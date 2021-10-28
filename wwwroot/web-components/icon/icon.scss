@@ -1,0 +1,48 @@
+@import "../_vars.scss";
+
+:host {
+    position: relative;
+    display: block;
+    pointer-events: none;
+
+    &[unresolved] {
+        display: none !important;
+    }
+
+    > div {
+        display: grid;
+        place-items: center;
+        height: 100%;
+    }
+
+    svg {
+        width: var(--vi-icon-width, 16px);
+        height: var(--vi-icon-height, 16px);
+        fill: var(--vi-icon-fill, inherit);
+    }
+
+    &.size-h1 svg {
+        width: var(--theme-h1);
+        height: var(--theme-h1);
+    }
+
+    &.size-h2 svg {
+        width: var(--theme-h2);
+        height: var(--theme-h2);
+    }
+
+    &.size-h3 svg {
+        width: var(--theme-h3);
+        height: var(--theme-h3);
+    }
+
+    &.size-h4 svg {
+        width: var(--theme-h4);
+        height: var(--theme-h4);
+    }
+
+    &.size-h5 svg {
+        width: var(--theme-h5);
+        height: var(--theme-h5);
+    }
+}

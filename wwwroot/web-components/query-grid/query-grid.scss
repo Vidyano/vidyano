@@ -1,0 +1,54 @@
+@import "../_vars.scss";
+
+:host {
+    display: flex;
+    flex-direction: column;
+    contain: strict;
+    position: relative;
+    @include noSelection();
+
+    &[initializing] {
+        header, vi-scroller {
+            visibility: hidden;
+        }
+
+        vi-query-grid-row {
+            display: contents;
+        }
+
+        .filler {
+            display: none;
+        }
+    }
+
+    vi-scroller {
+        flex: 1;
+    }
+
+    [grid] {
+        display: grid;
+        grid-template-columns: var(--vi-query-grid-columns);
+        will-change: transform;
+    }
+
+    header {
+        padding-left: 64px;
+
+        [grid] {
+            transform: translateX(calc(var(--vi-query-grid-horizontal, 0) * -1));
+            will-change: transform;
+        }
+    }
+
+    .measures {
+        display: contents;
+
+        > .measure {
+            position: relative;
+        }
+    }
+
+    vi-spinner[hidden] {
+        display: none !important;
+    }
+}

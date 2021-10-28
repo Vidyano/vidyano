@@ -1,0 +1,10 @@
+:host {
+    --vi-icon-selected-checked-color: var(--vi-query-grid-cell-boolean-checked-color, #555);
+
+    display: block;
+
+    > * {
+        height: var(--vi-query-grid-row-height);
+        line-height: var(--vi-query-grid-row-height);
+    }
+}

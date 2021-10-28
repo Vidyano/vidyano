@@ -1,0 +1,220 @@
+@import "../_vars.scss";
+
+@mixin colorizer($bgColor, $fgColor, $bgHoverColor) {
+    background-color: $bgColor;
+    color: $fgColor;
+    fill: $fgColor;
+    --vi-spinner-color: #{$fgColor};
+
+    &:not([disabled]):hover {
+        background-color: $bgHoverColor;
+    }
+
+    &[disabled] {
+        background-color: fadeout($bgColor, 50%) !important;
+        fill: fadeout($fgColor, 50%) !important;
+        color: fadeout($fgColor, 50%) !important;
+        --at-apply: --vi-button-disabled;
+    }
+}
+
+:host {
+    contain: content;
+    position: relative;
+    cursor: pointer;
+    transition-property: fill, color, background-color;
+    transition-duration: 0.1s;
+    transition-timing-function: ease-out;
+    border: none;
+    outline: none;
+    box-sizing: border-box;
+    --vi-spinner-size: 1.5em;
+    --at-apply: --vi-button;
+
+    .highlight {
+        display: none !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--theme-color);
+        opacity: 0.1;
+    }
+    
+    /* elevation values from http://codepen.io/shyndman/pen/c5394ddf2e8b2a5c9185904b57421cdb */
+    &[elevation] {
+        transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: transition;
+
+        &:active {
+            box-shadow: none;
+        }
+    }
+
+    &[elevation="1"] {
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+    }
+
+    &[elevation="2"] {
+        box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
+    }
+
+    &[elevation="3"] {
+        box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12), 0 3px 5px -1px rgba(0, 0, 0, 0.4);
+    }
+
+    &[elevation="4"] {
+        box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12), 0 5px 5px -3px rgba(0, 0, 0, 0.4);
+    }
+
+    &[elevation="5"] {
+        box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14), 0 6px 30px 5px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.4);
+    }
+
+    &[disabled] {
+        cursor: default;
+        --at-apply: --vi-button-disabled;
+
+        vi-icon {
+            --at-apply: --vi-button-disabled-icon;
+        }
+
+        span {
+            --at-apply: --vi-button-disabled-label;
+        }
+    }
+
+    &:not([custom-layout]) {
+        padding: 1px var(--theme-h5);
+        text-align: center;
+        white-space: nowrap;
+
+        > *:not(style) {
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        > vi-icon {
+            height: 100%;
+            margin-right: 2px;
+            --at-apply: --vi-button-icon;
+        }
+
+        > span {
+            --at-apply: --vi-button-label;
+        }
+
+        &[busy] {
+            > span, > vi-icon {
+                visibility: hidden;
+            }
+        }
+    }
+
+    &[type=""], &:not([type]) {
+        &:not([inverse]) {
+            background-color: var(--theme-color);
+            color: white;
+            fill: white;
+            --vi-spinner-color: white;
+
+            &:not([disabled]):hover {
+                background-color: var(--theme-color-light);
+            }
+
+            &:not([busy])[disabled] {
+                opacity: 0.5;
+                --at-apply: --vi-button-disabled;
+            }
+        }
+
+        &[inverse] {
+            background-color: transparent;
+            color: var(--theme-color);
+            fill: var(--theme-color);
+            --vi-spinner-color: var(--theme-color);
+
+            &:not([disabled]):hover {
+                background-color: rgba(var(--theme-color-rgb), 0.1);
+            }
+
+            &:not([busy])[disabled] {
+                opacity: 0.5;
+                --at-apply: --vi-button-disabled;
+            }
+        }
+    }
+
+    &[type="light-monochrome"] {
+        &:not([inverse]) {
+            @include colorizer(#f0f0f0, white, lighten(#f0f0f0, 10%));
+        }
+
+        &[inverse] {
+            @include colorizer(transparent, #f0f0f0, fadeout(#f0f0f0, 90%));
+        }
+    }
+
+    &[type="danger"] {
+        &:not([inverse]) {
+            @include colorizer(#FF4136, white, lighten(#FF4136, 10%));
+        }
+
+        &[inverse] {
+            @include colorizer(transparent, #FF4136, fadeout(#FF4136, 90%));
+        }
+    }
+
+    &[type="safe"] {
+        &:not([inverse]) {
+            @include colorizer(#3D9970, white, lighten(#3D9970, 10%));
+        }
+
+        &[inverse] {
+            @include colorizer(transparent, #3D9970, fadeout(#3D9970, 90%));
+        }
+    }
+}
+
+vi-popup[open] > [toggle] vi-button[slot="header"] {
+    &[type=""], &:not([type]) {
+        &:not([inverse]) {
+            background-color: var(--theme-color-light);
+        }
+
+        &[inverse] {
+            background-color: var(--theme-color-faint);
+        }
+    }
+
+    &[type="light-monochrome"] {
+        &:not([inverse]) {
+            background-color: lighten(#f0f0f0, 10%);
+        }
+
+        &[inverse] {
+            background-color: fadeout(#f0f0f0, 90%);
+        }
+    }
+
+    &[type="danger"] {
+        &:not([inverse]) {
+            background-color: lighten(#FF4136, 10%);
+        }
+
+        &[inverse] {
+            background-color: fadeout(#FF4136, 90%);
+        }
+    }
+
+    &[type="safe"] {
+        &:not([inverse]) {
+            background-color: lighten(#3D9970, 10%);
+        }
+
+        &[inverse] {
+            background-color: fadeout(#3D9970, 90%);
+        }
+    }
+}

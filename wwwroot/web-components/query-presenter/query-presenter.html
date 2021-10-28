@@ -1,0 +1,18 @@
+<!-- <link rel="import" href="../Notification/notification.html" /> -->
+
+<link rel="stylesheet" href="query-presenter.css" />
+
+<dom-if if="[[loading]]">
+    <template>
+        <vi-spinner></vi-spinner>
+    </template>
+</dom-if>
+<dom-if if="[[hasError]]" restamp>
+    <template>
+        <div id="error">
+            <vi-icon source="Notification_Error"></vi-icon>
+            <span>[[error]]</span>
+        </div>
+    </template>
+</dom-if>
+<slot></slot>

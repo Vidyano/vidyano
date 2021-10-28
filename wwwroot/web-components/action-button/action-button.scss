@@ -1,0 +1,135 @@
+@import "../_vars.scss";
+
+:host {
+    display: block;
+    box-sizing: border-box;
+
+    vi-button {
+        display: inline-block;
+        padding: 0 var(--theme-h5);
+        vertical-align: top;
+        text-align: left;
+        height: var(--theme-h1);
+        line-height: var(--theme-h1);
+        min-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+
+        vi-icon {
+            height: var(--theme-h1);
+
+            &[source^="Action_"] {
+                width: var(--theme-h3);
+            }
+
+            &[source^="Down"] {
+                width: var(--theme-h3);
+            }
+        }
+
+        span {
+            flex: 1;
+            padding: 0 var(--theme-h5);
+        }
+    }
+
+    vi-popup[open] vi-button.groupActions {
+        background-color: var(--theme-color-faint);
+    }
+
+    &[disabled] {
+        vi-button {
+            --vi-button-disabled: {
+                opacity: 1;
+            };
+
+            span {
+                opacity: 0.5;
+            }
+
+            vi-icon {
+                opacity: 0.4;
+            }
+        }
+    }
+    
+    &[grouped] vi-icon.down-icon {
+        transform: rotate(-90deg);
+    }
+
+    &[overflow], &[grouped] {
+        vi-button {
+            padding: 0 !important;
+
+            vi-icon[source^="Action_"] {
+                width: var(--theme-h2);
+            }
+
+            span {
+                padding: 0 var(--theme-h4);
+            }
+        }
+
+        &[icon-space] {
+            button {
+                vi-icon[source^="Action_"] {
+                    display: block;
+                }
+            }
+        }
+
+        vi-icon {
+            vertical-align: top;
+            width: var(--theme-h2);
+
+            &[source="Down"] {
+                -moz-transform: rotate(-90deg);
+                -ms-transform: rotate(-90deg);
+                -o-transform: rotate(-90deg);
+                -webkit-transform: rotate(-90deg);
+                transform: rotate(-90deg);
+            }
+        }
+
+        vi-icon[source^="Action_"] {
+            background-color: rgba(0, 0, 0, 0.04);
+        }
+    }
+
+    &[no-label]:not([force-label]), &[pinned]:not([force-label]) {
+        vi-button span {
+            display: none;
+        }
+    }
+
+    &[no-icon] {
+        vi-button vi-icon {
+            display: none;
+        }
+    }
+
+    &:focus {
+        outline: none;
+    }
+
+    ul {
+        padding: 0;
+        margin: 0;
+        list-style-type: none;
+        line-height: var(--theme-h1);
+
+        li {
+            cursor: pointer;
+            padding: 0 var(--theme-h4);
+            color: var(--theme-color);
+
+            &:hover {
+                background-color: var(--theme-color-faint);
+            }
+        }
+    }
+
+    vi-popup-menu[open] button:not(:hover) {
+        background-color: var(--theme-color-faint);
+    }
+}

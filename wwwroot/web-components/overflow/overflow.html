@@ -1,0 +1,20 @@
+<!-- <link rel="import" href="../Button/button.html" />
+<link rel="import" href="../Popup/popup.html" />
+<link rel="import" href="../SizeTracker/size-tracker.html" /> -->
+
+<link rel="stylesheet" href="overflow.css" />
+
+<div class="flex relative visibleContainer">
+    <div class="visible horizontal layout wrap relative">
+        <div id="first"></div>
+        <slot id="visible"></slot>
+        <vi-size-tracker on-sizechanged="_visibleSizeChanged"></vi-size-tracker>
+    </div>
+    <vi-size-tracker on-sizechanged="_visibleContainerSizeChanged"></vi-size-tracker>
+</div>
+<vi-popup id="overflowPopup" class="horizontal layout" on-popup-opening="_popupOpening" on-popup-closed="_popupClosed">
+    <vi-button slot="header" flex inverse label="&hellip;"></vi-button>
+    <div id="overflowChildren" class="vertical layout">
+        <slot id="overflow" name="overflow"></slot>
+    </div>
+</vi-popup>

@@ -1,0 +1,7 @@
+﻿@import "../_vars.scss";
+
+:host {
+    vi-error {
+        margin: calc(var(--theme-h1) * 2) 0;
+    }
+}

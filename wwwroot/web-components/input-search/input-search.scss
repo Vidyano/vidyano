@@ -1,0 +1,43 @@
+@import "../_vars.scss";
+
+:host {
+    @include layout-horizontal();
+    line-height: var(--theme-h2);
+    position: relative;
+
+    form {
+        margin: 0;
+        flex: 1;
+    }
+
+    input {
+        border: none;
+        outline: none;
+        -moz-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        padding-right: var(--theme-h2);
+        padding-left: var(--theme-h5);
+        background-color: transparent;
+        color: white;
+        width: 100%;
+
+        &::placeholder {
+            color: var(--vi-input-search-placeholder-color, #aaa);
+        }
+    }
+
+    button {
+        position: absolute;
+        top: 1px;
+        right: 1px;
+        bottom: 1px;
+        border: none;
+        outline: none;
+        fill: #aaa;
+        cursor: pointer;
+        width: var(--theme-h2);
+        background-color: transparent;
+        margin: 1px 1px 1px 0;
+    }
+}

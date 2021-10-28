@@ -1,0 +1,113 @@
+@import "../_vars.scss";
+
+$footerHeight: var(--theme-h1);
+$background-color: #2b3940;
+$border-color: mix(white, $background-color, 7.5%);
+
+:host {
+    display: block;
+    border-top: 1px solid $border-color;
+
+    .username {
+        line-height: calc(var(--theme-h2) - 2px);
+        background-color: var(--vi-user--background-color, $background-color);
+        margin-bottom: 1px;
+        white-space: nowrap;
+
+        span {
+            padding: 0 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 12px;
+        }
+    }
+
+    .actions {
+        display: flex;
+        justify-content: space-around;
+        background-color: var(--vi-user--background-color, $background-color);
+
+        vi-button {
+            height: var(--theme-h2) !important;
+            line-height: var(--theme-h2) !important;
+            cursor: pointer;
+            fill: #f0f0f0;
+            --vi-icon-height: var(--theme-h4);
+            --vi-icon-width: var(--theme-h4);
+
+            &#signIn {
+                border-left: 1px solid $border-color;
+                color: white;
+
+                > vi-icon {
+                    height: $footerHeight !important;
+                    margin-left: var(--theme-h5);
+                }
+            }
+        }
+    }
+
+    vi-button {
+        width: $footerHeight;
+        height: $footerHeight !important;
+        line-height: $footerHeight !important;
+        cursor: pointer;
+
+        &#settings {
+            width: $footerHeight;
+            box-sizing: border-box;
+            border-left: 1px solid rgba(255, 255, 255, 0.12);
+            @include color-button(rgba(255, 255, 255, 0.05));
+        }
+
+        > span {
+            display: inline-block;
+            vertical-align: top;
+            line-height: $footerHeight;
+            height: $footerHeight;
+        }
+
+        > vi-icon {
+            display: inline-block;
+            fill: white;
+        }
+    }
+}
+
+:host-context([is-signed-in]) {
+    vi-button {
+        cursor: pointer;
+    }
+}
+
+:host-context([collapsed]) {
+    .actions {
+        display: flex;
+        flex-direction: column;
+
+        vi-button {
+            height: var(--theme-h1) !important;
+            line-height: var(--theme-h1) !important;
+        }
+    }
+
+    .username {
+        display: none;
+    }
+
+    #signIn {
+        border-left: none !important;
+
+        & > span {
+            display: none;
+        }
+
+        vi-icon {
+            margin-left: 0 !important;
+        }
+    }
+
+    vi-button.vi-user#settings {
+        border-left-width: 0;
+    }
+}

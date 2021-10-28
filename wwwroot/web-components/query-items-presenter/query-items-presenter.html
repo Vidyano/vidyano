@@ -1,0 +1,18 @@
+<!-- <link rel="import" href="../Chart/chart.html" />
+<link rel="import" href="../FileDrop/file-drop.html" /> -->
+
+<link rel="stylesheet" href="query-items-presenter.css" />
+
+<dom-if if="[[fileDrop]]">
+    <template>
+        <vi-file-drop class="layout horizontal">
+            <slot></slot>
+        </vi-file-drop>
+    </template>
+</dom-if>
+<dom-if if="[[!fileDrop]]">
+    <template>
+        <slot></slot>
+    </template>
+</dom-if>
+<vi-spinner hidden$="[[!loading]]"></vi-spinner>

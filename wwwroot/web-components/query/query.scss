@@ -1,0 +1,38 @@
+@import "../_vars.scss";
+
+:host {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto minmax(0, 1fr);
+    @include fit();
+
+    vi-action-bar {
+        box-shadow: var(--theme-box-shadow);
+        z-index: 1;
+    }
+
+    header {
+        @include page-title();
+    }
+
+    vi-query-items-presenter {
+        margin: 3px 0 0 0;
+        z-index: 0;
+    }
+
+    &[no-actions] {
+        > header {
+            box-shadow: var(--theme-box-shadow);
+        }
+
+        vi-action-bar {
+            display: none !important;
+        }
+    }
+
+    &[hide-header] {
+        vi-query-items-presenter {
+            margin: 0;
+        }
+    }
+}

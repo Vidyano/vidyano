@@ -1,0 +1,25 @@
+<link rel="stylesheet" href="query-grid.css" />
+
+<header id="header">
+    <div grid>
+        <dom-repeat items="[[columns]]" as="column">
+            <template>
+                <vi-query-grid-column-header column="[[column]]"></vi-query-grid-column-header>
+            </template>
+        </dom-repeat>
+    </div>
+</header>
+
+<vi-scroller horizontal-scroll-offset="{{horizontalScrollOffset}}" vertical-scroll-offset="{{verticalScrollOffset}}" outer-height="{{viewportHeight}}" outer-width="{{viewportWidth}}">
+    <div id="gridWrapper">
+        <div id="grid" grid$="[[initializing]]">
+            <dom-repeat items="[[virtualItems]]">
+                <template>
+                    <vi-query-grid-row item="[[item]]" columns="[[columns]]" index="[[index]]" offsets="[[_computeOffsets(columnWidths)]]" visible-range="{{_computeVisibleRange(viewportWidth, horizontalScrollOffset)}}"></vi-query-grid-row>
+                </template>
+            </dom-repeat>
+        </div>
+    </div>
+</vi-scroller>
+
+<vi-spinner hidden$="[[!query.isBusy]]"></vi-spinner>

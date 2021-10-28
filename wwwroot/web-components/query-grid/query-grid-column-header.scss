@@ -1,0 +1,39 @@
+@import "../_vars.scss";
+
+:host {
+    display: block;
+    box-sizing: border-box;
+    border-style: solid;
+    border-width: 0 1px 1px 0;
+    border-color: var(--theme-light-border);
+
+    .label {
+        display: flex;
+        position: relative;
+        padding: 0 var(--vi-query-grid-cell-padding, var(--theme-h5));
+        cursor: pointer;
+        position: relative;
+        color: #808080;
+        white-space: nowrap;
+        overflow: hidden;
+
+        > label {
+            display: block;
+            line-height: var(--vi-query-grid-header-height, var(--vi-query-grid-row-height));
+            white-space: nowrap;
+            cursor: pointer;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            padding-right: var(--theme-h5);
+            color: var(--theme-color);
+        }
+
+        > vi-icon {
+            fill: var(--theme-color);
+            line-height: var(--theme-h2);
+            height: var(--theme-h2);
+            --vi-icon-height: 12px;
+        }
+    }
+}

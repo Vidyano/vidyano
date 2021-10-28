@@ -1,0 +1,18 @@
+@import "../_vars.scss";
+
+:host {
+    @include layout-horizontal();
+    @include relative();
+
+    > * {
+        @include flex();
+    }
+
+    &:focus {
+        outline: none !important;
+    }
+
+    ::slotted(*) {
+        @include flex();
+    }
+}

@@ -1,0 +1,30 @@
+@import "../_vars.scss";
+
+:host {
+    @include layout-horizontal();
+    @include relative();
+    contain: strict;
+
+    &[has-error] {
+        @include layout-center-center();
+        color: var(--theme-color-error);
+        fill: var(--theme-color-error);
+
+        span {
+            display: block;
+            text-align: center;
+            padding: var(--theme-h5) var(--theme-h3);
+        }
+
+        vi-icon {
+            --vi-icon-width: var(--theme-h1);
+            --vi-icon-height: var(--theme-h1);
+        }
+    }
+
+    &::slotted {
+        > vi-query-items-presenter, > vi-query {
+            @include flex();
+        }
+    }
+}

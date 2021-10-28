@@ -1,0 +1,14 @@
+﻿<!-- <link rel="import" href="../ActionBar/action-bar.html" />
+<link rel="import" href="../Notification/notification.html" />
+<link rel="import" href="../QueryItemsPresenter/query-items-presenter.html" /> -->
+
+<link rel="stylesheet" href="query.css" />
+
+<dom-if if="[[!hideHeader]]">
+    <template>
+        <header>[[label]]</header>
+        <vi-action-bar class="horizontal layout center" service-object="[[query]]" hidden$="[[noActions]]"></vi-action-bar>
+        <vi-notification service-object="[[query]]"></vi-notification>
+    </template>
+</dom-if>
+<vi-query-items-presenter query="[[query]]"></vi-query-items-presenter>

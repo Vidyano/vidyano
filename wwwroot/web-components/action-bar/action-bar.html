@@ -1,0 +1,26 @@
+﻿<link rel="stylesheet" href="action-bar.css" />
+
+<vi-overflow class="flex">
+    <dom-repeat items="[[unpinnedActions]]" as="action">
+        <template>
+            <vi-action-button action="[[action]]"></vi-action-button>
+        </template>
+    </dom-repeat>
+</vi-overflow>
+<dom-repeat items="[[pinnedActions]]" as="action">
+    <template>
+        <vi-action-button action="[[action]]" no-label></vi-action-button>
+    </template>
+</dom-repeat>
+<dom-if if="[[hasCharts]]">
+    <template>
+        <vi-chart-selector query="[[serviceObject]]"></vi-chart-selector>
+    </template>
+</dom-if>
+<dom-if if="[[canSearch]]">
+    <template>
+        <div class="search layout horizontal center-center">
+            <vi-input-search value="{{serviceObject.textSearch}}" on-search="_search"></vi-input-search>
+        </div>
+    </template>
+</dom-if>

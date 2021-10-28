@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+      "target": "esnext",
+      "module": "esnext",
+      "useDefineForClassFields": false,
+      "moduleResolution": "node",
+      "lib": [
+          "ESNext",
+          "DOM"
+      ],
+      "declaration": true,
+      "removeComments": true,
+      "experimentalDecorators": true,
+      "noEmitOnError": false,
+      "rootDir": "."
+  },
+  "exclude": [],
+  "include": [
+      "wwwroot/libs/vidyano/**/*.ts",
+      "wwwroot/web-components/**/*.ts"
+  ]
+}

@@ -1,0 +1,94 @@
+﻿<link rel="stylesheet" href="audit.css" />
+
+<header>
+    <span>[[persistentObject.breadcrumb]]</span>
+</header>
+<nav>
+    <div class="search layout horizontal center-center">
+        <vi-input-search value="{{search}}" on-search="_filter"></vi-input-search>
+    </div>
+</nav>
+<vi-scroller class="flex" no-horizontal vertical-scroll-offset="{{verticalScrollOffset}}">
+    <main>
+        <dom-repeat items="[[groups]]" as="group">
+            <template>
+                <div class="group">
+                    <dom-if if="[[group.today]]">
+                        <template>
+                            <div class="today"><h1>[[translations.Today]]</h1></div>
+                        </template>
+                    </dom-if>
+                    <dom-if if="[[!group.today]]">
+                        <template>
+                            <div class="date layout horizontal" hidden$="[[group.today]]">
+                                <div class="day">[[group.day]]</div>
+                                <div>
+                                    <div class="dayOfWeek">[[group.dayOfWeek]]</div>
+                                    <div class="monthYear">[[group.monthYear]]</div>
+                                </div>
+                            </div>
+                        </template>
+                    </dom-if>
+                    <dom-repeat items="[[group.entries]]" as="entry" filter="[[_filterEntries(filter)]]">
+                        <template>
+                            <div class="entry layout horizontal relative">
+                                <div class="timeline">
+                                    <div class="dot"></div>
+                                    <div class="line"></div>
+                                </div>
+                                <a href$="[[entry.href]]" class="layout horizontal flex" on-tap="_open">
+                                    <div class="time">
+                                        <div class="title layout horizontal">
+                                            <span>[[entry.time]]</span>
+                                        </div>
+                                    </div>
+                                    <dom-if if="[[!entry.busy]]">
+                                        <template>
+                                            <div class="content layout vertical relative">
+                                                <div class="grid">
+                                                    <vi-icon source="Action_viImpersonate"></vi-icon>
+                                                    <label class="user">[[entry.user]]&nbsp;[[entry.originalUser]]</label>
+                                                    <dom-repeat items="[[entry.changes]]" as="change">
+                                                        <template>
+                                                            <label class="change">[[change.name]]:</label>
+                                                            <pre>[[change.value]]</pre>
+                                                        </template>
+                                                    </dom-repeat>
+                                                </div>
+                                                <dom-if if="[[entry.outData.notification]]">
+                                                    <template>
+                                                        <div class="notification" type$="[[entry.outData.notificationType]]">
+                                                            <span>[[entry.outData.notification]]</span>
+                                                        </div>
+                                                    </template>
+                                                </dom-if>
+                                                <div class="info" expanded$="[[entry.expanded]]">
+                                                    <vi-grid no-spacing>
+                                                        <dom-repeat items="[[_moreInfo(entry)]]">
+                                                            <template>
+                                                                <div class="infoItem" desktop-4 tablet-4 phone-4>
+                                                                    <label>[[item.label]]</label>
+                                                                    <span>[[item.displayValue]]</span>
+                                                                </div>
+                                                            </template>
+                                                        </dom-repeat>
+                                                    </vi-grid>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </dom-if>
+                                    <div class="busy layout horizontal center-center" hidden$="[[!entry.busy]]">
+                                        <vi-spinner block></vi-spinner>
+                                    </div>
+                                </a>
+                                <div class="expand" on-tap="_expand">
+                                    <vi-icon source="CaretDown" expanded$="[[entry.expanded]]"></vi-icon>
+                                </div>
+                            </div>
+                        </template>
+                    </dom-repeat>
+                </div>
+            </template>
+        </dom-repeat>
+    </main>
+</vi-scroller>

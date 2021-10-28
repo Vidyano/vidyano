@@ -1,0 +1,68 @@
+:host {   
+    display: grid;
+    position: relative;
+    grid-template-columns: auto auto var(--vi-query-grid-columns);
+    width: initial;
+    height: var(--vi-query-grid-row-height);
+    line-height: var(--vi-query-grid-row-height);
+    min-width: 100%;
+    overflow: visible;
+    white-space: nowrap;
+    contain: layout style;
+
+    &:nth-of-type(even) > ::slotted(.column),
+    &:nth-of-type(even) > .pinned {
+        background-color: var(--vi-query-grid-row-even-color, white);
+    }
+
+    &:nth-of-type(odd) {
+        &, ::slotted(.column), .pinned {
+            background-color: var(--vi-query-grid-row-odd-color, #FAFAFA);
+        }
+
+        &.loading {
+            &, ::slotted(.column), .pinned {
+                background-color: var(--vi-query-grid-row-odd-color, #FCFCFC);
+            }
+        }
+    }
+
+    &:not(.loading):hover {
+        cursor: pointer;
+
+        &, ::slotted(.column), .pinned {
+            background-color: var(--theme-color-semi-faint);
+        }
+    }
+
+    .pinned {
+        will-change: transform;
+        transform: translateX(var(--vi-query-grid-horizontal));
+        z-index: 1;
+    }
+
+    .selector, .actions {
+        vi-icon {
+            width: var(--vi-query-grid-row-height);
+            height: var(--vi-query-grid-row-height);
+        }
+
+        &:hover {
+            background-color: rgba(0, 0, 0, .05) !important;
+        }
+    }
+
+    &.loading {
+        .selector, .actions, ::slotted(.column) {
+            visibility: hidden;
+        }
+    }
+
+    &.hidden {
+        display: none !important;
+    }
+}
+
+:host-context([initializing]) .pinned {
+    display: none;
+}

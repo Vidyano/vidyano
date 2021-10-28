@@ -1,0 +1,18 @@
+@import "../_vars.scss";
+
+:host {
+    position: fixed;
+    visibility: hidden;
+    background-color: white;
+    opacity: 0;
+    transition: opacity 0.1s ease-out;
+    overflow: visible;
+    padding: 1px;
+    @include z-index1();
+
+    &[open] {
+        visibility: visible;
+        opacity: 1;
+        z-index: 11;
+    }
+}

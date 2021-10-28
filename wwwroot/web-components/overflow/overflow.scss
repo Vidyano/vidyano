@@ -1,0 +1,51 @@
+@import "../_vars.scss";
+
+:host {
+    height: var(--theme-h1);
+    line-height: var(--theme-h1);
+    @include noSelection();
+    @include layout-horizontal();
+    @include relative();
+
+    .visibleContainer {
+        overflow: hidden;
+    }
+
+    .visible {
+        @include layout-inline();
+        position: relative;
+
+        vi-size-tracker {
+            z-index: -1;
+        }
+
+        > div#first {
+            width: 0;
+            opacity: 0;
+        }
+    }
+
+    #overflowPopup {
+        position: relative;
+
+        button[slot="header"] {
+            display: block;
+            width: var(--theme-h1);
+            font-weight: bold;
+        }
+    }
+
+    &:not([has-overflow]) {
+        #overflowPopup {
+            display: none;
+        }
+    }
+
+    vi-popup {
+        &[open] {
+            button[slot="header"] {
+                background-color: var(--theme-color-faint);
+            }
+        }
+    }
+}

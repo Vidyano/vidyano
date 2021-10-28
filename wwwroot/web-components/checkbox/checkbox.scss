@@ -1,0 +1,46 @@
+@import "../_vars.scss";
+
+:host {
+    display: block;
+    box-sizing: border-box;
+
+    &:not([disabled]) {
+        cursor: pointer;
+    }
+
+    div {
+        > span:not([empty]) {
+            padding: 0 1px 0 3px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        > vi-icon:not([hidden]) + span:not([empty]) {
+            margin-left: calc(var(--theme-h5) - 1px);
+        }
+    }
+
+    &:focus {
+        outline: 0;
+
+        &:not([disabled]) vi-icon {
+            &[source="SelectedRadio"] ::content #box {
+                fill: var(--theme-color-light);
+                opacity: 0.75;
+            }
+
+            &[source="Selected"] + span {
+                outline: 1px dotted var(--theme-color-light);
+            }
+        }
+    }
+
+    vi-icon {
+        --at-apply: --vi-checkbox--icon;
+
+        &[disabled] {
+            --at-apply: --vi-checkbox--icon-disabled;
+        }
+    }
+}

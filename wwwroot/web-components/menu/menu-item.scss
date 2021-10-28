@@ -1,0 +1,126 @@
+@import "../_vars.scss";
+
+$color: #FAFAFA;
+$backgroundColor: $blue-grey-900;
+
+:host {
+    @include relative();
+    box-sizing: border-box;
+	display: block;
+	line-height: var(--theme-h2);
+    color: var(--vi-menu-color, $color);
+    fill: var(--vi-menu-color, $color);
+    cursor: pointer;
+    --iron-collapse-transition-duration: 150ms;
+
+    span.match {
+        color: #FFDD00;
+        font-weight: bold;
+        pointer-events: none;
+    }
+
+    > .title {
+        @include layout-horizontal();
+        @include relative();
+        padding-right: var(--theme-h5);
+        text-decoration: none;
+        color: var(--vi-menu-color, $color);
+        white-space: nowrap;
+        -ms-text-overflow: ellipsis;
+        -o-text-overflow: ellipsis;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        outline: none;
+
+        &:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        > vi-icon {
+            height: var(--theme-h2);
+            width: var(--theme-h3);
+            --vi-icon-width: 1em;
+            --vi-icon-height: 1em;
+            margin-left: calc(var(--theme-h3) * var(--vi-menu-item-indent-level, 0));
+            fill: var(--vi-menu-color, $color);
+    		transition: transform 0.2s ease;
+            transform: rotate(0deg);
+
+            &:empty {
+                display: none;
+
+                & + span {
+                    margin-left: calc(var(--theme-h3) + var(--theme-h3) * var(--vi-menu-item-indent-level, 0));
+                }
+            }
+        }
+    }
+    
+    &[hidden] {
+        display: none !important;
+    }
+
+    &[expand], &[filtering] {
+        > .title {
+            > vi-icon[source="ProgramUnitGroup"] {
+                -moz-transform: rotate(90deg);
+    			-ms-transform: rotate(90deg);
+    			-o-transform: rotate(90deg);
+    			-webkit-transform: rotate(90deg);
+    			transform: rotate(90deg);
+            }
+        }
+    }
+
+    &.program-unit {
+		background-color: transparent;
+
+        > .title {
+            font-weight: 600;
+            color: var(--vi-menu-color, $color);
+            text-transform: uppercase;
+
+            > vi-icon {
+                display: none;
+
+                + span {
+                    margin-left: var(--theme-h4);
+                }
+            }
+        }
+
+        &[collapsed] {
+            > .title {
+                padding: 0 !important;
+                line-height: var(--theme-h1);
+                height: var(--theme-h1);
+                width: var(--theme-h1);
+                text-align: center;
+
+                > vi-icon[has-resource] {
+                    display: block;
+                    width: var(--theme-h1);
+                    -moz-transform: rotate(0);
+    			    -ms-transform: rotate(0);
+    			    -o-transform: rotate(0);
+    			    -webkit-transform: rotate(0);
+    			    transform: rotate(0);
+
+                    & + span {
+                        display: none;
+                    }
+                }
+
+                > span {
+                    margin-left: 0 !important;
+                }
+            }
+
+            &:not([header]) {
+                > .title {
+                    display: none;
+                }
+            }
+        }
+	}
+}

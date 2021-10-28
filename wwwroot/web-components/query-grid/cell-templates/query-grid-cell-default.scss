@@ -1,0 +1,11 @@
+@import "../../_vars.scss";
+
+:host {
+    padding: 0 var(--theme-h5);
+    height: var(--vi-query-grid-row-height);
+    line-height: var(--vi-query-grid-row-height);
+    min-width: var(--theme-h2);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}

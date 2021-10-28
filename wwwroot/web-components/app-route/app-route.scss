@@ -1,0 +1,14 @@
+@import "../_vars.scss";
+
+:host {
+    display: flex;
+    position: relative;
+
+    ::slotted(*) {
+        flex: 1;
+    }
+
+    &:not(.active) {
+        display: none !important;
+    }
+}

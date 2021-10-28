@@ -1,0 +1,37 @@
+<link rel="stylesheet" href="app.css" />
+
+<vi-profiler service="[[service]]" hidden$="[[!isProfiling]]"></vi-profiler>
+<dom-if if="[[showMenu]]" restamp>
+    <template>
+        <vi-menu menu label="[[label]]" program-units="[[service.application.programUnits]]" active-program-unit="[[programUnit]]">
+            <slot name="menu-label"></slot>
+        </vi-menu>
+    </template>
+</dom-if>
+<vi-app-route-presenter path="{{pathExtended}}">
+    <vi-app-route route=""></vi-app-route>
+    <vi-app-route route="query.:id" route-alt="Query.:id" component="../query-presenter/query-presenter.js"></vi-app-route>
+    <vi-app-route route=":programUnitName/query.:id" route-alt=":programUnitName/Query.:id" component="../query-presenter/query-presenter.js"></vi-app-route>
+    <vi-app-route route="persistent-object.:id(/:objectId*)" route-alt="PersistentObject.:id(/:objectId*)" component="../persistent-object-presenter/persistent-object-presenter.js"></vi-app-route>
+    <vi-app-route route=":programUnitName/persistent-object.:id(/:objectId*)" route-alt=":programUnitName/PersistentObject.:id(/:objectId*)" component="../persistent-object-presenter/persistent-object-presenter.js"></vi-app-route>
+    <vi-app-route route=":programUnitName/from-action/:fromActionId" component="../persistent-object-presenter/persistent-object-presenter.js"></vi-app-route>
+    <vi-app-route route=":programUnitName(/)" component="../persistent-unit-presenter/persistent-unit-presenter.js"></vi-app-route>
+    <vi-app-route class="fit" route="sign-in(/:stateOrReturnUrl*)(/:returnUrl*)" route-alt="SignIn(/:stateOrReturnUrl*)(/:returnUrl*)" allow-signed-out>
+        <template>
+            <vi-sign-in label="[[app.label]]" logo="[[app.signInLogo]]">
+                <slot name="sign-in-background"></slot>
+                <slot name="sign-in-footer"></slot>
+            </vi-sign-in>
+        </template>
+    </vi-app-route>
+    <vi-app-route route="sign-out(/)(:returnUrl*)" route-alt="SignOut(/)(:returnUrl*)" allow-signed-out>
+        <template>
+            <vi-sign-out></vi-sign-out>
+        </template>
+    </vi-app-route>
+</vi-app-route-presenter>
+<dom-if if="[[service.application.hasManagement]]">
+    <template>
+        <vi-popup-menu id="viConfigure" ctrl-key context-menu-only></vi-popup-menu>
+    </template>
+</dom-if>

@@ -1,0 +1,27 @@
+:host {
+    display: flex;
+    box-sizing: border-box;
+    border-bottom: 1px solid var(--theme-light-border);
+    cursor: pointer;
+    background-color: #f5f5f5;
+    min-width: 100%;
+
+    &:not([first]) {
+        border-top: 1px solid var(--theme-light-border);
+    }
+
+    &[collapsed] {
+        vi-icon {
+            transform: rotate(-45deg);
+        }
+    }
+
+    vi-icon {
+        height: var(--vi-query-grid--row-height, var(--theme-h2));
+        width: var(--theme-h2);
+    }
+
+    label {
+        line-height: var(--vi-query-grid--row-height, var(--theme-h2));
+    }
+}
