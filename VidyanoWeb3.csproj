@@ -1,13 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <TargetFramework>net5.0</TargetFramework>
+	<UserSecretsId>60A2590B-D165-41F5-9D56-36B1A10ED282</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.json" Version="13.0.1" />
+    <PackageReference Include="RavenDB.Embedded" Version="5.2.3" />
+    <PackageReference Include="Vidyano.RavenDB" Version="6.0.20210822.3278-rc1" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="App_Data\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 
 </Project>

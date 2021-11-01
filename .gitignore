@@ -354,3 +354,5 @@ wwwroot/web-components/**/*.d.ts
 wwwroot/web-components/**/*.js
 wwwroot/web-components/**/*.css
 wwwroot/web-components/**/*.css.map
+
+data

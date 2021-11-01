@@ -1,0 +1,44 @@
+﻿<html>
+    <head>
+        <!-- <script defer src="https://unpkg.com/es-module-shims"></script>
+        <script type="importmap-shim" src="importmap.json"></script>
+        <script type="module-shim" src="web3/web-components/app/app.js"></script> -->
+
+        <script type="importmap">
+            {
+                "imports": {
+                    "bignumber.js": "https://cdn.jsdelivr.net/npm/bignumber.js/bignumber.mjs",
+                    "@polymer/polymer": "https://cdn.jsdelivr.net/npm/@polymer/polymer/polymer-element.js",
+                    "@polymer/polymer/lib/": "https://cdn.jsdelivr.net/npm/@polymer/polymer/lib/",
+                    "@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js": "https://cdn.jsdelivr.net/npm/@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js",
+                    "@polymer/iron-collapse": "https://cdn.jsdelivr.net/npm/@polymer/iron-collapse/iron-collapse.js",
+                    "@polymer/iron-collapse/": "https://cdn.jsdelivr.net/npm/@polymer/iron-collapse/",
+                    "@polymer/iron-list": "https://cdn.jsdelivr.net/npm/@polymer/iron-list/iron-list.js",
+                    "@polymer/iron-resizable-behavior/iron-resizable-behavior.js": "https://cdn.jsdelivr.net/npm/@polymer/iron-resizable-behavior/iron-resizable-behavior.js",
+                    "@polymer/iron-scroll-target-behavior/iron-scroll-target-behavior.js": "https://cdn.jsdelivr.net/npm/@polymer/iron-scroll-target-behavior/iron-scroll-target-behavior.js",
+                    "@polymer/polymer/polymer-legacy.js": "https://cdn.jsdelivr.net/npm/@polymer/polymer/polymer-legacy.js",
+                    "@webcomponents/shadycss/entrypoints/apply-shim.js": "https://cdn.jsdelivr.net/npm/@webcomponents/shadycss/entrypoints/apply-shim.js",
+                    "@webcomponents/shadycss/entrypoints/custom-style-interface.js": "https://cdn.jsdelivr.net/npm/@webcomponents/shadycss/entrypoints/custom-style-interface.js"
+                }
+            }
+        </script>
+        <script type="module" src="web3/web-components/app/app.js"></script>
+        
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,300,600,700,800" rel="stylesheet" type="text/css">
+        <style>
+            html, body {
+                margin: 0;
+                padding: 0;
+            }
+
+            vi-app {
+                width: 100vw;
+                height: 100vh;
+                overflow: hidden;
+            }
+        </style>
+    </head>
+    <body>
+        <vi-app label="Web3"></vi-app>
+    </body>
+</html>

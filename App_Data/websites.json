@@ -1,0 +1,16 @@
+{
+  "Websites": {
+    "Default": {
+      "Type": 2,
+      "Bindings": [
+        "*"
+      ]
+    },
+    "Legacy": {
+      "Type": 2,
+      "Bindings": [
+        "*/legacy"
+      ]
+    }
+  }
+}

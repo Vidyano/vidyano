@@ -1,38 +1,35 @@
-using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
-var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseWebRoot("wwwroot");
-
-var app = builder.Build();
-
-app.MapGet("web3/{**id}", (string id) => {
-    var provider = new FileExtensionContentTypeProvider();
-    if (!provider.TryGetContentType(id, out var mimeType))
+namespace VidyanoWeb3
+{
+    public class Program
     {
-        switch (Path.GetExtension(id))
+        public static IHostEnvironment HostEnvironment { get; private set;}
+
+        public static void Main(string[] args)
         {
-            case ".mjs":
-                mimeType = "application/javascript";
-                break;
-
-            default:
-                mimeType = "application/octet-stream";
-                break;
+            CreateHostBuilder(args).Build().Run();
         }
+
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    var env = HostEnvironment = hostingContext.HostingEnvironment;
+
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                        .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+
+                    config.AddEnvironmentVariables();
+
+                    if (env.IsDevelopment())
+                        config.AddUserSecrets<Program>();
+                })
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                });
     }
-
-    var filePath = Path.Combine(Vulcanizer.RootPath, id);
-    if (!System.IO.File.Exists(filePath))
-        return Results.NotFound();
-
-    // TODO: Verify if file is allow to be served
-    return Results.Content(Vulcanizer.Generate(filePath), mimeType);
-});
-
-app.UseStaticFiles();
-
-app.MapFallback(() => {
-    return Results.Content(File.ReadAllText("wwwroot/index.html"), "text/html; charset=utf-8");
-});
-
-app.Run();
+}

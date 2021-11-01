@@ -1,0 +1,13 @@
+{
+  "Groups": {
+    "fe9429ba-d5cd-4e7c-bbe4-05a4c3497d97": "Administrators",
+    "d3bd3312-0730-43d9-9bf4-9e14c75b00f7": "Users"
+  },
+  "Rights": [
+    {
+      "Id": "dabfad25-5be8-4595-aeda-e2a5f2f045b1",
+      "Resource": "QueryReadEditNewDelete/VidyanoWeb3",
+      "UserId": "d3bd3312-0730-43d9-9bf4-9e14c75b00f7"
+    }
+  ]
+}

@@ -1,0 +1,822 @@
+{
+  "Actions": {
+    "AddReference": {
+      "RefreshQueryOnCompleted": true,
+      "Offset": 300,
+      "ShowedOn": 2,
+      "IsSystem": true,
+      "DisplayName": {
+        "en": "Add"
+      },
+      "IconName": "Add"
+    },
+    "BulkEdit": {
+      "Offset": 400,
+      "ShowedOn": 2,
+      "IsSystem": true,
+      "SelectionRule": ">0",
+      "DisplayName": {
+        "en": "Edit"
+      },
+      "IconName": "Edit"
+    },
+    "CancelEdit": {
+      "IsSystem": true,
+      "DisplayName": {
+        "en": "Cancel"
+      },
+      "IconName": "CancelEdit"
+    },
+    "CancelSave": {
+      "IsSystem": true,
+      "DisplayName": {
+        "en": "Cancel"
+      },
+      "IconName": "Cancel"
+    },
+    "Delete": {
+      "RefreshQueryOnCompleted": true,
+      "Offset": 500,
+      "ShowedOn": 2,
+      "IsSystem": true,
+      "SelectionRule": ">0",
+      "DisplayName": {
+        "en": "Delete"
+      },
+      "ConfirmationMessageKey": "AskForDeleteItems",
+      "IconName": "Delete"
+    },
+    "DialogCancel": {
+      "IsSystem": true,
+      "DisplayName": {
+        "en": "Cancel"
+      },
+      "IconName": "Cancel"
+    },
+    "DialogOk": {
+      "IsSystem": true,
+      "SelectionRule": "> 0",
+      "DisplayName": {
+        "en": "OK"
+      },
+      "IconName": "Ok"
+    },
+    "Edit": {
+      "Offset": 100,
+      "ShowedOn": 5,
+      "IsSystem": true,
+      "DisplayName": {
+        "en": "Edit"
+      },
+      "IconName": "Edit"
+    },
+    "EndEdit": {
+      "IsSystem": true,
+      "DisplayName": {
+        "en": "Save"
+      },
+      "IconName": "Save"
+    },
+    "ExportToCsv": {
+      "Offset": 30001,
+      "ShowedOn": 2,
+      "IsSystem": true,
+      "DisplayName": {
+        "en": "Export"
+      },
+      "IconName": "Excel"
+    },
+    "ExportToExcel": {
+      "Offset": 30000,
+      "ShowedOn": 2,
+      "IsSystem": true,
+      "DisplayName": {
+        "en": "Export"
+      },
+      "IconName": "Excel"
+    },
+    "New": {
+      "Offset": 200,
+      "ShowedOn": 2,
+      "IsSystem": true,
+      "DisplayName": {
+        "en": "New"
+      },
+      "IconName": "Add"
+    },
+    "Remove": {
+      "RefreshQueryOnCompleted": true,
+      "Offset": 600,
+      "ShowedOn": 2,
+      "IsSystem": true,
+      "SelectionRule": ">0",
+      "DisplayName": {
+        "en": "Remove"
+      },
+      "IconName": "Remove"
+    },
+    "Save": {
+      "IsSystem": true,
+      "DisplayName": {
+        "en": "Save"
+      },
+      "IconName": "Save"
+    },
+    "ShowHelp": {
+      "Offset": 60000,
+      "ShowedOn": 7,
+      "IsSystem": true,
+      "DisplayName": {
+        "en": "Help"
+      },
+      "IsPinned": true,
+      "IconName": "Help"
+    },
+    "viSearch": {
+      "Offset": 1500,
+      "ShowedOn": 2,
+      "IsSystem": true,
+      "DisplayName": {
+        "en": "Search"
+      },
+      "IsPinned": true,
+      "IconName": "Filter"
+    },
+    "viSaveAdvancedSearch": {
+      "Offset": 1600,
+      "ShowedOn": 2,
+      "IsSystem": true,
+      "DisplayName": {
+        "en": "Save"
+      },
+      "IconName": "Save"
+    },
+    "viLoadAdvancedSearch": {
+      "Offset": 1600,
+      "ShowedOn": 2,
+      "IsSystem": true,
+      "DisplayName": {
+        "en": "Load"
+      },
+      "IconName": "Add"
+    }
+  },
+  "DataTypes": {
+    "AsDetail": {
+      "$id": "DataType:AsDetail",
+      "IsSystem": true,
+      "CanSort": false,
+      "CanFilter": false,
+      "CanListDistincts": false
+    },
+    "BinaryFile": {
+      "$id": "DataType:BinaryFile",
+      "IsSystem": true,
+      "CanSort": false,
+      "CanFilter": false,
+      "CanListDistincts": false
+    },
+    "Boolean": {
+      "$id": "DataType:Boolean",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "Byte": {
+      "$id": "DataType:Byte",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "ComboBox": {
+      "$id": "DataType:ComboBox",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "CommonMark": {
+      "$id": "DataType:CommonMark",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "Date": {
+      "$id": "DataType:Date",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "DateTime": {
+      "$id": "DataType:DateTime",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "DateTimeOffset": {
+      "$id": "DataType:DateTimeOffset",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "Decimal": {
+      "$id": "DataType:Decimal",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "Double": {
+      "$id": "DataType:Double",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "DropDown": {
+      "$id": "DataType:DropDown",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "Enum": {
+      "$id": "DataType:Enum",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "FlagsEnum": {
+      "$id": "DataType:FlagsEnum",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "Geography": {
+      "$id": "DataType:Geography",
+      "IsSystem": true,
+      "CanSort": false,
+      "CanFilter": true,
+      "CanListDistincts": false
+    },
+    "Guid": {
+      "$id": "DataType:Guid",
+      "IsSystem": true,
+      "CanSort": false,
+      "CanFilter": false,
+      "CanListDistincts": false
+    },
+    "Image": {
+      "$id": "DataType:Image",
+      "IsSystem": true,
+      "CanSort": false,
+      "CanFilter": false,
+      "CanListDistincts": false
+    },
+    "Int16": {
+      "$id": "DataType:Int16",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "Int32": {
+      "$id": "DataType:Int32",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "Int64": {
+      "$id": "DataType:Int64",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "KeyValueList": {
+      "$id": "DataType:KeyValueList",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "MultiLineString": {
+      "$id": "DataType:MultiLineString",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "MultiString": {
+      "$id": "DataType:MultiString",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "NullableBoolean": {
+      "$id": "DataType:NullableBoolean",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "NullableByte": {
+      "$id": "DataType:NullableByte",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "NullableDate": {
+      "$id": "DataType:NullableDate",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "NullableDateTime": {
+      "$id": "DataType:NullableDateTime",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "NullableDateTimeOffset": {
+      "$id": "DataType:NullableDateTimeOffset",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "NullableDecimal": {
+      "$id": "DataType:NullableDecimal",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "NullableDouble": {
+      "$id": "DataType:NullableDouble",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "NullableGuid": {
+      "$id": "DataType:NullableGuid",
+      "IsSystem": true,
+      "CanSort": false,
+      "CanFilter": false,
+      "CanListDistincts": false
+    },
+    "NullableInt16": {
+      "$id": "DataType:NullableInt16",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "NullableInt32": {
+      "$id": "DataType:NullableInt32",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "NullableInt64": {
+      "$id": "DataType:NullableInt64",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "NullableSByte": {
+      "$id": "DataType:NullableSByte",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "NullableSingle": {
+      "$id": "DataType:NullableSingle",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "NullableTime": {
+      "$id": "DataType:NullableTime",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "NullableUInt16": {
+      "$id": "DataType:NullableUInt16",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "NullableUInt32": {
+      "$id": "DataType:NullableUInt32",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "NullableUInt64": {
+      "$id": "DataType:NullableUInt64",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "NullableUser": {
+      "$id": "DataType:NullableUser",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "Password": {
+      "$id": "DataType:Password",
+      "IsSystem": true,
+      "CanSort": false,
+      "CanFilter": false,
+      "CanListDistincts": false
+    },
+    "Reference": {
+      "$id": "DataType:Reference",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "SByte": {
+      "$id": "DataType:SByte",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "Single": {
+      "$id": "DataType:Single",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": false,
+      "CanListDistincts": true
+    },
+    "String": {
+      "$id": "DataType:String",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "Time": {
+      "$id": "DataType:Time",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "TranslatedString": {
+      "$id": "DataType:TranslatedString",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "UInt16": {
+      "$id": "DataType:UInt16",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "UInt32": {
+      "$id": "DataType:UInt32",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "UInt64": {
+      "$id": "DataType:UInt64",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "User": {
+      "$id": "DataType:User",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
+    "YesNo": {
+      "$id": "DataType:YesNo",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    }
+  },
+  "Schemas": {
+    "VidyanoWeb3": {
+      "PersistentObjects": {
+        "8f58df40-31ec-3ca3-903d-1a95cfb24b45": {
+          "$id": "PersistentObject:8f58df40-31ec-3ca3-903d-1a95cfb24b45",
+          "SchemaName": "VidyanoWeb3",
+          "Type": "Employee",
+          "Salt": "hT-0AEmOkuDMD8-3PYeCTjei6KDUB9seF8ULqQT4NG02pvtPPnkdYw",
+          "Breadcrumb": "{Extension}",
+          "ContextProperty": "Employees",
+          "Label": {
+            "en": "Employee"
+          },
+          "Groups": [
+            {
+              "$id": "PersistentObjectAttributeGroup:c694e886-a3c7-4941-bce0-599a04582955",
+              "Id": "c694e886-a3c7-4941-bce0-599a04582955"
+            }
+          ],
+          "Tabs": [
+            {
+              "$id": "PersistentObjectAttributeTab:30e7d5dc-3c0b-45da-af07-44f6479c48f1",
+              "Id": "30e7d5dc-3c0b-45da-af07-44f6479c48f1"
+            }
+          ],
+          "Attributes": [
+            {
+              "$id": "PersistentObjectAttribute:fadc98c3-7026-38cc-b591-6a4f96932dc7",
+              "Id": "fadc98c3-7026-38cc-b591-6a4f96932dc7",
+              "Offset": 50,
+              "Rules": "Required",
+              "Name": "Birthday",
+              "Label": {
+                "en": "Birthday"
+              },
+              "Visibility": 7,
+              "ColumnSpan": 1,
+              "DataType": {
+                "$ref": "DataType:DateTime"
+              },
+              "Group": {
+                "$ref": "PersistentObjectAttributeGroup:c694e886-a3c7-4941-bce0-599a04582955"
+              },
+              "Tab": {
+                "$ref": "PersistentObjectAttributeTab:30e7d5dc-3c0b-45da-af07-44f6479c48f1"
+              }
+            },
+            {
+              "$id": "PersistentObjectAttribute:76dcd782-c7fb-3237-9f0f-916eaf2cdfae",
+              "Id": "76dcd782-c7fb-3237-9f0f-916eaf2cdfae",
+              "Offset": 70,
+              "Rules": "NotEmpty",
+              "Name": "Extension",
+              "Label": {
+                "en": "Extension"
+              },
+              "Visibility": 7,
+              "ColumnSpan": 1,
+              "DataType": {
+                "$ref": "DataType:String"
+              },
+              "Group": {
+                "$ref": "PersistentObjectAttributeGroup:c694e886-a3c7-4941-bce0-599a04582955"
+              },
+              "Tab": {
+                "$ref": "PersistentObjectAttributeTab:30e7d5dc-3c0b-45da-af07-44f6479c48f1"
+              }
+            },
+            {
+              "$id": "PersistentObjectAttribute:3bdb07bc-17a0-3688-93fb-7dafa1dd8278",
+              "Id": "3bdb07bc-17a0-3688-93fb-7dafa1dd8278",
+              "Offset": 20,
+              "Rules": "NotEmpty",
+              "Name": "FirstName",
+              "Label": {
+                "en": "First name"
+              },
+              "Visibility": 7,
+              "ColumnSpan": 1,
+              "DataType": {
+                "$ref": "DataType:String"
+              },
+              "Group": {
+                "$ref": "PersistentObjectAttributeGroup:c694e886-a3c7-4941-bce0-599a04582955"
+              },
+              "Tab": {
+                "$ref": "PersistentObjectAttributeTab:30e7d5dc-3c0b-45da-af07-44f6479c48f1"
+              }
+            },
+            {
+              "$id": "PersistentObjectAttribute:44216578-256b-3048-9e50-4e5f69c70fad",
+              "Id": "44216578-256b-3048-9e50-4e5f69c70fad",
+              "Offset": 40,
+              "Rules": "Required",
+              "Name": "HiredAt",
+              "Label": {
+                "en": "Hired at"
+              },
+              "Visibility": 7,
+              "ColumnSpan": 1,
+              "DataType": {
+                "$ref": "DataType:DateTime"
+              },
+              "Group": {
+                "$ref": "PersistentObjectAttributeGroup:c694e886-a3c7-4941-bce0-599a04582955"
+              },
+              "Tab": {
+                "$ref": "PersistentObjectAttributeTab:30e7d5dc-3c0b-45da-af07-44f6479c48f1"
+              }
+            },
+            {
+              "$id": "PersistentObjectAttribute:62c5adf8-d8ac-3a0b-a0dd-a1bca3dc4294",
+              "Id": "62c5adf8-d8ac-3a0b-a0dd-a1bca3dc4294",
+              "Offset": 60,
+              "Rules": "NotEmpty",
+              "Name": "HomePhone",
+              "Label": {
+                "en": "Home phone"
+              },
+              "Visibility": 7,
+              "ColumnSpan": 1,
+              "DataType": {
+                "$ref": "DataType:String"
+              },
+              "Group": {
+                "$ref": "PersistentObjectAttributeGroup:c694e886-a3c7-4941-bce0-599a04582955"
+              },
+              "Tab": {
+                "$ref": "PersistentObjectAttributeTab:30e7d5dc-3c0b-45da-af07-44f6479c48f1"
+              }
+            },
+            {
+              "$id": "PersistentObjectAttribute:b005a81f-f9b3-3f83-bd01-f03077cdccd4",
+              "Id": "b005a81f-f9b3-3f83-bd01-f03077cdccd4",
+              "Offset": 10,
+              "Rules": "NotEmpty",
+              "Name": "LastName",
+              "Label": {
+                "en": "Last name"
+              },
+              "Visibility": 7,
+              "ColumnSpan": 1,
+              "DataType": {
+                "$ref": "DataType:String"
+              },
+              "Group": {
+                "$ref": "PersistentObjectAttributeGroup:c694e886-a3c7-4941-bce0-599a04582955"
+              },
+              "Tab": {
+                "$ref": "PersistentObjectAttributeTab:30e7d5dc-3c0b-45da-af07-44f6479c48f1"
+              }
+            },
+            {
+              "$id": "PersistentObjectAttribute:061478d1-7b70-34d1-9f77-82aee8b4a720",
+              "Id": "061478d1-7b70-34d1-9f77-82aee8b4a720",
+              "Offset": 80,
+              "Rules": "Required",
+              "Name": "Notes",
+              "Label": {
+                "en": "Notes"
+              },
+              "Visibility": 7,
+              "ColumnSpan": 1,
+              "DataType": {
+                "$ref": "DataType:String"
+              },
+              "Group": {
+                "$ref": "PersistentObjectAttributeGroup:c694e886-a3c7-4941-bce0-599a04582955"
+              },
+              "Tab": {
+                "$ref": "PersistentObjectAttributeTab:30e7d5dc-3c0b-45da-af07-44f6479c48f1"
+              }
+            },
+            {
+              "$id": "PersistentObjectAttributeWithReference:917fbac2-4a01-3f4a-8806-216116a0de70",
+              "$type": "Vidyano.Service.Repository.PersistentObjectAttributeWithReference, Vidyano.Service",
+              "DisplayAttribute": "Extension",
+              "LookupId": "026c4ca7-53f4-42ac-b196-158f0cb871a1",
+              "Id": "917fbac2-4a01-3f4a-8806-216116a0de70",
+              "Offset": 100,
+              "Name": "ReportsTo",
+              "Label": {
+                "en": "Reports to"
+              },
+              "Visibility": 7,
+              "ColumnSpan": 1,
+              "DataType": {
+                "$ref": "DataType:Reference"
+              },
+              "Group": {
+                "$ref": "PersistentObjectAttributeGroup:c694e886-a3c7-4941-bce0-599a04582955"
+              },
+              "Tab": {
+                "$ref": "PersistentObjectAttributeTab:30e7d5dc-3c0b-45da-af07-44f6479c48f1"
+              }
+            },
+            {
+              "$id": "PersistentObjectAttribute:92d32034-d556-3ede-b551-732f3f7628df",
+              "Id": "92d32034-d556-3ede-b551-732f3f7628df",
+              "Offset": 90,
+              "Rules": "Required",
+              "Name": "Territories",
+              "Label": {
+                "en": "Territories"
+              },
+              "Visibility": 7,
+              "ColumnSpan": 1,
+              "DataType": {
+                "$ref": "DataType:String"
+              },
+              "Group": {
+                "$ref": "PersistentObjectAttributeGroup:c694e886-a3c7-4941-bce0-599a04582955"
+              },
+              "Tab": {
+                "$ref": "PersistentObjectAttributeTab:30e7d5dc-3c0b-45da-af07-44f6479c48f1"
+              }
+            },
+            {
+              "$id": "PersistentObjectAttribute:db0abfc9-54e3-3307-bd1a-f0dc15a01595",
+              "Id": "db0abfc9-54e3-3307-bd1a-f0dc15a01595",
+              "Offset": 30,
+              "Rules": "NotEmpty",
+              "Name": "Title",
+              "Label": {
+                "en": "Title"
+              },
+              "Visibility": 7,
+              "ColumnSpan": 1,
+              "DataType": {
+                "$ref": "DataType:String"
+              },
+              "Group": {
+                "$ref": "PersistentObjectAttributeGroup:c694e886-a3c7-4941-bce0-599a04582955"
+              },
+              "Tab": {
+                "$ref": "PersistentObjectAttributeTab:30e7d5dc-3c0b-45da-af07-44f6479c48f1"
+              }
+            }
+          ],
+          "Queries": []
+        }
+      },
+      "Queries": {
+        "026c4ca7-53f4-42ac-b196-158f0cb871a1": {
+          "$id": "Query:026c4ca7-53f4-42ac-b196-158f0cb871a1",
+          "Source": "Database.Employees",
+          "AutoQuery": true,
+          "Name": "Employees",
+          "Label": {
+            "en": "Employees"
+          },
+          "PersistentObject": {
+            "$ref": "PersistentObject:8f58df40-31ec-3ca3-903d-1a95cfb24b45"
+          },
+          "Columns": []
+        }
+      }
+    }
+  },
+  "ProgramUnits": [
+    {
+      "Name": "Home",
+      "Title": {
+        "en": "Home"
+      },
+      "OpenFirst": true,
+      "Groups": [],
+      "Items": [
+        {
+          "Offset": 10,
+          "Title": {
+            "en": "Employees"
+          },
+          "Name": "Employees",
+          "Query": {
+            "$ref": "Query:026c4ca7-53f4-42ac-b196-158f0cb871a1"
+          }
+        }
+      ]
+    }
+  ],
+  "Reports": [],
+  "ServiceVersion": "6.0.20210822.3278-rc1+6cae5a9",
+  "ModelHash": "EwEl5bWxREVmju+2ZbfR728CZl8J6m3Romy+WC5bDE0=",
+  "SeederHash": "yob+BuFRqrhY/0LUMpgC4NEWgJ3rsvJWMuAw+eLqK8w="
+}
