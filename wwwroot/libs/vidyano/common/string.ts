@@ -149,7 +149,7 @@ const _format = function(format: string, values: any[], useLocale: boolean) {
     return format.replace(_formatRE,
         function (str, m) {
             var index = parseInt(m.substr(1), 10);
-            var value = values[index + 1];
+            var value = values[index];
             if (value == null)
                 return '';
             if (value.format) {

@@ -189,115 +189,46 @@ export class PersistentObjectAttributePresenter extends WebComponentListener(Web
             this._renderedAttributeElement = this._renderedAttribute = null;
         }
 
-        if (attribute && isConnected) {
-            this._setLoading(true);
+        if (!attribute || !isConnected)
+            return;
 
-            if (!this.getAttribute("height"))
-                this.height = this.app.configuration.getAttributeConfig(attribute).calculateHeight(attribute);
+        this._setLoading(true);
 
-            let attributeType: string;
-            if (Vidyano.DataType.isNumericType(attribute.type))
-                attributeType = "Numeric";
-            else if (Vidyano.DataType.isDateTimeType(attribute.type))
-                attributeType = "DateTime";
-            else if (attribute.parent.isBulkEdit && (attribute.type === "YesNo" || attribute.type === "Boolean"))
-                attributeType = "NullableBoolean";
-            else
-                attributeType = attribute.type;
+        if (!this.getAttribute("height"))
+            this.height = this.app.configuration.getAttributeConfig(attribute).calculateHeight(attribute);
 
-            if (_attributeImports[attributeType] !== undefined) {
-                this._renderAttribute(attribute, attributeType);
-                return;
-            }
+        let attributeType: string;
+        if (Vidyano.DataType.isNumericType(attribute.type))
+            attributeType = "Numeric";
+        else if (Vidyano.DataType.isDateTimeType(attribute.type))
+            attributeType = "DateTime";
+        else if (attribute.parent.isBulkEdit && (attribute.type === "YesNo" || attribute.type === "Boolean"))
+            attributeType = "NullableBoolean";
+        else {
+            switch (attribute.type) {
+                case "YesNo":
+                    attributeType = "Boolean";
+                    break;
 
-            const typeImport = this._getAttributeTypeImportInfo(attributeType);
-            console.log(typeImport);
-            if (!typeImport) {
-                _attributeImports[attributeType] = Promise.resolve(false);
-                this._renderAttribute(attribute, attributeType);
-                return;
-            }
+                case "Enum":
+                    attributeType = "DropDown";
+                    break;
 
-            let synonymResolvers: ((result: {}) => void)[];
-            if (typeImport.synonyms) {
-                synonymResolvers = [];
-                typeImport.synonyms.forEach(s => _attributeImports[s] = new Promise(resolve => { synonymResolvers.push(resolve); }));
-            }
+                case "Guid":
+                case "NullableGuid":
+                    attributeType = "String";
+                    break;
 
-            _attributeImports[attributeType] = new Promise(async (resolve) => {
-                try {
-                    await this.importHref(this.resolveUrl("../Attributes/" + typeImport.filename));
-                    if (synonymResolvers)
-                        synonymResolvers.forEach(resolver => resolver(true));
+                case "NullableUser":
+                    attributeType = "User";
+                    break;
 
-                    this._renderAttribute(attribute, attributeType);
-                    resolve(true);
-                }
-                catch (err) {
-                    _attributeImports[attributeType] = Promise.resolve(false);
-                    this._setLoading(false);
-                    resolve(false);
-                }
-            });
-        }
-    }
-
-    private _getAttributeTypeImportInfo(type: string): { filename: string; synonyms?: string[]; } {
-        const typeSynonyms: { [key: string]: string[]; } = {
-            "Boolean": ["YesNo"],
-            "DropDown": ["Enum"],
-            "String": ["Guid", "NullableGuid"],
-            "User": ["NullableUser"]
-        };
-
-        let synonyms: string[];
-        for (const key in typeSynonyms) {
-            if (key === type)
-                synonyms = typeSynonyms[key];
-            else if (typeSynonyms[key].indexOf(type) >= 0) {
-                type = key;
-                synonyms = typeSynonyms[key];
+                default:
+                    attributeType = attribute.type;
             }
         }
 
-        if (type === "AsDetail")
-            return { filename: "PersistentObjectAttributeAsDetail/persistent-object-attribute-as-detail.html", synonyms: synonyms };
-        else if (type === "BinaryFile")
-            return { filename: "PersistentObjectAttributeBinaryFile/persistent-object-attribute-binary-file.html", synonyms: synonyms };
-        else if (type === "Boolean" || type === "NullableBoolean")
-            return { filename: "PersistentObjectAttributeBoolean/persistent-object-attribute-boolean.html", synonyms: synonyms };
-        else if (type === "ComboBox")
-            return { filename: "PersistentObjectAttributeComboBox/persistent-object-attribute-combo-box.html", synonyms: synonyms };
-        else if (type === "CommonMark")
-            return { filename: "PersistentObjectAttributeCommonMark/persistent-object-attribute-common-mark.html", synonyms: synonyms };
-        else if (type === "DateTime")
-            return { filename: "PersistentObjectAttributeDateTime/persistent-object-attribute-date-time.html", synonyms: synonyms };
-        else if (type === "DropDown")
-            return { filename: "PersistentObjectAttributeDropDown/persistent-object-attribute-drop-down.html", synonyms: synonyms };
-        else if (type === "FlagsEnum")
-            return { filename: "PersistentObjectAttributeFlagsEnum/persistent-object-attribute-flags-enum.html", synonyms: synonyms };
-        else if (type === "Image")
-            return { filename: "PersistentObjectAttributeImage/persistent-object-attribute-image.html", synonyms: synonyms };
-        else if (type === "KeyValueList")
-            return { filename: "PersistentObjectAttributeKeyValueList/persistent-object-attribute-key-value-list.html", synonyms: synonyms };
-        else if (type === "MultiLineString")
-            return { filename: "PersistentObjectAttributeMultiLineString/persistent-object-attribute-multi-line-string.html", synonyms: synonyms };
-        else if (type === "MultiString")
-            return { filename: "PersistentObjectAttributeMultiString/persistent-object-attribute-multi-string.html", synonyms: synonyms };
-        else if (type === "Numeric")
-            return { filename: "PersistentObjectAttributeNumeric/persistent-object-attribute-numeric.html", synonyms: synonyms };
-        else if (type === "Password")
-            return { filename: "PersistentObjectAttributePassword/persistent-object-attribute-password.html", synonyms: synonyms };
-        else if (type === "Reference")
-            return { filename: "PersistentObjectAttributeReference/persistent-object-attribute-reference.html", synonyms: synonyms };
-        else if (type === "String")
-            return { filename: "PersistentObjectAttributeString/persistent-object-attribute-string.html", synonyms: synonyms };
-        else if (type === "TranslatedString")
-            return { filename: "PersistentObjectAttributeTranslatedString/persistent-object-attribute-translated-string.html", synonyms: synonyms };
-        else if (type === "User")
-            return { filename: "PersistentObjectAttributeUser/persistent-object-attribute-user.html", synonyms: synonyms };
-
-        return null;
+        this._renderAttribute(attribute, attributeType);
     }
 
     private async _renderAttribute(attribute: Vidyano.PersistentObjectAttribute, attributeType: string) {

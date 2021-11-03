@@ -542,12 +542,11 @@
           "SchemaName": "VidyanoWeb3",
           "Type": "Employee",
           "Salt": "hT-0AEmOkuDMD8-3PYeCTjei6KDUB9seF8ULqQT4NG02pvtPPnkdYw",
-          "Breadcrumb": "{Extension}",
+          "Breadcrumb": "{FirstName} {LastName}",
           "ContextProperty": "Employees",
           "Label": {
             "en": "Employee"
           },
-          "StateBehavior": 2,
           "Groups": [
             {
               "$id": "PersistentObjectAttributeGroup:c694e886-a3c7-4941-bce0-599a04582955",

@@ -11,7 +11,10 @@
             <vi-checkbox checked="{{attribute.isValueChanged}}" disabled="[[readOnly]]"></vi-checkbox>
         </template>
     </dom-if>
-    <div id="content"></div>
+    <slot></slot>
+    <div id="content">
+        <slot></slot>
+    </div>
 </div>
 <dom-if if="[[developer]]">
     <div id="developer" on-tap="_openAttributeManagement">

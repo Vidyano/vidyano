@@ -66,7 +66,7 @@ export class PersistentObjectAttributeString extends PersistentObjectAttribute {
             this._suggestionsSeparator = this.attribute.getTypeHint("SuggestionsSeparator");
             if (this._suggestionsSeparator != null && this.attribute.options != null && this.attribute.options.length > 0) {
                 const value = <string>this.attribute.value;
-                this._setSuggestions((<string[]>this.attribute.options).filter(o => !StringEx.isNullOrEmpty(o) && (value == null || !value.contains(o))));
+                this._setSuggestions((<string[]>this.attribute.options).filter(o => !String.isNullOrEmpty(o) && (value == null || !value.contains(o))));
             }
         }
     }
@@ -118,16 +118,16 @@ export class PersistentObjectAttributeString extends PersistentObjectAttribute {
             this._setEditInputStyle(undefined);
     }
 
-    private _addSuggestion(e: Polymer.TapEvent) {
+    private _addSuggestion(e: Polymer.Gestures.TapEvent) {
         const suggestion = e.model.suggestion;
-        this.attribute.setValue(StringEx.isNullOrEmpty(this.value) ? suggestion : (this.value.endsWith(this._suggestionsSeparator) ? this.value + suggestion : this.value + this._suggestionsSeparator + suggestion)).catch(Vidyano.noop);
+        this.attribute.setValue(String.isNullOrEmpty(this.value) ? suggestion : (this.value.endsWith(this._suggestionsSeparator) ? this.value + suggestion : this.value + this._suggestionsSeparator + suggestion)).catch(Vidyano.noop);
     }
 
     private _computeFilteredSuggestions(suggestions: string[], value: string): string[] {
         if (!suggestions || suggestions.length === 0)
             return [];
 
-        if (StringEx.isNullOrEmpty(value))
+        if (String.isNullOrEmpty(value))
             return suggestions;
 
         return suggestions.filter(s => value.indexOf(s) < 0);
