@@ -1,6 +1,11 @@
 import * as Polymer from '../../libs/@polymer/polymer.js';
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
+import "../persistent-object-attribute-edit/persistent-object-attribute-edit.js"
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
+
+const styleElement = document.createElement("dom-module");
+styleElement.innerHTML = `<link rel="import" href="persistent-object-attribute-style-module.html">`;
+styleElement.register("vi-persistent-object-attribute-style-module");
 
 @WebComponent.registerAbstract({
     properties: {

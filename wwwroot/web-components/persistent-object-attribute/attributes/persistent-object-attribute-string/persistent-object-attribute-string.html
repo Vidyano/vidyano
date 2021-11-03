@@ -1,0 +1,54 @@
+<style include="vi-persistent-object-attribute-style-module"></style>
+<link rel="stylesheet" href="persistent-object-attribute-string.css" />
+
+<dom-if if="[[!editing]]">
+    <template>
+        <dom-if if="[[!link]]">
+            <template>
+                <span sensitive$="[[sensitive]]">[[attribute.displayValue]]</span>
+            </template>
+        </dom-if>
+        <dom-if if="[[link]]">
+            <template>
+                <a href$="[[link]]" title$="[[linkTitle]]" rel="external noopener" target="_blank">
+                    <span sensitive$="[[sensitive]]">[[attribute.displayValue]]</span>
+                    <dom-if if="[[attribute.value]]">
+                        <template>
+                            <vi-icon source="ArrowUpRight" class="size-h4"></vi-icon>
+                        </template>
+                    </dom-if>
+                    <div class="spacer"></div>
+                </a>
+            </template>
+        </dom-if>
+    </template>
+</dom-if>
+<dom-if if="[[editing]]">
+    <template>
+        <vi-persistent-object-attribute-edit attribute="[[attribute]]">
+            <input value="{{value::input}}" type$="[[inputtype]]" maxlength$="[[maxlength]]" style$="[[editInputStyle]]" sensitive$="[[sensitive]]" on-focus="_editInputFocus" on-blur="_editInputBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder="[[placeholder]]">
+            <template if="[[link]]">
+                <a class="button" href$="[[link]]" title$="[[linkTitle]]" tabindex="-1" rel="external noopener" target="_blank">
+                    <vi-icon source="ArrowUpRight"></vi-icon>
+                </a>
+            </template>
+            <slot name="button" slot="button"></slot>
+            <dom-if if="[[hasSuggestions]]">
+                <template>
+                    <vi-popup slot="button" id="suggestions" content-align="right">
+                        <vi-icon source="Add" slot="header"></vi-icon>
+                        <vi-scroller>
+                            <ul>
+                                <dom-repeat items="[[filteredSuggestions]]" as="suggestion">
+                                    <template>
+                                        <li on-tap="_addSuggestion">[[suggestion]]</li>
+                                    </template>
+                                </dom-repeat>
+                            </ul>
+                        </vi-scroller>
+                    </vi-popup>
+                </template>
+            </dom-if>
+        </vi-persistent-object-attribute-edit>
+    </template>
+</dom-if>

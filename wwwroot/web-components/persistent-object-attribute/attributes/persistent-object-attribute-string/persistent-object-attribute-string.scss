@@ -1,0 +1,99 @@
+@import "../../../_vars.scss";
+
+:host {
+    @include layout-horizontal();
+    overflow: hidden;
+
+    span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    span, input {
+        color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
+
+        &[sensitive] {
+            --at-apply: --vi-app--sensitive;
+        }
+    }
+
+    #suggestions {
+        &[open] {
+            vi-icon {
+                fill: white !important;
+                background-color: var(--theme-color);
+            }
+        }
+
+        vi-icon {
+            width: calc(var(--theme-h2) - 2px);
+            height: calc(var(--theme-h2) - 2px);
+
+            &:hover {
+                fill: var(--theme-color);
+            }
+        }
+
+        ul {
+            margin: 0;
+            padding: 0;
+            list-style-type: none;
+
+            li {
+                padding: 0 var(--theme-h5);
+                height: var(--theme-h2);
+                cursor: pointer;
+                text-align: left;
+
+                &:hover {
+                    background-color: var(--theme-color-faint);
+                }
+            }
+        }
+    }
+
+    a {
+        @include layout-horizontal();
+        text-decoration: none;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        fill: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
+
+        &:focus {
+            outline: 0;
+        }
+
+        &:visited {
+            color: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
+            fill: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
+        }
+
+        &:hover {
+            color: var(--vi-persistent-object-attribute-foreground, var(--theme-color-light));
+            fill: var(--vi-persistent-object-attribute-foreground, var(--theme-color-light));
+        }
+
+        &[disabled] {
+            color: var(--vi-persistent-object-attribute-foreground, #333) !important
+        }
+
+        &[href] {
+            cursor: pointer;
+        }
+
+        span {
+            -ms-text-overflow: ellipsis;
+            -o-text-overflow: ellipsis;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            color: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
+        }
+
+        vi-icon {
+            margin: 0 var(--theme-h5);
+            min-width: var(--theme-h4);
+            height: 1em;
+            transform: translateY(2px);
+        }
+    }
+}

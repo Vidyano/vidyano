@@ -547,6 +547,7 @@
           "Label": {
             "en": "Employee"
           },
+          "StateBehavior": 2,
           "Groups": [
             {
               "$id": "PersistentObjectAttributeGroup:c694e886-a3c7-4941-bce0-599a04582955",

@@ -1,8 +1,11 @@
 import * as Polymer from '../../libs/@polymer/polymer.js';
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
-import "../persistent-object-attribute-label/persistent-object-attribute-label.js"
 import { Observable, ISubjectDisposer } from "../../libs/vidyano/common/observable.js"
+import { PersistentObjectAttribute } from "../persistent-object-attribute/persistent-object-attribute.js"
+import { PersistentObjectAttributeConfig } from '../app/config/persistent-object-attribute-config.js'
+import "../persistent-object-attribute-label/persistent-object-attribute-label.js"
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
+import * as Attributes from "../persistent-object-attribute/attributes/attributes.js"
 
 class DeveloperShortcut extends Observable<DeveloperShortcut> {
     private _state: boolean = false;
@@ -141,11 +144,11 @@ export class PersistentObjectAttributePresenter extends WebComponentListener(Web
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-presenter.html">`; }
 
     private _developerToggleDisposer: ISubjectDisposer;
-    private _renderedAttribute: PersistentObjectAttribute;
+    private _renderedAttribute: Vidyano.PersistentObjectAttribute;
     private _renderedAttributeElement: PersistentObjectAttribute;
     private _focusQueued: boolean;
     readonly loading: boolean; private _setLoading: (loading: boolean) => void;
-    attribute: PersistentObjectAttribute;
+    attribute: Vidyano.PersistentObjectAttribute;
     nonEdit: boolean;
     noLabel: boolean;
     height: number;
@@ -180,7 +183,7 @@ export class PersistentObjectAttributePresenter extends WebComponentListener(Web
             this._focusQueued = true;
     }
 
-    private _attributeChanged(attribute: PersistentObjectAttribute, isConnected: boolean) {
+    private _attributeChanged(attribute: Vidyano.PersistentObjectAttribute, isConnected: boolean) {
         if (this._renderedAttribute) {
             Array.from(this.$.content.children).forEach(c => this.$.content.removeChild(c));
             this._renderedAttributeElement = this._renderedAttribute = null;
@@ -208,6 +211,7 @@ export class PersistentObjectAttributePresenter extends WebComponentListener(Web
             }
 
             const typeImport = this._getAttributeTypeImportInfo(attributeType);
+            console.log(typeImport);
             if (!typeImport) {
                 _attributeImports[attributeType] = Promise.resolve(false);
                 this._renderAttribute(attribute, attributeType);
@@ -309,7 +313,7 @@ export class PersistentObjectAttributePresenter extends WebComponentListener(Web
             if (!!config && config.hasTemplate)
                 this.$.content.appendChild(config.stamp(attribute, config.as || "attribute"));
             else {
-                this._renderedAttributeElement = <PersistentObjectAttribute>new (Vidyano.WebComponents.Attributes["PersistentObjectAttribute" + attributeType] || Vidyano.WebComponents.Attributes.PersistentObjectAttributeString)();
+                this._renderedAttributeElement = <PersistentObjectAttribute>new (Attributes["PersistentObjectAttribute" + attributeType] || Attributes.PersistentObjectAttributeString)();
                 this._renderedAttributeElement.classList.add("attribute");
                 this._renderedAttributeElement.attribute = attribute;
                 this._renderedAttributeElement.nonEdit = this.nonEdit;
@@ -357,7 +361,7 @@ export class PersistentObjectAttributePresenter extends WebComponentListener(Web
     }
 
     private _computeHasError(validationError: string): boolean {
-        return !StringEx.isNullOrEmpty(validationError);
+        return !String.isNullOrEmpty(validationError);
     }
 
     private _onFocus() {

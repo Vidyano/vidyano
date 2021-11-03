@@ -133,3 +133,7 @@
         background-color: var(--theme-color-faint);
     }
 }
+
+:host-context([hidden]) {
+    display: none !important;
+}

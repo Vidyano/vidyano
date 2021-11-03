@@ -1,0 +1,92 @@
+@import "../_vars.scss";
+
+:host {
+    @include layout-horizontal();
+    @include layout-end();
+    height: var(--theme-h2);
+    box-sizing: border-box;
+    overflow: hidden;
+
+    label {
+        font-size: 11px;
+        font-weight: 400;
+        color: var(--vi-persistent-object-attribute-label-color, #888);
+        letter-spacing: 0.5px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding-bottom: var(--theme-h5);
+        --at-apply: --vi-persistent-object-attribute-presenter-label;
+    }
+
+    .required {
+        display: none;
+        position: relative;
+        font-size: 10px;
+        color: white;
+        line-height: 1.5em;
+        height: 14px;
+        margin: 0 0 var(--theme-h5) var(--theme-h4);
+        padding: 0 var(--theme-h5) 2px calc(var(--theme-h5) / 2);
+        background-color: var(--theme-color);
+        --at-apply: --vi-persistent-object-attribute-presenter-required;
+
+        &::before {
+            content: "";
+            position: absolute;
+            right: 100%;
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right-color: var(--theme-color);
+            border-right-width: 7px;
+            border-right-style: solid;
+        }
+    }
+
+    .locked {
+        fill: #666;
+        display: none;
+        margin: 0 0 2px var(--theme-h5);
+
+        > vi-icon {
+            height: var(--theme-h3);
+            --vi-icon-width: 10px;
+            --vi-icon-height: 10px;
+            fill: var(--vi-persistent-object-attribute-label-color, #888);
+        }
+
+        --at-apply: --vi--attribute-locked;
+    }
+
+    .info {
+        width: var(--theme-h3);
+        height: var(--theme-h3);
+        margin-bottom: 2px;
+        margin-left: 2px;
+
+        vi-icon {
+            --vi-icon-width: 12px;
+            --vi-icon-height: 12px;
+            fill: var(--theme-color);
+        }
+    }
+
+    &[has-error] {
+        .label .required {
+            background-color: var(--theme-color-error) !important;
+
+            &::before {
+                border-right-color: var(--theme-color-error) !important;
+            }
+        }
+    }
+
+    &[editing][required]:not([bulk-edit]):not([read-only]) .required {
+        display: inline-block;
+    }
+
+    &[editing][read-only] .locked {
+        display: inline-block;
+    }
+}

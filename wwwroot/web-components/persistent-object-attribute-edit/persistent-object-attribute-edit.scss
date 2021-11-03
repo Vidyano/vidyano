@@ -1,0 +1,194 @@
+@import "../_vars.scss";
+
+:host {
+    @include layout-horizontal();
+    @include flex();
+    @include relative();
+    line-height: var(--theme-h2);
+
+    fieldset {
+        margin: 0;
+        padding: 0;
+        border: none;
+    }
+
+    .box {
+        background-color: white;
+        min-height: calc(var(--theme-h2) - 2px);
+        line-height: calc(var(--theme-h2) - 2px);
+        border: 1px solid var(--theme-light-border);
+        -moz-transition: border-color 0.2s ease-in-out;
+        -o-transition: border-color 0.2s ease-in-out;
+        -webkit-transition: border-color 0.2s ease-in-out;
+        transition: border-color 0.2s ease-in-out;
+        --at-apply: --vi-persistent-object-attribute-edit-box;
+
+        .buttons {
+            --at-apply: --vi-persistent-object-attribute-edit-buttons;
+        }
+
+        &[reverse] {
+            @include layout-horizontal-reverse();
+        }
+    }
+
+    &[read-only] {
+        .box {
+            background-color: var(--theme-read-only);
+        }
+
+        .box {
+            .buttons {
+                background-color: transparent;
+            }
+        }
+    }
+
+    &[reverse-content] {
+        .box {
+            @include layout-horizontal-reverse();
+        }
+    }
+
+    &[has-error] {
+        .box {
+            border-color: var(--theme-color-error) !important;
+            overflow: hidden;
+
+            &::before {
+                @include fit();
+                content: " ";
+                opacity: 0.05;
+                background-color: var(--theme-color-error);
+                pointer-events: none;
+            }
+        }
+    }
+
+    fieldset[disabled] {
+        .box {
+            background-color: #eee;
+
+            .buttons {
+                background-color: #eee;
+                pointer-events: none;
+
+                ::slotted([slot="button"]) {
+                    opacity: 0.25;
+
+                    &::before {
+                        border-left-color: var(--theme-light-border);
+                    }
+                }
+            }
+        }
+    }
+
+    .box {
+        ::slotted(*:not(.buttons)) {
+            @include flex();
+        }
+
+        .buttons {
+            @include layout-horizontal();
+            background-color: white;
+            align-self: flex-start;
+
+            ::slotted([slot="button"]) {
+                @include relative();
+                outline: none;
+                cursor: pointer;
+                width: calc(var(--theme-h2) - 2px);
+                height: calc(var(--theme-h2) - 2px);
+                line-height: calc(var(--theme-h2) - 2px);
+                padding: 0;
+                box-sizing: content-box;
+                text-align: center;
+                @include theme-color-button-inverse();
+                transition: background-color 0.1s ease-out;
+
+                &::after {
+                    position: absolute;
+                    bottom: -1px;
+                    left: 3px;
+                    right: 4px;
+                    content: " ";
+                    border-bottom: 1px solid var(--theme-light-border);
+                    transition: all 0.1s ease-in-out;
+                }
+
+                &::before {
+                    position: absolute;
+                    top: 4px;
+                    bottom: 4px;
+                    content: " ";
+                    -moz-transition: all 0.1s ease-in-out;
+                    -o-transition: all 0.1s ease-in-out;
+                    -webkit-transition: all 0.1s ease-out;
+                    transition: all 0.1s ease-in-out;
+                }
+
+                vi-icon {
+                    width: calc(var(--theme-h2) - 2px);
+                    height: calc(var(--theme-h2) - 2px);
+                }
+            }
+
+            &:hover ::slotted([slot="button"]:hover) {
+                background-color: var(--theme-color-faint);
+                --vi-icon-fill: var(--theme-color);
+            }
+
+            &:hover ::slotted([slot="button"]:active) {
+                background-color: var(--theme-color-dark) !important;
+            }
+
+            &:hover ::slotted([slot="button"]) {
+                &::after {
+                    left: 0;
+                    right: 0;
+                }
+    
+                &::before {
+                    top: 0;
+                    bottom: 0;
+                }
+            }
+        }
+
+        &:not([reverse]) {
+            .buttons ::slotted([slot="button"])::before {
+                left: 0;
+                border-left: 1px solid var(--theme-light-border);
+            }
+        }
+
+        &[reverse] {
+            .buttons ::slotted([slot="button"])::before {
+                right: 0;
+                border-right: 1px solid var(--theme-light-border);
+            }
+        }
+    }
+
+    &[focus] {
+        .box {
+            border-color: var(--theme-color-lighter);
+
+            .buttons {
+                ::slotted([slot="button"]) {
+                    --vi-icon-fill: var(--theme-color);
+                }
+
+                ::slotted([slot="button"]:hover) {
+                    background-color: var(--theme-color);
+                    --vi-icon-fill: white;
+                }
+
+                ::slotted([slot="button"])::after, ::slotted([slot="button"])::before {
+                    border-color: var(--theme-color-lighter);
+                }
+            }
+        }
+    }
+}

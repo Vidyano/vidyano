@@ -18,7 +18,7 @@ declare class ResizeObserver implements IResizeObserver {
 let resizeObserver: ResizeObserver;
 resizeObserver = new ResizeObserver(entries => {	
     entries.forEach(e => {
-        const tracker = <SizeTracker>Array.from(e.target.children).find(e => e instanceof SizeTracker);	
+        let tracker = <SizeTracker>Array.from(e.target.shadowRoot?.children || e.target.children).find(e => e instanceof SizeTracker);
         if (tracker)
             tracker["_triggerSizeChanged"](e.contentRect);	
     });	
@@ -53,7 +53,6 @@ export class SizeTracker extends WebComponent {
     private _resizeLast: ISize;
     private _isActive: boolean;
     readonly size: ISize; private _setSize: (size: ISize) => void;
-    readonly noResizeObserver: boolean; private _setNoResizeObserver: (noResizeObserver: boolean) => void;
     deferred: boolean;
     triggerZero: boolean;
     bubbles: boolean;

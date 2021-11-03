@@ -1,0 +1,11 @@
+<link rel="stylesheet" href="persistent-object-attribute-edit.css" />
+
+<fieldset class="flex relative" disabled$="[[attribute.parent.isFrozen]]">
+    <div class="box layout horizontal fit" reverse$="[[reverse]]">
+        <slot></slot>
+        <div class="buttons">
+            <slot name="button"></slot>
+        </div>
+    </div>
+</fieldset>
+<vi-persistent-object-attribute-validation-error attribute="[[attribute]]"></vi-persistent-object-attribute-validation-error>

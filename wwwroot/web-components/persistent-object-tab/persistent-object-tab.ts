@@ -3,6 +3,7 @@ import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import { ISize, WebComponent, WebComponentListener } from "../web-component/web-component.js"
 import "../persistent-object-group/persistent-object-group.js"
 import { PersistentObjectAttributePresenter } from "../persistent-object-attribute-presenter/persistent-object-attribute-presenter.js"
+import "../size-tracker/size-tracker.js"
 
 @WebComponent.register({
     properties: {
