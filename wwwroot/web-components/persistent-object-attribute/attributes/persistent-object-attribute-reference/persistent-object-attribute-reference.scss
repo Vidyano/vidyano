@@ -1,0 +1,106 @@
+@import "../../../_vars.scss";
+
+:host {
+    @include layout-horizontal();
+    @include relative();
+
+    --vi-select-input: {
+        color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
+    };
+
+    --vi-select-icon: {
+        display: none;
+    };
+
+    input {
+        color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
+    }
+
+    &:not([editing]) {
+        overflow: hidden;
+
+        a {
+            @include layout-horizontal();
+            text-decoration: none;
+            color: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
+            fill: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            &:focus {
+                outline: 0;
+            }
+
+            &:visited {
+                color: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
+                fill: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
+            }
+
+            &:hover {
+                color: var(--vi-persistent-object-attribute-foreground, var(--theme-color-light));
+                fill: var(--vi-persistent-object-attribute-foreground, var(--theme-color-light));
+            }
+
+            &[disabled] {
+                color: var(--vi-persistent-object-attribute-foreground, #333) !important;
+            }
+
+            span {
+                -ms-text-overflow: ellipsis;
+                -o-text-overflow: ellipsis;
+                text-overflow: ellipsis;
+                overflow: hidden;
+            }
+
+            vi-icon {
+                margin: 0 var(--theme-h5);
+                min-width: var(--theme-h4);
+                height: 1em;
+                fill: var(--theme-color);
+                transform: translateY(2px);
+            }
+        }
+    }
+
+    &[editing] {
+        vi-select {
+            border: none;
+            position: absolute;
+            left: 0;
+            right: 0;
+
+            vi-popup > #content {
+                -moz-transform: translateY(1px);
+                -ms-transform: translateY(1px);
+                -o-transform: translateY(1px);
+                -webkit-transform: translateY(1px);
+                transform: translateY(1px);
+            }
+        }
+
+        a[disabled] {
+            display: none;
+        }
+    }
+
+    vi-persistent-object-attribute-edit[reverse-content] {
+        --vi-persistent-object-attribute-edit-buttons: {
+            z-index: 2;
+        };
+    }
+
+    #radiobuttons {
+        line-height: var(--theme-h2);
+
+        &[orientation="horizontal"] {
+            @include layout-horizontal();
+            @include layout-wrap();
+        }
+    }
+
+    span, input {
+        &[sensitive] {
+            --at-apply: --vi-app--sensitive;
+        }
+    }
+}

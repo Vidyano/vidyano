@@ -1,6 +1,5 @@
 using System;
 using System.Linq.Expressions;
-using Service.Service.Model;
 using Vidyano.Service.Repository;
 using VidyanoWeb3.Service.Model;
 
@@ -8,7 +7,7 @@ namespace VidyanoWeb3.Service
 {
     public sealed class EmployeeActions : PersistentObjectActionsReference<VidyanoWeb3Context, Employee>
     {
-        public EmployeeActions(BillingContext context)
+        public EmployeeActions(VidyanoWeb3Context context)
             : base(context)
         {
         }
