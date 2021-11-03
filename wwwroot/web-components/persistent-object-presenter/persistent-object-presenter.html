@@ -1,0 +1,13 @@
+<link rel="stylesheet" href="persistent-object-presenter.css" />
+
+<dom-if if="[[error]]" restamp>
+    <template>
+        <vi-error class="flex" message="[[error]]"></vi-error>
+    </template>
+</dom-if>
+<slot></slot>
+<dom-if if="[[loading]]">
+    <template>
+        <vi-spinner></vi-spinner>
+    </template>
+</dom-if>

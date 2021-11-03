@@ -1,7 +1,10 @@
 import * as Polymer from "../../libs/@polymer/polymer.js"
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
+import "../action-bar/action-bar.js"
 import { App } from "../app/app.js"
 import { AppCacheEntryPersistentObject } from "../app-cache/app-cache-entry-persistent-object.js"
+import "../persistent-object-tab-bar/persistent-object-tab-bar.js"
+import "../persistent-object-tab-presenter/persistent-object-tab-presenter.js"
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
 
 @WebComponent.register({

@@ -1,0 +1,78 @@
+@import "../_vars.scss";
+
+:host {
+    display: block;
+    white-space: nowrap;
+    color: #222;
+    position: relative;
+
+    @for $i from 1 through 10 {
+        &[height="#{$i}"] > #contentWrapper > #content {
+            height: calc(var(--theme-h2) * 2 * (#{$i} - 0.5));
+        }
+    }
+
+    #content {
+        @include layout-horizontal();
+        @include flex();
+
+        &:empty {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .attribute {
+            @include flex();
+            outline: 0;
+        }
+    }
+
+    &[bulk-edit] {
+        #content {
+            > vi-checkbox {
+                @include self-start();
+                width: var(--theme-h3);
+            }
+        }
+    }
+
+    vi-checkbox {
+        margin-right: var(--theme-h5);
+
+        --vi-checkbox--icon-disabled: {
+            background-color: #eee;
+        };
+    }
+
+    input, textarea {
+        background-color: white;
+    }
+
+    &:focus {
+        outline: 0;
+    }
+
+    &[developer] {
+        #contentWrapper, vi-persistent-object-attribute-label {
+            opacity: 0.2;
+        }
+
+        #developer {
+            @include fit();
+            @include layout-horizontal();
+            @include layout-center-center();
+            background-color: rgba(255, 255, 255, 0.3);
+            border: 1px dashed var(--theme-color-faint);
+            cursor: pointer;
+
+            &:hover {
+                background-color: var(--theme-color-faint);
+            }
+
+            label {
+                font-weight: bold;
+                color: var(--theme-color-darker);
+                pointer-events: none;
+            }
+        }
+    }
+}

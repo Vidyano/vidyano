@@ -1,0 +1,10 @@
+@import "../_vars.scss";
+
+:host {
+    @include layout-horizontal();
+    @include relative();
+
+    ::slotted(*) {
+        @include fit();
+    }
+}

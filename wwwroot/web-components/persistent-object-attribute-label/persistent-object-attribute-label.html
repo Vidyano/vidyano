@@ -1,0 +1,10 @@
+<link rel="stylesheet" href="persistent-object-attribute-label.css" />
+
+<label>[[attribute.label]]</label>
+<span class="required">[[translateMessage('Required', isConnected)]]</span>
+<div class="locked">
+    <vi-icon source="Lock"></vi-icon>
+</div>
+<vi-button inverse class="info" on-tap="_showTooltip" hidden$="[[!hasToolTip]]" tabindex="-1">
+    <vi-icon source="Info"></vi-icon>
+</vi-button>

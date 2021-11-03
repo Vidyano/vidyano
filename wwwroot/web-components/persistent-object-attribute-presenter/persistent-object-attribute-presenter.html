@@ -1,0 +1,20 @@
+<link rel="stylesheet" href="persistent-object-attribute-presenter.css" />
+
+<dom-if if="[[!noLabel]]">
+    <template>
+        <vi-persistent-object-attribute-label non-edit="[[nonEdit]]" attribute="[[attribute]]"></vi-persistent-object-attribute-label>
+    </template>
+</dom-if>
+<div id="contentWrapper" class="layout horizontal flex">
+    <dom-if if="[[attribute.parent.isBulkEdit]]">
+        <template>
+            <vi-checkbox checked="{{attribute.isValueChanged}}" disabled="[[readOnly]]"></vi-checkbox>
+        </template>
+    </dom-if>
+    <div id="content"></div>
+</div>
+<dom-if if="[[developer]]">
+    <div id="developer" on-tap="_openAttributeManagement">
+        <label>[[attribute.name]]</label>
+    </div>
+</dom-if>

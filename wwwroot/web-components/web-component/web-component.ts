@@ -127,6 +127,10 @@ export interface IWebComponentRegistrationInfo {
     sensitive?: boolean;
 }
 
+export interface IObserveChainDisposer {
+    (): void;
+}
+
 export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerElement) {
     private _appChangedListener: EventListener;
     private _serviceChangedListener: EventListener;
@@ -288,7 +292,7 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
         return span.innerHTML;
     }
 
-    protected _forwardObservable(source: Vidyano.Observable<any> | Array<any>, path: string, pathPrefix: string, callback?: (path: string) => void): () => void {
+    protected _forwardObservable(source: Vidyano.Observable<any> | Array<any>, path: string, pathPrefix: string, callback?: (path: string) => void): IObserveChainDisposer {
         const paths = path.splitWithTail(".", 2);
         const pathToNotify = pathPrefix ? pathPrefix + "." + paths[0] : paths[0];
         const disposers: (() => void)[] = [];
@@ -746,20 +750,52 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
         return element;
     }
 
-    static register(info?: IWebComponentRegistrationInfo, prefix?: string): (obj: any) => void;
-    static register(element: Function, info: IWebComponentRegistrationInfo, prefix?: string): (obj: any) => void;
-    static register(infoOrElement?: IWebComponentRegistrationInfo | Function, prefixOrInfo?: string | IWebComponentRegistrationInfo, prefix?: string): (obj: any) => void {
-        if (!infoOrElement || typeof infoOrElement === "object") {
-            return (element: CustomElementConstructor) => {
-                const info = <IWebComponentRegistrationInfo>infoOrElement;
-                registrations.push({ element, info });
+    private static registrations: { [key: string]: IWebComponentRegistrationInfo; } = {};
+    static register(infoOrTarget?: IWebComponentRegistrationInfo, prefix?: string): (obj: any) => void {
+        return (target: CustomElementConstructor) => {
+            const info: IWebComponentRegistrationInfo = WebComponent._clone(WebComponent.registrations[Object.getPrototypeOf(target).name] || {});
 
-                const prefix = <string>prefixOrInfo;
-                return WebComponent._register(element, WebComponent._clone(info), prefix);
-            };
-        }
-        else if (typeof infoOrElement === "function")
-            return WebComponent._register.apply(this, arguments);
+            const targetInfo = <IWebComponentRegistrationInfo>infoOrTarget;
+            if (targetInfo) {
+                if (targetInfo.properties)
+                    info.properties = info.properties ? Vidyano.extend(info.properties, targetInfo.properties) : targetInfo.properties;
+
+                if (targetInfo.hostAttributes)
+                    info.hostAttributes = info.hostAttributes ? Vidyano.extend(info.hostAttributes, targetInfo.hostAttributes) : targetInfo.hostAttributes;
+
+                if (targetInfo.listeners)
+                    info.listeners = info.listeners ? Vidyano.extend(info.listeners, targetInfo.listeners) : targetInfo.listeners;
+
+                if (targetInfo.keybindings)
+                    info.keybindings = info.keybindings ? Vidyano.extend(info.keybindings, targetInfo.keybindings) : targetInfo.keybindings;
+
+                if (targetInfo.observers)
+                    info.observers ? info.observers.push(...targetInfo.observers) : (info.observers = targetInfo.observers);
+
+                if (targetInfo.behaviors)
+                    info.behaviors ? info.behaviors.push(...targetInfo.behaviors) : (info.behaviors = targetInfo.behaviors);
+
+                if (targetInfo.forwardObservers)
+                    info.forwardObservers ? info.forwardObservers.push(...targetInfo.forwardObservers) : (info.forwardObservers = targetInfo.forwardObservers);
+
+                if (typeof targetInfo.mediaQueryAttributes !== "undefined")
+                    info.mediaQueryAttributes = targetInfo.mediaQueryAttributes;
+
+                if (typeof targetInfo.sensitive !== "undefined")
+                    info.sensitive = targetInfo.sensitive;
+            }
+            const wc = WebComponent._register(target, WebComponent._clone(info), prefix);
+
+            WebComponent.registrations[wc.name] = info;
+
+            return wc;
+        };
+    }
+
+    static registerAbstract(info?: IWebComponentRegistrationInfo): (obj: any) => void {
+        return (target: Function) => {
+            WebComponent.registrations[Object(target).name] = info;
+        };
     }
 
     private static _clone(source: any, depth: number = 0): any {
@@ -777,8 +813,6 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
         return output;
     }
 }
-
-const registrations: { element: CustomElementConstructor; info: IWebComponentRegistrationInfo }[] = [];
 
 export abstract class ConfigurableWebComponent extends WebComponent {
 

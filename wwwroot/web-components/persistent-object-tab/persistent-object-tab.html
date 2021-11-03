@@ -1,0 +1,30 @@
+<link rel="stylesheet" href="persistent-object-tab.css" />
+
+<vi-size-tracker size="{{size}}"></vi-size-tracker>
+<dom-if if="[[!noScroll]]" restamp>
+    <template>
+        <vi-scroller no-horizontal>
+            <div class="relative">
+                <vi-size-tracker size="{{innerSize}}"></vi-size-tracker>
+                <div class="groups">
+                    <dom-repeat items="[[tab.groups]]" as="group">
+                        <template>
+                            <vi-persistent-object-group group="[[group]]" group-index="[[index]]" columns="[[columns]]"></vi-persistent-object-group>
+                        </template>
+                    </dom-repeat>
+                </div>
+            </div>
+        </vi-scroller>
+    </template>
+</dom-if>
+<dom-if if="[[noScroll]]" restamp>
+    <template>
+        <div class="groups relative">
+            <dom-repeat items="[[tab.groups]]" as="group">
+                <template>
+                    <vi-persistent-object-group group="[[group]]" group-index="[[index]]" columns="[[columns]]"></vi-persistent-object-group>
+                </template>
+            </dom-repeat>
+        </div>
+    </template>
+</dom-if>

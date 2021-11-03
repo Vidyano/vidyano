@@ -1,0 +1,14 @@
+@import "../_vars.scss";
+
+:host {
+    @include layout-horizontal();
+
+    > vi-scroller {
+        @include flex();
+    }
+
+    .groups {
+        display: block;
+        padding-bottom: var(--theme-h4);
+    }
+}

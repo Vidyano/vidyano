@@ -1,8 +1,11 @@
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import * as Polymer from "../../libs/@polymer/polymer.js"
+import { Path } from "../../libs/pathjs/pathjs.js"
 import "../popup/popup.js"
+import { App } from "../app/app.js"
 import { ActionButton } from "../action-button/action-button.js"
 import { Popup } from "../popup/popup.js"
+import type { QueryGrid } from "./query-grid.js"
 import { QueryGridCell } from "./cell-templates/query-grid-cell.js";
 import { QueryGridCellBoolean } from "./cell-templates/query-grid-cell-boolean.js";
 import { QueryGridCellDefault } from "./cell-templates/query-grid-cell-default.js";
@@ -10,22 +13,11 @@ import { QueryGridCellImage } from "./cell-templates/query-grid-cell-image.js";
 import { QueryGridRowGroup } from "./query-grid-row-group.js";
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
 
-interface IResizeObserver {
-    observe: (target: HTMLElement) => void;
-    unobserve: (target: HTMLElement) => void;
-}
-
-declare class ResizeObserver implements IResizeObserver {
-    constructor(observer: (entries: { target: HTMLElement; contentRect: ClientRect }[]) => void);
-    observe: (target: HTMLElement, options?: { box : "border-box" | "content-box" }) => void;
-    unobserve: (target: HTMLElement) => void;
-}
-
 let resizeObserver: ResizeObserver;
 resizeObserver = new ResizeObserver(entries => {
     entries[0].target.parentElement.dispatchEvent(new CustomEvent("column-width-changed", {
         detail: entries.map(e => {
-            let width = e["borderBoxSize"] != null ? e["borderBoxSize"][0].inlineSize : e.target.offsetWidth;
+            let width = e["borderBoxSize"] != null ? e["borderBoxSize"][0].inlineSize : (<HTMLElement>e.target).offsetWidth;
             return [(<QueryGridCell>e.target).column, width];
         }),
         bubbles: true,
@@ -180,8 +172,53 @@ export class QueryGridRow extends WebComponentListener(WebComponent) {
         });
     }
 
-    private _onTap(e: Polymer.Gestures.TapEvent) {
-        console.log("tap");
+    private async _onTap(e: Polymer.Gestures.TapEvent) {
+        if (!this.item)
+            return;
+
+        if (this.item instanceof Vidyano.QueryResultItem) {
+            if (this.item.getTypeHint("extraclass", "").split(" ").some(c => c.toUpperCase() === "DISABLED"))
+                return;
+
+            if (this.fire("query-grid-item-tap", { item: this.item }, { bubbles: true, composed: true, cancelable: true }).defaultPrevented)
+                return;
+
+            let openaction = this.item.getTypeHint("openaction", null);
+            if (openaction) {
+                const action = this.item.query.actions.find(a => a.name === openaction) || Vidyano.Action.get(this.item.service, openaction, this.item.query);
+                if (action)
+                    await action.execute({ selectedItems: [this.item] });
+                else
+                    console.warn(`Unknown openaction '${openaction}'.`);
+
+                return;
+            }
+
+            if (this.item.query.canRead && !this.item.query.asLookup) {
+                if (e.detail.sourceEvent && ((<KeyboardEvent>e.detail.sourceEvent).ctrlKey || (<KeyboardEvent>e.detail.sourceEvent).shiftKey) && this.app instanceof App) {
+                    // Open in new window/tab
+                    window.open(Path.routes.root + this.app.getUrlForPersistentObject(this.item.query.persistentObject.id, this.item.id));
+
+                    e.stopPropagation();
+                    return;
+                }
+
+                const grid = (this.getRootNode() as ShadowRoot).host as QueryGrid;
+                grid["_itemOpening"] = this.item;
+                const po = await this.item.getPersistentObject();
+                if (!po)
+                    return;
+
+                if (grid["_itemOpening"] === this.item) {
+                    grid["_itemOpening"] = undefined;
+
+                    this.item.query.service.hooks.onOpen(po);
+                }
+            }
+        }
+
+        // TODO: Group collapse/expand
+
         // const div = document.createElement("div");
         // div.style.position = "absolute";
         // div.style.background = "red";

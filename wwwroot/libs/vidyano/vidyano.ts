@@ -6,6 +6,8 @@ export * from "./common/observable.js"
 export * from "./common/queue.js"
 export * from "./common/service-bus.js"
 export * from "./common/string.js"
+export * from "./common/extend.js"
+export * from "./common/noop.js"
 
 export * from "./service.js"
 

@@ -1,4 +1,4 @@
-﻿import { html } from "@polymer/polymer"
+﻿import * as Polymer from '../../libs/@polymer/polymer.js';
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import "../action-button/action-button.js"
 import { App } from "../app/app.js"
@@ -37,7 +37,7 @@ import { WebComponent } from "../web-component/web-component.js"
     ]
 })
 export class ActionBar extends WebComponent {
-    static get template() { return html`<link rel="import" href="action-bar.html">`; }
+    static get template() { return Polymer.html`<link rel="import" href="action-bar.html">`; }
 
     accent: boolean = false;
     serviceObject: Vidyano.ServiceObjectWithActions;

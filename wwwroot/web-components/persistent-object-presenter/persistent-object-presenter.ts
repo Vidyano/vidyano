@@ -1,3 +1,4 @@
+import * as Polymer from '../../libs/@polymer/polymer.js';
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
 import { App, AppBase } from "../app/app.js"
@@ -61,6 +62,8 @@ interface IPersistentObjectPresenterRouteParameters {
     sensitive: true
 })
 export class PersistentObjectPresenter extends WebComponentListener(WebComponent) {
+    static get template() { return Polymer.html`<link rel="import" href="persistent-object-presenter.html">`; }
+
     private _cacheEntry: AppCacheEntryPersistentObject;
     readonly loading: boolean; private _setLoading: (loading: boolean) => void;
     readonly templated: boolean; private _setTemplated: (templated: boolean) => void;

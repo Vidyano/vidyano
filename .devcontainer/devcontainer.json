@@ -20,7 +20,9 @@
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
 		"ms-dotnettools.csharp",
-		"ritwickdey.live-sass"
+		"ritwickdey.live-sass",
+		"npxms.hide-gitignored",
+		"coenraads.bracket-pair-colorizer"
 	],
 	"forwardPorts": [5000, 5001, 8081],
 
