@@ -3,6 +3,7 @@
       "target": "esnext",
       "module": "esnext",
       "useDefineForClassFields": false,
+      "allowSyntheticDefaultImports": true,
       "moduleResolution": "node",
       "lib": [
           "ESNext",

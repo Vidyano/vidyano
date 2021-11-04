@@ -1,0 +1,46 @@
+@import "../../../_vars.scss";
+
+:host {
+    @include layout-horizontal();
+
+    &[editing] {
+        [slot="content"] {
+            @include layout-horizontal();
+        }
+
+        vi-masked-input {
+            display: inline-block;
+            border: none;
+            height: calc(var(--theme-h2) - 2px);
+            line-height: calc(var(--theme-h2) - 2px);
+            width: auto;
+
+            &:not([hidden]) + input {
+                padding-left: 0;
+            }
+
+            &:last-of-type:not([hidden]), &[flex] {
+                @include flex();
+            }
+        }
+
+        &[is-invalid] {
+            vi-masked-input::part(input).date, vi-masked-input::part(input).time, span#monthMode {
+                color: red;
+            }
+        }
+    }
+
+    span, vi-masked-input {
+        color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
+
+        &[sensitive] {
+            --at-apply: --vi-app--sensitive;
+        }
+    }
+
+    span#monthMode {
+        padding: 0 var(--theme-h5);
+        cursor: default;
+    }
+}

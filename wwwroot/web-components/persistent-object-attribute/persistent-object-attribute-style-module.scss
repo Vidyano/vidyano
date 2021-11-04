@@ -6,12 +6,12 @@
         line-height: var(--theme-h3);
     }
 
-    input {
+    input, *::part(input) {
         padding: 0 var(--theme-h5);
         line-height: calc(var(--theme-h2) - 2px);
     }
 
-    input, textarea {
+    input, textarea, *::part(input) {
         background-color: transparent;
         box-sizing: border-box;
         margin: 0;
@@ -19,5 +19,6 @@
         outline: none;
         color: #333;
         width: 100%;
+        font-family: inherit;
     }
 }

@@ -1,0 +1,73 @@
+<style include="vi-persistent-object-attribute-style-module"></style>
+<link rel="stylesheet" href="persistent-object-attribute-date-time.css" />
+
+<dom-if if="[[!editing]]">
+    <template>
+        <span sensitive$="[[sensitive]]">[[attribute.displayValue]]</span>
+    </template>
+</dom-if>
+<dom-if if="[[editing]]">
+    <template>
+        <vi-persistent-object-attribute-edit attribute="[[attribute]]">
+            <div class="layout horizontal">
+                <dom-if if="[[!monthMode]]">
+                    <template>
+                        <vi-masked-input class="date"
+                                         format="[[dateFormat]]"
+                                         separator="[[dateSeparator]]"
+                                         readonly$="[[readOnly]]"
+                                         tabindex$="[[readOnlyTabIndex]]"
+                                         hidden$="[[!hasDateComponent]]"
+                                         flex$="[[!hasTimeComponent]]"
+                                         on-filled="_dateFilled">
+                        </vi-masked-input>
+                        <vi-masked-input class="time"
+                                         format="[[timeFormat]]"
+                                         separator="[[timeSeparator]]"
+                                         readonly$="[[readOnly]]"
+                                         tabindex$="[[readOnlyTabIndex]]"
+                                         hidden$="[[!hasTimeComponent]]"
+                                         on-filled="_timeFilled">
+                        </vi-masked-input>
+                    </template>
+                </dom-if>
+                <dom-if if="[[monthMode]]">
+                    <template>
+                        <span id="monthMode" hidden$="[[!hasDateComponent]]" sensitive$="[[sensitive]]">[[attribute.displayValue]]</span>
+                    </template>
+                </dom-if>
+            </div>
+            <dom-if if="[[!readOnly]]">
+                <template>
+                    <dom-if if="[[hasTimeComponent]]">
+                        <template>
+                            <vi-time-picker slot="button" id="timepicker" time="{{selectedTime}}"></vi-time-picker>
+                        </template>
+                    </dom-if>
+                    <dom-if if="[[hasDateComponent]]">
+                        <template>
+                            <dom-if if="[[monthMode]]">
+                                <template>
+                                    <vi-button slot="button" on-tap="_previousMonth">
+                                        <vi-icon source="ChevronLeft"></vi-icon>
+                                    </vi-button>
+                                    <vi-button slot="button" on-tap="_nextMonth">
+                                        <vi-icon source="ChevronRight"></vi-icon>
+                                    </vi-button>
+                                </template>
+                            </dom-if>
+                            <vi-date-picker slot="button" id="datepicker" selected-date="{{selectedDate}}" month-mode="[[monthMode]]" min-date="[[minDate]]" max-date="[[maxDate]]"></vi-date-picker>
+                        </template>
+                    </dom-if>
+                    <dom-if if="[[canClear]]">
+                        <template>
+                            <vi-button slot="button" on-tap="_clear" tabindex="-1">
+                                <vi-icon source="Remove"></vi-icon>
+                            </vi-button>
+                        </template>
+                    </dom-if>
+                </template>
+            </dom-if>
+        </vi-persistent-object-attribute-edit>
+    </template>
+</dom-if>

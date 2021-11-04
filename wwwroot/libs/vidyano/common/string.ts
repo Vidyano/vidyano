@@ -147,7 +147,7 @@ String.isNullOrWhiteSpace = function(str: string) {
 const _formatRE = /(\{[^\}^\{]+\})/g;
 const _format = function(format: string, values: any[], useLocale: boolean) {
     return format.replace(_formatRE,
-        function (str, m) {
+        function (m) {
             var index = parseInt(m.substr(1), 10);
             var value = values[index];
             if (value == null)

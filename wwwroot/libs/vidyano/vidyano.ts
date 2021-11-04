@@ -1,4 +1,5 @@
 export * from "./common/array.js"
+export * from "./common/bignumber.js"
 export * from "./common/boolean.js"
 export * from "./common/date.js"
 export * from "./common/expression-parser.js"

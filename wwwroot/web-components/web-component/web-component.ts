@@ -696,27 +696,26 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
             };
         }
 
-        // TODO
-        // if (info.sensitive) {
-        //     info.properties.isAppSensitive = {
-        //         type: Boolean,
-        //         reflectToAttribute: true,
-        //         readOnly: true
-        //     };
+        if (info.sensitive) {
+            info.properties.isAppSensitive = {
+                type: Boolean,
+                reflectToAttribute: true,
+                readOnly: true
+            };
 
-        //     info.observers.push("_appSensitiveObserver(app)");
+            info.observers.push("_appSensitiveObserver(app)");
 
-        //     obj.prototype._appSensitiveObserver = function (app: App) {
-        //         if (this.app) {
-        //             this["_setIsAppSensitive"](app.sensitive);
-        //             const _this = this;
-        //             this.app.addEventListener("sensitive-changed", this["_appSensitiveListener"] = function (e) { _this["_setIsAppSensitive"](e.detail); });
-        //         }
-        //         else {
-        //             this.app.removeEventListener("sensitive-changed", this["_appSensitiveListener"]);
-        //         }
-        //     };
-        // }
+            element.prototype._appSensitiveObserver = function (app: App) {
+                if (this.app) {
+                    this["_setIsAppSensitive"](app.sensitive);
+                    const _this = this;
+                    this.app.addEventListener("sensitive-changed", this["_appSensitiveListener"] = function (e) { _this["_setIsAppSensitive"](e.detail); });
+                }
+                else {
+                    this.app.removeEventListener("sensitive-changed", this["_appSensitiveListener"]);
+                }
+            };
+        }
 
         const fncRegex = /([^(]+)\(([^)]+)\)/;
 
