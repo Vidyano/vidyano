@@ -1,7 +1,8 @@
 ﻿import * as Polymer from "../../libs/@polymer/polymer.js"
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
-import moment from "../../libs/moment/moment"
+import moment from 'moment/moment.js'
 import { Button } from "../button/button.js"
+import { Popup } from "../popup/popup.js"
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
 
 export interface IDatePickerCell {
@@ -74,12 +75,8 @@ export interface IDatePickerCell {
     }
 })
 export class DatePicker extends WebComponentListener(WebComponent) {
-    private _daysBody: HTMLElement;
-    private _monthsAndYearsBody: HTMLElement;
-    private _dayCells: HTMLDivElement[][];
-    private _monthsAndYearsCells: HTMLDivElement[];
-    private _minYears: number;
-    private _scopedClassName: string;
+    static get template() { return Polymer.html`<link rel="import" href="date-picker.html">`; }
+
     readonly cells: IDatePickerCell[]; private _setCells: (cells: IDatePickerCell[]) => void;
     readonly canFast: boolean; private _setCanFast: (canFast: boolean) => void;
     readonly currentDate: moment.Moment; private _setCurrentDate: (date: moment.Moment) => void;
@@ -268,7 +265,7 @@ export class DatePicker extends WebComponentListener(WebComponent) {
         if (!cell || !cell.date)
             return;
 
-        if ((<HTMLElement>this.todo_checkEventTarget(e.target)).hasAttribute("unselectable")) {
+        if ((<HTMLElement>e.target).hasAttribute("unselectable")) {
             e.stopPropagation();
             return;
         }

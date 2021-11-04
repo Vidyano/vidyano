@@ -4,7 +4,10 @@ import moment from 'moment/moment.js'
 import "../../../masked-input/masked-input.js"
 import { WebComponent, Keyboard } from "../../../web-component/web-component.js"
 import { PersistentObjectAttribute } from "../../persistent-object-attribute.js"
-import BigNumber from 'bignumber.js';
+import type { TimePicker } from '../../../time-picker/time-picker.js'
+import '../../../time-picker/time-picker.js'
+import type { DatePicker } from '../../../date-picker/date-picker.js'
+import '../../../date-picker/date-picker.js'
 
 @WebComponent.register({
     properties: {

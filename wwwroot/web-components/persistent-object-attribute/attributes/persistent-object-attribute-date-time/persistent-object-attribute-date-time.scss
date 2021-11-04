@@ -25,7 +25,7 @@
         }
 
         &[is-invalid] {
-            vi-masked-input::part(input).date, vi-masked-input::part(input).time, span#monthMode {
+            vi-masked-input::part(input), span#monthMode {
                 color: red;
             }
         }
@@ -42,5 +42,10 @@
     span#monthMode {
         padding: 0 var(--theme-h5);
         cursor: default;
+    }
+
+    :is(vi-time-picker, vi-date-picker)::part(icon) {
+        width: calc(var(--theme-h2) - 2px);
+        height: calc(var(--theme-h2) - 2px);
     }
 }
