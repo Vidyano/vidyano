@@ -1,17 +1,17 @@
 {
     "imports": {
-        "bignumber.js": "https://cdn.jsdelivr.net/npm/bignumber.js/bignumber.mjs",
-        "@polymer/polymer": "https://cdn.jsdelivr.net/npm/@polymer/polymer/polymer-element.js",
-        "@polymer/polymer/lib/": "https://cdn.jsdelivr.net/npm/@polymer/polymer/lib/",
-        "@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js": "https://cdn.jsdelivr.net/npm/@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js",
-        "@polymer/iron-collapse": "https://cdn.jsdelivr.net/npm/@polymer/iron-collapse/iron-collapse.js",
-        "@polymer/iron-collapse/": "https://cdn.jsdelivr.net/npm/@polymer/iron-collapse/",
-        "@polymer/iron-list": "https://cdn.jsdelivr.net/npm/@polymer/iron-list/iron-list.js",
-        "@polymer/iron-resizable-behavior/iron-resizable-behavior.js": "https://cdn.jsdelivr.net/npm/@polymer/iron-resizable-behavior/iron-resizable-behavior.js",
-        "@polymer/iron-scroll-target-behavior/iron-scroll-target-behavior.js": "https://cdn.jsdelivr.net/npm/@polymer/iron-scroll-target-behavior/iron-scroll-target-behavior.js",
-        "@polymer/polymer/polymer-legacy.js": "https://cdn.jsdelivr.net/npm/@polymer/polymer/polymer-legacy.js",
-        "@webcomponents/shadycss/entrypoints/apply-shim.js": "https://cdn.jsdelivr.net/npm/@webcomponents/shadycss/entrypoints/apply-shim.js",
-        "@webcomponents/shadycss/entrypoints/custom-style-interface.js": "https://cdn.jsdelivr.net/npm/@webcomponents/shadycss/entrypoints/custom-style-interface.js",
+        "bignumber.js": "https://cdn.jsdelivr.net/npm/bignumber.js@9.0.1/bignumber.mjs",
+        "@polymer/polymer": "https://cdn.jsdelivr.net/npm/@polymer/polymer@3.4.1/polymer-element.js",
+        "@polymer/polymer/lib/": "https://cdn.jsdelivr.net/npm/@polymer/polymer@3.4.1/lib/",
+        "@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js": "https://cdn.jsdelivr.net/npm/@polymer/iron-a11y-keys-behavior@3.0.1/iron-a11y-keys-behavior.js",
+        "@polymer/iron-collapse": "https://cdn.jsdelivr.net/npm/@polymer/iron-collapse@3.0.1/iron-collapse.js",
+        "@polymer/iron-collapse/": "https://cdn.jsdelivr.net/npm/@polymer/iron-collapse@3.0.1/",
+        "@polymer/iron-list": "https://cdn.jsdelivr.net/npm/@polymer/iron-list@3.1.0/iron-list.js",
+        "@polymer/iron-resizable-behavior/iron-resizable-behavior.js": "https://cdn.jsdelivr.net/npm/@polymer/iron-resizable-behavior@3.0.1/iron-resizable-behavior.js",
+        "@polymer/iron-scroll-target-behavior/iron-scroll-target-behavior.js": "https://cdn.jsdelivr.net/npm/@polymer/iron-scroll-target-behavior@3.0.1/iron-scroll-target-behavior.js",
+        "@polymer/polymer/polymer-legacy.js": "https://cdn.jsdelivr.net/npm/@polymer/polymer@3.4.1/polymer-legacy.js",
+        "@webcomponents/shadycss/entrypoints/apply-shim.js": "https://cdn.jsdelivr.net/npm/@webcomponents/shadycss@1.11.0/entrypoints/apply-shim.js",
+        "@webcomponents/shadycss/entrypoints/custom-style-interface.js": "https://cdn.jsdelivr.net/npm/@webcomponents/shadycss@1.11.0/entrypoints/custom-style-interface.js",
         "moment/moment.js": "https://cdn.jsdelivr.net/npm/moment@2.29.1/dist/moment.js"
     }
 }
