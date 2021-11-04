@@ -108,7 +108,7 @@ function _netFormat(value: number, format: string, useLocale: boolean) {
     switch (fs) {
         case 'd':
         case 'D':
-            s = Math.abs(value).toString();
+            s = parseInt(Math.abs(value).toString()).toString();
             if (precision != -1) {
                 s = s.padLeft(precision, '0');
             }
@@ -118,7 +118,7 @@ function _netFormat(value: number, format: string, useLocale: boolean) {
             break;
         case 'x':
         case 'X':
-            s = Math.abs(this).toString(16);
+            s = parseInt(Math.abs(value).toString()).toString(16);
             if (fs == 'X') {
                 s = s.toUpperCase();
             }
