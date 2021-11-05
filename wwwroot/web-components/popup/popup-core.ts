@@ -271,7 +271,7 @@ export class PopupCore extends WebComponent {
             PopupCore._isBuggyGetBoundingClientRect = outerRect.left === innerRect.left;
         }
 
-        if (false || PopupCore._isBuggyGetBoundingClientRect) {
+        if (PopupCore._isBuggyGetBoundingClientRect) {
             let parent: Element = target.parentElement || (target.parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE ? (<ShadowRoot>target.parentNode).host : null);
             while (parent != null) {
                 const computedStyle = getComputedStyle(parent, null),
