@@ -6,6 +6,7 @@ import "../button/button.js"
 import "../input-search/input-search.js"
 import type { InputSearch } from "../input-search/input-search.js"
 import "./menu-item.js"
+import { Popup } from "../popup/popup.js"
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
 import "../user/user.js"
 
@@ -101,10 +102,6 @@ export class Menu extends WebComponentListener(WebComponent) {
         // Array.from(Polymer.dom(this.$.headerElements).children).forEach(element => Polymer.dom(this.app).appendChild(element));
     }
 
-    get app(): App {
-        return <App>super.app;
-    }
-
     private _filterChanged() {
         this.filtering = !String.isNullOrEmpty(this.filter);
 
@@ -140,7 +137,7 @@ export class Menu extends WebComponentListener(WebComponent) {
         if (!this.filtering || !this.hasGlobalSearch)
             return;
 
-        this.app.changePath(this.app.getUrlForPersistentObject(this.service.application.globalSearchId, this.filter));
+        this.app.changePath((<App>this.app).getUrlForPersistentObject(this.service.application.globalSearchId, this.filter));
         this.filter = "";
     }
 

@@ -99,10 +99,10 @@ export class AppServiceHooks extends AppServiceHooksBase {
         }
     }
 
-    onClientOperation(operation: Vidyano.ClientOperations.IClientOperation) {
+    onClientOperation(operation: Vidyano.IClientOperation) {
         switch (operation.type) {
             case "Refresh":
-                const refresh = <Vidyano.ClientOperations.IRefreshOperation>operation;
+                const refresh = <Vidyano.IRefreshOperation>operation;
                 if (refresh.queryId) {
                     const cacheEntry = <AppCacheEntryQuery>this.app.cachePing(new AppCacheEntryQuery(refresh.queryId));
                     if (cacheEntry && cacheEntry.query)

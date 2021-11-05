@@ -1,6 +1,14 @@
 import * as Polymer from "../../libs/@polymer/polymer.js"
-import { SizeTracker } from "../size-tracker/size-tracker.js";
+import { mixinBehaviors } from "@polymer/polymer/lib/legacy/class.js"
+import { IronOverlayBehavior } from "@polymer/iron-overlay-behavior"
+import { SizeTracker, SizeTrackerEvent } from "../size-tracker/size-tracker.js";
 import { IPosition, WebComponent, WebComponentListener } from "../web-component/web-component.js"
+
+export class DialogCore extends mixinBehaviors(IronOverlayBehavior, Polymer.PolymerElement) {
+    static get template() { return Polymer.html`<link rel="import" href="dialog-core.html">`; }
+}
+
+customElements.define("vi-dialog-core", <CustomElementConstructor><any>DialogCore);
 
 @WebComponent.register({
     properties: {
@@ -26,6 +34,14 @@ import { IPosition, WebComponent, WebComponentListener } from "../web-component/
     }
 })
 export abstract class Dialog extends WebComponentListener(WebComponent) {
+    static dialogTemplate(dialog: HTMLTemplateElement) {
+        const template = Polymer.html`<link rel="import" href="dialog.html">`;
+        const dialogCore = template.content.querySelector("vi-dialog-core") as DialogCore;
+        dialogCore.appendChild(dialog.content.cloneNode(true));
+
+        return template;
+    }
+
     private _sizeTracker: SizeTracker;
     private _translatePosition: IPosition;
     private _resolve: Function;
@@ -35,28 +51,34 @@ export abstract class Dialog extends WebComponentListener(WebComponent) {
     noHeader: boolean;
 
     connectedCallback() {
+        super.connectedCallback();
+
         if (!this._sizeTracker) {
             this.shadowRoot.appendChild(this._sizeTracker = new SizeTracker());
             this._sizeTracker.bubbles = true;
         }
 
-        // NOTE: Fix for https://github.com/PolymerElements/iron-overlay-behavior/issues/124
-        (<any>this)._manager._overlayWithBackdrop = function () {
-            for (let i = this._overlays.length - 1; i >= 0; i--) {
-                if (this._overlays[i].withBackdrop) {
-                    return this._overlays[i];
-                }
-            }
-        };
+        // // NOTE: Fix for https://github.com/PolymerElements/iron-overlay-behavior/issues/124
+        // (<any>this)._manager._overlayWithBackdrop = function () {
+        //     for (let i = this._overlays.length - 1; i >= 0; i--) {
+        //         if (this._overlays[i].withBackdrop) {
+        //             return this._overlays[i];
+        //         }
+        //     }
+        // };
 
         // By default, don't cancel dialog on outside click.
         this.noCancelOnOutsideClick = true;
+    }
 
-        super.connectedCallback();
+    private get dialogCore() {
+        return this.shadowRoot.querySelector("vi-dialog-core") as DialogCore;
     }
 
     async open(): Promise<any> {
-        let trackHandler: EventListenerOrEventListenerObject;
+        this.dialogCore.open();
+
+        /*let trackHandler: EventListenerOrEventListenerObject;
         const header = <HTMLElement>this.shadowRoot.querySelector("header");
         if (header)
             header.addEventListener("track", trackHandler = this._track.bind(this));
@@ -71,7 +93,11 @@ export abstract class Dialog extends WebComponentListener(WebComponent) {
             header.removeEventListener("track", trackHandler);
 
         Polymer["IronOverlayBehaviorImpl"].close.apply(this);
-        return result;
+        return result;*/
+
+        return new Promise(resolve => {
+            this._resolve = resolve;
+        });
     }
 
     private _esc(e: KeyboardEvent) {
@@ -84,7 +110,7 @@ export abstract class Dialog extends WebComponentListener(WebComponent) {
     }
 
     cancel() {
-        Polymer["IronOverlayBehaviorImpl"].cancel.apply(this);
+        this.dialogCore.close();
     }
 
     private _onClosed() {
@@ -126,7 +152,7 @@ export abstract class Dialog extends WebComponentListener(WebComponent) {
 
     private _translate(position: IPosition) {
         this._translatePosition = position;
-        this.style.webkitTransform = this.style.transform = `translate(${position.x}px, ${position.y}px)`;
+        this.style.transform = `translate(${position.x}px, ${position.y}px)`;
     }
 
     protected _translateReset() {
@@ -134,6 +160,6 @@ export abstract class Dialog extends WebComponentListener(WebComponent) {
             return;
 
         this._translatePosition = null;
-        this.style.webkitTransform = this.style.transform = "";
+        this.style.transform = "";
     }
 }

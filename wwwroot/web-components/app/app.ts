@@ -1,3 +1,4 @@
+import "tslib"
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import * as Polymer from "../../libs/@polymer/polymer.js"
 import { Path } from "../../libs/pathjs/pathjs.js"

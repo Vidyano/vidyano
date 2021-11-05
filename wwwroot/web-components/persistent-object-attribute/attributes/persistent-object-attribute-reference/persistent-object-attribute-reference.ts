@@ -3,6 +3,7 @@ import * as Vidyano from "../../../../libs/vidyano/vidyano.js"
 import { Path } from "../../../../libs/pathjs/pathjs.js"
 import { App } from '../../../app/app.js';
 import { PersistentObjectAttribute } from "../../persistent-object-attribute.js"
+import { SelectReferenceDialog } from '../../../select-reference-dialog/select-reference-dialog.js'
 import { WebComponent } from "../../../web-component/web-component.js"
 
 @WebComponent.register({
@@ -137,7 +138,7 @@ export class PersistentObjectAttributeReference extends PersistentObjectAttribut
         this.attribute.lookup.selectedItems = [];
 
         try {
-            const result = await this.app.showDialog(new Vidyano.WebComponents.SelectReferenceDialog(this.attribute.lookup, forceSearch, this.canAddNewReference));
+            const result = await this.app.showDialog(new SelectReferenceDialog(this.attribute.lookup, forceSearch, this.canAddNewReference));
             if (!result)
                 return;
 

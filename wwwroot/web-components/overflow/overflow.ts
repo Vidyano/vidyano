@@ -1,4 +1,5 @@
 import * as Polymer from "../../libs/@polymer/polymer.js"
+import { Popup } from "../popup/popup.js"
 import { WebComponent, WebComponentListener} from "../web-component/web-component.js"
 
 @WebComponent.register({

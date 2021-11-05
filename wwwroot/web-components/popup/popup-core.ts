@@ -241,7 +241,7 @@ export class PopupCore extends WebComponent {
         this.fire("popup-opened", null, { bubbles: false, cancelable: false });
     }
 
-    protected _getTargetRect(target: HTMLElement): { targetRect: ClientRect, transformedRect?: ClientRect } {
+    protected _getTargetRect(target: HTMLElement): { targetRect: Rect, transformedRect?: Rect } {
         let targetRect: Rect = target.getBoundingClientRect();
         if (target === this) {
             targetRect = {

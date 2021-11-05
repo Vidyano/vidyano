@@ -4,6 +4,7 @@
       "module": "esnext",
       "useDefineForClassFields": false,
       "allowSyntheticDefaultImports": true,
+      "noEmitHelpers": true,
       "moduleResolution": "node",
       "lib": [
           "ESNext",

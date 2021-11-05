@@ -1,5 +1,6 @@
 {
     "imports": {
+        "tslib": "https://cdn.jsdelivr.net/npm/tslib@2.3.1/tslib.js",
         "bignumber.js": "https://cdn.jsdelivr.net/npm/bignumber.js@9.0.1/bignumber.mjs",
         "@polymer/polymer": "https://cdn.jsdelivr.net/npm/@polymer/polymer@3.4.1/polymer-element.js",
         "@polymer/polymer/lib/": "https://cdn.jsdelivr.net/npm/@polymer/polymer@3.4.1/lib/",

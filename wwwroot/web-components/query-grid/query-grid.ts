@@ -229,6 +229,9 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
                 this.$.grid.style.transform = `translateY(${newVirtualGridStartIndex * rowHeight}px)`;
 
                 if (this.initializing) {
+                    // Ensure items are bound
+                    Polymer.flush();
+
                     const firstItemRow = (<QueryGridRow[]>Array.from(this.$.grid.querySelectorAll("vi-query-grid-row"))).find(r => r.item instanceof Vidyano.QueryResultItem);
                     if (firstItemRow != null)
                         firstItemRow.measure();
