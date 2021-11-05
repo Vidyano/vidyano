@@ -112,7 +112,7 @@ function _netFormat(value: number, format: string, useLocale: boolean) {
             if (precision != -1) {
                 s = s.padLeft(precision, '0');
             }
-            if (this < 0) {
+            if (value < 0) {
                 s = '-' + s;
             }
             break;
@@ -129,10 +129,10 @@ function _netFormat(value: number, format: string, useLocale: boolean) {
         case 'e':
         case 'E':
             if (precision == -1) {
-                s = this.toExponential();
+                s = value.toExponential();
             }
             else {
-                s = this.toExponential(precision);
+                s = value.toExponential(precision);
             }
             if (fs == 'E') {
                 s = s.toUpperCase();
@@ -145,7 +145,7 @@ function _netFormat(value: number, format: string, useLocale: boolean) {
             if (precision == -1) {
                 precision = nf.numberDecimalDigits;
             }
-            s = this.toFixed(precision).toString();
+            s = value.toFixed(precision).toString();
             if (precision && (nf.numberDecimalSeparator != '.')) {
                 var idx = s.indexOf('.');
                 s = s.substr(0, idx) + nf.numberDecimalSeparator + s.substr(idx + 1);
@@ -159,13 +159,13 @@ function _netFormat(value: number, format: string, useLocale: boolean) {
             if (precision == -1) {
                 precision = nf.currencyDecimalDigits;
             }
-            s = Math.abs(this).toFixed(precision).toString();
+            s = Math.abs(value).toFixed(precision).toString();
             if (precision && (nf.currencyDecimalSeparator != '.')) {
                 var i = s.indexOf('.');
                 s = s.substr(0, i) + nf.currencyDecimalSeparator + s.substr(i + 1);
             }
             s = _commaFormat(s, nf.currencyGroupSizes, nf.currencyDecimalSeparator, nf.currencyGroupSeparator);
-            if (this < 0) {
+            if (value < 0) {
                 s = String.format(nf.currencyNegativePattern, s);
             }
             else {
@@ -179,13 +179,13 @@ function _netFormat(value: number, format: string, useLocale: boolean) {
             if (precision == -1) {
                 precision = nf.percentDecimalDigits;
             }
-            s = (Math.abs(this) * 100.0).toFixed(precision).toString();
+            s = (Math.abs(value) * 100.0).toFixed(precision).toString();
             if (precision && (nf.percentDecimalSeparator != '.')) {
                 var index = s.indexOf('.');
                 s = s.substr(0, index) + nf.percentDecimalSeparator + s.substr(index + 1);
             }
             s = _commaFormat(s, nf.percentGroupSizes, nf.percentDecimalSeparator, nf.percentGroupSeparator);
-            if (this < 0) {
+            if (value < 0) {
                 s = String.format(nf.percentNegativePattern, s);
             }
             else {
@@ -197,10 +197,10 @@ function _netFormat(value: number, format: string, useLocale: boolean) {
             if (precision == -1)
                 precision = 10;
 
-            if (Math.floor(this) == this)
-                s = this.toString();
+            if (Math.floor(value) == value)
+                s = value.toString();
             else
-                s = this._netFormat("F" + precision, useLocale).trimEnd('0');
+                s = _netFormat(value, "F" + precision, useLocale).trimEnd('0');
             break;
     }
 
