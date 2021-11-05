@@ -23,6 +23,7 @@
 
     vi-scroller {
         flex: 1;
+        contain: strict;
     }
 
     [grid] {
