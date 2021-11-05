@@ -34,12 +34,21 @@ namespace VidyanoWeb3.Controllers
                 }
             }
 
-            var filePath = Path.Combine(Vulcanizer.RootPath, id);
-            if (!System.IO.File.Exists(filePath))
+            // TODO: Verify that served files are permitted
+
+            if (!id.StartsWith("libs/modules/")) {
+                var filePath = Path.Combine(Vulcanizer.RootPath, id);
+                if (!System.IO.File.Exists(filePath))
+                    return NotFound();
+
+                return Content(Vulcanizer.Generate(filePath), mimeType);
+            }
+                
+            var moduleFilePath = Path.Combine(Vulcanizer.RootPath, id.Replace("libs/modules/", "../node_modules/"));
+            if (!System.IO.File.Exists(moduleFilePath))
                 return NotFound();
 
-            // TODO: Verify if file is allow to be served
-            return Content(Vulcanizer.Generate(filePath), mimeType);
+            return Content(System.IO.File.ReadAllText(moduleFilePath), mimeType);
         }
     }
 }
