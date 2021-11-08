@@ -28,6 +28,10 @@ resizeObserver = new ResizeObserver(entries => {
     entries.forEach(e => resizeObserver.unobserve(e.target));
 });
 
+export interface IItemTapEventArgs {
+    item: Vidyano.QueryResultItem;
+}
+
 @WebComponent.register({
     properties: {
         index: Number,
@@ -180,7 +184,7 @@ export class QueryGridRow extends WebComponentListener(WebComponent) {
             if (this.item.getTypeHint("extraclass", "").split(" ").some(c => c.toUpperCase() === "DISABLED"))
                 return;
 
-            if (this.fire("query-grid-item-tap", { item: this.item }, { bubbles: true, composed: true, cancelable: true }).defaultPrevented)
+            if (this.fire("item-tap", { item: this.item }, { bubbles: true, composed: true, cancelable: true }).defaultPrevented)
                 return;
 
             let openaction = this.item.getTypeHint("openaction", null);

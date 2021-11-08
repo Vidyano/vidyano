@@ -1,0 +1,72 @@
+:host {
+    vi-dialog-core {
+        > header, > footer {
+            background-color: #FAFAFA;
+        }
+
+        > header {
+            -webkit-flex: 0 0 auto;
+            -moz-flex: 0 0 auto;
+            -ms-flex: 0 0 auto;
+            flex: 0 0 auto;
+            line-height: var(--theme-h1);
+            padding: var(--theme-h5) var(--theme-h4);
+            height: calc(var(--theme-h1) + var(--theme-h5) * 2);
+            border-bottom: 1px solid #EEE;
+            box-sizing: border-box;
+
+            h4 {
+                margin: 0;
+                font-weight: 500;
+                font-size: 120%;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+
+            vi-button.close {
+                margin: 0;
+                padding: 0 var(--theme-h5);
+                fill: #888;
+                background: none;
+                border: none;
+                cursor: pointer;
+
+                &:hover {
+                    fill: #555;
+                }
+
+                &:active {
+                    fill: #333;
+                }
+
+                &:focus {
+                    outline: none;
+                }
+            }
+        }
+
+        > footer {
+            padding: var(--theme-h4);
+            border-top: 1px solid #EEE;
+            -webkit-flex: 0 0 auto;
+            -moz-flex: 0 0 auto;
+            -ms-flex: 0 0 auto;
+            flex: 0 0 auto;
+
+            vi-button {
+                line-height: var(--theme-h2);
+                padding: 0 var(--theme-h4);
+
+                &:not(:first-of-type) {
+                    margin-left: var(--theme-h5);
+                }
+            }
+        }
+
+        > main {
+            position: relative;
+            z-index: 1;
+        }
+    }
+}

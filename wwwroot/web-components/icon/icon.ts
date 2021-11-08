@@ -17,7 +17,8 @@ const icons: { [key: string]: Icon } = {};
         unresolved: {
             type: Boolean,
             readOnly: true,
-            reflectToAttribute: true
+            reflectToAttribute: true,
+            value: true
         }
     },
     observers: [

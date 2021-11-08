@@ -5,6 +5,8 @@ import { AppColor } from "../app-color/app-color.js"
 import "../app/config/app-config.js"
 import type { AppConfig } from "../app/config/app-config.js"
 import { AppRoute } from "../app-route/app-route.js"
+import { Alert } from "../alert/alert.js"
+import "../alert/alert.js"
 import "../app-route-presenter/app-route-presenter.js"
 import type { AppRoutePresenter } from "../app-route-presenter/app-route-presenter.js"
 import { AppServiceHooksBase } from "../app-service-hooks/app-service-hooks-base.js"
@@ -13,6 +15,7 @@ import { Keyboard, WebComponent, WebComponentListener } from "../web-component/w
 import "./style-modules/flex-layout.js"
 import "./style-modules/reset-css.js"
 import "./style-modules/responsive.js"
+import "@polymer/paper-ripple"
 
 declare global {
     interface Window {
@@ -341,7 +344,7 @@ export abstract class AppBase extends WebComponentListener(WebComponent) {
     }
 
     showAlert(notification: string, type: Vidyano.NotificationType = "Notice", duration: number = 3000) {
-        alertify.log(notification, type, duration);
+        (this.$.alert as Alert).log(notification, type, duration);
     }
 
     redirectToSignIn(keepUrl: boolean = true) {

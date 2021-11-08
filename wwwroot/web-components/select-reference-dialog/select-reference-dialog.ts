@@ -2,6 +2,7 @@ import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import * as Polymer from "../../libs/@polymer/polymer.js"
 import { WebComponent } from "../web-component/web-component.js"
 import { Dialog } from "../dialog/dialog.js"
+import { IItemTapEventArgs } from "../query-grid/query-grid-row.js"
 
 @WebComponent.register({
     properties: {
@@ -80,7 +81,7 @@ export class SelectReferenceDialog extends Dialog {
     private _selectReference(e: CustomEvent) {
         e.preventDefault();
 
-        const detail = <IQueryGridItemTapEventArgs>e.detail;
+        const detail = <IItemTapEventArgs>e.detail;
         if (this.query.maxSelectedItems === 1)
             this.close([detail.item]);
         else
