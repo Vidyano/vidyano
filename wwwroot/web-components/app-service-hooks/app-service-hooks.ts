@@ -30,7 +30,7 @@ export class AppServiceHooks extends AppServiceHooksBase {
             return super.onAction(args);
         }
         else if (args.action === "viAudit")
-            this.app.import("../audit/audit.js");
+            import("../audit/audit.js");
 
         return super.onAction(args);
     }
@@ -40,13 +40,13 @@ export class AppServiceHooks extends AppServiceHooksBase {
             const po = <Vidyano.PersistentObject>obj;
 
             if (po.stateBehavior.indexOf("AsWizard") >= 0) {
-                await this.app.import("../persistent-object-wizard-dialog/persistent-object-wizard-dialog.js");
+                await import("../persistent-object-wizard-dialog/persistent-object-wizard-dialog.js");
                 await this.app.showDialog(new PersistentObjectWizardDialog(po));
 
                 return;
             }
             else if (po.stateBehavior.indexOf("OpenAsDialog") >= 0) {
-                await this.app.import("../persistent-object-dialog/persistent-object-dialog.js");
+                await import("../persistent-object-dialog/persistent-object-dialog.js");
                 await this.app.showDialog(new PersistentObjectDialog(po));
 
                 return;

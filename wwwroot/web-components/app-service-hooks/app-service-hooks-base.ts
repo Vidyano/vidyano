@@ -8,6 +8,7 @@ import { PersistentObjectTabConfig } from "../app/config/persistent-object-tab-c
 import { ProgramUnitConfig } from "../app/config/program-unit-config"
 import { QueryConfig } from "../app/config/query-config"
 import { QueryChartConfig } from "../app/config/query-chart-config"
+import type { SelectReferenceDialog } from "../select-reference-dialog/select-reference-dialog.js"
 
 /* tslint:disable:no-var-keyword */
 var _gaq: any[];
@@ -161,8 +162,8 @@ export class AppServiceHooksBase extends Vidyano.ServiceHooks {
             const query = args.query.clone(true);
             query.search();
 
-            await this.app.import("../select-reference-dialog/select-reference-dialog.js");
-            const result = await this.app.showDialog(new SelectReferenceDialog(query));
+            const module = await import("../select-reference-dialog/select-reference-dialog.js");
+            const result = await this.app.showDialog(new module.SelectReferenceDialog(query));
             if (result && result.length > 0) {
                 args.selectedItems = result;
 
@@ -221,8 +222,8 @@ export class AppServiceHooksBase extends Vidyano.ServiceHooks {
         if (!query.hasSearched)
             query.search();
 
-        await this.app.import("../select-reference-dialog/select-reference-dialog.js");
-        return this.app.showDialog(new SelectReferenceDialog(query, false, false, true));
+        const module = await import("../select-reference-dialog/select-reference-dialog.js");
+        return this.app.showDialog(new module.SelectReferenceDialog(query, false, false, true));
     }
 
     async onInitial(initial: Vidyano.PersistentObject) {
@@ -257,8 +258,8 @@ export class AppServiceHooksBase extends Vidyano.ServiceHooks {
 
     async onRetryAction(retry: Vidyano.Dto.RetryAction): Promise<string> {
         if (retry.persistentObject) {
-            await this.app.import("../retry-action-dialog/retry-action-dialog.js");
-            return this.app.showDialog(new RetryActionDialog(retry));
+            const module = await import("../retry-action-dialog/retry-action-dialog.js");
+            return this.app.showDialog(new module.RetryActionDialog(retry));
         }
 
         return retry.options[await this.app.showMessageDialog({

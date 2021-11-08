@@ -267,10 +267,6 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
         return this.service.getTranslatedMessage.apply(this.service, [key].concat(params));
     }
 
-    async import(link: string) {
-        await import(link);
-    }
-
     protected _focusElement(element: string | HTMLElement, maxAttempts?: number, interval?: number, attempt: number = 0) {
         const input = typeof element === "string" ? <HTMLElement>this.shadowRoot.querySelector(`#${element}`) : <HTMLElement>element;
         if (input) {

@@ -68,7 +68,7 @@ export class MessageDialog extends Dialog {
 
         async open(): Promise<any> {
             if (this.options.rich)
-                await this.import("@polymer/marked-element/marked-element.js");
+                await import("@polymer/marked-element/marked-element.js");
 
             /*const focus = setInterval(() => {
                 const button = <HTMLButtonElement>this.$.actions.querySelectorAll("button")[this.activeAction];

@@ -300,7 +300,7 @@ export class App extends AppBase {
         if (!isSignedIn || !profile)
             return false;
 
-        this.import("../profiler/profiler.js");
+        import("../profiler/profiler.js");
         return true;
     }
 

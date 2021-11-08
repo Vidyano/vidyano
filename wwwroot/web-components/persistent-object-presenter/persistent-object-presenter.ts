@@ -186,7 +186,7 @@ export class PersistentObjectPresenter extends WebComponentListener(WebComponent
                 this._setLoading(false);
             }
             else {
-                await this.import("../persistent-object/persistent-object.js");
+                await import("../persistent-object/persistent-object.js");
                 this._renderPersistentObject(persistentObject);
             }
 
