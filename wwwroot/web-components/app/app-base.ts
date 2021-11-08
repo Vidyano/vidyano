@@ -11,6 +11,7 @@ import "../app-route-presenter/app-route-presenter.js"
 import type { AppRoutePresenter } from "../app-route-presenter/app-route-presenter.js"
 import { AppServiceHooksBase } from "../app-service-hooks/app-service-hooks-base.js"
 import { Dialog } from "../dialog/dialog.js"
+import { MessageDialog, IMessageDialogOptions } from "../message-dialog/message-dialog.js"
 import { Keyboard, WebComponent, WebComponentListener } from "../web-component/web-component.js"
 import "./style-modules/flex-layout.js"
 import "./style-modules/reset-css.js"
@@ -339,7 +340,6 @@ export abstract class AppBase extends WebComponentListener(WebComponent) {
     }
 
     async showMessageDialog(options: IMessageDialogOptions): Promise<any> {
-        await this.import("../message-dialog/message-dialog.js");
         return this.showDialog(new MessageDialog(options));
     }
 

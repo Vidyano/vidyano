@@ -1,7 +1,7 @@
 import * as Polymer from "../../libs/@polymer/polymer.js"
 import { mixinBehaviors } from "@polymer/polymer/lib/legacy/class.js"
 import { IronOverlayBehavior } from "@polymer/iron-overlay-behavior"
-import { SizeTracker, SizeTrackerEvent } from "../size-tracker/size-tracker.js";
+import { SizeTrackerEvent } from "../size-tracker/size-tracker.js";
 import { IPosition, WebComponent, WebComponentListener } from "../web-component/web-component.js"
 
 export class DialogCore extends mixinBehaviors(IronOverlayBehavior, Polymer.PolymerElement) {
@@ -18,13 +18,8 @@ customElements.define("vi-dialog-core", <CustomElementConstructor><any>DialogCor
         }
     },
     listeners: {
-        "sizechanged": "_dialogSizeChanged",
         "iron-overlay-closed": "_onClosed"
     },
-    behaviors: [
-        Polymer["IronOverlayBehavior"],
-        Polymer["IronResizableBehavior"]
-    ],
     hostAttributes: {
         "dialog": "",
         "with-backdrop": ""
@@ -42,58 +37,44 @@ export abstract class Dialog extends WebComponentListener(WebComponent) {
         return template;
     }
 
-    private _sizeTracker: SizeTracker;
     private _translatePosition: IPosition;
     private _resolve: Function;
     private opened: boolean;
-    noCancelOnOutsideClick: boolean;
-    noCancelOnEscKey: boolean;
     noHeader: boolean;
 
     connectedCallback() {
         super.connectedCallback();
 
-        if (!this._sizeTracker) {
-            this.shadowRoot.appendChild(this._sizeTracker = new SizeTracker());
-            this._sizeTracker.bubbles = true;
-        }
-
-        // // NOTE: Fix for https://github.com/PolymerElements/iron-overlay-behavior/issues/124
-        // (<any>this)._manager._overlayWithBackdrop = function () {
-        //     for (let i = this._overlays.length - 1; i >= 0; i--) {
-        //         if (this._overlays[i].withBackdrop) {
-        //             return this._overlays[i];
-        //         }
-        //     }
-        // };
-
         // By default, don't cancel dialog on outside click.
         this.noCancelOnOutsideClick = true;
     }
 
-    private get dialogCore() {
+    get noCancelOnOutsideClick() {
+        return this.dialogCore.noCancelOnOutsideClick;
+    }
+
+    set noCancelOnOutsideClick(noCancelOnOutsideClick: boolean) {
+        this.dialogCore.noCancelOnOutsideClick = noCancelOnOutsideClick;
+    }
+
+    get noCancelOnEscKey() {
+        return this.dialogCore.noCancelOnEscKey;
+    }
+
+    set noCancelOnEscKey(noCancelOnEscKey: boolean) {
+        this.dialogCore.noCancelOnEscKey = noCancelOnEscKey;
+    }
+
+    private get dialogCore(): DialogCore {
         return this.shadowRoot.querySelector("vi-dialog-core") as DialogCore;
     }
 
     async open(): Promise<any> {
         this.dialogCore.open();
 
-        /*let trackHandler: EventListenerOrEventListenerObject;
         const header = <HTMLElement>this.shadowRoot.querySelector("header");
         if (header)
-            header.addEventListener("track", trackHandler = this._track.bind(this));
-
-        const result = await new Promise(resolve => {
-            this._resolve = resolve;
-
-            Polymer["IronOverlayBehaviorImpl"].open.apply(this);
-        });
-
-        if (trackHandler)
-            header.removeEventListener("track", trackHandler);
-
-        Polymer["IronOverlayBehaviorImpl"].close.apply(this);
-        return result;*/
+            Polymer.Gestures.addListener(header, "track", (e: Polymer.Gestures.TrackEvent) => this._track(e));
 
         return new Promise(resolve => {
             this._resolve = resolve;
@@ -117,8 +98,8 @@ export abstract class Dialog extends WebComponentListener(WebComponent) {
         this._resolve();
     }
 
-    private _dialogSizeChanged(e: SizeTrackerEvent) {
-        (<any>this).notifyResize();
+    private _sizeChanged(e: SizeTrackerEvent) {
+        this.dialogCore.notifyResize();
 
         e.stopPropagation();
     }
@@ -131,7 +112,7 @@ export abstract class Dialog extends WebComponentListener(WebComponent) {
             });
         }
         else if (e.detail.state === "start") {
-            if (!(<HTMLElement>(e.sourceEvent.target)).tagName.startsWith("H")) {
+            if (!(<HTMLElement>(e.currentTarget)).tagName.startsWith("H")) {
                 e.stopPropagation();
                 e.preventDefault();
 
@@ -152,7 +133,7 @@ export abstract class Dialog extends WebComponentListener(WebComponent) {
 
     private _translate(position: IPosition) {
         this._translatePosition = position;
-        this.style.transform = `translate(${position.x}px, ${position.y}px)`;
+        this.dialogCore.style.transform = `translate(${position.x}px, ${position.y}px)`;
     }
 
     protected _translateReset() {
@@ -160,6 +141,6 @@ export abstract class Dialog extends WebComponentListener(WebComponent) {
             return;
 
         this._translatePosition = null;
-        this.style.transform = "";
+        this.dialogCore.style.transform = "";
     }
 }
