@@ -1,0 +1,137 @@
+@import "../_vars.scss";
+
+$border-color: #ddd;
+
+:host {
+    @include layout-horizontal();
+    position: relative;
+    border: 1px solid $border-color;
+    outline: none !important;
+
+    vi-popup {
+        @include flex();
+
+        #content {
+            transform: translate(0, 1px);
+        }
+
+        [slot="header"] {
+            @include flex();
+            @include layout-horizontal();
+            @include relative();
+
+            .suggestions {
+                z-index: 1;
+                padding-left: var(--theme-h5);
+                position: absolute;
+                left: 0;
+                height: calc(var(--theme-h2) - 2px);
+                line-height: calc(var(--theme-h2) - 2px);
+
+                span {
+                    float: left;
+
+                    &:first-child {
+                        color: transparent;
+                    }
+
+                    &:nth-child(2) {
+                        color: #CCC;
+                    }
+                }
+            }
+
+            input {
+                @include flex();
+                z-index: 2;
+                border: none;
+                height: calc(var(--theme-h2) - 2px);
+                line-height: calc(var(--theme-h2) - 2px);
+                padding-left: var(--theme-h5);
+                background-color: transparent;
+                outline: none;
+                --at-apply: --vi-select-input;
+
+                &[disabled] {
+                    color: inherit !important;
+                    --at-apply: --vi-select-input-disabled;
+                }
+
+                &:hover {
+                    --at-apply: --vi-select-input-hover;
+                }
+
+                &::-ms-clear {
+                    display: none;
+                }
+            }
+
+            vi-icon {
+                height: calc(var(--theme-h2) - 2px);
+                width: calc(var(--theme-h2) - 2px);
+                fill: var(--vi-select-icon-color, var(--theme-foreground));
+                --at-apply: --vi-select-icon;
+            }
+        }
+
+        iron-list {
+            min-height: calc(var(--theme-h2) - 2px);
+        }
+
+        [content] {
+            max-height: calc(var(--theme-h2) * 10);
+            overflow-y: auto;
+            -ms-overflow-style: scrollbar;
+            padding: 0;
+            margin: 0;
+            list-style: none;
+
+            vi-select-option-item {
+                padding-left: var(--theme-h5);
+                line-height: calc(var(--theme-h2) - 2px);
+                height: calc(var(--theme-h2) - 2px);
+                white-space: nowrap;
+
+                &:not(.group) {
+                    cursor: pointer;
+
+                    &:hover {
+                        background-color: var(--theme-color-faint);
+                    }
+                }
+
+                &.group {
+                    color: #888;
+                }
+
+                &[group] {
+                    padding-left: var(--theme-h3);
+                }
+            }
+
+            vi-select-option-item[suggested], &:not([filtering]) vi-select-option-item[selected] {
+                color: white;
+                background-color: var(--theme-color);
+
+                &:hover {
+                    background-color: var(--theme-color-light);
+                }
+            }
+        }
+
+        &[disabled] [slot="header"] vi-icon {
+            opacity: 0.25;
+            cursor: default;
+        }
+    }
+
+    &[sensitive] {
+        input, vi-select-option-item {
+            --at-apply: --vi-app--sensitive;
+        }
+
+        input + vi-icon {
+            opacity: 0.5;
+        }
+    }
+}

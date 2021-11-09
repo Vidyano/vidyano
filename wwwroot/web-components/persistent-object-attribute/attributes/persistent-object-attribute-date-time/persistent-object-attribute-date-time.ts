@@ -325,7 +325,7 @@ export class PersistentObjectAttributeDateTime extends PersistentObjectAttribute
         if (!input.value)
             return;
 
-        if (input === this.timeInput && (e.keyCode === Keyboard.KeyCodes.backspace || e.keyCode === Keyboard.KeyCodes.leftarrow)) {
+        if (input === this.timeInput && (e.key === Keyboard.Keys.Backspace || e.key === Keyboard.Keys.ArrowLeft)) {
             if (input.selectionStart === 0 && input.selectionEnd === 0 && this.hasDateComponent) {
                 this._focusElement(this.dateInput);
                 this.dateInput.selectionStart = this.dateInput.selectionEnd = this.dateInput.value.length;
@@ -337,7 +337,7 @@ export class PersistentObjectAttributeDateTime extends PersistentObjectAttribute
             }
         }
 
-        if (input === this.dateInput && input.value && e.keyCode === Keyboard.KeyCodes.rightarrow) {
+        if (input === this.dateInput && input.value && e.key === Keyboard.Keys.ArrowRight) {
             if (input.selectionStart === input.value.length && input.selectionEnd === input.value.length && this.hasTimeComponent) {
                 this._focusElement(this.timeInput);
                 this.timeInput.selectionStart = this.timeInput.selectionEnd = 0;
@@ -349,14 +349,14 @@ export class PersistentObjectAttributeDateTime extends PersistentObjectAttribute
             }
         }
 
-        if (e.keyCode === Keyboard.KeyCodes.backspace && input.selectionStart === 0 && input.selectionEnd === input.value.length) {
+        if (e.key === Keyboard.Keys.Backspace && input.selectionStart === 0 && input.selectionEnd === input.value.length) {
             input.value = input === this.dateInput ? this.dateFormat : this.timeFormat;
             input.selectionStart = input.selectionEnd = 0;
         }
     }
 
     private _keyup(e: KeyboardEvent) {
-        if (e.keyCode === Keyboard.KeyCodes.backspace && this.attribute.type.startsWith("Nullable")) {
+        if (e.key === Keyboard.Keys.Backspace && this.attribute.type.startsWith("Nullable")) {
             if (!this.hasDateComponent || (this.hasDateComponent && this.dateInput.value === this.dateFormat)) {
                 if (!this.hasTimeComponent || (this.hasTimeComponent && this.timeInput.value === this.timeFormat))
                     this._guardedSetValue(null);

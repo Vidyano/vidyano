@@ -1,0 +1,38 @@
+<link rel="stylesheet" href="select.css" />
+
+<vi-popup id="popup" on-tap="_openPopup" on-tap="_openPopup" on-popup-opened="_popupOpened" on-popup-closed="_popupClosed" sticky auto-width disabled$="[[op.some(readonly, disabled, sensitive)]]">
+    <div slot="header" >
+        <slot name="left"></slot>
+        <div class="suggestions">
+            <span id="match"></span><span id="remainder"></span>
+        </div>
+        <input value="{{_inputValue::input}}" sensitive$="[[sensitive]]" on-blur="_blur" on-keydown="_keydown" on-keyup="_keyup" readonly$="[[isReadonlyInput]]" tabindex="[[inputTabindex]]" placeholder="[[placeholder]]">
+        <vi-icon source="CaretDown" hidden$="[[!hasOptions]]"></vi-icon>
+        <slot name="right"></slot>
+    </div>
+    <dom-if if="[[!groupSeparator]]">
+        <template>
+            <iron-list items="[[filteredItems]]" as="item" content filtering$="[[filtering]]" on-select-option="_select">
+                <template>
+                    <vi-select-option-item suggested="[[op.areSame(item.option.key, suggestion.option.key)]]" selected="[[op.areSame(item.option.key, selectedItem.option.key)]]" item="{{item}}">[[item.displayValue]]</vi-select-option-item>
+                </template>
+            </iron-list>
+        </template>
+    </template>
+    <dom-if if="[[groupSeparator]]">
+        <template>
+            <div content filtering$="[[filtering]]" on-select-option="_select">
+                <dom-repeat items="[[filteredItems]]" as="item">
+                    <template>
+                        <dom-if if="[[op.every(item.group, item.groupFirst)]]">
+                            <template>
+                                <li class="group">[[item.group]]</li>
+                            </template>
+                        </dom-if>
+                        <vi-select-option-item suggested="[[op.areSame(item.option.key, suggestion.option.key)]]" selected="[[op.areSame(item.option.key, selectedItem.option.key)]]" item="{{item}}">[[item.displayValue]]</vi-select-option-item>
+                    </template>
+                </dom-repeat>
+            </div>
+        </template>
+    </template>
+</vi-popup>
