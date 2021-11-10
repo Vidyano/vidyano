@@ -2,10 +2,10 @@ import * as Polymer from '../../libs/@polymer/polymer.js';
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import { Observable, ISubjectDisposer } from "../../libs/vidyano/common/observable.js"
 import { PersistentObjectAttribute } from "../persistent-object-attribute/persistent-object-attribute.js"
+import { PersistentObjectAttributeString } from "../persistent-object-attribute/attributes/persistent-object-attribute-string/persistent-object-attribute-string.js"
 import { PersistentObjectAttributeConfig } from '../app/config/persistent-object-attribute-config.js'
 import "../persistent-object-attribute-label/persistent-object-attribute-label.js"
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
-import * as Attributes from "../persistent-object-attribute/attributes/attributes.js"
 
 class DeveloperShortcut extends Observable<DeveloperShortcut> {
     private _state: boolean = false;
@@ -244,7 +244,17 @@ export class PersistentObjectAttributePresenter extends WebComponentListener(Web
             if (!!config && config.hasTemplate)
                 this.$.content.appendChild(config.stamp(attribute, config.as || "attribute"));
             else {
-                this._renderedAttributeElement = <PersistentObjectAttribute>new (Attributes["PersistentObjectAttribute" + attributeType] || Attributes.PersistentObjectAttributeString)();
+                const fullAttributeFileName = `persistent-object-attribute-${attributeType.toKebabCase()}`;
+                let type: ObjectConstructor;
+                try {
+                    const attributeModule = await import(`../persistent-object-attribute/attributes/${fullAttributeFileName}/${fullAttributeFileName}.js`);
+                    type = attributeModule["PersistentObjectAttribute" + attributeType];
+                }
+                catch {
+                    // Fallback to string
+                }
+
+                this._renderedAttributeElement = <PersistentObjectAttribute>new (type ?? PersistentObjectAttributeString)();
                 this._renderedAttributeElement.classList.add("attribute");
                 this._renderedAttributeElement.attribute = attribute;
                 this._renderedAttributeElement.nonEdit = this.nonEdit;

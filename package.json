@@ -9,6 +9,7 @@
     "@polymer/paper-ripple": "^3.0.2",
     "@polymer/polymer": "^3.4.1",
     "bignumber.js": "^9.0.1",
+    "codemirror": "^5.63.3",
     "moment": "^2.29.1",
     "tslib": "^2.3.1"
   }

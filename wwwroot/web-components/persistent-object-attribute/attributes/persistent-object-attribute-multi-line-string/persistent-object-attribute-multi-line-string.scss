@@ -1,0 +1,24 @@
+@import "../../../_vars.scss";
+
+:host {
+    @include layout-horizontal();
+    overflow: hidden;
+
+    textarea {
+        resize: none;
+        white-space: pre-wrap;
+        -ms-overflow-style: -ms-autohiding-scrollbar;
+    }
+
+    pre, textarea {
+        color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
+
+        &[sensitive] {
+            --at-apply: --vi-app--sensitive;
+        }
+    }
+
+    pre {
+        white-space: pre-line;
+    }
+}

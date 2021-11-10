@@ -462,7 +462,6 @@ export class Select extends WebComponentListener(WebComponent) {
 }
 
 @WebComponent.register({
-    extends: "li",
     properties: {
         suggested: {
             type: Boolean,

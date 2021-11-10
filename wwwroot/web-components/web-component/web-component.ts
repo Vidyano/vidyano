@@ -96,8 +96,6 @@ export interface IWebComponentRegistrationInfo {
     hostAttributes?: { [name: string]: any };
     listeners?: { [eventName: string]: string };
     observers?: string[];
-    extends?: string;
-    behaviors?: any[];
 
     // Non-default Polymer registration info
 
@@ -370,23 +368,24 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
         if (!template)
             return;
 
-        let update = false;
-
         // Add vi-flex-layout-style-module if template contains layout or flex class
         if (WebComponent._scanTemplateForLayoutClasses(template)) {
             const style = document.createElement("style");
             style.setAttribute("include", "vi-flex-layout-style-module");
             template.content.insertBefore(style, template.content.firstChild);
-            update = true;
         }
 
-        if (!update)
-            return;
+        const style = document.createElement("style");
+        style.setAttribute("include", "vi-reset-css-style-module");
+        template.content.insertBefore(style, template.content.firstChild);
 
         Object.defineProperty(element, "template", {
             get: () => template,
             enumerable: false
         });
+
+        // TODO: Allow template override via dom module
+        // TODO: Allow additional style modules
 
         /*const addStyleModules = (template: HTMLTemplateElement = <HTMLTemplateElement>(Polymer.DomModule.import(elementName, "template"))) => {
            debugger;
@@ -766,9 +765,6 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
 
                 if (targetInfo.observers)
                     info.observers ? info.observers.push(...targetInfo.observers) : (info.observers = targetInfo.observers);
-
-                if (targetInfo.behaviors)
-                    info.behaviors ? info.behaviors.push(...targetInfo.behaviors) : (info.behaviors = targetInfo.behaviors);
 
                 if (targetInfo.forwardObservers)
                     info.forwardObservers ? info.forwardObservers.push(...targetInfo.forwardObservers) : (info.forwardObservers = targetInfo.forwardObservers);

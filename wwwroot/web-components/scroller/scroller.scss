@@ -3,6 +3,7 @@
 :host {
     display: grid;
     grid-template-rows: 1fr;
+    position: relative;
     --vi-scroller-thumb-color: #888;
     --vi-scroller-thumb-hover-color: #777;
     --vi-scroller-thumb-size: var(--theme-h5);

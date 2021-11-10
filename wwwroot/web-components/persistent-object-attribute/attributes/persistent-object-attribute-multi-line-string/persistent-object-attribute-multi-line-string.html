@@ -1,0 +1,26 @@
+<style include="vi-persistent-object-attribute-style-module"></style>
+<link rel="stylesheet" href="persistent-object-attribute-multi-line-string.css" />
+
+<dom-if if="[[!useCodeMirror]]">
+    <template>
+        <dom-if if="[[!editing]]">
+            <template>
+                <vi-scroller no-horizontal class="flex" allow-native>
+                    <pre sensitive$="[[sensitive]]">[[attribute.displayValue]]</pre>
+                </vi-scroller>
+            </template>
+        </dom-if>
+        <dom-if if="[[editing]]">
+            <template>
+                <vi-persistent-object-attribute-edit attribute="[[attribute]]">
+                    <textarea value="{{value::input}}" maxlength$="[[maxlength]]" style$="[[editInputStyle]]" sensitive$="[[sensitive]]" on-blur="_editTextAreaBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder$="[[placeholder]]"></textarea>
+                </vi-persistent-object-attribute-edit>
+            </template>
+        </dom-if>
+    </template>
+</dom-if>
+<dom-if if="[[useCodeMirror]]">
+    <template>
+        <vi-code-mirror class="flex" value="{{value}}" mode="[[codeMirror]]" line-numbers="[[!isCodeMirrorReadOnly]]" read-only="[[isCodeMirrorReadOnly]]"></vi-code-mirror>
+    </template>
+</dom-if>
