@@ -47,19 +47,17 @@ export class Icon extends WebComponent {
         if (isConnected === undefined || source === undefined)
             return;
 
-        if (isConnected) {
-            if (!source && this._iconStyle !== undefined) {
-                Array.from(this.$.svgHost.children).forEach(c => {
-                    if (c === this._iconStyle)
-                        return;
+        if (isConnected && !source && this._iconStyle !== undefined) {
+            Array.from(this.$.svgHost.children).forEach(c => {
+                if (c === this._iconStyle)
+                    return;
 
-                    this.$.svgHost.removeChild(c);
-                });
-            }
-
-            if (this._source === source)
-                return;
+                this.$.svgHost.removeChild(c);
+            });
         }
+
+        if (this._source === source)
+            return;
 
         const resource = Icon.Load(this._source = source);
         this._setUnresolved(!resource);
