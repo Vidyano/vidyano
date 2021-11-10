@@ -566,6 +566,27 @@
         }
       },
       {
+        "$id": "PersistentObjectAttribute:be7818c5-5cb7-41bc-818b-3516c68300ac",
+        "Id": "be7818c5-5cb7-41bc-818b-3516c68300ac",
+        "Offset": 3,
+        "Name": "MultiStringWithTags",
+        "DataTypeHints": "inputtype=tags",
+        "Label": {
+          "en": "MultiString with tags"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:MultiString"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:3afd90d8-8bd7-4376-9b86-492a7b417686"
+        }
+      },
+      {
         "$id": "PersistentObjectAttribute:98e0799f-f8fb-41d3-8d76-67d3bfeca1de",
         "Id": "98e0799f-f8fb-41d3-8d76-67d3bfeca1de",
         "Offset": 203,

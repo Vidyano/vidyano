@@ -31,6 +31,7 @@ namespace VidyanoWeb3.Service.Model
                     StringUpper = "TEST",
                     MultiLineString = "Test line 1\nTest line 2",
                     MultiString = "Test line 1\nTest line 2",
+                    MultiStringWithTags = "red\ngreen\nblue",
                     Password = "S3cr3T",
                     Byte = 128,
                     Decimal = 1234567890123.456789M,
@@ -88,6 +89,8 @@ namespace VidyanoWeb3.Service.Model
         public string MultiLineString { get; set; }
 
         public string MultiString { get; set; }
+
+        public string MultiStringWithTags { get; set; }
 
         public string Password { get; set; }
 

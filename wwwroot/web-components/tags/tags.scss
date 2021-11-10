@@ -1,0 +1,50 @@
+@import "../_vars.scss";
+
+:host {
+    @include layout-horizontal();
+
+    .wrapContainer {
+        flex-wrap: wrap;
+    }
+
+    &:not([readonly]) {
+        cursor: text;
+    }
+
+    input {
+        border: none;
+        outline: none;
+        max-width: 250px;
+        width: var(--tags-input--width, 30px);
+        min-width: 8px;
+    }
+
+    .tag {
+        margin: 0 4px 4px 0;
+        background-color: var(--theme-color);
+        color: white;
+        border-radius: var(--theme-h5);
+        text-align: center;
+        justify-content: center;
+
+        .tagValue {
+            margin-left: 8px;
+            margin-right: 8px;
+            max-width: 250px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .delete {
+            padding: 5px 5px 3px 0;
+            cursor: pointer;
+            fill: white;
+        }
+    }
+
+    &[sensitive] {
+        .tag {
+            --at-apply: --vi-app--sensitive;
+        }
+    }
+}
