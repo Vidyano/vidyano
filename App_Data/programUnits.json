@@ -1,0 +1,34 @@
+{
+  "ProgramUnits": [
+    {
+      "Name": "Home",
+      "Title": {
+        "en": "Home"
+      },
+      "OpenFirst": true,
+      "Groups": [],
+      "Items": [
+        {
+          "Offset": 10,
+          "Title": {
+            "en": "Employees"
+          },
+          "Name": "Employees",
+          "Query": {
+            "$ref": "Query:026c4ca7-53f4-42ac-b196-158f0cb871a1"
+          }
+        },
+        {
+          "Offset": 20,
+          "Title": {
+            "en": "Attributes"
+          },
+          "Name": "Attributes",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          }
+        }
+      ]
+    }
+  ]
+}
