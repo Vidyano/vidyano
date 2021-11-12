@@ -1,0 +1,44 @@
+<style include="vi-persistent-object-attribute-style-module"></style>
+<link rel="stylesheet" href="persistent-object-attribute-translated-string.css" />
+
+<dom-if if="[[!editing]]">
+    <template>
+        <dom-if if="[[!multiline]]">
+            <template>
+                <span sensitive$="[[sensitive]]">[[attribute.displayValue]]</span>
+            </template>
+        </dom-if>
+        <dom-if if="[[multiline]]">
+            <template>
+                <vi-scroller>
+                    <pre sensitive$="[[sensitive]]">[[attribute.displayValue]]</pre>
+                </vi-scroller>
+            </template>
+        </dom-if>
+    </template>
+</dom-if>
+<dom-if if="[[editing]]">
+    <template>
+        <vi-persistent-object-attribute-edit attribute="[[attribute]]" reverse-content$="[[multiline]]">
+            <dom-if if="[[!multiline]]">
+                <template>
+                    <input class="flex" value="{{value::input}}" type="text" on-blur="_editInputBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder="[[placeholder]]" sensitive$="[[sensitive]]">
+                </template>
+            </dom-if>
+            <dom-if if="[[multiline]]">
+                <template>
+                    <vi-scroller class="fit">
+                        <pre id="multiline" sensitive$="[[sensitive]]">[[attribute.value]]</pre>
+                    </vi-scroller>
+                </template>
+            </dom-if>
+            <dom-if if="[[canShowDialog]]">
+                <template>
+                    <vi-button slot="button" on-tap="_showLanguagesDialog" tabindex="-1" hidden$="[[sensitive]]">
+                        <vi-icon source="TranslatedString"></vi-icon>
+                    </vi-button>
+                </template>
+            </dom-if>
+        </vi-persistent-object-attribute-edit>
+    </template>
+</dom-if>

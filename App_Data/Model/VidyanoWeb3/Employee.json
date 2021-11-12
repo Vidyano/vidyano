@@ -8,7 +8,8 @@
     "Breadcrumb": "{FirstName} {LastName}",
     "ContextProperty": "Employees",
     "Label": {
-      "en": "Employee"
+      "en": "Employee",
+      "nl-be": "Werknemer"
     },
     "StateBehavior": 2,
     "Groups": [
@@ -31,7 +32,8 @@
         "Rules": "Required",
         "Name": "Birthday",
         "Label": {
-          "en": "Birthday"
+          "en": "Birthday",
+          "nl-be": "Verjaardag"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -52,7 +54,8 @@
         "Rules": "NotEmpty",
         "Name": "Extension",
         "Label": {
-          "en": "Extension"
+          "en": "Extension",
+          "nl-be": "Extensie"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -73,7 +76,8 @@
         "Rules": "NotEmpty",
         "Name": "FirstName",
         "Label": {
-          "en": "First name"
+          "en": "First name",
+          "nl-be": "Voornaam"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -94,7 +98,8 @@
         "Rules": "Required",
         "Name": "HiredAt",
         "Label": {
-          "en": "Hired at"
+          "en": "Hired at",
+          "nl-be": "Aangenomen bij"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -115,7 +120,8 @@
         "Rules": "NotEmpty",
         "Name": "HomePhone",
         "Label": {
-          "en": "Home phone"
+          "en": "Home phone",
+          "nl-be": "Huistelefoon"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -136,7 +142,8 @@
         "Rules": "NotEmpty",
         "Name": "LastName",
         "Label": {
-          "en": "Last name"
+          "en": "Last name",
+          "nl-be": "Achternaam"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -157,7 +164,8 @@
         "Rules": "Required",
         "Name": "Notes",
         "Label": {
-          "en": "Notes"
+          "en": "Notes",
+          "nl-be": "Notities"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -181,7 +189,8 @@
         "Offset": 100,
         "Name": "ReportsTo",
         "Label": {
-          "en": "Reports to"
+          "en": "Reports to",
+          "nl-be": "Rapporten aan"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -202,7 +211,8 @@
         "Rules": "Required",
         "Name": "Territories",
         "Label": {
-          "en": "Territories"
+          "en": "Territories",
+          "nl-be": "Gebieden"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -223,7 +233,8 @@
         "Rules": "NotEmpty",
         "Name": "Title",
         "Label": {
-          "en": "Title"
+          "en": "Title",
+          "nl-be": "Titel"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -248,7 +259,8 @@
       "AutoQuery": true,
       "Name": "Employees",
       "Label": {
-        "en": "Employees"
+        "en": "Employees",
+        "nl-be": "Medewerkers"
       },
       "PersistentObject": {
         "$ref": "PersistentObject:8f58df40-31ec-3ca3-903d-1a95cfb24b45"

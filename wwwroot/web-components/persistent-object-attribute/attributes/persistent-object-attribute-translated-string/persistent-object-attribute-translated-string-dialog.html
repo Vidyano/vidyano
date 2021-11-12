@@ -1,0 +1,39 @@
+<link rel="stylesheet" href="persistent-object-attribute-translated-string-dialog.css" />
+
+<header class="horizontal layout">
+    <h4 class="flex">[[label]]</h4>
+</header>
+<main>
+    <ul id="content">
+        <dom-repeat items="[[strings]]" as="string">
+            <template>
+                <li>
+                    <label>[[string.label]]</label>
+                    <dom-if if="[[!multiline]]">
+                        <template>
+                            <input value="{{string.value::input}}" type="text" readonly$="[[readonly]]" tabindex$="[[readOnlyTabIndex]]">
+                        </template>
+                    </dom-if>
+                    <dom-if if="[[multiline]]">
+                        <template>
+                            <textarea rows="5" value="{{string.value::input}}"></textarea>
+                        </template>
+                    </dom-if>
+                </li>
+            </template>
+        </dom-repeat>
+    </ul>
+</main>
+<footer class="horizontal layout end-justified">
+    <dom-if if="[[!readonly]]">
+        <template>
+            <vi-button on-tap="_ok" label="[[translateMessage('OK', isConnected)]]"></vi-button>
+            <vi-button on-tap="cancel" inverse label="[[translateMessage('Cancel', isConnected)]]"></vi-button>
+        </template>
+    </dom-if>
+    <dom-if if="[[readonly]]">
+        <template>
+            <vi-button on-tap="_ok" label="[[translateMessage('Close', isConnected)]]"></vi-button>
+        </template>
+    </dom-if>
+</footer>

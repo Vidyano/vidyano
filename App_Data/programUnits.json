@@ -3,7 +3,8 @@
     {
       "Name": "Home",
       "Title": {
-        "en": "Home"
+        "en": "Home",
+        "nl-be": "Thuis"
       },
       "OpenFirst": true,
       "Groups": [],
@@ -11,7 +12,8 @@
         {
           "Offset": 10,
           "Title": {
-            "en": "Employees"
+            "en": "Employees",
+            "nl-be": "Medewerkers"
           },
           "Name": "Employees",
           "Query": {
@@ -21,7 +23,8 @@
         {
           "Offset": 20,
           "Title": {
-            "en": "Attributes"
+            "en": "Attributes",
+            "nl-be": "Kenmerken"
           },
           "Name": "Attributes",
           "PersistentObject": {

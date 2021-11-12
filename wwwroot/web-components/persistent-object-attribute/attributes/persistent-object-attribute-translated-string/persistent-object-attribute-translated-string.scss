@@ -1,0 +1,35 @@
+@import "../../../_vars.scss";
+
+:host {
+    @include layout-horizontal();
+    overflow: hidden;
+
+    span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    pre {
+        padding-top: var(--theme-h5);
+        line-height: normal !important;
+    }
+
+    span, pre, input, textarea {
+        color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
+
+        &[sensitive] {
+            --at-apply: --vi-app--sensitive;
+        }
+    }
+
+    &[multiline] {
+        #multiline {
+            overflow: hidden;
+            padding: var(--theme-h5) var(--theme-h5) 0 var(--theme-h5);
+        }
+
+        button {
+            background-color: white;
+        }
+    }
+}

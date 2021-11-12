@@ -2,1269 +2,1470 @@
   "Languages": {
     "en": {
       "Name": {
-        "en": "English"
+        "en": "English",
+        "nl-be": "Engels"
+      }
+    },
+    "nl-be": {
+      "Name": {
+        "en": "Dutch",
+        "nl-be": "Nederlands"
       }
     }
   },
   "Messages": {
     "ActionGeneratedAnError": {
       "Value": {
-        "en": "The action {0} generated an error: {1}"
+        "en": "The action {0} generated an error: {1}",
+        "nl-be": "De actie {0} een fout gegenereerd: {1}"
       },
       "IsSystem": true
     },
     "ActionNotImplemented": {
       "Value": {
-        "en": "Action {0} is not implemented.\n\nAdd method to {1}:\n"
+        "en": "Action {0} is not implemented.\n\nAdd method to {1}:\n",
+        "nl-be": "Actie {0} wordt niet uitgevoerd.\n\nMethode toevoegen aan {1}:\n"
       },
       "IsSystem": true
     },
     "AddProgramUnitItem": {
       "Value": {
-        "en": "Add"
+        "en": "Add",
+        "nl-be": "Toevoegen"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "and": {
       "Value": {
-        "en": "and"
+        "en": "and",
+        "nl-be": "en"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "AnUnexpectedDatabaseErrorOccurred": {
       "Value": {
-        "en": "An unexpected database error occurred."
+        "en": "An unexpected database error occurred.",
+        "nl-be": "Er is een onverwachte databasefout opgetreden."
       },
       "IsSystem": true
     },
     "ApplicationOutdated": {
       "Value": {
-        "en": "A new version of this app is available."
+        "en": "A new version of this app is available.",
+        "nl-be": "Er is een nieuwe versie van deze app beschikbaar."
       },
       "IsClient": true,
       "IsSystem": true
     },
     "ApplicationOutdatedRefresh": {
       "Value": {
-        "en": "Refresh"
+        "en": "Refresh",
+        "nl-be": "Opfrissen"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "AskForDeleteFilter": {
       "Value": {
-        "en": "Are you sure you want to delete filter '{0}'?"
+        "en": "Are you sure you want to delete filter '{0}'?",
+        "nl-be": "Weet je zeker dat je filter '{0}' wilt verwijderen?"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "AskForDeleteItems": {
       "Value": {
-        "en": "Are you sure you want to delete these items?"
+        "en": "Are you sure you want to delete these items?",
+        "nl-be": "Weet u zeker dat u deze items wilt verwijderen?"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "AttributeCheckPasswordComplexityRule": {
       "Value": {
-        "en": "{{0}} does not meet complexity requirements or it has appeared in a data breach. (minimum length: {0}, including {1})"
+        "en": "{{0}} does not meet complexity requirements or it has appeared in a data breach. (minimum length: {0}, including {1})",
+        "nl-be": "{{0}} voldoet niet aan de complexiteitseisen of is verschenen in een datalek. (minimumlengte: {0}, inclusief {1})"
       },
       "IsSystem": true
     },
     "AttributeCombinationIsInvalid": {
       "Value": {
-        "en": "Combination {0} is invalid."
+        "en": "Combination {0} is invalid.",
+        "nl-be": "Combinatie {0} is ongeldig."
       },
       "IsSystem": true
     },
     "AttributeCombinationIsUnique": {
       "Value": {
-        "en": "Combination {0} must be unique."
+        "en": "Combination {0} must be unique.",
+        "nl-be": "Combinatie {0} moet uniek zijn."
       },
       "IsSystem": true
     },
     "AttributeIsInvalid": {
       "Value": {
-        "en": "{0} is invalid."
+        "en": "{0} is invalid.",
+        "nl-be": "{0} is ongeldig."
       },
       "IsSystem": true
     },
     "AttributeIsRequiredRule": {
       "Value": {
-        "en": "{0} is required."
+        "en": "{0} is required.",
+        "nl-be": "{0} is vereist."
       },
       "IsClient": true,
       "IsSystem": true
     },
     "AttributeIsUnique": {
       "Value": {
-        "en": "{0} is unique."
+        "en": "{0} is unique.",
+        "nl-be": "{0} is uniek."
       },
       "IsClient": true,
       "IsSystem": true
     },
     "AttributeIsValidKeyValueListRule": {
       "Value": {
-        "en": "{0} does not contain a valid value. (eg: Option1=Value1;Option2=Value2)"
+        "en": "{0} does not contain a valid value. (eg: Option1=Value1;Option2=Value2)",
+        "nl-be": "{0} bevat geen geldige waarde. (bijvoorbeeld: Option1=Value1;Option2=Value2)"
       },
       "IsSystem": true
     },
     "AttributeMaximumLengthRule": {
       "Value": {
-        "en": "{0} has a maximum length of {1}."
+        "en": "{0} has a maximum length of {1}.",
+        "nl-be": "{0} heeft een maximale lengte van {1}."
       },
       "IsClient": true,
       "IsSystem": true
     },
     "AttributeMaximumValueRule": {
       "Value": {
-        "en": "{0} has a maximum value of {1}."
+        "en": "{0} has a maximum value of {1}.",
+        "nl-be": "{0} heeft een maximale waarde van {1}."
       },
       "IsClient": true,
       "IsSystem": true
     },
     "AttributeMinimumLengthRule": {
       "Value": {
-        "en": "{0} has a minimum length of {1}."
+        "en": "{0} has a minimum length of {1}.",
+        "nl-be": "{0} heeft een minimale lengte van {1}."
       },
       "IsSystem": true
     },
     "AttributeMinimumValueRule": {
       "Value": {
-        "en": "{0} has a minimum value of {1}."
+        "en": "{0} has a minimum value of {1}.",
+        "nl-be": "{0} heeft een minimale waarde van {1}."
       },
       "IsClient": true,
       "IsSystem": true
     },
     "AttributeNotEmptyRule": {
       "Value": {
-        "en": "{0} cannot be empty."
+        "en": "{0} cannot be empty.",
+        "nl-be": "{0} mag niet leeg zijn."
       },
       "IsClient": true,
       "IsSystem": true
     },
     "AutoOpenFilter": {
       "Value": {
-        "en": "Auto open filter:"
+        "en": "Auto open filter:",
+        "nl-be": "Automatisch openen filter:"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "BulkEditBreadcrumb": {
       "Value": {
-        "en": "Edit {0}"
+        "en": "Edit {0}",
+        "nl-be": "{0} bewerken"
       },
       "IsSystem": true
     },
     "BusinessRuleFailed": {
       "Value": {
-        "en": "Rule '{0}' failed for {1} with '{2}'."
+        "en": "Rule '{0}' failed for {1} with '{2}'.",
+        "nl-be": "Regel '{0}' faalde voor {1} met '{2}'."
       },
       "IsSystem": true
     },
     "Cancel": {
       "Value": {
-        "en": "Cancel"
+        "en": "Cancel",
+        "nl-be": "Annuleren"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "CancelSignIn": {
       "Value": {
-        "en": "Cancel"
+        "en": "Cancel",
+        "nl-be": "Annuleren"
       },
       "IsSystem": true
     },
     "Clear": {
       "Value": {
-        "en": "Clear"
+        "en": "Clear",
+        "nl-be": "Duidelijk"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "ClearFilter": {
       "Value": {
-        "en": "Clear"
+        "en": "Clear",
+        "nl-be": "Duidelijk"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "ClearFilterFrom": {
       "Value": {
-        "en": "Clear filter from {0}"
+        "en": "Clear filter from {0}",
+        "nl-be": "Filter van {0} wissen"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "Close": {
       "Value": {
-        "en": "Close"
+        "en": "Close",
+        "nl-be": "Sluiten"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "CompactPagingInfo": {
       "Value": {
-        "en": "{0} of {1}"
+        "en": "{0} of {1}",
+        "nl-be": "{0} van {1}"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "ConfirmLeavePage": {
       "Value": {
-        "en": "Are you sure you want to leave this page?"
+        "en": "Are you sure you want to leave this page?",
+        "nl-be": "Weet je zeker dat je deze pagina wilt verlaten?"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "ConfirmUnsavedChanges": {
       "Value": {
-        "en": "Are you sure you want to ignore unsaved changes?"
+        "en": "Are you sure you want to ignore unsaved changes?",
+        "nl-be": "Weet u zeker dat u niet-opgeslagen wijzigingen wilt negeren?"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "CouldNotDelete": {
       "Value": {
-        "en": "Could not delete some entities because they are still referenced in the database: {0}"
+        "en": "Could not delete some entities because they are still referenced in the database: {0}",
+        "nl-be": "Sommige entiteiten kunnen niet worden verwijderd omdat er nog steeds naar wordt verwezen in de database: {0}"
       },
       "IsSystem": true
     },
     "DataFilterControlHeader": {
       "Value": {
-        "en": "Data Filter:"
+        "en": "Data Filter:",
+        "nl-be": "Gegevensfilter:"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "Default": {
       "Value": {
-        "en": "Default"
+        "en": "Default",
+        "nl-be": "Verstek"
       },
       "IsSystem": true
     },
     "DefaultAttributesGroup": {
       "Value": {
-        "en": "Attributes"
+        "en": "Attributes",
+        "nl-be": "Kenmerken"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "Delete": {
       "Value": {
-        "en": "Delete"
+        "en": "Delete",
+        "nl-be": "Verwijderen"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "Disabled": {
       "Value": {
-        "en": "Disabled"
+        "en": "Disabled",
+        "nl-be": "Invalide"
       },
       "IsSystem": true
     },
     "DistinctEmptyValue": {
       "Value": {
-        "en": "< Empty >"
+        "en": "< Empty >",
+        "nl-be": "< lege >"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "DistinctNullValue": {
       "Value": {
-        "en": "< Nothing >"
+        "en": "< Nothing >",
+        "nl-be": "< niets >"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "DontSave": {
       "Value": {
-        "en": "Don't save"
+        "en": "Don't save",
+        "nl-be": "Niet opslaan"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "EnableAtLeastOneAuthenticationProvider": {
       "Value": {
-        "en": "At least one authentication provider has to be enabled."
+        "en": "At least one authentication provider has to be enabled.",
+        "nl-be": "Er moet ten minste één verificatieprovider zijn ingeschakeld."
       },
       "IsSystem": true
     },
     "EnterPassword": {
       "Value": {
-        "en": "Enter password"
+        "en": "Enter password",
+        "nl-be": "Voer wachtwoord in"
       },
       "IsSystem": true
     },
     "EnterTwoFactorCode": {
       "Value": {
-        "en": "Enter two-factor code"
+        "en": "Enter two-factor code",
+        "nl-be": "Voer tweefactorcode in"
       },
       "IsSystem": true
     },
     "Error": {
       "Value": {
-        "en": "Error"
+        "en": "Error",
+        "nl-be": "Fout"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "False": {
       "Value": {
-        "en": "False"
+        "en": "False",
+        "nl-be": "Vals"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "Feedback": {
       "Value": {
-        "en": "Feedback"
+        "en": "Feedback",
+        "nl-be": "Terugkoppeling"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "FeedbackComment": {
       "Value": {
-        "en": "Comment"
+        "en": "Comment",
+        "nl-be": "Commentaar"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "FeedbackGroup": {
       "Value": {
-        "en": "Information"
+        "en": "Information",
+        "nl-be": "Informatie"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "FeedbackScreenshot": {
       "Value": {
-        "en": "Screenshot"
+        "en": "Screenshot",
+        "nl-be": "Schermafbeelding"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "FeedbackType": {
       "Value": {
-        "en": "Type"
+        "en": "Type",
+        "nl-be": "Type"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "FeedbackTypes": {
       "Value": {
-        "en": "Bug;Change Request"
+        "en": "Bug;Change Request",
+        "nl-be": "Bug; Wijzigingsverzoek"
       },
       "IsSystem": true
     },
     "FilterName": {
       "Value": {
-        "en": "Filter name:"
+        "en": "Filter name:",
+        "nl-be": "Filternaam:"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "FilterSearchHint": {
       "Value": {
-        "en": "Search ..."
+        "en": "Search ...",
+        "nl-be": "Zoeken..."
       },
       "IsClient": true,
       "IsSystem": true
     },
     "ForgotPassword": {
       "Value": {
-        "en": "Forgot password?"
+        "en": "Forgot password?",
+        "nl-be": "Wachtwoord vergeten?"
       },
       "IsSystem": true
     },
     "GlobalSearch": {
       "Value": {
-        "en": "Search this application"
+        "en": "Search this application",
+        "nl-be": "Zoek in deze applicatie"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "GroupByColumn": {
       "Value": {
-        "en": "Group by {0}"
+        "en": "Group by {0}",
+        "nl-be": "Groeperen op {0}"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "HelpBreadcrumb": {
       "Value": {
-        "en": "{0} - Help"
+        "en": "{0} - Help",
+        "nl-be": "{0} - Help"
       },
       "IsSystem": true
     },
     "HideColumn": {
       "Value": {
-        "en": "Hide column"
+        "en": "Hide column",
+        "nl-be": "Kolom verbergen"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "IgnoreUnsavedChanges": {
       "Value": {
-        "en": "Ignore changes"
+        "en": "Ignore changes",
+        "nl-be": "Wijzigingen negeren"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "ImpersonateMessage": {
       "Value": {
-        "en": "Open the following link in a new private browser window"
+        "en": "Open the following link in a new private browser window",
+        "nl-be": "Open de volgende koppeling in een nieuw privébrowservenster"
       },
       "IsSystem": true
     },
     "ImpersonateUser": {
       "Value": {
-        "en": "Impersonate {0}"
+        "en": "Impersonate {0}",
+        "nl-be": "Doe je voor als {0}"
       },
       "IsSystem": true
     },
     "Important": {
       "Value": {
-        "en": "Important"
+        "en": "Important",
+        "nl-be": "Belangrijk"
       },
       "IsSystem": true
     },
     "InTrial": {
       "Value": {
-        "en": "Your application is currently running in trial mode"
+        "en": "Your application is currently running in trial mode",
+        "nl-be": "Uw toepassing wordt momenteel uitgevoerd in de proefmodus"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "InvalidImage": {
       "Value": {
-        "en": "Invalid image."
+        "en": "Invalid image.",
+        "nl-be": "Ongeldige afbeelding."
       },
       "IsSystem": true
     },
     "InvalidJavaScriptCode": {
       "Value": {
-        "en": "Invalid JavaScript code. Only empty, comments or function() {} is allowed."
+        "en": "Invalid JavaScript code. Only empty, comments or function() {} is allowed.",
+        "nl-be": "Ongeldige JavaScript-code. Alleen leeg, opmerkingen of function() {} is toegestaan."
       },
       "IsClient": true,
       "IsSystem": true
     },
     "InvalidNumberOfSelectedItems": {
       "Value": {
-        "en": "Invalid number of selected items."
+        "en": "Invalid number of selected items.",
+        "nl-be": "Ongeldig aantal geselecteerde objecten."
       },
       "IsSystem": true
     },
     "InvalidUserNameOrPassword": {
       "Value": {
-        "en": "Invalid user name or password."
+        "en": "Invalid user name or password.",
+        "nl-be": "Ongeldige gebruikersnaam of wachtwoord."
       },
       "IsSystem": true
     },
     "IsBase64Rule": {
       "Value": {
-        "en": "{0} requires a valid base64 value."
+        "en": "{0} requires a valid base64 value.",
+        "nl-be": "{0} vereist een geldige base64-waarde."
       },
       "IsSystem": true
     },
     "IsDefaultFilter": {
       "Value": {
-        "en": "Is default filter:"
+        "en": "Is default filter:",
+        "nl-be": "Is standaard filter:"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "IsRegexRule": {
       "Value": {
-        "en": "{0} requires a valid regular expression."
+        "en": "{0} requires a valid regular expression.",
+        "nl-be": "{0} vereist een geldige reguliere expressie."
       },
       "IsSystem": true
     },
     "IsValidCultureRule": {
       "Value": {
-        "en": "{0} requires a valid culture name."
+        "en": "{0} requires a valid culture name.",
+        "nl-be": "{0} vereist een geldige cultuurnaam."
       },
       "IsSystem": true
     },
     "IsValidEmailRule": {
       "Value": {
-        "en": "{0} requires a valid email address."
+        "en": "{0} requires a valid email address.",
+        "nl-be": "{0} vereist een geldig e-mailadres."
       },
       "IsClient": true,
       "IsSystem": true
     },
     "IsValidUrlRule": {
       "Value": {
-        "en": "{0} requires a valid website address."
+        "en": "{0} requires a valid website address.",
+        "nl-be": "{0} vereist een geldig websiteadres."
       },
       "IsSystem": true
     },
     "IsWordRule": {
       "Value": {
-        "en": "{0} must only contain word characters (letters, digits or underscores)."
+        "en": "{0} must only contain word characters (letters, digits or underscores).",
+        "nl-be": "{0} mag alleen woordtekens (letters, cijfers of onderstrepingstekens) bevatten."
       },
       "IsClient": true,
       "IsSystem": true
     },
     "IsWordWithDotRule": {
       "Value": {
-        "en": "{0} must only contain word characters (letters, digits or underscores) or dots."
+        "en": "{0} must only contain word characters (letters, digits or underscores) or dots.",
+        "nl-be": "{0} mag alleen woordtekens (letters, cijfers of onderstrepingstekens) of punten bevatten."
       },
       "IsClient": true,
       "IsSystem": true
     },
     "KeepUnsavedChanges": {
       "Value": {
-        "en": "Keep editing"
+        "en": "Keep editing",
+        "nl-be": "Blijf bewerken"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "Language": {
       "Value": {
-        "en": "Language"
+        "en": "Language",
+        "nl-be": "Taal"
       },
       "IsSystem": true
     },
     "LastLogins": {
       "Value": {
-        "en": "Last logins (per month)"
+        "en": "Last logins (per month)",
+        "nl-be": "Laatste logins (per maand)"
       },
       "IsSystem": true
     },
     "LastMonth": {
       "Value": {
-        "en": "Last month"
+        "en": "Last month",
+        "nl-be": "Vorige maand"
       },
       "IsSystem": true
     },
     "LastWeek": {
       "Value": {
-        "en": "Last week"
+        "en": "Last week",
+        "nl-be": "Vorige week"
       },
       "IsSystem": true
     },
     "LastXDays": {
       "Value": {
-        "en": "Last (\\d+) day(s)?"
+        "en": "Last (\\d+) day(s)?",
+        "nl-be": "Laatste (\\d+) dag(en)?"
       },
       "IsSystem": true
     },
     "LastYear": {
       "Value": {
-        "en": "Last year"
+        "en": "Last year",
+        "nl-be": "Vorig jaar"
       },
       "IsSystem": true
     },
     "LeaveThisPage": {
       "Value": {
-        "en": "Leave this page"
+        "en": "Leave this page",
+        "nl-be": "Verlaat deze pagina"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "ListLastSeparator": {
       "Value": {
-        "en": " and "
+        "en": " and ",
+        "nl-be": " en "
       },
       "IsSystem": true
     },
     "ListSeparator": {
       "Value": {
-        "en": ", "
+        "en": ", ",
+        "nl-be": ", "
       },
       "IsSystem": true
     },
     "LoadMore": {
       "Value": {
-        "en": "Load more ..."
+        "en": "Load more ...",
+        "nl-be": "Laad meer ..."
       },
       "IsClient": true,
       "IsSystem": true
     },
     "LocalTimeZone": {
       "Value": {
-        "en": "< Local Time Zone >"
+        "en": "< Local Time Zone >",
+        "nl-be": "< lokale tijdzone >"
       },
       "IsSystem": true
     },
     "Manage": {
       "Value": {
-        "en": "Manage"
+        "en": "Manage",
+        "nl-be": "Beheren"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "MustBeSignedIn": {
       "Value": {
-        "en": "You must be signed in before you can use this application."
+        "en": "You must be signed in before you can use this application.",
+        "nl-be": "U moet zijn aangemeld voordat u deze toepassing kunt gebruiken."
       },
       "IsSystem": true
     },
     "NewFilter": {
       "Value": {
-        "en": "New Filter ..."
+        "en": "New Filter ...",
+        "nl-be": "Nieuw filter ..."
       },
       "IsClient": true,
       "IsSystem": true
     },
     "NewObjectBreadcrumb": {
       "Value": {
-        "en": "New {0}"
+        "en": "New {0}",
+        "nl-be": "Nieuwe {0}"
       },
       "IsSystem": true
     },
     "NewPasswordMustBeDifferent": {
       "Value": {
-        "en": "Your new password must be different from your previous password."
+        "en": "Your new password must be different from your previous password.",
+        "nl-be": "Uw nieuwe wachtwoord moet verschillen van uw vorige wachtwoord."
       },
       "IsSystem": true
     },
     "NewReference": {
       "Value": {
-        "en": "New"
+        "en": "New",
+        "nl-be": "Nieuw"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "NewUsers": {
       "Value": {
-        "en": "New users (per month)"
+        "en": "New users (per month)",
+        "nl-be": "Nieuwe gebruikers (per maand)"
       },
       "IsSystem": true
     },
     "Next": {
       "Value": {
-        "en": "Next"
+        "en": "Next",
+        "nl-be": "Volgend"
       },
       "IsSystem": true
     },
     "NextMonth": {
       "Value": {
-        "en": "Next month"
+        "en": "Next month",
+        "nl-be": "Volgende maand"
       },
       "IsSystem": true
     },
     "NextWeek": {
       "Value": {
-        "en": "Next week"
+        "en": "Next week",
+        "nl-be": "Volgende week"
       },
       "IsSystem": true
     },
     "NextYear": {
       "Value": {
-        "en": "Next year"
+        "en": "Next year",
+        "nl-be": "Volgend jaar"
       },
       "IsSystem": true
     },
     "No": {
       "Value": {
-        "en": "No"
+        "en": "No",
+        "nl-be": "Nee"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "NoItemsSelected": {
       "Value": {
-        "en": "No items selected."
+        "en": "No items selected.",
+        "nl-be": "Geen items geselecteerd."
       },
       "IsSystem": true
     },
     "NoMicrosoftTranslatorAppIdSpecified": {
       "Value": {
-        "en": "No MicrosoftTranslatorAppId has been specified in the settings. Current translations will be copied."
+        "en": "No MicrosoftTranslatorAppId has been specified in the settings. Current translations will be copied.",
+        "nl-be": "Er is geen MicrosoftTranslatorAppId opgegeven in de instellingen. De huidige vertalingen worden gekopieerd."
       },
       "IsSystem": true
     },
     "NoResultsFound": {
       "Value": {
-        "en": "No items match your search."
+        "en": "No items match your search.",
+        "nl-be": "Er komen geen objecten overeen met uw zoekopdracht."
       },
       "IsClient": true,
       "IsSystem": true
     },
     "NoRightOnPersistentObject": {
       "Value": {
-        "en": "Could not use the '{0}' right on '{1}'."
+        "en": "Could not use the '{0}' right on '{1}'.",
+        "nl-be": "Kon geen gebruik maken van het '{0}' recht op '{1}'."
       },
       "IsSystem": true
     },
     "Not": {
       "Value": {
-        "en": "Not"
+        "en": "Not",
+        "nl-be": "Niet"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "NotFound": {
       "Value": {
-        "en": "We are sorry, the page you requested cannot be found."
+        "en": "We are sorry, the page you requested cannot be found.",
+        "nl-be": "Het spijt ons, de pagina die u hebt opgevraagd kan niet worden gevonden."
       },
       "IsClient": true,
       "IsSystem": true
     },
     "Notice": {
       "Value": {
-        "en": "Notice"
+        "en": "Notice",
+        "nl-be": "Bemerken"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "NotificationEmailBody": {
       "Value": {
-        "en": "A new feedback entry of type {0} has been recorded.\n\n{1}"
+        "en": "A new feedback entry of type {0} has been recorded.\n\n{1}",
+        "nl-be": "Er is een nieuwe feedbackinvoer van het type {0} geregistreerd.\n\n{1}"
       },
       "IsSystem": true
     },
     "NotificationEmailSubject": {
       "Value": {
-        "en": "New feedback from user {0}."
+        "en": "New feedback from user {0}.",
+        "nl-be": "Nieuwe feedback van {0}."
       },
       "IsSystem": true
     },
     "NotYou": {
       "Value": {
-        "en": "Not you?"
+        "en": "Not you?",
+        "nl-be": "Jij niet?"
       },
       "IsSystem": true
     },
     "OK": {
       "Value": {
-        "en": "OK"
+        "en": "OK",
+        "nl-be": "OK"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "Or": {
       "Value": {
-        "en": "Or"
+        "en": "Or",
+        "nl-be": "Of"
       },
       "IsSystem": true
     },
     "PagesWithUnsavedChanges": {
       "Value": {
-        "en": "Some pages contain unsaved changes."
+        "en": "Some pages contain unsaved changes.",
+        "nl-be": "Sommige pagina's bevatten niet-opgeslagen wijzigingen."
       },
       "IsClient": true,
       "IsSystem": true
     },
     "PageWithUnsavedChanges": {
       "Value": {
-        "en": "This page contains unsaved changes."
+        "en": "This page contains unsaved changes.",
+        "nl-be": "Deze pagina bevat niet-opgeslagen wijzigingen."
       },
       "IsClient": true,
       "IsSystem": true
     },
     "Password": {
       "Value": {
-        "en": "Password"
+        "en": "Password",
+        "nl-be": "Wachtwoord"
       },
       "IsSystem": true
     },
     "PasswordComplexityDigit": {
       "Value": {
-        "en": "digits"
+        "en": "digits",
+        "nl-be": "Cijfers"
       },
       "IsSystem": true
     },
     "PasswordComplexityLowercase": {
       "Value": {
-        "en": "lowercase"
+        "en": "lowercase",
+        "nl-be": "onderkast"
       },
       "IsSystem": true
     },
     "PasswordComplexityNone": {
       "Value": {
-        "en": "characters"
+        "en": "characters",
+        "nl-be": "karakters"
       },
       "IsSystem": true
     },
     "PasswordComplexitySpecial": {
       "Value": {
-        "en": "special characters"
+        "en": "special characters",
+        "nl-be": "speciale tekens"
       },
       "IsSystem": true
     },
     "PasswordComplexityUppercase": {
       "Value": {
-        "en": "uppercase"
+        "en": "uppercase",
+        "nl-be": "Hoofdletters"
       },
       "IsSystem": true
     },
     "Paste": {
       "Value": {
-        "en": "Paste"
+        "en": "Paste",
+        "nl-be": "Plakken"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "Pin": {
       "Value": {
-        "en": "Pin"
+        "en": "Pin",
+        "nl-be": "Speld"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "Previous": {
       "Value": {
-        "en": "Previous"
+        "en": "Previous",
+        "nl-be": "Vorig"
       },
       "IsSystem": true
     },
     "ReferenceEmptyValue": {
       "Value": {
-        "en": "..."
+        "en": "...",
+        "nl-be": "..."
       },
       "IsSystem": true
     },
     "Register": {
       "Value": {
-        "en": "New here? Create an account"
+        "en": "New here? Create an account",
+        "nl-be": "Nieuw hier? Maak een account aan"
       },
       "IsSystem": true
     },
     "RegisterSave": {
       "Value": {
-        "en": "Register"
+        "en": "Register",
+        "nl-be": "Registreren"
       },
       "IsSystem": true
     },
     "Related": {
       "Value": {
-        "en": "Related"
+        "en": "Related",
+        "nl-be": "Aanverwant"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "Reload": {
       "Value": {
-        "en": "Reload"
+        "en": "Reload",
+        "nl-be": "Herladen"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "RemoveFile": {
       "Value": {
-        "en": "Remove"
+        "en": "Remove",
+        "nl-be": "Verwijderen"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "RemoveImage": {
       "Value": {
-        "en": "Remove"
+        "en": "Remove",
+        "nl-be": "Verwijderen"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "RemoveReference": {
       "Value": {
-        "en": "Remove"
+        "en": "Remove",
+        "nl-be": "Verwijderen"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "Required": {
       "Value": {
-        "en": "Required"
+        "en": "Required",
+        "nl-be": "Vereist"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "Reset": {
       "Value": {
-        "en": "Reset"
+        "en": "Reset",
+        "nl-be": "Terugstellen"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "Retry": {
       "Value": {
-        "en": "Retry"
+        "en": "Retry",
+        "nl-be": "Opnieuw"
       },
       "IsSystem": true
     },
     "RetrySignIn": {
       "Value": {
-        "en": "Retry"
+        "en": "Retry",
+        "nl-be": "Opnieuw"
       },
       "IsSystem": true
     },
     "Save": {
       "Value": {
-        "en": "Save"
+        "en": "Save",
+        "nl-be": "Redden"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "SaveAs": {
       "Value": {
-        "en": "Save As..."
+        "en": "Save As...",
+        "nl-be": "Opslaan als..."
       },
       "IsClient": true,
       "IsSystem": true
     },
     "SaveForLater": {
       "Value": {
-        "en": "Save for later"
+        "en": "Save for later",
+        "nl-be": "Opslaan voor later"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "Search": {
       "Value": {
-        "en": "Search"
+        "en": "Search",
+        "nl-be": "Zoeken"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "Search_Condition_And": {
       "Value": {
-        "en": "and"
+        "en": "and",
+        "nl-be": "en"
       },
       "IsSystem": true
     },
     "Search_Condition_Or": {
       "Value": {
-        "en": "or"
+        "en": "or",
+        "nl-be": "of"
       },
       "IsSystem": true
     },
     "SelectedObjectCouldNotBeFoundOnTheDatabase": {
       "Value": {
-        "en": "The selected object for '{0}' could not be found in the database."
+        "en": "The selected object for '{0}' could not be found in the database.",
+        "nl-be": "Het geselecteerde object voor '{0}' kan niet worden gevonden in de database."
       },
       "IsSystem": true
     },
     "SendEmail": {
       "Value": {
-        "en": "Send Email"
+        "en": "Send Email",
+        "nl-be": "E-mail verzenden"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "SessionLost": {
       "Value": {
-        "en": "You signed out in another tab or window. Reload to refresh your session."
+        "en": "You signed out in another tab or window. Reload to refresh your session.",
+        "nl-be": "U hebt zich afgemeld in een ander tabblad of venster. Herlaad om uw sessie te vernieuwen."
       },
       "IsClient": true,
       "IsSystem": true
     },
     "SignIn": {
       "Value": {
-        "en": "Sign in"
+        "en": "Sign in",
+        "nl-be": "Aanmelden"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "SignInError": {
       "Value": {
-        "en": "An error occurred while signing in"
+        "en": "An error occurred while signing in",
+        "nl-be": "Er is een fout opgetreden tijdens het aanmelden"
       },
       "IsSystem": true
     },
     "SigningIn": {
       "Value": {
-        "en": "Signing in ..."
+        "en": "Signing in ...",
+        "nl-be": "Aanmelden ..."
       },
       "IsSystem": true
     },
     "SignInTo": {
       "Value": {
-        "en": "Sign in to {0}"
+        "en": "Sign in to {0}",
+        "nl-be": "Meld u aan bij {0}"
       },
       "IsSystem": true
     },
     "SignInUsing": {
       "Value": {
-        "en": "Sign in using"
+        "en": "Sign in using",
+        "nl-be": "Aanmelden met"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "SignOut": {
       "Value": {
-        "en": "Sign out"
+        "en": "Sign out",
+        "nl-be": "Afmelden"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "SortAscending": {
       "Value": {
-        "en": "Sort ascending"
+        "en": "Sort ascending",
+        "nl-be": "Sorteren oplopend"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "SortAToZ": {
       "Value": {
-        "en": "Sort A to Z"
+        "en": "Sort A to Z",
+        "nl-be": "Sorteren van A tot Z"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "SortDescending": {
       "Value": {
-        "en": "Sort descending"
+        "en": "Sort descending",
+        "nl-be": "Sorteren aflopend"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "SortLargestToSmallest": {
       "Value": {
-        "en": "Sort largest to smallest"
+        "en": "Sort largest to smallest",
+        "nl-be": "Sorteer van groot naar klein"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "SortNewestToOldest": {
       "Value": {
-        "en": "Sort newest to oldest"
+        "en": "Sort newest to oldest",
+        "nl-be": "Sorteer van nieuwste naar oudste"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "SortOldestToNewest": {
       "Value": {
-        "en": "Sort oldest to newest"
+        "en": "Sort oldest to newest",
+        "nl-be": "Sorteer oudste naar nieuwste"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "SortSmallestToLargest": {
       "Value": {
-        "en": "Sort smallest to largest"
+        "en": "Sort smallest to largest",
+        "nl-be": "Sorteer van kleinste naar grootste"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "SortZToA": {
       "Value": {
-        "en": "Sort Z to A"
+        "en": "Sort Z to A",
+        "nl-be": "Sorteer Z naar A"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "StayOnThisPage": {
       "Value": {
-        "en": "Stay on this page"
+        "en": "Stay on this page",
+        "nl-be": "Blijf op deze pagina"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "StaySignedIn": {
       "Value": {
-        "en": "Stay signed in"
+        "en": "Stay signed in",
+        "nl-be": "Aangemeld blijven"
       },
       "IsSystem": true
     },
     "ThisMonth": {
       "Value": {
-        "en": "This month"
+        "en": "This month",
+        "nl-be": "Deze maand"
       },
       "IsSystem": true
     },
     "ThisWeek": {
       "Value": {
-        "en": "This week"
+        "en": "This week",
+        "nl-be": "Deze week"
       },
       "IsSystem": true
     },
     "ThisYear": {
       "Value": {
-        "en": "This year"
+        "en": "This year",
+        "nl-be": "Dit jaar"
       },
       "IsSystem": true
     },
     "Today": {
       "Value": {
-        "en": "Today"
+        "en": "Today",
+        "nl-be": "Vandaag"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "Tomorrow": {
       "Value": {
-        "en": "Tomorrow"
+        "en": "Tomorrow",
+        "nl-be": "Morgen"
       },
       "IsSystem": true
     },
     "True": {
       "Value": {
-        "en": "True"
+        "en": "True",
+        "nl-be": "Waar"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "TwoFactorCode": {
       "Value": {
-        "en": "Two-factor code"
+        "en": "Two-factor code",
+        "nl-be": "Tweefactorcode"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "UnableToCreateEntityForPersistentObject": {
       "Value": {
-        "en": "Could not create new {0}."
+        "en": "Could not create new {0}.",
+        "nl-be": "Kan geen nieuwe {0} maken."
       },
       "IsSystem": true
     },
     "UnableToLoadEntityForPersistentObject": {
       "Value": {
-        "en": "{0} ({1}) not found or access denied."
+        "en": "{0} ({1}) not found or access denied.",
+        "nl-be": "{0} ({1}) niet gevonden of toegang geweigerd."
       },
       "IsSystem": true
     },
     "UnableToLoadObject": {
       "Value": {
-        "en": "Unable to load object."
+        "en": "Unable to load object.",
+        "nl-be": "Kan object niet laden."
       },
       "IsClient": true,
       "IsSystem": true
     },
     "UnableToSaveModifiedEntity": {
       "Value": {
-        "en": "{0} ({1}) has been modified by another user. Reload the page and try again."
+        "en": "{0} ({1}) has been modified by another user. Reload the page and try again.",
+        "nl-be": "{0} ({1}) is gewijzigd door een andere gebruiker. Laad de pagina opnieuw en probeer het opnieuw."
       },
       "IsSystem": true
     },
     "UnknownValueForFilter": {
       "Value": {
-        "en": "Could not use '{0}' for {1}."
+        "en": "Could not use '{0}' for {1}.",
+        "nl-be": "Kon '{0}' niet gebruiken voor {1}."
       },
       "IsSystem": true
     },
     "UnmatchedPasswords": {
       "Value": {
-        "en": "Passwords do not match."
+        "en": "Passwords do not match.",
+        "nl-be": "Wachtwoorden komen niet overeen."
       },
       "IsSystem": true
     },
     "Unpin": {
       "Value": {
-        "en": "Unpin"
+        "en": "Unpin",
+        "nl-be": "Losmaken"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "UnsavedChangesDetected": {
       "Value": {
-        "en": "Some pages contain unsaved changes.\nDo you want to save changes?"
+        "en": "Some pages contain unsaved changes.\nDo you want to save changes?",
+        "nl-be": "Sommige pagina's bevatten niet-opgeslagen wijzigingen.\nWilt u wijzigingen opslaan?"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "UserName": {
       "Value": {
-        "en": "User name"
+        "en": "User name",
+        "nl-be": "Gebruikersnaam"
       },
       "IsSystem": true
     },
     "UserSettings": {
       "Value": {
-        "en": "Settings"
+        "en": "Settings",
+        "nl-be": "Instellingen"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "UserSettingsBreadcrumb": {
       "Value": {
-        "en": "User Settings"
+        "en": "User Settings",
+        "nl-be": "Gebruikersinstellingen"
       },
       "IsSystem": true
     },
     "UserSettingsChangePassword": {
       "Value": {
-        "en": "Please change your password"
+        "en": "Please change your password",
+        "nl-be": "Wijzig uw wachtwoord"
       },
       "IsSystem": true
     },
     "UserSettingsConfirmPassword": {
       "Value": {
-        "en": "Confirm new password"
+        "en": "Confirm new password",
+        "nl-be": "Nieuw wachtwoord bevestigen"
       },
       "IsSystem": true
     },
     "UserSettingsCultureInfo": {
       "Value": {
-        "en": "Date, time and number format"
+        "en": "Date, time and number format",
+        "nl-be": "Datum-, tijd- en getalnotatie"
       },
       "IsSystem": true
     },
     "UserSettingsLanguage": {
       "Value": {
-        "en": "Language"
+        "en": "Language",
+        "nl-be": "Taal"
       },
       "IsSystem": true
     },
     "UserSettingsLanguageGroup": {
       "Value": {
-        "en": "Language"
+        "en": "Language",
+        "nl-be": "Taal"
       },
       "IsSystem": true
     },
     "UserSettingsNewPassword": {
       "Value": {
-        "en": "New password"
+        "en": "New password",
+        "nl-be": "Nieuw wachtwoord"
       },
       "IsSystem": true
     },
     "UserSettingsOldPassword": {
       "Value": {
-        "en": "Old password"
+        "en": "Old password",
+        "nl-be": "Oud wachtwoord"
       },
       "IsSystem": true
     },
     "UserSettingsPasswordGroup": {
       "Value": {
-        "en": "Password"
+        "en": "Password",
+        "nl-be": "Wachtwoord"
       },
       "IsSystem": true
     },
     "UserSettingsTwoFactorCode": {
       "Value": {
-        "en": "Enter generated code from authenticator app"
+        "en": "Enter generated code from authenticator app",
+        "nl-be": "Voer gegenereerde code in vanuit de authenticator-app"
       },
       "IsSystem": true
     },
     "UserSettingsTwoFactorEnabled": {
       "Value": {
-        "en": "Use two-factor authentication"
+        "en": "Use two-factor authentication",
+        "nl-be": "Tweefactorauthenticatie gebruiken"
       },
       "IsSystem": true
     },
     "UserSettingsTwoFactorImage": {
       "Value": {
-        "en": "Scan QR code in authenticator app"
+        "en": "Scan QR code in authenticator app",
+        "nl-be": "QR-code scannen in de authenticator-app"
       },
       "IsSystem": true
     },
     "ValidationRulesFailed": {
       "Value": {
-        "en": "Some required information is missing or incorrect."
+        "en": "Some required information is missing or incorrect.",
+        "nl-be": "Sommige vereiste informatie ontbreekt of is onjuist."
       },
       "IsClient": true,
       "IsSystem": true
     },
     "Warning": {
       "Value": {
-        "en": "Warning"
+        "en": "Warning",
+        "nl-be": "Waarschuwing"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "Yes": {
       "Value": {
-        "en": "Yes"
+        "en": "Yes",
+        "nl-be": "Ja"
       },
       "IsClient": true,
       "IsSystem": true
     },
     "Yesterday": {
       "Value": {
-        "en": "Yesterday"
+        "en": "Yesterday",
+        "nl-be": "Gisteren"
       },
       "IsSystem": true
     }
