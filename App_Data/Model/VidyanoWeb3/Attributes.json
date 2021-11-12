@@ -189,6 +189,7 @@
         "Offset": 100,
         "Rules": "Required",
         "Name": "Byte",
+        "DataTypeHints": "DisplayFormat=€ {0}",
         "Label": {
           "en": "Byte",
           "nl-be": "Byte"
@@ -320,6 +321,7 @@
         "Offset": 101,
         "Rules": "Required",
         "Name": "Decimal",
+        "DataTypeHints": "DisplayFormat={0} ₿",
         "Label": {
           "en": "Decimal",
           "nl-be": "Decimaal"
