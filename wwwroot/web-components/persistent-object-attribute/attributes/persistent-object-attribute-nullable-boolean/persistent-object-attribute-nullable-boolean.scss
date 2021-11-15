@@ -1,0 +1,13 @@
+@import "../persistent-object-attribute-boolean/persistent-object-attribute-boolean.scss";
+
+:host {
+    @include layout-horizontal();
+
+    vi-select {
+        border: none;
+    }
+
+    span[sensitive] {
+        --at-apply: --vi-app--sensitive;
+    }
+}

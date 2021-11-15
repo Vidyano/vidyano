@@ -1,0 +1,29 @@
+@import "../../../_vars.scss";
+
+:host {
+    @include noSelection();
+    @include layout-horizontal();
+    line-height: normal;
+
+    --vi-select-input: {
+        color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
+    };
+
+    vi-checkbox {
+        display: inline-block;
+        color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
+    }
+
+     span[sensitive] {
+         --at-apply: --vi-app--sensitive;
+     }
+
+    --at-apply: --vi-persistent-object-attribute-boolean;
+}
+
+:host-context(vi-persistent-object-attribute-as-detail) {
+    border: 1px solid var(--theme-light-border);
+    margin: 0 1px;
+    padding: 0 var(--theme-h5);
+    line-height: var(--theme-h2);
+}

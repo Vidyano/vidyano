@@ -1,0 +1,29 @@
+<link rel="stylesheet" href="persistent-object-attribute-boolean.css" />
+<dom-if if="[[editing]]">
+    <template>
+        <dom-if if="[[!sensitive]]" restamp>
+            <template>
+                <dom-if if="[[!isCheckbox]]">
+                    <template>
+                        <vi-toggle label="[[attribute.displayValue]]" toggled="{{value}}" disabled="[[op.some(attribute.isReadOnly, attribute.parent.isFrozen)]]"></vi-toggle>
+                    </template>
+                </dom-if>
+                <dom-if if="[[isCheckbox]]">
+                    <template>
+                        <vi-checkbox checked="{{value}}" label="[[attribute.displayValue]]" disabled="[[op.some(attribute.isReadOnly, attribute.parent.isFrozen)]]"></vi-checkbox>
+                    </template>
+                </dom-if>
+            </template>
+        </dom-if>
+        <dom-if if="[[sensitive]]" restamp>
+            <template>
+                <span sensitive>[[attribute.displayValue]]</span>
+            </template>
+        </dom-if>
+    </template>
+</dom-if>
+<dom-if if="[[!editing]]">
+    <template>
+        <span sensitive$="[[sensitive]]">[[attribute.displayValue]]</span>
+    </template>
+</dom-if>
