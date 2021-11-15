@@ -1,0 +1,29 @@
+<style include="vi-persistent-object-attribute-style-module"></style>
+<link rel="stylesheet" href="persistent-object-attribute-user.css" />
+
+<dom-if if="[[!editing]]">
+    <template>
+        <span sensitive$="[[sensitive]]">[[friendlyName]]</span>
+    </template>
+</dom-if>
+<dom-if if="[[editing]]">
+    <template>
+        <vi-persistent-object-attribute-edit attribute="[[attribute]]">
+            <input value="[[friendlyName]]" readonly sensitive$="[[sensitive]]">
+            <dom-if if="[[!readOnly]]" restamp>
+                <template>
+                    <vi-button slot="button" on-tap="_browseReference" tabindex="-1">
+                        <vi-icon source="Ellipsis"></vi-icon>
+                    </vi-button>
+                </template>
+            </dom-if>
+            <dom-if if="[[canClear]]" restamp>
+                <template>
+                    <vi-button slot="button" on-tap="_clearReference" tabindex="-1">
+                        <vi-icon source="Remove"></vi-icon>
+                    </vi-button>
+                </template>
+            </dom-if>
+        </vi-persistent-object-attribute-edit>
+    </template>
+</dom-if>
