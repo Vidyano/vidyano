@@ -14,7 +14,7 @@
         <template>
             <iron-list items="[[filteredItems]]" as="item" content filtering$="[[filtering]]" on-select-option="_select">
                 <template>
-                    <vi-select-option-item suggested="[[op.areSame(item.option.key, suggestion.option.key)]]" selected="[[op.areSame(item.option.key, selectedItem.option.key)]]" item="{{item}}">[[item.displayValue]]</vi-select-option-item>
+                    <vi-select-option-item suggested="[[op.areSame(item.option, suggestion.option)]]" selected="[[op.areSame(item.option, selectedItem.option)]]" item="{{item}}" inner-h-t-m-l="[[_computeItemDisplayValue(item.displayValue, inputValue)]]"></vi-select-option-item>
                 </template>
             </iron-list>
         </template>
@@ -26,10 +26,10 @@
                     <template>
                         <dom-if if="[[op.every(item.group, item.groupFirst)]]">
                             <template>
-                                <li class="group">[[item.group]]</li>
+                                <div class="group">[[item.group]]</div>
                             </template>
                         </dom-if>
-                        <vi-select-option-item suggested="[[op.areSame(item.option.key, suggestion.option.key)]]" selected="[[op.areSame(item.option.key, selectedItem.option.key)]]" item="{{item}}">[[item.displayValue]]</vi-select-option-item>
+                        <vi-select-option-item suggested="[[op.areSame(item.option, suggestion.option)]]" selected="[[op.areSame(item.option, selectedItem.option)]]" item="{{item}}" inner-h-t-m-l="[[_computeItemDisplayValue(item.displayValue, inputValue)]]"></vi-select-option-item>
                     </template>
                 </dom-repeat>
             </div>

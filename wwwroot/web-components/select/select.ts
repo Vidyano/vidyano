@@ -246,7 +246,7 @@ export class Select extends WebComponentListener(WebComponent) {
     }
 
     private _scrollItemIntoView() {
-        const focusOption = <HTMLElement>this.shadowRoot.querySelector("[content] > li[selected]") || <HTMLElement>this.shadowRoot.querySelector("[content] > li[suggested]");
+        const focusOption = <HTMLElement>this.shadowRoot.querySelector("vi-select-option-item[selected], vi-select-option-item[suggested]");
         if (focusOption)
             (focusOption["scrollIntoViewIfNeeded"] || focusOption["scrollIntoView"]).apply(focusOption);
     }
@@ -378,6 +378,14 @@ export class Select extends WebComponentListener(WebComponent) {
 
         this.$.match.innerHTML = this._escapeHTML(suggestionMatch).replace(" ", "&nbsp;");
         this.$.remainder.innerHTML = this._escapeHTML(suggestionRemainder).replace(" ", "&nbsp;");
+    }
+
+    private _computeItemDisplayValue(displayValue: string, inputValue: string): string {
+        if (!displayValue || !inputValue)
+            return displayValue;
+
+        const exp = new RegExp(`(${inputValue})`, "gi");
+        return displayValue.replace(exp, "<span class='match'>$1</span>");
     }
 
     private _setSelectedOption(option: string | SelectOption, force?: boolean) {
