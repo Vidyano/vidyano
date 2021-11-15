@@ -1,0 +1,34 @@
+@import "../../../_vars.scss";
+
+:host {
+    @include layout-horizontal();
+    @include relative();
+    outline: none;
+
+    input[readonly] {
+        @include flex();
+        z-index: 1;
+    }
+
+    .browse {
+        ::slotted(div) {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0;
+            padding: 0;
+            margin: 0;
+            border: 0;
+            cursor: pointer;
+        }
+    }
+
+    span, input {
+        color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
+
+        &[sensitive] {
+            --at-apply: --vi-app--sensitive;
+        }
+    }
+}

@@ -1,0 +1,30 @@
+<style include="vi-persistent-object-attribute-style-module"></style>
+<link rel="stylesheet" href="persistent-object-attribute-binary-file.css" />
+
+<dom-if if="[[!editing]]">
+    <template>
+        <span sensitive$="[[sensitive]]">[[fileName]]</span>
+    </template>
+</dom-if>
+<dom-if if="[[editing]]">
+    <template>
+        <vi-persistent-object-attribute-edit attribute="[[attribute]]">
+            <input class="flex" value="{{fileName}}" type="text" readonly placeholder="[[placeholder]]" sensitive$="[[sensitive]]">
+            <dom-if if="[[!readOnly]]">
+                <template>
+                    <button class="browse" slot="button" on-change="_change">
+                        <vi-icon source="FileUpload"></vi-icon>
+                        <slot name="upload"></slot>
+                    </button>
+                    <dom-if if="[[canClear]]" restamp>
+                        <template>
+                            <button slot="button" on-tap="_clear" tabindex="-1">
+                                <vi-icon source="Remove"></vi-icon>
+                            </button>
+                        </template>
+                    </dom-if>
+                </template>
+            </dom-if>
+        </vi-persistent-object-attribute-edit>
+    </template>
+</dom-if>
