@@ -66,6 +66,10 @@ export class PersistentObjectAttributeComboBox extends PersistentObjectAttribute
     }
 
     protected _onFocus(e: FocusEvent) {
-        this._focusElement(<Select>this.shadowRoot.querySelector("vi-select"));
+        const select = <Select>this.shadowRoot.querySelector("vi-select");
+        if (e.composedPath().some(e => e === select))
+            return;
+
+        this._focusElement(select);
     }
 }
