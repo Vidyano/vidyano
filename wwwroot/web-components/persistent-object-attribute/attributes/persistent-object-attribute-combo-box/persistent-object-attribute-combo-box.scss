@@ -1,0 +1,33 @@
+@import "../../../_vars.scss";
+
+:host {
+    @include layout-horizontal();
+
+    vi-select {
+        border: none;
+    }
+
+    span, vi-select {
+        color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
+
+        --vi-select-input: {
+            color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
+        };
+    }
+
+    #add {
+        background-color: var(--theme-color);
+
+        vi-icon {
+            fill: white !important;
+        }
+
+        &:before {
+            border-left-color: var(--theme-color);
+        }
+    }
+
+    span[sensitive] {
+        --at-apply: --vi-app--sensitive;
+    }
+}
