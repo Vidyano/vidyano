@@ -17,10 +17,6 @@
         min-height: calc(var(--theme-h2) - 2px);
         line-height: calc(var(--theme-h2) - 2px);
         border: 1px solid var(--theme-light-border);
-        -moz-transition: border-color 0.2s ease-in-out;
-        -o-transition: border-color 0.2s ease-in-out;
-        -webkit-transition: border-color 0.2s ease-in-out;
-        transition: border-color 0.2s ease-in-out;
         --at-apply: --vi-persistent-object-attribute-edit-box;
 
         .buttons {
@@ -122,9 +118,6 @@
                     top: 4px;
                     bottom: 4px;
                     content: " ";
-                    -moz-transition: all 0.1s ease-in-out;
-                    -o-transition: all 0.1s ease-in-out;
-                    -webkit-transition: all 0.1s ease-out;
                     transition: all 0.1s ease-in-out;
                 }
 
@@ -132,6 +125,10 @@
                     width: calc(var(--theme-h2) - 2px);
                     height: calc(var(--theme-h2) - 2px);
                 }
+            }
+
+            ::slotted([slot="button"].bottom-border)::after {
+                bottom: 0;
             }
 
             &:hover ::slotted([slot="button"]:hover) {
