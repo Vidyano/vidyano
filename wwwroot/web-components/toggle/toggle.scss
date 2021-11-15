@@ -1,0 +1,74 @@
+@import "../_vars.scss";
+
+:host {
+    display: block;
+    padding-right: var(--theme-h5);
+    box-sizing: border-box;
+
+    &:not([disabled]) {
+        cursor: pointer;
+    }
+
+    #box {
+        padding: 2px;
+        border: 1px solid var(--theme-light-border);
+        width: var(--theme-h2);
+
+        #switch {
+            background-color: #333;
+            width: calc(var(--theme-h4) - 2px);
+            height: calc(var(--theme-h4) - 2px);
+            transform: translateX(0px);
+            -webkit-transition: transform 0.25s cubic-bezier(0,1,.6,1);
+            transition: transform 0.25s cubic-bezier(0,1,.6,1);
+        }
+    }
+
+    span {
+        padding: 0 1px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        &:not(:empty) {
+            margin-left: calc(var(--theme-h5) - 1px);
+        }
+    }
+
+    &:focus {
+        outline: 0;
+
+        &:not([disabled]) span {
+            outline: 1px dotted var(--theme-color-light);
+        }
+    }
+}
+
+:host([toggled]) {
+    #box {
+        background-color: var(--theme-color);
+        border-color: var(--theme-color);
+
+        #switch {
+            background-color: white;
+            transform: translateX(calc(var(--theme-h2) - var(--theme-h4) + 2px));
+        }
+    }
+}
+
+:host([disabled][toggled]) {
+    #box {
+        background-color: #d6d6d6;
+        border-color: #d6d6d6;
+    }
+}
+
+:host([disabled]:not([toggled])) {
+    #box {
+        border-color: var(--theme-light-border);
+
+        #switch {
+            background-color: #a5a5a5;
+        }
+    }
+}
