@@ -11,9 +11,8 @@
       "es": "Tipos de datos",
       "fr": "Types de données",
       "ja": "データ型",
-      "nl": "Gegevenstypen",
-      "pt": "Tipos de dados",
-      "nl-be": "Kenmerken"
+      "nl": "Kenmerken",
+      "pt": "Tipos de dados"
     },
     "StateBehavior": 2,
     "Help": [],
@@ -24,7 +23,7 @@
         "Name": "Nullable",
         "Label": {
           "en": "Nullable",
-          "nl-be": "Nietigbaar"
+          "nl": "Nietigbaar"
         }
       },
       {
@@ -37,7 +36,7 @@
         "Name": "ReadOnly",
         "Label": {
           "en": "Read-only",
-          "nl-be": "Alleen-lezen"
+          "nl": "Alleen-lezen"
         }
       }
     ],
@@ -49,7 +48,7 @@
         "ColumnCount": 1,
         "Label": {
           "en": "Refresh",
-          "nl-be": "Opfrissen"
+          "nl": "Vernieuwen"
         }
       },
       {
@@ -58,7 +57,7 @@
         "Name": "String",
         "Label": {
           "en": "String",
-          "nl-be": "Snaar"
+          "nl": "Snaar"
         }
       },
       {
@@ -67,7 +66,7 @@
         "Name": "Numeric",
         "Label": {
           "en": "Numeric",
-          "nl-be": "Numeriek"
+          "nl": "Numeriek"
         }
       },
       {
@@ -76,7 +75,7 @@
         "Name": "Date",
         "Label": {
           "en": "Date",
-          "nl-be": "Datum"
+          "nl": "Datum"
         }
       },
       {
@@ -85,7 +84,7 @@
         "Name": "Reference",
         "Label": {
           "en": "Reference",
-          "nl-be": "Referentie"
+          "nl": "Referentie"
         }
       },
       {
@@ -94,7 +93,7 @@
         "Name": "Boolean",
         "Label": {
           "en": "Boolean",
-          "nl-be": "Booleaans"
+          "nl": "Booleaans"
         }
       },
       {
@@ -103,7 +102,7 @@
         "Name": "Advanced",
         "Label": {
           "en": "Advanced",
-          "nl-be": "Geavanceerd"
+          "nl": "Geavanceerd"
         }
       },
       {
@@ -112,7 +111,7 @@
         "Name": "Select",
         "Label": {
           "en": "Select",
-          "nl-be": "Selecteren"
+          "nl": "Selecteren"
         }
       }
     ],
@@ -124,7 +123,7 @@
         "Name": "BinaryFile",
         "Label": {
           "en": "BinaryFile",
-          "nl-be": "BinaryFile"
+          "nl": "BinaryFile"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -146,7 +145,7 @@
         "Name": "Boolean",
         "Label": {
           "en": "Boolean",
-          "nl-be": "Booleaans"
+          "nl": "Booleaans"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -169,7 +168,7 @@
         "IsReadOnly": true,
         "Label": {
           "en": "Boolean RO",
-          "nl-be": "Booleaanse RO"
+          "nl": "Booleaanse RO"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -189,10 +188,9 @@
         "Offset": 100,
         "Rules": "Required",
         "Name": "Byte",
-        "DataTypeHints": "DisplayFormat=€ {0}",
         "Label": {
           "en": "Byte",
-          "nl-be": "Byte"
+          "nl": "Byte"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -213,7 +211,7 @@
         "Name": "ComboBox",
         "Label": {
           "en": "ComboBox",
-          "nl-be": "Combobox"
+          "nl": "Combobox"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -235,7 +233,7 @@
         "Name": "CommonMark",
         "Label": {
           "en": "CommonMark",
-          "nl-be": "CommonMark"
+          "nl": "CommonMark"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -257,7 +255,7 @@
         "Name": "Date",
         "Label": {
           "en": "Date",
-          "nl-be": "Datum"
+          "nl": "Datum"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -279,7 +277,7 @@
         "Name": "DateTime",
         "Label": {
           "en": "DateTime",
-          "nl-be": "DateTime"
+          "nl": "DateTime"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -301,7 +299,7 @@
         "Name": "DateTimeOffset",
         "Label": {
           "en": "DateTimeOffset",
-          "nl-be": "DatumTijdOffset"
+          "nl": "DatumTijdOffset"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -321,10 +319,9 @@
         "Offset": 101,
         "Rules": "Required",
         "Name": "Decimal",
-        "DataTypeHints": "DisplayFormat={0} ₿",
         "Label": {
           "en": "Decimal",
-          "nl-be": "Decimaal"
+          "nl": "Decimaal"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -346,7 +343,7 @@
         "Name": "Double",
         "Label": {
           "en": "Double",
-          "nl-be": "Dubbel"
+          "nl": "Dubbel"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -367,7 +364,7 @@
         "Name": "DropDown",
         "Label": {
           "en": "DropDown",
-          "nl-be": "Vervolgkeuzemenu"
+          "nl": "Vervolgkeuzemenu"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -390,7 +387,7 @@
         "Name": "Enum",
         "Label": {
           "en": "Enum",
-          "nl-be": "Enum"
+          "nl": "Enum"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -411,7 +408,7 @@
         "Name": "EnumFlags",
         "Label": {
           "en": "Enum (Flags)",
-          "nl-be": "Enum (Vlaggen)"
+          "nl": "Enum (Vlaggen)"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -434,7 +431,7 @@
         "DataTypeHints": "IncludeGroups=True",
         "Label": {
           "en": "Group",
-          "nl-be": "Groep"
+          "nl": "Groep"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -455,7 +452,7 @@
         "Name": "Image",
         "Label": {
           "en": "Image",
-          "nl-be": "Beeld"
+          "nl": "Beeld"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -477,7 +474,7 @@
         "Name": "Int16",
         "Label": {
           "en": "Int16",
-          "nl-be": "Int16"
+          "nl": "Int16"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -499,7 +496,7 @@
         "Name": "Int32",
         "Label": {
           "en": "Int32",
-          "nl-be": "Int32"
+          "nl": "Int32"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -521,7 +518,7 @@
         "Name": "Int64",
         "Label": {
           "en": "Int64",
-          "nl-be": "Int64"
+          "nl": "Int64"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -543,7 +540,7 @@
         "Name": "KeyValueList",
         "Label": {
           "en": "KeyValueList",
-          "nl-be": "KeyValueList"
+          "nl": "KeyValueList"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -565,7 +562,7 @@
         "Name": "MultiLineString",
         "Label": {
           "en": "MultiLineString",
-          "nl-be": "MultiLineString"
+          "nl": "MultiLineString"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -586,7 +583,7 @@
         "Name": "MultiString",
         "Label": {
           "en": "MultiString",
-          "nl-be": "MultiString"
+          "nl": "MultiString"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -608,7 +605,7 @@
         "DataTypeHints": "inputtype=tags",
         "Label": {
           "en": "MultiString with tags",
-          "nl-be": "MultiString met tags"
+          "nl": "MultiString met tags"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -629,7 +626,7 @@
         "Name": "NullableBoolean",
         "Label": {
           "en": "Nullable boolean",
-          "nl-be": "Vernietigbaar booleaans"
+          "nl": "Vernietigbaar booleaans"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -652,7 +649,7 @@
         "DataTypeHints": "TrueKey=OK; FalseKey=Cancel",
         "Label": {
           "en": "Nullable Boolean (TypeHints)",
-          "nl-be": "Nullable Boolean (TypeHints)"
+          "nl": "Nullable Boolean (TypeHints)"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -673,7 +670,7 @@
         "Name": "NullableByte",
         "Label": {
           "en": "NullableByte",
-          "nl-be": "NullableByte"
+          "nl": "NullableByte"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -694,7 +691,7 @@
         "Name": "NullableDate",
         "Label": {
           "en": "NullableDate",
-          "nl-be": "NullableDate"
+          "nl": "NullableDate"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -715,7 +712,7 @@
         "Name": "NullableDateTime",
         "Label": {
           "en": "NullableDateTime",
-          "nl-be": "NullableDateTime"
+          "nl": "NullableDateTime"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -736,7 +733,7 @@
         "Name": "NullableDateTimeOffset",
         "Label": {
           "en": "NullableDateTimeOffset",
-          "nl-be": "NullableDateTimeOffset"
+          "nl": "NullableDateTimeOffset"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -757,7 +754,7 @@
         "Name": "NullableDecimal",
         "Label": {
           "en": "NullableDecimal",
-          "nl-be": "NullableDecimale"
+          "nl": "NullableDecimale"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -778,7 +775,7 @@
         "Name": "NullableDouble",
         "Label": {
           "en": "NullableDouble",
-          "nl-be": "NullableDouble"
+          "nl": "NullableDouble"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -799,7 +796,7 @@
         "Name": "NullableInt16",
         "Label": {
           "en": "NullableInt16",
-          "nl-be": "NullableInt16"
+          "nl": "NullableInt16"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -820,7 +817,7 @@
         "Name": "NullableInt32",
         "Label": {
           "en": "NullableInt32",
-          "nl-be": "NullableInt32"
+          "nl": "NullableInt32"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -841,7 +838,7 @@
         "Name": "NullableInt64",
         "Label": {
           "en": "NullableInt64",
-          "nl-be": "NullableInt64"
+          "nl": "NullableInt64"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -862,7 +859,7 @@
         "Name": "NullableSByte",
         "Label": {
           "en": "NullableSByte",
-          "nl-be": "NullableSByte"
+          "nl": "NullableSByte"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -883,7 +880,7 @@
         "Name": "NullableSingle",
         "Label": {
           "en": "NullableSingle",
-          "nl-be": "NullableSingle"
+          "nl": "NullableSingle"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -904,7 +901,7 @@
         "Name": "NullableTime",
         "Label": {
           "en": "NullableTime",
-          "nl-be": "NullableTime"
+          "nl": "NullableTime"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -925,7 +922,7 @@
         "Name": "NullableUInt16",
         "Label": {
           "en": "NullableUInt16",
-          "nl-be": "NullableUInt16"
+          "nl": "NullableUInt16"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -946,7 +943,7 @@
         "Name": "NullableUInt32",
         "Label": {
           "en": "NullableUInt32",
-          "nl-be": "NullableUInt32"
+          "nl": "NullableUInt32"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -967,7 +964,7 @@
         "Name": "NullableUInt64",
         "Label": {
           "en": "NullableUInt64",
-          "nl-be": "NullableUInt64"
+          "nl": "NullableUInt64"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -988,7 +985,7 @@
         "Name": "NullableUser",
         "Label": {
           "en": "Nullable user",
-          "nl-be": "Nullable gebruiker"
+          "nl": "Nullable gebruiker"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -1009,7 +1006,7 @@
         "Name": "Password",
         "Label": {
           "en": "Password",
-          "nl-be": "Wachtwoord"
+          "nl": "Wachtwoord"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -1033,7 +1030,7 @@
         "Name": "Reference",
         "Label": {
           "en": "Reference",
-          "nl-be": "Referentie"
+          "nl": "Referentie"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -1058,7 +1055,7 @@
         "Name": "ReferenceWithCanAddNew",
         "Label": {
           "en": "Reference with CanAddNew",
-          "nl-be": "Referentie met CanAddNew"
+          "nl": "Referentie met CanAddNew"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -1083,7 +1080,7 @@
         "Name": "ReferenceWithSelectInPlace",
         "Label": {
           "en": "Reference with SelectInPlance",
-          "nl-be": "Referentie met SelectInPlance"
+          "nl": "Referentie met SelectInPlance"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -1105,7 +1102,7 @@
         "Name": "SByte",
         "Label": {
           "en": "SByte",
-          "nl-be": "SByte"
+          "nl": "SByte"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -1127,7 +1124,7 @@
         "Name": "Single",
         "Label": {
           "en": "Single",
-          "nl-be": "Ongetrouwd"
+          "nl": "Ongetrouwd"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -1150,7 +1147,7 @@
         "DataTypeHints": "",
         "Label": {
           "en": "String",
-          "nl-be": "Snaar"
+          "nl": "Snaar"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -1172,7 +1169,7 @@
         "DataTypeHints": "CharacterCasing=Lower",
         "Label": {
           "en": "String (Lower)",
-          "nl-be": "Tekenreeks (lager)"
+          "nl": "Tekenreeks (lager)"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -1194,7 +1191,7 @@
         "DataTypeHints": "CharacterCasing=Upper",
         "Label": {
           "en": "String (Upper)",
-          "nl-be": "String (Boven)"
+          "nl": "String (Boven)"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -1216,7 +1213,7 @@
         "Name": "Time",
         "Label": {
           "en": "Time",
-          "nl-be": "Tijd"
+          "nl": "Tijd"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -1237,7 +1234,7 @@
         "Name": "TranslatedString",
         "Label": {
           "en": "Translated string",
-          "nl-be": "Vertaalde string"
+          "nl": "Vertaalde string"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -1260,7 +1257,7 @@
         "TriggersRefresh": true,
         "Label": {
           "en": "Triggers refresh",
-          "nl-be": "Triggers vernieuwen"
+          "nl": "Triggers vernieuwen"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -1282,7 +1279,7 @@
         "Name": "TriggersRefreshNullable",
         "Label": {
           "en": "Triggers refresh nullable",
-          "nl-be": "Triggers vernieuwen nullable"
+          "nl": "Triggers vernieuwen nullable"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -1304,7 +1301,7 @@
         "Name": "UInt16",
         "Label": {
           "en": "UInt16",
-          "nl-be": "UInt16"
+          "nl": "UInt16"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -1326,7 +1323,7 @@
         "Name": "UInt32",
         "Label": {
           "en": "UInt32",
-          "nl-be": "UInt32"
+          "nl": "UInt32"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -1348,7 +1345,7 @@
         "Name": "UInt64",
         "Label": {
           "en": "UInt64",
-          "nl-be": "UInt64"
+          "nl": "UInt64"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -1370,7 +1367,7 @@
         "Name": "User",
         "Label": {
           "en": "User",
-          "nl-be": "Gebruiker"
+          "nl": "Gebruiker"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -1392,7 +1389,7 @@
         "Name": "YesNo",
         "Label": {
           "en": "Yes/No",
-          "nl-be": "Ja/Nee"
+          "nl": "Ja/Nee"
         },
         "Visibility": 7,
         "ColumnSpan": 1,

@@ -9,7 +9,7 @@
     "ContextProperty": "Employees",
     "Label": {
       "en": "Employee",
-      "nl-be": "Werknemer"
+      "nl": "Werknemer"
     },
     "StateBehavior": 2,
     "Groups": [
@@ -33,7 +33,7 @@
         "Name": "Birthday",
         "Label": {
           "en": "Birthday",
-          "nl-be": "Verjaardag"
+          "nl": "Verjaardag"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -55,7 +55,7 @@
         "Name": "Extension",
         "Label": {
           "en": "Extension",
-          "nl-be": "Extensie"
+          "nl": "Extensie"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -77,7 +77,7 @@
         "Name": "FirstName",
         "Label": {
           "en": "First name",
-          "nl-be": "Voornaam"
+          "nl": "Voornaam"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -99,7 +99,7 @@
         "Name": "HiredAt",
         "Label": {
           "en": "Hired at",
-          "nl-be": "Aangenomen bij"
+          "nl": "Aangenomen bij"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -121,7 +121,7 @@
         "Name": "HomePhone",
         "Label": {
           "en": "Home phone",
-          "nl-be": "Huistelefoon"
+          "nl": "Huistelefoon"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -143,7 +143,7 @@
         "Name": "LastName",
         "Label": {
           "en": "Last name",
-          "nl-be": "Achternaam"
+          "nl": "Achternaam"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -165,7 +165,7 @@
         "Name": "Notes",
         "Label": {
           "en": "Notes",
-          "nl-be": "Notities"
+          "nl": "Notities"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -190,7 +190,7 @@
         "Name": "ReportsTo",
         "Label": {
           "en": "Reports to",
-          "nl-be": "Rapporten aan"
+          "nl": "Rapporten aan"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -212,7 +212,7 @@
         "Name": "Territories",
         "Label": {
           "en": "Territories",
-          "nl-be": "Gebieden"
+          "nl": "Gebieden"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -234,7 +234,7 @@
         "Name": "Title",
         "Label": {
           "en": "Title",
-          "nl-be": "Titel"
+          "nl": "Titel"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -260,7 +260,7 @@
       "Name": "Employees",
       "Label": {
         "en": "Employees",
-        "nl-be": "Medewerkers"
+        "nl": "Medewerkers"
       },
       "PersistentObject": {
         "$ref": "PersistentObject:8f58df40-31ec-3ca3-903d-1a95cfb24b45"

@@ -7,7 +7,7 @@
       "IsSystem": true,
       "DisplayName": {
         "en": "Add",
-        "nl-be": "Toevoegen"
+        "nl": "Toevoegen"
       },
       "IconName": "Add"
     },
@@ -18,7 +18,7 @@
       "SelectionRule": ">0",
       "DisplayName": {
         "en": "Edit",
-        "nl-be": "Bewerken"
+        "nl": "Bewerken"
       },
       "IconName": "Edit"
     },
@@ -26,7 +26,7 @@
       "IsSystem": true,
       "DisplayName": {
         "en": "Cancel",
-        "nl-be": "Annuleren"
+        "nl": "Annuleren"
       },
       "IconName": "CancelEdit"
     },
@@ -34,7 +34,7 @@
       "IsSystem": true,
       "DisplayName": {
         "en": "Cancel",
-        "nl-be": "Annuleren"
+        "nl": "Annuleren"
       },
       "IconName": "Cancel"
     },
@@ -46,7 +46,7 @@
       "SelectionRule": ">0",
       "DisplayName": {
         "en": "Delete",
-        "nl-be": "Verwijderen"
+        "nl": "Verwijderen"
       },
       "ConfirmationMessageKey": "AskForDeleteItems",
       "IconName": "Delete"
@@ -55,7 +55,7 @@
       "IsSystem": true,
       "DisplayName": {
         "en": "Cancel",
-        "nl-be": "Annuleren"
+        "nl": "Annuleren"
       },
       "IconName": "Cancel"
     },
@@ -64,7 +64,7 @@
       "SelectionRule": "> 0",
       "DisplayName": {
         "en": "OK",
-        "nl-be": "OK"
+        "nl": "OK"
       },
       "IconName": "Ok"
     },
@@ -74,7 +74,7 @@
       "IsSystem": true,
       "DisplayName": {
         "en": "Edit",
-        "nl-be": "Bewerken"
+        "nl": "Bewerken"
       },
       "IconName": "Edit"
     },
@@ -82,7 +82,7 @@
       "IsSystem": true,
       "DisplayName": {
         "en": "Save",
-        "nl-be": "Redden"
+        "nl": "Opslaan"
       },
       "IconName": "Save"
     },
@@ -92,7 +92,7 @@
       "IsSystem": true,
       "DisplayName": {
         "en": "Export",
-        "nl-be": "Exporteren"
+        "nl": "Exporteren"
       },
       "IconName": "Excel"
     },
@@ -102,7 +102,7 @@
       "IsSystem": true,
       "DisplayName": {
         "en": "Export",
-        "nl-be": "Exporteren"
+        "nl": "Exporteren"
       },
       "IconName": "Excel"
     },
@@ -112,7 +112,7 @@
       "IsSystem": true,
       "DisplayName": {
         "en": "New",
-        "nl-be": "Nieuw"
+        "nl": "Nieuw"
       },
       "IconName": "Add"
     },
@@ -124,7 +124,7 @@
       "SelectionRule": ">0",
       "DisplayName": {
         "en": "Remove",
-        "nl-be": "Verwijderen"
+        "nl": "Verwijderen"
       },
       "IconName": "Remove"
     },
@@ -132,7 +132,7 @@
       "IsSystem": true,
       "DisplayName": {
         "en": "Save",
-        "nl-be": "Redden"
+        "nl": "Opslaan"
       },
       "IconName": "Save"
     },
@@ -142,7 +142,7 @@
       "IsSystem": true,
       "DisplayName": {
         "en": "Help",
-        "nl-be": "Help"
+        "nl": "Help"
       },
       "IsPinned": true,
       "IconName": "Help"
@@ -153,7 +153,7 @@
       "IsSystem": true,
       "DisplayName": {
         "en": "Search",
-        "nl-be": "Zoeken"
+        "nl": "Zoeken"
       },
       "IsPinned": true,
       "IconName": "Filter"
@@ -164,7 +164,7 @@
       "IsSystem": true,
       "DisplayName": {
         "en": "Save",
-        "nl-be": "Redden"
+        "nl": "Opslaan"
       },
       "IconName": "Save"
     },
@@ -174,7 +174,7 @@
       "IsSystem": true,
       "DisplayName": {
         "en": "Load",
-        "nl-be": "Lading"
+        "nl": "Laden"
       },
       "IconName": "Add"
     }
