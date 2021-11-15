@@ -1,0 +1,41 @@
+@import "../../../_vars.scss";
+
+:host {
+    @include layout-horizontal();
+    @include relative();
+    outline: none;
+    min-height: var(--theme-h2) !important;
+
+    img {
+        position: absolute;
+        top: 0;
+        max-height: 100%;
+        max-width: 100%;
+
+        &[can-open] {
+            cursor: zoom-in;
+        }
+
+        &[sensitive] {
+            --at-apply: --vi-app--sensitive;
+        }
+    }
+
+    .fit.image-container {
+        padding: var(--theme-h5);
+    }
+
+    .browse {
+        input {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0;
+            padding: 0;
+            margin: 0;
+            border: 0;
+            cursor: pointer;
+        }
+    }
+}

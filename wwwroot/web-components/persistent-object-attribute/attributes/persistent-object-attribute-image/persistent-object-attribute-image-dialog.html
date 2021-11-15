@@ -1,0 +1,16 @@
+<link rel="stylesheet" href="persistent-object-attribute-image-dialog.css" />
+
+<header class="relative">
+    <vi-size-tracker size="{{headerSize}}"></vi-size-tracker>
+    <h4 class="flex">[[label]]</h4>
+</header>
+<main class="layout horizontal center">
+    <vi-spinner id="spinner"></vi-spinner>
+    <vi-button class="previous" icon="ChevronLeft" inverse hidden$="[[!hasMultiple]]" on-tap="_previous"></vi-button>
+    <img id="img" hidden src$="[[source]]" />
+    <vi-button class="next" icon="ChevronRight" inverse hidden$="[[!hasMultiple]]" on-tap="_next"></vi-button>
+</main>
+<footer class="horizontal layout end-justified relative">
+    <vi-size-tracker size="{{footerSize}}"></vi-size-tracker>
+    <vi-button on-tap="_close" action-type="Default" label="[[translateMessage('Close', isConnected)]]"></vi-button>
+</footer>

@@ -1,0 +1,35 @@
+<link rel="stylesheet" href="persistent-object-attribute-image.css" />
+
+<dom-if if="[[!editing]]" restamp>
+    <template>
+        <div class="fit">
+            <img src="[[image]]" on-tap="_showDialog" can-open$="[[canOpen]]" sensitive$="[[sensitive]]" />
+        </div>
+    </template>
+</dom-if>
+<dom-if if="[[editing]]" restamp>
+    <template>
+        <vi-persistent-object-attribute-edit attribute="[[attribute]]">
+            <div class="flex relative">
+                <div class="fit image-container">
+                    <img src="[[image]]" on-tap="_showDialog" can-open$="[[canOpen]]" sensitive$="[[sensitive]]" />
+                </div>
+            </div>
+            <dom-if if="[[!readOnly]]">
+                <template>
+                    <vi-button slot="button" class="browse bottom-border">
+                        <vi-icon source="ImageUpload"></vi-icon>
+                        <input type="file" accept="image/*" capture="environment" on-change="_change">
+                    </vi-button>
+                    <dom-if if="[[hasValue]]" restamp>
+                        <template>
+                            <vi-button slot="button" class="bottom-border" on-tap="_clear" tabindex="-1">
+                                <vi-icon source="Remove"></vi-icon>
+                            </vi-button>
+                        </template>
+                    </dom-if>
+                </template>
+            </dom-if>
+        </vi-persistent-object-attribute-edit>
+    </template>
+</dom-if>
