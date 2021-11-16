@@ -1,5 +1,6 @@
 import * as Polymer from '../../libs/@polymer/polymer.js';
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
+import "../persistent-object-attribute-validation-error/persistent-object-attribute-validation-error.js"
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
 
 @WebComponent.register({
