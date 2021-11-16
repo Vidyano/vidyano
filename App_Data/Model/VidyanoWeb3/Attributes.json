@@ -27,6 +27,15 @@
         }
       },
       {
+        "$id": "PersistentObjectAttributeGroup:67aff5fa-ee6b-4271-9267-7b0886ffb94e",
+        "Id": "67aff5fa-ee6b-4271-9267-7b0886ffb94e",
+        "Name": "AsDetail",
+        "Label": {
+          "en": "As detail",
+          "nl": ""
+        }
+      },
+      {
         "$id": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26",
         "Id": "8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
       },
@@ -117,9 +126,35 @@
     ],
     "Attributes": [
       {
+        "$id": "PersistentObjectAttributeAsDetail:b41f3aab-11d0-3312-ba9f-cad26aa180dc",
+        "$type": "Vidyano.Service.Repository.PersistentObjectAttributeAsDetail, Vidyano.Service",
+        "DetailsId": "1278a445-580f-45ae-9b71-92b33b9402c4",
+        "Id": "b41f3aab-11d0-3312-ba9f-cad26aa180dc",
+        "Name": "AsDetail",
+        "CanSort": false,
+        "CanFilter": false,
+        "CanListDistincts": false,
+        "DataTypeHints": "IncludeHeader=True",
+        "Label": {
+          "en": "As detail",
+          "nl": "As detail"
+        },
+        "Visibility": 5,
+        "ColumnSpan": 4,
+        "DataType": {
+          "$ref": "DataType:AsDetail"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:67aff5fa-ee6b-4271-9267-7b0886ffb94e"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:71353c61-acde-4c01-b540-c20b079fb764"
+        }
+      },
+      {
         "$id": "PersistentObjectAttribute:017e2bc3-bdfb-4fcb-82c4-6924484621bb",
         "Id": "017e2bc3-bdfb-4fcb-82c4-6924484621bb",
-        "Offset": 1110,
+        "Offset": 1200,
         "Name": "BinaryFile",
         "Label": {
           "en": "BinaryFile",
@@ -229,7 +264,7 @@
       {
         "$id": "PersistentObjectAttribute:9a7ee5ff-d474-4582-9c9d-fc6f4842c051",
         "Id": "9a7ee5ff-d474-4582-9c9d-fc6f4842c051",
-        "Offset": 6,
+        "Offset": 7,
         "Name": "CommonMark",
         "Label": {
           "en": "CommonMark",
@@ -425,7 +460,7 @@
       {
         "$id": "PersistentObjectAttribute:18aee3bf-d5c9-40f5-b53e-83bdfc8bb2bc",
         "Id": "18aee3bf-d5c9-40f5-b53e-83bdfc8bb2bc",
-        "Offset": 1071,
+        "Offset": 1080,
         "Rules": "Required",
         "Name": "Group",
         "DataTypeHints": "IncludeGroups=True",
@@ -448,7 +483,7 @@
       {
         "$id": "PersistentObjectAttribute:665f5491-082d-4f1f-8f2b-6936e721d9db",
         "Id": "665f5491-082d-4f1f-8f2b-6936e721d9db",
-        "Offset": 1100,
+        "Offset": 1110,
         "Name": "Image",
         "Label": {
           "en": "Image",
@@ -600,7 +635,7 @@
       {
         "$id": "PersistentObjectAttribute:be7818c5-5cb7-41bc-818b-3516c68300ac",
         "Id": "be7818c5-5cb7-41bc-818b-3516c68300ac",
-        "Offset": 3,
+        "Offset": 4,
         "Name": "MultiStringWithTags",
         "DataTypeHints": "inputtype=tags",
         "Label": {
@@ -981,7 +1016,7 @@
       {
         "$id": "PersistentObjectAttribute:f92c1d6f-cd61-4214-98db-1007799db925",
         "Id": "f92c1d6f-cd61-4214-98db-1007799db925",
-        "Offset": 1080,
+        "Offset": 1100,
         "Name": "NullableUser",
         "Label": {
           "en": "Nullable user",
@@ -1002,7 +1037,7 @@
       {
         "$id": "PersistentObjectAttribute:e2af44cc-f5f3-47b1-91eb-4fc50eca34e2",
         "Id": "e2af44cc-f5f3-47b1-91eb-4fc50eca34e2",
-        "Offset": 4,
+        "Offset": 5,
         "Name": "Password",
         "Label": {
           "en": "Password",
@@ -1230,7 +1265,7 @@
       {
         "$id": "PersistentObjectAttribute:dab22963-e906-4598-8ae1-a2a8f3c6dfba",
         "Id": "dab22963-e906-4598-8ae1-a2a8f3c6dfba",
-        "Offset": 5,
+        "Offset": 6,
         "Name": "TranslatedString",
         "Label": {
           "en": "Translated string",
@@ -1251,7 +1286,7 @@
       {
         "$id": "PersistentObjectAttribute:929c468f-e9d2-40c8-8b72-5228407ea6a9",
         "Id": "929c468f-e9d2-40c8-8b72-5228407ea6a9",
-        "Offset": 1210,
+        "Offset": 1220,
         "Rules": "NotEmpty",
         "Name": "TriggersRefresh",
         "TriggersRefresh": true,
@@ -1275,7 +1310,7 @@
       {
         "$id": "PersistentObjectAttribute:39c5d06b-4652-41ca-a4f9-502b3f18ad0a",
         "Id": "39c5d06b-4652-41ca-a4f9-502b3f18ad0a",
-        "Offset": 1200,
+        "Offset": 1210,
         "Name": "TriggersRefreshNullable",
         "Label": {
           "en": "Triggers refresh nullable",
@@ -1362,7 +1397,7 @@
       {
         "$id": "PersistentObjectAttribute:3bab5cb9-96cd-499d-b32b-299728ee2784",
         "Id": "3bab5cb9-96cd-499d-b32b-299728ee2784",
-        "Offset": 1070,
+        "Offset": 1071,
         "Rules": "Required",
         "Name": "User",
         "Label": {
@@ -1404,7 +1439,9 @@
         }
       }
     ],
-    "Queries": [],
+    "Queries": [
+      "1278a445-580f-45ae-9b71-92b33b9402c4"
+    ],
     "ActionCodes": []
   },
   "Queries": [],

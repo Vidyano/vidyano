@@ -1,0 +1,41 @@
+<style include="vi-persistent-object-attribute-style-module"></style>
+<link rel="stylesheet" href="persistent-object-attribute-as-detail-row.css" />
+
+<dom-repeat items="[[columns]]" as="column" filter="_isColumnVisible">
+    <template>
+        <div class="column layout horizontal" data-column$="[[column.name]]">
+            <dom-if if="[[editing]]">
+                <template>
+                    <dom-if if="[[op.some(fullEdit, softEdit)]]">
+                        <template>
+                            <vi-persistent-object-attribute-presenter class="flex" no-label attribute="[[_attributeForColumn(serviceObject, column)]]" soft-edit-only$="[[_isSoftEditOnly(fullEdit, softEdit)]]"></vi-persistent-object-attribute-presenter>
+                        </template>
+                    </dom-if>
+                    <dom-if if="[[!fullEdit]]">
+                        <template>
+                            <div pre-edit on-tap="_setFullEdit" class="flex layout horizontal-reverse">
+                                <vi-persistent-object-attribute-validation-error attribute="[[_attributeForColumn(serviceObject, column)]]"></vi-persistent-object-attribute-validation-error>
+                                <div class="flex">
+                                    <span class="value" sensitive$="[[isSensitive]]">[[_displayValue(serviceObject, column, fullEdit, serviceObject.lastUpdated)]]</span>
+                                </div>
+                            </div>
+                        </template>
+                    </dom-if>
+                </template>
+            </dom-if>
+            <dom-if if="[[!editing]]">
+                <template>
+                    <span class="flex" sensitive$="[[isSensitive]]">[[_displayValue(serviceObject, column, lastUpdated)]]</span>
+                </template>
+            </dom-if>
+        </div>
+    </template>
+</dom-repeat>
+
+<dom-if if="[[canDelete]]">
+    <template>
+        <vi-button class="delete-button" inverse on-tap="_delete" disabled$="[[op.some(attribute.parent.isFrozen, obj.isReadOnly)]]">
+            <vi-icon source="Action_Delete"></vi-icon>
+        </vi-button>
+    </template>
+</dom-if>

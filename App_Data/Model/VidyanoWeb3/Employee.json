@@ -266,6 +266,21 @@
         "$ref": "PersistentObject:8f58df40-31ec-3ca3-903d-1a95cfb24b45"
       },
       "Columns": []
+    },
+    {
+      "$id": "Query:1278a445-580f-45ae-9b71-92b33b9402c4",
+      "Id": "1278a445-580f-45ae-9b71-92b33b9402c4",
+      "Source": "Custom.EmployeesAsDetail",
+      "AutoQuery": true,
+      "Name": "EmployeesAsDetail",
+      "Label": {
+        "en": "Employees",
+        "nl": ""
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:8f58df40-31ec-3ca3-903d-1a95cfb24b45"
+      },
+      "Columns": []
     }
   ],
   "Reports": []

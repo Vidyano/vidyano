@@ -1,0 +1,166 @@
+@import "../../../_vars.scss";
+
+@mixin addStyle() {
+    &.foot {
+        height: var(--theme-h2);
+        background-color: #F9F9F9;
+        border: 1px solid var(--theme-light-border);
+    }
+
+    ::content > button {
+        height: var(--theme-h2);
+        line-height: var(--theme-h2);
+    }
+}
+
+:host {
+    @include layout-horizontal();
+    @include relative();
+    overflow: hidden;
+
+    &[initializing] {
+        #table {
+            opacity: 0;
+        }
+    }
+
+    --persistent-object-attribute-as-detail--delete-width: var(--theme-h2);
+
+    #table {
+        @include layout-vertical();
+        @include flex();
+        line-height: var(--theme-h2);
+        overflow: hidden;
+
+        #head {
+            display: grid;
+            grid-template-columns: var(--column-widths);
+            height: var(--theme-h2);
+            border-style: solid;
+            border-color: var(--theme-light-border);
+            border-width: 0 0 1px 0;
+
+            .column {
+                box-sizing: border-box;
+                border-style: solid;
+                border-color: var(--theme-light-border);
+                border-width: 0;
+
+                label {
+                    display: block;
+                    padding: 0 4px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    text-align: left;
+                    font-weight: bold;
+                    font-size: 11px;
+                    letter-spacing: 0.5px;
+                }
+            }
+        }
+
+        #body {
+            position: relative;
+            @include flex();
+
+            #data {
+                display: block;
+                overflow: hidden;
+            }
+        }
+
+        button.action {
+            height: var(--theme-h2);
+            line-height: var(--theme-h2);
+        }
+    }
+
+    &[editing] {
+        #table {
+            @include noSelection();
+
+            #head {
+                background-color: #F9F9F9;
+
+                .column {
+                    border-width: 1px 0 0 1px;
+                    padding: 0 1px 1px 0;
+                    height: var(--theme-h2);
+                    line-height: var(--theme-h2);
+                    box-sizing: border-box;
+                    width: auto;
+                    min-width: 0;
+                }
+
+                .delete-spacer {
+                    width: var(--persistent-object-attribute-as-detail--delete-width);
+                    border-width: 1px 1px 0 0;
+                    border-color: var(--theme-light-border);
+                    border-style: solid;
+                }
+            }
+
+            #body {
+                margin-top: 1px !important;
+
+                .row {
+                    height: calc(var(--theme-h2) + 2px);
+                    line-height: calc(var(--theme-h2) + 2px);
+                    overflow: hidden;
+
+                    &:last-of-type {
+                        height: var(--theme-h2);
+
+                        .column, div.delete-button {
+                            padding-bottom: 0;
+                        }
+                    }
+                }
+
+                &[vertical] {
+                    .row div.delete-button {
+                        margin-right: var(--theme-h4);
+                    }
+                }
+            }
+
+            .row.add {
+                @include addStyle();
+            }
+        }
+
+        &:not([can-delete]) {
+            #head .column:last-of-type {
+                border-right: 0;
+            }
+        }
+    }
+
+    &:not([editing]) {
+        #table {
+            border: none;
+
+            #body {
+                .row {
+                    &:nth-child(odd) {
+                        background-color: #FCFCFC;
+                    }
+
+                    &:nth-child(even) {
+                        background-color: #F7F7F7;
+                    }
+
+                    .column {
+                        padding: 1px 4px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+                }
+            }
+        }
+
+        #foot {
+            display: none;
+        }
+    }
+}

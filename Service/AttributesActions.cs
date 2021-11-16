@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using Vidyano.Core.Extensions;
 using Vidyano.Service.Repository;
@@ -42,5 +43,13 @@ namespace VidyanoWeb3.Service
                 obj["CustomersReadOnly"].IsReadOnly = (bool?)args.Attribute ?? false;
         }
 
+    }
+
+    partial class VidyanoWeb3Context
+    {
+        public IEnumerable<Employee> EmployeesAsDetail(CustomQueryArgs e)
+        {
+            return Attributes.GetInstance(this).AsDetail;
+        }
     }
 }

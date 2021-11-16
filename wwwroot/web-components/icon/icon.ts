@@ -70,6 +70,8 @@ export class Icon extends WebComponent {
         Array.from(resource.children).forEach((child: HTMLElement) => {
             this.$.svgHost.appendChild(child.cloneNode(true));
         });
+
+        this.$.svgHost.querySelectorAll("svg").forEach(svg => svg.setAttribute("part", "svg"));
     }
 
     static Load(name: string): Icon {
