@@ -327,6 +327,7 @@ export class PersistentObject extends WebComponentListener(WebComponent) {
     }
 })
 export class PersistentObjectDetailsContent extends WebComponent {
+    static get template() { return Polymer.html`<link rel="import" href="vi-persistent-object-details-content.html">` }
 }
 
 @WebComponent.register({
@@ -339,4 +340,5 @@ export class PersistentObjectDetailsContent extends WebComponent {
     }
 })
 export class PersistentObjectDetailsHeader extends WebComponent {
+    static get template() { return Polymer.html`<link rel="import" href="vi-persistent-object-details-header.html">` }
 }
