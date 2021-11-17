@@ -12,6 +12,7 @@
         "@polymer/iron-resizable-behavior/iron-resizable-behavior.js": "./web3/libs/modules/@polymer/iron-resizable-behavior/iron-resizable-behavior.js",
         "@polymer/iron-scroll-target-behavior/iron-scroll-target-behavior.js": "./web3/libs/modules/@polymer/iron-scroll-target-behavior/iron-scroll-target-behavior.js",
         "@polymer/iron-overlay-behavior": "./web3/libs/modules/@polymer/iron-overlay-behavior/iron-overlay-behavior.js",
+        "@polymer/iron-overlay-behavior/": "./web3/libs/modules/@polymer/iron-overlay-behavior/",
         "@polymer/iron-fit-behavior/iron-fit-behavior.js": "./web3/libs/modules/@polymer/iron-fit-behavior/iron-fit-behavior.js",
         "@polymer/iron-media-query/iron-media-query.js": "./web3/libs/modules/@polymer/iron-media-query/iron-media-query.js",
         "@polymer/polymer/polymer-legacy.js": "./web3/libs/modules/@polymer/polymer/polymer-legacy.js",
