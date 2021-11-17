@@ -153,12 +153,12 @@ export class PersistentObjectAttributePresenter extends WebComponentListener(Web
     readOnly: boolean;
 
     connectedCallback() {
-        if (this.service && this.service.application && this.service.application.hasManagement)
-            this._developerToggleDisposer = developerShortcut.propertyChanged.attach(this._devToggle.bind(this));
+        this.setAttribute("tabindex", "-1");
 
         super.connectedCallback();
 
-        this.setAttribute("tabindex", "-1");
+        if (this.service && this.service.application && this.service.application.hasManagement)
+            this._developerToggleDisposer = developerShortcut.propertyChanged.attach(this._devToggle.bind(this));
     }
 
     disconnectedCallback() {
@@ -184,7 +184,7 @@ export class PersistentObjectAttributePresenter extends WebComponentListener(Web
 
     private _attributeChanged(attribute: Vidyano.PersistentObjectAttribute, isConnected: boolean) {
         if (this._renderedAttribute) {
-            Array.from(this.$.content.children).forEach(c => this.$.content.removeChild(c));
+            Array.from(this.children).forEach(c => this.removeChild(c));
             this._renderedAttributeElement = this._renderedAttribute = null;
         }
 
@@ -241,7 +241,7 @@ export class PersistentObjectAttributePresenter extends WebComponentListener(Web
             this.noLabel = this.noLabel || (config && !!config.noLabel);
 
             if (!!config && config.hasTemplate)
-                this.$.content.appendChild(config.stamp(attribute, config.as || "attribute"));
+                this.appendChild(config.stamp(attribute, config.as || "attribute"));
             else {
                 const fullAttributeFileName = `persistent-object-attribute-${attributeType.toKebabCase()}`;
                 let type: ObjectConstructor;
@@ -259,7 +259,7 @@ export class PersistentObjectAttributePresenter extends WebComponentListener(Web
                 this._renderedAttributeElement.nonEdit = this.nonEdit;
                 this._renderedAttributeElement.disabled = this.disabled;
 
-                this.$.content.appendChild(focusTarget = this._renderedAttributeElement);
+                this.appendChild(focusTarget = this._renderedAttributeElement);
             }
 
             this._renderedAttribute = attribute;

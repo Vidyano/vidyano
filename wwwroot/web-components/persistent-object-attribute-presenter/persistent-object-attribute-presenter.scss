@@ -16,14 +16,14 @@
         @include layout-horizontal();
         @include flex();
 
-        &:empty {
-            background-color: rgba(0, 0, 0, 0.05);
-        }
-
-        .attribute {
+        ::slotted(.attribute), .attribute {
             @include flex();
             outline: 0;
         }
+    }
+
+    &:empty #content{
+        background-color: rgba(0, 0, 0, 0.05);
     }
 
     &[bulk-edit] {
