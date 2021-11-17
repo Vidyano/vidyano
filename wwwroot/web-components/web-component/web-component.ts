@@ -7,6 +7,7 @@ import type { App } from "../app/app.js"
 import * as Keyboard from "../utils/keyboard.js"
 import WebComponentListener from "./web-component-listeners.js"
 import { WebComponentListenerRegistry } from "./web-component-listeners.js"
+import { IronA11yKeysElement } from "@polymer/iron-a11y-keys"
 
 class Operations {
     areSame(value1: any, value2: any): boolean {
@@ -613,9 +614,10 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
                             e.detail.keyboardEvent.preventDefault();
                         };
 
-                        const element = <any>document.createElement("iron-a11y-keys");
+                        const element = <IronA11yKeysElement>document.createElement("iron-a11y-keys");
                         element.target = this;
                         element.keys = keys;
+                        element.style.display = "none";
                         element.addEventListener("keys-pressed", eventListener);
 
                         const registration: Keyboard.IKeybindingRegistration = {
