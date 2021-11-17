@@ -35,12 +35,4 @@
             }
         }
     }
-
-    vi-icon {
-        --at-apply: --vi-checkbox--icon;
-
-        &[disabled] {
-            --at-apply: --vi-checkbox--icon-disabled;
-        }
-    }
 }

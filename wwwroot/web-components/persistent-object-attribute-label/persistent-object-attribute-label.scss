@@ -15,7 +15,6 @@
         overflow: hidden;
         text-overflow: ellipsis;
         padding-bottom: var(--theme-h5);
-        --at-apply: --vi-persistent-object-attribute-presenter-label;
     }
 
     .required {
@@ -28,7 +27,6 @@
         margin: 0 0 var(--theme-h5) var(--theme-h4);
         padding: 0 var(--theme-h5) 2px calc(var(--theme-h5) / 2);
         background-color: var(--theme-color);
-        --at-apply: --vi-persistent-object-attribute-presenter-required;
 
         &::before {
             content: "";
@@ -55,8 +53,6 @@
             --vi-icon-height: 10px;
             fill: var(--vi-persistent-object-attribute-label-color, #888);
         }
-
-        --at-apply: --vi--attribute-locked;
     }
 
     .info {

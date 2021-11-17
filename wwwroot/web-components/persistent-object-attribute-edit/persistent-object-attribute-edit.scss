@@ -13,19 +13,12 @@
     }
 
     .box {
+        @include layout-horizontal();
+        @include layout-justified();
         background-color: white;
         min-height: calc(var(--theme-h2) - 2px);
         line-height: calc(var(--theme-h2) - 2px);
         border: 1px solid var(--theme-light-border);
-        --at-apply: --vi-persistent-object-attribute-edit-box;
-
-        .buttons {
-            --at-apply: --vi-persistent-object-attribute-edit-buttons;
-        }
-
-        &[reverse] {
-            @include layout-horizontal-reverse();
-        }
     }
 
     &[read-only] {
@@ -37,12 +30,6 @@
             .buttons {
                 background-color: transparent;
             }
-        }
-    }
-
-    &[reverse-content] {
-        .box {
-            @include layout-horizontal-reverse();
         }
     }
 
@@ -69,7 +56,7 @@
                 background-color: #eee;
                 pointer-events: none;
 
-                ::slotted([slot="button"]) {
+                ::slotted(*) {
                     opacity: 0.25;
 
                     &::before {
@@ -81,16 +68,19 @@
     }
 
     .box {
-        ::slotted(*:not(.buttons)) {
+        > ::slotted(*) {
             @include flex();
         }
 
-        .buttons {
-            @include layout-horizontal();
+        .extras {
+            position: absolute;
             background-color: white;
-            align-self: flex-start;
 
-            ::slotted([slot="button"]) {
+            &.right {
+                right: 0;
+            }
+
+            ::slotted(*) {
                 @include relative();
                 outline: none;
                 cursor: pointer;
@@ -127,20 +117,16 @@
                 }
             }
 
-            ::slotted([slot="button"].bottom-border)::after {
-                bottom: 0;
-            }
-
-            &:hover ::slotted([slot="button"]:hover) {
+            ::slotted(*:hover) {
                 background-color: var(--theme-color-faint);
                 --vi-icon-fill: var(--theme-color);
             }
 
-            &:hover ::slotted([slot="button"]:active) {
+            ::slotted(*:active) {
                 background-color: var(--theme-color-dark) !important;
             }
 
-            &:hover ::slotted([slot="button"]) {
+            &:hover ::slotted(*) {
                 &::after {
                     left: 0;
                     right: 0;
@@ -151,38 +137,50 @@
                     bottom: 0;
                 }
             }
-        }
 
-        &:not([reverse]) {
-            .buttons ::slotted([slot="button"])::before {
+            &.left ::slotted(*)::before {
+                right: 0;
+                border-right: 1px solid var(--theme-light-border);
+            }
+
+            &.right ::slotted(*)::before {
                 left: 0;
                 border-left: 1px solid var(--theme-light-border);
             }
-        }
 
-        &[reverse] {
-            .buttons ::slotted([slot="button"])::before {
-                right: 0;
-                border-right: 1px solid var(--theme-light-border);
+            &.left, &.right {
+                @include layout-horizontal;
             }
         }
     }
 
-    &[focus] {
+    .box {
+        .extras {
+            ::slotted(*::part(popup)) {
+                background-color: yellowgreen;
+            }
+
+            ::slotted(*)::part(icon) {
+                background-color: yellow;
+            }
+        }
+    }
+
+    &:focus-within {
         .box {
             border-color: var(--theme-color-lighter);
 
-            .buttons {
-                ::slotted([slot="button"]) {
+            .extras {
+                ::slotted(*) {
                     --vi-icon-fill: var(--theme-color);
                 }
 
-                ::slotted([slot="button"]:hover) {
+                ::slotted(*:hover) {
                     background-color: var(--theme-color);
-                    --vi-icon-fill: white;
+                    --vi-icon-fill: white !important;
                 }
 
-                ::slotted([slot="button"])::after, ::slotted([slot="button"])::before {
+                ::slotted(*)::after, ::slotted(*)::before {
                     border-color: var(--theme-color-lighter);
                 }
             }

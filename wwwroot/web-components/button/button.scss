@@ -14,7 +14,6 @@
         background-color: fadeout($bgColor, 50%) !important;
         fill: fadeout($fgColor, 50%) !important;
         color: fadeout($fgColor, 50%) !important;
-        --at-apply: --vi-button-disabled;
     }
 }
 
@@ -29,7 +28,6 @@
     outline: none;
     box-sizing: border-box;
     --vi-spinner-size: 1.5em;
-    --at-apply: --vi-button;
 
     .highlight {
         display: none !important;
@@ -74,15 +72,7 @@
 
     &[disabled] {
         cursor: default;
-        --at-apply: --vi-button-disabled;
-
-        vi-icon {
-            --at-apply: --vi-button-disabled-icon;
-        }
-
-        span {
-            --at-apply: --vi-button-disabled-label;
-        }
+        pointer-events: none;
     }
 
     &:not([custom-layout]) {
@@ -98,11 +88,6 @@
         > vi-icon {
             height: 100%;
             margin-right: 2px;
-            --at-apply: --vi-button-icon;
-        }
-
-        > span {
-            --at-apply: --vi-button-label;
         }
 
         &[busy] {
@@ -125,7 +110,6 @@
 
             &:not([busy])[disabled] {
                 opacity: 0.5;
-                --at-apply: --vi-button-disabled;
             }
         }
 
@@ -141,7 +125,6 @@
 
             &:not([busy])[disabled] {
                 opacity: 0.5;
-                --at-apply: --vi-button-disabled;
             }
         }
     }

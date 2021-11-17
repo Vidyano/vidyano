@@ -4,16 +4,12 @@
     @include layout-horizontal();
     @include relative();
 
-    --vi-select-input: {
+    input, vi-select::part(input) {
         color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
-    };
+    }
 
-    --vi-select-icon: {
+    vi-select::part(icon) {
         display: none;
-    };
-
-    input {
-        color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
     }
 
     &:not([editing]) {
@@ -46,8 +42,6 @@
             }
 
             span {
-                -ms-text-overflow: ellipsis;
-                -o-text-overflow: ellipsis;
                 text-overflow: ellipsis;
                 overflow: hidden;
             }
@@ -65,15 +59,8 @@
     &[editing] {
         vi-select {
             border: none;
-            position: absolute;
-            left: 0;
-            right: 0;
 
             vi-popup > #content {
-                -moz-transform: translateY(1px);
-                -ms-transform: translateY(1px);
-                -o-transform: translateY(1px);
-                -webkit-transform: translateY(1px);
                 transform: translateY(1px);
             }
         }
@@ -81,12 +68,6 @@
         a[disabled] {
             display: none;
         }
-    }
-
-    vi-persistent-object-attribute-edit[reverse-content] {
-        --vi-persistent-object-attribute-edit-buttons: {
-            z-index: 2;
-        };
     }
 
     #radiobuttons {
@@ -100,7 +81,7 @@
 
     span, input {
         &[sensitive] {
-            --at-apply: --vi-app--sensitive;
+            filter: blur(5px);
         }
     }
 }

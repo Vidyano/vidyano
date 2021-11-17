@@ -12,14 +12,14 @@
             <input value="[[friendlyName]]" readonly sensitive$="[[sensitive]]">
             <dom-if if="[[!readOnly]]" restamp>
                 <template>
-                    <vi-button slot="button" on-tap="_browseReference" tabindex="-1">
+                    <vi-button slot="right" on-tap="_browseReference" tabindex="-1">
                         <vi-icon source="Ellipsis"></vi-icon>
                     </vi-button>
                 </template>
             </dom-if>
             <dom-if if="[[canClear]]" restamp>
                 <template>
-                    <vi-button slot="button" on-tap="_clearReference" tabindex="-1">
+                    <vi-button slot="right" on-tap="_clearReference" tabindex="-1">
                         <vi-icon source="Remove"></vi-icon>
                     </vi-button>
                 </template>

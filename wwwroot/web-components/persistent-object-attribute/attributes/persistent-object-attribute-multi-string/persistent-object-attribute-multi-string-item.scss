@@ -28,7 +28,7 @@
             }
 
             &[sensitive] {
-                --at-apply: --vi-app--sensitive;
+                filter: blur(5px);
             }
         }
     }

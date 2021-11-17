@@ -39,9 +39,9 @@
 
     &[disabled] {
         vi-button {
-            --vi-button-disabled: {
+            &[disabled] {
                 opacity: 1;
-            };
+            }
 
             span {
                 opacity: 0.5;

@@ -27,7 +27,7 @@
     }
 
     pre[sensitive] {
-        --at-apply: --vi-app--sensitive;
+        filter: blur(5px);
     }
 
     vi-persistent-object-attribute-edit vi-tags {

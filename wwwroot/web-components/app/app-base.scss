@@ -42,10 +42,8 @@
         @include noSelection();
     }
 
-    &[sensitive] {
-        --vi-app--sensitive: {
-            filter: blur(5px);
-        };
+    &[sensitive] *::part(*).sensitive {
+        filter: blur(5px);
     }
 
     [dialog] {
@@ -78,9 +76,6 @@
             }
 
             > header {
-                -webkit-flex: 0 0 auto;
-                -moz-flex: 0 0 auto;
-                -ms-flex: 0 0 auto;
                 flex: 0 0 auto;
                 line-height: var(--theme-h1);
                 padding: var(--theme-h5) var(--theme-h4);

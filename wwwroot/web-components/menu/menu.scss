@@ -9,7 +9,6 @@ $backgroundColor: $blue-grey-900;
     @include noSelection();
     color: var(--vi-menu-color, $color);
     background-color: var(--vi-menu-background, $backgroundColor);
-    --at-apply: --vi-menu;
 
     &:not([collapsed]) {
         width: var(--vi-menu--expand-width, 17em);
@@ -164,7 +163,6 @@ $backgroundColor: $blue-grey-900;
             background-color: var(--theme-color-dark);
             white-space: nowrap;
             overflow: hidden;
-            --at-apply: --vi-menu--label;
         }
 
         #toggleCollapse {
@@ -174,7 +172,6 @@ $backgroundColor: $blue-grey-900;
             height: var(--theme-h1);
             width: var(--theme-h1);
             fill: rgba(255, 255, 255, 0.5);
-            --at-apply: --vi-menu--toggle-collapse;
 
             &::part(icon) {
                 transition: transform 0.3s ease-in-out;
@@ -186,7 +183,6 @@ $backgroundColor: $blue-grey-900;
 
     footer {
         overflow: hidden;
-        --at-apply: --vi-menu--footer;
     }
 
     vi-input-search:not([collapsed]) {

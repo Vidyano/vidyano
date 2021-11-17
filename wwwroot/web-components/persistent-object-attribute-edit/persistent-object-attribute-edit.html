@@ -1,10 +1,13 @@
 <link rel="stylesheet" href="persistent-object-attribute-edit.css" />
 
 <fieldset class="flex relative" disabled$="[[attribute.parent.isFrozen]]">
-    <div class="box layout horizontal fit" reverse$="[[reverse]]">
+    <div class="box fit layout horizontal">
+        <div class="left extras">
+            <slot name="left"></slot>
+        </div>
         <slot></slot>
-        <div class="buttons">
-            <slot name="button"></slot>
+        <div class="right extras">
+            <slot name="right"></slot>
         </div>
     </div>
 </fieldset>

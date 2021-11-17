@@ -41,27 +41,27 @@
                 <template>
                     <dom-if if="[[hasTimeComponent]]">
                         <template>
-                            <vi-time-picker slot="button" id="timepicker" time="{{selectedTime}}"></vi-time-picker>
+                            <vi-time-picker slot="right" id="timepicker" time="{{selectedTime}}"></vi-time-picker>
                         </template>
                     </dom-if>
                     <dom-if if="[[hasDateComponent]]">
                         <template>
                             <dom-if if="[[monthMode]]">
                                 <template>
-                                    <vi-button slot="button" on-tap="_previousMonth">
+                                    <vi-button slot="right" on-tap="_previousMonth">
                                         <vi-icon source="ChevronLeft"></vi-icon>
                                     </vi-button>
-                                    <vi-button slot="button" on-tap="_nextMonth">
+                                    <vi-button slot="right" on-tap="_nextMonth">
                                         <vi-icon source="ChevronRight"></vi-icon>
                                     </vi-button>
                                 </template>
                             </dom-if>
-                            <vi-date-picker slot="button" id="datepicker" selected-date="{{selectedDate}}" month-mode="[[monthMode]]" min-date="[[minDate]]" max-date="[[maxDate]]"></vi-date-picker>
+                            <vi-date-picker slot="right" id="datepicker" selected-date="{{selectedDate}}" month-mode="[[monthMode]]" min-date="[[minDate]]" max-date="[[maxDate]]"></vi-date-picker>
                         </template>
                     </dom-if>
                     <dom-if if="[[canClear]]">
                         <template>
-                            <vi-button slot="button" on-tap="_clear" tabindex="-1">
+                            <vi-button slot="right" on-tap="_clear" tabindex="-1">
                                 <vi-icon source="Remove"></vi-icon>
                             </vi-button>
                         </template>

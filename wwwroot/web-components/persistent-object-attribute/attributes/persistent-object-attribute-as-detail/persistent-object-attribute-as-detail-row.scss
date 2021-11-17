@@ -74,7 +74,7 @@
     }
 
     span[sensitive] {
-        --at-apply: --vi-app--sensitive;
+        filter: blur(5px);
     }
 
     &:not([full-edit])[read-only] .column {

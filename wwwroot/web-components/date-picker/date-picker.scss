@@ -9,7 +9,7 @@ $border-color: #eee;
     &:hover vi-popup[open], vi-popup[hover] {
         [slot="header"] {
             background-color: var(--theme-color) !important;
-            fill: white !important;
+            --vi-icon-fill: white !important;
         }
     }
 
@@ -18,7 +18,7 @@ $border-color: #eee;
         fill: white;
         background-color: var(--theme-color);
 
-        button {
+        vi-button {
             text-align: center;
             height: var(--theme-h2);
             min-width: var(--theme-h2);
@@ -27,6 +27,7 @@ $border-color: #eee;
 
             > vi-icon {
                 height: var(--theme-h2);
+                --vi-icon-fill: white;
             }
 
             &:hover {

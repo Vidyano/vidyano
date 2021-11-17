@@ -32,10 +32,10 @@
                     <vi-icon source="ArrowUpRight"></vi-icon>
                 </a>
             </template>
-            <slot name="button" slot="button"></slot>
+            <slot name="button" slot="right"></slot>
             <dom-if if="[[hasSuggestions]]">
                 <template>
-                    <vi-popup slot="button" id="suggestions" content-align="right">
+                    <vi-popup slot="right" id="suggestions" content-align="right">
                         <vi-icon source="Add" slot="header"></vi-icon>
                         <vi-scroller>
                             <ul>

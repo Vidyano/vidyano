@@ -17,13 +17,13 @@
             </div>
             <dom-if if="[[!readOnly]]">
                 <template>
-                    <vi-button slot="button" class="browse bottom-border">
+                    <vi-button slot="right" class="browse bottom-border">
                         <vi-icon source="ImageUpload"></vi-icon>
                         <input type="file" accept="image/*" capture="environment" on-change="_change">
                     </vi-button>
                     <dom-if if="[[hasValue]]" restamp>
                         <template>
-                            <vi-button slot="button" class="bottom-border" on-tap="_clear" tabindex="-1">
+                            <vi-button slot="right" class="bottom-border" on-tap="_clear" tabindex="-1">
                                 <vi-icon source="Remove"></vi-icon>
                             </vi-button>
                         </template>

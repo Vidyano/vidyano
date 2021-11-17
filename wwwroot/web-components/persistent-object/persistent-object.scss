@@ -3,20 +3,20 @@
 $tabsBG: #f1f1f1;
 
 :host {
-    --vi-action-bar-style: {
-        padding-top: 3px;
-        border-bottom: 1px solid '$tabsBG';
-    };
-
     @include layout-vertical-reverse();
     --vi-persistent-object-master-width: 40%;
+
+    vi-action-bar {
+        padding-top: 3px;
+        border-bottom: 1px solid '$tabsBG';
+    }
 
     header {
         @include page-title();
         padding-right: 4px;
 
         > span[sensitive] {
-            --at-apply: --vi-app--sensitive;
+            filter: blur(5px);
         }
     }
 
@@ -64,10 +64,6 @@ $tabsBG: #f1f1f1;
                 opacity: 0.01;
                 background-color: white;
                 z-index: 3;
-                -moz-transform: translateX(-3px);
-                -ms-transform: translateX(-3px);
-                -o-transform: translateX(-3px);
-                -webkit-transform: translateX(-3px);
                 transform: translateX(-3px);
             }
 

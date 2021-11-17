@@ -98,10 +98,6 @@ $backgroundColor: $blue-grey-900;
                 > vi-icon[has-resource] {
                     display: block;
                     width: var(--theme-h1);
-                    -moz-transform: rotate(0);
-    			    -ms-transform: rotate(0);
-    			    -o-transform: rotate(0);
-    			    -webkit-transform: rotate(0);
     			    transform: rotate(0);
 
                     & + span {

@@ -12,13 +12,13 @@
             <input class="flex" value="{{fileName}}" type="text" readonly placeholder="[[placeholder]]" sensitive$="[[sensitive]]">
             <dom-if if="[[!readOnly]]">
                 <template>
-                    <button class="browse" slot="button" on-change="_change">
+                    <button class="browse" slot="right" on-change="_change">
                         <vi-icon source="FileUpload"></vi-icon>
                         <slot name="upload"></slot>
                     </button>
                     <dom-if if="[[canClear]]" restamp>
                         <template>
-                            <button slot="button" on-tap="_clear" tabindex="-1">
+                            <button slot="right" on-tap="_clear" tabindex="-1">
                                 <vi-icon source="Remove"></vi-icon>
                             </button>
                         </template>
