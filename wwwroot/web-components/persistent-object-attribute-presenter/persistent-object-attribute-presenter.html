@@ -16,7 +16,9 @@
     </div>
 </div>
 <dom-if if="[[developer]]">
-    <div id="developer" on-tap="_openAttributeManagement">
-        <label>[[attribute.name]]</label>
-    </div>
+    <template>
+        <div id="developer" on-tap="_openAttributeManagement">
+            <label>[[attribute.name]]</label>
+        </div>
+    </template>
 </dom-if>
