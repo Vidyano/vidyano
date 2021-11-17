@@ -7,6 +7,7 @@ import "../input-search/input-search.js"
 import type { InputSearch } from "../input-search/input-search.js"
 import "./menu-item.js"
 import { Popup } from "../popup/popup.js"
+import { SelectReferenceDialog } from "../select-reference-dialog/select-reference-dialog.js"
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
 import "../user/user.js"
 
