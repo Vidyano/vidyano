@@ -26,8 +26,6 @@ $backgroundColor: $blue-grey-900;
         text-decoration: none;
         color: var(--vi-menu-color, $color);
         white-space: nowrap;
-        -ms-text-overflow: ellipsis;
-        -o-text-overflow: ellipsis;
         text-overflow: ellipsis;
         overflow: hidden;
         outline: none;
@@ -46,7 +44,7 @@ $backgroundColor: $blue-grey-900;
     		transition: transform 0.2s ease;
             transform: rotate(0deg);
 
-            &:empty {
+            &[unresolved] {
                 display: none;
 
                 & + span {
