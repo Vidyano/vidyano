@@ -28,7 +28,6 @@ const icons: { [key: string]: Icon } = {};
 export class Icon extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="icon.html">`; }
 
-    private _iconStyle: HTMLStyleElement;
     private _source: string;
     private _aliases: string[] = [];
     name: string;
@@ -47,25 +46,16 @@ export class Icon extends WebComponent {
         if (isConnected === undefined || source === undefined)
             return;
 
-        if (isConnected && !source && this._iconStyle !== undefined) {
-            Array.from(this.$.svgHost.children).forEach(c => {
-                if (c === this._iconStyle)
-                    return;
-
-                this.$.svgHost.removeChild(c);
-            });
-        }
-
         if (this._source === source)
             return;
+
+        if (this.$.svgHost.children.length > 0)
+            this.$.svgHost.innerHTML = "";
 
         const resource = Icon.Load(this._source = source);
         this._setUnresolved(!resource);
         if (this.unresolved)
             return;
-
-        if (!this._iconStyle)
-            this._iconStyle = this.shadowRoot.querySelector("style");
 
         Array.from(resource.children).forEach((child: HTMLElement) => {
             this.$.svgHost.appendChild(child.cloneNode(true));
