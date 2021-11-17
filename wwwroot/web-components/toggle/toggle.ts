@@ -26,8 +26,7 @@ import { WebComponent, WebComponentListener } from "../web-component/web-compone
         "tap": "toggle"
     },
     keybindings: {
-        "space": "_keyToggle",
-        "enter": "_keyToggle"
+        "space": "_keyToggle"
     }
 })
 export class Toggle extends WebComponentListener(WebComponent) {
@@ -52,7 +51,7 @@ export class Toggle extends WebComponentListener(WebComponent) {
     }
 
     private _keyToggle(e: KeyboardEvent) {
-        if (document.activeElement !== this)
+        if (this.app.activeElement !== this)
             return true;
 
         this.toggle();

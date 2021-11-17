@@ -70,16 +70,16 @@ export class MessageDialog extends Dialog {
             if (this.options.rich)
                 await import("@polymer/marked-element/marked-element.js");
 
-            /*const focus = setInterval(() => {
-                const button = <HTMLButtonElement>this.$.actions.querySelectorAll("button")[this.activeAction];
+            const focus = setInterval(() => {
+                const button = <HTMLButtonElement>this.$.actions.querySelectorAll("vi-button")[this.activeAction];
                 if (!button)
                     return;
 
-                if (document.activeElement !== button)
+                if (this.app.activeElement !== button)
                     this._focusElement(button);
                 else
                     clearInterval(focus);
-            }, 100);*/
+            }, 100);
 
             return super.open();
         }

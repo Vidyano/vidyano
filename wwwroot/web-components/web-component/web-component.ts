@@ -265,17 +265,24 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
     }
 
     protected _focusElement(element: string | HTMLElement, maxAttempts?: number, interval?: number, attempt: number = 0) {
-        const input = typeof element === "string" ? <HTMLElement>this.shadowRoot.querySelector(`#${element}`) : <HTMLElement>element;
-        if (input) {
-            const activeElement = <HTMLElement>document.activeElement;
-            input.focus();
+        const target = typeof element === "string" ? <HTMLElement>this.shadowRoot.querySelector(`#${element}`) : <HTMLElement>element;
+        if (target) {
+            const oldActiveElementPath = this.app.activeElementPath;
+            if (oldActiveElementPath.some(e => e === target))
+                return;
 
-            if (activeElement !== document.activeElement)
+            target.focus();
+
+            const currentActiveElementPath = this.app.activeElementPath;
+            if (oldActiveElementPath.length !== currentActiveElementPath.length)
+                return;
+
+            if (oldActiveElementPath.some((e, i) => currentActiveElementPath[i] !== e))
                 return;
         }
 
         if (attempt < (maxAttempts || 10))
-            setTimeout(() => this._focusElement(input || element, maxAttempts, interval, attempt + 1), interval || 100);
+            setTimeout(() => this._focusElement(target || element, maxAttempts, interval, attempt + 1), interval || 100);
     }
 
     protected _escapeHTML(val: string): string {
@@ -575,7 +582,7 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
                         this._keybindingRegistrations = [];
 
                     const registerKeybinding = (keys: string) => {
-                        let keybinding = this.keybindings[keys];
+                        let keybinding = info.keybindings[keys];
                         if (typeof keybinding === "string")
                             keybinding = { listener: keybinding };
 
@@ -607,6 +614,7 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
                         };
 
                         const element = <any>document.createElement("iron-a11y-keys");
+                        element.target = this;
                         element.keys = keys;
                         element.addEventListener("keys-pressed", eventListener);
 
@@ -624,7 +632,7 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
                         this.app._registerKeybindings(registration);
                     };
 
-                    for (const keys in this.keybindings) {
+                    for (const keys in info.keybindings) {
                         registerKeybinding(keys);
                     }
                 }
@@ -636,8 +644,7 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
                             this.app._unregisterKeybindings(reg);
 
                             reg.element.removeEventListener("keys-pressed", reg.listener);
-                            // TODO
-                            //this.shadowRoot.removeChild(reg.element);
+                            this.shadowRoot.removeChild(reg.element);
                         }
                     }
                 }
@@ -752,9 +759,6 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
             if (targetInfo) {
                 if (targetInfo.properties)
                     info.properties = info.properties ? Vidyano.extend(info.properties, targetInfo.properties) : targetInfo.properties;
-
-                if (targetInfo.hostAttributes)
-                    info.hostAttributes = info.hostAttributes ? Vidyano.extend(info.hostAttributes, targetInfo.hostAttributes) : targetInfo.hostAttributes;
 
                 if (targetInfo.listeners)
                     info.listeners = info.listeners ? Vidyano.extend(info.listeners, targetInfo.listeners) : targetInfo.listeners;

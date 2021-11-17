@@ -16,7 +16,9 @@ import { Keyboard, WebComponent, WebComponentListener } from "../web-component/w
 import "./style-modules/flex-layout.js"
 import "./style-modules/reset-css.js"
 import "./style-modules/responsive.js"
+import "@polymer/iron-a11y-keys/iron-a11y-keys.js"
 import "@polymer/paper-ripple"
+import { IronA11yKeysElement } from "@polymer/iron-a11y-keys/iron-a11y-keys.js"
 
 declare global {
     interface Window {
@@ -152,9 +154,6 @@ if (hashBangRe.test(document.location.href)) {
         "_computeThemeColorVariants(themeAccentColor, 'accent-color', isConnected)",
         "_mediaQueryChanged(isDesktop, isTablet, isPhone)"
     ],
-    hostAttributes: {
-        "tabindex": "-1"
-    },
     listeners: {
         "app-route-presenter-connected": "_appRoutePresenterConnected",
         "click": "_anchorClickHandler",
@@ -206,10 +205,29 @@ export abstract class AppBase extends WebComponentListener(WebComponent) {
         this._initPathRescue();
 
         super.connectedCallback();
+
+        const a11yKeys = this.shadowRoot.querySelector("iron-a11y-keys") as IronA11yKeysElement;
+        a11yKeys.target = document.body;
+
+        this.setAttribute("tabindex", "-1");
     }
 
     get initialize(): Promise<any> {
         return this._initialize;
+    }
+
+    get activeElement(): Element {
+        return this.activeElementPath[0];
+    }
+
+    get activeElementPath(): Element[] {
+        const path = [document.activeElement];
+
+        let element = document.activeElement;
+        while (element.shadowRoot != null && element.shadowRoot.activeElement)
+            path.push(element = element.shadowRoot.activeElement);
+
+        return path.reverse();
     }
 
     protected _initPathRescue() {
@@ -479,7 +497,7 @@ export abstract class AppBase extends WebComponentListener(WebComponent) {
         if (!this._keybindingRegistrations[e.detail.combo])
             return;
 
-        if (document.activeElement instanceof HTMLInputElement && !(e.detail.keyboardEvent.ctrlKey || e.detail.keyboardEvent.shiftKey || e.detail.keyboardEvent.altKey) && e.detail.key !== "esc")
+        if (this.activeElement instanceof HTMLInputElement && !(e.detail.keyboardEvent.ctrlKey || e.detail.keyboardEvent.shiftKey || e.detail.keyboardEvent.altKey) && e.detail.key !== "esc")
             return;
 
         let combo = e.detail.combo;

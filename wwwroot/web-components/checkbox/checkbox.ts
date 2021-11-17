@@ -1,4 +1,4 @@
-import * as Polymer from "../../libs/@polymer/polymer.js"
+﻿import * as Polymer from "../../libs/@polymer/polymer.js"
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
 
 @WebComponent.register({
@@ -39,8 +39,7 @@ import { WebComponent, WebComponentListener } from "../web-component/web-compone
         "tap": "toggle"
     },
     keybindings: {
-        "space": "_keyToggle",
-        "enter": "_keyToggle"
+        "space": "_keyToggle"
     }
 })
 export class Checkbox extends WebComponentListener(WebComponent) {
@@ -68,7 +67,7 @@ export class Checkbox extends WebComponentListener(WebComponent) {
     }
 
     private _keyToggle(e: KeyboardEvent) {
-        if (document.activeElement !== this)
+        if (this.app.activeElement !== this)
             return true;
 
         this.toggle();

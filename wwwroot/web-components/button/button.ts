@@ -27,6 +27,10 @@ import { WebComponent, WebComponentListener } from "../web-component/web-compone
             reflectToAttribute: true
         }
     },
+    keybindings: {
+        "space": "_fireTap",
+        "enter": "_fireTap"
+    },
     listeners: {
         "tap": "_tap"
     }
@@ -42,6 +46,10 @@ export class Button extends WebComponentListener(WebComponent) {
 
         this.setAttribute("tabindex", "0");
         this._setCustomLayout(this.children.length > 0);
+    }
+
+    private _fireTap() {
+        this.click();
     }
 
     private _tap(e: Polymer.Gestures.TapEvent) {

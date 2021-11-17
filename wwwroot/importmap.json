@@ -4,6 +4,7 @@
         "bignumber.js": "./web3/libs/modules/bignumber.js/bignumber.mjs",
         "@polymer/polymer": "./web3/libs/modules/@polymer/polymer/polymer-element.js",
         "@polymer/polymer/lib/": "./web3/libs/modules/@polymer/polymer/lib/",
+        "@polymer/iron-a11y-keys/iron-a11y-keys.js": "./web3/libs/modules/@polymer/iron-a11y-keys/iron-a11y-keys.js", 
         "@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js": "./web3/libs/modules/@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js",
         "@polymer/iron-collapse": "./web3/libs/modules/@polymer/iron-collapse/iron-collapse.js",
         "@polymer/iron-collapse/": "./web3/libs/modules/@polymer/iron-collapse/",
