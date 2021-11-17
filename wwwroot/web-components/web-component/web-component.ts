@@ -93,33 +93,32 @@ export interface IWebComponentKeybindingInfo {
 
 export interface IWebComponentRegistrationInfo {
     properties?: IWebComponentProperties;
-    hostAttributes?: { [name: string]: any };
     listeners?: { [eventName: string]: string };
     observers?: string[];
 
     // Non-default Polymer registration info
 
-    /*
+    /**
      * Binds keys to local observer functions
      */
     keybindings?: IWebComponentKeybindingInfo;
 
-    /*
+    /**
      * forwardObservers is used to forward Vidyano.Common.Observable notifications to Polymer notifyPath
      */
     forwardObservers?: string[];
 
-    /*
-        * serviceBusObservers is used to subscribe to messages send over the global ServiceBus
-        */
+    /**
+     * serviceBusObservers is used to subscribe to messages send over the global ServiceBus
+     */
     serviceBusObservers?: { [message: string]: string };
 
-    /*
+    /**
      * If true, the component will add readonly isDesktop, isTablet, isPhone properties with reflectToAttribute
      */
     mediaQueryAttributes?: boolean;
 
-    /*
+    /**
      * If true, the component will add a readonly isAppSensitive property with reflectToAttribute. The value will be toggled by the app.
      */
     sensitive?: boolean;

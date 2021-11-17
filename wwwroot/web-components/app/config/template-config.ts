@@ -11,9 +11,6 @@ import { WebComponent } from "../../web-component/web-component.js"
             type: String,
             reflectToAttribute: true
         }
-    },
-    hostAttributes: {
-        "slot": "vi-app-config"
     }
 })
 export abstract class TemplateConfig<T> extends WebComponent {
@@ -31,6 +28,7 @@ export abstract class TemplateConfig<T> extends WebComponent {
     connectedCallback() {
         super.connectedCallback();
 
+        this.setAttribute("slot", "vi-app-config");
         this._setHasTemplate(!!(this.__template = <HTMLTemplateElement>this.querySelector("template")));
     }
 

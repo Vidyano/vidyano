@@ -20,10 +20,6 @@ customElements.define("vi-dialog-core", <CustomElementConstructor><any>DialogCor
     listeners: {
         "iron-overlay-closed": "_onClosed"
     },
-    hostAttributes: {
-        "dialog": "",
-        "with-backdrop": ""
-    },
     keybindings: {
         "esc": "_esc"
     }

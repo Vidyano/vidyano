@@ -94,9 +94,6 @@ styleElement.register("vi-persistent-object-attribute-style-module");
     listeners: {
         "focus": "_onFocus"
     },
-    hostAttributes: {
-        "tabindex": "-1"
-    },
     sensitive: true
 })
 export abstract class PersistentObjectAttribute extends WebComponentListener(WebComponent) {
@@ -108,6 +105,12 @@ export abstract class PersistentObjectAttribute extends WebComponentListener(Web
     readOnly: boolean;
     disabled: boolean;
     sensitive: boolean;
+
+    connectedCallback() {
+        super.connectedCallback();
+
+        this.setAttribute("tabindex", "-1");
+    }
 
     protected _attributeValueChanged() {
         this.value = this.attribute.value !== undefined ? this.attribute.value : null;

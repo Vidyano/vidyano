@@ -22,9 +22,6 @@ import { WebComponent, WebComponentListener } from "../web-component/web-compone
             reflectToAttribute: true
         }
     },
-    hostAttributes: {
-        "tabindex": "0"
-    },
     listeners: {
         "tap": "toggle"
     },
@@ -40,6 +37,12 @@ export class Toggle extends WebComponentListener(WebComponent) {
     label: string;
     disabled: boolean;
     radio: boolean;
+
+    connectedCallback() {
+        super.connectedCallback();
+
+        this.setAttribute("tabindex", "0");
+    }
 
     toggle() {
         if (this.disabled)

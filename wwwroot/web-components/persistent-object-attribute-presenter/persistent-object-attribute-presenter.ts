@@ -119,9 +119,6 @@ const _attributeImports: { [key: string]: Promise<any>; } = {
             reflectToAttribute: true
         }
     },
-    hostAttributes: {
-        "tabindex": "-1"
-    },
     listeners: {
         "focus": "_onFocus"
     },
@@ -160,6 +157,8 @@ export class PersistentObjectAttributePresenter extends WebComponentListener(Web
             this._developerToggleDisposer = developerShortcut.propertyChanged.attach(this._devToggle.bind(this));
 
         super.connectedCallback();
+
+        this.setAttribute("tabindex", "-1");
     }
 
     disconnectedCallback() {

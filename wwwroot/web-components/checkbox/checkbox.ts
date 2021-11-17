@@ -1,4 +1,4 @@
-﻿import * as Polymer from "../../libs/@polymer/polymer.js"
+import * as Polymer from "../../libs/@polymer/polymer.js"
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
 
 @WebComponent.register({
@@ -35,9 +35,6 @@ import { WebComponent, WebComponentListener } from "../web-component/web-compone
             computed: "_computeIcon(radio)"
         }
     },
-    hostAttributes: {
-        "tabindex": "0"
-    },
     listeners: {
         "tap": "toggle"
     },
@@ -53,6 +50,12 @@ export class Checkbox extends WebComponentListener(WebComponent) {
     label: string;
     disabled: boolean;
     radio: boolean;
+
+    connectedCallback() {
+        super.connectedCallback();
+
+        this.setAttribute("tabindex", "0");
+    }
 
     toggle() {
         if (this.disabled)
