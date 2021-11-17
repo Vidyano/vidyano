@@ -130,6 +130,7 @@
         "$type": "Vidyano.Service.Repository.PersistentObjectAttributeAsDetail, Vidyano.Service",
         "DetailsId": "1278a445-580f-45ae-9b71-92b33b9402c4",
         "Id": "b41f3aab-11d0-3312-ba9f-cad26aa180dc",
+        "Offset": 403,
         "Name": "AsDetail",
         "CanSort": false,
         "CanFilter": false,
