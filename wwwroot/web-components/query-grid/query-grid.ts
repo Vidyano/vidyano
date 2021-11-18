@@ -148,6 +148,9 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
         if (this._columnWidths.size < this.columns.length)
             return;
 
+        // Remove previously added columns which are no longer relevant
+        Array.from(this._columnWidths).filter(cw => this.columns.indexOf(cw[0]) < 0).forEach(c => this._columnWidths.delete(c[0]));
+
         const widths = Array.from(this._columnWidths.values());
         if (widths.some(w => w.length < 2))
             return;

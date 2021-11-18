@@ -63,7 +63,7 @@ export class QueryGridRow extends WebComponentListener(WebComponent) {
 
     private _groupElement: QueryGridRowGroup;
     private _visibleCells: QueryGridCell[];
-    private _invisibleCellValues: [QueryGridCell, Vidyano.QueryResultItemValue][];
+    private _invisibleCellValues: [QueryGridCell, Vidyano.QueryResultItemValue][] = [];
     columns: Vidyano.QueryColumn[];
     index: number;
     offsets: number[];
