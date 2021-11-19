@@ -153,8 +153,6 @@ export class PersistentObjectAttributePresenter extends WebComponentListener(Web
     readOnly: boolean;
 
     connectedCallback() {
-        this.setAttribute("tabindex", "-1");
-
         super.connectedCallback();
 
         if (this.service && this.service.application && this.service.application.hasManagement)

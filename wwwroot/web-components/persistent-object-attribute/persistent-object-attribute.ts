@@ -106,12 +106,6 @@ export abstract class PersistentObjectAttribute extends WebComponentListener(Web
     disabled: boolean;
     sensitive: boolean;
 
-    connectedCallback() {
-        super.connectedCallback();
-
-        this.setAttribute("tabindex", "-1");
-    }
-
     protected _attributeValueChanged() {
         this.value = this.attribute.value !== undefined ? this.attribute.value : null;
     }
