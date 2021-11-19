@@ -39,11 +39,6 @@
             </div>
             <dom-if if="[[!readOnly]]">
                 <template>
-                    <dom-if if="[[hasTimeComponent]]">
-                        <template>
-                            <vi-time-picker slot="right" id="timepicker" time="{{selectedTime}}"></vi-time-picker>
-                        </template>
-                    </dom-if>
                     <dom-if if="[[hasDateComponent]]">
                         <template>
                             <dom-if if="[[monthMode]]">
@@ -57,6 +52,11 @@
                                 </template>
                             </dom-if>
                             <vi-date-picker slot="right" id="datepicker" selected-date="{{selectedDate}}" month-mode="[[monthMode]]" min-date="[[minDate]]" max-date="[[maxDate]]"></vi-date-picker>
+                        </template>
+                    </dom-if>
+                    <dom-if if="[[hasTimeComponent]]">
+                        <template>
+                            <vi-time-picker slot="right" id="timepicker" time="{{selectedTime}}"></vi-time-picker>
                         </template>
                     </dom-if>
                     <dom-if if="[[canClear]]">

@@ -75,10 +75,6 @@ export class PersistentObjectAttributeDateTime extends PersistentObjectAttribute
     private _valueChangedBlock: boolean;
     private _dateInput: HTMLInputElement;
     private _timeInput: HTMLInputElement;
-    private _lastRenderedSelectedDate: any;
-    private _isDateFilled: boolean;
-    private _isTimeFilled: boolean;
-    private _skipBlurRefreshUpdate: boolean;
     private _pendingRefresh: boolean;
     readonly isInvalid: boolean; private _setIsInvalid: (invalid: boolean) => void;
     readonly hasTimeComponent: boolean;
@@ -109,13 +105,6 @@ export class PersistentObjectAttributeDateTime extends PersistentObjectAttribute
         }
 
         return this._timeInput;
-    }
-
-    private _focused(e: FocusEvent) {
-        const input = <HTMLInputElement>e.target;
-
-        if ((input.id === "date" && !this._isDateFilled) || (input.id === "time" && !this._isTimeFilled))
-            input.selectionStart = input.selectionEnd = 0;
     }
 
     protected _editingChanged() {
@@ -209,6 +198,9 @@ export class PersistentObjectAttributeDateTime extends PersistentObjectAttribute
 
             if (this.maxDate && value > this.maxDate)
                 return this._setIsInvalid(true);
+            
+            if (this.value instanceof Date && value.getTime() === this.value.getTime())
+                return;
         }
         else
             this._setIsInvalid(false);
@@ -284,24 +276,13 @@ export class PersistentObjectAttributeDateTime extends PersistentObjectAttribute
 
     private _dateFilled() {
         const dateMoment = moment(this.dateInput.value, Vidyano.CultureInfo.currentCulture.dateFormat.shortDatePattern.toUpperCase(), true);
-        if (this._isDateFilled = dateMoment.isValid()) {
+        if (dateMoment.isValid()) {
             this.selectedDate = dateMoment.toDate();
 
-            if (this.hasTimeComponent && this.dateInput.selectionStart === this.dateInput.value.length) {
-                try {
-                    this._skipBlurRefreshUpdate = true;
-                    if (!this.selectedTime) {
-                        this.timeInput.value = this.attribute.typeHints.newTime || moment(new Date()).format("HH:mm");
-                        //(<MaskedInput><any>this.timeInput).fire("filled", { value: this.timeInput.value });
-                    }
-
-                    this._focusElement(this.timeInput);
-                    this.timeInput.selectionStart = 0;
-                    this.timeInput.selectionEnd = this.timeInput.value.length;
-                }
-                finally {
-                    this._skipBlurRefreshUpdate = false;
-                }
+            if (this.hasTimeComponent) {
+                this._focusElement(this.timeInput);
+                this.timeInput.selectionStart = 0;
+                this.timeInput.selectionEnd = this.timeInput.value.length;
             }
         }
         else
@@ -309,9 +290,9 @@ export class PersistentObjectAttributeDateTime extends PersistentObjectAttribute
     }
 
     private _timeFilled() {
-        const timeMoment = moment(this.timeInput.value, Vidyano.CultureInfo.currentCulture.dateFormat.shortTimePattern, true);
+        const timeMoment = moment(this.timeInput.value, `HH${Vidyano.CultureInfo.currentCulture.dateFormat.timeSeparator}mm`, true);
 
-        if (this._isTimeFilled = timeMoment.isValid())
+        if (timeMoment.isValid())
             this.selectedTime = timeMoment.toDate();
         else
             this._setIsInvalid(true);
