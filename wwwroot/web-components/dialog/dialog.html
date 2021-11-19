@@ -1,6 +1,8 @@
 <link rel="stylesheet" href="dialog.css" />
 
 <vi-dialog-core with-backdrop>
-    <vi-size-tracker on-sizechanged="_sizeChanged"></vi-size-tracker>
+    <div class="fit">
+        <vi-size-tracker on-sizechanged="_sizechanged"></vi-size-tracker>
+    </div>
     <slot></slot>
 </vi-dialog-core>

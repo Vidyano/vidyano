@@ -1,0 +1,41 @@
+@import "../_vars.scss";
+
+$min-main-width: 400px;
+
+:host {
+    --vi-persistent-object-dialog-base-width-base: #{$min-main-width};
+
+    main {
+        @include layout-vertical();
+        padding: 0;
+        max-height: calc(80vh - (var(--theme-h1) + var(--theme-h5) * 2) - (var(--theme-h2) + var(--theme-h4) * 2)); // 80vh - header height - footer height (both defined on vi-app)
+        min-height: calc(var(--theme-h2) * 3);
+
+        > vi-persistent-object-tab-presenter {
+            @include flex();
+            min-height: calc(var(--theme-h2) * 3);
+
+            > vi-persistent-object-tab {
+                position: static;
+                width: 100%;
+            }
+        }
+    }
+
+    footer {
+        .extra-actions {
+            padding-right: var(--theme-h5);
+        }
+    }
+}
+
+:host-context(vi-app[is-phone]) main {
+    width: 85vw;
+}
+
+:host-context(vi-app[is-tablet]), :host-context(vi-app[is-desktop]) {
+    main, vi-notification {
+        min-width: $min-main-width;
+        max-width: var(--vi-persistent-object-dialog-computed-width);
+    }
+}

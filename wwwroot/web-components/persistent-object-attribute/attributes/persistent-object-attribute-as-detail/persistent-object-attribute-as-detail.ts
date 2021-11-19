@@ -170,9 +170,8 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
                     await this._finalizeAdd(po);
             }
             else {
-                const module = import("../../../persistent-object-dialog/persistent-object-dialog.js");
-                //await this.app.importComponent("PersistentObjectDialog");
-                this.app.showDialog(new PersistentObjectDialog(po, {
+                const module = await import("../../../persistent-object-dialog/persistent-object-dialog.js");
+                this.app.showDialog(new module.PersistentObjectDialog(po, {
                     saveLabel: po.service.actionDefinitions["AddReference"].displayName,
                     save: (po, close) => {
                         this._finalizeAdd(po);

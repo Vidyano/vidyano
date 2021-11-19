@@ -1,0 +1,31 @@
+<link rel="stylesheet" href="persistent-object-dialog.css" />
+
+<header class="horizontal layout">
+    <h4 class="flex">[[persistentObject.breadcrumb]]</h4>
+</header>
+<vi-notification service-object="[[persistentObject]]"></vi-notification>
+<main id="main">
+    <vi-persistent-object-tab-presenter tab="[[tab]]"></vi-persistent-object-tab-presenter>
+</main>
+<footer class="horizontal layout">
+    <div class="layout horizontal flex extra-actions">
+        <dom-repeat items="[[dialogActions]]" as="action">
+            <template>
+                <vi-button label="[[action.definition.displayName]]" on-tap="_executeExtraAction" disabled$="[[persistentObject.isBusy]]"></vi-button>
+            </template>
+        </dom-repeat>
+    </div>
+    <div class="layout horizontal default-actions">
+        <dom-if if="[[!readOnly]]">
+            <template>
+                <vi-button on-tap="_save" action-type="Default" label="[[saveLabel]]" disabled$="[[!canSave]]"></vi-button>
+                <vi-button inverse on-tap="_cancel" label="[[translateMessage('Cancel', isConnected)]]" disabled$="[[persistentObject.isBusy]]" hidden$="[[options.noCancel]]"></vi-button>
+            </template>
+        </dom-if>
+        <dom-if if="[[readOnly]]">
+            <template>
+                <vi-button on-tap="_cancel" action-type="Default" label="[[translateMessage('Close', isConnected)]]" disabled$="[[persistentObject.isBusy]]"></vi-button>
+            </template>
+        </dom-if>
+    </div>
+</footer>

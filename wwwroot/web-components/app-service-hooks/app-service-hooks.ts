@@ -46,8 +46,8 @@ export class AppServiceHooks extends AppServiceHooksBase {
                 return;
             }
             else if (po.stateBehavior.indexOf("OpenAsDialog") >= 0) {
-                await import("../persistent-object-dialog/persistent-object-dialog.js");
-                await this.app.showDialog(new PersistentObjectDialog(po));
+                const module = await import("../persistent-object-dialog/persistent-object-dialog.js");
+                await this.app.showDialog(new module.PersistentObjectDialog(po));
 
                 return;
             }

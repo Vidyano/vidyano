@@ -1,7 +1,8 @@
 import * as Polymer from "../../libs/@polymer/polymer.js"
 import { mixinBehaviors } from "@polymer/polymer/lib/legacy/class.js"
 import { IronOverlayBehavior } from "@polymer/iron-overlay-behavior"
-import { SizeTrackerEvent } from "../size-tracker/size-tracker.js";
+import { SizeTrackerEvent } from "../size-tracker/size-tracker.js"
+import "../size-tracker/size-tracker.js"
 import { IPosition, WebComponent, WebComponentListener } from "../web-component/web-component.js"
 
 export class DialogCore extends mixinBehaviors(IronOverlayBehavior, Polymer.PolymerElement) {
@@ -35,7 +36,6 @@ export abstract class Dialog extends WebComponentListener(WebComponent) {
 
     private _translatePosition: IPosition;
     private _resolve: Function;
-    private opened: boolean;
     noHeader: boolean;
 
     connectedCallback() {
@@ -94,7 +94,7 @@ export abstract class Dialog extends WebComponentListener(WebComponent) {
         this._resolve();
     }
 
-    private _sizeChanged(e: SizeTrackerEvent) {
+    private _sizechanged(e: SizeTrackerEvent) {
         this.dialogCore.notifyResize();
 
         e.stopPropagation();
@@ -130,13 +130,5 @@ export abstract class Dialog extends WebComponentListener(WebComponent) {
     private _translate(position: IPosition) {
         this._translatePosition = position;
         this.dialogCore.style.transform = `translate(${position.x}px, ${position.y}px)`;
-    }
-
-    protected _translateReset() {
-        if (!this._translatePosition)
-            return;
-
-        this._translatePosition = null;
-        this.dialogCore.style.transform = "";
     }
 }
