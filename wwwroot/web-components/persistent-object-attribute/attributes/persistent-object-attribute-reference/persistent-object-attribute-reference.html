@@ -21,7 +21,7 @@
                 <dom-if if="[[!selectInPlaceAsRadio]]">
                     <template>
                         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-                            <vi-select id="selectInPlace" class="flex" options="[[options]]" selected-option="{{objectId}}" readonly$="[[readOnly]]" placeholder="[[placeholder]]" sensitive="[[sensitive]]"></vi-select>
+                            <vi-select id="selectInPlace" class="fit" options="[[options]]" selected-option="{{objectId}}" readonly$="[[readOnly]]" placeholder="[[placeholder]]" sensitive="[[sensitive]]"></vi-select>
                             <vi-button slot="right" on-tap="_openSelect" hidden$="[[!canOpenSelect]]">
                                 <vi-icon source="CaretDown"></vi-icon>
                             </vi-button>

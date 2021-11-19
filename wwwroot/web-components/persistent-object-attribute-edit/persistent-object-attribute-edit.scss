@@ -73,12 +73,8 @@
         }
 
         .extras {
-            position: absolute;
+            position: relative;
             background-color: white;
-
-            &.right {
-                right: 0;
-            }
 
             ::slotted(*) {
                 @include relative();
