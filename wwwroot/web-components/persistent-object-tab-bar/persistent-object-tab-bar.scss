@@ -7,11 +7,11 @@
     height: var(--theme-h1);
     @include noSelection();
 
-    vi-overflow {
-        [toggle] {
-           &:hover{
-               background-color: var(--theme-color-faint);
-           }
+    vi-overflow::part(button) {
+        width: var(--theme-h1);
+        
+        &:hover{
+            background-color: var(--theme-color-faint);
         }
     }
 }

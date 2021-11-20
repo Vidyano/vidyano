@@ -20,10 +20,12 @@
         }
     }
 
-    vi-overflow {
-        vi-action-button {
-            text-align: left;
-        }
+    vi-action-button {
+        text-align: left;
+    }
+    
+    vi-overflow::part(button) {
+        width: var(--theme-h1);
     }
 
     .search {

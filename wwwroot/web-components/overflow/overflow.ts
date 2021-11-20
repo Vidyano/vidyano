@@ -1,4 +1,5 @@
 import * as Polymer from "../../libs/@polymer/polymer.js"
+import "../popup/popup.js"
 import { Popup } from "../popup/popup.js"
 import { WebComponent, WebComponentListener} from "../web-component/web-component.js"
 
@@ -18,7 +19,6 @@ export class Overflow extends WebComponentListener(WebComponent) {
     static get template() { return Polymer.html`<link rel="import" href="overflow.html">` }
 
     private _overflownChildren: HTMLElement[];
-    private _visibibleSizeChangedSkip: { width: number; height: number };
     private _previousHeight: number;
     readonly hasOverflow: boolean; private _setHasOverflow: (val: boolean) => void;
 
@@ -30,27 +30,31 @@ export class Overflow extends WebComponentListener(WebComponent) {
     }
 
     private _childSizechanged() {
+        if ((<Popup>this.$.overflowPopup).open)
+            return;
+
         this._setHasOverflow(false);
     }
 
     private _visibleSizeChanged(e: Event, detail: { width: number; height: number }) {
         const popup = <Popup>this.$.overflowPopup;
-        if (popup.open)
-            return;
-
-        Polymer.Async.animationFrame.run(() => {
-            const children = this._getChildren();
-            children.forEach(child => child.removeAttribute("slot"));
-
-            this._setHasOverflow(children.some(child => child.offsetTop > 0));
-        });
+        if (!popup.open) {
+            Polymer.Async.animationFrame.run(() => {
+                const children = this._getChildren();
+                children.forEach(child => child.removeAttribute("slot"));
+    
+                this._setHasOverflow(children.reverse().some(child => child.offsetTop > 0));
+            });
+        }
+        else
+            this._popupOpening();
     }
 
     protected _getChildren(): HTMLElement[] {
         const visibleSlot = <HTMLSlotElement>this.$.visible;
         const overflowSlot = <HTMLSlotElement>this.$.overflow;
 
-        return <HTMLElement[]>visibleSlot.assignedNodes().concat(visibleSlot.assignedNodes()).filter(child => child instanceof HTMLElement);
+        return <HTMLElement[]>visibleSlot.assignedNodes().concat(overflowSlot.assignedNodes()).filter(child => child instanceof HTMLElement);
     }
 
     private _popupOpening() {
