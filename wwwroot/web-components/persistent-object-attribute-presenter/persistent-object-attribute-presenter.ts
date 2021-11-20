@@ -5,7 +5,7 @@ import { PersistentObjectAttribute } from "../persistent-object-attribute/persis
 import { PersistentObjectAttributeString } from "../persistent-object-attribute/attributes/persistent-object-attribute-string/persistent-object-attribute-string.js"
 import { PersistentObjectAttributeConfig } from '../app/config/persistent-object-attribute-config.js'
 import "../persistent-object-attribute-label/persistent-object-attribute-label.js"
-import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
+import { WebComponent } from "../web-component/web-component.js"
 
 class DeveloperShortcut extends Observable<DeveloperShortcut> {
     private _state: boolean = false;
@@ -119,9 +119,6 @@ const _attributeImports: { [key: string]: Promise<any>; } = {
             reflectToAttribute: true
         }
     },
-    listeners: {
-        "focus": "_onFocus"
-    },
     observers: [
         "_attributeChanged(attribute, isConnected)"
     ],
@@ -137,7 +134,7 @@ const _attributeImports: { [key: string]: Promise<any>; } = {
         "attribute.parent.isBulkEdit"
     ]
 })
-export class PersistentObjectAttributePresenter extends WebComponentListener(WebComponent) {
+export class PersistentObjectAttributePresenter extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-presenter.html">`; }
 
     private _developerToggleDisposer: ISubjectDisposer;
@@ -300,14 +297,6 @@ export class PersistentObjectAttributePresenter extends WebComponentListener(Web
 
     private _computeHasError(validationError: string): boolean {
         return !String.isNullOrEmpty(validationError);
-    }
-
-    private _onFocus() {
-        const element = <HTMLElement>this._renderedAttributeElement || Polymer.IronFocusablesHelper.getTabbableNodes(this.shadowRoot.host)[0];
-        if (!element)
-            return;
-
-        this._focusElement(element);
     }
 
     private _loadingChanged(loading: boolean) {

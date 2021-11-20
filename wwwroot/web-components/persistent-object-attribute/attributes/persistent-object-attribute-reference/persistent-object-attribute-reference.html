@@ -22,7 +22,7 @@
                     <template>
                         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
                             <vi-select id="selectInPlace" class="fit" options="[[options]]" selected-option="{{objectId}}" readonly$="[[readOnly]]" placeholder="[[placeholder]]" sensitive="[[sensitive]]"></vi-select>
-                            <vi-button slot="right" on-tap="_openSelect" hidden$="[[!canOpenSelect]]">
+                            <vi-button slot="right" on-tap="_openSelect" hidden$="[[!canOpenSelect]]" tabindex="-1">
                                 <vi-icon source="CaretDown"></vi-icon>
                             </vi-button>
                             <a slot="right" href$="[[href]]" title$="[[title]]" disabled$="[[!href]]" tabindex="-1" on-tap="_open" target$="[[target]]">

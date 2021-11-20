@@ -91,9 +91,6 @@ styleElement.register("vi-persistent-object-attribute-style-module");
     observers: [
         "_updateForegroundDataTypeHint(attribute, editing, readOnly)"
     ],
-    listeners: {
-        "focus": "_onFocus"
-    },
     sensitive: true
 })
 export abstract class PersistentObjectAttribute extends WebComponentListener(WebComponent) {

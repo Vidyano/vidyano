@@ -44,7 +44,9 @@ export class Button extends WebComponentListener(WebComponent) {
     connectedCallback() {
         super.connectedCallback();
 
-        this.setAttribute("tabindex", "0");
+        if (!this.getAttribute("tabindex"))
+            this.setAttribute("tabindex", "0");
+
         this._setCustomLayout(this.children.length > 0);
     }
 

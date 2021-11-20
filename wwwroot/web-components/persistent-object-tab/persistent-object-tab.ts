@@ -83,17 +83,14 @@ export class PersistentObjectTab extends WebComponentListener(WebComponent) {
             return;
 
         this._attributePresenters = this._attributePresenters.sort((attr1, attr2) => attr1.attribute.offset - attr2.attribute.offset);
-        this._autofocusTarget = this._attributePresenters.find(a => !a.hidden && !a.disabled && !a.readOnly);
-        if (!this._autofocusTarget)
-            return;
+        for (const presenter of this._attributePresenters) {
+            const focusTarget = Polymer.IronFocusablesHelper.getTabbableNodes(presenter)[0];
+            if (!focusTarget)
+                continue;
 
-        if (document.activeElement && document.activeElement.tagName === "INPUT")
-            return;
-
-        if (!!this.findParent(e => e instanceof PersistentObjectAttributePresenter, this._autofocusTarget.parentElement))
-            return;
-
-        this._focusElement(this._autofocusTarget);
+            this._focusElement(focusTarget);
+            break;
+        }
     }
 
     private _innerSizeChanged(size: ISize) {

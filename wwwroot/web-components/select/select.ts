@@ -104,8 +104,7 @@ export interface ISelectItem {
         placeholder: String
     },
     listeners: {
-        "keydown": "_keydown",
-        "focus": "_onFocus"
+        "keydown": "_keydown"
     },
     observers: [
         "_computeSuggestionFeedback(inputValue, suggestion, filtering)"
@@ -127,13 +126,6 @@ export class Select extends WebComponentListener(WebComponent) {
     keepUnmatched: boolean;
     readonly: boolean;
     groupSeparator: string;
-
-    constructor() {
-        super();
-
-        if (!this.hasAttribute("tabindex"))
-            this.setAttribute("tabindex", "0");
-    }
 
     open() {
         if (this.readonly || !this.items || this.items.length === 0)
@@ -207,10 +199,6 @@ export class Select extends WebComponentListener(WebComponent) {
                 e.preventDefault();
             }
         }
-    }
-
-    private _onFocus() {
-        this.shadowRoot.querySelector("input").focus();
     }
 
     private _keyup(e: KeyboardEvent) {
