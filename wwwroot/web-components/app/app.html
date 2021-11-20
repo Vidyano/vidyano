@@ -15,7 +15,7 @@
     <vi-app-route route="persistent-object.:id(/:objectId*)" route-alt="PersistentObject.:id(/:objectId*)" component="../persistent-object-presenter/persistent-object-presenter.js"></vi-app-route>
     <vi-app-route route=":programUnitName/persistent-object.:id(/:objectId*)" route-alt=":programUnitName/PersistentObject.:id(/:objectId*)" component="../persistent-object-presenter/persistent-object-presenter.js"></vi-app-route>
     <vi-app-route route=":programUnitName/from-action/:fromActionId" component="../persistent-object-presenter/persistent-object-presenter.js"></vi-app-route>
-    <vi-app-route route=":programUnitName(/)" component="../persistent-unit-presenter/persistent-unit-presenter.js"></vi-app-route>
+    <vi-app-route route=":programUnitName(/)" component="../program-unit-presenter/program-unit-presenter.js"></vi-app-route>
     <vi-app-route class="fit" route="sign-in(/:stateOrReturnUrl*)(/:returnUrl*)" route-alt="SignIn(/:stateOrReturnUrl*)(/:returnUrl*)" allow-signed-out>
         <template>
             <vi-sign-in label="[[app.label]]" logo="[[app.signInLogo]]">
