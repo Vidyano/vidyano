@@ -166,6 +166,9 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
             this._appChangedListener = null;
 
             this._setApp(window["app"]);
+
+            if (!this.app.service)
+                this._listenForService(this.app);
         });
     }
 
