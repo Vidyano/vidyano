@@ -19,6 +19,7 @@
   "exclude": [],
   "include": [
       "wwwroot/libs/vidyano/**/*.ts",
+      "wwwroot/test/**/*.ts",
       "wwwroot/web-components/**/*.ts"
   ]
 }

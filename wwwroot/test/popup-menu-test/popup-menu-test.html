@@ -1,0 +1,66 @@
+<link rel="stylesheet" href="popup-menu-test.css" />
+
+<div class="grid">
+    <div>
+        <label>With one popup-menu-item</label>
+        <vi-popup-menu>
+            <vi-button slot="header" label="Test" icon="CaretDown"></vi-button>
+            <vi-popup-menu-item label="Menu item 1"></vi-popup-menu-item>
+        </vi-popup-menu>
+    </div>
+
+    <div>
+        <label>With multiple popup-menu-items</label>
+        <vi-popup-menu>
+            <vi-button slot="header" label="Test" icon="CaretDown"></vi-button>
+            <vi-popup-menu-item label="Menu item 1"></vi-popup-menu-item>
+            <vi-popup-menu-item label="Menu item 2"></vi-popup-menu-item>
+        </vi-popup-menu>
+    </div>
+
+    <div>
+        <label>With multiple popup-menu-items and icons</label>
+        <vi-popup-menu>
+            <vi-button slot="header" label="Test" icon="CaretDown"></vi-button>
+            <vi-popup-menu-item label="Menu item 1" icon="SortAsc"></vi-popup-menu-item>
+            <vi-popup-menu-item label="Menu item 2" icon="SortDesc"></vi-popup-menu-item>
+        </vi-popup-menu>
+    </div>
+
+    <div>
+        <label>With popup-menu-item and children</label>
+        <vi-popup-menu>
+            <vi-button slot="header" label="Test" icon="CaretDown"></vi-button>
+            <vi-popup-menu-item label="Menu item 1" icon="SortAsc">
+                <vi-popup-menu-item label="Menu item 1.1"></vi-popup-menu-item>
+            </vi-popup-menu-item>
+            <vi-popup-menu-item label="Menu item 2" icon="SortDesc"></vi-popup-menu-item>
+        </vi-popup-menu>
+    </div>
+
+    <div>
+        <label>With separator</label>
+        <vi-popup-menu>
+            <vi-button slot="header" label="Test" icon="CaretDown"></vi-button>
+            <vi-popup-menu-item label="Menu item A" icon="SortAsc"></vi-popup-menu-item>
+            <vi-popup-menu-item label="Menu item B" icon="SortAsc"></vi-popup-menu-item>
+            <vi-popup-menu-item label="Menu item C" icon="SortAsc"></vi-popup-menu-item>
+            <vi-popup-menu-item-separator></vi-popup-menu-item-separator>
+            <vi-popup-menu-item label="Menu item D" icon="SortDesc"></vi-popup-menu-item>
+            <vi-popup-menu-item label="Menu item E" icon="SortDesc"></vi-popup-menu-item>
+        </vi-popup-menu>
+    </div>
+
+    <div>
+        <label>With split</label>
+        <vi-popup-menu>
+            <vi-button slot="header" label="Test" icon="CaretDown"></vi-button>
+            <vi-popup-menu-item-split label="Menu item 1" icon="SortAsc">
+                <vi-popup-menu-item label="Menu item 1.1" icon="SignIn"></vi-popup-menu-item>
+                <vi-popup-menu-item label="Menu item 1.2"></vi-popup-menu-item>
+                <vi-popup-menu-item label="Menu item 1.3"></vi-popup-menu-item>
+            </vi-popup-menu-item-split>
+            <vi-popup-menu-item label="Menu item 2" icon="SortDesc"></vi-popup-menu-item>
+        </vi-popup-menu>
+    </div>
+</div>

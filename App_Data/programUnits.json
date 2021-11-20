@@ -32,6 +32,25 @@
           }
         }
       ]
+    },
+    {
+      "Name": "Test",
+      "Offset": 10,
+      "Title": {
+        "en": "Test",
+        "nl": ""
+      },
+      "Groups": [],
+      "Items": [
+        {
+          "ObjectId": "test/popup-menu",
+          "Title": {
+            "en": "Popup menu",
+            "nl": ""
+          },
+          "Name": "Popup menu"
+        }
+      ]
     }
   ]
 }

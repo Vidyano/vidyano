@@ -350,6 +350,10 @@ MigrationBackup/
 
 wwwroot/libs/**/*.d.ts
 wwwroot/libs/**/*.js
+wwwroot/test/**/*.d.ts
+wwwroot/test/**/*.js
+wwwroot/test/**/*.css
+wwwroot/test/**/*.css.map
 wwwroot/web-components/**/*.d.ts
 wwwroot/web-components/**/*.js
 wwwroot/web-components/**/*.css

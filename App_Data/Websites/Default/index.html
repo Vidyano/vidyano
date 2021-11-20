@@ -1,4 +1,4 @@
-﻿<html>
+<html>
     <head>
         <!-- <script defer src="./web3/libs/modules/es-module-shims@1.3.0/dist/es-module-shims.js"></script>
         <script type="importmap-shim" src="importmap.json"></script>
@@ -36,6 +36,10 @@
         </script>
         <script type="module" src="web3/web-components/app/app.js"></script>
         
+        <!-- Test -->
+        <script type="module" src="web3/test/popup-menu-test/popup-menu-test.js"></script>
+        <!-- End Test -->
+        
         <link href="//fonts.googleapis.com/css?family=Open+Sans:400,300,600,700,800" rel="stylesheet" type="text/css">
         <style>
             html, body {
@@ -51,6 +55,12 @@
         </style>
     </head>
     <body>
-        <vi-app label="Web3"></vi-app>
+        <vi-app label="Web3">
+            <vi-app-route route="test/popup-menu" slot="app-route">
+                <template>
+                    <vi-popup-menu-test></vi-popup-menu-test>
+                </template>
+            </vi-app-route>
+        </vi-app>
     </body>
 </html>

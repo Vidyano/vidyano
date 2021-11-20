@@ -1,0 +1,11 @@
+@import "../_vars.scss";
+
+:host {
+    .grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    vi-popup-menu {
+        display: inline-block;
+    }
+}
