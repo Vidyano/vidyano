@@ -29,6 +29,7 @@
             <vi-sign-out></vi-sign-out>
         </template>
     </vi-app-route>
+    <slot name="app-route"></slot>
 </vi-app-route-presenter>
 <dom-if if="[[service.application.hasManagement]]">
     <template>

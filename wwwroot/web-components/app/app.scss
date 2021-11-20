@@ -8,7 +8,7 @@
         display: flex;
         flex: 1;
 
-        > vi-app-route {
+        > vi-app-route, > ::slotted(*) {
             flex: 1;
         }
     }
