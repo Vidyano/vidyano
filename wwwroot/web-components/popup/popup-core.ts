@@ -87,6 +87,18 @@ export class PopupCore extends WebComponent {
     boundingTarget: HTMLElement;
     closeDelay: number;
 
+    connectedCallback() {
+        super.connectedCallback();
+
+        this.addEventListener("popupparent", this._onPopupparent);
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+
+        this.removeEventListener("popupparent", this._onPopupparent);
+    }
+
     popup(target: HTMLElement | WebComponent): Promise<any> {
         if (this.open)
             return Promise.resolve();
@@ -98,13 +110,20 @@ export class PopupCore extends WebComponent {
     }
 
     protected _open(target: HTMLElement | WebComponent, content: HTMLElement = this) {
-        this._currentOrientation = this.orientation.toUpperCase() === "AUTO" ? !this._findParentPopup() ? "vertical" : "horizontal" : this.orientation.toLowerCase();
+        const parentPopup = this._findParentPopup();
+        if (this.orientation.toUpperCase() === "AUTO") {
+            if (!parentPopup)
+                this._currentOrientation = "vertical";
+            else
+                this._currentOrientation = "horizontal";
+        }
+        else
+            this._currentOrientation = this.orientation.toLowerCase();
 
         if (this.open || this.hasAttribute("disabled") || this.fire("popup-opening", null, { bubbles: false, cancelable: true }).defaultPrevented)
             return;
 
         // Close non-parent popups
-        const parentPopup = this._findParentPopup();
         const firstOpenNonParentChild = openPopups[parentPopup == null ? 0 : openPopups.indexOf(parentPopup) + 1];
         if (firstOpenNonParentChild != null)
             firstOpenNonParentChild.close();
@@ -325,12 +344,19 @@ export class PopupCore extends WebComponent {
         this.fire("popup-closed", null, { bubbles: false, cancelable: false });
     }
 
-    protected _findParentPopup(): PopupCore {
-        let element = this.parentNode;
-        while (element != null && openPopups.indexOf(<any>element) === -1)
-            element = (<any>element).host || element.parentNode;
+    private _onPopupparent(e: CustomEvent) {
+        e.detail.popup = this;
+        e.stopPropagation();
+    }
 
-        return <PopupCore><any>element;
+    protected _findParentPopup(): PopupCore {
+        const e = this.fire("popupparent", { popup: null }, {
+            bubbles: true,
+            composed: true,
+            node: this.parentElement || (<ShadowRoot>this.parentNode)?.host
+        }) as CustomEvent;
+
+        return !e.defaultPrevented ? e.detail.popup as PopupCore : null;
     }
 
     private _catchContentClick(e?: Event) {
