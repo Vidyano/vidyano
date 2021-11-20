@@ -1,7 +1,7 @@
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import * as Polymer from "../../libs/@polymer/polymer.js"
+import "../popup-menu/popup-menu.js"
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
-import { Spinner } from "../spinner/spinner.js";
 
 interface IResizeObserver {
     observe: (target: HTMLElement) => void;
