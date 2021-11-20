@@ -37,4 +37,10 @@
             --vi-icon-height: 12px;
         }
     }
+
+    vi-popup-menu {
+        vi-button {
+            height: var(--vi-query-grid-header-height, var(--vi-query-grid-row-height));
+        }
+    }
 }
