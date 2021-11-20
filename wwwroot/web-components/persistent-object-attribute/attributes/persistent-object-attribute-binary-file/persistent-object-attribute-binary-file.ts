@@ -1,8 +1,18 @@
 import * as Polymer from '../../../../libs/@polymer/polymer.js';
 import * as Vidyano from "../../../../libs/vidyano/vidyano.js"
 import "../../../button/button.js"
+import { Icon } from '../../../icon/icon.js';
 import { WebComponent } from "../../../web-component/web-component.js"
 import { PersistentObjectAttribute } from "../../persistent-object-attribute.js"
+
+Icon.Add`
+<vi-icon name="FileUpload">
+    <svg viewBox="0 0 32 32">
+        <g>
+            <path d="M 7.4765625 1.4882812 L 7.4765625 6.2617188 L 24.523438 6.2617188 L 24.523438 1.4882812 L 7.4765625 1.4882812 z M 15.966797 7.9042969 L 4.3476562 19.521484 L 7.703125 22.880859 L 13.615234 16.966797 L 13.615234 30.46875 L 18.388672 30.46875 L 18.388672 17.033203 L 24.296875 22.949219 L 27.652344 19.589844 L 15.966797 7.9042969 z " />
+        </g>
+    </svg>
+</vi-icon>`;
 
 @WebComponent.register({
     properties: {

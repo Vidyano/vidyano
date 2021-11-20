@@ -7,8 +7,9 @@ import "./query-grid-column-measure.js"
 import "./query-grid-column-header.js"
 import "./query-grid-row.js"
 import "../scroller/scroller.js"
-import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
+import { Icon } from "../icon/icon.js"
 import { QueryGridRow } from "./query-grid-row.js"
+import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
 
 const placeholder = {};
 
@@ -19,6 +20,15 @@ interface QueryGridItems {
 }
 
 type QueryGridItem = Vidyano.QueryResultItem | Vidyano.QueryResultItemGroup;
+
+Icon.Add
+`<vi-icon name="QueryGrid_Group">
+    <svg viewBox="0 0 32 32">
+        <g>
+            <path d="M 2 8 L 2 14 L 22 14 L 22 8 L 2 8 z M 10 18 L 10 24 L 30 24 L 30 18 L 10 18 z " />
+        </g>
+    </svg>
+</vi-icon>`;
 
 @WebComponent.register({
     properties: {

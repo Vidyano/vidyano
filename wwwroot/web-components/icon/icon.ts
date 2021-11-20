@@ -72,8 +72,13 @@ export class Icon extends WebComponent {
         return !!Icon.Load(name);
     }
 
-    static Add(template: HTMLTemplateElement) {
-        Array.from(template.content.querySelectorAll("vi-icon")).forEach((icon: Icon) => {
+    static Add(strings: TemplateStringsArray);
+    static Add(template: HTMLTemplateElement);
+    static Add(stringOrTemplate: HTMLTemplateElement | TemplateStringsArray) {
+        if (Array.isArray(stringOrTemplate))
+            stringOrTemplate = Polymer.html(<TemplateStringsArray>stringOrTemplate);
+
+        Array.from((<HTMLTemplateElement>stringOrTemplate).content.querySelectorAll("vi-icon")).forEach((icon: Icon) => {
             document.body.appendChild(icon);
             icons[icon.name] = icon;
             document.body.removeChild(icon);
