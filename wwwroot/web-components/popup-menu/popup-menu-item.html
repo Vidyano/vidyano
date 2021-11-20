@@ -1,0 +1,12 @@
+<link rel="stylesheet" href="popup-menu-item.css" />
+
+<vi-popup open-on-hover class="flex" id="popup" data-test="test">
+    <vi-button slot="header" inverse$="[[!checked]]" class="layout horizontal" on-tap="_catchTap">
+        <vi-icon id="icon" source="[[icon]]" hidden$="[[noIcon]]"></vi-icon>
+        <span class="flex">[[label]]</span>
+        <vi-icon source="Forward" hidden$="[[!hasChildren]]"></vi-icon>
+    </vi-button>
+    <div>
+        <slot id="subItems"></slot>
+    </div>
+</vi-popup>

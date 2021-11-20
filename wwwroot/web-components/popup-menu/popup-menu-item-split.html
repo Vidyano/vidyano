@@ -1,0 +1,14 @@
+<link rel="stylesheet" href="popup-menu-item-split.css" />
+
+<vi-button inverse$="[[!checked]]">
+    <vi-icon id="icon" source="[[icon]]"></vi-icon>
+    <span class="flex">[[label]]</span>
+</vi-button>
+<vi-popup open-on-hover hidden$="[[!hasChildren]]">
+    <vi-button id="split" class="flex" slot="header" icon="Forward" on-tap="_splitTap" inverse>
+        <vi-icon source="Forward"></vi-icon>
+    </vi-button>
+    <div>
+        <slot id="subItems"></slot>
+    </div>
+</vi-popup>
