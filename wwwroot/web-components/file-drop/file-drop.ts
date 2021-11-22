@@ -23,7 +23,7 @@ export interface IFileDropDetails {
     }
 })
 export class FileDrop extends WebComponentListener(WebComponent) {
-    static get template() { return Polymer.html`<link rel="import" href="query-items-presenter.html">` }
+    static get template() { return Polymer.html`<link rel="import" href="file-drop.html">` }
 
     readonly dragOver: boolean; private _setDragOver: (val: boolean) => void;
 
