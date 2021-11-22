@@ -1,0 +1,25 @@
+<link rel="stylesheet" href="list-test.css" />
+
+<div class="grid">
+    <div>
+        <label>List</label>
+        <vi-list items="[[items]]" class="list1">
+            <template>
+                <div class="item">[[item]]</div>
+            </template>
+        </vi-list>
+    </div>
+
+    <div>
+        <label>List with parent scroller</label>
+        <vi-scroller>
+            <div class="list2-parent">
+                <vi-list items="[[items]]" parent-scroller>
+                    <template>
+                        <div class="item">[[item]]</div>
+                    </template>
+                </vi-list>
+            </div>
+        </vi-scroller>
+    </div>
+</div>

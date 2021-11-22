@@ -1,0 +1,39 @@
+@import "../_vars.scss";
+
+:host {
+    @include layout-horizontal();
+
+    .grid {
+        @include flex();
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr;
+
+        > div {
+            @include layout-vertical();
+            overflow: hidden;
+
+            > label + * {
+                @include flex();
+            }
+        }
+
+        .list2-parent {
+            padding: 50px;
+            background-color: #f0f0f0;
+
+            vi-list {
+                background-color: white;
+            }
+        }
+
+        .item {
+            line-height: var(--theme-h2);
+            padding: 0 var(--theme-h5);
+
+            &:hover {
+                background-color: var(--theme-color-faint);
+                cursor: pointer;
+            }
+        }
+    }
+}

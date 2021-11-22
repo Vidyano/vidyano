@@ -44,11 +44,21 @@
       "Items": [
         {
           "ObjectId": "test/popup-menu",
+          "Offset": 20,
           "Title": {
             "en": "Popup menu",
             "nl": ""
           },
           "Name": "Popup menu"
+        },
+        {
+          "ObjectId": "test/list",
+          "Offset": 10,
+          "Title": {
+            "en": "List",
+            "nl": ""
+          },
+          "Name": "List"
         }
       ]
     }
