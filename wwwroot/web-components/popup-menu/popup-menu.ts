@@ -38,7 +38,8 @@ import { WebComponent, WebComponentListener } from "../../web-components/web-com
     ],
     listeners: {
         "mouseenter": "_mouseenter",
-        "mousemove": "_mousemove"
+        "mousemove": "_mousemove",
+        "tap": "_stopTap"
     }
 })
 export class PopupMenu extends WebComponentListener(WebComponent) {
@@ -99,6 +100,10 @@ export class PopupMenu extends WebComponentListener(WebComponent) {
     }
 
     private _mousemove(e: MouseEvent) {
+        e.stopPropagation();
+    }
+
+    private _stopTap(e: Polymer.Gestures.TapEvent) {
         e.stopPropagation();
     }
 }
