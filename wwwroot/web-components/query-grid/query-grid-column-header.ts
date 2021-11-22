@@ -1,6 +1,7 @@
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import * as Polymer from "../../libs/@polymer/polymer.js"
 import "../popup-menu/popup-menu.js"
+import { QueryGridColumn } from "./query-grid-column.js"
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
 
 interface IResizeObserver {
@@ -69,7 +70,7 @@ resizeObserver = new ResizeObserver(entries => {
 export class QueryGridColumnHeader extends WebComponentListener(WebComponent) {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-column-header.html">` }
 
-    column: Vidyano.QueryColumn;
+    column: QueryGridColumn;
     readonly canSort: boolean; private _setCanSort: (canSort: boolean) => void;
     readonly canGroupBy: boolean; private _setCanGroupBy: (canGroupBy: boolean) => void;
     readonly isPinned: boolean; private _setIsPinned: (isPinned: boolean) => void;
@@ -86,7 +87,7 @@ export class QueryGridColumnHeader extends WebComponentListener(WebComponent) {
         resizeObserver.unobserve(this);
     }
 
-    private _columnChanged(column: Vidyano.QueryColumn) {
+    private _columnChanged(column: QueryGridColumn) {
         if (!column)
             return;
         
@@ -133,7 +134,7 @@ export class QueryGridColumnHeader extends WebComponentListener(WebComponent) {
             }
         }
 
-        this.column.sort(newSortingDirection, multiSort);
+        this.column.column.sort(newSortingDirection, multiSort);
     }
 
     private _sortAsc(e: Polymer.Gestures.TapEvent) {
@@ -147,8 +148,9 @@ export class QueryGridColumnHeader extends WebComponentListener(WebComponent) {
     }
 
     private _togglePin() {
-        // TODO: Fire event to update grid with optional argument to reset horizontal offset to 0
         this.column.isPinned = !this.column.isPinned;
         this._setIsPinned(this.column.isPinned);
+
+        this.fire("query-grid-column:update");
     }
 }

@@ -8,6 +8,8 @@ import "./query-grid-column-header.js"
 import "./query-grid-row.js"
 import "../scroller/scroller.js"
 import { Icon } from "../icon/icon.js"
+import { QueryGridColumn } from "./query-grid-column.js"
+import { QueryGridUserSettings } from "./query-grid-user-settings.js"
 import { QueryGridRow } from "./query-grid-row.js"
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
 
@@ -51,12 +53,11 @@ Icon.Add
         },
         columns: {
             type: Array,
-            computed: "_computeColumns(query.columns)"
+            computed: "_computeColumns(userSettings.columns)"
         },
         pinnedColumns: {
             type: Array,
-            computed: "_computePinnedColumns(columns)",
-            observer: "_pinnedColumnsChanged"
+            readOnly: true
         },
         columnWidths: {
             type: Array,
@@ -70,6 +71,10 @@ Icon.Add
         rowHeight: {
             type: Number,
             observer: "_rowHeightChanged"
+        },
+        userSettings: {
+            type: Object,
+            computed: "_computeUserSettings(query)"
         },
         verticalScrollOffset: Number,
         viewportHeight: {
@@ -94,11 +99,13 @@ Icon.Add
     forwardObservers: [
         "query.columns",
         "query.isBusy",
-        "query.lastUpdated"
+        "query.lastUpdated",
+        "_updatePinnedColumns(columns.*.isPinned)"
     ],
     listeners: {
         "column-width-changed": "_columnWidthChanged",
-        "item-select": "_itemSelect"
+        "item-select": "_itemSelect",
+        "query-grid-column:update": "_onColumnUpdate"
     },
     observers: [
         "_update(verticalScrollOffset, virtualRowCount, rowHeight, items)",
@@ -108,7 +115,7 @@ Icon.Add
 export class QueryGrid extends WebComponentListener(WebComponent) {
     static get template() { return Polymer.html`<link rel="import" href="query-grid.html">` }
 
-    private readonly _columnWidths = new Map<Vidyano.QueryColumn, number[]>();
+    private readonly _columnWidths = new Map<QueryGridColumn, number[]>();
     private readonly items: QueryGridItems;
     private _virtualGridStartIndex: number = 0;
     private _verticalSpacerCorrection: number = 1;
@@ -121,12 +128,15 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
     readonly initializing: boolean; private _setInitializing: (initializing: boolean) => void;
     readonly updating: boolean; private _setUpdating: (updating: boolean) => void;
     readonly virtualItems: QueryGridItem[]; private _setVirtualItems: (virtualItems: QueryGridItem[]) => void;
-    readonly columns: Vidyano.QueryColumn[];
+    readonly columns: QueryGridColumn[];
+    readonly pinnedColumns: QueryGridColumn[]; private _setPinnedColumns: (pinnedColumns: QueryGridColumn[]) => void;
     readonly columnWidths: number[]; private _setColumnWidths: (columnsWidths: number[]) => void;
     readonly viewportHeight: number;
     readonly virtualRowCount: number;
     readonly hasGrouping: boolean; private _setHasGrouping: (hasGrouping: boolean) => void;
+    readonly userSettings: QueryGridUserSettings;
     rowHeight: number;
+    horizontalScrollOffset: number;
 
     ready() {
         super.ready();
@@ -144,7 +154,7 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
         if (!this.initializing)
             return;
 
-        const entries: [column: Vidyano.QueryColumn, width: number][] = e.detail;
+        const entries: [column: QueryGridColumn, width: number][] = e.detail;
         entries.forEach(entry => {
             const currentWidth = this._columnWidths.get(entry[0]);
             if (!currentWidth) {
@@ -320,21 +330,11 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
         });
     }
 
-    private _computeColumns(columns: Vidyano.QueryColumn[]) {
-        columns = columns.orderBy(c => c.offset).filter(c => !c.isHidden);
-        Polymer.Async.microTask.run(() => {
-            this.style.setProperty("--vi-query-grid-columns", `repeat(${columns.length}, max-content)`);
-        });
+    private _updatePinnedColumns() {
+        const pinnedColumns = this.columns.filter(c => c.isPinned);
+        this._setPinnedColumns(pinnedColumns);
 
-        return columns;
-    }
-
-    private _computePinnedColumns(columns: Vidyano.QueryColumn[]) {
-        return columns.filter(c => c.isPinned);
-    }
-
-    private _pinnedColumnsChanged(columns: Vidyano.QueryColumn[]) {
-        if (!columns.length) {
+        if (!pinnedColumns.length) {
             if (this._pinnedStyle != null) {
                 this.shadowRoot.removeChild(this._pinnedStyle);
                 this._pinnedStyle = null;
@@ -347,16 +347,29 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
             this.shadowRoot.appendChild(this._pinnedStyle = document.createElement("style"));
             
         this._pinnedStyle.innerHTML = `
-            header > [grid] > *:nth-child(-n+${columns.length}), vi-query-grid-row > .column:nth-child(-n+${columns.length}) {
+            header > [grid] > *:nth-child(-n+${pinnedColumns.length}), vi-query-grid-row > .column:nth-child(-n+${pinnedColumns.length}) {
                 will-change: transform;
                 transform: translateX(var(--vi-query-grid-horizontal));
                 z-index: 1;
             }
 
-            vi-query-grid-row > .column:nth-child(${columns.length}) {
+            vi-query-grid-row > .column:nth-child(${pinnedColumns.length}) {
                 border-right: 1px solid var(--theme-light-border);
             }
         `;
+    }
+
+    private _computeUserSettings(query: Vidyano.Query) {
+        return QueryGridUserSettings.Load(query);
+    }
+
+    private _computeColumns(columns: QueryGridColumn[]) {
+        columns = columns.orderBy(c => c.offset).filter(c => !c.isHidden);
+        Polymer.Async.microTask.run(() => {
+            this.style.setProperty("--vi-query-grid-columns", `repeat(${columns.length}, max-content)`);
+        });
+
+        return columns;
     }
 
     private _computeVirtualRowCount(viewportHeight: number, rowHeight: number) {
@@ -407,5 +420,10 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
 
         if (detail.item.isSelected)
             this._lastSelectedItemIndex = indexOfItem;
+    }
+
+    private async _onColumnUpdate() {
+        this.horizontalScrollOffset = 0;
+        await this.userSettings.save();
     }
 }
