@@ -221,11 +221,13 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
     findParent<T extends HTMLElement>(condition: (element: Node) => boolean = e => !!e, parent?: Node): T {
         if (!parent) {
             parent = this.parentElement ||
-                     this.parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE ? (<ShadowRoot>this.parentNode).host : null;
+                     (this.parentNode instanceof ShadowRoot ? (<ShadowRoot>this.parentNode).host : null);
         }
 
-        while (!!parent && !condition(parent))
-            parent = parent.parentNode ? parent.parentNode.nodeType !== Node.DOCUMENT_FRAGMENT_NODE ? parent.parentNode : (<ShadowRoot>parent).host : null;
+        while (!!parent && !condition(parent)) {
+            parent = parent.parentElement ||
+                     (parent.parentNode instanceof ShadowRoot ? (<ShadowRoot>parent.parentNode).host : null);
+        }
 
         return <T><any>parent;
     }
