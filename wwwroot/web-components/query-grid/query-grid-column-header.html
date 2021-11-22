@@ -7,8 +7,8 @@
     </div>
     <vi-popup-menu right-align id="menu">
         <vi-button slot="header" icon="CaretDown" inverse></vi-button>
-        <vi-popup-menu-item label="[[translateMessage('SortAscending', isConnected)]]" icon="SortAsc" on-tap="_sort" hidden$="[[!canSort]]"></vi-popup-menu-item>
-        <vi-popup-menu-item label="[[translateMessage('SortDescending', isConnected)]]" icon="SortDesc" on-tap="_sort" hidden$="[[!canSort]]"></vi-popup-menu-item>
+        <vi-popup-menu-item label="[[translateMessage('SortAscending', isConnected)]]" icon="SortAsc" on-tap="_sort" hidden$="[[!canSort]]" on-tap="_sortAsc"></vi-popup-menu-item>
+        <vi-popup-menu-item label="[[translateMessage('SortDescending', isConnected)]]" icon="SortDesc" on-tap="_sort" hidden$="[[!canSort]]"  on-tap="_sortDesc"></vi-popup-menu-item>
         <vi-popup-menu-item-separator hidden$="[[!canSort]]"></vi-popup-menu-item-separator>
         <vi-popup-menu-item label="[[groupByLabel]]" icon="QueryGrid_Group" on-tap="_group" hidden$="[[!canGroupBy]]"></vi-popup-menu-item>
         <vi-popup-menu-item label="[[pinLabel]]" icon="Pin" checked$="[[isPinned]]" on-tap="_togglePin"></vi-popup-menu-item>
