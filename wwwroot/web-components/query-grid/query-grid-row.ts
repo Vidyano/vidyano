@@ -14,18 +14,28 @@ import { QueryGridRowGroup } from "./query-grid-row-group.js";
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
 
 let resizeObserver: ResizeObserver;
-resizeObserver = new ResizeObserver(entries => {
-    entries[0].target.parentElement.dispatchEvent(new CustomEvent("column-width-changed", {
-        detail: entries.map(e => {
-            let width = e["borderBoxSize"] != null ? e["borderBoxSize"][0].inlineSize : (<HTMLElement>e.target).offsetWidth;
-            return [(<QueryGridCell>e.target).column, width];
-        }),
-        bubbles: true,
-        cancelable: true,
-        composed: true
-    }));
+resizeObserver = new ResizeObserver(allEntries => {
+    // Entries may be batched for multiple grids, make sure the event is dispatched to the correct grid
+    
+    const parents = new Map<HTMLElement, ResizeObserverEntry[]>();
+    allEntries.forEach(e => {
+        const parent = parents.get(e.target.parentElement) || parents.set(e.target.parentElement, []).get(e.target.parentElement);
+        parent.push(e);
+    });
 
-    entries.forEach(e => resizeObserver.unobserve(e.target));
+    parents.forEach((entries, parent) => {
+        parent.dispatchEvent(new CustomEvent("column-width-changed", {
+            detail: entries.map(e => {
+                let width = e["borderBoxSize"] != null ? e["borderBoxSize"][0].inlineSize : (<HTMLElement>e.target).offsetWidth;
+                return [(<QueryGridCell>e.target).column, width];
+            }),
+            bubbles: true,
+            cancelable: true,
+            composed: true
+        }));
+    
+        entries.forEach(e => resizeObserver.unobserve(e.target));
+    });
 });
 
 export interface IItemTapEventArgs {
