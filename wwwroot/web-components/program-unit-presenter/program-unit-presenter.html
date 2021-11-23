@@ -1,0 +1,8 @@
+<link rel="stylesheet" href="program-unit-presenter.css" />
+
+<dom-if if="[[error]]" restamp>
+    <template>
+        <vi-error class="fit" message="[[error]]"></vi-error>
+    </template>
+</dom-if>
+<slot></slot>
