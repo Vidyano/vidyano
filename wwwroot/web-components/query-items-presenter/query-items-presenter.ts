@@ -50,12 +50,6 @@ export class QueryItemsPresenter extends WebComponentListener(WebComponent) {
     readonly fileDrop: boolean; private _setFileDrop: (fileDrop: boolean) => void;
     query: Vidyano.Query;
 
-    connectedCallback() {
-        super.connectedCallback();
-
-        this.setAttribute("tabindex", "0");
-    }
-
     private async _renderQuery(query: Vidyano.Query, currentChart: Vidyano.QueryChart, isConnected: boolean) {
         if (!isConnected)
             return;
