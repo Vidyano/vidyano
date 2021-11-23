@@ -1,4 +1,9 @@
-﻿import { ISize, WebComponent } from "../web-component/web-component.js"
+﻿import { WebComponent } from "../web-component/web-component.js"
+
+export interface ISize {
+    width: number;
+    height: number;
+}
 
 export interface SizeTrackerEvent extends CustomEvent {
     detail: ISize;

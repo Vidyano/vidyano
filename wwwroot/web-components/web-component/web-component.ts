@@ -60,11 +60,6 @@ export interface IPosition {
     y: number;
 }
 
-export interface ISize {
-    width: number;
-    height: number;
-}
-
 export interface IWebComponentProperties {
     [name: string]: ObjectConstructor | StringConstructor | BooleanConstructor | DateConstructor | NumberConstructor | ArrayConstructor | IWebComponentProperty;
 }

@@ -1,6 +1,7 @@
 import * as Polymer from "../../../../libs/@polymer/polymer.js"
-import { ISize, WebComponent } from "../../../web-component/web-component.js"
+import { WebComponent } from "../../../web-component/web-component.js"
 import { Dialog } from "../../../dialog/dialog.js"
+import { ISize } from "../../../size-tracker/size-tracker.js"
 
 @WebComponent.register({
     properties: {
