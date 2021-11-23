@@ -55,7 +55,11 @@
         background-color: var(--theme-color-faint);
     }
 
-    button[slot="header"] {
+    #preRender {
+        display: block;
+    }
+
+    button[slot="header"], #preRender {
         box-sizing: border-box;
         overflow: hidden;
         text-align: left;

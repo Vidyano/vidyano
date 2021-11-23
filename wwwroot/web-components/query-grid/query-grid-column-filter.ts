@@ -59,6 +59,11 @@ export interface IQueryGridColumnFilterDistinct {
             type: Boolean,
             reflectToAttribute: true,
             computed: "queryColumn.isSensitive"
+        },
+        render: {
+            type: Boolean,
+            readOnly: true,
+            value: false
         }
     },
     observers: [
@@ -78,6 +83,7 @@ export class QueryGridColumnFilter extends WebComponentListener(WebComponent) {
     private _searchTextDebouncer: Polymer.Debounce.Debouncer;
     private _resizeStart: ISize;
     readonly loading: boolean; private _setLoading: (loading: boolean) => void;
+    readonly render: boolean; private _setRender: (render: boolean) => void;
     column: QueryGridColumn;
     queryColumn: Vidyano.QueryColumn;
     searchText: string;
@@ -90,6 +96,18 @@ export class QueryGridColumnFilter extends WebComponentListener(WebComponent) {
         super.disconnectedCallback();
 
         this.searchText = "";
+    }
+
+    private _render(e: Event) {
+        e.stopPropagation();
+
+        this._setRender(true);
+        Polymer.flush();
+
+        Polymer.Async.microTask.run(() => {
+            (<Popup>this.shadowRoot.querySelector("#filter")).popup();
+            this.removeAttribute("open");
+        });
     }
 
     protected _update() {
@@ -132,28 +150,28 @@ export class QueryGridColumnFilter extends WebComponentListener(WebComponent) {
                 return value.substr(indexOfPipe + parseInt(value.substr(0, indexOfPipe), 10) + 1);
         }
 
-        return value == null ? this.service.getTranslatedMessage("DistinctNullValue") : this.service.getTranslatedMessage("DistinctEmptyValue");
+        return value == null ? this.service?.getTranslatedMessage("DistinctNullValue") : this.service?.getTranslatedMessage("DistinctEmptyValue");
     }
 
     private async _popupOpening(e: CustomEvent) {
         if (!this.column.canFilter)
             return;
 
-        const input = <InputSearch><any>this.$.search;
-        this._focusElement(input);
+        const search = <Popup>this.$.search || (this.$.search = <Popup>this.shadowRoot.querySelector("#search"));
+        this._focusElement(search);
 
-        const popup = <Popup>this.$.filter;
-        popup.boundingTarget = this.findParent<QueryGrid>(p => p instanceof QueryGrid).parentElement;
-        popup.closeDelay = parseInt(this.app.configuration.getSetting("vi-query-grid-column-filter.close-delay", "750"));
+        const filter = <Popup>this.$.filter || (this.$.filter = <Popup>this.shadowRoot.querySelector("#filter"));
+        filter.boundingTarget = this.findParent<QueryGrid>(p => p instanceof QueryGrid).parentElement;
+        filter.closeDelay = parseInt(this.app.configuration.getSetting("vi-query-grid-column-filter.close-delay", "750"));
+
+        const distinctsList = <HTMLDivElement>this.$.distincts || (this.$.distincts = <HTMLDivElement>this.shadowRoot.querySelector("#distincts"));;
+        distinctsList.style.minWidth = this.offsetWidth + "px";
 
         if (this.column.canListDistincts && (!this.queryColumn.distincts || this.column.distincts.isDirty)) {
             this._setLoading(true);
 
             try {
                 await this.queryColumn.refreshDistincts();
-                const distinctsList = <HTMLElement>this.$.distincts;
-                distinctsList.style.minWidth = this.offsetWidth + "px";
-
                 this._setLoading(false);
             }
             catch (e) {
@@ -161,11 +179,8 @@ export class QueryGridColumnFilter extends WebComponentListener(WebComponent) {
                 this.app.showAlert(e, "Error");
             }
         }
-        else {
-            const distinctsList = <HTMLElement>this.$.distincts;
-            distinctsList.style.minWidth = this.offsetWidth + "px";
+        else
             distinctsList.scrollTop = 0;
-        }
     }
 
     private _searchTextChanged(searchText: string, oldSearchText: string) {
@@ -327,19 +342,20 @@ export class QueryGridColumnFilter extends WebComponentListener(WebComponent) {
     }
 
     private _onResize(e: Polymer.Gestures.TrackEvent) {
+        const filterContent = <HTMLDivElement>this.$.filterContent || (this.$.filterContent = <HTMLDivElement>this.shadowRoot.querySelector("#filterContent"));;
+        const filter = <Popup>this.$.filter || (this.$.filter = <Popup>this.shadowRoot.querySelector("#filter"));
+
         if (e.detail.state === "start") {
             this.app.isTracking = true;
-            const filter = <Popup>this.$.filter;
             filter.sticky = true;
 
-            this._resizeStart = { width: this.$.filterContent.offsetWidth, height: this.$.filterContent.offsetHeight };
+            this._resizeStart = { width: filterContent.offsetWidth, height: filterContent.offsetHeight };
         }
         else if (e.detail.state === "track") {
-            this.$.filterContent.style.width = `${this._resizeStart.width + e.detail.dx}px`;
-            this.$.filterContent.style.height = `${this._resizeStart.height + e.detail.dy}px`;
+            filterContent.style.width = `${this._resizeStart.width + e.detail.dx}px`;
+            filterContent.style.height = `${this._resizeStart.height + e.detail.dy}px`;
         }
         else if (e.detail.state === "end") {
-            const filter = <Popup>this.$.filter;
             filter.sticky = false;
 
             this._resizeStart = null;

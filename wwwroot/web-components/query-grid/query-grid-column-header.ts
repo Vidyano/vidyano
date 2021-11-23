@@ -1,6 +1,7 @@
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import * as Polymer from "../../libs/@polymer/polymer.js"
 import "../popup-menu/popup-menu.js"
+import { PopupMenu } from "../popup-menu/popup-menu.js"
 import { QueryGridColumn } from "./query-grid-column.js"
 import "./query-grid-column-filter.js"
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
@@ -59,6 +60,11 @@ resizeObserver = new ResizeObserver(entries => {
         pinLabel: {
             type: String,
             computed: "_computePinLabel(isPinned, translations)"
+        },
+        renderPopupMenu: {
+            type: Boolean,
+            readOnly: true,
+            value: false
         }
     },
     forwardObservers: [
@@ -75,6 +81,8 @@ export class QueryGridColumnHeader extends WebComponentListener(WebComponent) {
     readonly canSort: boolean; private _setCanSort: (canSort: boolean) => void;
     readonly canGroupBy: boolean; private _setCanGroupBy: (canGroupBy: boolean) => void;
     readonly isPinned: boolean; private _setIsPinned: (isPinned: boolean) => void;
+    readonly renderPopupMenu: boolean; private _setRenderPopupMenu: (renderPopupMenu: boolean) => void;
+    readonly renderFilter: boolean; private _setRenderFilter: (renderFilter: boolean) => void;
 
     connectedCallback() {
         super.connectedCallback();
@@ -86,6 +94,16 @@ export class QueryGridColumnHeader extends WebComponentListener(WebComponent) {
         super.disconnectedCallback();
 
         resizeObserver.unobserve(this);
+    }
+
+    private _renderPopupMenu(e: Event) {
+        e.stopPropagation();
+
+        this._setRenderPopupMenu(true);
+        Polymer.flush();
+        
+        const menu = <PopupMenu>this.shadowRoot.querySelector("#menu");
+        menu.popup();
     }
 
     private _columnChanged(column: QueryGridColumn) {
