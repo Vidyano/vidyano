@@ -54,7 +54,7 @@ export class ProgramUnit extends ProgramUnitItem {
             });
         }
 
-        if (this.openFirst && this.items.length > 0 && !(this.items[0] instanceof ProgramUnitItemUrl)) {
+        if (this.openFirst && this.items.length > 0 && (!(this.items[0] instanceof ProgramUnitItemUrl) || !this.items[0].path?.startsWith("http"))) {
             this.path = this.items[0].path;
 
             if (this.items[0].title === this.title)
