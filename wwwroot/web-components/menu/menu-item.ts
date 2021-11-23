@@ -65,9 +65,13 @@ import { WebComponent, WebComponentListener } from "../web-component/web-compone
             type: String,
             computed: "_computedHref(item, app)"
         },
+        target: {
+            type: String,
+            computed: "_computedTarget(href)"
+        },
         rel: {
             type: String,
-            computed: "_computedRel(item, app)"
+            computed: "_computedRel(item, href)"
         },
         collapseGroupsOnTap: {
             type: Boolean,
@@ -220,8 +224,12 @@ export class MenuItem extends WebComponentListener(WebComponent) {
         return (this.item && !(item instanceof Vidyano.ProgramUnitItemGroup)) ? app.noHistory ? "#" : Path.routes.rootPath + this.item.path : undefined;
     }
 
-    private _computedRel(item: Vidyano.ProgramUnitItemUrl, app: App): string {
-        if (item instanceof Vidyano.ProgramUnitItemUrl)
+    private _computedTarget(href: string) {
+        return href?.startsWith("http") ? null : "_blank";
+    }
+
+    private _computedRel(item: Vidyano.ProgramUnitItemUrl, href: string): string {
+        if (item instanceof Vidyano.ProgramUnitItemUrl && href?.startsWith("http"))
             return "external noopener";
 
         return null;
