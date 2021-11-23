@@ -287,7 +287,7 @@ export class QueryGridColumnFilter extends WebComponentListener(WebComponent) {
 
         searchText = searchText.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
         const exp = new RegExp(`(${searchText})`, "gi");
-        return displayValue.replace(exp, "<span class='style-scope vi-query-grid-column-filter match'>$1</span>");
+        return displayValue.replace(exp, "<span class='match'>$1</span>");
     }
 
     private async _search() {
