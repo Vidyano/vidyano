@@ -1,7 +1,6 @@
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import * as Polymer from "../../libs/@polymer/polymer.js"
 import "../checkbox/checkbox.js"
-import { InputSearch } from "../input-search/input-search.js"
 import "../input-search/input-search.js"
 import { Popup } from "../popup/popup.js"
 import { ISize } from "../size-tracker/size-tracker.js"
