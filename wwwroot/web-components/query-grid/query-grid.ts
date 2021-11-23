@@ -74,7 +74,7 @@ Icon.Add
         },
         userSettings: {
             type: Object,
-            computed: "_computeUserSettings(query)"
+            computed: "_computeUserSettings(query, query.columns)"
         },
         verticalScrollOffset: Number,
         viewportHeight: {
