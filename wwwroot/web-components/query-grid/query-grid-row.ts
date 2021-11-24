@@ -53,6 +53,11 @@ export interface IItemTapEventArgs {
             type: Array,
             observer: "_columnsChanged"
         },
+        isGroup: {
+            type: Boolean,
+            readOnly: true,
+            reflectToAttribute: true
+        },
         offsets: Array,
         visibleRange: Array,
         initializing: {
@@ -78,6 +83,7 @@ export class QueryGridRow extends WebComponentListener(WebComponent) {
     private _groupElement: QueryGridRowGroup;
     private _visibleCells: QueryGridCell[];
     private _invisibleCellValues: [QueryGridCell, Vidyano.QueryResultItemValue][] = [];
+    readonly isGroup: boolean; private _setIsGroup: (isGroup: boolean) => void;
     columns: Vidyano.QueryColumn[];
     index: number;
     offsets: number[];
@@ -145,27 +151,20 @@ export class QueryGridRow extends WebComponentListener(WebComponent) {
 
         if (oldItem instanceof Vidyano.QueryResultItemGroup) {
             this._groupElement.group = null;
-            this._groupElement.style.display = "none";
-
-            if (!(item instanceof Vidyano.QueryResultItemGroup)) {
-                cells.forEach((cell: QueryGridCellDefault) => {
-                    cell.style.display = "block";
-                });
-            }
+            this._setIsGroup(false);
         }
 
         if (item instanceof Vidyano.QueryResultItemGroup) {
-            if (!this._groupElement)
-                this.shadowRoot.appendChild(this._groupElement = new QueryGridRowGroup());
-            else
-                this._groupElement.style.display = "flex";
+            if (!this._groupElement) {
+                this._groupElement = new QueryGridRowGroup();
+                this.appendChild(this._groupElement);
+            }
+            
+            this._groupElement.slot = "group";
+            this._setIsGroup(true);
 
             this._groupElement.group = item;
-            this._groupElement.style.gridColumn = `1 / span ${this.columns.length}`;
-
-            cells.forEach((cell: QueryGridCellDefault) => {
-                cell.style.display = "none";
-            });
+            this._groupElement.style.gridColumn = `1 / span ${this.columns.length + 3}`;
         }
     }
 

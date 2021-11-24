@@ -49,9 +49,26 @@ namespace VidyanoWeb3.Service
             }
 
             if (flags.Length > 1 && flags[1] == "Grouping")
-                query.PersistentObject.GetAttribute("Title").CanGroupBy = true;
+                query.GroupedBy = "Title";
 
             query.IsIncludedInParentObject = true;
+        }
+
+        protected override void GetGroupingInfo(Source<Employee> source, GroupingInfoArgs args)
+        {
+            args.SetResult(source.OrderBy(e => e.Title).AsQueryable().ToArray()
+                .GroupBy(h => h.Title)
+                .Select(g => new
+                {
+                    g.Key,
+                    Count = g.Count()
+                })
+                .Select(g => new GroupInfo
+                {
+                    Name = $"{g.Key}",
+                    Count = g.Count
+                })
+                .ToArray());
         }
     }
 }

@@ -1,5 +1,7 @@
 <link rel="stylesheet" href="query-grid-row.css" />
 
+<slot name="group"></slot>
+
 <dom-if if="[[!initializing]]">
     <template>
         <div class="selector pinned" on-tap="_onSelect" part="selector">
