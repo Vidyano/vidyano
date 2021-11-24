@@ -36,9 +36,8 @@
     }
 
     .pinned {
-        will-change: transform;
         transform: translateX(var(--vi-query-grid-horizontal));
-        z-index: 1;
+        z-index: 0;
     }
 
     .selector, .actions {
@@ -47,7 +46,7 @@
             height: var(--vi-query-grid-row-height);
         }
 
-        &:hover {
+        &:hover vi-icon {
             background-color: rgba(0, 0, 0, .05) !important;
         }
     }
