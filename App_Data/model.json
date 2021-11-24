@@ -106,6 +106,14 @@
       },
       "IconName": "Excel"
     },
+    "Merge": {
+      "ShowedOn": 2,
+      "SelectionRule": ">1",
+      "DisplayName": {
+        "en": "Merge",
+        "nl": "Merge"
+      }
+    },
     "New": {
       "Offset": 200,
       "ShowedOn": 2,
@@ -147,16 +155,15 @@
       "IsPinned": true,
       "IconName": "Help"
     },
-    "viSearch": {
-      "Offset": 1500,
+    "viLoadAdvancedSearch": {
+      "Offset": 1600,
       "ShowedOn": 2,
       "IsSystem": true,
       "DisplayName": {
-        "en": "Search",
-        "nl": "Zoeken"
+        "en": "Load",
+        "nl": "Laden"
       },
-      "IsPinned": true,
-      "IconName": "Filter"
+      "IconName": "Add"
     },
     "viSaveAdvancedSearch": {
       "Offset": 1600,
@@ -168,15 +175,16 @@
       },
       "IconName": "Save"
     },
-    "viLoadAdvancedSearch": {
-      "Offset": 1600,
+    "viSearch": {
+      "Offset": 1500,
       "ShowedOn": 2,
       "IsSystem": true,
       "DisplayName": {
-        "en": "Load",
-        "nl": "Laden"
+        "en": "Search",
+        "nl": "Zoeken"
       },
-      "IconName": "Add"
+      "IsPinned": true,
+      "IconName": "Filter"
     }
   },
   "DataTypes": {

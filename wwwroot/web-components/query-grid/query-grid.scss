@@ -3,8 +3,8 @@
 :host {
     display: flex;
     flex-direction: column;
-    contain: strict;
     position: relative;
+    overflow: hidden;
     @include noSelection();
 
     &[initializing] {
@@ -23,23 +23,36 @@
 
     vi-scroller {
         flex: 1;
-        contain: strict;
+        min-height: 0;
+        min-width: 0;
     }
 
     [grid] {
         display: grid;
         grid-template-columns: var(--vi-query-grid-columns);
-        will-change: transform;
     }
 
     header {
+        @include layout-horizontal();
         position: relative;
-        padding-left: 64px;
         z-index: 1;
 
         [grid] {
-            transform: translateX(calc(var(--vi-query-grid-horizontal, 0) * -1));
-            will-change: transform;
+            margin-left: calc(var(--vi-query-grid-horizontal, 0) * -1);
+        }
+
+        .controls {
+            display: grid;
+            background-color: white;
+            position: relative;
+            z-index: 1;
+
+            // TODO: Remove
+            vi-button.filter {
+                height: var(--vi-query-grid-row-height);
+                line-height: var(--vi-query-grid-row-height);
+                box-sizing: border-box;
+            }
         }
     }
 
@@ -53,5 +66,164 @@
 
     vi-spinner[hidden] {
         display: none !important;
+    }
+
+    &:not([can-select]):not([can-filter]):not([inline-actions]) {
+        header .controls {
+            display: none;
+        }
+
+        vi-query-grid-row {
+            grid-template-columns: var(--vi-query-grid-columns);
+
+            &::part(selector), &::part(actions), &::part(spacer) {
+                display: none;
+            }
+        }
+
+        vi-query-grid-column-header::part(filter) {
+            display: none;
+        }
+    }
+
+    &[can-select]:not([can-filter]):not([inline-actions]) {
+        vi-query-grid-row {
+            grid-template-columns: auto var(--vi-query-grid-columns);
+
+            &::part(actions), &::part(spacer) {
+                display: none;
+            }
+        }
+
+        vi-query-grid-column-header::part(filter) {
+            display: none;
+        }
+
+        .controls {
+            grid-template-columns: var(--vi-query-grid-row-height);
+            grid-template-rows: var(--vi-query-grid-row-height);
+            border-bottom: 1px solid var(--theme-light-border);
+
+            vi-query-grid-select-all {
+                grid-row: 1;
+            }
+        }
+    }
+
+    &:not([can-select])[can-filter]:not([inline-actions]) {
+        vi-query-grid-row {
+            grid-template-columns: var(--vi-query-grid-row-height) var(--vi-query-grid-columns);
+
+            &::part(selector), &::part(actions) {
+                display: none;
+            }
+        }
+
+        .controls {
+            grid-template-columns: var(--vi-query-grid-row-height);
+            grid-template-rows: var(--vi-query-grid-row-height) var(--vi-query-grid-row-height);
+            border-bottom: 1px solid var(--theme-light-border);
+
+            .filter {
+                grid-row: 2;
+                border-top: 1px solid var(--theme-light-border);
+            }
+        }
+    }
+
+    &:not([can-select]):not([can-filter])[inline-actions] {
+        vi-query-grid-row {
+            grid-template-columns: var(--vi-query-grid-row-height) var(--vi-query-grid-columns);
+
+            &::part(selector), &::part(spacer) {
+                display: none;
+            }
+        }
+
+        vi-query-grid-column-header::part(filter) {
+            display: none;
+        }
+
+        .controls {
+            grid-template-columns: var(--vi-query-grid-row-height);
+            grid-template-rows: var(--vi-query-grid-row-height);
+            border-bottom: 1px solid var(--theme-light-border);
+        }
+    }
+
+    &[can-select][can-filter]:not([inline-actions]) {
+        vi-query-grid-row {
+            grid-template-columns: var(--vi-query-grid-row-height) var(--vi-query-grid-row-height) var(--vi-query-grid-columns);
+
+            &::part(actions) {
+                display: none;
+            }
+        }
+
+        .controls {
+            grid-template-columns: var(--vi-query-grid-row-height) var(--vi-query-grid-row-height);
+            grid-template-rows: var(--vi-query-grid-row-height) var(--vi-query-grid-row-height);
+            border-bottom: 1px solid var(--theme-light-border);
+
+            .filter {
+                grid-column: 2;
+                grid-row: 2;
+                border-top: 1px solid var(--theme-light-border);
+            }
+
+            vi-query-grid-select-all {
+                grid-column: 1;
+                grid-row: 2;
+                border-top: 1px solid var(--theme-light-border);
+            }
+        }
+    }
+
+    &[can-select]:not([can-filter])[inline-actions] {
+        vi-query-grid-row {
+            grid-template-columns: var(--vi-query-grid-row-height) var(--vi-query-grid-row-height) var(--vi-query-grid-columns);
+
+            &::part(spacer) {
+                display: none;
+            }
+        }
+
+        vi-query-grid-column-header::part(filter) {
+            display: none;
+        }
+
+        .controls {
+            grid-template-columns: var(--vi-query-grid-row-height) var(--vi-query-grid-row-height);
+            grid-template-rows: var(--vi-query-grid-row-height);
+            border-bottom: 1px solid var(--theme-light-border);
+        }
+    }
+
+    &[can-select][can-filter][inline-actions] {
+        vi-query-grid-row {
+            grid-template-columns: var(--vi-query-grid-row-height) var(--vi-query-grid-row-height) var(--vi-query-grid-columns);
+
+            &::part(spacer) {
+                display: none;
+            }
+        }
+
+        .controls {
+            grid-template-columns: var(--vi-query-grid-row-height) var(--vi-query-grid-row-height);
+            grid-template-rows: var(--vi-query-grid-row-height) var(--vi-query-grid-row-height);
+            border-bottom: 1px solid var(--theme-light-border);
+
+            .filter {
+                grid-column: 2;
+                grid-row: 2;
+                border-top: 1px solid var(--theme-light-border);
+            }
+
+            vi-query-grid-select-all {
+                grid-column: 1;
+                grid-row: 2;
+                border-top: 1px solid var(--theme-light-border);
+            }
+        }
     }
 }

@@ -1,14 +1,14 @@
 :host {   
     display: grid;
     position: relative;
-    grid-template-columns: auto auto var(--vi-query-grid-columns);
+    grid-template-columns: auto auto auto var(--vi-query-grid-columns);
     width: initial;
     height: var(--vi-query-grid-row-height);
     line-height: var(--vi-query-grid-row-height);
     min-width: 100%;
     overflow: visible;
     white-space: nowrap;
-    contain: layout style;
+    background-color: white;
 
     &:nth-of-type(even) > ::slotted(.column),
     &:nth-of-type(even) > .pinned {
@@ -61,8 +61,8 @@
     &.hidden {
         display: none !important;
     }
-}
 
-:host-context([initializing]) .pinned {
-    display: none;
+    &[initializing] .pinned {
+        display: none;
+    }
 }

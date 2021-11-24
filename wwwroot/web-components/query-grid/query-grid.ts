@@ -6,6 +6,7 @@ import "./query-grid-cell-presenter.js"
 import "./query-grid-column-measure.js"
 import "./query-grid-column-header.js"
 import "./query-grid-row.js"
+import "./query-grid-select-all.js"
 import "../scroller/scroller.js"
 import { Icon } from "../icon/icon.js"
 import { QueryGridColumn } from "./query-grid-column.js"
@@ -46,6 +47,11 @@ Icon.Add
         },
         query: {
             type: Object
+        },
+        asLookup: {
+            type: Boolean,
+            reflectToAttribute: true,
+            value: false
         },
         items: {
             type: Array,
@@ -94,6 +100,31 @@ Icon.Add
         hasGrouping: {
             type: Boolean,
             readOnly: true
+        },
+        noSelection: {
+            type: Boolean,
+            reflectToAttribute: true,
+            value: false
+        },
+        canSelect: {
+            type: Boolean,
+            reflectToAttribute: true,
+            computed: "_computeCanSelect(query, noSelection, asLookup)"
+        },
+        noInlineActions: {
+            type: Boolean,
+            reflectToAttribute: true,
+            value: false
+        },
+        inlineActions: {
+            type: Boolean,
+            reflectToAttribute: true,
+            computed: "_computeInlineActions(query, noInlineActions)"
+        },
+        canFilter: {
+            type: Boolean,
+            reflectToAttribute: true,
+            computed: "query.canFilter"
         }
     },
     forwardObservers: [
@@ -125,6 +156,9 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
     private _lastSelectedItemIndex: number;
 
     query: Vidyano.Query;
+    asLookup: boolean;
+    noSelection: boolean;
+    noInlineActions: boolean;
     readonly initializing: boolean; private _setInitializing: (initializing: boolean) => void;
     readonly updating: boolean; private _setUpdating: (updating: boolean) => void;
     readonly virtualItems: QueryGridItem[]; private _setVirtualItems: (virtualItems: QueryGridItem[]) => void;
@@ -348,9 +382,7 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
             
         this._pinnedStyle.innerHTML = `
             header > [grid] > *:nth-child(-n+${pinnedColumns.length}), vi-query-grid-row > .column:nth-child(-n+${pinnedColumns.length}) {
-                will-change: transform;
-                transform: translateX(var(--vi-query-grid-horizontal));
-                z-index: 1;
+                margin-left: calc(var(--vi-query-grid-horizontal, 0) * -1);
             }
 
             vi-query-grid-row > .column:nth-child(${pinnedColumns.length}) {
@@ -388,6 +420,14 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
 
     private _computeVisibleRange(viewportWidth: number, horizontalScrollOffset: number) {
         return [horizontalScrollOffset, viewportWidth + horizontalScrollOffset];
+    }
+
+    private _computeCanSelect(query: Vidyano.Query, noSelection: boolean, asLookup: boolean): boolean {
+        return !noSelection && !!query && (asLookup || query.actions.some(a => a.isVisible && a.definition.selectionRule !== Vidyano.ExpressionParser.alwaysTrue));
+    }
+
+    private _computeInlineActions(query: Vidyano.Query, noInlineActions: boolean): boolean {
+        return !noInlineActions && !!query && !query.asLookup && !this.asLookup && (query.actions.some(a => a.isVisible && a.definition.selectionRule !== Vidyano.ExpressionParser.alwaysTrue && a.definition.selectionRule(1)));
     }
 
     private _rowHeightChanged(rowHeight: number) {

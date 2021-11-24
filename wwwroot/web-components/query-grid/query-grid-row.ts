@@ -54,7 +54,11 @@ export interface IItemTapEventArgs {
             observer: "_columnsChanged"
         },
         offsets: Array,
-        visibleRange: Array
+        visibleRange: Array,
+        initializing: {
+            type: Boolean,
+            reflectToAttribute: true
+        }
     },
     forwardObservers: [
         "item.isSelected"
@@ -121,11 +125,7 @@ export class QueryGridRow extends WebComponentListener(WebComponent) {
 
     private _itemChanged(item: Vidyano.QueryResultItem | Vidyano.QueryResultItemGroup, oldItem: Vidyano.QueryResultItem | Vidyano.QueryResultItemGroup) {
         if (item != null) {
-            if (item instanceof Vidyano.QueryResultItem || item instanceof Vidyano.QueryResultItemGroup)
-                this.classList.remove("loading");
-            else
-                this.classList.add("loading");
-
+            this.classList.toggle("loading", !(item instanceof Vidyano.QueryResultItem || item instanceof Vidyano.QueryResultItemGroup));
             this.classList.remove("hidden");
         }
         else if (item === null)

@@ -44,6 +44,15 @@
       "Groups": [],
       "Items": [
         {
+          "ObjectId": "test/list",
+          "Offset": 10,
+          "Title": {
+            "en": "List",
+            "nl": ""
+          },
+          "Name": "List"
+        },
+        {
           "ObjectId": "test/popup-menu",
           "Offset": 20,
           "Title": {
@@ -53,13 +62,13 @@
           "Name": "Popup menu"
         },
         {
-          "ObjectId": "test/list",
-          "Offset": 10,
+          "ObjectId": "test/query-grid",
+          "Offset": 30,
           "Title": {
-            "en": "List",
+            "en": "Query grid",
             "nl": ""
           },
-          "Name": "List"
+          "Name": "QueryGrid"
         }
       ]
     }

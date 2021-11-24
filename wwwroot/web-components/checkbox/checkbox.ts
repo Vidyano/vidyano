@@ -16,11 +16,6 @@ import { WebComponent, WebComponentListener } from "../web-component/web-compone
             type: Boolean,
             computed: "_computeNoLabel(label)"
         },
-        isNull: {
-            type: Boolean,
-            value: true,
-            computed: "_computeIsNull(checked)"
-        },
         disabled: {
             type: Boolean,
             reflectToAttribute: true
@@ -71,10 +66,6 @@ export class Checkbox extends WebComponentListener(WebComponent) {
             return true;
 
         this.toggle();
-    }
-
-    private _computeIsNull(checked: boolean): boolean {
-        return checked !== false && checked !== true;
     }
 
     private _computeIcon(radio: boolean): string {

@@ -1,0 +1,28 @@
+@import "../_vars.scss";
+
+:host {
+    @include layout-horizontal();
+
+    .grid {
+        @include flex();
+        grid-template-columns: repeat(3, 1fr);
+
+        > div {
+            @include layout-vertical();
+            overflow: hidden;
+
+            label {
+                color: var(--theme-color-dark);
+                font-size: 18px;
+            }
+
+            vi-query-grid {
+                background-color: white;
+                flex: 1;
+                margin-top: var(--theme-h4);
+                border: 1px solid var(--theme-light-border);
+                box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.1);
+            }
+        }
+    }
+}

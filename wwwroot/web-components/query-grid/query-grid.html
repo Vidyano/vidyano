@@ -1,12 +1,27 @@
 <link rel="stylesheet" href="query-grid.css" />
 
 <header id="header">
-    <div grid>
-        <dom-repeat items="[[columns]]" as="column">
+    <div class="controls">
+        <dom-if if="[[canSelect]]">
             <template>
-                <vi-query-grid-column-header column="[[column]]"></vi-query-grid-column-header>
+                <vi-query-grid-select-all query="[[query]]" hidden$="[[!canSelect]]"></vi-query-grid-select-all>
             </template>
-        </dom-repeat>
+        </dom-if>
+        <dom-if if="[[canFilter]]">
+            <template>
+                <!-- TODO: QueryGridFilters component -->
+                <vi-button class="filter" icon="Filter" inverse></vi-button>
+            </template>
+        </dom-if>
+    </div>
+    <div>
+        <div grid>
+            <dom-repeat items="[[columns]]" as="column">
+                <template>
+                    <vi-query-grid-column-header column="[[column]]"></vi-query-grid-column-header>
+                </template>
+            </dom-repeat>
+        </div>
     </div>
 </header>
 
@@ -15,7 +30,7 @@
         <div id="grid" grid$="[[initializing]]">
             <dom-repeat items="[[virtualItems]]">
                 <template>
-                    <vi-query-grid-row item="[[item]]" columns="[[columns]]" index="[[index]]" offsets="[[_computeOffsets(columnWidths)]]" visible-range="{{_computeVisibleRange(viewportWidth, horizontalScrollOffset)}}"></vi-query-grid-row>
+                    <vi-query-grid-row item="[[item]]" columns="[[columns]]" index="[[index]]" offsets="[[_computeOffsets(columnWidths)]]" visible-range="{{_computeVisibleRange(viewportWidth, horizontalScrollOffset)}}" initializing$="[[initializing]]"></vi-query-grid-row>
                 </template>
             </dom-repeat>
         </div>

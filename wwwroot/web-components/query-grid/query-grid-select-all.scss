@@ -1,0 +1,29 @@
+@import "../_vars.scss";
+
+:host {
+    display: block;
+    position: relative;
+    height: var(--theme-h2);
+    width: var(--theme-h2);
+    box-sizing: border-box;
+    align-self: flex-end;
+    cursor: pointer;
+
+    > vi-icon {
+        height: var(--theme-h2);
+        width: var(--theme-h2);
+        line-height: var(--theme-h2);
+    }
+
+    &[partial] > * {
+        opacity: 0.5;
+    }
+
+    &:not([partial]):not([can-select-all]) {
+        cursor: default;
+
+        & > * {
+            visibility: hidden;
+        }
+    }
+}

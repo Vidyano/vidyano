@@ -3,7 +3,6 @@
 :host {
     @include layout-horizontal();
     @include relative();
-    contain: strict;
 
     &[has-error] {
         @include layout-center-center();

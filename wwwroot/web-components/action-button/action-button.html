@@ -15,7 +15,7 @@
         <dom-if if="[[options]]">
             <template>
                 <vi-popup-menu open-on-hover="[[_computeOpenOnHover(overflow, openOnHover)]]" disabled="[[!canExecute]]">
-                    <vi-button disabled="[[!canExecute]]" header inverse class="options">
+                    <vi-button disabled="[[!canExecute]]" header slot="header" header inverse class="options">
                         <div class="layout horizontal">
                             <vi-icon class="action-icon" source="[[icon]]"></vi-icon>
                             <span class="label">[[action.displayName]]</span>

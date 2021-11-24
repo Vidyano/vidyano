@@ -39,6 +39,7 @@
         <!-- Test -->
         <script type="module" src="web3/test/list-test/list-test.js"></script>
         <script type="module" src="web3/test/popup-menu-test/popup-menu-test.js"></script>
+        <script type="module" src="web3/test/query-grid-test/query-grid-test.js"></script>
         <!-- End Test -->
         
         <link href="//fonts.googleapis.com/css?family=Open+Sans:400,300,600,700,800" rel="stylesheet" type="text/css">
@@ -57,14 +58,19 @@
     </head>
     <body>
         <vi-app label="Web3">
-            <vi-app-route route="test/list" slot="app-route">
+            <vi-app-route route="/:programUnitName/list" slot="app-route">
                 <template>
                     <vi-list-test></vi-list-test>
                 </template>
             </vi-app-route>
-            <vi-app-route route="test/popup-menu" slot="app-route">
+            <vi-app-route route="/:programUnitName/popup-menu" slot="app-route">
                 <template>
                     <vi-popup-menu-test></vi-popup-menu-test>
+                </template>
+            </vi-app-route>
+            <vi-app-route route="/:programUnitName/query-grid" slot="app-route">
+                <template>
+                    <vi-query-grid-test></vi-query-grid-test>
                 </template>
             </vi-app-route>
         </vi-app>

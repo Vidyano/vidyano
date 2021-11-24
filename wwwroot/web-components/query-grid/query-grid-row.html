@@ -1,11 +1,17 @@
 <link rel="stylesheet" href="query-grid-row.css" />
 
-<div class="selector pinned" on-tap="_onSelect">
-    <vi-icon source="Selected" is-selected$="[[item.isSelected]]"></vi-icon>
-</div>
+<dom-if if="[[!initializing]]">
+    <template>
+        <div class="selector pinned" on-tap="_onSelect" part="selector">
+            <vi-icon source="Selected" is-selected$="[[item.isSelected]]"></vi-icon>
+        </div>
 
-<vi-popup id="actions" class="actions pinned" on-popup-opening="_onActionsOpening" on-popup-closed="_onActionsClosed">
-    <vi-icon slot="header" source="EllipsisVertical"></vi-icon>
-</vi-popup>
+        <vi-popup id="actions" class="actions pinned" part="actions" on-popup-opening="_onActionsOpening" on-popup-closed="_onActionsClosed">
+            <vi-icon slot="header" source="EllipsisVertical"></vi-icon>
+        </vi-popup>
+
+        <div part="spacer"></div>
+    </template>
+</dom-if>
 
 <slot id="columns"></slot>
