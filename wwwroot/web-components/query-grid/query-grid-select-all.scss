@@ -3,16 +3,15 @@
 :host {
     display: block;
     position: relative;
-    height: var(--theme-h2);
-    width: var(--theme-h2);
+    width: var(--vi-query-grid-row-height);
     box-sizing: border-box;
     align-self: flex-end;
     cursor: pointer;
 
     > vi-icon {
-        height: var(--theme-h2);
-        width: var(--theme-h2);
-        line-height: var(--theme-h2);
+        height: var(--vi-query-grid-row-height);
+        width: var(--vi-query-grid-row-height);
+        line-height: var(--vi-query-grid-row-height);
     }
 
     &[partial] > * {

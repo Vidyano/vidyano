@@ -9,10 +9,14 @@ import "../../web-components/query-grid/query-grid.js"
         queries: {
             type: Array,
             readOnly: true
+        },
+        withGrouping: {
+            type: Boolean,
+            value: true
         }
     },
     observers: [
-        "_getQueries(service)"
+        "_getQueries(service, withGrouping)"
     ]
 })
 export class QueryGridTest extends WebComponentListener(WebComponent) {
@@ -20,7 +24,7 @@ export class QueryGridTest extends WebComponentListener(WebComponent) {
 
     readonly queryies: Vidyano.Query[]; private _setQueries: (queries: Vidyano.Query[]) => void;
 
-    private async _getQueries(service: Vidyano.Service) {
-        this._setQueries((await service.getPersistentObject(null, "29a160cd-c146-36a8-bf8c-8d159341c1a2")).queries);
+    private async _getQueries(service: Vidyano.Service, withGrouping: boolean) {
+        this._setQueries((await service.getPersistentObject(null, "29a160cd-c146-36a8-bf8c-8d159341c1a2", withGrouping ? "grouped" : null)).queries);
     }
 }

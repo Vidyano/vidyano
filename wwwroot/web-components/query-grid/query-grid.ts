@@ -5,6 +5,7 @@ import "./cell-templates/query-grid-cell-default.js"
 import "./query-grid-cell-presenter.js"
 import "./query-grid-column-measure.js"
 import "./query-grid-column-header.js"
+import "./query-grid-grouping.js"
 import "./query-grid-row.js"
 import "./query-grid-select-all.js"
 import "../scroller/scroller.js"
@@ -23,15 +24,6 @@ interface QueryGridItems {
 }
 
 type QueryGridItem = Vidyano.QueryResultItem | Vidyano.QueryResultItemGroup;
-
-Icon.Add
-`<vi-icon name="QueryGrid_Group">
-    <svg viewBox="0 0 32 32">
-        <g>
-            <path d="M 2 8 L 2 14 L 22 14 L 22 8 L 2 8 z M 10 18 L 10 24 L 30 24 L 30 18 L 10 18 z " />
-        </g>
-    </svg>
-</vi-icon>`;
 
 @WebComponent.register({
     properties: {
@@ -99,7 +91,8 @@ Icon.Add
         },
         hasGrouping: {
             type: Boolean,
-            readOnly: true
+            readOnly: true,
+            reflectToAttribute: true
         },
         noSelection: {
             type: Boolean,

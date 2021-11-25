@@ -20,8 +20,7 @@ namespace VidyanoWeb3.Service
             if (!query.Name.StartsWith("QueryGridTest_Flags_"))
                 return;
 
-            var flags = query.Name.Substring("QueryGridTest_Flags_".Length).Split("_");
-            switch (flags[0])
+            switch (query.Name.Substring("QueryGridTest_Flags_".Length))
             {
                 case "None":
                     query.Actions = null;
@@ -48,7 +47,7 @@ namespace VidyanoWeb3.Service
                     break;
             }
 
-            if (flags.Length > 1 && flags[1] == "Grouping")
+            if (!string.IsNullOrEmpty(parent.ObjectId))
                 query.GroupedBy = "Title";
 
             query.IsIncludedInParentObject = true;

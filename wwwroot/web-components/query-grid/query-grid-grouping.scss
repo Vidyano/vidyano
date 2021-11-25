@@ -1,0 +1,9 @@
+:host {
+    display: block;
+
+    vi-button {
+        width: var(--vi-query-grid-row-height);
+        height: var(--vi-query-grid-row-height);
+        line-height: var(--vi-query-grid-row-height);
+    }
+}

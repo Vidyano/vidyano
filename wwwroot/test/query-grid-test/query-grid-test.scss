@@ -6,10 +6,15 @@
     .grid {
         @include flex();
         grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: min-content 1fr 1fr 1fr;
 
         > div {
             @include layout-vertical();
             overflow: hidden;
+
+            &.grouping {
+                grid-column: 1 / 4;
+            }
 
             label {
                 color: var(--theme-color-dark);

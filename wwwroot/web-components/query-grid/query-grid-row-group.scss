@@ -19,9 +19,14 @@
     vi-icon {
         height: var(--vi-query-grid--row-height, var(--theme-h2));
         width: var(--theme-h2);
+        transition: transform 0.2s ease;
     }
 
     label {
         line-height: var(--vi-query-grid--row-height, var(--theme-h2));
+    }
+
+    > div {
+        transform: translateX(var(--vi-query-grid-horizontal));
     }
 }

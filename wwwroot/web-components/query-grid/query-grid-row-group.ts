@@ -12,9 +12,13 @@ import { WebComponent, WebComponentListener } from "../web-component/web-compone
         },
         collapsed: {
             type: Boolean,
-            computed: "group.isCollapsed"
+            computed: "group.isCollapsed",
+            reflectToAttribute: true
         }
     },
+    forwardObservers: [
+        "group.isCollapsed"
+    ],
     listeners: {
         "tap": "_tap"
     }
@@ -33,4 +37,10 @@ export class QueryGridRowGroup extends WebComponentListener(WebComponent) {
     }
 }
 
-Icon.Add(Polymer.html`<link rel="import" href="query-grid-row-group-icons.html">`);
+Icon.Add `<vi-icon name="QueryGrid_Group_Row">
+    <svg viewBox="0 0 32 32">
+        <g>
+            <path d="M 24 8 L 8 24 L 24 24 L 24 8 z "></path>
+        </g>
+    </svg>
+</vi-icon>`;

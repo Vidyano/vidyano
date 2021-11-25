@@ -1,3 +1,4 @@
+import { Observable } from "./common/observable.js";
 import type { Query } from "./query.js";
 import type { QueryResultItem } from "./query-result-item.js";
 import * as Dto from "./typings/service.js";
@@ -6,13 +7,15 @@ export interface IQueryGroupingInfo extends Dto.QueryGroupingInfo {
     groups?: QueryResultItemGroup[];
 }
 
-export class QueryResultItemGroup implements Dto.QueryResultItemGroup {
+export class QueryResultItemGroup extends Observable<QueryResultItemGroup> implements Dto.QueryResultItemGroup {
     private _name: string;
     private _count: number;
     private _items: QueryResultItem[];
     private _isCollapsed: boolean;
 
     constructor(public readonly query: Query, group: Dto.QueryResultItemGroup, private _start: number, private _end: number, private _notifier: () => void) {
+        super();
+
         this._name = group.name;
         this._count = group.count;
 
@@ -51,7 +54,8 @@ export class QueryResultItemGroup implements Dto.QueryResultItemGroup {
         if (this._isCollapsed === isCollapsed)
             return;
         
-        this._isCollapsed = isCollapsed;
+        const oldIsCollapsed = this._isCollapsed;
+        this.notifyPropertyChanged("isCollapsed", this._isCollapsed = isCollapsed, oldIsCollapsed);
         this._notifier();
     }
 

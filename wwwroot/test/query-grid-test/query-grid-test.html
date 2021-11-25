@@ -1,6 +1,10 @@
 <link rel="stylesheet" href="query-grid-test.css" />
 
 <div class="grid">
+    <div class="grouping">
+        <vi-checkbox checked="{{withGrouping}}" label="With grouping"></vi-checkbox>
+    </div>
+
     <div>
         <label>[[queries.0.label]]</label>
         <vi-query-grid query="[[queries.0]]"></vi-query-grid>
@@ -34,10 +38,5 @@
     <div>
         <label>[[queries.6.label]]</label>
         <vi-query-grid query="[[queries.6]]"></vi-query-grid>
-    </div>
-
-    <div>
-        <label>TODO: Grouping for [[queries.7.label]]</label>
-        <vi-query-grid query="[[queries.7]]"></vi-query-grid>
     </div>
 </div>

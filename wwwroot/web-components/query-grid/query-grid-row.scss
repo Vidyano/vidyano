@@ -35,7 +35,7 @@
         }
     }
 
-    .pinned, ::slotted([slot="group"]) {
+    .pinned {
         transform: translateX(var(--vi-query-grid-horizontal));
         z-index: 0;
     }
@@ -61,11 +61,15 @@
         display: none !important;
     }
 
-    &[initializing] .pinned {
-        display: none;
+    &[initializing] {
+        &[is-group], .pinned {
+            display: none !important;
+        }
     }
 
     &[is-group] {
+        grid-template-columns: 1fr !important;
+
         ::slotted(.column), .pinned {
             display: none;
         }
@@ -73,5 +77,17 @@
 
     &:not([is-group]) ::slotted([slot="group"]) {
         display: none;
+    }
+
+    [part="groupspacer"], [part="filter"] {
+        display: none;
+        width: var(--vi-query-grid-row-height);
+    }
+}
+
+
+:host-context([has-grouping]) {
+    [part="groupspacer"] {
+        display: block;
     }
 }
