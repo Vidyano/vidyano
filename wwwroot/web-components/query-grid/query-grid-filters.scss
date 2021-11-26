@@ -1,0 +1,30 @@
+@import "../_vars.scss";
+
+:host {
+    display: block;
+    width: var(--vi-query-grid-row-height);
+    height: var(--vi-query-grid-row-height);
+    line-height: var(--vi-query-grid-row-height);
+    align-self: flex-end;
+
+    > vi-popup-menu {
+        vi-button[slot="header"] {
+            @include relative();
+            @include flex();
+            z-index: 1;
+            text-align: center;
+            line-height: var(--vi-query-grid-row-height);
+            height: var(--vi-query-grid-row-height);
+            width: var(--vi-query-grid-row-height);
+            padding: 0;
+        }
+    }
+
+    &[hidden] {
+        display: block !important;
+
+        > vi-popup-menu {
+            visibility: hidden;
+        }
+    }
+}

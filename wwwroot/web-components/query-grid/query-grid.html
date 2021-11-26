@@ -9,13 +9,12 @@
         </dom-if>
         <dom-if if="[[canSelect]]">
             <template>
-                <vi-query-grid-select-all query="[[query]]" hidden$="[[!canSelect]]"></vi-query-grid-select-all>
+                <vi-query-grid-select-all query="[[query]]"></vi-query-grid-select-all>
             </template>
         </dom-if>
         <dom-if if="[[canFilter]]">
             <template>
-                <!-- TODO: QueryGridFilters component -->
-                <vi-button class="filter" icon="Filter" inverse></vi-button>
+                <vi-query-grid-filters query="[[query]]"></vi-query-grid-filters>
             </template>
         </dom-if>
         <div class="spacer"></div>

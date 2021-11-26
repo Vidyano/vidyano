@@ -56,12 +56,9 @@
                 grid-area: select;
             }
 
-            // TODO: Remove
-            vi-button.filter {
+            vi-query-grid-filters {
                 grid-area: filter;
-                height: var(--vi-query-grid-row-height);
                 line-height: var(--vi-query-grid-row-height);
-                box-sizing: border-box;
             }
 
             .spacer {
@@ -205,7 +202,7 @@
         .controls {
             grid-template-areas: "spacer spacer" "select filter";
 
-            vi-query-grid-grouping, vi-query-grid-select-all, .filter {
+            vi-query-grid-grouping, vi-query-grid-select-all, vi-query-grid-filters {
                 border-top: 1px solid var(--theme-light-border);
             }
 
@@ -263,7 +260,7 @@
         .controls {
             grid-template-areas: "spacer spacer" "select filter";
 
-            vi-query-grid-select-all, .filter {
+            vi-query-grid-select-all, vi-query-grid-filters {
                 border-top: 1px solid var(--theme-light-border);
             }
             
