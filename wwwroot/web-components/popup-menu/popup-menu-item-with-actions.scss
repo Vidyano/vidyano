@@ -38,11 +38,10 @@
     }
 
     .actions {
-        position: relative;
-        z-index: 1;
+        @include layout-horizontal();
         padding-left: var(--theme-h5);
 
-        ::content button {
+        ::slotted(*) {
             height: var(--vi-popup-menu-item-height, var(--theme-h1));
             width: var(--vi-popup-menu-item-height, var(--theme-h1));
             line-height: var(--vi-popup-menu-item-height, var(--theme-h1));
@@ -55,7 +54,7 @@
         height: var(--vi-popup-menu-item-height, var(--theme-h1));
         width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
 
-        &#icon:before {
+        &#icon::before {
             content: " ";
             position: absolute;
             top: 0;
@@ -64,5 +63,15 @@
             width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
             background-color: rgba(0, 0, 0, 0.04);
         }
+    }
+
+    vi-icon#icon[unresolved] + .icon-space {
+        height: var(--vi-popup-menu-item-height, var(--theme-h1));
+        width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
+        background-color: rgba(0, 0, 0, 0.04);
+    }
+
+    &:not([icon-space]) .icon-space {
+        display: none !important;
     }
 }
