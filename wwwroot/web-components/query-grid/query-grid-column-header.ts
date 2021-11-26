@@ -107,13 +107,18 @@ export class QueryGridColumnHeader extends WebComponentListener(WebComponent) {
         menu.popup();
     }
 
-    private _columnChanged(column: QueryGridColumn) {
+    private _columnChanged(column: QueryGridColumn, oldColumn: QueryGridColumn) {
         if (!column)
             return;
         
         this._setCanSort(column.canSort);
         this._setCanGroupBy(column.canGroupBy);
         this._setIsPinned(column.isPinned);
+
+        if (oldColumn != null) {
+            resizeObserver.unobserve(this);
+            resizeObserver.observe(this, { box: "border-box" });
+        }
     }
 
     private _computeSortingIcon(direction: Vidyano.SortDirection) {

@@ -9,7 +9,6 @@ import "./query-grid-grouping.js"
 import "./query-grid-row.js"
 import "./query-grid-select-all.js"
 import "../scroller/scroller.js"
-import { Icon } from "../icon/icon.js"
 import { QueryGridColumn } from "./query-grid-column.js"
 import { QueryGridUserSettings } from "./query-grid-user-settings.js"
 import { QueryGridRow } from "./query-grid-row.js"
@@ -38,7 +37,8 @@ type QueryGridItem = Vidyano.QueryResultItem | Vidyano.QueryResultItemGroup;
             readOnly: true
         },
         query: {
-            type: Object
+            type: Object,
+            observer: "_queryChanged"
         },
         asLookup: {
             type: Boolean,
@@ -169,6 +169,11 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
         super.ready();
 
         requestAnimationFrame(() => this.rowHeight = parseInt(window.getComputedStyle(this).getPropertyValue("--vi-query-grid-row-height")) || 32);
+    }
+
+    private _queryChanged(query: Vidyano.Query, oldQuery: Vidyano.Query) {
+        if (oldQuery)
+            this._setInitializing(true);
     }
 
     private _columnWidthsChanged(columnWidths: number[]) {

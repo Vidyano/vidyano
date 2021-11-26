@@ -261,7 +261,15 @@
     // Select + Filter + Inline actions
     &[can-select][can-filter][inline-actions] {
         .controls {
-            grid-template-areas: "select filter";
+            grid-template-areas: "spacer spacer" "select filter";
+
+            vi-query-grid-select-all, .filter {
+                border-top: 1px solid var(--theme-light-border);
+            }
+            
+            .spacer {
+                display: block;
+            }
         }
 
         vi-query-grid-row {
@@ -272,12 +280,8 @@
             .controls {
                 grid-template-areas: "spacer spacer spacer" "grouping select filter";
     
-                vi-query-grid-grouping, vi-query-grid-select-all, .filter {
+                vi-query-grid-grouping {
                     border-top: 1px solid var(--theme-light-border);
-                }
-    
-                .spacer {
-                    display: block;
                 }
             }
 
