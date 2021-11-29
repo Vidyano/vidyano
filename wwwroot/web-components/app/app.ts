@@ -5,6 +5,8 @@ import { Path } from "../../libs/pathjs/pathjs.js"
 import { AppBase } from "./app-base.js"
 export { AppBase } from "./app-base.js"
 import "../menu/menu.js"
+import "../sign-in/sign-in.js"
+import "../sign-out/sign-out.js"
 import "../spinner/spinner.js"
 import { WebComponent } from "../web-component/web-component.js"
 import { AppCacheEntry } from "../app-cache/app-cache-entry.js"
@@ -230,7 +232,9 @@ export class App extends AppBase {
     protected _cleanUpOnSignOut(isSignedIn: boolean) {
         if (isSignedIn === false) {
             this.cacheClear();
-            this.appRoutePresenter.clear();
+
+            // TODO: check
+            //this.appRoutePresenter.clear();
 
             super._cleanUpOnSignOut(isSignedIn);
         }
