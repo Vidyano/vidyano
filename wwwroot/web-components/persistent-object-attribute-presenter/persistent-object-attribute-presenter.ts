@@ -141,6 +141,7 @@ export class PersistentObjectAttributePresenter extends WebComponent {
     private _renderedAttribute: Vidyano.PersistentObjectAttribute;
     private _renderedAttributeElement: PersistentObjectAttribute;
     private _focusQueued: boolean;
+    private _customTemplate: new (p0?: object) => Polymer.Templatize.TemplateInstanceBase;
     readonly loading: boolean; private _setLoading: (loading: boolean) => void;
     attribute: Vidyano.PersistentObjectAttribute;
     nonEdit: boolean;
@@ -151,6 +152,11 @@ export class PersistentObjectAttributePresenter extends WebComponent {
 
     connectedCallback() {
         super.connectedCallback();
+
+        const customTemplate = <HTMLTemplateElement><any>this.querySelector("template");
+        if (customTemplate) {
+            this._customTemplate = Polymer.Templatize.templatize(customTemplate);
+        }
 
         if (this.service && this.service.application && this.service.application.hasManagement)
             this._developerToggleDisposer = developerShortcut.propertyChanged.attach(this._devToggle.bind(this));
@@ -232,29 +238,35 @@ export class PersistentObjectAttributePresenter extends WebComponent {
 
         let focusTarget: HTMLElement;
         try {
-            const config = <PersistentObjectAttributeConfig>this.app.configuration.getAttributeConfig(attribute);
-            this.noLabel = this.noLabel || (config && !!config.noLabel);
-
-            if (!!config && config.hasTemplate)
-                this.appendChild(config.stamp(attribute, config.as || "attribute"));
+            if (this._customTemplate) {
+                const templateInstance = new this._customTemplate({ attribute: attribute });
+                (focusTarget = this.$.content).appendChild(templateInstance.root);
+            }
             else {
-                const fullAttributeFileName = `persistent-object-attribute-${attributeType.toKebabCase()}`;
-                let type: ObjectConstructor;
-                try {
-                    const attributeModule = await import(`../persistent-object-attribute/attributes/${fullAttributeFileName}/${fullAttributeFileName}.js`);
-                    type = attributeModule["PersistentObjectAttribute" + attributeType];
-                }
-                catch {
-                    // Fallback to string
-                }
+                const config = <PersistentObjectAttributeConfig>this.app.configuration.getAttributeConfig(attribute);
+                this.noLabel = this.noLabel || (config && !!config.noLabel);
 
-                this._renderedAttributeElement = <PersistentObjectAttribute>new (type ?? PersistentObjectAttributeString)();
-                this._renderedAttributeElement.classList.add("attribute");
-                this._renderedAttributeElement.attribute = attribute;
-                this._renderedAttributeElement.nonEdit = this.nonEdit;
-                this._renderedAttributeElement.disabled = this.disabled;
+                if (!!config && config.hasTemplate)
+                    this.appendChild(config.stamp(attribute, config.as || "attribute"));
+                else {
+                    const fullAttributeFileName = `persistent-object-attribute-${attributeType.toKebabCase()}`;
+                    let type: ObjectConstructor;
+                    try {
+                        const attributeModule = await import(`../persistent-object-attribute/attributes/${fullAttributeFileName}/${fullAttributeFileName}.js`);
+                        type = attributeModule["PersistentObjectAttribute" + attributeType];
+                    }
+                    catch {
+                        // Fallback to string
+                    }
 
-                this.appendChild(focusTarget = this._renderedAttributeElement);
+                    this._renderedAttributeElement = <PersistentObjectAttribute>new (type ?? PersistentObjectAttributeString)();
+                    this._renderedAttributeElement.classList.add("attribute");
+                    this._renderedAttributeElement.attribute = attribute;
+                    this._renderedAttributeElement.nonEdit = this.nonEdit;
+                    this._renderedAttributeElement.disabled = this.disabled;
+
+                    this.appendChild(focusTarget = this._renderedAttributeElement);
+                }
             }
 
             this._renderedAttribute = attribute;
