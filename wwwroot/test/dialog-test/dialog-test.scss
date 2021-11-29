@@ -1,0 +1,9 @@
+@import "../_vars.scss";
+
+:host {
+    vi-button {
+        display: inline-block;
+        line-height: var(--theme-h2);
+        padding: 0 var(--theme-h4);
+    }
+}

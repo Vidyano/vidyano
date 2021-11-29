@@ -69,6 +69,15 @@
             "nl": ""
           },
           "Name": "QueryGrid"
+        },
+        {
+          "ObjectId": "test/dialog",
+          "Offset": 5,
+          "Title": {
+            "en": "Dialog",
+            "nl": ""
+          },
+          "Name": "Dialog"
         }
       ]
     }

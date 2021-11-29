@@ -37,6 +37,7 @@
         <script type="module" src="web3/web-components/app/app.js"></script>
         
         <!-- Test -->
+        <script type="module" src="web3/test/dialog-test/dialog-test.js"></script>
         <script type="module" src="web3/test/list-test/list-test.js"></script>
         <script type="module" src="web3/test/popup-menu-test/popup-menu-test.js"></script>
         <script type="module" src="web3/test/query-grid-test/query-grid-test.js"></script>
@@ -58,6 +59,11 @@
     </head>
     <body>
         <vi-app label="Web3">
+            <vi-app-route route="/:programUnitName/dialog" slot="app-route">
+                <template>
+                    <vi-dialog-test></vi-dialog-test>
+                </template>
+            </vi-app-route>
             <vi-app-route route="/:programUnitName/list" slot="app-route">
                 <template>
                     <vi-list-test></vi-list-test>
