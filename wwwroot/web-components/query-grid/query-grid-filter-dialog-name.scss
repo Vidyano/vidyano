@@ -1,0 +1,27 @@
+@import "../_vars.scss";
+
+:host {
+    @include layout-horizontal();
+
+    vi-icon {
+        width: var(--theme-h2);
+        height: var(--theme-h2);
+    }
+
+    input {
+        padding: 0 var(--theme-h5);
+    }
+
+    #group {
+        &:not([grouping]) {
+            & > vi-persistent-object-attribute-edit, & > vi-icon {
+                display: none !important;
+            }
+        }
+
+        > vi-icon {
+            width: var(--theme-h2);
+            height: var(--theme-h2);
+        }
+    }
+}

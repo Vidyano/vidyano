@@ -1,0 +1,11 @@
+<style include="vi-reset-css-style-module"></style>
+<link rel="stylesheet" href="query-grid-filter-dialog-name.css" />
+
+<vi-persistent-object-attribute-edit attribute="[[attribute]]" class="flex" reverse>
+    <vi-button slot="left" icon="Folder" on-tap="_toggleGrouping" inverse tabindex="-1"></vi-button>
+    <div class="layout horizontal flex">
+        <input class="flex group" value="{{group::input}}" hidden$="[[!grouping]]" />
+        <vi-icon source="ChevronRight" hidden$="[[!grouping]]"></vi-icon>
+        <input class="flex name" value="{{name::input}}" />
+    </div>
+</vi-persistent-object-attribute-edit>

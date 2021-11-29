@@ -1,6 +1,7 @@
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import * as Polymer from "../../libs/@polymer/polymer.js"
 import { Popup } from "../popup/popup.js"
+import { QueryGridFilterDialog } from "./query-grid-filter-dialog.js"
 import { WebComponent } from "../web-component/web-component.js"
 
 interface IQueryFilter {
@@ -180,8 +181,7 @@ export class QueryGridFilters extends WebComponent {
     }
 
     private async _saveAs() {
-        // TODO
-        // this.app.showDialog(new QueryGridFilterDialog(this.query.filters, await this.query.filters.createNew()));
+        this.app.showDialog(new QueryGridFilterDialog(this.query.filters, await this.query.filters.createNew()));
     }
 
     private _save() {
@@ -189,9 +189,8 @@ export class QueryGridFilters extends WebComponent {
     }
 
     private async _edit(e: Polymer.Gestures.TapEvent) {
-        // TODO
-        // const filter = <Vidyano.QueryFilter>e.model.filter.filter;
-        // this.app.showDialog(new Vidyano.WebComponents.QueryGridFilterDialog(this.query.filters, filter));
+        const filter = <Vidyano.QueryFilter>e.model.filter.filter;
+        this.app.showDialog(new QueryGridFilterDialog(this.query.filters, filter));
     }
 
     private async _delete(e: Polymer.Gestures.TapEvent) {
