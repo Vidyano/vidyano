@@ -27,6 +27,7 @@
     border: none;
     outline: none;
     box-sizing: border-box;
+    user-select: none;
     --vi-spinner-size: 1.5em;
 
     .highlight {
