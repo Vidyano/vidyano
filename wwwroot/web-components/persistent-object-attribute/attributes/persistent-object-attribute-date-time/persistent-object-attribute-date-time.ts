@@ -147,7 +147,7 @@ export class PersistentObjectAttributeDateTime extends PersistentObjectAttribute
     }
 
     private _selectedDateChanged(selectedDate: Date, hasDateComponent: boolean, hasTimeComponent: boolean) {
-        if (!hasDateComponent || this._valueChangedBlock)
+        if (!this.editing || !hasDateComponent || this._valueChangedBlock)
             return;
 
         if (selectedDate) {
@@ -171,7 +171,7 @@ export class PersistentObjectAttributeDateTime extends PersistentObjectAttribute
     }
 
     private _selectedTimeChanged(selectedTime: Date, hasDateComponent: boolean, hasTimeComponent: boolean) {
-        if (!hasTimeComponent || this._valueChangedBlock)
+        if (!this.editing || !hasTimeComponent || this._valueChangedBlock)
             return;
 
         if (hasDateComponent) {
