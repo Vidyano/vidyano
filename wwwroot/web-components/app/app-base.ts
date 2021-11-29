@@ -155,7 +155,7 @@ if (hashBangRe.test(document.location.href)) {
         "_mediaQueryChanged(isDesktop, isTablet, isPhone)"
     ],
     listeners: {
-        "app-route-presenter-connected": "_appRoutePresenterConnected",
+        "app-route-presenter:connected": "_appRoutePresenterConnected",
         "click": "_anchorClickHandler",
         "app-update-available": "_updateAvailable"
     },

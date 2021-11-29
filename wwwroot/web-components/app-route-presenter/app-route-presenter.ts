@@ -37,7 +37,7 @@ export class AppRoutePresenter extends WebComponent {
     connectedCallback() {
         super.connectedCallback();
 
-        this.fire("app-route-presenter-connected");
+        this.fire("app-route-presenter:connected");
 
         this._routesObserver = new Polymer.FlattenedNodesObserver(this.$.routes, this._routesChanged.bind(this));
     }
