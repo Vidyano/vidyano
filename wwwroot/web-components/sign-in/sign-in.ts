@@ -341,7 +341,7 @@ export class SignIn extends WebComponentListener(WebComponent) {
     }
 
     private _keydown(e: KeyboardEvent) {
-        if (e.code === Keyboard.Keys.Enter) {
+        if (e.key === Keyboard.Keys.Enter) {
             switch (this.step) {
                 case "username": {
                     if (!String.isNullOrEmpty(this.userName))
@@ -478,7 +478,7 @@ export class SignIn extends WebComponentListener(WebComponent) {
         } : null);
     }
 
-    private _getProviders(providers: { [name: string]: IProviderParameters }): { name: string; parameters: IProviderParameters; }[] {
+    private _getProviders(providers: { [name: string]: Vidyano.Dto.ProviderParameters }): { name: string; parameters: Vidyano.Dto.ProviderParameters; }[] {
         return Object.keys(providers).filter(key => key !== "Vidyano").map(key => {
             return {
                 key: key,
