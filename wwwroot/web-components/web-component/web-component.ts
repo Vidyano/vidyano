@@ -386,41 +386,18 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
         style.setAttribute("include", "vi-reset-css-style-module");
         template.content.insertBefore(style, template.content.firstChild);
 
+        const userStyleModule = <HTMLTemplateElement>Polymer.DomModule.import(`${elementName}-style-module`);
+        if (userStyleModule != null) {
+            const style = document.createElement("style");
+            style.setAttribute("include", "vi-flex-layout-style-module");
+
+            template.content.insertBefore(style, template.content.querySelector("style:last-of-type") || template.content.firstChild);
+        }
+
         Object.defineProperty(element, "template", {
             get: () => template,
             enumerable: false
         });
-
-        // TODO: Allow template override via dom module
-        // TODO: Allow additional style modules
-
-        /*const addStyleModules = (template: HTMLTemplateElement = <HTMLTemplateElement>(Polymer.DomModule.import(elementName, "template"))) => {
-           debugger;
-            if (template == null)
-                return;
-
-            const userStyleModuleTemplate = <HTMLTemplateElement>Polymer.DomModule.import(`${elementName}-style-module`, "template");
-            const userStyle = userStyleModuleTemplate != null ? userStyleModuleTemplate.content.querySelector("style") : null;
-
-            const baseStyle = (<HTMLTemplateElement>Polymer.DomModule.import("vi-base-style-module", "template")).content.querySelector("style").cloneNode(true);
-            // Add vi-base-style-module
-            template.content.insertBefore(baseStyle, template.content.firstChild);
-
-            // Add vi-flex-layout-style-module if template contains layout or flex class
-            const temp = document.createElement("div");
-            temp.appendChild(template.cloneNode(true));
-            if (/class="[^"]*?(layout|flex)[^"]*?"/.test(temp.innerHTML)) {
-                const flexLayoutStyleModuleTemplate = <HTMLTemplateElement>Polymer.DomModule.import("vi-flex-layout-style-module", "template");
-                const flexLayoutStyle = flexLayoutStyleModuleTemplate.content.querySelector("style");
-                if (flexLayoutStyle != null)
-                    baseStyle.parentNode.insertBefore(flexLayoutStyle.cloneNode(true), baseStyle.nextSibling);
-            }
-
-            if (userStyle != null)
-                template.content.appendChild(userStyle);
-
-            return template;
-        };*/
     }
 
     private static _register(element: CustomElementConstructor, info: IWebComponentRegistrationInfo = {}, prefix: string = "vi") {
