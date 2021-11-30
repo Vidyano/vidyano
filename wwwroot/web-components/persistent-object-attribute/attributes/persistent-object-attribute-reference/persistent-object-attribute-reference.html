@@ -4,7 +4,7 @@
 <dom-if if="[[!editing]]">
     <template>
         <a href$="[[href]]" title$="[[title]]" disabled$="[[!href]]" on-tap="_open" target$="[[target]]">
-            <span sensitive$="[[sensitive]]">[[attribute.displayValue]]</span>
+            <vi-sensitive disabled="[[!sensitive]]">[[attribute.displayValue]]</vi-sensitive>
             <dom-if if="[[href]]">
                 <template>
                     <vi-icon source="ArrowUpRight" class="size-h4"></vi-icon>
@@ -63,7 +63,9 @@
         <dom-if if="[[!attribute.selectInPlace]]">
             <template>
                 <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-                    <input value="{{filter::input}}" on-blur="_filterBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder="[[placeholder]]" sensitive$="[[sensitive]]">
+                    <vi-sensitive disabled="[[!sensitive]]" class="layout horizontal">
+                        <input class="flex" value="{{filter::input}}" on-blur="_filterBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder="[[placeholder]]">
+                    </vi-sensitive>
                     <a slot="right" href$="[[href]]" title$="[[title]]" disabled$="[[!href]]" tabindex="-1" on-tap="_open" target$="[[target]]">
                         <vi-icon source="ArrowUpRight"></vi-icon>
                     </a>

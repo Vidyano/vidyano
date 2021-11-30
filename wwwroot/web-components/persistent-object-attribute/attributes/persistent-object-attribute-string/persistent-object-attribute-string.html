@@ -5,13 +5,13 @@
     <template>
         <dom-if if="[[!link]]">
             <template>
-                <span sensitive$="[[sensitive]]">[[attribute.displayValue]]</span>
+                <vi-sensitive disabled="[[!sensitive]]">[[attribute.displayValue]]</vi-sensitive>
             </template>
         </dom-if>
         <dom-if if="[[link]]">
             <template>
                 <a href$="[[link]]" title$="[[linkTitle]]" rel="external noopener" target="_blank">
-                    <span sensitive$="[[sensitive]]">[[attribute.displayValue]]</span>
+                    <vi-sensitive disabled="[[!sensitive]]">[[attribute.displayValue]]</vi-sensitive>
                     <dom-if if="[[attribute.value]]">
                         <template>
                             <vi-icon source="ArrowUpRight" class="size-h4"></vi-icon>
@@ -26,7 +26,9 @@
 <dom-if if="[[editing]]">
     <template>
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-            <input value="{{value::input}}" type$="[[inputtype]]" maxlength$="[[maxlength]]" style$="[[editInputStyle]]" sensitive$="[[sensitive]]" on-focus="_editInputFocus" on-blur="_editInputBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder="[[placeholder]]">
+            <vi-sensitive disabled="[[!sensitive]]">
+                <input value="{{value::input}}" type$="[[inputtype]]" maxlength$="[[maxlength]]" style$="[[editInputStyle]]" on-focus="_editInputFocus" on-blur="_editInputBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder="[[placeholder]]">
+            </vi-sensitive>
             <template if="[[link]]">
                 <a class="button" href$="[[link]]" title$="[[linkTitle]]" tabindex="-1" rel="external noopener" target="_blank">
                     <vi-icon source="ArrowUpRight"></vi-icon>

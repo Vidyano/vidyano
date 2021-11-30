@@ -41,10 +41,4 @@
             fill: white;
         }
     }
-
-    &[sensitive] {
-        .tag {
-            filter: blur(5px);
-        }
-    }
 }

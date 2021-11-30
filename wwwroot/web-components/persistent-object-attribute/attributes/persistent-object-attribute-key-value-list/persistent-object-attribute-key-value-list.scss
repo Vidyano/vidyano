@@ -11,10 +11,6 @@
         color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
     }
 
-    span[sensitive] {
-        filter: blur(5px);
-    }
-
     #radiobuttons {
         line-height: var(--theme-h2);
 

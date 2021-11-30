@@ -17,13 +17,17 @@
         </dom-if>
         <dom-if if="[[sensitive]]" restamp>
             <template>
-                <span sensitive>[[attribute.displayValue]]</span>
+                <vi-sensitive>
+                    <span>[[attribute.displayValue]]</span>
+                </vi-sensitive>
             </template>
         </dom-if>
     </template>
 </dom-if>
 <dom-if if="[[!editing]]">
     <template>
-        <span sensitive$="[[sensitive]]">[[attribute.displayValue]]</span>
+        <vi-sensitive disabled="[[!sensitive]]">
+            <span>[[attribute.displayValue]]</span>
+        </vi-sensitive>
     </template>
 </dom-if>

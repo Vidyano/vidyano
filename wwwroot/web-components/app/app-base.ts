@@ -12,11 +12,11 @@ import type { AppRoutePresenter } from "../app-route-presenter/app-route-present
 import { AppServiceHooksBase } from "../app-service-hooks/app-service-hooks-base.js"
 import { Dialog } from "../dialog/dialog.js"
 import { MessageDialog, IMessageDialogOptions } from "../message-dialog/message-dialog.js"
+import "../sensitive/sensitive.js"
 import { Keyboard, WebComponent, WebComponentListener } from "../web-component/web-component.js"
 import "./style-modules/flex-layout.js"
 import "./style-modules/reset-css.js"
 import "./style-modules/responsive.js"
-import "./style-modules/sensitive.js"
 import "@polymer/iron-a11y-keys/iron-a11y-keys.js"
 import "@polymer/paper-ripple"
 import { IronA11yKeysElement } from "@polymer/iron-a11y-keys/iron-a11y-keys.js"
@@ -379,7 +379,7 @@ export abstract class AppBase extends WebComponentListener(WebComponent) {
         if (currentSensitiveCookie !== sensitive)
             Vidyano.cookie("sensitive", String(sensitive));
 
-        this.fire("sensitive-changed", sensitive, { bubbles: false });
+        Vidyano.ServiceBus.send("vi-app:sensitive-changed", sensitive);
     }
 
     private _cookiePrefixChanged(cookiePrefix: string) {

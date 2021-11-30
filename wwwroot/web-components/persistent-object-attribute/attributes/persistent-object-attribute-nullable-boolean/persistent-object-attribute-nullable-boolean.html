@@ -3,7 +3,7 @@
 
 <dom-if if="[[!editing]]" restamp>
     <template>
-        <span sensitive$="[[sensitive]]">[[attribute.displayValue]]</span>
+        <vi-sensitive disabled="[[!sensitive]]">[[attribute.displayValue]]</vi-sensitive>>
     </template>
 </dom-if>
 <dom-if if="[[editing]]">

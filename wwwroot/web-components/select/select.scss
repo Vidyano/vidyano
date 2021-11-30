@@ -42,7 +42,6 @@ $border-color: #ddd;
             }
 
             input {
-                @include flex();
                 border: none;
                 height: calc(var(--theme-h2) - 2px);
                 line-height: calc(var(--theme-h2) - 2px);

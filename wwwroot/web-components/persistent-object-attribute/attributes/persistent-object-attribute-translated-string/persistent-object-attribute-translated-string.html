@@ -5,13 +5,15 @@
     <template>
         <dom-if if="[[!multiline]]">
             <template>
-                <span sensitive$="[[sensitive]]">[[attribute.displayValue]]</span>
+                <vi-sensitive disabled="[[!sensitive]]">[[attribute.displayValue]]</vi-sensitive>
             </template>
         </dom-if>
         <dom-if if="[[multiline]]">
             <template>
                 <vi-scroller>
-                    <pre sensitive$="[[sensitive]]">[[attribute.displayValue]]</pre>
+                    <vi-sensitive disabled="[[!sensitive]]">
+                        <pre>[[attribute.displayValue]]</pre>
+                    </vi-sensitive>
                 </vi-scroller>
             </template>
         </dom-if>
@@ -22,13 +24,17 @@
         <vi-persistent-object-attribute-edit attribute="[[attribute]]" reverse-content$="[[multiline]]">
             <dom-if if="[[!multiline]]">
                 <template>
-                    <input class="flex" value="{{value::input}}" type="text" on-blur="_editInputBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder="[[placeholder]]" sensitive$="[[sensitive]]">
+                    <vi-sensitive class="flex layout horizontal" disabled="[[!sensitive]]">
+                        <input class="flex" value="{{value::input}}" type="text" on-blur="_editInputBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder="[[placeholder]]">
+                    </vi-sensitive>
                 </template>
             </dom-if>
             <dom-if if="[[multiline]]">
                 <template>
                     <vi-scroller class="fit">
-                        <pre id="multiline" sensitive$="[[sensitive]]">[[attribute.value]]</pre>
+                        <vi-sensitive disabled="[[!sensitive]]">
+                            <pre id="multiline">[[attribute.value]]</pre>
+                        </vi-sensitive>
                     </vi-scroller>
                 </template>
             </dom-if>

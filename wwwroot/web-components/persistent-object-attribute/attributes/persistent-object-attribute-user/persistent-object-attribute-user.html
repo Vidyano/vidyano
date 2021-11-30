@@ -3,13 +3,15 @@
 
 <dom-if if="[[!editing]]">
     <template>
-        <span sensitive$="[[sensitive]]">[[friendlyName]]</span>
+        <vi-sensitive disabled="[[!sensitive]]">[[friendlyName]]</vi-sensitive>
     </template>
 </dom-if>
 <dom-if if="[[editing]]">
     <template>
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-            <input value="[[friendlyName]]" readonly sensitive$="[[sensitive]]">
+            <vi-sensitive disabled="[[!sensitive]]">
+                <input value="[[friendlyName]]" readonly>
+            </vi-sensitive>
             <dom-if if="[[!readOnly]]" restamp>
                 <template>
                     <vi-button slot="right" on-tap="_browseReference" tabindex="-1">

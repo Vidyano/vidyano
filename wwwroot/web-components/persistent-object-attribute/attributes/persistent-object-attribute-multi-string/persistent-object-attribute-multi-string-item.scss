@@ -26,10 +26,6 @@
             &:disabled {
                 background-color: #eee;
             }
-
-            &[sensitive] {
-                filter: blur(5px);
-            }
         }
     }
 

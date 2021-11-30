@@ -102,12 +102,12 @@ import { WebComponent, WebComponentListener } from "../web-component/web-compone
     ],
     listeners: {
         "tabselect": "_tabselect"
-    }
+    },
+    sensitive: true
 })
 export class PersistentObject extends WebComponentListener(WebComponent) {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object.html">` }
 
-    private _parameters: { id: string; objectId: string };
     private _cacheEntry: AppCacheEntryPersistentObject;
     persistentObject: Vidyano.PersistentObject;
     layout: string;

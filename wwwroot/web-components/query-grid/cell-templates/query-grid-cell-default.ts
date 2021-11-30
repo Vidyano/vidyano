@@ -13,8 +13,14 @@ import { WebComponent } from "../../web-component/web-component.js"
         right: {
             type: Boolean,
             reflectToAttribute: true
+        },
+        sensitive: {
+            type: Boolean,
+            readOnly: true,
+            reflectToAttribute: true
         }
-    }
+    },
+    sensitive: true
 })
 export class QueryGridCellDefault extends QueryGridCell {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-cell-default.html">` }
@@ -26,8 +32,11 @@ export class QueryGridCellDefault extends QueryGridCell {
     private _foreground: { currentValue?: any; originalValue?: any } = { currentValue: null };
     private _textAlign: { currentValue?: any; originalValue?: any } = { currentValue: null };
     right: boolean;
+    readonly sensitive: boolean; private _setSensitive: (sensitive: boolean) => void;
 
     private _valueChanged(itemValue: Vidyano.QueryResultItemValue) {
+        this._setSensitive(itemValue?.column.isSensitive);
+
         if (!itemValue) {
             if (this._textNode && this._textNodeValue !== "")
                 this._textNode.nodeValue = this._textNodeValue = "";

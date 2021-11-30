@@ -3,7 +3,7 @@
 
 <dom-if if="[[!editing]]">
     <template>
-        <span sensitive$="[[sensitive]]">[[attribute.displayValue]]</span>
+        <vi-sensitive disabled="[[!sensitive]]">[[attribute.displayValue]]</vi-sensitive>>
     </template>
 </dom-if>
 <dom-if if="[[editing]]">
@@ -11,7 +11,9 @@
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
             <div class="layout horizontal">
                 <span class="before" hidden$="[[!unitBefore]]">[[unitBefore]]</span>
-                <input class="flex" value="{{value::input}}" type$="[[inputtype]]" sensitive$="[[sensitive]]" on-keypress="_keypress" on-focus="_editInputFocus" on-blur="_editInputBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder="[[placeholder]]">
+                <vi-sensitive class="flex layout horizontal" disabled="[[!sensitive]]">
+                    <input class="flex" value="{{value::input}}" type$="[[inputtype]]" on-keypress="_keypress" on-focus="_editInputFocus" on-blur="_editInputBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder="[[placeholder]]">
+                </vi-sensitive>
                 <span class="after" hidden$="[[!unitAfter]]">[[unitAfter]]</span>
             </div>
         </vi-persistent-object-attribute-edit>

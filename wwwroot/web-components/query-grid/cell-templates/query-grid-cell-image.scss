@@ -11,4 +11,8 @@
         background-size: contain;
         background-repeat: no-repeat;
     }
+
+    &[is-app-sensitive][sensitive] {
+        filter: blur(5px);
+    }
 }

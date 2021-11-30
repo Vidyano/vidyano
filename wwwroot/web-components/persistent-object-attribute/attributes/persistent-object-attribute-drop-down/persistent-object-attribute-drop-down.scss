@@ -7,12 +7,8 @@
         border: none;
     }
 
-    span, vi-select::part(input) {
+    vi-sensitive, vi-select::part(input) {
         color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
-    }
-
-    span[sensitive] {
-        filter: blur(5px);
     }
 
     #radiobuttons {

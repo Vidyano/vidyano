@@ -7,7 +7,16 @@
         "nl": "Thuis"
       },
       "OpenFirst": true,
-      "Groups": [],
+      "Groups": [
+        {
+          "$id": "ProgramUnitItemGroup:4ae1faf8-533e-49fd-abcf-29edb40ee96a",
+          "Id": "4ae1faf8-533e-49fd-abcf-29edb40ee96a",
+          "Title": {
+            "en": "Attributes",
+            "nl": ""
+          }
+        }
+      ],
       "Items": [
         {
           "Offset": 10,
@@ -29,6 +38,24 @@
           "Name": "Attributes",
           "PersistentObject": {
             "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:4ae1faf8-533e-49fd-abcf-29edb40ee96a"
+          }
+        },
+        {
+          "ObjectId": "sensitive",
+          "Offset": 30,
+          "Title": {
+            "en": "Attributes sensitive",
+            "nl": ""
+          },
+          "Name": "AttributesSensitive",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:4ae1faf8-533e-49fd-abcf-29edb40ee96a"
           }
         }
       ]

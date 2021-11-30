@@ -4,14 +4,18 @@
 <dom-if if="[[!editing]]">
     <template>
         <vi-scroller class="flex" allow-native>
-            <marked-element markdown="[[attribute.displayValue]]" sensitive$="[[sensitive]]" breaks></marked-element>
+            <vi-sensitive disabled="[[!sensitive]]">
+                <marked-element markdown="[[attribute.displayValue]]" breaks></marked-element>
+            </vi-sensitive>
         </vi-scroller>
     </template>
 </dom-if>
 <dom-if if="[[editing]]">
     <template>
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-            <textarea value="{{value::input}}" maxlength$="[[maxlength]]" style$="[[editInputStyle]]" sensitive$="[[sensitive]]" on-blur="_editTextAreaBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]"></textarea>
+            <vi-sensitive disabled="[[!sensitive]]" class="layout horizontal">
+                <textarea class="flex" value="{{value::input}}" maxlength$="[[maxlength]]" style$="[[editInputStyle]]" on-blur="_editTextAreaBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]"></textarea>
+            </vi-sensitive>
         </vi-persistent-object-attribute-edit>
     </template>
 </dom-if>

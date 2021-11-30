@@ -8,10 +8,6 @@
     header {
         @include page-title();
         padding-right: 4px;
-
-        > span[sensitive] {
-            filter: blur(5px);
-        }
     }
 
     nav {

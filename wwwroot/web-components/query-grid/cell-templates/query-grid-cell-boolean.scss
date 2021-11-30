@@ -7,4 +7,8 @@
         height: var(--vi-query-grid-row-height);
         line-height: var(--vi-query-grid-row-height);
     }
+
+    &[is-app-sensitive][sensitive] {
+        filter: blur(5px);
+    }
 }

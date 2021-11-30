@@ -2,18 +2,18 @@
 
 <dom-if if="[[!editing]]" restamp>
     <template>
-        <div class="fit">
-            <img src="[[image]]" on-tap="_showDialog" can-open$="[[canOpen]]" sensitive$="[[sensitive]]" />
-        </div>
+        <vi-sensitive class="fit" disabled="[[!sensitive]]">
+            <img src="[[image]]" on-tap="_showDialog" can-open$="[[canOpen]]" />
+        </vi-sensitive>
     </template>
 </dom-if>
 <dom-if if="[[editing]]" restamp>
     <template>
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
             <div class="flex relative">
-                <div class="fit image-container">
-                    <img src="[[image]]" on-tap="_showDialog" can-open$="[[canOpen]]" sensitive$="[[sensitive]]" />
-                </div>
+                <vi-sensitive class="fit image-container" disabled="[[!sensitive]]">
+                    <img src="[[image]]" on-tap="_showDialog" can-open$="[[canOpen]]" />
+                </vi-sensitive>
             </div>
             <dom-if if="[[!readOnly]]">
                 <template>

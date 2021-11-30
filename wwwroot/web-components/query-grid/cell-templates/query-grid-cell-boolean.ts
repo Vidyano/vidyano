@@ -17,7 +17,8 @@ import { WebComponent } from "../../web-component/web-component.js"
     },
     observers: [
         "_update(value, oldValue, isConnected)"
-    ]
+    ],
+    sensitive: true
 })
 export class QueryGridCellBoolean extends QueryGridCell {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-cell-boolean.html">` }
@@ -26,12 +27,15 @@ export class QueryGridCellBoolean extends QueryGridCell {
     private _icon: HTMLElement;
     private _textNode: Text;
     readonly oldValue: Vidyano.QueryResultItemValue; private _setOldValue: (oldValue: Vidyano.QueryResultItemValue) => void;
+    readonly sensitive: boolean; private _setSensitive: (sensitive: boolean) => void;
 
     private _valueChanged(value: Vidyano.QueryResultItemValue, oldValue: Vidyano.QueryResultItemValue) {
         this._setOldValue(oldValue == null ? null : oldValue);
     }
 
     private _update(value: Vidyano.QueryResultItemValue, oldValue: Vidyano.QueryResultItemValue) {
+        this._setSensitive(value?.column.isSensitive);
+
         if (!!value && !!oldValue && value.getValue() === oldValue.getValue()) {
             const oldHints = oldValue.column.typeHints;
             const hints = value.column.typeHints;

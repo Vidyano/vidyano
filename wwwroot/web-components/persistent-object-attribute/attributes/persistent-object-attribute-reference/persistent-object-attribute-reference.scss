@@ -78,10 +78,4 @@
             @include layout-wrap();
         }
     }
-
-    span, input {
-        &[sensitive] {
-            filter: blur(5px);
-        }
-    }
 }

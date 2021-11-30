@@ -5,13 +5,13 @@
         <dom-repeat items="[[tags]]" as="tag">
             <template>
                 <div class="layout horizontal tag">
-                    <span class="tagValue" sensitive$="[[sensitive]]">[[tag]]</span>
+                    <vi-sensitive disabled="[[!sensitive]]" class="tagValue">[[tag]]</vi-sensitive>
                     <div on-tap="_onDeleteTap" class="delete" hidden$="[[readonly]]">
                         <vi-icon source="Remove"></vi-icon>
                     </div>
                 </div>
             </template>
         </dom-repeat>
-        <input id="tagsInput" type="text" value="{{input::input}}" on-keyup="_checkKeyPress" on-blur="_onInputBlur" sensitive$="[[sensitive]]" hidden$="[[readonly]]" />
+        <input id="tagsInput" type="text" value="{{input::input}}" on-keyup="_checkKeyPress" on-blur="_onInputBlur" hidden$="[[readonly]]" />
     </div>
 </vi-scroller>

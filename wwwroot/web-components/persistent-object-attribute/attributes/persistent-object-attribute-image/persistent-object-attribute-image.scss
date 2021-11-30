@@ -14,10 +14,6 @@
         &[can-open] {
             cursor: zoom-in;
         }
-
-        &[sensitive] {
-            filter: blur(5px);
-        }
     }
 
     .fit.image-container {

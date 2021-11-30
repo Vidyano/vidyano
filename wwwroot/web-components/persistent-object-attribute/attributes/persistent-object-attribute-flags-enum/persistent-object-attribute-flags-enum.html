@@ -3,7 +3,9 @@
 
 <dom-if if="[[!editing]]">
     <template>
-        <span sensitive$="[[sensitive]]">[[attribute.displayValue]]</span>
+        <vi-sensitive disabled="[[!sensitive]]">
+            <span>[[attribute.displayValue]]</span>
+        </vi-sensitive>
     </template>
 </dom-if>
 <dom-if if="[[editing]]">
@@ -11,7 +13,9 @@
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
             <vi-popup sticky disabled$="[[op.some(readOnly, attribute.parent.isFrozen, sensitive)]]">
                 <div slot="header" class="layout horizontal flex">
-                    <input class="flex" header value="[[attribute.displayValue]]" readonly placeholder="[[placeholder]]" sensitive$="[[sensitive]]">
+                    <vi-sensitive disabled="[[!sensitive]]" class="flex layout horizontal">
+                        <input class="flex" header value="[[attribute.displayValue]]" readonly placeholder="[[placeholder]]">
+                    </vi-sensitive>
                     <vi-icon source="CaretDown" hidden$="[[readOnly]]"></vi-icon>
                 </div>
                 <ul>

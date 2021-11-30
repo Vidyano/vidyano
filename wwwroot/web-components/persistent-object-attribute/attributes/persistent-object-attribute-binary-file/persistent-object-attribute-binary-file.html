@@ -3,13 +3,17 @@
 
 <dom-if if="[[!editing]]">
     <template>
-        <span sensitive$="[[sensitive]]">[[fileName]]</span>
+        <vi-sensitive disabled="[[!sensitive]]">
+            <span>[[fileName]]</span>
+        </vi-sensitive>
     </template>
 </dom-if>
 <dom-if if="[[editing]]">
     <template>
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-            <input class="flex" value="{{fileName}}" type="text" readonly placeholder="[[placeholder]]" sensitive$="[[sensitive]]">
+            <vi-sensitive class="flex layout horizontal" disabled="[[!sensitive]]">
+                <input class="flex" value="{{fileName}}" type="text" readonly placeholder="[[placeholder]]">
+            </vi-sensitive>
             <dom-if if="[[!readOnly]]">
                 <template>
                     <button class="browse" slot="right" on-change="_change">

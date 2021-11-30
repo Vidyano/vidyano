@@ -28,10 +28,6 @@
 
     input, span {
         color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
-        
-        &[sensitive] {
-            filter: blur(5px);
-        }
     }    
 
     vi-icon {

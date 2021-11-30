@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using Vidyano.Core.Extensions;
 using Vidyano.Service.Repository;
 using VidyanoWeb3.Service.Model;
 
@@ -51,6 +53,18 @@ namespace VidyanoWeb3.Service
                 query.GroupedBy = "Title";
 
             query.IsIncludedInParentObject = true;
+        }
+
+        public override void OnLoad(PersistentObject obj, PersistentObject parent)
+        {
+            base.OnLoad(obj, parent);
+
+            if (parent?.FullTypeName == "VidyanoWeb3.Attributes" && parent.ObjectId == "sensitive")
+            {
+                obj.Attributes.Run(a => {
+                    a.IsSensitive = true;
+                });
+            }
         }
 
         protected override void GetGroupingInfo(Source<Employee> source, GroupingInfoArgs args)

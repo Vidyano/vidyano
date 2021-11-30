@@ -1,0 +1,7 @@
+:host {
+    display: block;
+
+    &:not([disabled])[is-app-sensitive] {
+        filter: blur(5px);
+    }
+}

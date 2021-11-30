@@ -115,7 +115,7 @@ export interface IWebComponentRegistrationInfo {
     mediaQueryAttributes?: boolean;
 
     /**
-     * If true, the component will add a readonly isAppSensitive property with reflectToAttribute. The value will be toggled by the app.
+     * If true, the component will add a readonly is-app-sensitive property with reflectToAttribute. The value will be toggled by the app.
      */
     sensitive?: boolean;
 }
@@ -552,28 +552,6 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
             };
         });
 
-        if (info.serviceBusObservers) {
-            (info.observers = info.observers || []).push("_serviceBusObserver(isAttached)");
-            element.prototype["_serviceBusObserver"] = function (isAttached: boolean) {
-                if (!this._serviceBusRegistrations)
-                    this._serviceBusRegistrations = [];
-
-                if (isAttached) {
-                    for (const message in this.serviceBusObservers) {
-                        const callback = this[this.serviceBusObservers[message]];
-                        if (callback)
-                            this._serviceBusRegistrations.push(Vidyano.ServiceBus.subscribe(message, callback.bind(this), true));
-                        else
-                            console.warn("ServiceBus listener callback '" + message + "' not found on element " + this.is);
-                    }
-                }
-                else {
-                    this._serviceBusRegistrations.forEach(disposer => disposer());
-                    this._serviceBusRegistrations = [];
-                }
-            };
-        }
-
         if (info.keybindings) {
             (info.observers = info.observers || []).push("_keybindingsObserver(isConnected)");
 
@@ -706,16 +684,32 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
                 readOnly: true
             };
 
-            info.observers.push("_appSensitiveObserver(app)");
+            info.serviceBusObservers = info.serviceBusObservers || {};
+            info.serviceBusObservers["vi-app:sensitive-changed"] = "_appSensitiveChangedObserver"
 
-            element.prototype._appSensitiveObserver = function (app: App) {
-                if (this.app) {
-                    this["_setIsAppSensitive"](app.sensitive);
-                    const _this = this;
-                    this.app.addEventListener("sensitive-changed", this["_appSensitiveListener"] = function (e) { _this["_setIsAppSensitive"](e.detail); });
+            element.prototype._appSensitiveChangedObserver = <Vidyano.ServiceBusCallback>function (sender: any, message: string, detail: any) {
+                this["_setIsAppSensitive"](detail);
+            };
+        }
+
+        if (info.serviceBusObservers) {
+            (info.observers = info.observers || []).push("_serviceBusObserver(isConnected)");
+            element.prototype["_serviceBusObserver"] = function (isConnected: boolean) {
+                if (!this._serviceBusRegistrations)
+                    this._serviceBusRegistrations = [];
+
+                if (isConnected) {
+                    for (const message in info.serviceBusObservers) {
+                        const callback = this[info.serviceBusObservers[message]];
+                        if (callback)
+                            this._serviceBusRegistrations.push(Vidyano.ServiceBus.subscribe(message, callback.bind(this), true));
+                        else
+                            console.warn("ServiceBus listener callback '" + message + "' not found on element " + this.is);
+                    }
                 }
                 else {
-                    this.app.removeEventListener("sensitive-changed", this["_appSensitiveListener"]);
+                    this._serviceBusRegistrations.forEach(disposer => disposer());
+                    this._serviceBusRegistrations = [];
                 }
             };
         }
@@ -779,6 +773,9 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
 
                 if (typeof targetInfo.sensitive !== "undefined")
                     info.sensitive = targetInfo.sensitive;
+
+                if (targetInfo.serviceBusObservers)
+                    info.serviceBusObservers = info.serviceBusObservers ? Vidyano.extend(info.serviceBusObservers, targetInfo.serviceBusObservers) : targetInfo.serviceBusObservers;
             }
             const wc = WebComponent._register(target, WebComponent._clone(info), prefix);
 

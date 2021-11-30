@@ -14,6 +14,17 @@ namespace VidyanoWeb3.Service
         {
         }
 
+        public override void OnLoad(PersistentObject obj, PersistentObject parent)
+        {
+            base.OnLoad(obj, parent);
+
+            if (obj.ObjectId == "sensitive") {
+                obj.Attributes.Run(a => {
+                    a.IsSensitive = true;
+                });
+            }
+        }
+
         protected override Attributes LoadEntity(PersistentObject obj, bool forRefresh = false)
         {
             return Attributes.GetInstance(Context);

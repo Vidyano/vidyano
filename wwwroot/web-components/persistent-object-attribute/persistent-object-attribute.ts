@@ -43,10 +43,6 @@ styleElement.register("vi-persistent-object-attribute-style-module");
             reflectToAttribute: true,
             computed: "attribute.isRequired"
         },
-        appSensitive: {
-            type: Boolean,
-            readOnly: true
-        },
         sensitive: {
             type: Boolean,
             reflectToAttribute: true,

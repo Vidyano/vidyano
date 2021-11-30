@@ -2,6 +2,6 @@
 <link rel="stylesheet" href="persistent-object-attribute-multi-string-item.css" />
 
 <vi-icon source="Hamburger" class="sort-handle" part="icon" hidden$="[[sensitive]]"></vi-icon>
-<div class="layout horizontal flex inputhost" sensitive$="[[sensitive]]">
-    <input content class="flex" value="{{value::input}}" sensitive$="[[sensitive]]" on-blur="_onInputBlur" type="text" readonly$="[[isReadOnly]]" tabindex$="[[readOnlyTabIndex]]" disabled$="[[disabled]]" placeholder="[[placeholder]]">
-</div>
+<vi-sensitive disabled="[[!sensitive]]" class="layout horizontal flex inputhost">
+    <input content class="flex" value="{{value::input}}" on-blur="_onInputBlur" type="text" readonly$="[[isReadOnly]]" tabindex$="[[readOnlyTabIndex]]" disabled$="[[disabled]]" placeholder="[[placeholder]]">
+</vi-sensitive>

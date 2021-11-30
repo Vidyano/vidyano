@@ -42,10 +42,6 @@
         @include noSelection();
     }
 
-    &[sensitive] *::part(*).sensitive {
-        filter: blur(5px);
-    }
-
     [dialog] {
         display: flex;
         flex-direction: column;

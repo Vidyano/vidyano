@@ -16,10 +16,6 @@
 
     span, pre, input, textarea {
         color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
-
-        &[sensitive] {
-            filter: blur(5px);
-        }
     }
 
     &[multiline] {

@@ -5,7 +5,9 @@
         <dom-if if="[[!editing]]">
             <template>
                 <vi-scroller no-horizontal class="flex">
-                    <pre sensitive$="[[sensitive]]">[[attribute.displayValue]]</pre>
+                    <vi-sensitive disabled="[[!sensitive]]">
+                        <pre>[[attribute.displayValue]]</pre>
+                    </vi-sensitive>
                 </vi-scroller>
             </template>
         </dom-if>
@@ -13,8 +15,8 @@
             <template>
                 <vi-scroller no-horizontal class="flex">
                     <fieldset disabled$="[[attribute.parent.isFrozen]]">
-                        <vi-persistent-object-attribute-multi-string-items id="strings" draggable-items="vi-persistent-object-attribute-multi-string-item" handle=".sort-handle" enabled="[[!attribute.parent.isFrozen]]" sensitive$="[[sensitive]]"></vi-persistent-object-attribute-multi-string-items>
-                        <vi-persistent-object-attribute-multi-string-item is-new hidden$="[[readOnly]]" placeholder="[[placeholder]]" sensitive$="[[sensitive]]"></vi-persistent-object-attribute-multi-string-item>
+                        <vi-persistent-object-attribute-multi-string-items id="strings" draggable-items="vi-persistent-object-attribute-multi-string-item" handle=".sort-handle" enabled="[[!attribute.parent.isFrozen]]" sensitive="[[sensitive]]"></vi-persistent-object-attribute-multi-string-items>
+                        <vi-persistent-object-attribute-multi-string-item is-new hidden$="[[readOnly]]" placeholder="[[placeholder]]" sensitive="[[sensitive]]"></vi-persistent-object-attribute-multi-string-item>
                     </fieldset>
                 </vi-scroller>
             </template>
