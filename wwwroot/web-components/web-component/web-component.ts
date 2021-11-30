@@ -389,9 +389,8 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
         const userStyleModule = <HTMLTemplateElement>Polymer.DomModule.import(`${elementName}-style-module`);
         if (userStyleModule != null) {
             const style = document.createElement("style");
-            style.setAttribute("include", "vi-flex-layout-style-module");
-
-            template.content.insertBefore(style, template.content.querySelector("style:last-of-type") || template.content.firstChild);
+            style.setAttribute("include", `${elementName}-style-module`);
+            template.content.appendChild(style);
         }
 
         Object.defineProperty(element, "template", {
