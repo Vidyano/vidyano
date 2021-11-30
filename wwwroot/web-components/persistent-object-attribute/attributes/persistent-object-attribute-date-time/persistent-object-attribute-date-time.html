@@ -9,13 +9,13 @@
 <dom-if if="[[editing]]">
     <template>
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-            <div class="layout horizontal">
+            <vi-sensitive disabled="[[!sensitive]]" class="layout horizontal">
                 <dom-if if="[[!monthMode]]">
                     <template>
                         <vi-masked-input class="date"
                                          format="[[dateFormat]]"
                                          separator="[[dateSeparator]]"
-                                         readonly$="[[readOnly]]"
+                                         disabled="[[readOnly]]"
                                          tabindex$="[[readOnlyTabIndex]]"
                                          hidden$="[[!hasDateComponent]]"
                                          flex$="[[!hasTimeComponent]]"
@@ -24,7 +24,7 @@
                         <vi-masked-input class="time"
                                          format="[[timeFormat]]"
                                          separator="[[timeSeparator]]"
-                                         readonly$="[[readOnly]]"
+                                         disabled="[[readOnly]]"
                                          tabindex$="[[readOnlyTabIndex]]"
                                          hidden$="[[!hasTimeComponent]]"
                                          on-filled="_timeFilled">
@@ -36,7 +36,7 @@
                         <vi-sensitive id="monthMode" hidden$="[[!hasDateComponent]]" disabled="[[!sensitive]]">[[attribute.displayValue]]</vi-sensitive>
                     </template>
                 </dom-if>
-            </div>
+            </vi-sensitive>
             <dom-if if="[[!readOnly]]">
                 <template>
                     <dom-if if="[[hasDateComponent]]">
