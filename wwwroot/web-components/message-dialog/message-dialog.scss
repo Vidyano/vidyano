@@ -3,6 +3,7 @@
 :host {
     main {
         min-width: 17em;
+        max-width: 70vw;
         @include layout-horizontal();
 
         &:not([rich]) {
@@ -52,10 +53,6 @@
 
         &[source$="OK"] {
             fill: var(--theme-color-ok);
-        }
-
-        &:empty {
-            display: none;
         }
     }
 }
