@@ -3,6 +3,7 @@ import * as Polymer from "../../libs/@polymer/polymer.js"
 import "../action-bar/action-bar.js"
 import { AppCacheEntryQuery } from "../app-cache/app-cache-entry-query.js"
 import type { App } from "../app/app.js"
+import "../notification/notification.js"
 import { WebComponent } from "../web-component/web-component.js"
 
 @WebComponent.register({

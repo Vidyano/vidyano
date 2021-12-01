@@ -1,8 +1,9 @@
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import * as Polymer from "../../libs/@polymer/polymer.js"
-import { WebComponent } from "../web-component/web-component.js"
 import { Dialog } from "../dialog/dialog.js"
 import { IItemTapEventArgs } from "../query-grid/query-grid-row.js"
+import "../notification/notification.js"
+import { WebComponent } from "../web-component/web-component.js"
 
 @WebComponent.register({
     properties: {

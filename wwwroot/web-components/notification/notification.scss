@@ -1,0 +1,86 @@
+@import "../_vars.scss";
+
+@mixin color-notification($color) {
+    border-bottom-color: rgba(0, 0, 0, 0.1);
+    background-color: $color;
+    fill: $color;
+}
+
+:host {
+    @include layout-horizontal();
+    @include layout-center();
+    height: var(--theme-h1);
+    box-sizing: border-box;
+    border-bottom-width: 2px;
+    border-bottom-style: solid;
+
+    #icon {
+        width: var(--theme-h1);
+        line-height: var(--theme-h1);
+
+        vi-icon {
+            fill: white;
+            height: calc(var(--theme-h1) - 2px);
+            --vi-icon-width: var(--theme-h3);
+            --vi-icon-height: var(--theme-h3);
+        }
+    }
+
+    #close {
+        cursor: pointer;
+        background-color: transparent;
+        width: var(--theme-h1);
+        height: var(--theme-h1);
+        line-height: var(--theme-h1);
+        fill: white;
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+    }
+
+    #textHost {
+        color: white;
+        overflow: hidden;
+
+        span {
+            display: block;
+            line-height: var(--theme-h1);
+            height: var(--theme-h1);
+            font-size: 14px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+
+            a {
+                color: inherit;
+            }
+        }
+    }
+
+    vi-icon {
+        @include layout-horizontal();
+        @include layout-center-center();
+
+        svg {
+            fill: white;
+            transform: none;
+        }
+    }
+
+    &[type="Error"] {
+        @include color-notification(var(--theme-color-error));
+    }
+
+    &[type="Notice"] {
+        @include color-notification(var(--theme-color-notice));
+    }
+
+    &[type="OK"] {
+        @include color-notification(var(--theme-color-ok));
+    }
+
+    &[type="Warning"] {
+        @include color-notification(var(--theme-color-warning));
+    }
+}
