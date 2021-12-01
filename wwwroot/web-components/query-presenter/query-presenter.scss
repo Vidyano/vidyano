@@ -21,9 +21,7 @@
         }
     }
 
-    &::slotted {
-        > vi-query-items-presenter, > vi-query {
-            @include flex();
-        }
+    ::slotted(vi-query-items-presenter), ::slotted(vi-query) {
+        @include flex();
     }
 }

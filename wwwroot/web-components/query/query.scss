@@ -4,7 +4,6 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto auto auto minmax(0, 1fr);
-    @include fit();
 
     vi-action-bar {
         box-shadow: var(--theme-box-shadow);
@@ -34,5 +33,9 @@
         vi-query-items-presenter {
             margin: 0;
         }
+    }
+
+    vi-query-items-presenter {
+        grid-row: 4;
     }
 }
