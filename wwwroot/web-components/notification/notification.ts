@@ -106,9 +106,9 @@ export class Notification extends WebComponent {
         if (!notification)
             return null;
 
-        const html = this._escapeHTML(notification).replace(findUriLabel, "<a href=\"$2\" title=\"\">$1</a>");
+        const html = this._escapeHTML(notification).replace(findUriLabel, "<a href=\"$2\" title=\"\" target=\"_blank\">$1</a>");
         if (notification === html)
-            return notification.replace(findUri, "<a href=\"$1\" title=\"\">$1</a>");
+            return notification.replace(findUri, "<a href=\"$1\" title=\"\" target=\"_blank\">$1</a>");
 
         return html;
     }
