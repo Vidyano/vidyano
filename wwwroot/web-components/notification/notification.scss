@@ -58,16 +58,6 @@
         }
     }
 
-    vi-icon {
-        @include layout-horizontal();
-        @include layout-center-center();
-
-        svg {
-            fill: white;
-            transform: none;
-        }
-    }
-
     &[type="Error"] {
         @include color-notification(var(--theme-color-error));
     }

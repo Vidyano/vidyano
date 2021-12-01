@@ -1,0 +1,7 @@
+@import "../_vars.scss";
+
+:host {
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

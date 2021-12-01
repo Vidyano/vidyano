@@ -7,10 +7,14 @@
         gap: 40px;
         margin: var(--theme-h2);
 
-        label {
-            display: block;
-            line-height: var(--theme-h1);
-            font-weight: bold;
+        > div {
+            overflow: hidden;
+
+            label {
+                display: block;
+                line-height: var(--theme-h1);
+                font-weight: bold;
+            }
         }
     }
 }

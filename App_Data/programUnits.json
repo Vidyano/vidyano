@@ -71,6 +71,15 @@
       "Groups": [],
       "Items": [
         {
+          "ObjectId": "test/dialog",
+          "Offset": 5,
+          "Title": {
+            "en": "Dialog",
+            "nl": ""
+          },
+          "Name": "Dialog"
+        },
+        {
           "ObjectId": "test/list",
           "Offset": 10,
           "Title": {
@@ -98,13 +107,13 @@
           "Name": "QueryGrid"
         },
         {
-          "ObjectId": "test/dialog",
-          "Offset": 5,
+          "ObjectId": "test/notification-test",
+          "Offset": 15,
           "Title": {
-            "en": "Dialog",
+            "en": "Notification",
             "nl": ""
           },
-          "Name": "Dialog"
+          "Name": "Notification"
         }
       ]
     }

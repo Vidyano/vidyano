@@ -39,6 +39,7 @@
         <!-- Test -->
         <script type="module" src="web3/test/dialog-test/dialog-test.js"></script>
         <script type="module" src="web3/test/list-test/list-test.js"></script>
+        <script type="module" src="web3/test/notification-test/notification-test.js"></script>
         <script type="module" src="web3/test/popup-menu-test/popup-menu-test.js"></script>
         <script type="module" src="web3/test/query-grid-test/query-grid-test.js"></script>
         <!-- End Test -->
@@ -67,6 +68,11 @@
             <vi-app-route route="/:programUnitName/list" slot="app-route">
                 <template>
                     <vi-list-test></vi-list-test>
+                </template>
+            </vi-app-route>
+            <vi-app-route route="/:programUnitName/notification-test" slot="app-route">
+                <template>
+                    <vi-notification-test></vi-notification-test>
                 </template>
             </vi-app-route>
             <vi-app-route route="/:programUnitName/popup-menu" slot="app-route">

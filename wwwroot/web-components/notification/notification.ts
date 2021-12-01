@@ -1,5 +1,6 @@
 import * as Polymer from "../../libs/@polymer/polymer.js"
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
+import { Icon } from "../icon/icon.js";
 import { WebComponent } from "../web-component/web-component.js"
 
 const findUriLabel = /\[url:([^|]+)\|((https?:\/\/[-\w]+(\.[-\w]+)*(:\d+)?(\/#?!?[^\.\s]*(\.[^\.\s]+)*)?)|(#!\/)?[^\]]+)]/g;
@@ -105,9 +106,9 @@ export class Notification extends WebComponent {
         if (!notification)
             return null;
 
-        const html = this._escapeHTML(notification).replace(findUriLabel, "<a href=\"$2\" title=\"\" target=\"_blank\">$1</a>");
+        const html = this._escapeHTML(notification).replace(findUriLabel, "<a href=\"$2\" title=\"\">$1</a>");
         if (notification === html)
-            return notification.replace(findUri, "<a href=\"$1\" title=\"\" target=\"_blank\">$1</a>");
+            return notification.replace(findUri, "<a href=\"$1\" title=\"\">$1</a>");
 
         return html;
     }
@@ -124,3 +125,11 @@ export class Notification extends WebComponent {
         return `Notification_${type}`;
     }
 }
+
+Icon.Add `
+<vi-icon name="Notification_Close">
+    <svg viewBox="0 0 32 32">
+        <path d="M19.587 16.001l6.096 6.096c0.396 0.396 0.396 1.039 0 1.435l-2.151 2.151c-0.396 0.396-1.038 0.396-1.435 0l-6.097-6.096-6.097 6.096c-0.396 0.396-1.038 0.396-1.434 0l-2.152-2.151c-0.396-0.396-0.396-1.038 0-1.435l6.097-6.096-6.097-6.097c-0.396-0.396-0.396-1.039 0-1.435l2.153-2.151c0.396-0.396 1.038-0.396 1.434 0l6.096 6.097 6.097-6.097c0.396-0.396 1.038-0.396 1.435 0l2.151 2.152c0.396 0.396 0.396 1.038 0 1.435l-6.096 6.096z"></path>
+    </svg>
+</vi-icon>
+`;
