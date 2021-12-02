@@ -8,6 +8,11 @@
         --theme-color-faint: var(--theme-accent-color-faint);
         --theme-color-semi-faint: var(--theme-accent-color-semi-faint);
     }
+
+    :host vi-action-bar {
+        padding-top: 3px;
+        border-bottom: 1px solid var(--theme-light-border);
+    }
 </style>
 
 <vi-action-bar service-object="[[tab.target]]" hidden$="[[hideActionBar]]"></vi-action-bar>

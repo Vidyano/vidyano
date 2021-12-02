@@ -1,14 +1,12 @@
 @import "../_vars.scss";
 
-$tabsBG: #f1f1f1;
-
 :host {
     @include layout-vertical-reverse();
     --vi-persistent-object-master-width: 40%;
 
     vi-action-bar {
         padding-top: 3px;
-        border-bottom: 1px solid '$tabsBG';
+        border-bottom: 1px solid var(--theme-light-border);
     }
 
     header {
@@ -17,7 +15,7 @@ $tabsBG: #f1f1f1;
     }
 
     .tabs {
-        background-color: $tabsBG;
+        background-color: #f1f1f1;
         box-shadow: var(--theme-box-shadow);
     }
 
@@ -48,7 +46,7 @@ $tabsBG: #f1f1f1;
             @include noSelection();
             position: relative;
             width: 4px;
-            background-color: $tabsBG;
+            background-color: #f1f1f1;
 
             &::after {
                 position: absolute;
