@@ -178,4 +178,9 @@ export class QueryGridColumnHeader extends WebComponentListener(WebComponent) {
 
         this.fire("query-grid-column:update");
     }
+
+    private _hide() {
+        this.column.isHidden = !this.column.isHidden;
+        this.fire("query-grid-column:update");
+    }
 }

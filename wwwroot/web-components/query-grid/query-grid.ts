@@ -474,7 +474,9 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
     }
 
     private async _onColumnUpdate() {
-        this.horizontalScrollOffset = 0;
         await this.userSettings.save();
+
+        this._setInitializing(true);
+        this.notifyPath("userSettings.columns", this.userSettings.columns);
     }
 }
