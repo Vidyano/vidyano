@@ -9,6 +9,7 @@ import "./query-grid-grouping.js"
 import "./query-grid-row.js"
 import "./query-grid-select-all.js"
 import "../scroller/scroller.js"
+import { Popup } from "../popup/popup.js"
 import { QueryGridColumn } from "./query-grid-column.js"
 import { QueryGridUserSettings } from "./query-grid-user-settings.js"
 import { QueryGridRow } from "./query-grid-row.js"
@@ -74,7 +75,10 @@ type QueryGridItem = Vidyano.QueryResultItem | Vidyano.QueryResultItemGroup;
             type: Object,
             computed: "_computeUserSettings(query, query.columns)"
         },
-        verticalScrollOffset: Number,
+        verticalScrollOffset: {
+            type: Number,
+            observer: "_onVerticalScrollOffsetChanged"
+        },
         viewportHeight: {
             type: Number,
             value: 0
@@ -438,6 +442,11 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
 
     private _updateHorizontalScrollOffset(horizontalScrollOffset: number) {
         this.style.setProperty("--vi-query-grid-horizontal", `${horizontalScrollOffset}px`);
+        Popup.closeAll();
+    }
+
+    private _onVerticalScrollOffsetChanged() {
+        Popup.closeAll();
     }
 
     private _itemSelect(e: CustomEvent) {
