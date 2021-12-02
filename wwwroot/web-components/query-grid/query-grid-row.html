@@ -10,7 +10,7 @@
             <vi-icon source="Selected" is-selected$="[[item.isSelected]]"></vi-icon>
         </div>
 
-        <vi-popup id="actions" class="actions pinned" part="actions" on-popup-opening="_onActionsOpening" on-popup-closed="_onActionsClosed">
+        <vi-popup id="actions" class="actions pinned" part="actions" on-popup-opening="_onActionsOpening" on-popup-closed="_onActionsClosed" on-tap="_preventOpen">
             <vi-icon slot="header" source="EllipsisVertical"></vi-icon>
         </vi-popup>
 

@@ -103,7 +103,7 @@
     // None
     &:not([can-select]):not([can-filter]):not([inline-actions]) {
         .controls {
-            grid-template-areas: "";
+            grid-template-areas: none;
         }
 
         vi-query-grid-row {

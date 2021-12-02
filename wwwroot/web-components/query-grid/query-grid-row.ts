@@ -5,13 +5,14 @@ import "../popup/popup.js"
 import { App } from "../app/app.js"
 import { ActionButton } from "../action-button/action-button.js"
 import { Popup } from "../popup/popup.js"
-import type { QueryGrid } from "./query-grid.js"
+import { QueryGrid } from "./query-grid.js"
 import { QueryGridCell } from "./cell-templates/query-grid-cell.js";
 import { QueryGridCellBoolean } from "./cell-templates/query-grid-cell-boolean.js";
 import { QueryGridCellDefault } from "./cell-templates/query-grid-cell-default.js";
 import { QueryGridCellImage } from "./cell-templates/query-grid-cell-image.js";
 import { QueryGridRowGroup } from "./query-grid-row-group.js";
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
+import { PopupCore } from "../popup/popup-core.js"
 
 let resizeObserver: ResizeObserver;
 resizeObserver = new ResizeObserver(allEntries => {
@@ -69,7 +70,8 @@ export interface IItemTapEventArgs {
         "item.isSelected"
     ],
     listeners: {
-        "tap": "_onTap"
+        "tap": "_onTap",
+        "contextmenu": "_onContextmenu"
     },
     observers: [
         "_flush(offsets, visibleRange)"
@@ -185,62 +187,97 @@ export class QueryGridRow extends WebComponentListener(WebComponent) {
         });
     }
 
+    private _preventOpen(e: Polymer.Gestures.TapEvent) {
+        e.stopPropagation();
+    }
+
     private async _onTap(e: Polymer.Gestures.TapEvent) {
-        if (!this.item)
+        if (!(this.item instanceof Vidyano.QueryResultItem))
             return;
 
-        if (this.item instanceof Vidyano.QueryResultItem) {
-            if (this.item.getTypeHint("extraclass", "").split(" ").some(c => c.toUpperCase() === "DISABLED"))
-                return;
+        if (this.item.getTypeHint("extraclass", "").split(" ").some(c => c.toUpperCase() === "DISABLED"))
+            return;
 
-            if (this.fire("item-tap", { item: this.item }, { bubbles: true, composed: true, cancelable: true }).defaultPrevented)
-                return;
+        if (this.fire("item-tap", { item: this.item }, { bubbles: true, composed: true, cancelable: true }).defaultPrevented)
+            return;
 
-            let openaction = this.item.getTypeHint("openaction", null);
-            if (openaction) {
-                const action = this.item.query.actions.find(a => a.name === openaction) || Vidyano.Action.get(this.item.service, openaction, this.item.query);
-                if (action)
-                    await action.execute({ selectedItems: [this.item] });
-                else
-                    console.warn(`Unknown openaction '${openaction}'.`);
+        let openaction = this.item.getTypeHint("openaction", null);
+        if (openaction) {
+            const action = this.item.query.actions.find(a => a.name === openaction) || Vidyano.Action.get(this.item.service, openaction, this.item.query);
+            if (action)
+                await action.execute({ selectedItems: [this.item] });
+            else
+                console.warn(`Unknown openaction '${openaction}'.`);
 
-                return;
-            }
-
-            if (this.item.query.canRead && !this.item.query.asLookup) {
-                if (e.detail.sourceEvent && ((<KeyboardEvent>e.detail.sourceEvent).ctrlKey || (<KeyboardEvent>e.detail.sourceEvent).shiftKey) && this.app instanceof App) {
-                    // Open in new window/tab
-                    window.open(Path.routes.root + this.app.getUrlForPersistentObject(this.item.query.persistentObject.id, this.item.id));
-
-                    e.stopPropagation();
-                    return;
-                }
-
-                const grid = (this.getRootNode() as ShadowRoot).host as QueryGrid;
-                grid["_itemOpening"] = this.item;
-                const po = await this.item.getPersistentObject();
-                if (!po)
-                    return;
-
-                if (grid["_itemOpening"] === this.item) {
-                    grid["_itemOpening"] = undefined;
-
-                    this.item.query.service.hooks.onOpen(po);
-                }
-            }
+            return;
         }
 
-        // TODO: Group collapse/expand
+        if (this.item.query.canRead && !this.item.query.asLookup) {
+            if (e.detail.sourceEvent && ((<KeyboardEvent>e.detail.sourceEvent).ctrlKey || (<KeyboardEvent>e.detail.sourceEvent).shiftKey) && this.app instanceof App) {
+                // Open in new window/tab
+                window.open(Path.routes.root + this.app.getUrlForPersistentObject(this.item.query.persistentObject.id, this.item.id));
 
-        // const div = document.createElement("div");
-        // div.style.position = "absolute";
-        // div.style.background = "red";
-        // div.style.width = "500px";
-        // div.style.height = "500px";
-        // div.style.zIndex = "1000";
+                e.stopPropagation();
+                return;
+            }
 
-        // this.shadowRoot.insertBefore(div, this.shadowRoot.children[0]);
-        // this.style.zIndex = "1";
+            const grid = (this.getRootNode() as ShadowRoot).host as QueryGrid;
+            grid["_itemOpening"] = this.item;
+            const po = await this.item.getPersistentObject();
+            if (!po)
+                return;
+
+            if (grid["_itemOpening"] === this.item) {
+                grid["_itemOpening"] = undefined;
+
+                this.item.query.service.hooks.onOpen(po);
+            }
+        }
+    }
+
+    private async _onContextmenu(e: MouseEvent) {
+        if (!(this.item instanceof Vidyano.QueryResultItem) || this.item.query.asLookup)
+            return;
+
+        const grid = <QueryGrid>this.findParent(e => e instanceof QueryGrid);
+        if (e.button !== 2 || e.shiftKey || e.ctrlKey || grid.asLookup)
+            return true;
+
+        let [x, y] = [e.clientX, e.clientY];
+        this.findParent((e: HTMLElement) => {
+            if (e instanceof HTMLHtmlElement)
+                return true;
+
+            const transform = getComputedStyle(e).transform;
+            if (!transform.startsWith("matrix"))
+                return;
+
+            const r = e.getBoundingClientRect();
+            x -= r.left;
+            y -= r.top;
+        });
+
+        const anchor = document.createElement("div");
+        anchor.style.position = "fixed";
+        anchor.style.left = `${x}px`;
+        anchor.style.top = `${y}px`;
+
+        this.shadowRoot.appendChild(anchor);
+
+        const actionsPopup = new PopupCore();
+        actionsPopup.addEventListener("popup-opening", this._onActionsOpening.bind(this));
+        actionsPopup.addEventListener("popup-closed", this._onActionsClosed.bind(this));
+        this.shadowRoot.appendChild(actionsPopup);
+
+        e.preventDefault();
+
+        try {
+            await actionsPopup.popup(anchor);
+        }
+        finally {
+            this.shadowRoot.removeChild(anchor);
+            this.shadowRoot.removeChild(actionsPopup);
+        }
     }
 
     private _onSelect(e: Polymer.Gestures.TapEvent) {

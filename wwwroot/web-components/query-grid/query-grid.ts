@@ -1,6 +1,5 @@
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import * as Polymer from "../../libs/@polymer/polymer.js"
-import "@polymer/iron-list"
 import "./cell-templates/query-grid-cell-default.js"
 import "./query-grid-cell-presenter.js"
 import "./query-grid-column-measure.js"
@@ -380,8 +379,12 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
             this.shadowRoot.appendChild(this._pinnedStyle = document.createElement("style"));
             
         this._pinnedStyle.innerHTML = `
-            header > [grid] > *:nth-child(-n+${pinnedColumns.length}), vi-query-grid-row > .column:nth-child(-n+${pinnedColumns.length}) {
-                margin-left: calc(var(--vi-query-grid-horizontal, 0) * -1);
+            header [grid] > *:nth-child(-n+${pinnedColumns.length}), vi-query-grid-row > .column:nth-child(-n+${pinnedColumns.length}) {
+                transform: translateX(var(--vi-query-grid-horizontal, 0));
+            }
+
+            header [grid] > *:nth-child(-n+${pinnedColumns.length}) {
+                z-index: 1;
             }
 
             vi-query-grid-row > .column:nth-child(${pinnedColumns.length}) {
