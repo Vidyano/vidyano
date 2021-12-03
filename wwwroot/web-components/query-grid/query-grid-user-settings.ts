@@ -20,6 +20,10 @@ export class QueryGridUserSettings extends Vidyano.Observable<QueryGridUserSetti
         return this._columnsByName[name];
     }
 
+    get query(): Vidyano.Query {
+        return this._query;
+    }
+
     get columns(): QueryGridColumn[] {
         return this._columns;
     }

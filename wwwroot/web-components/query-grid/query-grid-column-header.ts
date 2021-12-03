@@ -20,7 +20,7 @@ resizeObserver = new ResizeObserver(allEntries => {
         parent.dispatchEvent(new CustomEvent("column-width-changed", {
             detail: entries.map(e => {
                 let width = e["borderBoxSize"] != null ? e["borderBoxSize"][0].inlineSize : (<HTMLElement>e.target).offsetWidth;
-                return [(<QueryGridColumnHeader>e.target).column, width];
+                return [(<QueryGridColumnHeader>e.target).column.name, width, e.target];
             }),
             bubbles: true,
             cancelable: true,
@@ -72,7 +72,8 @@ resizeObserver = new ResizeObserver(allEntries => {
         "column.sortDirection"
     ],
     listeners: {
-        "tap": "_sort"
+        "tap": "_sort",
+        "contextmenu": "_onContextmenu"
     }
 })
 export class QueryGridColumnHeader extends WebComponentListener(WebComponent) {
@@ -83,19 +84,6 @@ export class QueryGridColumnHeader extends WebComponentListener(WebComponent) {
     readonly canGroupBy: boolean; private _setCanGroupBy: (canGroupBy: boolean) => void;
     readonly isPinned: boolean; private _setIsPinned: (isPinned: boolean) => void;
     readonly renderPopupMenu: boolean; private _setRenderPopupMenu: (renderPopupMenu: boolean) => void;
-    readonly renderFilter: boolean; private _setRenderFilter: (renderFilter: boolean) => void;
-
-    connectedCallback() {
-        super.connectedCallback();
-
-        resizeObserver.observe(this, { box: "border-box" });
-    }
-
-    disconnectedCallback() {
-        super.disconnectedCallback();
-
-        resizeObserver.unobserve(this);
-    }
 
     private _renderPopupMenu(e: Event) {
         e.stopPropagation();
@@ -114,11 +102,6 @@ export class QueryGridColumnHeader extends WebComponentListener(WebComponent) {
         this._setCanSort(column.canSort);
         this._setCanGroupBy(column.canGroupBy);
         this._setIsPinned(column.isPinned);
-
-        if (oldColumn != null) {
-            resizeObserver.unobserve(this);
-            resizeObserver.observe(this, { box: "border-box" });
-        }
     }
 
     private _computeSortingIcon(direction: Vidyano.SortDirection) {
@@ -162,6 +145,11 @@ export class QueryGridColumnHeader extends WebComponentListener(WebComponent) {
         this.column.column.sort(newSortingDirection, multiSort);
     }
 
+    private _onContextmenu(e: Event) {        
+        this._renderPopupMenu(e);
+        e.preventDefault();
+    }
+
     private _sortAsc(e: Polymer.Gestures.TapEvent) {
         e.stopPropagation();
         this._sort("ASC");
@@ -182,5 +170,13 @@ export class QueryGridColumnHeader extends WebComponentListener(WebComponent) {
     private _hide() {
         this.column.isHidden = !this.column.isHidden;
         this.fire("query-grid-column:update");
+    }
+
+    private async _configure() {
+        this.fire("query-grid-column:configure");
+    }
+
+    measure() {
+        resizeObserver.observe(this, { box: "border-box" });
     }
 }

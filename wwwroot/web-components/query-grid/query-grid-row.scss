@@ -83,6 +83,10 @@
         display: none;
         width: var(--vi-query-grid-row-height);
     }
+
+    vi-popup[open] {
+        z-index: 10;
+    }
 }
 
 

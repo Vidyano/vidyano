@@ -70,14 +70,6 @@
         }
     }
 
-    .measures {
-        display: contents;
-
-        > .measure {
-            position: relative;
-        }
-    }
-
     vi-spinner[hidden] {
         display: none !important;
     }

@@ -28,7 +28,7 @@ resizeObserver = new ResizeObserver(allEntries => {
         parent.dispatchEvent(new CustomEvent("column-width-changed", {
             detail: entries.map(e => {
                 let width = e["borderBoxSize"] != null ? e["borderBoxSize"][0].inlineSize : (<HTMLElement>e.target).offsetWidth;
-                return [(<QueryGridCell>e.target).column, width];
+                return [(<QueryGridCell>e.target).column.name, width, e.target];
             }),
             bubbles: true,
             cancelable: true,
@@ -96,7 +96,7 @@ export class QueryGridRow extends WebComponentListener(WebComponent) {
 
         for (let i=0; i < columns.length; i++) {
             const column = columns[i];
-            let cell: QueryGridCell = existingCells.find(c => c.column === column);
+            let cell: QueryGridCell = existingCells.find(c => c.column.name === column.name);
             if (!cell) {
                 let cellConstructor: new() => QueryGridCell;
                 switch(column.type) {
@@ -116,12 +116,13 @@ export class QueryGridRow extends WebComponentListener(WebComponent) {
                 }
 
                 cell = new cellConstructor();
-                cell.column = column;
                 cell.classList.add("column");
+                cell.value = this.item instanceof Vidyano.QueryResultItem ? this.item.getFullValue(column.name) : null;
             }
             else
                 existingCells.remove(cell);
 
+            cell.column = column;
             this.appendChild(cell);
         }
 
@@ -339,5 +340,9 @@ export class QueryGridRow extends WebComponentListener(WebComponent) {
     measure() {
         const cells = (<HTMLSlotElement>this.$.columns).assignedElements();
         cells.forEach((cell: HTMLElement) => resizeObserver.observe(cell, { box: "border-box" }));
+    }
+
+    refresh() {
+        this._itemChanged(this.item, this.item);
     }
 }

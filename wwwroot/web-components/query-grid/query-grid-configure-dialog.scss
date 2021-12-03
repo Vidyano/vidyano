@@ -1,0 +1,35 @@
+@import "../_vars.scss";
+
+:host {
+    main {
+        @include layout-vertical();
+        @include noSelection();
+        padding: var(--theme-h4) 0 var(--theme-h4) var(--theme-h5);
+
+        > vi-scroller {
+            @include flex();
+            margin-top: var(--theme-h4);
+        }
+
+        vi-query-grid-configure-dialog-column-list {
+            display: block;
+            padding: 0 var(--theme-h4) 0 0;
+
+            &:empty {
+                display: none;
+            }
+        }
+    }
+
+    footer {
+        > vi-button {
+            margin: 0;
+        }
+
+        > div {
+            vi-button:first-child {
+                margin-right: var(--theme-h5);
+            }
+        }
+    }
+}
