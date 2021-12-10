@@ -6,6 +6,7 @@ import { App } from "../app/app.js"
 import { AppCacheEntryPersistentObject } from "../app-cache/app-cache-entry-persistent-object.js"
 import { AppCacheEntryQuery } from "../app-cache/app-cache-entry-query.js"
 import { Icon } from "../icon/icon.js"
+import { Menu } from "./menu.js"
 import "../scroller/scroller.js"
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
 
@@ -85,6 +86,9 @@ import { WebComponent, WebComponentListener } from "../web-component/web-compone
     ],
     listeners: {
         "tap": "_tap"
+    },
+    serviceBusObservers: {
+        "vi-menu-item:select": "_onServiceBusSelect"
     }
 })
 export class MenuItem extends WebComponentListener(WebComponent) {
@@ -237,6 +241,18 @@ export class MenuItem extends WebComponentListener(WebComponent) {
 
     private _titleMouseenter() {
         this.$.title.setAttribute("title", (<HTMLElement>this.$.title).offsetWidth < this.$.title.scrollWidth ? this.item.title : "");
+    }
+
+    private _onServiceBusSelect(sender: any, message: string, { name }: { name: string; }) {
+        if (this.item.name === name) {
+            this.findParent(e => {
+                if (e instanceof Menu)
+                    return true;
+
+                if (e instanceof MenuItem && !e.expand)
+                    e._setExpand(true);
+            });
+        }
     }
 
     // TODO
