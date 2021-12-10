@@ -114,6 +114,9 @@ export class Query extends ServiceObjectWithActions {
     private _columnObservers: ISubjectDisposer[];
     private _hasMore: boolean = null;
     private _groupingInfo: IQueryGroupingInfo;
+    private _items: QueryResultItem[];
+    private _queuedLazyItemIndexes: number[];
+    private _queuedLazyItemIndexesTimeout: number;
 
     persistentObject: PersistentObject;
     columns: QueryColumn[];
@@ -130,8 +133,8 @@ export class Query extends ServiceObjectWithActions {
     skip: number;
     top: number;
     continuation: string;
-    items: QueryResultItem[];
     selectAll: IQuerySelectAll;
+    disableLazyLoading: boolean;
 
     constructor(service: Service, query: Dto.Query, parent?: PersistentObject, asLookup?: boolean, maxSelectedItems?: number);
     constructor(service: Service, query: any, public parent?: PersistentObject, asLookup: boolean = false, public maxSelectedItems?: number) {
@@ -530,7 +533,7 @@ export class Query extends ServiceObjectWithActions {
 
         this.hasSearched = true;
         this._updateColumns(result.columns);
-        this._updateItems(result.items.map(item => this.service.hooks.onConstructQueryResultItem(this.service, item, this)));
+        this.items = result.items.map(item => this.service.hooks.onConstructQueryResultItem(this.service, item, this));
         this._updateGroupingInfo(result.groupingInfo);
         this._setSortOptionsFromService(result.sortOptions);
 
@@ -548,33 +551,57 @@ export class Query extends ServiceObjectWithActions {
         return this.columns.find(c => c.name === name);
     }
 
-    getItemsInMemory(start: number, length: number): QueryResultItem[] {
-        if (!this.hasSearched)
-            return null;
+    get items(): QueryResultItem[] {
+        return this._items;
+    }
 
-        if (this.totalItems >= 0) {
-            if (start > this.totalItems)
-                start = this.totalItems;
+    private set items(items: QueryResultItem[]) {
+        this.selectAll.inverse = this.selectAll.allSelected = false;
+        this.selectedItems = [];
 
-            if (start + length > this.totalItems)
-                length = this.totalItems - start;
+        const oldItems = this._items;
+        this.notifyPropertyChanged("items", this._items = new Proxy(items, { get: this._getItemsLazy.bind(this) }), oldItems);
+        this.notifyArrayChanged("items", 0, oldItems, items.length);
+    }
+    
+    private _getItemsLazy(target: QueryResultItem[], property: string | symbol, receiver: any) {
+        if (typeof property === "string") {
+            const index = parseInt(property);
+            if (!isNaN(index)) {
+                const item = Reflect.get(target, index, receiver);
+                if (item === undefined && !this.disableLazyLoading) {
+                    if (this._queuedLazyItemIndexes)
+                        this._queuedLazyItemIndexes.push(index);
+                    else
+                        this._queuedLazyItemIndexes = [index];
+                    
+                    clearTimeout(this._queuedLazyItemIndexesTimeout);
+                    this._queuedLazyItemIndexesTimeout = setTimeout(async () => {
+                        const queuedLazyItemIndexes = this._queuedLazyItemIndexes.filter(i => target[i] === null);
+                        if (queuedLazyItemIndexes.length === 0)
+                            return;
+
+                        try {
+                            await this.getItemsByIndex(...queuedLazyItemIndexes);
+                        }
+                        finally {
+                            queuedLazyItemIndexes.forEach(i => {
+                                if (target[i] == null)
+                                    delete target[i];
+                            });
+                        }
+                    }, 10);
+
+                    return target[index] = null;
+                }
+
+                return item;
+            }
+            else if (property === "length")
+                return this.totalItems;
         }
 
-        if (this.pageSize <= 0 || length === 0)
-            return this.items.slice(start, length - start);
-
-        let startPage = Math.floor(start / this.pageSize);
-        let endPage = Math.floor((start + length - 1) / this.pageSize);
-
-        while (startPage < endPage && this._queriedPages.indexOf(startPage) >= 0)
-            startPage++;
-        while (endPage > startPage && this._queriedPages.indexOf(endPage) >= 0)
-            endPage--;
-
-        if (startPage === endPage && this._queriedPages.indexOf(startPage) >= 0)
-            return this.items.slice(start, length);
-
-        return null;
+        return Reflect.get(target, property, receiver);
     }
 
     async getItemsByIndex(...indexes: number[]): Promise<QueryResultItem[]> {
@@ -582,30 +609,24 @@ export class Query extends ServiceObjectWithActions {
             return [];
 
         if (this.pageSize > 0) {
-            const pages = indexes.sort((i1, i2) => i1 - i2).reduce((pages, index) => {
-                const page = Math.floor(index / this.pageSize);
-                if (this._queriedPages.indexOf(page) < 0) {
-                    let prevPage = page;
-                    while (pages[prevPage - 1] >= 0)
-                        prevPage--;
-
-                    if (prevPage === page)
-                        pages[page] = this.pageSize;
-                    else {
-                        pages[page] = 0;
-                        pages[prevPage] += this.pageSize;
+            const pages = indexes.sort((a, b) => a - b).reduce((acc: [page: number, top: number][], i) => {
+                const page = Math.floor(i / this.pageSize);
+                if (acc.length > 0) {
+                    const last = acc[acc.length - 1];
+                    if (last[0] * this.pageSize + last[1] <= i) {
+                        if (last[0] * this.pageSize + last[1] + this.pageSize <= i)
+                            acc.push([page, this.pageSize]);
+                        else
+                            last[1] += this.pageSize;
                     }
                 }
-
-                return pages;
+                else
+                    acc.push([page, this.pageSize]);
+            
+                return acc;
             }, []);
 
-            await Promise.all(Object.keys(pages).map(page => parseInt(page)).map(page => {
-                if (pages[page] >= 0)
-                    return this.getItems(page * this.pageSize, pages[page]);
-                else
-                    return Promise.resolve(null);
-            }));
+            await Promise.all(pages.map(page =>  this.getItems(page[0] * this.pageSize, page[1])));
         }
 
         return indexes.map(i => this.items[i]);
@@ -686,13 +707,28 @@ export class Query extends ServiceObjectWithActions {
                     this._setTotalItems(result.totalItems);
                 }
 
-                for (let n = 0; n < clonedQuery.top && (skip + n < result.totalItems); n++) {
-                    if (this.items[skip + n] == null) {
-                        const item = this.items[skip + n] = this.service.hooks.onConstructQueryResultItem(this.service, result.items[n], this);
+                let added: [number, any[], number];
+                for (let n = 0; n < clonedQuery.top && (clonedQuery.skip + n < result.totalItems); n++) {
+                    const currentItem = this.items[clonedQuery.skip + n];
+                    if (currentItem == null) {
+                        const item = this.items[clonedQuery.skip + n] = this.service.hooks.onConstructQueryResultItem(this.service, result.items[n], this);
+                        if (!added)
+                            added = [clonedQuery.skip, [], 0];
+
+                        added[1].push(currentItem);
+                        added[2]++;
+
                         if (this.selectAll.allSelected || (selectedItems && selectedItems[item.id]))
                             (<any>item)._isSelected = true;
                     }
+                    else if (added) {
+                        this.notifyArrayChanged("items", added[0], added[1], added[2]);
+                        added = null;
+                    }
                 }
+
+                if (!!added)
+                    this.notifyArrayChanged("items", added[0], added[1], added[2]);
 
                 this._updateGroupingInfo(result.groupingInfo);
 
@@ -719,26 +755,21 @@ export class Query extends ServiceObjectWithActions {
         return this.queueWork(work, false);
     }
 
-    search(delay?: number): Promise<QueryResultItem[]>;
-    search(options: { delay?: number; throwExceptions?: boolean; keepSelection?: boolean }): Promise<QueryResultItem[]>;
-    async search(options: any = {}): Promise<QueryResultItem[]> {
-        if (typeof options === "number") {
-            options = { delay: options };
-            console.warn(`Calling search with a single delay parameter is deprecated. Use search({delay: ${options.delay}) instead.`);
-        }
-
-        const selectedIds = options.keepSelection ? this.selectedItems.map(i => i.id) : null;
+    async search(options?: { delay?: number; throwExceptions?: boolean; keepSelection?: boolean }): Promise<QueryResultItem[]> {
+        const selectedIds = options?.keepSelection ? this.selectedItems.map(i => i.id) : null;
         const search = () => {
             this.continuation = null;
             this._queriedPages = [];
-            this._updateItems([], true);
+            this.hasSearched = false;
+            this._setTotalItems(null);
+            this.items = [];
 
             const now = new Date();
             return this.queueWork(async () => {
                 if (this._lastUpdated && this._lastUpdated > now)
                     return this.items;
 
-                const result = await this.service.executeQuery(this.parent, this, this._asLookup, !!options.throwExceptions);
+                const result = await this.service.executeQuery(this.parent, this, this._asLookup, !!options?.throwExceptions);
                 if (!result)
                     return null;
 
@@ -759,9 +790,9 @@ export class Query extends ServiceObjectWithActions {
             });
         };
 
-        if (options.delay > 0) {
+        if (options?.delay > 0) {
             const now = new Date();
-            await new Promise(resolve => setTimeout(resolve, options.delay));
+            await new Promise(resolve => setTimeout(resolve, options?.delay));
 
             if (!this._lastUpdated || this._lastUpdated <= now)
                 return search();
@@ -852,19 +883,6 @@ export class Query extends ServiceObjectWithActions {
             this._updateIsFiltering();
     }
 
-    private _updateItems(items: QueryResultItem[], reset: boolean = false) {
-        if (reset) {
-            this.hasSearched = false;
-            this._setTotalItems(null);
-        }
-
-        this.selectAll.inverse = this.selectAll.allSelected = false;
-
-        const oldItems = this.items;
-        this.notifyPropertyChanged("items", this.items = items, oldItems);
-        this.selectedItems = this.selectedItems;
-    }
-
     _notifyItemSelectionChanged(item: QueryResultItem) {
         if (this._isSelectionModifying)
             return;
@@ -897,30 +915,4 @@ export class Query extends ServiceObjectWithActions {
                 this.selectAll.allSelected = true;
         }
     }
-}
-
-export interface IJsonQueryData {
-    id?: string;
-    name?: string;
-    label?: string;
-    singularLabel?: string;
-
-    items: {
-        id: string | number;
-        breadcrumb?: string;
-        typeHints?: { [name: string]: string };
-        values: {
-            key: string;
-            value: string;
-            typeHints?: { [name: string]: string };
-        }[];
-    }[];
-
-    columns: {
-        name: string;
-        label: string;
-        type: string;
-        width?: string;
-        typeHints?: { [name: string]: string };
-    }[];
 }

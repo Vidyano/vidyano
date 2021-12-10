@@ -50,7 +50,7 @@ type QueryGridItem = Vidyano.QueryResultItem | Vidyano.QueryResultItemGroup;
         },
         items: {
             type: Array,
-            computed: "_computeItems(query.lastUpdated)"
+            computed: "_computeItems(query.items.*)"
         },
         columns: {
             type: Array,
@@ -130,6 +130,7 @@ type QueryGridItem = Vidyano.QueryResultItem | Vidyano.QueryResultItemGroup;
         "query.columns",
         "query.isBusy",
         "query.lastUpdated",
+        "query.items.*",
         "_updatePinnedColumns(columns.*.isPinned)"
     ],
     listeners: {
@@ -149,6 +150,7 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
 
     private readonly _columnWidths = new Map<string, number[]>();
     private readonly items: QueryGridItems;
+    private _itemsChangedObserver: Vidyano.ISubjectDisposer;
     private _virtualGridStartIndex: number = 0;
     private _verticalSpacerCorrection: number = 1;
     private _getItemsDebouncer: Polymer.Debounce.Debouncer;
@@ -255,28 +257,17 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
 
         this._setUpdating(true);
 
+        const queuedItemIndexes: number[] = [];
         for (let virtualIndex=0; virtualIndex < this.virtualRowCount; virtualIndex++) {
             const index = newVirtualGridStartIndex + virtualIndex;
 
-            const [item, realIndex] = this._getItem(index);
+            const [item, realIndex] = this._getItem(index, true);
             this.virtualItems[virtualIndex] = item;
 
             if (this.virtualItems[virtualIndex] === undefined) {
                 if (realIndex < this.query.totalItems) {
                     this.virtualItems[virtualIndex] = <any>placeholder;
-
-                    this._getItemsDebouncer = Polymer.Debounce.Debouncer.debounce(
-                        this._getItemsDebouncer,
-                        Polymer.Async.timeOut.after(20),
-                        () => {
-                            this.query.queueWork(async () => {
-                                if (this._virtualGridStartIndex !== newVirtualGridStartIndex || this.virtualItems[virtualIndex] == null)
-                                    return;
-        
-                                return this.query.getItems(realIndex, Math.max(this.query.pageSize, virtualRowCount), true);
-                            }, false);
-                        }
-                    );
+                    queuedItemIndexes.push(realIndex);
                 }
                 else
                     this.virtualItems[virtualIndex] = null;
@@ -306,6 +297,17 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
                 this._setUpdating(false);
             }
         );
+
+        this._getItemsDebouncer = Polymer.Debounce.Debouncer.debounce(
+            this._getItemsDebouncer,
+            Polymer.Async.timeOut.after(20),
+            () => {
+                if (this._virtualGridStartIndex !== newVirtualGridStartIndex)
+                    return;
+
+                queuedItemIndexes.forEach(index => this._getItem(index));
+            }
+        );
     }
 
     private _computeItems(): QueryGridItems {
@@ -323,7 +325,7 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
         this._setHasGrouping(!!this.query.groupingInfo && !!this.query.groupingInfo.groups);
 
         if (!this.hasGrouping)
-            length = this.query.totalItems;
+            length = this.query.totalItems || 0;
         else {
             groups = [];
             length = this.query.groupingInfo.groups.reduce((n, g) => {
@@ -342,34 +344,42 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
         };
     }
 
-    private _getItem(index: number): [QueryGridItem, number] {
-        if (!this.hasGrouping)
-            return [this.query.items[index], index];
+    private _getItem(index: number, disableLazyLoading?: boolean): [QueryGridItem, number] {
+        const queryLazyLoading = this.query.disableLazyLoading;
+        try {
+            this.query.disableLazyLoading = disableLazyLoading;
 
-        if (index >= this.items.length)
-            return [null, -1];
+            if (!this.hasGrouping)
+                return [this.query.items[index], index];
 
-        let diff = 0;
-        let result: QueryGridItem;
-        this.items.groups.some((g, nn) => {
-            if (nn < index) {
-                diff++;
-                if (g.isCollapsed)
-                    diff -= g.count;
+            if (index >= this.items.length)
+                return [null, -1];
 
-                return false;
-            } else if (nn === index) {
-                result = g;
+            let diff = 0;
+            let result: QueryGridItem;
+            this.items.groups.some((g, nn) => {
+                if (nn < index) {
+                    diff++;
+                    if (g.isCollapsed)
+                        diff -= g.count;
+
+                    return false;
+                } else if (nn === index) {
+                    result = g;
+                    return true;
+                }
+
+                index -= diff;
+                result = this.query.items[index];
+
                 return true;
-            }
+            });
 
-            index -= diff;
-            result = this.query.items[index];
-
-            return true;
-        });
-
-        return [result, index];
+            return [result, index];
+        }
+        finally {
+            this.query.disableLazyLoading = queryLazyLoading;
+        }
     }
 
     private _updateVerticalSpacer(viewportHeight: number, rowHeight: number, items: QueryGridItem[]) {
