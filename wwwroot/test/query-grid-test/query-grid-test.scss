@@ -5,16 +5,12 @@
 
     .grid {
         @include flex();
-        grid-template-columns: repeat(3, 1fr);
-        grid-template-rows: min-content 1fr 1fr 1fr;
+        grid-template-columns: 1fr;
+        grid-template-rows: min-content 1fr;
 
-        > div {
+        > div:not(:first-of-type) {
             @include layout-vertical();
             overflow: hidden;
-
-            &.grouping {
-                grid-column: 1 / 4;
-            }
 
             label {
                 color: var(--theme-color-dark);
@@ -27,6 +23,13 @@
                 margin-top: var(--theme-h4);
                 border: 1px solid var(--theme-light-border);
                 box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.1);
+            }
+        }
+
+        div:first-of-type {
+            vi-checkbox {
+                display: inline-block;
+                user-select: none;
             }
         }
     }

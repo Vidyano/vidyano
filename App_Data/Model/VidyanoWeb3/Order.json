@@ -1,0 +1,118 @@
+{
+  "PersistentObject": {
+    "$id": "PersistentObject:6aaed933-4658-3781-93d8-2af3c46581da",
+    "Id": "6aaed933-4658-3781-93d8-2af3c46581da",
+    "SchemaName": "VidyanoWeb3",
+    "Type": "Order",
+    "Salt": "IO12kG_7eMLzLidJIY-BVsOnBgJrsi0bbpkfTWhPugaWnJjaMKZa8Q",
+    "Breadcrumb": "{Freight}",
+    "ContextProperty": "Orders",
+    "Label": {
+      "en": "Order",
+      "nl": "Order"
+    },
+    "Groups": [
+      {
+        "$id": "PersistentObjectAttributeGroup:d0abafbf-131a-4552-b7da-e9a6be4924aa",
+        "Id": "d0abafbf-131a-4552-b7da-e9a6be4924aa"
+      }
+    ],
+    "Tabs": [
+      {
+        "$id": "PersistentObjectAttributeTab:928fbf95-6a05-4f4d-be66-3c53a4629c15",
+        "Id": "928fbf95-6a05-4f4d-be66-3c53a4629c15"
+      }
+    ],
+    "Attributes": [
+      {
+        "$id": "PersistentObjectAttributeWithReference:4fd570b3-336f-3827-b476-43bc50c52253",
+        "$type": "Vidyano.Service.Repository.PersistentObjectAttributeWithReference, Vidyano.Service",
+        "DisplayAttribute": "Name",
+        "LookupId": "f94e7b97-c09c-4082-bde0-5ab426b1e289",
+        "Id": "4fd570b3-336f-3827-b476-43bc50c52253",
+        "Offset": 20,
+        "Name": "Company",
+        "Label": {
+          "en": "Company",
+          "nl": "Company"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Reference"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:d0abafbf-131a-4552-b7da-e9a6be4924aa"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:928fbf95-6a05-4f4d-be66-3c53a4629c15"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttributeWithReference:85cbe3fa-0549-3765-9572-3672b6270127",
+        "$type": "Vidyano.Service.Repository.PersistentObjectAttributeWithReference, Vidyano.Service",
+        "DisplayAttribute": "FirstName",
+        "LookupId": "026c4ca7-53f4-42ac-b196-158f0cb871a1",
+        "Id": "85cbe3fa-0549-3765-9572-3672b6270127",
+        "Offset": 30,
+        "Name": "Employee",
+        "Label": {
+          "en": "Employee",
+          "nl": "Employee"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Reference"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:d0abafbf-131a-4552-b7da-e9a6be4924aa"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:928fbf95-6a05-4f4d-be66-3c53a4629c15"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:29d5d856-975f-316a-b92d-2f8c03f93fe6",
+        "Id": "29d5d856-975f-316a-b92d-2f8c03f93fe6",
+        "Offset": 40,
+        "Rules": "Required",
+        "Name": "Freight",
+        "Label": {
+          "en": "Freight",
+          "nl": "Freight"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Decimal"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:d0abafbf-131a-4552-b7da-e9a6be4924aa"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:928fbf95-6a05-4f4d-be66-3c53a4629c15"
+        }
+      }
+    ],
+    "Queries": []
+  },
+  "Queries": [
+    {
+      "$id": "Query:04491772-b93c-4837-8ca6-b34b54d25234",
+      "Id": "04491772-b93c-4837-8ca6-b34b54d25234",
+      "Source": "Database.Orders",
+      "AutoQuery": true,
+      "Name": "Orders",
+      "Label": {
+        "en": "Orders",
+        "nl": "Orders"
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:6aaed933-4658-3781-93d8-2af3c46581da"
+      },
+      "Columns": []
+    }
+  ],
+  "Reports": []
+}

@@ -57,6 +57,28 @@
           "Group": {
             "$ref": "ProgramUnitItemGroup:4ae1faf8-533e-49fd-abcf-29edb40ee96a"
           }
+        },
+        {
+          "Offset": 5,
+          "Title": {
+            "en": "Companies",
+            "nl": "Companies"
+          },
+          "Name": "Companies",
+          "Query": {
+            "$ref": "Query:f94e7b97-c09c-4082-bde0-5ab426b1e289"
+          }
+        },
+        {
+          "Offset": 15,
+          "Title": {
+            "en": "Orders",
+            "nl": "Orders"
+          },
+          "Name": "Orders",
+          "Query": {
+            "$ref": "Query:04491772-b93c-4837-8ca6-b34b54d25234"
+          }
         }
       ]
     },
@@ -68,7 +90,16 @@
         "nl": ""
       },
       "OpenFirst": true,
-      "Groups": [],
+      "Groups": [
+        {
+          "$id": "ProgramUnitItemGroup:55c401f9-5703-4daf-909f-135715c68c80",
+          "Id": "55c401f9-5703-4daf-909f-135715c68c80",
+          "Title": {
+            "en": "QueryGrid",
+            "nl": ""
+          }
+        }
+      ],
       "Items": [
         {
           "ObjectId": "test/dialog",
@@ -89,6 +120,15 @@
           "Name": "List"
         },
         {
+          "ObjectId": "test/notification-test",
+          "Offset": 15,
+          "Title": {
+            "en": "Notification",
+            "nl": ""
+          },
+          "Name": "Notification"
+        },
+        {
           "ObjectId": "test/popup-menu",
           "Offset": 20,
           "Title": {
@@ -98,22 +138,88 @@
           "Name": "Popup menu"
         },
         {
-          "ObjectId": "test/query-grid",
-          "Offset": 30,
+          "ObjectId": "test/query-grid/None",
+          "Offset": 40,
           "Title": {
-            "en": "Query grid",
+            "en": "None",
             "nl": ""
           },
-          "Name": "QueryGrid"
+          "Name": "QueryGridTest_None",
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:55c401f9-5703-4daf-909f-135715c68c80"
+          }
         },
         {
-          "ObjectId": "test/notification-test",
-          "Offset": 15,
+          "ObjectId": "test/query-grid/Select",
+          "Offset": 50,
           "Title": {
-            "en": "Notification",
+            "en": "Select",
             "nl": ""
           },
-          "Name": "Notification"
+          "Name": "QueryGridTest_Select",
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:55c401f9-5703-4daf-909f-135715c68c80"
+          }
+        },
+        {
+          "ObjectId": "test/query-grid/Filter",
+          "Offset": 60,
+          "Title": {
+            "en": "Filter",
+            "nl": ""
+          },
+          "Name": "QueryGridTest_Filter",
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:55c401f9-5703-4daf-909f-135715c68c80"
+          }
+        },
+        {
+          "ObjectId": "test/query-grid/InlineActions",
+          "Offset": 70,
+          "Title": {
+            "en": "Inline actions",
+            "nl": ""
+          },
+          "Name": "QueryGridTest_InlineActions",
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:55c401f9-5703-4daf-909f-135715c68c80"
+          }
+        },
+        {
+          "ObjectId": "test/query-grid/SelectAndFilter",
+          "Offset": 80,
+          "Title": {
+            "en": "Select and Filter",
+            "nl": ""
+          },
+          "Name": "QueryGridTest_SelectAndFilter",
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:55c401f9-5703-4daf-909f-135715c68c80"
+          }
+        },
+        {
+          "ObjectId": "test/query-grid/SelectAndInlineActions",
+          "Offset": 90,
+          "Title": {
+            "en": "Select and Inline actions",
+            "nl": ""
+          },
+          "Name": "QueryGridTest_SelectAndInlineActions",
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:55c401f9-5703-4daf-909f-135715c68c80"
+          }
+        },
+        {
+          "ObjectId": "test/query-grid/SelectAndFilterAndInlineActions",
+          "Offset": 100,
+          "Title": {
+            "en": "Select, Filter and Inline actions",
+            "nl": ""
+          },
+          "Name": "QueryGridTest_SelectAndFilterAndInlineActions",
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:55c401f9-5703-4daf-909f-135715c68c80"
+          }
         }
       ]
     }

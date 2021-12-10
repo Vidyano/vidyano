@@ -13,6 +13,10 @@ namespace VidyanoWeb3.Service
         {
         }
 
+        public IRavenQueryable<Company> Companies => base.Query<Company>();
+
         public IRavenQueryable<Employee> Employees => base.Query<Employee>();
+
+        public IRavenQueryable<Order> Orders => base.Query<Order>();
     }
 }
