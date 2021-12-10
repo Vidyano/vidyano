@@ -3,7 +3,18 @@ export interface ISubjectNotifier<TSource, TDetail> {
 }
 
 export class PropertyChangedArgs {
-    constructor(public propertyName: string, public newValue: any, public oldValue: any) {
+    constructor(
+        public readonly propertyName: string,
+        public readonly newValue: any,
+        public readonly oldValue: any) {
+    }
+}
+
+export class ArrayChangedArgs {
+    constructor(public arrayPropertyName: string,
+        public readonly index: number,
+        public readonly removedItems?: any[],
+        public readonly addedItemCount?: number) {
     }
 }
 
@@ -37,65 +48,23 @@ export interface ISubjectObserver<TSource, TDetail> {
     (sender: TSource, detail: TDetail): void;
 }
 
-interface IEnqueuedPropertyChangedNotification {
-    newValue: any;
-    oldValue: any;
-}
-
 export class Observable<T> {
-    private _paused: boolean;
-    private _enqueueNotifications: boolean;
-    private _notificationQueue: { [property: string]: IEnqueuedPropertyChangedNotification; };
     private _propertyChangedNotifier: ISubjectNotifier<T, PropertyChangedArgs>;
-    propertyChanged: Subject<T, PropertyChangedArgs>;
+    private _arrayChangedNotifier: ISubjectNotifier<T, ArrayChangedArgs>;
+    readonly propertyChanged: Subject<T, PropertyChangedArgs>;
+    readonly arrayChanged: Subject<T, ArrayChangedArgs>;
 
-    constructor(paused?: boolean) {
-        this._paused = paused;
+    constructor() {
         this.propertyChanged = new Subject<T, PropertyChangedArgs>(this._propertyChangedNotifier = {});
+        this.arrayChanged = new Subject<T, ArrayChangedArgs>(this._arrayChangedNotifier = {});
     }
 
     protected notifyPropertyChanged(propertyName: string, newValue: any, oldValue?: any) {
-        if (this._paused) {
-            if (!this._enqueueNotifications)
-                return;
-
-            if (!this._notificationQueue)
-                this._notificationQueue = {};
-
-            const existingNotification = this._notificationQueue[propertyName];
-            if (existingNotification)
-                existingNotification.newValue = newValue;
-            else
-                this._notificationQueue[propertyName] = { newValue: newValue, oldValue: oldValue };
-
-            return;
-        }
-
-        this._propertyChangedNotifier.notify(<T><any>this, {
-            propertyName: propertyName,
-            newValue: newValue,
-            oldValue: oldValue
-        });
+        this._propertyChangedNotifier.notify(<T><any>this, new PropertyChangedArgs(propertyName, newValue, oldValue));
     }
 
-    protected monitorPropertyChanged() {
-        this._paused = false;
-        this._enqueueNotifications = false;
-
-        if (this._notificationQueue) {
-            const queue = this._notificationQueue;
-            this._notificationQueue = null;
-
-            Object.keys(queue).forEach(property => {
-                const notification = queue[property];
-                this.notifyPropertyChanged(property, notification.newValue, notification.oldValue);
-            });
-        }
-    }
-
-    protected pausePropertyChanged(enqueue: boolean = false) {
-        this._paused = true;
-        this._enqueueNotifications = enqueue;
+    protected notifyArrayChanged(arrayPropertyName: string, index: number, removedItems: any[] = [], addedCount: number) {
+        this._arrayChangedNotifier.notify(<T><any>this, new ArrayChangedArgs(arrayPropertyName, index, removedItems, addedCount));
     }
 }
 

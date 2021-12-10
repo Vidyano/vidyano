@@ -313,7 +313,7 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
                     }
 
                     const newValue = detail.newValue;
-                    if (newValue && paths.length === 2) {
+                    if (newValue && paths.length === 2 && paths[1] !== "*") {
                         subDispose = this._forwardObservable(newValue, paths[1], pathToNotify, callback);
                         disposers.push(subDispose);
                     }
@@ -326,10 +326,29 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
             disposers.push(dispose);
 
             if (paths.length === 2) {
-                const subSource = source[paths[0]];
-                if (subSource) {
-                    subDispose = this._forwardObservable(subSource, paths[1], pathToNotify, callback);
-                    disposers.push(subDispose);
+                if (paths[1] !== "*") {
+                    const subSource = source[paths[0]];
+                    if (subSource) {
+                        subDispose = this._forwardObservable(subSource, paths[1], pathToNotify, callback);
+                        disposers.push(subDispose);
+                    }
+                }
+                else if (!!(<Vidyano.Observable<any>>source).arrayChanged) {
+                    const dispose = (<Vidyano.Observable<any>>source).arrayChanged.attach((sender, detail) => {
+                        if (detail.arrayPropertyName === paths[0]) {
+                            this.notifySplices(`${pathPrefix}.${paths[0]}`, [{
+                                index: detail.index,
+                                removed: detail.removedItems,
+                                addedCount: detail.addedItemCount,
+                                object: source,
+                                type: "splice"
+                            }]);
+
+                            if (callback)
+                                callback(pathToNotify);
+                        }
+                    });
+                    disposers.push(dispose);
                 }
             } else if (paths.length === 1 && source[paths[0]] !== undefined && this.get(`${pathPrefix}.${paths[0]}`) !== source[paths[0]])
                 this.notifyPath(`${pathPrefix}.${paths[0]}`, source[paths[0]]);
