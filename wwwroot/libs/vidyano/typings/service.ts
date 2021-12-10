@@ -197,6 +197,7 @@ export declare type QueryResult = {
     notificationDuration?: number;
     notificationType?: NotificationType;
     pageSize?: number;
+    skip?: number;
     sortOptions: string;
     totalItem?: QueryResultItem;
     totalItems?: number;
