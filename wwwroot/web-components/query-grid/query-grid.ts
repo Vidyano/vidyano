@@ -140,6 +140,7 @@ type QueryGridItem = Vidyano.QueryResultItem | Vidyano.QueryResultItemGroup;
         "query-grid-column:update": "_onColumnUpdate"
     },
     observers: [
+        "_updateScrollOffsetForItems(query.items)",
         "_update(verticalScrollOffset, virtualRowCount, rowHeight, items)",
         "_updateVerticalSpacer(viewportHeight, rowHeight, items)",
         "_updateUserSettings(query, query.columns)"
@@ -182,15 +183,24 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
         requestAnimationFrame(() => this.rowHeight = parseInt(window.getComputedStyle(this).getPropertyValue("--vi-query-grid-row-height")) || 32);
     }
 
+    /**
+     * If the query changes, the grid will go back in initializing mode.
+     */
     private _queryChanged(query: Vidyano.Query, oldQuery: Vidyano.Query) {
         if (oldQuery)
             this._setInitializing(true);
     }
 
+    /**
+     * Updated the --vi-query-grid-columns custom css property, used by all rows and headers for column width.
+     */
     private _columnWidthsChanged(columnWidths: number[]) {
         this.style.setProperty("--vi-query-grid-columns", `${columnWidths.map(width => `${width}px`).join(" ")} minmax(0, 1fr)`);
     }
 
+    /**
+     * Is called when the first query grid row or the header columns report their size.
+     */
     private _columnWidthChanged(e: CustomEvent) {
         e.stopPropagation();
 
@@ -220,6 +230,13 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
 
         this._setColumnWidths(this.columns.map(c => Math.ceil(this._columnWidths.get(c.name).max(e => e))));
         this._setInitializing(false);
+    }
+
+    /**
+     * Is called when the items property is set, for example after a search.
+     */
+    private _updateScrollOffsetForItems() {
+        this.verticalScrollOffset = 0;
     }
 
     private _update(verticalScrollOffset: number, virtualRowCount: number, rowHeight: number, items: QueryGridItems) {
