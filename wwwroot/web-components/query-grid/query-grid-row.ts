@@ -33,10 +33,6 @@ export interface IItemTapEventArgs {
             readOnly: true,
             reflectToAttribute: true
         },
-        measure: {
-            type: Object,
-            computed: "_computeMeasure(item)"
-        },
         offsets: Array,
         visibleRange: Array,
         initializing: {
@@ -64,20 +60,9 @@ export class QueryGridRow extends WebComponentListener(WebComponent) {
     private _visibleCells: QueryGridCell[];
     private _invisibleCellValues: [QueryGridCell, Vidyano.QueryResultItemValue][] = [];
     readonly isGroup: boolean; private _setIsGroup: (isGroup: boolean) => void;
-    readonly measure: boolean;
     columns: Vidyano.QueryColumn[];
     offsets: number[];
     visibleRange: [ left: number, right: number];
-
-    /**
-     * Only perform measurement for the first query item.
-     */
-    private _computeMeasure(item: Vidyano.QueryResultItem) {
-        if (!item)
-            return false;
-
-        return item.query.items[0] === item;
-    }
 
     private _columnsChanged(columns: Vidyano.QueryColumn[]) {
         const existingCells = <QueryGridCell[]>Array.from((<HTMLSlotElement>this.$.columns).assignedElements());
@@ -105,7 +90,7 @@ export class QueryGridRow extends WebComponentListener(WebComponent) {
 
                 cell = new cellConstructor();
                 cell.classList.add("column");
-                cell.value = this.item instanceof Vidyano.QueryResultItem ? this.item.getFullValue(column.name) : null;
+                cell.value = this.item instanceof Vidyano.QueryResultItem ? this.item.getFullValue(column.name) : undefined;
             }
             else
                 existingCells.remove(cell);

@@ -61,7 +61,11 @@ export abstract class QueryGridCell extends WebComponent {
     }
 
     private _queueMeasure(value: Vidyano.QueryResultItemValue, isConnected: boolean) {
-        if (!isConnected || !(this.parentElement as QueryGridRow).measure || this.#_lastMeasuredColumn === this.column)
+        if (!isConnected || this.#_lastMeasuredColumn === this.column)
+            return;
+
+        const row = this.parentElement as QueryGridRow;
+        if (!row.item || row.item.query.items[0] !== row.item)
             return;
 
         this.#_lastMeasuredColumn = this.column;
