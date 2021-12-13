@@ -430,13 +430,20 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
 
     private _computeColumns(columns: QueryGridColumn[]) {
         columns = columns.filter(c => !c.isHidden);
-        columns = [...columns.filter(c => c.isPinned).orderBy(c => c.offset), ...columns.filter(c => !c.isPinned).orderBy(c => c.offset)];
 
-        Polymer.Async.microTask.run(() => {
+        if (this.columns) {
+            const newColumns = columns.orderBy(c => c.name).map(c => c.name).join(";");
+            const currentColumns = this.columns.orderBy(c => c.name).map(c => c.name).join(";");
+
+            if (currentColumns !== newColumns) {
+                this._setInitializing(true);
+                this.style.setProperty("--vi-query-grid-columns", `repeat(${columns.length}, max-content)`);
+            }
+        }
+        else
             this.style.setProperty("--vi-query-grid-columns", `repeat(${columns.length}, max-content)`);
-        });
 
-        return columns;
+        return [...columns.filter(c => c.isPinned).orderBy(c => c.offset), ...columns.filter(c => !c.isPinned).orderBy(c => c.offset)];
     }
 
     private _computeVirtualRowCount(viewportHeight: number, rowHeight: number) {
@@ -513,11 +520,7 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
     }
 
     private _reset() {
-        this._setInitializing(true);
-
         this._updateUserSettings(this.query);
-        this.style.setProperty("--vi-query-grid-columns", `repeat(${this.columns?.length || 0}, max-content)`);
-
         this._update(this.verticalScrollOffset, this.virtualRowCount, this.rowHeight, this.items);
     }
 }

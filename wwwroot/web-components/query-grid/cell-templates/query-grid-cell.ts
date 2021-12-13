@@ -26,7 +26,7 @@ resizeObserver = new ResizeObserver(allEntries => {
             composed: true
         }));
     
-        entries.forEach(e => resizeObserver.unobserve(e.target));
+        entries.forEach(e => (e.target as QueryGridCell)._unobserve());
     });
 });
 
@@ -40,24 +40,38 @@ resizeObserver = new ResizeObserver(allEntries => {
     ]
 })
 export abstract class QueryGridCell extends WebComponent {
-    #_lastMeasuredValue: Vidyano.QueryResultItemValue;
+    #_lastMeasuredColumn: Vidyano.QueryColumn;
+    #_isObserved: boolean;
 
     column: Vidyano.QueryColumn;
     value: Vidyano.QueryResultItemValue;
     valueQueued: Vidyano.QueryResultItemValue;
 
+    disconnectedCallback() {
+        super.disconnectedCallback();
+
+        if (this.#_isObserved) {
+            resizeObserver.unobserve(this);
+            this.#_isObserved = false;
+        }
+    }
+
+    get isObserved() {
+        return this.#_isObserved;
+    }
+
     private _queueMeasure(value: Vidyano.QueryResultItemValue, isConnected: boolean) {
-        if (!value || !isConnected)
+        if (!isConnected || !(this.parentElement as QueryGridRow).measure || this.#_lastMeasuredColumn === this.column)
             return;
 
-        const row = this.parentElement as QueryGridRow;
-        if ((this.parentElement as QueryGridRow).shadowRoot.host.parentElement.children[0] !== row)
-            return;
-
-        if (this.#_lastMeasuredValue === value)
-            return;
-
+        this.#_lastMeasuredColumn = this.column;
+        
+        this.#_isObserved = true;
         resizeObserver.observe(this, { box: "border-box" });
-        this.#_lastMeasuredValue = value;
+    }
+
+    _unobserve() {
+        resizeObserver.unobserve(this);
+        this.#_isObserved = false;
     }
 }
