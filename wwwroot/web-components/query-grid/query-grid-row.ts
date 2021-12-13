@@ -14,31 +14,6 @@ import { QueryGridRowGroup } from "./query-grid-row-group.js";
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
 import { PopupCore } from "../popup/popup-core.js"
 
-let resizeObserver: ResizeObserver;
-resizeObserver = new ResizeObserver(allEntries => {
-    // Entries may be batched for multiple grids, make sure the event is dispatched to the correct grid
-    
-    const parents = new Map<HTMLElement, ResizeObserverEntry[]>();
-    allEntries.forEach(e => {
-        const parent = parents.get(e.target.parentElement) || parents.set(e.target.parentElement, []).get(e.target.parentElement);
-        parent.push(e);
-    });
-
-    parents.forEach((entries, parent) => {
-        parent.dispatchEvent(new CustomEvent("column-width-changed", {
-            detail: entries.map(e => {
-                let width = e["borderBoxSize"] != null ? e["borderBoxSize"][0].inlineSize : (<HTMLElement>e.target).offsetWidth;
-                return [(<QueryGridCell>e.target).column.name, width, e.target];
-            }),
-            bubbles: true,
-            cancelable: true,
-            composed: true
-        }));
-    
-        entries.forEach(e => resizeObserver.unobserve(e.target));
-    });
-});
-
 export interface IItemTapEventArgs {
     item: Vidyano.QueryResultItem;
 }
@@ -127,7 +102,6 @@ export class QueryGridRow extends WebComponentListener(WebComponent) {
         }
 
         existingCells.forEach(cell => {
-            resizeObserver.unobserve(cell);
             this.removeChild(cell);
         });
     }
@@ -335,11 +309,6 @@ export class QueryGridRow extends WebComponentListener(WebComponent) {
         this.style.zIndex = "auto";
 
         e.stopPropagation();
-    }
-
-    measure() {
-        const cells = (<HTMLSlotElement>this.$.columns).assignedElements();
-        cells.forEach((cell: HTMLElement) => resizeObserver.observe(cell, { box: "border-box" }));
     }
 
     refresh() {

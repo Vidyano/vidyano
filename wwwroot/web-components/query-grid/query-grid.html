@@ -33,7 +33,7 @@
 <vi-scroller horizontal-scroll-offset="{{horizontalScrollOffset}}" vertical-scroll-offset="{{verticalScrollOffset}}" outer-height="{{viewportHeight}}" outer-width="{{viewportWidth}}">
     <div id="gridWrapper">
         <div id="grid" grid$="[[initializing]]">
-            <dom-repeat items="[[virtualItems]]" id="rowRepeater">
+            <dom-repeat items="[[virtualItems]]">
                 <template>
                     <vi-query-grid-row item="[[item]]" columns="[[columns]]" index="[[index]]" offsets="[[_computeOffsets(columnWidths)]]" visible-range="{{_computeVisibleRange(viewportWidth, horizontalScrollOffset)}}" initializing$="[[initializing]]"></vi-query-grid-row>
                 </template>

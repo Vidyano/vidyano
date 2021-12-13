@@ -18,10 +18,13 @@ resizeObserver = new ResizeObserver(allEntries => {
 
     parents.forEach((entries, parent) => {
         parent.dispatchEvent(new CustomEvent("column-width-changed", {
-            detail: entries.map(e => {
-                let width = e["borderBoxSize"] != null ? e["borderBoxSize"][0].inlineSize : (<HTMLElement>e.target).offsetWidth;
-                return [(<QueryGridColumnHeader>e.target).column.name, width, e.target];
-            }),
+            detail: {
+                type: "column",
+                entries: entries.map(e => {
+                    let width = e["borderBoxSize"] != null ? e["borderBoxSize"][0].inlineSize : (<HTMLElement>e.target).offsetWidth;
+                    return [(<QueryGridColumnHeader>e.target).column.name, width];
+                }),
+            },
             bubbles: true,
             cancelable: true,
             composed: true
@@ -74,10 +77,15 @@ resizeObserver = new ResizeObserver(allEntries => {
     listeners: {
         "tap": "_sort",
         "contextmenu": "_onContextmenu"
-    }
+    },
+    observers: [
+        "_queueMeasure(column, isConnected)"
+    ]
 })
 export class QueryGridColumnHeader extends WebComponentListener(WebComponent) {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-column-header.html">` }
+
+    #_lastMeasuredColumn: Vidyano.QueryColumn;
 
     column: QueryGridColumn;
     readonly canSort: boolean; private _setCanSort: (canSort: boolean) => void;
@@ -176,7 +184,11 @@ export class QueryGridColumnHeader extends WebComponentListener(WebComponent) {
         this.fire("query-grid-column:configure");
     }
 
-    measure() {
+    private _queueMeasure(column: QueryGridColumn, isConnected: boolean) {
+        if (!column || !isConnected || this.#_lastMeasuredColumn === column?.column)
+            return;
+
         resizeObserver.observe(this, { box: "border-box" });
+        this.#_lastMeasuredColumn = column.column;
     }
 }
