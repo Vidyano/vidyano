@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="query-grid.css" />
 
-<header id="header">
+<header>
     <div class="controls">
         <dom-if if="[[hasGrouping]]">
             <template>
@@ -35,7 +35,7 @@
         <div id="grid" grid$="[[initializing]]">
             <dom-repeat items="[[virtualItems]]">
                 <template>
-                    <vi-query-grid-row item="[[item]]" columns="[[columns]]" index="[[index]]" offsets="[[_computeOffsets(columnWidths)]]" visible-range="{{_computeVisibleRange(viewportWidth, horizontalScrollOffset)}}" initializing$="[[initializing]]"></vi-query-grid-row>
+                    <vi-query-grid-row item="[[item]]" columns="[[columns]]" offsets="[[_computeOffsets(columnWidths)]]" visible-range="{{_computeVisibleRange(viewportWidth, horizontalScrollOffset)}}" initializing$="[[initializing]]"></vi-query-grid-row>
                 </template>
             </dom-repeat>
         </div>

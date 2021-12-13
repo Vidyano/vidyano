@@ -20,7 +20,6 @@ export interface IItemTapEventArgs {
 
 @WebComponent.register({
     properties: {
-        index: Number,
         item: {
             type: Object,
             observer: "_itemChanged"
@@ -67,7 +66,6 @@ export class QueryGridRow extends WebComponentListener(WebComponent) {
     readonly isGroup: boolean; private _setIsGroup: (isGroup: boolean) => void;
     readonly measure: boolean;
     columns: Vidyano.QueryColumn[];
-    index: number;
     offsets: number[];
     visibleRange: [ left: number, right: number];
 
