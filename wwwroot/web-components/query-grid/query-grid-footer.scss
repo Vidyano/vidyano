@@ -1,0 +1,14 @@
+:host {   
+    display: grid;
+    grid-template-columns: var(--vi-query-grid-columns);
+
+    .column {
+        padding: 0 var(--theme-h5);
+        line-height: var(--vi-query-grid-row-height);
+        font-weight: bold;
+
+        &[is-numeric] {
+            text-align: right;
+        }
+    }
+}

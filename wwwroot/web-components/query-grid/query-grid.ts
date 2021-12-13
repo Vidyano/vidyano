@@ -130,6 +130,7 @@ type QueryGridItem = Vidyano.QueryResultItem | Vidyano.QueryResultItemGroup;
         "query.isBusy",
         "query.lastUpdated",
         "query.items.*",
+        "query.totalItem",
         "_updatePinnedColumns(columns.*.isPinned)"
     ],
     listeners: {
@@ -150,13 +151,13 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
 
     private readonly _columnWidths = new Map<string, any>();
     private readonly items: QueryGridItems;
-    private _itemsChangedObserver: Vidyano.ISubjectDisposer;
     private _virtualGridStartIndex: number = 0;
     private _verticalSpacerCorrection: number = 1;
     private _getItemsDebouncer: Polymer.Debounce.Debouncer;
     private _updateCellDebouncer: Polymer.Debounce.Debouncer;
     private _pinnedStyle: HTMLStyleElement;
     private _lastSelectedItemIndex: number;
+    private _controlsSizeObserver: ResizeObserver;
 
     query: Vidyano.Query;
     asLookup: boolean;
@@ -176,6 +177,19 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
     horizontalScrollOffset: number;
     verticalScrollOffset: number;
 
+    connectedCallback() {
+        super.connectedCallback();
+
+        this._controlsSizeObserver = new ResizeObserver(this._controlsSizeChanged.bind(this));
+        this._controlsSizeObserver.observe(this.shadowRoot.querySelector(".controls"));
+    }
+
+    disconnectedCallback() {
+        this._controlsSizeObserver.disconnect();
+
+        super.disconnectedCallback();
+    }
+
     ready() {
         super.ready();
 
@@ -188,6 +202,14 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
     private _queryChanged(query: Vidyano.Query, oldQuery: Vidyano.Query) {
         if (oldQuery)
             this._setInitializing(true);
+    }
+
+    /**
+     * Is called when the header controls wrapper changes size.
+     */
+    private _controlsSizeChanged(entries: ResizeObserverEntry[]) {
+        let width = entries[0]["borderBoxSize"] != null ? entries[0]["borderBoxSize"][0].inlineSize : (<HTMLElement>entries[0].target).offsetWidth;
+        this.style.setProperty("--vi-query-grid-controls-width", `${width}px`);
     }
 
     /**

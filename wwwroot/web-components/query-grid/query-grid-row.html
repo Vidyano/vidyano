@@ -1,9 +1,9 @@
 <link rel="stylesheet" href="query-grid-row.css" />
 
-<slot name="group"></slot>
-
 <dom-if if="[[!initializing]]">
     <template>
+        <slot name="group"></slot>
+
         <div part="groupspacer" class="pinned"></div>
 
         <div class="selector pinned" on-tap="_onSelect" part="selector">

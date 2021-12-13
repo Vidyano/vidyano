@@ -42,4 +42,12 @@
     </div>
 </vi-scroller>
 
+<dom-if if="[[query.totalItem]]">
+    <template>
+        <footer>
+            <vi-query-grid-footer item="[[query.totalItem]]" columns="[[columns]]"></vi-query-grid-footer>
+        </footer>
+    </template>
+</dom-if>
+
 <vi-spinner hidden$="[[!query.isBusy]]"></vi-spinner>
