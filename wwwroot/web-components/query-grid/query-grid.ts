@@ -16,7 +16,7 @@ import { QueryGridConfigureDialog } from "./query-grid-configure-dialog.js"
 import { QueryGridUserSettings } from "./query-grid-user-settings.js"
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
 
-const placeholder = {};
+const placeholder: { query?: Vidyano.Query; } = {};
 
 interface QueryGridItems {
     forceUpdate?: boolean;
@@ -301,6 +301,7 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
 
             if (this.virtualItems[virtualIndex] === undefined) {
                 if (realIndex < this.query.totalItems) {
+                    placeholder.query = this.query;
                     this.virtualItems[virtualIndex] = <any>placeholder;
                     queuedItemIndexes.push(realIndex);
                 }
