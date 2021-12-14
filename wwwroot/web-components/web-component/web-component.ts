@@ -132,11 +132,11 @@ export interface IObserveChainDisposer {
 export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerElement) {
     private _appChangedListener: EventListener;
     private _serviceChangedListener: EventListener;
+    readonly isConnected: boolean; private _setIsConnected: (isConnected: boolean) => void;
     readonly app: AppBase; private _setApp: (app: AppBase) => void;
     readonly service: Vidyano.Service;
     readonly translations: { [key: string]: string; };
     protected readonly isAppSensitive: boolean;
-    isConnected: boolean;
 
     connectedCallback() {
         this._setApp(window["app"]);
@@ -146,12 +146,12 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
             this._listenForService(this.app);
             
         super.connectedCallback();
-        this.set("isConnected", true);
+        this._setIsConnected(true);
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
-        this.set("isConnected", false);
+        this._setIsConnected(false);
         
         if (!!this._appChangedListener)
             window.removeEventListener("app-changed", this._appChangedListener);
@@ -442,8 +442,12 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
             }
         }
 
-        if (!baseProperties.isConnected && !info.properties.isConnected)
-            info.properties.isConnected = Boolean;
+        if (!baseProperties.isConnected && !info.properties.isConnected) {
+            info.properties.isConnected = {
+                type: Boolean,
+                readOnly: true
+            };
+        }
 
         if (!baseProperties.app && !info.properties.app) {
             info.properties.app = {
@@ -699,8 +703,6 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
                 }
             };
         }
-
-        const fncRegex = /([^(]+)\(([^)]+)\)/;
 
         for (let p in info.properties) {
             if (typeof info.properties[p] === "object") {

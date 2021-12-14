@@ -43,7 +43,7 @@ if (hashBangRe.test(document.location.href)) {
         history.replaceState(null, null, `${hashBangParts[1]}${hashBangParts[2]}`);
 }
 
-@WebComponent.register({
+@WebComponent.registerAbstract({
     properties: {
         uri: {
             type: String,
@@ -80,7 +80,7 @@ if (hashBangRe.test(document.location.href)) {
         },
         service: {
             type: Object,
-            computed: "_computeInitialService(uri, hooks, isConnected)"
+            readOnly: true
         },
         appRoutePresenter: {
             type: Object,
@@ -151,6 +151,7 @@ if (hashBangRe.test(document.location.href)) {
         }
     },
     observers: [
+        "_computeInitialService(uri, hooks, isConnected)",
         "_cleanUpOnSignOut(service.isSignedIn)",
         "_computeThemeColorVariants(themeColor, 'color', isConnected)",
         "_computeThemeColorVariants(themeAccentColor, 'accent-color', isConnected)",
@@ -175,7 +176,7 @@ export abstract class AppBase extends WebComponentListener(WebComponent) {
     private _initializeResolve: (app: Vidyano.Application) => void;
     private _initialize: Promise<Vidyano.Application> = new Promise(resolve => { this._initializeResolve = resolve; });
     private _setInitializing: (initializing: boolean) => void;
-    readonly service: Vidyano.Service;
+    private _setService: (service: Vidyano.Service) => void;
     readonly appRoutePresenter: AppRoutePresenter; private _setAppRoutePresenter: (appRoutePresenter: AppRoutePresenter) => void;
     readonly keys: string; private _setKeys: (keys: string) => void;
     readonly updateAvailable: boolean; private _setUpdateAvailable: (updateAvailable: boolean) => void;
@@ -247,7 +248,10 @@ export abstract class AppBase extends WebComponentListener(WebComponent) {
         return new AppServiceHooksBase(this);
     }
 
-    private _computeInitialService(uri: string, hooks: string, isAttached: boolean): Vidyano.Service {
+    private async _computeInitialService(uri: string, hooks: string, isConnected: boolean) {
+        if (!isConnected)
+            return;
+
         if (this.service) {
             console.warn("Service uri and hooks cannot be altered.");
             return this.service;
@@ -264,26 +268,26 @@ export abstract class AppBase extends WebComponentListener(WebComponent) {
         else
             hooksInstance = this._createServiceHooks();
 
-        const service = new Vidyano.Service(this.uri, hooksInstance);
+        this._setService(new Vidyano.Service(uri, hooksInstance));
         const path = AppBase.removeRootPath(document.location.pathname);
         const skipDefaultCredentialLogin = path.startsWith("sign-in");
 
         this._setInitializing(true);
-        service.initialize(skipDefaultCredentialLogin).then(async () => {
-            if (this.service !== service)
-                return;
+        try {
+            await this.service.initialize(skipDefaultCredentialLogin);
 
             if (hooksInstance instanceof AppServiceHooksBase)
                 await hooksInstance.onBeforeAppInitialized();
 
             this._initializeResolve(this.service.application);
             this._setInitializing(false);
-        }, async e => {
+        }
+        catch (e) {
             if (hooksInstance instanceof AppServiceHooksBase)
                 await hooksInstance.onAppInitializeFailed(e);
-        });
-
-        return service;
+            else
+                throw e;
+        }
     }
 
     private _onSessionStorage(event: StorageEvent) {
