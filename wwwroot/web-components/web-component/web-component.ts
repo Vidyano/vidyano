@@ -1,5 +1,4 @@
 import * as Polymer from "../../libs/@polymer/polymer.js"
-
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import { Path } from "../../libs/pathjs/pathjs.js"
 import { AppBase } from "../app/app-base.js"
@@ -8,6 +7,12 @@ import * as Keyboard from "../utils/keyboard.js"
 import WebComponentListener from "./web-component-listeners.js"
 import { WebComponentListenerRegistry } from "./web-component-listeners.js"
 import { IronA11yKeysElement } from "@polymer/iron-a11y-keys"
+
+Polymer.Settings.setLegacyUndefined(true);
+Polymer.Settings.setOrderedComputed(true);
+Polymer.Settings.setPassiveTouchGestures(true);
+Polymer.Settings.setRemoveNestedTemplates(true);
+Polymer.Settings.setSuppressTemplateNotifications(true);
 
 class Operations {
     areSame(value1: any, value2: any): boolean {
@@ -183,20 +188,6 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
 
     ensureArgumentValues(args: IArguments): boolean {
         return !Array.from(args).some(a => a === undefined);
-    }
-
-    private _ensureComputedValues(fn: string, prop: string, ...args: any[]): any {
-        if (args.some(a => a === undefined))
-            return this[prop];
-
-        return (<Function>this[fn]).apply(this, args);
-    }
-
-    private _ensureObserverValues(fn: string, ...args: any[]): any {
-        if (args.some(a => a === undefined))
-            return;
-
-        (<Function>this[fn]).apply(this, args);
     }
 
     $: { [key: string]: HTMLElement };
@@ -716,17 +707,9 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
                 const prop = <IWebComponentProperty>info.properties[p];
                 if (prop.computed && !prop.computed.startsWith("_forwardComputed(") && !prop.computed.startsWith("_forwardNegate(")) {
                     if (!prop.computed.startsWith("_compute") && elementName.startsWith("vi-"))
-                        console.error(`Naming convention violation for computed property "${p}" on element "${elementName}"`);
-
-                    const parts = fncRegex.exec(prop.computed);
-                    prop.computed = `_ensureComputedValues("${parts[1]}", "${p}", ${parts[2]})`;
+                        console.warn(`Naming convention violation for computed property "${p}" on element "${elementName}"`);
                 }
             }
-        }
-
-        for (let p in info.observers) {
-            const parts = fncRegex.exec(info.observers[p]);
-            info.observers[p] = `_ensureObserverValues("${parts[1]}", ${parts[2]})`;
         }
 
         for (let fn of Object.getOwnPropertyNames(Operations.prototype)) {
