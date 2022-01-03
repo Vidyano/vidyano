@@ -5,6 +5,7 @@ import { AppBase } from "../app/app-base.js"
 import type { App } from "../app/app.js"
 import * as Keyboard from "../utils/keyboard.js"
 import WebComponentListener from "./web-component-listeners.js"
+import { ConfigurableWebComponent, IConfigurableAction }  from "./web-component-configurable.js"
 import { WebComponentListenerRegistry } from "./web-component-listeners.js"
 import { IronA11yKeysElement } from "@polymer/iron-a11y-keys"
 
@@ -787,11 +788,9 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
     }
 }
 
-export abstract class ConfigurableWebComponent extends WebComponent {
-
-}
-
 export {
     Keyboard,
-    WebComponentListener
+    WebComponentListener,
+    ConfigurableWebComponent,
+    IConfigurableAction
 }

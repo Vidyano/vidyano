@@ -8,7 +8,7 @@ import { AppCacheEntryQuery } from "../app-cache/app-cache-entry-query.js"
 import { Icon } from "../icon/icon.js"
 import { Menu } from "./menu.js"
 import "../scroller/scroller.js"
-import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
+import { WebComponent, WebComponentListener, ConfigurableWebComponent } from "../web-component/web-component.js"
 
 @WebComponent.register({
     properties: {
@@ -85,13 +85,14 @@ import { WebComponent, WebComponentListener } from "../web-component/web-compone
         "_updateOpened(filtering, item, expand)"
     ],
     listeners: {
-        "tap": "_tap"
+        "tap": "_tap",
+        "vi:configure": "_configure"
     },
     serviceBusObservers: {
         "vi-menu-item:select": "_onServiceBusSelect"
     }
 })
-export class MenuItem extends WebComponentListener(WebComponent) {
+export class MenuItem extends ConfigurableWebComponent(WebComponentListener(WebComponent)) {
     static get template() { return Polymer.html`<link rel="import" href="menu-item.html">`; }
 
     readonly expand: boolean; private _setExpand: (val: boolean) => void;
@@ -255,13 +256,12 @@ export class MenuItem extends WebComponentListener(WebComponent) {
         }
     }
 
-    // TODO
-    /*_viConfigure(actions: IConfigurableAction[]) {
+    private _configure(e: CustomEvent) {
         if (!this.item.path || this.item.path.startsWith("Management/"))
             return;
 
         if (this.item instanceof Vidyano.ProgramUnit) {
-            actions.push({
+            e.detail.push({
                 label: `Program unit: ${this.item.name} `,
                 icon: "viConfigure",
                 action: () => this.app.changePath(`Management/PersistentObject.b53ec1cd-e0b3-480f-b16d-bf33b133c05c/${this.item.name}`),
@@ -270,12 +270,11 @@ export class MenuItem extends WebComponentListener(WebComponent) {
                         label: "Add Query",
                         icon: "Add",
                         action: async () => {
-                            await this.app.importComponent("SelectReferenceDialog");
                             const query = await this.service.getQuery("5a4ed5c7-b843-4a1b-88f7-14bd1747458b");
                             if (!query)
                                 return;
 
-                            await this.app.showDialog(new SelectReferenceDialog(query));
+                            await this.app.showDialog(new (await import("../select-reference-dialog/select-reference-dialog.js")).SelectReferenceDialog(query));
                             if (!query.selectedItems || query.selectedItems.length === 0)
                                 return;
 
@@ -286,14 +285,14 @@ export class MenuItem extends WebComponentListener(WebComponent) {
                 ]
             });
 
-            actions.push();
+            e.detail.push();
         }
         else if (this.item instanceof Vidyano.ProgramUnitItem) {
-            actions.push({
+            e.detail.push({
                 label: `Program unit item: ${this.item.name} `,
                 icon: "viConfigure",
                 action: () => this.app.changePath(`Management/PersistentObject.68f7b99e-ce10-4d43-80fb-191b6742d53c/${this.item.name} `)
             });
         }
-    }*/
+    }
 }

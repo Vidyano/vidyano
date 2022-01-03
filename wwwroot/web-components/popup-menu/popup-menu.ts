@@ -58,21 +58,19 @@ export class PopupMenu extends WebComponentListener(WebComponent) {
     }
 
     private _hookContextMenu(isConnected: boolean, contextMenu: boolean) {
-        // TODO: Fix old domHost
-
-        // if (isConnected && contextMenu)
-        //     this.domHost.addEventListener("contextmenu", this._openContextEventListener = this._openContext.bind(this));
-        // else if (this._openContextEventListener) {
-        //     this.domHost.removeEventListener("contextmenu", this._openContextEventListener);
-        //     this._openContextEventListener = undefined;
-        // }
+        if (isConnected && contextMenu)
+            (this.getRootNode() as ShadowRoot).host.addEventListener("contextmenu", this._openContextEventListener = this._openContext.bind(this));
+        else if (this._openContextEventListener) {
+            (this.getRootNode() as ShadowRoot).host.removeEventListener("contextmenu", this._openContextEventListener);
+            this._openContextEventListener = undefined;
+        }
     }
 
     private _openContext(e: MouseEvent): boolean {
         if (!this.contextMenuOnly)
             return true;
 
-        if (e.which === 3 && !!this.shiftKey === !!e.shiftKey && !!this.ctrlKey === !!e.ctrlKey) {
+        if (e.button === 2 && !!this.shiftKey === !!e.shiftKey && !!this.ctrlKey === !!e.ctrlKey) {
             const popup = <Popup><any>this.$.popup;
 
             popup.style.left = e.pageX + "px";

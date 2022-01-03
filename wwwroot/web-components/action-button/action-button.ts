@@ -1,7 +1,7 @@
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import * as Polymer from "../../libs/@polymer/polymer.js"
 import { Icon } from "../icon/icon.js"
-import { WebComponent } from "../web-component/web-component.js";
+import { WebComponent, ConfigurableWebComponent, WebComponentListener, IConfigurableAction } from "../web-component/web-component.js";
 
 @WebComponent.register({
     properties: {
@@ -87,6 +87,9 @@ import { WebComponent } from "../web-component/web-component.js";
             computed: "_computeIsGroup(action)"
         }
     },
+    listeners: {
+        "vi:configure": "_configure"
+    },
     observers: [
         "_observeAction(action.canExecute, action.isVisible, action.options)",
         "_computeSiblingIcon(overflow, grouped, isConnected)"
@@ -98,7 +101,7 @@ import { WebComponent } from "../web-component/web-component.js";
         "action.options"
     ]
 })
-export class ActionButton extends WebComponent {
+export class ActionButton extends ConfigurableWebComponent(WebComponentListener(WebComponent)) {
     static get template() { return Polymer.html`<link rel="import" href="action-button.html">`; }
 
     private _skipObserver: boolean;
@@ -119,7 +122,7 @@ export class ActionButton extends WebComponent {
             this._applyItemSelection(item, action);
     }
 
-    connectedCallback() {
+    async connectedCallback() {
         super.connectedCallback();
 
         if (this.grouped) {
@@ -254,20 +257,19 @@ export class ActionButton extends WebComponent {
         this.fire("sizechanged", null);
     }
 
-    // TODO
-    // _viConfigure(actions: IConfigurableAction[]) {
-    //     if (!(this.action instanceof Vidyano.Action))
-    //         return;
+    _configure(e: CustomEvent) {
+        if (!(this.action instanceof Vidyano.Action))
+            return;
 
-    //     if ((this.action.parent && this.action.parent.isSystem) || (this.action.query && this.action.query.isSystem))
-    //         return;
+        if ((this.action.parent && this.action.parent.isSystem) || (this.action.query && this.action.query.isSystem))
+            return;
 
-    //     actions.push({
-    //         label: `Action: ${this.action.name}`,
-    //         icon: "viConfigure",
-    //         action: () => {
-    //             this.app.changePath(`management/persistent-object.1bf5e50c-ee7d-4205-8ccf-46ab68e25d63/${this.action.name}`);
-    //         }
-    //     });
-    // }
+        e.detail.push({
+            label: `Action: ${this.action.name}`,
+            icon: "viConfigure",
+            action: () => {
+                this.app.changePath(`management/persistent-object.1bf5e50c-ee7d-4205-8ccf-46ab68e25d63/${this.action.name}`);
+            }
+        });
+    }
 }

@@ -5,7 +5,7 @@ import { PersistentObjectAttribute } from "../persistent-object-attribute/persis
 import { PersistentObjectAttributeString } from "../persistent-object-attribute/attributes/persistent-object-attribute-string/persistent-object-attribute-string.js"
 import { PersistentObjectAttributeConfig } from '../app/config/persistent-object-attribute-config.js'
 import "../persistent-object-attribute-label/persistent-object-attribute-label.js"
-import { WebComponent } from "../web-component/web-component.js"
+import { WebComponent, ConfigurableWebComponent, WebComponentListener } from "../web-component/web-component.js"
 
 class DeveloperShortcut extends Observable<DeveloperShortcut> {
     private _state: boolean = false;
@@ -119,6 +119,9 @@ const _attributeImports: { [key: string]: Promise<any>; } = {
             reflectToAttribute: true
         }
     },
+    listeners: {
+        "vi:configure": "_configure"
+    },
     observers: [
         "_attributeChanged(attribute, isConnected)"
     ],
@@ -134,7 +137,7 @@ const _attributeImports: { [key: string]: Promise<any>; } = {
         "attribute.parent.isBulkEdit"
     ]
 })
-export class PersistentObjectAttributePresenter extends WebComponent {
+export class PersistentObjectAttributePresenter extends ConfigurableWebComponent(WebComponentListener(WebComponent)) {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-presenter.html">`; }
 
     private _developerToggleDisposer: ISubjectDisposer;
@@ -150,7 +153,7 @@ export class PersistentObjectAttributePresenter extends WebComponent {
     disabled: boolean;
     readOnly: boolean;
 
-    connectedCallback() {
+    async connectedCallback() {
         super.connectedCallback();
 
         const customTemplate = <HTMLTemplateElement><any>this.querySelector("template");
@@ -322,5 +325,16 @@ export class PersistentObjectAttributePresenter extends WebComponent {
 
     private _openAttributeManagement() {
         this.app.changePath(`Management/PersistentObject.1456569d-e02b-44b3-9d1a-a1e417061c77/${this.attribute.id}`);
+    }
+
+    private _configure(e: CustomEvent) {
+        if (this.attribute.parent.isSystem)
+            return;
+
+        e.detail.push({
+            label: `Attribute: ${this.attribute.name}`,
+            icon: "viConfigure",
+            action: this._openAttributeManagement.bind(this)
+        });
     }
 }

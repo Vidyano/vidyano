@@ -3,7 +3,7 @@ import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import { AppServiceHooks } from "../app-service-hooks/app-service-hooks.js"
 import { IFileDropDetails } from "../file-drop/file-drop.js"
 import { QueryGrid } from "../query-grid/query-grid.js"
-import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
+import { WebComponent, WebComponentListener, ConfigurableWebComponent } from "../web-component/web-component.js"
 
 @WebComponent.register({
     properties: {
@@ -38,10 +38,11 @@ import { WebComponent, WebComponentListener } from "../web-component/web-compone
         "query.currentChart"
     ],
     listeners: {
-        "file-dropped": "_onFileDropped"
+        "file-dropped": "_onFileDropped",
+        "vi:configure": "_configure"
     }
 })
-export class QueryItemsPresenter extends WebComponentListener(WebComponent) {
+export class QueryItemsPresenter extends ConfigurableWebComponent(WebComponentListener(WebComponent)) {
     static get template() { return Polymer.html`<link rel="import" href="query-items-presenter.html">` }
 
     private _renderedQuery: Vidyano.Query;
@@ -147,23 +148,23 @@ export class QueryItemsPresenter extends WebComponentListener(WebComponent) {
             action.execute();
     }
 
-    // _viConfigure(actions: IConfigurableAction[]) {
-    //     if (this.query.isSystem)
-    //         return;
+    private _configure(e: CustomEvent) {
+        if (this.query.isSystem)
+            return;
 
-    //     actions.push({
-    //         label: `Query: ${this.query.label}`,
-    //         icon: "viConfigure",
-    //         action: () => {
-    //             this.app.changePath(`Management/PersistentObject.b9d2604d-2233-4df2-887a-709d93502843/${this.query.id}`);
-    //         },
-    //         subActions: [{
-    //             label: `Persistent Object: ${this.query.persistentObject.type}`,
-    //             icon: "viConfigure",
-    //             action: () => {
-    //                 this.app.changePath(`Management/PersistentObject.316b2486-df38-43e3-bee2-2f7059334992/${this.query.persistentObject.id}`);
-    //             }
-    //         }]
-    //     });
-    // }
+        e.detail.push({
+            label: `Query: ${this.query.label}`,
+            icon: "viConfigure",
+            action: () => {
+                this.app.changePath(`Management/PersistentObject.b9d2604d-2233-4df2-887a-709d93502843/${this.query.id}`);
+            },
+            subActions: [{
+                label: `Persistent Object: ${this.query.persistentObject.type}`,
+                icon: "viConfigure",
+                action: () => {
+                    this.app.changePath(`Management/PersistentObject.316b2486-df38-43e3-bee2-2f7059334992/${this.query.persistentObject.id}`);
+                }
+            }]
+        });
+    }
 }

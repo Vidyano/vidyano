@@ -1,7 +1,7 @@
 import * as Polymer from '../../libs/@polymer/polymer.js';
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import { ISize } from "../size-tracker/size-tracker.js"
-import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
+import { ConfigurableWebComponent, WebComponent, WebComponentListener } from "../web-component/web-component.js"
 import "../persistent-object-group/persistent-object-group.js"
 import { PersistentObjectAttributePresenter } from "../persistent-object-attribute-presenter/persistent-object-attribute-presenter.js"
 import "../size-tracker/size-tracker.js"
@@ -33,14 +33,15 @@ import "../size-tracker/size-tracker.js"
         "_autofocus(noAutofocus, tab.parent.isEditing)"
     ],
     listeners: {
-        "attribute-loaded": "_attributeLoaded"
+        "attribute-loaded": "_attributeLoaded",
+        "vi:configure": "_configure"
     },
     forwardObservers: [
         "tab.parent.isEditing",
         "tab.groups"
     ]
 })
-export class PersistentObjectTab extends WebComponentListener(WebComponent) {
+export class PersistentObjectTab extends ConfigurableWebComponent(WebComponentListener(WebComponent)) {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-tab.html">`; }
 
     private _attributePresenters: PersistentObjectAttributePresenter[];
@@ -96,5 +97,19 @@ export class PersistentObjectTab extends WebComponentListener(WebComponent) {
 
     private _innerSizeChanged(size: ISize) {
         this.fire("vi-persistent-object-tab-inner-size-changed", size, { bubbles: true});
+    }
+
+    private _configure(e: CustomEvent) {
+        if (this.tab.target instanceof Vidyano.PersistentObject) {
+            if ((<Vidyano.PersistentObject>this.tab.target).isSystem)
+                return;
+        }
+
+        const tab = <Vidyano.PersistentObjectAttributeTab>this.tab;
+        e.detail.push({
+            label: `Attribute tab: ${tab.label}`,
+            icon: "viConfigure",
+            action: () => this.app.changePath(`management/persistent-object.9b7a3b94-cf71-4284-bac3-de4d2790c868/${tab.id}`)
+        });
     }
 }

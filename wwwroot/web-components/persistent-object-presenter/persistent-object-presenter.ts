@@ -1,6 +1,6 @@
 import * as Polymer from '../../libs/@polymer/polymer.js';
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
-import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
+import { ConfigurableWebComponent, WebComponent, WebComponentListener } from "../web-component/web-component.js"
 import { App, AppBase } from "../app/app.js"
 import { AppCacheEntryPersistentObject } from "../app-cache/app-cache-entry-persistent-object.js"
 import { AppCacheEntryPersistentObjectFromAction } from "../app-cache/app-cache-entry-persistent-object-from-action.js"
@@ -49,7 +49,8 @@ interface IPersistentObjectPresenterRouteParameters {
     ],
     listeners: {
         "app-route-activate": "_activate",
-        "app-route-deactivate": "_deactivate"
+        "app-route-deactivate": "_deactivate",
+        "vi:configure": "_configure"
     },
     keybindings: {
         "f2": {
@@ -61,7 +62,7 @@ interface IPersistentObjectPresenterRouteParameters {
     },
     sensitive: true
 })
-export class PersistentObjectPresenter extends WebComponentListener(WebComponent) {
+export class PersistentObjectPresenter extends ConfigurableWebComponent(WebComponentListener(WebComponent)) {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-presenter.html">`; }
 
     private _cacheEntry: AppCacheEntryPersistentObject;
@@ -237,6 +238,19 @@ export class PersistentObjectPresenter extends WebComponentListener(WebComponent
         const action = <Vidyano.Action>(this.persistentObject.actions["CancelEdit"] || this.persistentObject.actions["CancelSave"]);
         if (action)
             action.execute();
+    }
+
+    private _configure(e: CustomEvent) {
+        if (this.persistentObject.isSystem)
+            return;
+
+        e.detail.push({
+            label: `Persistent Object: ${this.persistentObject.type}`,
+            icon: "viConfigure",
+            action: () => {
+                this.app.changePath(`management/persistent-object.316b2486-df38-43e3-bee2-2f7059334992/${this.persistentObject.id}`);
+            }
+        });
     }
 }
 

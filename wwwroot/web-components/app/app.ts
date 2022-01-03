@@ -12,6 +12,7 @@ import { WebComponent } from "../web-component/web-component.js"
 import { AppCacheEntry } from "../app-cache/app-cache-entry.js"
 import { AppServiceHooks } from "../app-service-hooks/app-service-hooks.js"
 import { AppCacheEntryPersistentObject } from "../app-cache/app-cache-entry-persistent-object.js"
+import { PopupMenu } from "../popup-menu/popup-menu.js"
 
 @WebComponent.register({
     properties: {
@@ -178,56 +179,20 @@ export class App extends AppBase {
         }
     }
 
-    // TODO
-    /*private _configureContextmenu(e: MouseEvent) {
+    private _configureContextmenu(e: MouseEvent) {
         if (!this.service || !this.service.application)
             return;
 
-        let configurableParent: IConfigurable;
-
-        if (!this.service.application.hasManagement || window.getSelection().toString()) {
+        const configureItems: WebComponent[] = e["vi:configure"];
+        if (!this.service.application.hasManagement || !configureItems?.length || window.getSelection().toString()) {
             e.stopImmediatePropagation();
             return;
         }
 
-        const configureItems: WebComponent[] = [];
-
-        const elements = e.composedPath();
-        let element = elements.shift();
-        while (!!element && element !== this) {
-            if ((<any>element as IConfigurable)._viConfigure) {
-                const actions: IConfigurableAction[] = [];
-                (<IConfigurable><any>element)._viConfigure(actions);
-
-                if (actions.length > 0) {
-                    actions.forEach(action => {
-                        let item: WebComponent;
-
-                        if (!action.subActions)
-                            item = new PopupMenuItem(action.label, action.icon, action.action);
-                        else {
-                            item = new PopupMenuItemSplit(action.label, action.icon, action.action);
-                            action.subActions.forEach(subA => item.appendChild(new PopupMenuItem(subA.label, subA.icon, subA.action)));
-                        }
-
-                        configureItems.push(item);
-                    });
-                }
-            }
-
-            element = elements.shift();
-        }
-
-        if (configureItems.length === 0) {
-            e.stopImmediatePropagation();
-            return;
-        }
-
-        // const popupMenuItem = <PopupMenuItem>this.shadowRoot.querySelector("#viConfigure");
-        // this.empty(popupMenuItem);
-
-        // configureItems.forEach(item => Polymer.dom(popupMenuItem).appendChild(item));
-    }*/
+        const popupMenu = <PopupMenu>this.shadowRoot.querySelector("#viConfigure");
+        Array.from(popupMenu.children).forEach(item => popupMenu.removeChild(item));
+        configureItems.forEach(item => popupMenu.appendChild(item));
+    }
 
     protected _cleanUpOnSignOut(isSignedIn: boolean) {
         if (isSignedIn === false) {
