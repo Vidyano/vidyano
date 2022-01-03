@@ -47,7 +47,7 @@ resizeObserver = new ResizeObserver(allEntries => {
         },
         sortingIcon: {
             type: String,
-            computed: "_computeSortingIcon(column.sortDirection)"
+            computed: "_computeSortingIcon(column.column.sortDirection)"
         },
         canGroupBy: {
             type: Boolean,
@@ -72,7 +72,7 @@ resizeObserver = new ResizeObserver(allEntries => {
         }
     },
     forwardObservers: [
-        "column.sortDirection"
+        "column.column.sortDirection"
     ],
     listeners: {
         "tap": "_sort",
