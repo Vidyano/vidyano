@@ -1,0 +1,52 @@
+{
+  "PersistentObject": {
+    "$id": "PersistentObject:28a72ddc-5576-32c0-b7c4-8f99d210ca19",
+    "Id": "28a72ddc-5576-32c0-b7c4-8f99d210ca19",
+    "SchemaName": "VidyanoWeb3",
+    "Type": "Retry",
+    "Salt": "w32dAb6r-a4HmDc6l_aM6e2bBBhIU1mVFvcAtaJRZ8MiMnD_We-ROg",
+    "Label": {
+      "en": "Retry",
+      "nl": ""
+    },
+    "Groups": [
+      {
+        "$id": "PersistentObjectAttributeGroup:416239de-99e3-4a6b-92dd-60cb030900e5",
+        "Id": "416239de-99e3-4a6b-92dd-60cb030900e5"
+      }
+    ],
+    "Tabs": [
+      {
+        "$id": "PersistentObjectAttributeTab:76091d85-3c87-46fb-a95f-b692ed658b78",
+        "Id": "76091d85-3c87-46fb-a95f-b692ed658b78"
+      }
+    ],
+    "Attributes": [
+      {
+        "$id": "PersistentObjectAttribute:2255e033-ef2b-37c5-9a12-a8bcc1702120",
+        "Id": "2255e033-ef2b-37c5-9a12-a8bcc1702120",
+        "Offset": 10,
+        "Rules": "NotEmpty",
+        "Name": "Name",
+        "Label": {
+          "en": "Name",
+          "nl": "Name"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:416239de-99e3-4a6b-92dd-60cb030900e5"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:76091d85-3c87-46fb-a95f-b692ed658b78"
+        }
+      }
+    ],
+    "Queries": []
+  },
+  "Queries": [],
+  "Reports": []
+}

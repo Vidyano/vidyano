@@ -19,7 +19,8 @@ customElements.define("vi-dialog-core", <CustomElementConstructor><any>DialogCor
         }
     },
     listeners: {
-        "iron-overlay-closed": "_onClosed"
+        "iron-overlay-closed": "_onClosed",
+        "iron-overlay-canceled": "cancel"
     },
     keybindings: {
         "esc": "_esc"

@@ -1,0 +1,45 @@
+@import "../_vars.scss";
+
+$min-main-width: 400px;
+
+:host {
+    --vi-persistent-object-dialog-base-width-base: #{$min-main-width};
+
+    header {
+        padding: var(--theme-h5);
+    }
+
+    main {
+        @include layout-vertical();
+        padding: 0;
+
+        > h4 {
+            display: block;
+            padding: var(--theme-h4) var(--theme-h5);
+            font-weight: normal;
+            border-bottom: 1px solid var(--theme-light-border);
+            margin: 0;
+        }
+
+        > vi-persistent-object-tab-presenter {
+            @include flex();
+            @include layout-vertical();
+            min-height: calc(var(--theme-h2) * 3);
+
+            > vi-persistent-object-tab {
+                position: static;
+            }
+        }
+    }
+
+    &[is-phone] main {
+        width: 85vw;
+    }
+
+    &[is-tablet], &[is-desktop] {
+        main {
+            min-width: $min-main-width;
+            max-width: var(--vi-persistent-object-dialog-computed-width);
+        }
+    }
+}

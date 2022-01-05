@@ -136,6 +136,14 @@
       },
       "IconName": "Remove"
     },
+    "Retry": {
+      "ShowedOn": 2,
+      "Intent": 1,
+      "DisplayName": {
+        "en": "Retry",
+        "nl": "Retry"
+      }
+    },
     "Save": {
       "IsSystem": true,
       "DisplayName": {
