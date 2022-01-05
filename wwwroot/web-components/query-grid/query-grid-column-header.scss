@@ -41,4 +41,14 @@
             height: var(--vi-query-grid-header-height, var(--vi-query-grid-row-height));
         }
     }
+
+    vi-button[icon="CaretDown"]::after {
+        position: absolute;
+        left: 0;
+        top: 2px;
+        bottom: 2px;
+        width: 1px;
+        content: " ";
+        background-color: var(--theme-light-border);
+    }
 }
