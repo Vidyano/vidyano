@@ -142,7 +142,7 @@ export class SignIn extends WebComponentListener(WebComponent) {
                 this._setNotification(null);
                 this._setIsBusy(true);
                 try {
-                    await import("../persistent-object-tab-presenter/persistent-object-presenter.js");
+                    await import("../persistent-object-tab-presenter/persistent-object-tab-presenter.js");
 
                     const registerService = new Vidyano.Service(this.service.serviceUri, this.service.hooks, true);
                     await registerService.initialize(true);
@@ -167,7 +167,7 @@ export class SignIn extends WebComponentListener(WebComponent) {
             }
             else {
                 if (this.service.initial) {
-                    await import("../persistent-object-tab-presenter/persistent-object-presenter.js");
+                    await import("../persistent-object-tab-presenter/persistent-object-tab-presenter.js");
                     this._setReturnUrl(decodeURIComponent(parameters.returnUrl || ""));
 
                     this.service.initial.beginEdit();
