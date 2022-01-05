@@ -225,7 +225,7 @@ export class Scroller extends WebComponentListener(WebComponent) {
             this.$.vertical.style.transform = `translateY(${this._verticalScrollTop = verticalScrollTop}px)`;
 
         this._setScrollTopShadow(!this.noScrollShadow && verticalScrollTop > 0);
-        this._setScrollBottomShadow(!this.noScrollShadow && innerHeight - verticalScrollOffset - outerHeight > 0);
+        this._setScrollBottomShadow(!this.noScrollShadow && Math.floor(innerHeight - verticalScrollOffset - outerHeight) > 0);
     }
 
     private _updateHorizontalScrollbar(outerWidth: number, innerWidth: number, horizontalScrollOffset: number, noHorizontal: boolean) {
