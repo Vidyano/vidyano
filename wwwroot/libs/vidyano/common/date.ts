@@ -151,7 +151,7 @@ Date.prototype["_netFormat"] = function(format, useLocale) {
             case 'h':
             case 'hh':
                 part = (dt.getHours() % 12).toString();
-                if (!part) {
+                if (part === "0") {
                     part = '12';
                 }
                 else if (fs == 'hh') {
