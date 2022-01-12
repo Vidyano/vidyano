@@ -8,8 +8,15 @@ import { MyDialog } from "./my-dialog/my-dialog.js"
 export class DialogTest extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="dialog-test.html">`; }
 
-    private async _open() {
+    private async _openDialog() {
         const result = await this.app.showDialog(new MyDialog());
         console.log(result);
+    }
+
+    private async _openWizard() {
+        const wizard = await this.service.getPersistentObject(null, "Wizard", null, true);
+        
+        const module = await import("../../web-components/persistent-object-wizard-dialog/persistent-object-wizard-dialog.js");
+        await this.app.showDialog(new module.PersistentObjectWizardDialog(wizard));
     }
 }

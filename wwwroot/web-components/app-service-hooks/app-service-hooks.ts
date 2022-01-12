@@ -40,8 +40,8 @@ export class AppServiceHooks extends AppServiceHooksBase {
             const po = <Vidyano.PersistentObject>obj;
 
             if (po.stateBehavior.indexOf("AsWizard") >= 0) {
-                await import("../persistent-object-wizard-dialog/persistent-object-wizard-dialog.js");
-                await this.app.showDialog(new PersistentObjectWizardDialog(po));
+                const module = await import("../persistent-object-wizard-dialog/persistent-object-wizard-dialog.js");
+                await this.app.showDialog(new module.PersistentObjectWizardDialog(po));
 
                 return;
             }

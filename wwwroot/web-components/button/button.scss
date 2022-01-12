@@ -18,6 +18,7 @@
 }
 
 :host {
+    display: block;
     contain: content;
     position: relative;
     cursor: pointer;
