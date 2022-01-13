@@ -20,7 +20,7 @@
                 </template>
             </iron-list>
         </template>
-    </template>
+    </dom-if>
     <dom-if if="[[groupSeparator]]">
         <template>
             <div content filtering$="[[filtering]]" on-select-option="_select">
@@ -36,5 +36,5 @@
                 </dom-repeat>
             </div>
         </template>
-    </template>
+    </dom-if>
 </vi-popup>
