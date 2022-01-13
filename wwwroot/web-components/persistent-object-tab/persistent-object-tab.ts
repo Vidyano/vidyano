@@ -56,6 +56,9 @@ export class PersistentObjectTab extends ConfigurableWebComponent(WebComponentLi
     }
 
     private _computeColumns(size: ISize, defaultColumnCount: number): number {
+        if (defaultColumnCount)
+            return defaultColumnCount;
+
         if (size.width >= 1500)
             return 4;
         else if (size.width > 1000)
