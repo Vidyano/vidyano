@@ -128,11 +128,11 @@
         }
     }
 
-    vi-popup-menu[open] button:not(:hover) {
+    vi-popup-menu[open] vi-button:not(:hover) {
         background-color: var(--theme-color-faint);
     }
-}
 
-:host-context([hidden]) {
-    display: none !important;
+    &[hidden] {
+        display: none !important;
+    }
 }
