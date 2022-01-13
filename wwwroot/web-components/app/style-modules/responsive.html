@@ -1,8 +1,8 @@
 <template>
     <style>
-        :host [is-phone], :host [hide-phone],
-        :host [is-tablet], :host [hide-tablet],
-        :host[is-desktop], :host[hide-desktop] {
+        :host([is-phone]) [hide-phone],
+        :host([is-tablet]) [hide-tablet],
+        :host([is-desktop]) [hide-desktop] {
             display: none !important;
         }
     </style>
