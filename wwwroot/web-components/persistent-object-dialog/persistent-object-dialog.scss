@@ -17,7 +17,8 @@ $min-main-width: 400px;
 
             > vi-persistent-object-tab {
                 position: static;
-                width: 100%;
+                width: var(--vi-persistent-object-dialog-computed-width, var(--vi-persistent-object-dialog-base-width-base));
+                max-width: 90vw;
             }
         }
     }
@@ -27,15 +28,15 @@ $min-main-width: 400px;
             padding-right: var(--theme-h5);
         }
     }
-}
 
-:host-context(vi-app[is-phone]) main {
-    width: 85vw;
-}
-
-:host-context(vi-app[is-tablet]), :host-context(vi-app[is-desktop]) {
-    main, vi-notification {
-        min-width: $min-main-width;
-        max-width: var(--vi-persistent-object-dialog-computed-width);
+    &[is-phone] main {
+        width: 85vw;
+    }
+    
+    &[is-tablet], &[is-desktop] {
+        main, vi-notification {
+            min-width: $min-main-width;
+            max-width: var(--vi-persistent-object-dialog-computed-width);
+        }
     }
 }

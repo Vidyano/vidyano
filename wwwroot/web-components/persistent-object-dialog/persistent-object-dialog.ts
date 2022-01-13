@@ -52,7 +52,8 @@ export interface IPersistentObjectDialogOptions {
     },
     keybindings: {
         "ctrl+s": "_keyboardSave"
-    }
+    },
+    mediaQueryAttributes: true
 })
 export class PersistentObjectDialog extends Dialog {
     static get template() { return Dialog.dialogTemplate(Polymer.html`<link rel="import" href="persistent-object-dialog.html">`) }
@@ -137,7 +138,7 @@ export class PersistentObjectDialog extends Dialog {
         const tab = <Vidyano.PersistentObjectAttributeTab>persistentObject.tabs.find(tab => tab instanceof Vidyano.PersistentObjectAttributeTab);
         tab.columnCount = tab.columnCount > 1 ? tab.columnCount : 1;
 
-        const width = parseInt(window.getComputedStyle(this).getPropertyValue("--vi-persistent-object-dialog-base-width-base"));
+        const width = parseInt(getComputedStyle(this).getPropertyValue("--vi-persistent-object-dialog-base-width-base")) * tab.columnCount
         this.style.setProperty("--vi-persistent-object-dialog-computed-width", `${width}px`);
 
         return tab;
