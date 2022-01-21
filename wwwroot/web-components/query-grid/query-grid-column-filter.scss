@@ -149,7 +149,6 @@
             }
         }
 
-
         .split {
             border-top: 1px solid var(--theme-light-border);
             margin: 0 0 var(--theme-h5) calc(var(--theme-h2) + var(--theme-h5));
@@ -219,10 +218,15 @@
                     --vi-checkbox-checked-color: darkred;
                 }
 
-                span {
+                > span {
+                    display: -webkit-box;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                     vertical-align: top;
                     line-height: var(--theme-h3);
                     height: var(--theme-h3);
+                    -webkit-line-clamp: 1;
+                    -webkit-box-orient: vertical;
 
                     &[distinct-type="remaining"] {
                         color: var(--vi-query-grid-column-filter-distinct-remaining-color, #aaa);
