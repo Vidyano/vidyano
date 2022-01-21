@@ -1,7 +1,6 @@
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import * as Polymer from "../../libs/@polymer/polymer.js"
 import { Path } from "../../libs/pathjs/pathjs.js"
-import "../popup/popup.js"
 import { App } from "../app/app.js"
 import { ActionButton } from "../action-button/action-button.js"
 import { Popup } from "../popup/popup.js"
@@ -12,7 +11,6 @@ import { QueryGridCellDefault } from "./cell-templates/query-grid-cell-default.j
 import { QueryGridCellImage } from "./cell-templates/query-grid-cell-image.js";
 import { QueryGridRowGroup } from "./query-grid-row-group.js";
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
-import { PopupCore } from "../popup/popup-core.js"
 
 export interface IItemTapEventArgs {
     item: Vidyano.QueryResultItem;
@@ -234,10 +232,12 @@ export class QueryGridRow extends WebComponentListener(WebComponent) {
         anchor.style.position = "fixed";
         anchor.style.left = `${x}px`;
         anchor.style.top = `${y}px`;
+        anchor.setAttribute("slot", "header");
 
         this.shadowRoot.appendChild(anchor);
 
-        const actionsPopup = new PopupCore();
+        const actionsPopup = new Popup();
+        actionsPopup.appendChild(anchor);
         actionsPopup.addEventListener("popup-opening", this._onActionsOpening.bind(this));
         actionsPopup.addEventListener("popup-closed", this._onActionsClosed.bind(this));
         this.shadowRoot.appendChild(actionsPopup);
@@ -248,7 +248,6 @@ export class QueryGridRow extends WebComponentListener(WebComponent) {
             await actionsPopup.popup(anchor);
         }
         finally {
-            this.shadowRoot.removeChild(anchor);
             this.shadowRoot.removeChild(actionsPopup);
         }
     }

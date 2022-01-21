@@ -4,35 +4,25 @@
     @include layout-horizontal();
     @include relative();
 
-    > [toggle] {
-        width: 100%;
-        box-sizing: border-box;
-        cursor: pointer;
-
-        > vi-icon {
-            display: block;
-
-            > span {
-                white-space: nowrap;
-                display: block;
-            }
-        }
-    }
-
-    > #content {
-        position: fixed;
+    #fit {
         visibility: hidden;
         background-color: white;
         opacity: 0;
         transition: opacity 0.1s ease-out;
+        overflow: visible;
+        padding: 1px;
         @include z-index1();
     }
 
-    &[open] {
-        > #content {
-            visibility: visible;
-            opacity: 1;
-            z-index: 11;
-        }
+    &[open] #fit {
+        visibility: visible;
+        opacity: 1;
+        z-index: 11;
+    }
+
+    [toggle] {
+        width: 100%;
+        box-sizing: border-box;
+        cursor: pointer;
     }
 }
