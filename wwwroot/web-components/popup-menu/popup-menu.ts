@@ -89,7 +89,7 @@ export class PopupMenu extends WebComponentListener(WebComponent) {
     }
 
     private _alignmentChanged() {
-        (<Popup><any>this.$.popup).contentAlign = this.rightAlign ? "right" : "";
+        (this.$.popup as Popup).horizontalAlign = this.rightAlign ? "right" : "auto";
     }
 
     private _mouseenter() {
