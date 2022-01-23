@@ -1,6 +1,7 @@
 import * as Polymer from "../../libs/@polymer/polymer.js"
 import { IronFitBehavior } from "@polymer/iron-fit-behavior/iron-fit-behavior.js"
 import "../size-tracker/size-tracker.js"
+import { ISize } from "../size-tracker/size-tracker.js"
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
 
 let _documentClosePopupListener: EventListener;
@@ -70,6 +71,10 @@ customElements.define("vi-popup-core-fit", <CustomElementConstructor><any>PopupC
             type: Boolean,
             reflectToAttribute: true
         },
+        autoWidth: {
+            type: Boolean,
+            reflectToAttribute: true
+        }
     },
     observers: [
         "_hookTapAndHoverEvents(isConnected, openOnHover)"
@@ -84,6 +89,7 @@ export class Popup extends WebComponentListener(WebComponent) {
     private _tapHandler: EventListener;
     private _enterHandler: EventListener;
     private _leaveHandler: EventListener;
+    private _toggleSize: ISize;
     private _header: HTMLElement;
     private __Vidyano_WebComponents_PopupCore__Instance__ = true;
     private _refitAF: number = null;
@@ -98,6 +104,7 @@ export class Popup extends WebComponentListener(WebComponent) {
     sticky: boolean;
     closeDelay: number;
     openOnHover: boolean;
+    autoWidth: boolean;
 
     connectedCallback() {
         super.connectedCallback();
@@ -148,8 +155,12 @@ export class Popup extends WebComponentListener(WebComponent) {
     refit() {
         this._refitAF && cancelAnimationFrame(this._refitAF);
         this._refitAF = requestAnimationFrame(() => {
+            const fit = this.$.fit as PopupCoreFit;
+            if (this.autoWidth && this._toggleSize?.width)
+                fit.style.minWidth = `${this._toggleSize.width}px`;
+
             this._refitAF = null;
-            (this.$.fit as PopupCoreFit).refit();
+            fit.refit();
         });
     }
 
@@ -291,6 +302,7 @@ export class Popup extends WebComponentListener(WebComponent) {
     }
 
     private _toggleSizeChanged(e: Event, detail: { width: number; height: number }) {
+        this._toggleSize = detail;
         if (!this.open)
             return;
 

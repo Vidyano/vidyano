@@ -11,7 +11,7 @@
 <dom-if if="[[editing]]">
     <template>
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-            <vi-popup sticky disabled$="[[op.some(readOnly, attribute.parent.isFrozen, sensitive)]]">
+            <vi-popup sticky disabled$="[[op.some(readOnly, attribute.parent.isFrozen, sensitive)]]" auto-width>
                 <div slot="header" class="layout horizontal flex">
                     <vi-sensitive disabled="[[!sensitive]]" class="flex layout horizontal">
                         <input class="flex" header value="[[attribute.displayValue]]" readonly placeholder="[[placeholder]]">
