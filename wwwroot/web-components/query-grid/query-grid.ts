@@ -333,6 +333,14 @@ export class QueryGrid extends WebComponentListener(WebComponent) {
                 queuedItemIndexes.forEach(index => this._getItem(index));
             }
         );
+
+        if (this.initializing && items.length === 0) {
+            // Query grid is displayed for the first time but query has no items, there will be no rows to trigger the column width synchronization.
+            this.query.queueWork(async () => {
+                if (this.initializing && items.length === 0)
+                    this._setInitializing(false);
+            });
+        }
     }
 
     private _computeItems(): QueryGridItems {
