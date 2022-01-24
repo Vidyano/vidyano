@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="profiler.css" />
 
-<vi-popup sticky disabled$="[[!lastRequest]]">
+<vi-popup sticky disabled$="[[!lastRequest]]" auto-width>
     <div slot="header" class="flex layout horizontal">
         <vi-icon source="Profiler"></vi-icon>
         <div class="flex" hidden$="[[op.isNotNull(lastRequest)]]">[[awaiting]]</div>
