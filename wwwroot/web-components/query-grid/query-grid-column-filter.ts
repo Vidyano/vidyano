@@ -160,7 +160,6 @@ export class QueryGridColumnFilter extends WebComponentListener(WebComponent) {
         this._focusElement(search);
 
         const filter = <Popup>this.$.filter || (this.$.filter = <Popup>this.shadowRoot.querySelector("#filter"));
-        filter.boundingTarget = this.findParent<QueryGrid>(p => p instanceof QueryGrid).parentElement;
         filter.closeDelay = parseInt(this.app.configuration.getSetting("vi-query-grid-column-filter.close-delay", "750"));
 
         const distinctsList = <HTMLDivElement>this.$.distincts || (this.$.distincts = <HTMLDivElement>this.shadowRoot.querySelector("#distincts"));;
