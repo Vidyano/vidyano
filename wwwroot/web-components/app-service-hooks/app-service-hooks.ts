@@ -1,10 +1,12 @@
 ﻿import * as Vidyano from "../../libs/vidyano/vidyano.js"
+import { guid } from "../../libs/utils/guid.js"
 import { App } from "../app/app.js"
 import { AppServiceHooksBase } from "./app-service-hooks-base.js"
 import { AppCacheEntryPersistentObject } from "../app-cache/app-cache-entry-persistent-object.js"
 import { AppCacheEntryPersistentObjectFromAction } from "../app-cache/app-cache-entry-persistent-object-from-action.js"
 import { AppCacheEntryQuery } from "../app-cache/app-cache-entry-query.js"
-import { guid } from "../../libs/utils/guid.js"
+import { PersistentObjectDialog } from "../persistent-object-dialog/persistent-object-dialog.js"
+import { PersistentObjectWizardDialog } from "../persistent-object-wizard-dialog/persistent-object-wizard-dialog.js"
 
 export class AppServiceHooks extends AppServiceHooksBase {
     constructor(public app: App) {
@@ -40,14 +42,12 @@ export class AppServiceHooks extends AppServiceHooksBase {
             const po = <Vidyano.PersistentObject>obj;
 
             if (po.stateBehavior.indexOf("AsWizard") >= 0) {
-                const module = await import("../persistent-object-wizard-dialog/persistent-object-wizard-dialog.js");
-                await this.app.showDialog(new module.PersistentObjectWizardDialog(po));
+                await this.app.showDialog(new PersistentObjectWizardDialog(po));
 
                 return;
             }
             else if (po.stateBehavior.indexOf("OpenAsDialog") >= 0) {
-                const module = await import("../persistent-object-dialog/persistent-object-dialog.js");
-                await this.app.showDialog(new module.PersistentObjectDialog(po));
+                await this.app.showDialog(new PersistentObjectDialog(po));
 
                 return;
             }

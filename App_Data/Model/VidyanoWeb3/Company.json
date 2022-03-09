@@ -93,7 +93,7 @@
       {
         "$id": "PersistentObjectAttribute:110429dc-2b0f-3c1b-9f4d-cb71e97ed489",
         "Id": "110429dc-2b0f-3c1b-9f4d-cb71e97ed489",
-        "Offset": 30,
+        "Offset": 50,
         "Rules": "NotEmpty",
         "Name": "Phone",
         "Label": {

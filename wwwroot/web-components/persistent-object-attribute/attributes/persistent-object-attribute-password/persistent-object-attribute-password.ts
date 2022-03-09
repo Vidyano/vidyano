@@ -12,3 +12,5 @@ export class PersistentObjectAttributePassword extends PersistentObjectAttribute
             this.attribute.setValue(this.value = this.attribute.value, true).catch(Vidyano.noop);
     }
 }
+
+PersistentObjectAttribute.registerAttributeType("Password", PersistentObjectAttributePassword);

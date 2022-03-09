@@ -172,7 +172,7 @@ export abstract class AppBase extends WebComponentListener(WebComponent) {
 
     private _keybindingRegistrations: { [key: string]: Keyboard.IKeybindingRegistration[]; } = {};
     private _activeDialogs: Dialog[] = [];
-    private _updateAvailableSnoozeTimer: number;
+    private _updateAvailableSnoozeTimer: any;
     private _initializeResolve: (app: Vidyano.Application) => void;
     private _initialize: Promise<Vidyano.Application> = new Promise(resolve => { this._initializeResolve = resolve; });
     private _setInitializing: (initializing: boolean) => void;
@@ -193,6 +193,9 @@ export abstract class AppBase extends WebComponentListener(WebComponent) {
 
         window.app = this;
         window.dispatchEvent(new CustomEvent("app-changed", { detail: { value: this }}));
+
+        if (!this.uri && document.location.hash)
+            this.uri = document.location.hash.trimStart("#");
     }
 
     async connectedCallback() {

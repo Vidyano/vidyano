@@ -3,6 +3,7 @@ import * as Vidyano from "../../../../libs/vidyano/vidyano.js"
 import { PersistentObjectAttribute } from "../../persistent-object-attribute.js"
 import { PersistentObjectAttributeMultiStringItem } from "./persistent-object-attribute-multi-string-item.js"
 import { Sortable } from "../../../sortable/sortable.js"
+import "../../../tags/tags.js"
 import { WebComponent } from "../../../web-component/web-component.js"
 
 @WebComponent.register()
@@ -115,11 +116,7 @@ export class PersistentObjectAttributeMultiString extends PersistentObjectAttrib
     /// Tags specific code
 
     private _computeIsTags(attribute: Vidyano.PersistentObjectAttribute): boolean {
-        const isTags = attribute && attribute.getTypeHint("inputtype", undefined, undefined, true) === "tags";
-        if (isTags)
-            import("../../../tags/tags.js");
-
-        return isTags;
+        return attribute && attribute.getTypeHint("inputtype", undefined, undefined, true) === "tags";
     }
 
     protected _valueChanged(newValue: any, oldValue: any) {
@@ -167,3 +164,5 @@ export class PersistentObjectAttributeMultiString extends PersistentObjectAttrib
         this.value = `${this.value}\n${e.model.suggestion}`;
     }
 }
+
+PersistentObjectAttribute.registerAttributeType("MultiString", PersistentObjectAttributeMultiString);

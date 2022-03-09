@@ -7,3 +7,5 @@ import "./persistent-object-attribute-flags-enum-flag.js"
 export class PersistentObjectAttributeFlagsEnum extends PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-flags-enum.html">`; }
 }
+
+PersistentObjectAttribute.registerAttributeType("FlagsEnum", PersistentObjectAttributeFlagsEnum);

@@ -1,4 +1,3 @@
-import String from "./common/string.js";
 import type { ActionDefinition } from "./action-definition.js";
 import { ActionGroup } from "./action-group.js";
 import type { QueryResultItem } from "./query-result-item.js";

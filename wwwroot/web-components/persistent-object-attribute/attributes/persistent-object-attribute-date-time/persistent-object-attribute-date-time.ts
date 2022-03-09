@@ -416,3 +416,5 @@ export class PersistentObjectAttributeDateTime extends PersistentObjectAttribute
         this.selectedDate = newSelectedDate;
     }
 }
+
+PersistentObjectAttribute.registerAttributeType("DateTime", PersistentObjectAttributeDateTime);

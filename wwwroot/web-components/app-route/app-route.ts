@@ -1,12 +1,6 @@
 import * as Polymer from "../../libs/@polymer/polymer.js"
-import { flush} from '@polymer/polymer/lib/utils/flush.js';
-import { App } from "../app/app.js"
 import { AppServiceHooks } from "../app-service-hooks/app-service-hooks.js"
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
-
-interface IAppRouteComponentConstructor extends HTMLElement {
-    new (): IAppRouteComponentConstructor;
-}
 
 export interface IAppRouteActivatedArgs {
     route: AppRoute;
@@ -20,10 +14,6 @@ export interface IAppRouteActivatedArgs {
             reflectToAttribute: true
         },
         routeAlt: {
-            type: String,
-            reflectToAttribute: true
-        },
-        component: {
             type: String,
             reflectToAttribute: true
         },
@@ -49,9 +39,6 @@ export interface IAppRouteActivatedArgs {
 export class AppRoute extends WebComponentListener(WebComponent) {
     static get template() { return Polymer.html`<link rel="import" href="app-route.html">`; }
 
-    private _constructor: IAppRouteComponentConstructor;
-    private _constructorComponent: string;
-    private _constructorChanged: boolean;
     private _hasChildren: boolean;
     private _parameters: { [key: string]: string } = {};
     private _documentTitleBackup: string;
@@ -62,7 +49,7 @@ export class AppRoute extends WebComponentListener(WebComponent) {
     preserveContent: boolean;
     routeAlt: string;
 
-    constructor(public route: string, public component: string) {
+    constructor(public route: string) {
         super();
     }
 
@@ -82,46 +69,19 @@ export class AppRoute extends WebComponentListener(WebComponent) {
         else {
             this._clearChildren();
 
-            if (this.component) {
-                if (this._constructorComponent !== this.component) {
-                    this._constructor = (await import(this.component)).default;
-                    // TODO: Still needed?
-                    // if (!this._constructor) {
-                    //     const component = this.component;
+            const template = this.querySelector("template");
+            if (template) {
+                const templateClass = Polymer.Templatize.templatize(template);
+                const templateInstance = new templateClass({ app: this.app });
+                this.appendChild(templateInstance.root);
+                this.shadowRoot.querySelector("slot").assignedElements().forEach(this._fireActivate.bind(this));
 
-                    //     await this.import(component);
-                    //     if (this.component !== component || (this._parameters && JSON.stringify(this._parameters) !== JSON.stringify(parameters)))
-                    //         return;
-
-                    //     this._constructor = await this._constructorFromComponent(this.component);
-                    //     if (this._constructor) {
-                    //         this._constructorComponent = this.component;
-                    //         this._distributeNewComponent();
-                    //     }
-                    // }
-                    // else {
-                        this._constructorComponent = this.component;
-                        this._distributeNewComponent();
-                    //}
-                }
-                else
-                    this._distributeNewComponent();
+                this._hasChildren = true;
             }
             else {
-                const template = this.querySelector("template");
-                if (template) {
-                    const templateClass = Polymer.Templatize.templatize(template);
-                    const templateInstance = new templateClass({ app: this.app });
-                    this.appendChild(templateInstance.root);
-                    this.shadowRoot.querySelector("slot").assignedElements().forEach(this._fireActivate.bind(this));
-
-                    this._hasChildren = true;
-                }
-                else {
-                    const firstChild = <WebComponent>this.children[0];
-                    if (firstChild)
-                        this._fireActivate(firstChild);
-                }
+                const firstChild = <WebComponent>this.children[0];
+                if (firstChild)
+                    this._fireActivate(firstChild);
             }
         }
 
@@ -129,25 +89,6 @@ export class AppRoute extends WebComponentListener(WebComponent) {
         this._setPath(this.app.path);
 
         (<AppServiceHooks>this.service.hooks).trackPageView(this.app.path);
-    }
-
-    private async _constructorFromComponent(component: string): Promise<IAppRouteComponentConstructor> {
-        return (await import(component)).default;
-    }
-
-    private _distributeNewComponent() {
-        if (!this._constructor || this._constructorComponent !== this.component)
-            return;
-
-        this._clearChildren();
-
-        const componentInstance = <WebComponent><any>new this._constructor();
-        this.appendChild(componentInstance);
-        flush(); // TODO: This should be back to Polymer.flush
-
-        this._hasChildren = true;
-
-        this._fireActivate(componentInstance);
     }
 
     private _fireActivate(target: WebComponent) {
@@ -180,15 +121,6 @@ export class AppRoute extends WebComponentListener(WebComponent) {
 
             return result;
         });
-    }
-
-    reset() {
-        this._setActive(false);
-
-        if (!this._constructor)
-            return;
-
-        this._clearChildren();
     }
 
     get parameters(): any {

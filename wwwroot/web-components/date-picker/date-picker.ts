@@ -1,6 +1,6 @@
 ﻿import * as Polymer from "../../libs/@polymer/polymer.js"
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
-import moment from 'moment/moment.js'
+import moment from "moment"
 import { Button } from "../button/button.js"
 import { Popup } from "../popup/popup.js"
 import { WebComponent, WebComponentListener } from "../web-component/web-component.js"

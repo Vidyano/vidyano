@@ -13,3 +13,5 @@ export class PersistentObjectAttributeCommonMark extends PersistentObjectAttribu
             this.attribute.setValue(this.value = this.attribute.value, true).catch(Vidyano.noop);
     }
 }
+
+PersistentObjectAttribute.registerAttributeType("CommonMark", PersistentObjectAttributeCommonMark);

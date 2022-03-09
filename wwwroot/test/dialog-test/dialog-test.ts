@@ -1,5 +1,6 @@
 import * as Polymer from "../../libs/@polymer/polymer.js"
 import "../../web-components/button/button.js"
+import { PersistentObjectWizardDialog } from "../../web-components/persistent-object-wizard-dialog/persistent-object-wizard-dialog.js";
 import { WebComponent } from "../../web-components/web-component/web-component.js"
 import { MyDialog } from "./my-dialog/my-dialog.js"
 
@@ -16,7 +17,6 @@ export class DialogTest extends WebComponent {
     private async _openWizard() {
         const wizard = await this.service.getPersistentObject(null, "Wizard", null, true);
         
-        const module = await import("../../web-components/persistent-object-wizard-dialog/persistent-object-wizard-dialog.js");
-        await this.app.showDialog(new module.PersistentObjectWizardDialog(wizard));
+        await this.app.showDialog(new PersistentObjectWizardDialog(wizard));
     }
 }

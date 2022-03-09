@@ -73,3 +73,5 @@ export class PersistentObjectAttributeComboBox extends PersistentObjectAttribute
         this._focusElement(select);
     }
 }
+
+PersistentObjectAttribute.registerAttributeType("ComboBox", PersistentObjectAttributeComboBox);

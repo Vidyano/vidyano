@@ -2,6 +2,7 @@ import * as Polymer from '../../../../libs/@polymer/polymer.js';
 import * as Vidyano from "../../../../libs/vidyano/vidyano.js"
 import { WebComponent } from "../../../web-component/web-component.js"
 import { PersistentObjectAttribute } from "../../persistent-object-attribute.js"
+import "codemirror/lib/codemirror.js"
 
 @WebComponent.register({
     properties: {
@@ -41,11 +42,7 @@ export class PersistentObjectAttributeMultiLineString extends PersistentObjectAt
     }
 
     private _computeCodeMirror(attribute: Vidyano.PersistentObjectAttribute): string {
-        const codeMirror = attribute ? attribute.getTypeHint("language", null) : null;
-        if (codeMirror)
-            import("codemirror/lib/codemirror.js");
-
-        return codeMirror;
+        return attribute ? attribute.getTypeHint("language", null) : null;
     }
 
     private _computeIsCodeMirrorReadOnly(readOnly: boolean, editing: boolean): boolean {
@@ -56,3 +53,5 @@ export class PersistentObjectAttributeMultiLineString extends PersistentObjectAt
         return codeMirror && !sensitive;
     }
 }
+
+PersistentObjectAttribute.registerAttributeType("MultiLineString", PersistentObjectAttributeMultiLineString);

@@ -86,3 +86,5 @@ export class PersistentObjectAttributeBinaryFile extends PersistentObjectAttribu
             return value.split("|")[0];
         }
 }
+
+PersistentObjectAttribute.registerAttributeType("BinaryFile", PersistentObjectAttributeBinaryFile);

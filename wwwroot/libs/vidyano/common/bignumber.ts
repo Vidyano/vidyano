@@ -1,5 +1,4 @@
 import { BigNumber } from "bignumber.js"
-import String from "./string.js"
 import { CultureInfo } from "../cultures.js";
 
 declare module "bignumber.js" {

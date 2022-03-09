@@ -1,5 +1,7 @@
-import * as Polymer from '@polymer/polymer'
-import { WebComponent } from './web-component.js'
+import * as Polymer from "@polymer/polymer"
+import { PopupMenuItemSplit } from "../popup-menu/popup-menu-item-split.js"
+import { PopupMenuItem } from "../popup-menu/popup-menu-item.js"
+import { WebComponent } from "./web-component.js"
 
 interface IConfigurableAction {
     icon: string;
@@ -20,9 +22,6 @@ const ConfigurableWebComponent = <T extends Constructor>(base: T) => class exten
 
     async connectedCallback() {
         super.connectedCallback();
-
-        const PopupMenuItem = (await import("../popup-menu/popup-menu-item.js")).PopupMenuItem;
-        const PopupMenuItemSplit = (await import("../popup-menu/popup-menu-item-split.js")).PopupMenuItemSplit;
 
         this._addEventListenerToNode(this, "contextmenu", this.#_onContextmenu = (e: CustomEvent) => {
             if (e["vi:configure"])

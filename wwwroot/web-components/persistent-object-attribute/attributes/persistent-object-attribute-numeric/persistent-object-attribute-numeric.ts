@@ -256,3 +256,5 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
         return position === "after" ? unit : "";
     }
 }
+
+PersistentObjectAttribute.registerAttributeType("Numeric", PersistentObjectAttributeNumeric);

@@ -112,3 +112,5 @@ export class PersistentObjectAttributeTranslatedString extends PersistentObjectA
         await this.attribute.setValue(this.value = this.attribute.value, true);
     }
 }
+
+PersistentObjectAttribute.registerAttributeType("TranslatedString", PersistentObjectAttributeTranslatedString);

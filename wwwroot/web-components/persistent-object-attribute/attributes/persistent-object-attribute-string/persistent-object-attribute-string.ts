@@ -149,3 +149,5 @@ export class PersistentObjectAttributeString extends PersistentObjectAttribute {
         return !sensitive ? displayValue : "";
     }
 }
+
+PersistentObjectAttribute.registerAttributeType("String", PersistentObjectAttributeString);

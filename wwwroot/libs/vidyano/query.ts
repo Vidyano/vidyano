@@ -116,7 +116,7 @@ export class Query extends ServiceObjectWithActions {
     private _groupingInfo: IQueryGroupingInfo;
     private _items: QueryResultItem[];
     private _queuedLazyItemIndexes: number[];
-    private _queuedLazyItemIndexesTimeout: number;
+    private _queuedLazyItemIndexesTimeout: any;
 
     persistentObject: PersistentObject;
     columns: QueryColumn[];

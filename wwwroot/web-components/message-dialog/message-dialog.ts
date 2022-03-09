@@ -1,6 +1,7 @@
 import * as Polymer from "../../libs/@polymer/polymer.js"
 import { WebComponent } from "../web-component/web-component.js"
 import { Dialog } from "../dialog/dialog.js"
+import "@polymer/marked-element/marked-element.js"
 
 export interface IMessageDialogOptions {
     noClose?: boolean;
@@ -67,9 +68,6 @@ export class MessageDialog extends Dialog {
         }
 
         async open(): Promise<any> {
-            if (this.options.rich)
-                await import("@polymer/marked-element/marked-element.js");
-
             const focus = setInterval(() => {
                 const button = <HTMLButtonElement>this.$.actions.querySelectorAll("vi-button")[this.activeAction];
                 if (!button)

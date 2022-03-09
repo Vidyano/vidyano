@@ -1,5 +1,4 @@
 import { CultureInfo } from "./../cultures.js";
-import String from "./string.js";
 
 declare global {
     export interface Date {

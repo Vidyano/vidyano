@@ -2,7 +2,25 @@ import * as Polymer from '../../libs/@polymer/polymer.js';
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import { Observable, ISubjectDisposer } from "../../libs/vidyano/common/observable.js"
 import { PersistentObjectAttribute } from "../persistent-object-attribute/persistent-object-attribute.js"
+import "../persistent-object-attribute/attributes/persistent-object-attribute-as-detail/persistent-object-attribute-as-detail.js"
+import "../persistent-object-attribute/attributes/persistent-object-attribute-binary-file/persistent-object-attribute-binary-file.js"
+import "../persistent-object-attribute/attributes/persistent-object-attribute-boolean/persistent-object-attribute-boolean.js"
+import "../persistent-object-attribute/attributes/persistent-object-attribute-combo-box/persistent-object-attribute-combo-box.js"
+import "../persistent-object-attribute/attributes/persistent-object-attribute-common-mark/persistent-object-attribute-common-mark.js"
+import "../persistent-object-attribute/attributes/persistent-object-attribute-date-time/persistent-object-attribute-date-time.js"
+import "../persistent-object-attribute/attributes/persistent-object-attribute-drop-down/persistent-object-attribute-drop-down.js"
+import "../persistent-object-attribute/attributes/persistent-object-attribute-flags-enum/persistent-object-attribute-flags-enum.js"
+import "../persistent-object-attribute/attributes/persistent-object-attribute-image/persistent-object-attribute-image.js"
+import "../persistent-object-attribute/attributes/persistent-object-attribute-key-value-list/persistent-object-attribute-key-value-list.js"
+import "../persistent-object-attribute/attributes/persistent-object-attribute-multi-line-string/persistent-object-attribute-multi-line-string.js"
+import "../persistent-object-attribute/attributes/persistent-object-attribute-multi-string/persistent-object-attribute-multi-string.js"
+import "../persistent-object-attribute/attributes/persistent-object-attribute-nullable-boolean/persistent-object-attribute-nullable-boolean.js"
+import "../persistent-object-attribute/attributes/persistent-object-attribute-numeric/persistent-object-attribute-numeric.js"
+import "../persistent-object-attribute/attributes/persistent-object-attribute-password/persistent-object-attribute-password.js"
+import "../persistent-object-attribute/attributes/persistent-object-attribute-reference/persistent-object-attribute-reference.js"
 import { PersistentObjectAttributeString } from "../persistent-object-attribute/attributes/persistent-object-attribute-string/persistent-object-attribute-string.js"
+import "../persistent-object-attribute/attributes/persistent-object-attribute-translated-string/persistent-object-attribute-translated-string.js"
+import "../persistent-object-attribute/attributes/persistent-object-attribute-user/persistent-object-attribute-user.js"
 import { PersistentObjectAttributeConfig } from '../app/config/persistent-object-attribute-config.js'
 import "../persistent-object-attribute-label/persistent-object-attribute-label.js"
 import { WebComponent, ConfigurableWebComponent, WebComponentListener } from "../web-component/web-component.js"
@@ -31,27 +49,6 @@ document.addEventListener("keydown", e => {
 document.addEventListener("keyup", e => {
     developerShortcut.state = e.ctrlKey && e.altKey;
 });
-
-const _attributeImports: { [key: string]: Promise<any>; } = {
-    "AsDetail": undefined,
-    "BinaryFile": undefined,
-    "Boolean": undefined,
-    "ComboBox": undefined,
-    "CommonMark": undefined,
-    "DateTime": undefined,
-    "DropDown": undefined,
-    "FlagsEnum": undefined,
-    "Image": undefined,
-    "KeyValueList": undefined,
-    "MultiLineString": undefined,
-    "MultiString": undefined,
-    "Numeric": undefined,
-    "Password": undefined,
-    "Reference": undefined,
-    "String": undefined,
-    "TranslatedString": undefined,
-    "User": undefined
-};
 
 @WebComponent.register({
     properties: {
@@ -235,7 +232,6 @@ export class PersistentObjectAttributePresenter extends ConfigurableWebComponent
     }
 
     private async _renderAttribute(attribute: Vidyano.PersistentObjectAttribute, attributeType: string) {
-        await _attributeImports[attributeType];
         if (!this.isConnected || attribute !== this.attribute || this._renderedAttribute === attribute)
             return;
 
@@ -252,17 +248,7 @@ export class PersistentObjectAttributePresenter extends ConfigurableWebComponent
                 if (!!config && config.hasTemplate)
                     this.appendChild(config.stamp(attribute, config.as || "attribute"));
                 else {
-                    const fullAttributeFileName = `persistent-object-attribute-${attributeType.toKebabCase()}`;
-                    let type: ObjectConstructor;
-                    try {
-                        const attributeModule = await import(`../persistent-object-attribute/attributes/${fullAttributeFileName}/${fullAttributeFileName}.js`);
-                        type = attributeModule["PersistentObjectAttribute" + attributeType];
-                    }
-                    catch {
-                        // Fallback to string
-                    }
-
-                    this._renderedAttributeElement = <PersistentObjectAttribute>new (type ?? PersistentObjectAttributeString)();
+                    this._renderedAttributeElement = <PersistentObjectAttribute>new (PersistentObjectAttribute.getAttributeConstructor(attributeType) ?? PersistentObjectAttributeString)();
                     this._renderedAttributeElement.classList.add("attribute");
                     this._renderedAttributeElement.attribute = attribute;
                     this._renderedAttributeElement.nonEdit = this.nonEdit;

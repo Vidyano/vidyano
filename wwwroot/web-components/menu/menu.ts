@@ -208,7 +208,7 @@ export class Menu extends WebComponentListener(WebComponent) {
     }
 
     private async _add(e: CustomEvent) {
-        const [query, selectReferenceDialogModule] = (await Promise.all([this.service.getQuery("5a4ed5c7-b843-4a1b-88f7-14bd1747458b"), await import("../select-reference-dialog/select-reference-dialog.js")]));
+        const query = await this.service.getQuery("5a4ed5c7-b843-4a1b-88f7-14bd1747458b");
         if (!query)
             return;
 
@@ -224,7 +224,7 @@ export class Menu extends WebComponentListener(WebComponent) {
             return;
         }
 
-        const dialog = new selectReferenceDialogModule.SelectReferenceDialog(query);
+        const dialog = new SelectReferenceDialog(query);
         this.app.showDialog(dialog).then(async () => {
             if (!query.selectedItems || query.selectedItems.length === 0)
                 return;

@@ -48,3 +48,5 @@ export class PersistentObjectAttributeNullableBoolean extends PersistentObjectAt
         return isReadOnly || isFrozen;
     }
 }
+
+PersistentObjectAttribute.registerAttributeType("NullableBoolean", PersistentObjectAttributeNullableBoolean);

@@ -55,3 +55,5 @@ export class PersistentObjectAttributeDropDown extends PersistentObjectAttribute
         this.attribute.setValue((<any>e).model.option, true).catch(Vidyano.noop);
     }
 }
+
+PersistentObjectAttribute.registerAttributeType("DropDown", PersistentObjectAttributeDropDown);

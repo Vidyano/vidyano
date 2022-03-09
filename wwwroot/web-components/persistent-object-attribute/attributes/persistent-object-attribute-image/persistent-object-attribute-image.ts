@@ -134,3 +134,5 @@ export class PersistentObjectAttributeImage extends PersistentObjectAttribute {
         this.app.showDialog(new PersistentObjectAttributeImageDialog(this.attribute.label, this.value.asDataUri()));
     }
 }
+
+PersistentObjectAttribute.registerAttributeType("Image", PersistentObjectAttributeImage);

@@ -1,5 +1,7 @@
 import * as Polymer from '../../../../libs/@polymer/polymer.js';
 import * as Vidyano from "../../../../libs/vidyano/vidyano.js"
+import "../../../checkbox/checkbox.js"
+import "../../../toggle/toggle.js"
 import { WebComponent } from "../../../web-component/web-component.js"
 import { PersistentObjectAttribute } from "../../persistent-object-attribute.js"
 
@@ -44,9 +46,8 @@ export class PersistentObjectAttributeBoolean extends PersistentObjectAttribute 
     }
 
     private _computeIsCheckbox(attribute: Vidyano.PersistentObjectAttribute, defaultInputtype: string): boolean {
-        const checkbox = attribute.getTypeHint("inputtype", defaultInputtype, undefined, true) === "checkbox";
-        import(checkbox ? "../../../checkbox/checkbox.js" : "../../../toggle/toggle.js")
-
-        return checkbox;
+        return attribute.getTypeHint("inputtype", defaultInputtype, undefined, true) === "checkbox";
     }
 }
+
+PersistentObjectAttribute.registerAttributeType("Boolean", PersistentObjectAttributeBoolean);

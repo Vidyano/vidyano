@@ -115,7 +115,6 @@ export class QueryPresenter extends WebComponentListener(WebComponent) {
             if(this.queryId !== query.id)
                 this.queryId = query.id;
 
-            await import("../query/query.js");
             if (this.query !== query)
                 return;
 

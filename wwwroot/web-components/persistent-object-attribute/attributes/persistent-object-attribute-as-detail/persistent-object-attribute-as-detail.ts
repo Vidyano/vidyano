@@ -5,6 +5,7 @@ import { SelectReferenceDialog } from "../../../select-reference-dialog/select-r
 import "./persistent-object-attribute-as-detail-row.js"
 import { WebComponent } from "../../../web-component/web-component.js"
 import { PersistentObjectAttribute } from "../../persistent-object-attribute.js"
+import { PersistentObjectDialog } from "../../../persistent-object-dialog/persistent-object-dialog.js"
 
 @WebComponent.register({
     properties: {
@@ -170,8 +171,7 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
                     await this._finalizeAdd(po);
             }
             else {
-                const module = await import("../../../persistent-object-dialog/persistent-object-dialog.js");
-                this.app.showDialog(new module.PersistentObjectDialog(po, {
+                this.app.showDialog(new PersistentObjectDialog(po, {
                     saveLabel: po.service.actionDefinitions["AddReference"].displayName,
                     save: (po, close) => {
                         this._finalizeAdd(po);
@@ -217,3 +217,5 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
         label.setAttribute("title", label.textContent);
     }
 }
+
+PersistentObjectAttribute.registerAttributeType("AsDetail", PersistentObjectAttributeAsDetail);

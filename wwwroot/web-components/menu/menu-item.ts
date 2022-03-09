@@ -7,6 +7,7 @@ import { AppCacheEntryPersistentObject } from "../app-cache/app-cache-entry-pers
 import { AppCacheEntryQuery } from "../app-cache/app-cache-entry-query.js"
 import { Icon } from "../icon/icon.js"
 import { Menu } from "./menu.js"
+import { SelectReferenceDialog } from "../select-reference-dialog/select-reference-dialog.js"
 import "../scroller/scroller.js"
 import { WebComponent, WebComponentListener, ConfigurableWebComponent } from "../web-component/web-component.js"
 
@@ -226,7 +227,7 @@ export class MenuItem extends ConfigurableWebComponent(WebComponentListener(WebC
         if (item instanceof Vidyano.ProgramUnitItemUrl)
             return item.path;
 
-        return (this.item && !(item instanceof Vidyano.ProgramUnitItemGroup)) ? app.noHistory ? "#" : Path.routes.rootPath + this.item.path : undefined;
+        return (this.item && !(item instanceof Vidyano.ProgramUnitItemGroup)) ? Path.routes.rootPath + this.item.path : undefined;
     }
 
     private _computedTarget(href: string) {
@@ -274,7 +275,7 @@ export class MenuItem extends ConfigurableWebComponent(WebComponentListener(WebC
                             if (!query)
                                 return;
 
-                            await this.app.showDialog(new (await import("../select-reference-dialog/select-reference-dialog.js")).SelectReferenceDialog(query));
+                            await this.app.showDialog(new SelectReferenceDialog(query));
                             if (!query.selectedItems || query.selectedItems.length === 0)
                                 return;
 

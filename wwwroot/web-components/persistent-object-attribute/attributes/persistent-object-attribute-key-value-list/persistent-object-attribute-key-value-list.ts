@@ -55,3 +55,5 @@ export class PersistentObjectAttributeKeyValueList extends PersistentObjectAttri
         this.attribute.setValue((<any>e).model.option.key, true).catch(Vidyano.noop);
     }
 }
+
+PersistentObjectAttribute.registerAttributeType("KeyValueList", PersistentObjectAttributeKeyValueList);

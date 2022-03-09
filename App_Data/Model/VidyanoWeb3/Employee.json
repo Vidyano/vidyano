@@ -21,7 +21,8 @@
     "Tabs": [
       {
         "$id": "PersistentObjectAttributeTab:30e7d5dc-3c0b-45da-af07-44f6479c48f1",
-        "Id": "30e7d5dc-3c0b-45da-af07-44f6479c48f1"
+        "Id": "30e7d5dc-3c0b-45da-af07-44f6479c48f1",
+        "ColumnCount": 2
       }
     ],
     "Attributes": [

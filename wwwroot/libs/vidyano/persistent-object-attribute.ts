@@ -5,7 +5,6 @@ import type { PersistentObjectAttributeTab } from "./persistent-object-tab.js";
 import { Service } from "./service.js";
 import { ServiceObject } from "./service-object.js";
 import { CultureInfo } from "./cultures.js";
-import String from "./common/string.js";
 import { PersistentObjectAttributeGroup } from "./persistent-object-attribute-group.js";
 import type { PersistentObjectAttributeWithReference } from "./persistent-object-attribute-with-reference.js";
 

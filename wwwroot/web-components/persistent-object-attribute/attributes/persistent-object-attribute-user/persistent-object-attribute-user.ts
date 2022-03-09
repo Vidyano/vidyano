@@ -56,3 +56,5 @@ export class PersistentObjectAttributeUser extends PersistentObjectAttribute {
         return !readOnly;
     }
 }
+
+PersistentObjectAttribute.registerAttributeType("User", PersistentObjectAttributeUser);

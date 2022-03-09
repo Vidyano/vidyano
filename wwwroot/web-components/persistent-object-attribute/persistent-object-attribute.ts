@@ -189,4 +189,16 @@ export abstract class PersistentObjectAttribute extends WebComponentListener(Web
 
         // element.focus();
     }
+
+    static registerAttributeType(attributeType: string, constructor: PersistentObjectAttributeConstructor) {
+        registeredAttributeTypes[attributeType] = constructor;
+    }
+
+    static getAttributeConstructor(attributeType: string) {
+        return registeredAttributeTypes[attributeType];
+    }
 }
+
+export type PersistentObjectAttributeConstructor = new (...args:any[]) => PersistentObjectAttribute;
+
+const registeredAttributeTypes: { [attributeType: string]: PersistentObjectAttributeConstructor} = {};

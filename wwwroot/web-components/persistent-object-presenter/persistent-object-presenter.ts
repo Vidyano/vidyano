@@ -186,10 +186,8 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent(WebCompo
                 this.appendChild(config.stamp(persistentObject, config.as || "persistentObject"));
                 this._setLoading(false);
             }
-            else {
-                await import("../persistent-object/persistent-object.js");
+            else
                 this._renderPersistentObject(persistentObject);
-            }
 
             this._updateTitle(persistentObject.isBreadcrumbSensitive, this.isAppSensitive);
         }
