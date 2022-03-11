@@ -8,6 +8,7 @@ import "../menu/menu.js"
 import "../sign-in/sign-in.js"
 import "../sign-out/sign-out.js"
 import "../spinner/spinner.js"
+import "../profiler/profiler.js"
 import { WebComponent } from "../web-component/web-component.js"
 import { AppCacheEntry } from "../app-cache/app-cache-entry.js"
 import { AppServiceHooks } from "../app-service-hooks/app-service-hooks.js"
@@ -41,7 +42,7 @@ import { PopupMenu } from "../popup-menu/popup-menu.js"
         isProfiling: {
             type: Boolean,
             reflectToAttribute: true,
-            computed: "_computeIsProfiling(service.isSignedIn, service.profile)"
+            computed: "op_every(service.isSignedIn, service.profile)"
         },
         signInLogo: String,
         showMenu: {
@@ -263,14 +264,6 @@ export class App extends AppBase {
 
     getUrlForFromAction(id: string, pu: Vidyano.ProgramUnit = this.programUnit) {
         return (pu ? pu.nameKebab + "/" : "") + `from-action/${id}`;
-    }
-
-    private _computeIsProfiling(isSignedIn: boolean, profile: boolean): boolean {
-        if (!isSignedIn || !profile)
-            return false;
-
-        import("../profiler/profiler.js");
-        return true;
     }
 
     private async _importConfigs(configs: string, isConnected: boolean) {

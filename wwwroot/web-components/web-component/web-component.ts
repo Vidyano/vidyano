@@ -37,7 +37,7 @@ class Operations {
     }
 
     every(...args: any[]) {
-        args.every(a => !!a && (!Array.isArray(a) || a.length > 0));
+        return args.every(a => !!a && (!Array.isArray(a) || a.length > 0));
     }
 
     none(...args: any[]) {
@@ -709,7 +709,7 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
             if (typeof info.properties[p] === "object") {
                 const prop = <IWebComponentProperty>info.properties[p];
                 if (prop.computed && !prop.computed.startsWith("_forwardComputed(") && !prop.computed.startsWith("_forwardNegate(")) {
-                    if (!prop.computed.startsWith("_compute") && elementName.startsWith("vi-"))
+                    if (elementName.startsWith("vi-") && (!prop.computed.startsWith("_compute") && !prop.computed.startsWith("op_")))
                         console.warn(`Naming convention violation for computed property "${p}" on element "${elementName}"`);
                 }
             }
@@ -719,7 +719,7 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
             if (fn === "constructor")
                 continue;
 
-            element.prototype[`op.${fn}`] = Operations.prototype[fn];
+            element.prototype[`op_${fn}`] = Operations.prototype[fn];
         }
 
         window.customElements.define(elementName, element);

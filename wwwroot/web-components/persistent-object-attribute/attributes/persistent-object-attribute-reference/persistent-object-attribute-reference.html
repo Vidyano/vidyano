@@ -51,7 +51,7 @@
                             <div id="radiobuttons" orientation$="[[orientation]]">
                                 <dom-repeat items="[[options]]" as="option">
                                     <template>
-                                        <vi-checkbox label="[[option.value]]" checked="[[op.areSame(option.key, objectId)]]" on-changed="_radioChanged" radio></vi-checkbox>
+                                        <vi-checkbox label="[[option.value]]" checked="[[op_areSame(option.key, objectId)]]" on-changed="_radioChanged" radio></vi-checkbox>
                                     </template>
                                 </dom-repeat>
                             </div>

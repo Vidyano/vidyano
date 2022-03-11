@@ -9,7 +9,7 @@
 <dom-if if="[[editing]]">
     <template>
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-            <vi-select options="[[booleanOptions]]" selected-option="{{value}}" sensitive="[[sensitive]]" disable-filtering readonly="[[readOnly]]" disabled="[[op.some(attribute.isReadOnly, attribute.parent.isFrozen)]]" placeholder="[[placeholder]]"></vi-select>
+            <vi-select options="[[booleanOptions]]" selected-option="{{value}}" sensitive="[[sensitive]]" disable-filtering readonly="[[readOnly]]" disabled="[[op_some(attribute.isReadOnly, attribute.parent.isFrozen)]]" placeholder="[[placeholder]]"></vi-select>
         </vi-persistent-object-attribute-edit>
     </template>
 </dom-if>

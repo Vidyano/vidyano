@@ -26,6 +26,12 @@
         }
     }
 
+    &:not([is-profiling]) {
+        vi-profiler {
+            display: none !important;
+        }
+    }
+
     &[is-profiling] {
         padding-top: var(--theme-h1);
 

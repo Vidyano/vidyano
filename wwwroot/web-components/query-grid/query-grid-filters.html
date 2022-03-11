@@ -22,7 +22,7 @@
     </dom-if>
     <dom-if if="[[userFilters]]">
         <template>
-            <vi-popup-menu-item-separator hidden$="[[op.none(canReset, canSave, canSaveAs)]]"></vi-popup-menu-item-separator>
+            <vi-popup-menu-item-separator hidden$="[[op_none(canReset, canSave, canSaveAs)]]"></vi-popup-menu-item-separator>
             <dom-repeat items="[[userFilters]]" as="filter" filter="_hasGroupName">
                 <template>
                     <vi-popup-menu-item icon-space label="[[filter.groupName]]" icon="Folder" on-tap="_catchGroupTap">
@@ -49,7 +49,7 @@
     </dom-if>
     <dom-if if="[[lockedFilters]]">
         <template>
-            <vi-popup-menu-item-separator hidden$="[[op.none(canReset, canSave, canSaveAs, userFilters)]]"></vi-popup-menu-item-separator>
+            <vi-popup-menu-item-separator hidden$="[[op_none(canReset, canSave, canSaveAs, userFilters)]]"></vi-popup-menu-item-separator>
             <dom-repeat items="[[lockedFilters]]" as="filter">
                 <template>
                     <dom-if if="[[filter.groupName]]">

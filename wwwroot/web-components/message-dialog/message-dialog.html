@@ -24,7 +24,7 @@
 <footer class="horizontal layout end-justified" id="actions">
     <dom-repeat items="[[options.actions]]" as="action">
         <template>
-            <vi-button on-tap="_onSelectAction" type$="[[_actionType(options, index)]]" inverse="[[op.areNotSame(activeAction, index)]]" label="[[action]]"></vi-button>
+            <vi-button on-tap="_onSelectAction" type$="[[_actionType(options, index)]]" inverse="[[op_areNotSame(activeAction, index)]]" label="[[action]]"></vi-button>
         </template>
     </dom-repeat>
 </footer>
