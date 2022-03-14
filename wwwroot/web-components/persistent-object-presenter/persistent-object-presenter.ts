@@ -1,11 +1,11 @@
-import * as Polymer from '../../libs/@polymer/polymer.js';
-import * as Vidyano from "../../libs/vidyano/vidyano.js"
-import { ConfigurableWebComponent, WebComponent, WebComponentListener } from "../web-component/web-component.js"
-import { App, AppBase } from "../app/app.js"
-import { AppCacheEntryPersistentObject } from "../app-cache/app-cache-entry-persistent-object.js"
-import { AppCacheEntryPersistentObjectFromAction } from "../app-cache/app-cache-entry-persistent-object-from-action.js"
-import { AppRoute } from "../app-route/app-route.js"
-import { PersistentObject } from "../persistent-object/persistent-object.js"
+import * as Polymer from "../../libs/polymer/polymer";
+import * as Vidyano from "../../libs/vidyano/vidyano"
+import { ConfigurableWebComponent, WebComponent, WebComponentListener } from "../web-component/web-component"
+import { App, AppBase } from "../app/app"
+import { AppCacheEntryPersistentObject } from "../app-cache/app-cache-entry-persistent-object"
+import { AppCacheEntryPersistentObjectFromAction } from "../app-cache/app-cache-entry-persistent-object-from-action"
+import { AppRoute } from "../app-route/app-route"
+import { PersistentObject } from "../persistent-object/persistent-object"
 
 interface IPersistentObjectPresenterRouteParameters {
     id: string;

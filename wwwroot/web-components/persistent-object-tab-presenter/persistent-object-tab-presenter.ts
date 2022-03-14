@@ -1,8 +1,8 @@
-import * as Polymer from '../../libs/@polymer/polymer.js';
-import * as Vidyano from "../../libs/vidyano/vidyano.js"
-import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
-import { QueryItemsPresenter } from "../query-items-presenter/query-items-presenter.js"
-import { PersistentObjectTab } from "../persistent-object-tab/persistent-object-tab.js"
+import * as Polymer from "../../libs/polymer/polymer";
+import * as Vidyano from "../../libs/vidyano/vidyano"
+import { WebComponent, WebComponentListener } from "../web-component/web-component"
+import { QueryItemsPresenter } from "../query-items-presenter/query-items-presenter"
+import { PersistentObjectTab } from "../persistent-object-tab/persistent-object-tab"
 
 @WebComponent.register({
     properties: {

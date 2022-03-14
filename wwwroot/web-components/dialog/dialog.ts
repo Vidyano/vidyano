@@ -1,9 +1,9 @@
-import * as Polymer from "../../libs/@polymer/polymer.js"
-import { mixinBehaviors } from "@polymer/polymer/lib/legacy/class.js"
+import * as Polymer from "../../libs/polymer/polymer"
+import { mixinBehaviors } from "@polymer/polymer/lib/legacy/class"
 import { IronOverlayBehavior } from "@polymer/iron-overlay-behavior"
-import { SizeTrackerEvent } from "../size-tracker/size-tracker.js"
-import "../size-tracker/size-tracker.js"
-import { IPosition, WebComponent, WebComponentListener } from "../web-component/web-component.js"
+import { SizeTrackerEvent } from "../size-tracker/size-tracker"
+import "../size-tracker/size-tracker"
+import { IPosition, WebComponent, WebComponentListener } from "../web-component/web-component"
 
 export class DialogCore extends mixinBehaviors(IronOverlayBehavior, Polymer.PolymerElement) {
     static get template() { return Polymer.html`<link rel="import" href="dialog-core.html">`; }
@@ -62,8 +62,8 @@ export abstract class Dialog extends WebComponentListener(WebComponent) {
         this.dialogCore.noCancelOnEscKey = noCancelOnEscKey;
     }
 
-    private get dialogCore(): DialogCore {
-        return this.shadowRoot.querySelector("vi-dialog-core") as DialogCore;
+    private get dialogCore() {
+        return this.shadowRoot.querySelector("vi-dialog-core") as (IronOverlayBehavior & Polymer.PolymerElement);
     }
 
     async open(): Promise<any> {

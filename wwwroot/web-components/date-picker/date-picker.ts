@@ -1,9 +1,9 @@
-﻿import * as Polymer from "../../libs/@polymer/polymer.js"
-import * as Vidyano from "../../libs/vidyano/vidyano.js"
+﻿import * as Polymer from "../../libs/polymer/polymer"
+import * as Vidyano from "../../libs/vidyano/vidyano"
 import moment from "moment"
-import { Button } from "../button/button.js"
-import { Popup } from "../popup/popup.js"
-import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
+import { Button } from "../button/button"
+import { Popup } from "../popup/popup"
+import { WebComponent, WebComponentListener } from "../web-component/web-component"
 
 export interface IDatePickerCell {
     type: string;

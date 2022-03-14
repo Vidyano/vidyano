@@ -1,22 +1,22 @@
-import * as Dto from "./typings/service.js";
-import { Observable } from "./common/observable.js";
-import "./common/array.js"; // NOTE: We need the side effect from this import
-import { Application } from "./application.js";
-import { IClientOperation } from "./client-operations.js";
-import { Language } from "./language.js";
+import * as Dto from "./typings/service";
+import { Observable } from "./common/observable";
+import "./common/array"; // NOTE: We need the side effect from this import
+import { Application } from "./application";
+import { IClientOperation } from "./client-operations";
+import { Language } from "./language";
 import { KeyValue } from "./typings/common";
-import { PersistentObject } from "./persistent-object.js";
-import { ActionDefinition } from "./action-definition.js";
-import { ServiceHooks } from "./service-hooks.js";
-import { cookie, cookiePrefix } from "./cookie.js";
-import { NoInternetMessage } from "./no-internet-message.js";
-import type { Query } from "./query.js";
-import type { QueryResultItem } from "./query-result-item.js";
-import { CultureInfo } from "./cultures.js";
-import { ExecuteActionArgs } from "./execute-action-args.js";
-import { DataType } from "./service-data-type.js";
-import Boolean from "./common/boolean.js";
-import "./actions.js";
+import { PersistentObject } from "./persistent-object";
+import { ActionDefinition } from "./action-definition";
+import { ServiceHooks } from "./service-hooks";
+import { cookie, cookiePrefix } from "./cookie";
+import { NoInternetMessage } from "./no-internet-message";
+import type { Query } from "./query";
+import type { QueryResultItem } from "./query-result-item";
+import { CultureInfo } from "./cultures";
+import { ExecuteActionArgs } from "./execute-action-args";
+import { DataType } from "./service-data-type";
+import Boolean from "./common/boolean";
+import "./actions";
 
 export let version = "latest";
 

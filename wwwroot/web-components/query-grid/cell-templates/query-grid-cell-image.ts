@@ -1,7 +1,7 @@
-import * as Vidyano from "../../../libs/vidyano/vidyano.js"
-import * as Polymer from "../../../libs/@polymer/polymer.js"
-import { QueryGridCell } from "./query-grid-cell.js"
-import { WebComponent } from "../../web-component/web-component.js"
+import * as Vidyano from "../../../libs/vidyano/vidyano"
+import * as Polymer from "../../../libs/polymer/polymer"
+import { QueryGridCell } from "./query-grid-cell"
+import { WebComponent } from "../../web-component/web-component"
 
 @WebComponent.register({
     properties: {

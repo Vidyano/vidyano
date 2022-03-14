@@ -1,10 +1,10 @@
-import * as Vidyano from "../../libs/vidyano/vidyano.js"
-import * as Polymer from "../../libs/@polymer/polymer.js"
-import { Dialog } from "../dialog/dialog.js"
-import "../notification/notification.js"
-import "../persistent-object-tab-presenter/persistent-object-tab-presenter.js"
-import "./query-grid-filter-dialog-name.js"
-import { WebComponent } from "../web-component/web-component.js"
+import * as Vidyano from "../../libs/vidyano/vidyano"
+import * as Polymer from "../../libs/polymer/polymer"
+import { Dialog } from "../dialog/dialog"
+import "../notification/notification"
+import "../persistent-object-tab-presenter/persistent-object-tab-presenter"
+import "./query-grid-filter-dialog-name"
+import { WebComponent } from "../web-component/web-component"
 
 @WebComponent.register({
     properties: {

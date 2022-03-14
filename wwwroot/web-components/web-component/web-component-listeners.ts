@@ -1,4 +1,4 @@
-import * as Polymer from '@polymer/polymer'
+import * as Polymer from "../../libs/polymer/polymer"
 
 const registry: { [ key: string]: { [eventName: string]: string } } = {};
 const registryMap = new Map();

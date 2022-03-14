@@ -1,11 +1,11 @@
-import type { ActionDefinition } from "./action-definition.js";
-import { ActionGroup } from "./action-group.js";
-import type { QueryResultItem } from "./query-result-item.js";
-import type { NotificationType, Service } from "./service.js";
-import { ServiceObject } from "./service-object.js";
-import { ServiceObjectWithActions } from "./service-object-with-actions.js";
-import { PersistentObject } from "./persistent-object.js";
-import type { Query } from "./query.js";
+import type { ActionDefinition } from "./action-definition";
+import { ActionGroup } from "./action-group";
+import type { QueryResultItem } from "./query-result-item";
+import type { NotificationType, Service } from "./service";
+import { ServiceObject } from "./service-object";
+import { ServiceObjectWithActions } from "./service-object-with-actions";
+import { PersistentObject } from "./persistent-object";
+import type { Query } from "./query";
 
 export interface IActionExecuteOptions {
     menuOption?: number;

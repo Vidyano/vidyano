@@ -1,5 +1,5 @@
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
-import * as Polymer from "../../libs/@polymer/polymer.js"
+import * as Polymer from "../../libs/polymer/polymer"
 import { AppRoute } from "../../web-components/app-route/app-route.js"
 import { WebComponent, WebComponentListener } from "../../web-components/web-component/web-component.js"
 import "../../web-components/scroller/scroller.js"

@@ -1,12 +1,11 @@
-﻿import * as Vidyano from "../../libs/vidyano/vidyano.js"
-import * as Polymer from "../../libs/@polymer/polymer.js"
-import * as Async from "@polymer/polymer/lib/utils/async.js";
-import { Path } from "../../libs/pathjs/pathjs.js"
-import { AppBase } from "../app/app-base.js"
-import { AppRoute } from "../app-route/app-route.js"
-import { AppServiceHooks } from "../app-service-hooks/app-service-hooks.js"
-import { Dialog } from "../dialog/dialog.js"
-import { WebComponent } from "../web-component/web-component.js"
+﻿import * as Vidyano from "../../libs/vidyano/vidyano"
+import * as Polymer from "../../libs/polymer/polymer"
+import { Path } from "../../libs/pathjs/pathjs"
+import { AppBase } from "../app/app-base"
+import { AppRoute } from "../app-route/app-route"
+import { AppServiceHooks } from "../app-service-hooks/app-service-hooks"
+import { Dialog } from "../dialog/dialog"
+import { WebComponent } from "../web-component/web-component"
 
 @WebComponent.register({
     properties: {
@@ -114,7 +113,7 @@ export class AppRoutePresenter extends WebComponent {
             const redirect = await (<AppServiceHooks>this.app.service.hooks).onAppRouteChanging(newRoute, this.currentRoute);
             if (redirect) {
                 this._setCurrentRoute(null);
-                Async.microTask.run(() => this.app.changePath(redirect));
+                Polymer.Async.microTask.run(() => this.app.changePath(redirect));
 
                 return;
             }

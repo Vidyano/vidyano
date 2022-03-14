@@ -1,5 +1,5 @@
-import * as Vidyano from "../../libs/vidyano/vidyano.js";
-import { AppCacheEntry } from "./app-cache-entry.js";
+import * as Vidyano from "../../libs/vidyano/vidyano";
+import { AppCacheEntry } from "./app-cache-entry";
 
 export class AppCacheEntryQuery extends AppCacheEntry {
     query: Vidyano.Query;

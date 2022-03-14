@@ -348,6 +348,7 @@ healthchecksdb
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
 
+dist/wwwroot
 wwwroot/dist/*.*
 wwwroot/libs/**/*.d.ts
 wwwroot/libs/**/*.js
@@ -359,5 +360,7 @@ wwwroot/web-components/**/*.d.ts
 wwwroot/web-components/**/*.js
 wwwroot/web-components/**/*.css
 wwwroot/web-components/**/*.css.map
+
+!wwwroot/libs/polymer/*.*
 
 data

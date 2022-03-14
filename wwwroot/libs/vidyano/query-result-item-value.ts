@@ -1,8 +1,8 @@
-import { Service } from "./service.js";
-import { ServiceObject } from "./service-object.js";
-import type { QueryResultItem } from "./query-result-item.js";
-import type { QueryColumn } from "./query-column.js";
-import { PersistentObjectAttribute } from "./persistent-object-attribute.js";
+import { Service } from "./service";
+import { ServiceObject } from "./service-object";
+import type { QueryResultItem } from "./query-result-item";
+import type { QueryColumn } from "./query-column";
+import { PersistentObjectAttribute } from "./persistent-object-attribute";
 
 export class QueryResultItemValue extends ServiceObject {
     private _column: QueryColumn;

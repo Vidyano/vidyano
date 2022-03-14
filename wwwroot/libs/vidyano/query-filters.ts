@@ -1,8 +1,8 @@
-import { Observable } from "./common/observable.js";
-import { Action } from "./action.js";
-import { PersistentObject } from "./persistent-object.js";
-import { Query } from "./query.js";
-import { PersistentObjectAttributeAsDetail } from "./persistent-object-attribute-as-detail.js";
+import { Observable } from "./common/observable";
+import { Action } from "./action";
+import { PersistentObject } from "./persistent-object";
+import { Query } from "./query";
+import { PersistentObjectAttributeAsDetail } from "./persistent-object-attribute-as-detail";
 
 export class QueryFilters extends Observable<QueryFilters> {
     private _filters: QueryFilter[];

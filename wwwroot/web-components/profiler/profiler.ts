@@ -1,9 +1,9 @@
 import * as d3 from "d3"
-import * as Vidyano from "../../libs/vidyano/vidyano.js"
-import * as Polymer from "../../libs/@polymer/polymer.js"
-import { ISize } from "../size-tracker/size-tracker.js"
-import { Scroller } from "../scroller/scroller.js"
-import { WebComponent } from "../web-component/web-component.js"
+import * as Vidyano from "../../libs/vidyano/vidyano"
+import * as Polymer from "../../libs/polymer/polymer"
+import { ISize } from "../size-tracker/size-tracker"
+import { Scroller } from "../scroller/scroller"
+import { WebComponent } from "../web-component/web-component"
 
 type ProfilerRequest = Vidyano.Dto.ProfilerRequest & {
     hasNPlusOne: boolean;

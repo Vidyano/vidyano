@@ -1,8 +1,8 @@
-import { PersistentObject } from "./persistent-object.js";
-import { PersistentObjectAttribute } from "./persistent-object-attribute.js";
-import { Query } from "./query.js";
-import { QueryResultItem } from "./query-result-item.js";
-import { Service } from "./service.js";
+import { PersistentObject } from "./persistent-object";
+import { PersistentObjectAttribute } from "./persistent-object-attribute";
+import { Query } from "./query";
+import { QueryResultItem } from "./query-result-item";
+import { Service } from "./service";
 
 export class PersistentObjectAttributeWithReference extends PersistentObjectAttribute {
     lookup: Query;

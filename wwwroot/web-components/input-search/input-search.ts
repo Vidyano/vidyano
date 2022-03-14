@@ -1,5 +1,5 @@
-import { WebComponent } from "../web-component/web-component.js"
-import * as Polymer from "../../libs/@polymer/polymer.js"
+import { WebComponent } from "../web-component/web-component"
+import * as Polymer from "../../libs/polymer/polymer"
 
 @WebComponent.register({
     properties: {

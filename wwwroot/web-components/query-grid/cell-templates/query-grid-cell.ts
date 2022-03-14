@@ -1,6 +1,6 @@
-import * as Vidyano from "../../../libs/vidyano/vidyano.js"
-import { WebComponent } from "../../web-component/web-component.js"
-import type { QueryGridRow } from "../query-grid-row.js"
+import * as Vidyano from "../../../libs/vidyano/vidyano"
+import { WebComponent } from "../../web-component/web-component"
+import type { QueryGridRow } from "../query-grid-row"
 
 let resizeObserver: ResizeObserver;
 resizeObserver = new ResizeObserver(allEntries => {

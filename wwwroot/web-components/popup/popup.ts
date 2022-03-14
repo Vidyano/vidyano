@@ -1,8 +1,8 @@
-import * as Polymer from "../../libs/@polymer/polymer.js"
-import { IronFitBehavior } from "@polymer/iron-fit-behavior/iron-fit-behavior.js"
-import "../size-tracker/size-tracker.js"
-import { ISize } from "../size-tracker/size-tracker.js"
-import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
+import * as Polymer from "../../libs/polymer/polymer"
+import { IronFitBehavior } from "@polymer/iron-fit-behavior/iron-fit-behavior"
+import "../size-tracker/size-tracker"
+import { ISize } from "../size-tracker/size-tracker"
+import { WebComponent, WebComponentListener } from "../web-component/web-component"
 
 let _documentClosePopupListener: EventListener;
 document.addEventListener("mousedown", _documentClosePopupListener = e => {
@@ -138,7 +138,7 @@ export class Popup extends WebComponentListener(WebComponent) {
         if (firstOpenNonParentChild != null)
             firstOpenNonParentChild.close();
 
-        (this.$.fit as PopupCoreFit).positionTarget = this._currentTarget = target;
+        (<IronFitBehavior><any>this.$.fit).positionTarget = this._currentTarget = target;
         this.refit();
 
         this._setOpen(true);
@@ -160,7 +160,7 @@ export class Popup extends WebComponentListener(WebComponent) {
                 fit.style.minWidth = `${this._toggleSize.width}px`;
 
             this._refitAF = null;
-            fit.refit();
+            (<IronFitBehavior><any>fit).refit();
         });
     }
 

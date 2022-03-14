@@ -1,7 +1,7 @@
-import * as Polymer from "@polymer/polymer"
-import { PopupMenuItemSplit } from "../popup-menu/popup-menu-item-split.js"
-import { PopupMenuItem } from "../popup-menu/popup-menu-item.js"
-import { WebComponent } from "./web-component.js"
+import * as Polymer from "../../libs/polymer/polymer"
+import { PopupMenuItemSplit } from "../popup-menu/popup-menu-item-split"
+import { PopupMenuItem } from "../popup-menu/popup-menu-item"
+import { WebComponent } from "./web-component"
 
 interface IConfigurableAction {
     icon: string;

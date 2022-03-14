@@ -1,4 +1,4 @@
-import * as Vidyano from "../../libs/vidyano/vidyano.js"
+import * as Vidyano from "../../libs/vidyano/vidyano"
 
 export interface IQueryGridUserSettingsColumnData {
     offset?: number;

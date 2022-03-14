@@ -1,6 +1,7 @@
-import * as Polymer from '../../libs/@polymer/polymer.js';
-import * as Vidyano from "../../libs/vidyano/vidyano.js"
-import { Keyboard, WebComponent, WebComponentListener } from "../web-component/web-component.js"
+import * as Polymer from "../../libs/polymer/polymer";
+import * as Vidyano from "../../libs/vidyano/vidyano"
+import { IronListElement } from "@polymer/iron-list"
+import { Keyboard, WebComponent, WebComponentListener } from "../web-component/web-component"
 import { Popup } from '../popup/popup.js';
 
 export type SelectOption = Vidyano.KeyValuePair<any, string>;

@@ -1,15 +1,15 @@
-import * as Dto from "./typings/service.js";
-import { Observable, IPropertyChangedObserver, ISubjectDisposer, PropertyChangedArgs } from "./common/observable.js";
-import { QueryColumn, SortDirection } from "./query-column.js";
-import { QueryResultItem } from "./query-result-item.js";
-import type { Service } from "./service.js";
-import { ServiceObjectWithActions } from "./service-object-with-actions.js";
-import { QueryFilters } from "./query-filters.js";
-import { QueryChart } from "./query-chart.js";
-import { IQueryGroupingInfo, QueryResultItemGroup } from "./query-result-item-group.js";
-import { PersistentObject } from "./persistent-object.js";
-import type { Action } from "./action.js";
-import { ExpressionParser } from "./common/expression-parser.js";
+import * as Dto from "./typings/service";
+import { Observable, IPropertyChangedObserver, ISubjectDisposer, PropertyChangedArgs } from "./common/observable";
+import { QueryColumn, SortDirection } from "./query-column";
+import { QueryResultItem } from "./query-result-item";
+import type { Service } from "./service";
+import { ServiceObjectWithActions } from "./service-object-with-actions";
+import { QueryFilters } from "./query-filters";
+import { QueryChart } from "./query-chart";
+import { IQueryGroupingInfo, QueryResultItemGroup } from "./query-result-item-group";
+import { PersistentObject } from "./persistent-object";
+import type { Action } from "./action";
+import { ExpressionParser } from "./common/expression-parser";
 
 export interface ISortOption {
     column: QueryColumn;

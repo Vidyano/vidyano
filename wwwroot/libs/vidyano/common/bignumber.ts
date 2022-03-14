@@ -1,5 +1,5 @@
 import { BigNumber } from "bignumber.js"
-import { CultureInfo } from "../cultures.js";
+import { CultureInfo } from "../cultures";
 
 declare module "bignumber.js" {
     export interface BigNumber {

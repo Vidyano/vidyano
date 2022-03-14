@@ -1,4 +1,4 @@
-import { ServiceHooks } from "./service-hooks.js";
+import { ServiceHooks } from "./service-hooks";
 
 export interface IClientOperation {
     type: string;

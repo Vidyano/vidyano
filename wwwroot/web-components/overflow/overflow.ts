@@ -1,7 +1,7 @@
-import * as Polymer from "../../libs/@polymer/polymer.js"
-import "../popup/popup.js"
-import { Popup } from "../popup/popup.js"
-import { WebComponent, WebComponentListener} from "../web-component/web-component.js"
+import * as Polymer from "../../libs/polymer/polymer"
+import "../popup/popup"
+import { Popup } from "../popup/popup"
+import { WebComponent, WebComponentListener} from "../web-component/web-component"
 
 @WebComponent.register({
     properties: {

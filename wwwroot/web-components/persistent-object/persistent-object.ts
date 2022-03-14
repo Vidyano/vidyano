@@ -1,12 +1,12 @@
-import * as Polymer from "../../libs/@polymer/polymer.js"
-import * as Vidyano from "../../libs/vidyano/vidyano.js"
-import "../action-bar/action-bar.js"
-import { App } from "../app/app.js"
-import { AppCacheEntryPersistentObject } from "../app-cache/app-cache-entry-persistent-object.js"
-import "../notification/notification.js"
-import "../persistent-object-tab-bar/persistent-object-tab-bar.js"
-import "../persistent-object-tab-presenter/persistent-object-tab-presenter.js"
-import { WebComponent, WebComponentListener } from "../web-component/web-component.js"
+import * as Polymer from "../../libs/polymer/polymer"
+import * as Vidyano from "../../libs/vidyano/vidyano"
+import "../action-bar/action-bar"
+import { App } from "../app/app"
+import { AppCacheEntryPersistentObject } from "../app-cache/app-cache-entry-persistent-object"
+import "../notification/notification"
+import "../persistent-object-tab-bar/persistent-object-tab-bar"
+import "../persistent-object-tab-presenter/persistent-object-tab-presenter"
+import { WebComponent, WebComponentListener } from "../web-component/web-component"
 
 @WebComponent.register({
     properties: {

@@ -1,6 +1,6 @@
-import * as Vidyano from "../../../libs/vidyano/vidyano.js"
-import { TemplateConfig } from "./template-config.js"
-import { WebComponent } from "../../web-component/web-component.js"
+import * as Vidyano from "../../../libs/vidyano/vidyano"
+import { TemplateConfig } from "./template-config"
+import { WebComponent } from "../../web-component/web-component"
 
 @WebComponent.register({
     properties: {

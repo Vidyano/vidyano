@@ -1,15 +1,15 @@
-import * as Vidyano from "../../libs/vidyano/vidyano.js"
-import { AppBase } from "../app/app-base.js"
-import { App } from "../app/app.js"
-import { AppRoute } from "../app-route/app-route.js"
+import * as Vidyano from "../../libs/vidyano/vidyano"
+import { AppBase } from "../app/app-base"
+import { App } from "../app/app"
+import { AppRoute } from "../app-route/app-route"
 import { PersistentObjectConfig } from "../app/config/persistent-object-config"
-import { PersistentObjectAttributeConfig } from "../app/config/persistent-object-attribute-config.js"
+import { PersistentObjectAttributeConfig } from "../app/config/persistent-object-attribute-config"
 import { PersistentObjectTabConfig } from "../app/config/persistent-object-tab-config"
 import { ProgramUnitConfig } from "../app/config/program-unit-config"
 import { QueryConfig } from "../app/config/query-config"
 import { QueryChartConfig } from "../app/config/query-chart-config"
-import { RetryActionDialog } from "../retry-action-dialog/retry-action-dialog.js"
-import { SelectReferenceDialog } from "../select-reference-dialog/select-reference-dialog.js"
+import { RetryActionDialog } from "../retry-action-dialog/retry-action-dialog"
+import { SelectReferenceDialog } from "../select-reference-dialog/select-reference-dialog"
 
 /* tslint:disable:no-var-keyword */
 var _gaq: any[];
@@ -33,7 +33,7 @@ export class AppServiceHooksBase extends Vidyano.ServiceHooks {
         if (addScript) {
             const ga = document.createElement("script");
             ga.type = "text/javascript"; ga.async = true;
-            ga.src = ("https:" === document.location.protocol ? "https://ssl" : "http://www") + ".google-analytics.com/ga.js";
+            ga.src = ("https:" === document.location.protocol ? "https://ssl" : "http://www") + ".google-analytics.com/ga";
 
             const script = document.getElementsByTagName("script")[0];
             script.parentNode.insertBefore(ga, script);

@@ -1,6 +1,6 @@
-import * as Polymer from "../../libs/@polymer/polymer.js"
-import type { Scroller } from "../scroller/scroller.js"
-import { Keyboard, WebComponent } from "../web-component/web-component.js"
+import * as Polymer from "../../libs/polymer/polymer"
+import type { Scroller } from "../scroller/scroller"
+import { Keyboard, WebComponent } from "../web-component/web-component"
 
 @WebComponent.register({
     properties: {

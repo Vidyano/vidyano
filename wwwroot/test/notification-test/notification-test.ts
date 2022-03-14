@@ -1,5 +1,5 @@
-import * as Vidyano from "../../libs/vidyano/vidyano.js"
-import * as Polymer from "../../libs/@polymer/polymer.js"
+import * as Vidyano from "../../libs/vidyano/vidyano"
+import * as Polymer from "../../libs/polymer/polymer"
 import { WebComponent, WebComponentListener } from "../../web-components/web-component/web-component.js"
 import "../../web-components/notification/notification.js"
 

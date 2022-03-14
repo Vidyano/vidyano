@@ -38,7 +38,7 @@ class ServiceWorkerMonitor implements IServiceWorkerMonitor {
     }
 }
 
-const monitor = new ServiceWorkerMonitor("serviceWorker" in navigator ? navigator.serviceWorker.register("service-worker.js") : null);
+const monitor = new ServiceWorkerMonitor("serviceWorker" in navigator ? navigator.serviceWorker.register("service-worker") : null);
 
 export class ServiceWorker {
     static get Monitor(): IServiceWorkerMonitor {

@@ -1,4 +1,4 @@
-﻿import { WebComponent } from "../web-component/web-component.js"
+﻿import { WebComponent } from "../web-component/web-component"
 
 export interface ISize {
     width: number;

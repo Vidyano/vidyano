@@ -6,6 +6,8 @@
       "allowSyntheticDefaultImports": true,
       "importHelpers": true,
       "moduleResolution": "node",
+      "declaration": true,
+      "declarationDir": "dist",
       "lib": [
           "ES2020",
           "DOM"
