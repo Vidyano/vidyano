@@ -2,7 +2,7 @@ import * as Polymer from "../../../../libs/polymer/polymer";
 import * as Vidyano from "../../../../libs/vidyano/vidyano"
 import { WebComponent } from "../../../web-component/web-component"
 import { PersistentObjectAttribute } from "../../persistent-object-attribute"
-import "codemirror/lib/codemirror"
+import "codemirror"
 
 @WebComponent.register({
     properties: {

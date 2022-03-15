@@ -1,5 +1,3 @@
-export * from "tslib"
-
 import * as moment from 'moment';
 export { moment }
 
