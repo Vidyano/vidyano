@@ -24,7 +24,7 @@ export default [
 	{
 		input: "wwwroot/dist/vidyano.js",
 		plugins: [execute('uglifyjs wwwroot/dist/vidyano.js -o wwwroot/dist/vidyano.min.js')],
-		output: [{ file: ' wwwroot/dist/vidyano.min.js' }]
+		output: [{ file: 'wwwroot/dist/vidyano.min.js' }]
 	},
 	{
 		input: 'rollup/vidyano.ts',
