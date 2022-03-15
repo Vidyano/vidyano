@@ -1,7 +1,7 @@
 export * from "tslib"
 
-// TODO: export moment.js
-//export * from "moment";
+import * as moment from 'moment';
+export { moment }
 
 export * from "bignumber.js"
 
