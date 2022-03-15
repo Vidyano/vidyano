@@ -41740,6 +41740,7 @@ if (hashBangRe.test(document.location.href)) {
     else
         history.replaceState(null, null, `${hashBangParts[1]}${hashBangParts[2]}`);
 }
+const missing_base_tag_error = new Error("Document is missing base tag");
 let AppBase = AppBase_1 = class AppBase extends WebComponent {
     constructor() {
         super();
@@ -42573,7 +42574,10 @@ AppBase = AppBase_1 = __decorate([
                 type: String,
                 readOnly: true,
                 value: () => {
-                    return document.head.querySelector("base").href;
+                    const base = document.head.querySelector("base");
+                    if (!base)
+                        throw missing_base_tag_error;
+                    return base.href;
                 }
             },
             path: {
@@ -42582,6 +42586,8 @@ AppBase = AppBase_1 = __decorate([
                 observer: "_pathChanged",
                 value: () => {
                     const base = document.head.querySelector("base");
+                    if (!base)
+                        throw missing_base_tag_error;
                     const parser = document.createElement("a");
                     parser.href = base.href;
                     Path.routes.rootPath = parser.pathname;

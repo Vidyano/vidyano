@@ -43,6 +43,7 @@ if (hashBangRe.test(document.location.href)) {
         history.replaceState(null, null, `${hashBangParts[1]}${hashBangParts[2]}`);
 }
 
+const missing_base_tag_error = new Error("Document is missing base tag");
 @WebComponent.registerAbstract({
     properties: {
         uri: {
@@ -59,7 +60,11 @@ if (hashBangRe.test(document.location.href)) {
             type: String,
             readOnly: true,
             value: () => {
-                return (document.head.querySelector("base") as HTMLBaseElement).href;
+                const base = document.head.querySelector("base") as HTMLBaseElement;
+                if (!base)
+                    throw missing_base_tag_error;
+
+                return base.href;
             }
         },
         path: {
@@ -68,6 +73,9 @@ if (hashBangRe.test(document.location.href)) {
             observer: "_pathChanged",
             value: () => {
                 const base = document.head.querySelector("base") as HTMLBaseElement;
+                if (!base)
+                    throw missing_base_tag_error;
+
                 const parser = document.createElement("a");
                 parser.href = base.href;
 
