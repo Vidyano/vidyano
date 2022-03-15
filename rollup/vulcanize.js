@@ -22,7 +22,7 @@ export default function vulcanize() {
     return {
         name: 'vulcanize',
         async load(jsInput) {
-            const index = jsInput.indexOf("/web-components/");
+            const index = jsInput.indexOf("web-components");
             if (index >= 0) {
                 let js = (await fs.readFile(jsInput)).toString();
 
@@ -50,13 +50,13 @@ export default function vulcanize() {
                 code = code.replace("marked(this.markdown", "marked.default(this.markdown");
             }
 
-            const index = id.indexOf("wwwroot/web-components/");
+            const index = id.indexOf("web-components");
             if (index >= 0) {
-                const idWithoutExtension = id.substring(0, id.lastIndexOf("."));
+                const componentDir = path.dirname(id);
 
                 const files = await fg([
-                    idWithoutExtension + "*.css",
-                    idWithoutExtension + "*.html"
+                    componentDir + "/*.css",
+                    componentDir + "/*.html"
                 ]);
 
                 for (let file of files) {
