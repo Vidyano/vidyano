@@ -1,18 +1,45 @@
-import fetch from 'node-fetch';
 import fg from 'fast-glob';
+import * as path from "path";
 
-// Ignore self-signed certificate
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+import * as _fs from "fs";
+const fs = _fs.promises;
+
+async function replaceAsync(str, regex, asyncFn) {
+    const promises = [];
+    str.replace(regex, (match, ...args) => {
+        const promise = asyncFn(match, ...args);
+        promises.push(promise);
+    });
+    const data = await Promise.all(promises);
+    return str.replace(regex, () => data.shift());
+}
+
+const htmlLink = /<link.*?href=[\"'](.+?.html)[\"'].*?>/gm;
+const cssLink = /<link.*?href=[\"'](.+?.css)[\"'].*?>/gm;
+const cssReplaceHost = /:host([^{( >-][^{> ,]+)([{> ,])/gm;
 
 export default function vulcanize() {
     return {
         name: 'vulcanize',
-        async load(id) {
-            const index = id.indexOf("/web-components/");
+        async load(jsInput) {
+            const index = jsInput.indexOf("/web-components/");
             if (index >= 0) {
-                id = id.substr("/workspaces/VidyanoWeb3/wwwroot/".length);
-                const response = await fetch("https://localhost:5001/web3/" + id);
-                return await response.text();
+                let js = (await fs.readFile(jsInput)).toString();
+
+                return await replaceAsync(js, htmlLink, async (_, href) => {
+                    const htmlInput = path.join(path.dirname(jsInput), href);
+                    let html = (await fs.readFile(htmlInput)).toString().replace(/^\uFEFF/, '');
+
+                    html = await replaceAsync(html, cssLink, async (_, href) => {
+                        const cssInput = path.join(path.dirname(htmlInput), href);
+                        let css = (await fs.readFile(cssInput)).toString().replace(/^\uFEFF/, '');
+
+                        css = css.replace(cssReplaceHost, ":host($1)$2");
+                        return `<style>${css}</style>`;
+                    });
+
+                    return html;
+                });
             }
 
             return null;
