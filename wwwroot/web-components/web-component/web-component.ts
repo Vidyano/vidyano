@@ -18,7 +18,7 @@ class Operations {
         return value1 === value2;
     }
 
-    areNotSame(value1: any, value2, any): boolean {
+    areNotSame(value1: any, value2: any): boolean {
         return value1 !== value2;
     }
 
