@@ -349,7 +349,6 @@ healthchecksdb
 MigrationBackup/
 
 rollup/wwwroot
-wwwroot/dist/*.*
 wwwroot/libs/**/*.d.ts
 wwwroot/libs/**/*.js
 wwwroot/test/**/*.d.ts
