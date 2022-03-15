@@ -1,8 +1,8 @@
 import commonjs from 'rollup-plugin-commonjs';
+import execute from 'rollup-plugin-execute';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import vulcanize from './rollup/vulcanize.js';
 import dts from "rollup-plugin-dts";
-import { terser } from "rollup-plugin-terser";
 
 export default [
 	{
@@ -23,7 +23,7 @@ export default [
 	},
 	{
 		input: "wwwroot/dist/vidyano.js",
-		plugins: [terser()],
+		plugins: [execute('uglifyjs wwwroot/dist/vidyano.js -o wwwroot/dist/vidyano.min.js')],
 		output: [{ file: ' wwwroot/dist/vidyano.min.js' }]
 	},
 	{
