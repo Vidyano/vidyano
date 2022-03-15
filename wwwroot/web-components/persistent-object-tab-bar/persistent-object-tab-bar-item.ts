@@ -1,7 +1,6 @@
 import * as Polymer from "../../libs/polymer/polymer";
 import type * as Vidyano from "../../libs/vidyano/vidyano"
-import { Popup } from "../popup/popup"
-import { WebComponent, IObserveChainDisposer } from "../web-component/web-component"
+import { WebComponent } from "../web-component/web-component"
 
 @WebComponent.register({
     properties: {
