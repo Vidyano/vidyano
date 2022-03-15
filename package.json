@@ -7,7 +7,7 @@
     "@polymer/iron-overlay-behavior": "3.0.3",
     "@polymer/marked-element": "3.0.1",
     "@polymer/paper-ripple": "3.0.2",
-    "@polymer/polymer": "3.4.1",
+    "@polymer/polymer": "vidyano/polymer",
     "bignumber.js": "9.0.1",
     "codemirror": "5.63.3",
     "d3": "7.3.0",
