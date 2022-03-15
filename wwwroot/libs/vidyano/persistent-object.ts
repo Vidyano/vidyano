@@ -1,5 +1,4 @@
 import * as Dto from "./typings/service";
-import Array from "./common/array";
 import { ServiceObjectWithActions } from "./service-object-with-actions";
 import type { Action } from "./action";
 import { PersistentObjectAttribute } from "./persistent-object-attribute";

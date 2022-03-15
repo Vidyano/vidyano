@@ -169,5 +169,3 @@ if (Array.prototype["sum"] === undefined) {
 Array.range = function range(start: number, end: number, step: number = 1): number[] {
     return Array.from({ length: end - start + 1 }, (_, k) => k * step + start);
 };
-
-export default Array;
