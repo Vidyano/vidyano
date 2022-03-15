@@ -1,4 +1,14 @@
 {
+  "name": "vidyano",
+  "version": "3.0.0-alpha.0",
+  "description": "The Vidyano library contains all the web components for working with a Vidyano .NET backend.",
+  "main": "wwwroot/dist/vidyano.js",
+  "module": "wwwroot/dist/vidyano.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Vidyano/vidyano.git"
+  },
+  "license": "MIT",
   "dependencies": {
     "@polymer/iron-a11y-keys": "3.0.1",
     "@polymer/iron-collapse": "3.0.1",
