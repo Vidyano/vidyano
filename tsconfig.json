@@ -7,7 +7,7 @@
       "importHelpers": true,
       "moduleResolution": "node",
       "declaration": true,
-      "declarationDir": "dist",
+      "declarationDir": "rollup",
       "lib": [
           "ES2020",
           "DOM"

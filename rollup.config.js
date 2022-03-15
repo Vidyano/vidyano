@@ -1,11 +1,11 @@
 import commonjs from 'rollup-plugin-commonjs';
 import execute from 'rollup-plugin-execute'
 import nodeResolve from '@rollup/plugin-node-resolve';
-import vulcanize from './dist/vulcanize.js';
+import vulcanize from './rollup/vulcanize.js';
 import dts from "rollup-plugin-dts";
 
 const vidyano = {
-	input: 'dist/vidyano.ts',
+	input: 'rollup/vidyano.ts',
 	external: ['String', "__decorate"],
 	plugins: [
 		nodeResolve(),
@@ -23,7 +23,7 @@ const vidyano = {
 };
 
 const vidyano_dts = {
-	input: 'dist/vidyano.ts',
+	input: 'rollup/vidyano.ts',
 	plugins: [
 		dts({
 			respectExternal: true
