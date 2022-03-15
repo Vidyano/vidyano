@@ -3,7 +3,7 @@ import * as Vidyano from "../../../../libs/vidyano/vidyano"
 import { Scroller } from "../../../scroller/scroller"
 import { SelectReferenceDialog } from "../../../select-reference-dialog/select-reference-dialog"
 import { PersistentObjectAttributePresenter } from "../../../persistent-object-attribute-presenter/persistent-object-attribute-presenter"
-import { WebComponent, WebComponentListener } from "../../../web-component/web-component"
+import { WebComponent } from "../../../web-component/web-component"
 
 @WebComponent.register({
     properties: {
@@ -40,7 +40,7 @@ import { WebComponent, WebComponentListener } from "../../../web-component/web-c
     },
     sensitive: true
 })
-export class PersistentObjectAttributeAsDetailRow extends WebComponentListener(WebComponent) {
+export class PersistentObjectAttributeAsDetailRow extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-as-detail-row.html">`; }
 
     private fullEdit: boolean;

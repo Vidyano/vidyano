@@ -1,6 +1,6 @@
 import * as Polymer from "../../libs/polymer/polymer"
 import { AppServiceHooks } from "../app-service-hooks/app-service-hooks"
-import { WebComponent, WebComponentListener } from "../web-component/web-component"
+import { WebComponent } from "../web-component/web-component"
 
 export interface IAppRouteActivatedArgs {
     route: AppRoute;
@@ -36,7 +36,7 @@ export interface IAppRouteActivatedArgs {
         "title-changed": "_titleChanged"
     }
 })
-export class AppRoute extends WebComponentListener(WebComponent) {
+export class AppRoute extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="app-route.html">`; }
 
     private _hasChildren: boolean;

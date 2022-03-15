@@ -4,7 +4,7 @@ import "./popup-menu-item"
 import "./popup-menu-item-separator"
 import "./popup-menu-item-split"
 import "./popup-menu-item-with-actions"
-import { WebComponent, WebComponentListener } from "../../web-components/web-component/web-component"
+import { WebComponent } from "../../web-components/web-component/web-component"
 
 @WebComponent.register({
     properties: {
@@ -42,7 +42,7 @@ import { WebComponent, WebComponentListener } from "../../web-components/web-com
         "tap": "_stopTap"
     }
 })
-export class PopupMenu extends WebComponentListener(WebComponent) {
+export class PopupMenu extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="popup-menu.html">`; }
 
     private _openContextEventListener: EventListener;

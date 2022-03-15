@@ -14,7 +14,7 @@ import { Popup } from "../popup/popup"
 import { QueryGridColumn } from "./query-grid-column"
 import { QueryGridConfigureDialog } from "./query-grid-configure-dialog"
 import { QueryGridUserSettings } from "./query-grid-user-settings"
-import { WebComponent, WebComponentListener } from "../web-component/web-component"
+import { WebComponent } from "../web-component/web-component"
 
 const placeholder: { query?: Vidyano.Query; } = {};
 
@@ -146,7 +146,7 @@ type QueryGridItem = Vidyano.QueryResultItem | Vidyano.QueryResultItemGroup;
         "_updateUserSettings(query, query.columns)"
     ]
 })
-export class QueryGrid extends WebComponentListener(WebComponent) {
+export class QueryGrid extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid.html">` }
 
     private readonly _columnWidths = new Map<string, any>();

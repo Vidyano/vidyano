@@ -1,14 +1,14 @@
 import * as Polymer from "../../libs/polymer/polymer"
 import * as Vidyano from "../../libs/vidyano/vidyano"
 import { AppRoute } from '../app-route/app-route.js'
-import { WebComponent, WebComponentListener } from "../web-component/web-component"
+import { WebComponent } from "../web-component/web-component"
 
 @WebComponent.register({
     listeners: {
         "app-route-activate": "_activate"
     }
 })
-export class SignOut extends WebComponentListener(WebComponent) {
+export class SignOut extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="sign-out.html">`; }
 
     private async _activate(e: CustomEvent) {

@@ -1,6 +1,6 @@
 import * as Vidyano from "../../libs/vidyano/vidyano"
 import * as Polymer from "../../libs/polymer/polymer"
-import { WebComponent, WebComponentListener } from "../../web-components/web-component/web-component"
+import { WebComponent } from "../../web-components/web-component/web-component"
 
 interface IProgramUnitPresenterRouteParameters {
     programUnitName: string;
@@ -22,7 +22,7 @@ interface IProgramUnitPresenterRouteParameters {
         "app-route-activate": "_activate"
     }
 })
-export class ProgramUnitPresenter extends WebComponentListener(WebComponent) {
+export class ProgramUnitPresenter extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="program-unit-presenter.html">`; }
 
     readonly programUnit: Vidyano.ProgramUnit; private _setProgramUnit: (programUnit: Vidyano.ProgramUnit) => void;

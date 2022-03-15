@@ -1,7 +1,7 @@
 import * as Vidyano from "../../libs/vidyano/vidyano"
 import * as Polymer from "../../libs/polymer/polymer"
 import { QueryGridColumn } from "./query-grid-column"
-import { WebComponent, WebComponentListener } from "../web-component/web-component"
+import { WebComponent } from "../web-component/web-component"
 
 @WebComponent.register({
     properties: {
@@ -9,7 +9,7 @@ import { WebComponent, WebComponentListener } from "../web-component/web-compone
         columns: Array
     }
 })
-export class QueryGridFooter extends WebComponentListener(WebComponent) {
+export class QueryGridFooter extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-footer.html">` }
 
     item: Vidyano.QueryResultItem;

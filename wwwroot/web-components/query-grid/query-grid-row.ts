@@ -10,7 +10,7 @@ import { QueryGridCellBoolean } from "./cell-templates/query-grid-cell-boolean";
 import { QueryGridCellDefault } from "./cell-templates/query-grid-cell-default";
 import { QueryGridCellImage } from "./cell-templates/query-grid-cell-image";
 import { QueryGridRowGroup } from "./query-grid-row-group";
-import { WebComponent, WebComponentListener } from "../web-component/web-component"
+import { WebComponent } from "../web-component/web-component"
 
 export interface IItemTapEventArgs {
     item: Vidyano.QueryResultItem;
@@ -49,7 +49,7 @@ export interface IItemTapEventArgs {
         "_flush(offsets, visibleRange)"
     ]
 })
-export class QueryGridRow extends WebComponentListener(WebComponent) {
+export class QueryGridRow extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-row.html">` }
 
     item: Vidyano.QueryResultItem | Vidyano.QueryResultItemGroup;

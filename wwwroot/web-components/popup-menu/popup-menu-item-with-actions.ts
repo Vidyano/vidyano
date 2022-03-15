@@ -1,6 +1,6 @@
 import * as Polymer from "../../libs/polymer/polymer"
 import { Popup } from "../popup/popup"
-import { WebComponent, WebComponentListener } from "../../web-components/web-component/web-component"
+import { WebComponent } from "../../web-components/web-component/web-component"
 
 @WebComponent.register({
     properties: {
@@ -11,7 +11,7 @@ import { WebComponent, WebComponentListener } from "../../web-components/web-com
         "tap": "_onTap"
     }
 })
-export class PopupMenuItemWithActions extends WebComponentListener(WebComponent) {
+export class PopupMenuItemWithActions extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="popup-menu-item-with-actions.html">`; }
 
     constructor(public label?: string, public icon?: string, private _action?: () => void) {

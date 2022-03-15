@@ -1,5 +1,5 @@
 import * as Polymer from "../../libs/polymer/polymer"
-import { WebComponent, WebComponentListener } from "../web-component/web-component"
+import { WebComponent } from "../web-component/web-component"
 
 export interface IFileDropDetails {
     name: string;
@@ -22,7 +22,7 @@ export interface IFileDropDetails {
         "drop": "_drop"
     }
 })
-export class FileDrop extends WebComponentListener(WebComponent) {
+export class FileDrop extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="file-drop.html">` }
 
     readonly dragOver: boolean; private _setDragOver: (val: boolean) => void;

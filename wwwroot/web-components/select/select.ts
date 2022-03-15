@@ -1,7 +1,7 @@
 import * as Polymer from "../../libs/polymer/polymer";
 import * as Vidyano from "../../libs/vidyano/vidyano"
-import { IronListElement } from "@polymer/iron-list"
-import { Keyboard, WebComponent, WebComponentListener } from "../web-component/web-component"
+import "@polymer/iron-list"
+import { Keyboard, WebComponent } from "../web-component/web-component"
 import { Popup } from '../popup/popup.js';
 
 export type SelectOption = Vidyano.KeyValuePair<any, string>;
@@ -111,7 +111,7 @@ export interface ISelectItem {
         "_computeSuggestionFeedback(inputValue, suggestion, filtering)"
     ]
 })
-export class Select extends WebComponentListener(WebComponent) {
+export class Select extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="select.html">` }
 
     private items: ISelectItem[];
@@ -474,7 +474,7 @@ export class Select extends WebComponentListener(WebComponent) {
         "tap": "_onTap"
     }
 })
-export class SelectOptionItem extends WebComponentListener(WebComponent) {
+export class SelectOptionItem extends WebComponent {
     item: ISelectItem;
 
     private _onTap(e: Polymer.Gestures.TapEvent) {

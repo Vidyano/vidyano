@@ -1,7 +1,7 @@
 import * as Polymer from "../../libs/polymer/polymer";
 import * as Vidyano from "../../libs/vidyano/vidyano"
 import { ISize } from "../size-tracker/size-tracker"
-import { ConfigurableWebComponent, WebComponent, WebComponentListener } from "../web-component/web-component"
+import { ConfigurableWebComponent, WebComponent } from "../web-component/web-component"
 import "../persistent-object-group/persistent-object-group"
 import { PersistentObjectAttributePresenter } from "../persistent-object-attribute-presenter/persistent-object-attribute-presenter"
 import "../size-tracker/size-tracker"
@@ -41,7 +41,7 @@ import "../size-tracker/size-tracker"
         "tab.groups"
     ]
 })
-export class PersistentObjectTab extends ConfigurableWebComponent(WebComponentListener(WebComponent)) {
+export class PersistentObjectTab extends ConfigurableWebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-tab.html">`; }
 
     private _attributePresenters: PersistentObjectAttributePresenter[];

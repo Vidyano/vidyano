@@ -1,5 +1,5 @@
 import * as Polymer from "../../libs/polymer/polymer"
-import { WebComponent, WebComponentListener } from "../../web-components/web-component/web-component.js"
+import { WebComponent } from "../../web-components/web-component/web-component.js"
 import "../../web-components/list/list.js"
 
 @WebComponent.register({
@@ -12,6 +12,6 @@ import "../../web-components/list/list.js"
         }
     }
 })
-export class ListTest extends WebComponentListener(WebComponent) {
+export class ListTest extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="list-test.html">`; }
 }

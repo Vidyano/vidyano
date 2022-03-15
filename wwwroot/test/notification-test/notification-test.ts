@@ -1,7 +1,7 @@
 import * as Vidyano from "../../libs/vidyano/vidyano"
 import * as Polymer from "../../libs/polymer/polymer"
-import { WebComponent, WebComponentListener } from "../../web-components/web-component/web-component.js"
-import "../../web-components/notification/notification.js"
+import "../../web-components/notification/notification"
+import { WebComponent } from "../../web-components/web-component/web-component"
 
 @WebComponent.register({
     properties: {
@@ -13,7 +13,7 @@ import "../../web-components/notification/notification.js"
         url: Object
     }
 })
-export class NotificationTest extends WebComponentListener(WebComponent) {
+export class NotificationTest extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="notification-test.html">`; }
 
     ok: Vidyano.ServiceObjectWithActions;

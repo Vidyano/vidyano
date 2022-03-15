@@ -1,7 +1,7 @@
 import * as Polymer from "../../libs/polymer/polymer"
 import { Popup } from "../popup/popup"
 import { PopupMenu } from "./popup-menu"
-import { WebComponent, WebComponentListener } from "../../web-components/web-component/web-component"
+import { WebComponent } from "../../web-components/web-component/web-component"
 
 @WebComponent.register({
     properties: {
@@ -28,7 +28,7 @@ import { WebComponent, WebComponentListener } from "../../web-components/web-com
         "tap": "_onTap"
     }
 })
-export class PopupMenuItem extends WebComponentListener(WebComponent) {
+export class PopupMenuItem extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="popup-menu-item.html">`; }
 
     private _observer: Polymer.FlattenedNodesObserver;

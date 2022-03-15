@@ -3,7 +3,7 @@ import * as Vidyano from "../../libs/vidyano/vidyano"
 import moment from "moment"
 import { Button } from "../button/button"
 import { Popup } from "../popup/popup"
-import { WebComponent, WebComponentListener } from "../web-component/web-component"
+import { WebComponent } from "../web-component/web-component"
 
 export interface IDatePickerCell {
     type: string;
@@ -74,7 +74,7 @@ export interface IDatePickerCell {
         "tap": "_catchTap"
     }
 })
-export class DatePicker extends WebComponentListener(WebComponent) {
+export class DatePicker extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="date-picker.html">`; }
 
     readonly cells: IDatePickerCell[]; private _setCells: (cells: IDatePickerCell[]) => void;

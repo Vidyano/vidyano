@@ -17,7 +17,7 @@ import { AppServiceHooksBase } from "../app-service-hooks/app-service-hooks-base
 import { Dialog } from "../dialog/dialog"
 import { MessageDialog, IMessageDialogOptions } from "../message-dialog/message-dialog"
 import "../sensitive/sensitive"
-import { Keyboard, WebComponent, WebComponentListener } from "../web-component/web-component"
+import { Keyboard, WebComponent } from "../web-component/web-component"
 import "@polymer/iron-a11y-keys/iron-a11y-keys"
 import "@polymer/paper-ripple"
 import { IronA11yKeysElement } from "@polymer/iron-a11y-keys/iron-a11y-keys"
@@ -167,7 +167,7 @@ if (hashBangRe.test(document.location.href)) {
         "service.application"
     ]
 })
-export abstract class AppBase extends WebComponentListener(WebComponent) {
+export abstract class AppBase extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="app-base.html">`; }
 
     private _keybindingRegistrations: { [key: string]: Keyboard.IKeybindingRegistration[]; } = {};

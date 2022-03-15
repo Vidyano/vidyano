@@ -4,7 +4,7 @@ import { AppCacheEntryQuery } from "../app-cache/app-cache-entry-query"
 import { App } from "../app/app"
 import { Query } from "../query/query"
 import "../query-items-presenter/query-items-presenter"
-import { WebComponent, WebComponentListener } from "../web-component/web-component"
+import { WebComponent } from "../web-component/web-component"
 
 interface IQueryPresenterRouteParameters {
     programUnitName: string;
@@ -48,7 +48,7 @@ interface IQueryPresenterRouteParameters {
         "query.labelWithTotalItems"
     ]
 })
-export class QueryPresenter extends WebComponentListener(WebComponent) {
+export class QueryPresenter extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-presenter.html">`; }
 
     private _cacheEntry: AppCacheEntryQuery;

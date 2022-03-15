@@ -3,7 +3,7 @@ import { mixinBehaviors } from "@polymer/polymer/lib/legacy/class"
 import { IronOverlayBehavior } from "@polymer/iron-overlay-behavior"
 import { SizeTrackerEvent } from "../size-tracker/size-tracker"
 import "../size-tracker/size-tracker"
-import { IPosition, WebComponent, WebComponentListener } from "../web-component/web-component"
+import { IPosition, WebComponent } from "../web-component/web-component"
 
 export class DialogCore extends mixinBehaviors(IronOverlayBehavior, Polymer.PolymerElement) {
     static get template() { return Polymer.html`<link rel="import" href="dialog-core.html">`; }
@@ -26,7 +26,7 @@ customElements.define("vi-dialog-core", <CustomElementConstructor><any>DialogCor
         "esc": "_esc"
     }
 })
-export abstract class Dialog extends WebComponentListener(WebComponent) {
+export abstract class Dialog extends WebComponent {
     static dialogTemplate(dialog: HTMLTemplateElement) {
         const template = Polymer.html`<link rel="import" href="dialog.html">`;
         const dialogCore = template.content.querySelector("vi-dialog-core") as DialogCore;

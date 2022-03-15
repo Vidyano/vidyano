@@ -3,7 +3,7 @@ import * as Vidyano from "../../libs/vidyano/vidyano"
 import { AppServiceHooks } from "../app-service-hooks/app-service-hooks"
 import { IFileDropDetails } from "../file-drop/file-drop"
 import { QueryGrid } from "../query-grid/query-grid"
-import { WebComponent, WebComponentListener, ConfigurableWebComponent } from "../web-component/web-component"
+import { WebComponent, ConfigurableWebComponent } from "../web-component/web-component"
 
 @WebComponent.register({
     properties: {
@@ -42,7 +42,7 @@ import { WebComponent, WebComponentListener, ConfigurableWebComponent } from "..
         "vi:configure": "_configure"
     }
 })
-export class QueryItemsPresenter extends ConfigurableWebComponent(WebComponentListener(WebComponent)) {
+export class QueryItemsPresenter extends ConfigurableWebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-items-presenter.html">` }
 
     private _renderedQuery: Vidyano.Query;

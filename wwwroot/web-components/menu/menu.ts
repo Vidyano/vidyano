@@ -8,7 +8,7 @@ import type { InputSearch } from "../input-search/input-search"
 import "./menu-item"
 import { Popup } from "../popup/popup"
 import { SelectReferenceDialog } from "../select-reference-dialog/select-reference-dialog"
-import { WebComponent, WebComponentListener } from "../web-component/web-component"
+import { WebComponent } from "../web-component/web-component"
 import "../user/user"
 
 @WebComponent.register({
@@ -60,7 +60,7 @@ import "../user/user"
         "reset-filter": "_resetFilter"
     }
 })
-export class Menu extends WebComponentListener(WebComponent) {
+export class Menu extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="menu.html">`; }
 
     private static _minResizeWidth: number;

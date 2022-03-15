@@ -2,7 +2,7 @@ import * as Polymer from "../../libs/polymer/polymer"
 import * as Vidyano from "../../libs/vidyano/vidyano"
 import type { PersistentObjectTabPresenter } from '../persistent-object-tab-presenter/persistent-object-tab-presenter.js'
 import { ISize } from '../size-tracker/size-tracker.js'
-import { Keyboard, WebComponent, WebComponentListener } from "../web-component/web-component"
+import { Keyboard, WebComponent } from "../web-component/web-component"
 
 declare type Step = "username" | "password" | "twofactor" | "register" | "initial";
 
@@ -114,7 +114,7 @@ interface INotification {
         "initial.isBusy"
     ]
 })
-export class SignIn extends WebComponentListener(WebComponent) {
+export class SignIn extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="sign-in.html">`; }
 
     readonly returnUrl: string; private _setReturnUrl: (returnUrl: string) => void;

@@ -1,7 +1,7 @@
 import * as Polymer from "../../libs/polymer/polymer"
 import * as Vidyano from "../../libs/vidyano/vidyano"
 import "../popup/popup"
-import { WebComponent, WebComponentListener } from "../web-component/web-component"
+import { WebComponent } from "../web-component/web-component"
 
 @WebComponent.register({
     properties: {
@@ -21,7 +21,7 @@ import { WebComponent, WebComponentListener } from "../web-component/web-compone
         "attribute.isReadOnly"
     ]
 })
-export class PersistentObjectAttributeValidationError extends WebComponentListener(WebComponent) {
+export class PersistentObjectAttributeValidationError extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-validation-error.html">` }
 
     attribute: Vidyano.PersistentObjectAttribute;

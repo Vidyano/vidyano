@@ -1,7 +1,7 @@
 import * as Vidyano from "../../libs/vidyano/vidyano"
 import * as Polymer from "../../libs/polymer/polymer"
 import { Icon } from "../icon/icon";
-import { WebComponent, WebComponentListener } from "../web-component/web-component"
+import { WebComponent } from "../web-component/web-component"
 
 @WebComponent.register({
     properties: {
@@ -23,7 +23,7 @@ import { WebComponent, WebComponentListener } from "../web-component/web-compone
         "tap": "_tap"
     }
 })
-export class QueryGridRowGroup extends WebComponentListener(WebComponent) {
+export class QueryGridRowGroup extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-row-group.html">` }
 
     group: Vidyano.QueryResultItemGroup;

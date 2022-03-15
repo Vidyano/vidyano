@@ -1,6 +1,6 @@
 import * as Polymer from "../../libs/polymer/polymer";
 import * as Vidyano from "../../libs/vidyano/vidyano"
-import { WebComponent, WebComponentListener } from "../web-component/web-component"
+import { WebComponent } from "../web-component/web-component"
 import { QueryItemsPresenter } from "../query-items-presenter/query-items-presenter"
 import { PersistentObjectTab } from "../persistent-object-tab/persistent-object-tab"
 
@@ -26,7 +26,7 @@ import { PersistentObjectTab } from "../persistent-object-tab/persistent-object-
         "attribute-loaded": "_attributeLoaded"
     }
 })
-export class PersistentObjectTabPresenter extends WebComponentListener(WebComponent) {
+export class PersistentObjectTabPresenter extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-tab-presenter.html">`; }
 
     private _renderedTab: Vidyano.PersistentObjectTab;

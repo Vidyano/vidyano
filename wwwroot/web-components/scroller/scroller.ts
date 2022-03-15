@@ -1,6 +1,6 @@
 import * as Polymer from "../../libs/polymer/polymer"
 import "../size-tracker/size-tracker"
-import { WebComponent, WebComponentListener } from "../web-component/web-component"
+import { WebComponent } from "../web-component/web-component"
 
 @WebComponent.register({
     properties: {
@@ -114,7 +114,7 @@ import { WebComponent, WebComponentListener } from "../web-component/web-compone
         "scroll": "_trapEvent"
     }
 })
-export class Scroller extends WebComponentListener(WebComponent) {
+export class Scroller extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="scroller.html">`; }
 
     private static _minBarSize: number = 40;

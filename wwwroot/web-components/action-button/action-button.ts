@@ -1,7 +1,7 @@
 import * as Vidyano from "../../libs/vidyano/vidyano"
 import * as Polymer from "../../libs/polymer/polymer"
 import { Icon } from "../icon/icon"
-import { WebComponent, ConfigurableWebComponent, WebComponentListener } from "../web-component/web-component";
+import { WebComponent, ConfigurableWebComponent } from "../web-component/web-component";
 
 @WebComponent.register({
     properties: {
@@ -101,7 +101,7 @@ import { WebComponent, ConfigurableWebComponent, WebComponentListener } from "..
         "action.options"
     ]
 })
-export class ActionButton extends ConfigurableWebComponent(WebComponentListener(WebComponent)) {
+export class ActionButton extends ConfigurableWebComponent {
     static get template() { return Polymer.html`<link rel="import" href="action-button.html">`; }
 
     private _skipObserver: boolean;

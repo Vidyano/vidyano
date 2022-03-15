@@ -1,5 +1,5 @@
 import * as Polymer from "../../libs/polymer/polymer"
-import { WebComponent, WebComponentListener } from "../web-component/web-component"
+import { WebComponent } from "../web-component/web-component"
 
 @WebComponent.register({
     properties: {
@@ -29,7 +29,7 @@ import { WebComponent, WebComponentListener } from "../web-component/web-compone
         "space": "_keyToggle"
     }
 })
-export class Toggle extends WebComponentListener(WebComponent) {
+export class Toggle extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="toggle.html">`; }
 
     toggled: boolean;

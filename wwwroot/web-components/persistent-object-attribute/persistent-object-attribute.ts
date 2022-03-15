@@ -1,7 +1,7 @@
 import * as Polymer from "../../libs/polymer/polymer";
 import * as Vidyano from "../../libs/vidyano/vidyano"
 import "../persistent-object-attribute-edit/persistent-object-attribute-edit"
-import { WebComponent, WebComponentListener } from "../web-component/web-component"
+import { WebComponent } from "../web-component/web-component"
 
 const styleElement = document.createElement("dom-module");
 styleElement.innerHTML = `<link rel="import" href="persistent-object-attribute-style-module.html">`;
@@ -89,7 +89,7 @@ styleElement.register("vi-persistent-object-attribute-style-module");
     ],
     sensitive: true
 })
-export abstract class PersistentObjectAttribute extends WebComponentListener(WebComponent) {
+export abstract class PersistentObjectAttribute extends WebComponent {
     private _foreground: string;
     attribute: Vidyano.PersistentObjectAttribute;
     value: any;

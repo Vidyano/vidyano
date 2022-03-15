@@ -23,7 +23,7 @@ import "../persistent-object-attribute/attributes/persistent-object-attribute-tr
 import "../persistent-object-attribute/attributes/persistent-object-attribute-user/persistent-object-attribute-user"
 import { PersistentObjectAttributeConfig } from '../app/config/persistent-object-attribute-config.js'
 import "../persistent-object-attribute-label/persistent-object-attribute-label"
-import { WebComponent, ConfigurableWebComponent, WebComponentListener } from "../web-component/web-component"
+import { WebComponent, ConfigurableWebComponent } from "../web-component/web-component"
 
 class DeveloperShortcut extends Observable<DeveloperShortcut> {
     private _state: boolean = false;
@@ -134,7 +134,7 @@ document.addEventListener("keyup", e => {
         "attribute.parent.isBulkEdit"
     ]
 })
-export class PersistentObjectAttributePresenter extends ConfigurableWebComponent(WebComponentListener(WebComponent)) {
+export class PersistentObjectAttributePresenter extends ConfigurableWebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-presenter.html">`; }
 
     private _developerToggleDisposer: ISubjectDisposer;

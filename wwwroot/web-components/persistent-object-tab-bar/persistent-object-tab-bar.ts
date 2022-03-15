@@ -2,7 +2,7 @@ import * as Polymer from "../../libs/polymer/polymer";
 import type * as Vidyano from "../../libs/vidyano/vidyano"
 import "./persistent-object-tab-bar-item"
 import { Popup } from "../popup/popup"
-import { WebComponent, WebComponentListener, IObserveChainDisposer } from "../web-component/web-component"
+import { WebComponent, IObserveChainDisposer } from "../web-component/web-component"
 
 @WebComponent.register({
     properties: {
@@ -21,7 +21,7 @@ import { WebComponent, WebComponentListener, IObserveChainDisposer } from "../we
         "_hookObservers(isConnected, tabs)"
     ]
 })
-export class PersistentObjectTabBar extends WebComponentListener(WebComponent) {
+export class PersistentObjectTabBar extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-tab-bar.html">`; }
 
     private _observeDisposer: IObserveChainDisposer;

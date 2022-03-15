@@ -1,7 +1,7 @@
 import * as Polymer from "../../libs/polymer/polymer"
 import "../popup/popup"
 import { Popup } from "../popup/popup"
-import { WebComponent, WebComponentListener} from "../web-component/web-component"
+import { WebComponent} from "../web-component/web-component"
 
 @WebComponent.register({
     properties: {
@@ -15,7 +15,7 @@ import { WebComponent, WebComponentListener} from "../web-component/web-componen
         "sizechanged": "_childSizechanged"
     }
 })
-export class Overflow extends WebComponentListener(WebComponent) {
+export class Overflow extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="overflow.html">` }
 
     private _overflownChildren: HTMLElement[];

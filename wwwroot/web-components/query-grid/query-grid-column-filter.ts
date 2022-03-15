@@ -6,7 +6,7 @@ import { Popup } from "../popup/popup"
 import { ISize } from "../size-tracker/size-tracker"
 import { QueryGrid } from "./query-grid"
 import { QueryGridColumn } from "./query-grid-column"
-import { WebComponent, WebComponentListener } from "../web-component/web-component"
+import { WebComponent } from "../web-component/web-component"
 
 export interface IQueryGridColumnFilterDistinct {
     type: string;
@@ -76,7 +76,7 @@ export interface IQueryGridColumnFilterDistinct {
         "queryColumn.query.isFiltering"
     ]
 })
-export class QueryGridColumnFilter extends WebComponentListener(WebComponent) {
+export class QueryGridColumnFilter extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-column-filter.html">` }
 
     private _searchTextDebouncer: Polymer.Debounce.Debouncer;

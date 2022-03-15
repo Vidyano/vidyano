@@ -9,7 +9,7 @@ import { Icon } from "../icon/icon"
 import { Menu } from "./menu"
 import { SelectReferenceDialog } from "../select-reference-dialog/select-reference-dialog"
 import "../scroller/scroller"
-import { WebComponent, WebComponentListener, ConfigurableWebComponent } from "../web-component/web-component"
+import { WebComponent, ConfigurableWebComponent } from "../web-component/web-component"
 
 @WebComponent.register({
     properties: {
@@ -93,7 +93,7 @@ import { WebComponent, WebComponentListener, ConfigurableWebComponent } from "..
         "vi-menu-item:select": "_onServiceBusSelect"
     }
 })
-export class MenuItem extends ConfigurableWebComponent(WebComponentListener(WebComponent)) {
+export class MenuItem extends ConfigurableWebComponent {
     static get template() { return Polymer.html`<link rel="import" href="menu-item.html">`; }
 
     readonly expand: boolean; private _setExpand: (val: boolean) => void;

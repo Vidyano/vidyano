@@ -1,5 +1,5 @@
 import * as Polymer from "../../libs/polymer/polymer"
-import { WebComponent, WebComponentListener } from "../web-component/web-component";
+import { WebComponent } from "../web-component/web-component";
 
 @WebComponent.register({
     properties: {
@@ -35,7 +35,7 @@ import { WebComponent, WebComponentListener } from "../web-component/web-compone
         "tap": "_tap"
     }
 })
-export class Button extends WebComponentListener(WebComponent) {
+export class Button extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="button.html">`; }
 
     readonly customLayout: boolean; private _setCustomLayout: (custom: boolean) => void;

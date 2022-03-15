@@ -4,9 +4,7 @@ import { Path } from "../../libs/pathjs/pathjs"
 import { AppBase } from "../app/app-base"
 import type { App } from "../app/app"
 import * as Keyboard from "../utils/keyboard"
-import WebComponentListener from "./web-component-listeners"
 import { ConfigurableWebComponent, IConfigurableAction }  from "./web-component-configurable"
-import { WebComponentListenerRegistry } from "./web-component-listeners"
 import { IronA11yKeysElement } from "@polymer/iron-a11y-keys"
 
 Polymer.Settings.setLegacyUndefined(true);
@@ -130,7 +128,7 @@ export interface IObserveChainDisposer {
     (): void;
 }
 
-export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerElement) {
+class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerElement) {
     private _appChangedListener: EventListener;
     private _serviceChangedListener: EventListener;
     readonly isConnected: boolean; private _setIsConnected: (isConnected: boolean) => void;
@@ -148,11 +146,17 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
             
         super.connectedCallback();
         this._setIsConnected(true);
+
+        if (this._updateListeners)
+            this._updateListeners(true);
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
         this._setIsConnected(false);
+
+        if (this._updateListeners)
+            this._updateListeners(false);
         
         if (!!this._appChangedListener)
             window.removeEventListener("app-changed", this._appChangedListener);
@@ -160,6 +164,8 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
         if (!!this._serviceChangedListener)
             this.app.removeEventListener("service-changed", this._serviceChangedListener);
     }
+
+    declare private _updateListeners: (isConnected: boolean) => void;
 
     private _listenForApp() {
         window.addEventListener("app-changed", this._appChangedListener = (e: CustomEvent) => {
@@ -472,10 +478,25 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
         }
 
         if (info.listeners) {
-            if (WebComponentListenerRegistry.implements(element))
-                WebComponentListenerRegistry.registerElement(elementName, element, info.listeners);
-            else
-                console.error(`Element ${elementName} has listeners defined but doesn't implement the WebComponentListener mixin.`);
+            element.prototype._updateListeners = function(isConnected: boolean) {
+                if (isConnected) {
+                    for (const l in info.listeners) {
+                        if (this[info.listeners[l]])
+                            this._addEventListenerToNode(this, l, this[info.listeners[l]].bound = this[info.listeners[l]].bind(this));
+                        else
+                            console.warn(`listener method '${info.listeners[l]}' not defined`);
+                    }
+                }
+                else {
+                    for (const l in info.listeners) {
+                        if (!this[info.listeners[l]])
+                            continue;
+
+                        this._removeEventListenerFromNode(this, l, this[info.listeners[l]].bound);
+                        this[info.listeners[l]].bound = undefined;
+                    }
+                }
+            }
         }
 
         element["observers"] = info.observers || (info.observers = []);
@@ -790,7 +811,7 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
 
 export {
     Keyboard,
-    WebComponentListener,
+    WebComponent,
     ConfigurableWebComponent,
     IConfigurableAction
 }

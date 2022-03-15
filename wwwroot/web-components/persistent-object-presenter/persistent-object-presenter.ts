@@ -1,6 +1,6 @@
 import * as Polymer from "../../libs/polymer/polymer";
 import * as Vidyano from "../../libs/vidyano/vidyano"
-import { ConfigurableWebComponent, WebComponent, WebComponentListener } from "../web-component/web-component"
+import { ConfigurableWebComponent, WebComponent } from "../web-component/web-component"
 import { App, AppBase } from "../app/app"
 import { AppCacheEntryPersistentObject } from "../app-cache/app-cache-entry-persistent-object"
 import { AppCacheEntryPersistentObjectFromAction } from "../app-cache/app-cache-entry-persistent-object-from-action"
@@ -62,7 +62,7 @@ interface IPersistentObjectPresenterRouteParameters {
     },
     sensitive: true
 })
-export class PersistentObjectPresenter extends ConfigurableWebComponent(WebComponentListener(WebComponent)) {
+export class PersistentObjectPresenter extends ConfigurableWebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-presenter.html">`; }
 
     private _cacheEntry: AppCacheEntryPersistentObject;

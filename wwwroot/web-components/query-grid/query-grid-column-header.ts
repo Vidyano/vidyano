@@ -4,7 +4,7 @@ import "../popup-menu/popup-menu"
 import { PopupMenu } from "../popup-menu/popup-menu"
 import { QueryGridColumn } from "./query-grid-column"
 import "./query-grid-column-filter"
-import { WebComponent, WebComponentListener } from "../web-component/web-component"
+import { WebComponent } from "../web-component/web-component"
 
 let resizeObserver: ResizeObserver;
 resizeObserver = new ResizeObserver(allEntries => {
@@ -82,7 +82,7 @@ resizeObserver = new ResizeObserver(allEntries => {
         "_queueMeasure(column, isConnected)"
     ]
 })
-export class QueryGridColumnHeader extends WebComponentListener(WebComponent) {
+export class QueryGridColumnHeader extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-column-header.html">` }
 
     #_lastMeasuredColumn: Vidyano.QueryColumn;

@@ -6,7 +6,7 @@ import { AppCacheEntryPersistentObject } from "../app-cache/app-cache-entry-pers
 import "../notification/notification"
 import "../persistent-object-tab-bar/persistent-object-tab-bar"
 import "../persistent-object-tab-presenter/persistent-object-tab-presenter"
-import { WebComponent, WebComponentListener } from "../web-component/web-component"
+import { WebComponent } from "../web-component/web-component"
 
 @WebComponent.register({
     properties: {
@@ -106,7 +106,7 @@ import { WebComponent, WebComponentListener } from "../web-component/web-compone
     },
     sensitive: true
 })
-export class PersistentObject extends WebComponentListener(WebComponent) {
+export class PersistentObject extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object.html">` }
 
     private _cacheEntry: AppCacheEntryPersistentObject;

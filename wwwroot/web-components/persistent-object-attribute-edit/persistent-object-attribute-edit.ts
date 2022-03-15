@@ -1,7 +1,7 @@
 import * as Polymer from "../../libs/polymer/polymer";
 import * as Vidyano from "../../libs/vidyano/vidyano"
 import "../persistent-object-attribute-validation-error/persistent-object-attribute-validation-error"
-import { WebComponent, WebComponentListener } from "../web-component/web-component"
+import { WebComponent } from "../web-component/web-component"
 
 @WebComponent.register({
     properties: {
@@ -43,7 +43,7 @@ import { WebComponent, WebComponentListener } from "../web-component/web-compone
     ],
     sensitive: true
 })
-export class PersistentObjectAttributeEdit extends WebComponentListener(WebComponent) {
+export class PersistentObjectAttributeEdit extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-edit.html">`; }
 
     private _setFocus: (val: boolean) => void;

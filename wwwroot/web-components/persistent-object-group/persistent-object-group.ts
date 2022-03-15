@@ -2,7 +2,7 @@ import * as Polymer from "../../libs/polymer/polymer";
 import * as Vidyano from "../../libs/vidyano/vidyano"
 import { PersistentObjectAttributeConfig } from "../app/config/persistent-object-attribute-config"
 import { PersistentObjectAttributePresenter } from "../persistent-object-attribute-presenter/persistent-object-attribute-presenter"
-import { WebComponent, WebComponentListener } from "../web-component/web-component"
+import { WebComponent } from "../web-component/web-component"
 
 interface IPersistentObjectGroupItem {
     attribute: Vidyano.PersistentObjectAttribute;
@@ -50,7 +50,7 @@ interface IPersistentObjectGroupRow {
         "group.attributes"
     ]
 })
-export class PersistentObjectGroup extends WebComponentListener(WebComponent) {
+export class PersistentObjectGroup extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-group.html">`; }
 
     private _asyncHandles: number[] = [];

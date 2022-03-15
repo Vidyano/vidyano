@@ -1,7 +1,7 @@
 import * as Polymer from "../../libs/polymer/polymer";
 import type * as Vidyano from "../../libs/vidyano/vidyano"
 import { Popup } from "../popup/popup"
-import { WebComponent, WebComponentListener, IObserveChainDisposer } from "../web-component/web-component"
+import { WebComponent, IObserveChainDisposer } from "../web-component/web-component"
 
 @WebComponent.register({
     properties: {
@@ -43,7 +43,7 @@ import { WebComponent, WebComponentListener, IObserveChainDisposer } from "../we
         "query.filters.currentFilter.name"
     ]
 })
-export class PersistentObjectTabBarItem extends WebComponentListener(WebComponent) {
+export class PersistentObjectTabBarItem extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-tab-bar-item.html">`; }
 
     tab: Vidyano.PersistentObjectTab;

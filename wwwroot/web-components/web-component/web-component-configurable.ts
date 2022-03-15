@@ -1,9 +1,8 @@
-import * as Polymer from "../../libs/polymer/polymer"
 import { PopupMenuItemSplit } from "../popup-menu/popup-menu-item-split"
 import { PopupMenuItem } from "../popup-menu/popup-menu-item"
 import { WebComponent } from "./web-component"
 
-interface IConfigurableAction {
+export interface IConfigurableAction {
     icon: string;
     label: string;
     action: () => void;
@@ -11,13 +10,7 @@ interface IConfigurableAction {
     subActions?: IConfigurableAction[];
 }
 
-interface ConfigurableWebComponent {
-    _viConfigure(actions: IConfigurableAction[]): void;
-}
-
-type Constructor<T = Polymer.PolymerElement> = new (...args: any[]) => T;
-
-const ConfigurableWebComponent = <T extends Constructor>(base: T) => class extends base {
+export abstract class ConfigurableWebComponent extends WebComponent {
     #_onContextmenu: (e: Event) => void;
 
     async connectedCallback() {
@@ -59,9 +52,4 @@ const ConfigurableWebComponent = <T extends Constructor>(base: T) => class exten
         this._removeEventListenerFromNode(this, "contextmenu", this.#_onContextmenu);
         super.disconnectedCallback();
     }
-}
-
-export {
-    ConfigurableWebComponent,
-    IConfigurableAction
 }
