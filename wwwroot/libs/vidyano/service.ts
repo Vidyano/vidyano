@@ -45,7 +45,7 @@ export class Service extends Observable<Service> {
     icons: KeyValue<string>;
     actionDefinitions: KeyValue<ActionDefinition>;
     environment: string = "Web";
-    environmentVersion: string = "2";
+    environmentVersion: string = "3";
 
     constructor(public serviceUri: string, public hooks: ServiceHooks = new ServiceHooks(), public readonly isTransient: boolean = false) {
         super();
@@ -181,7 +181,7 @@ export class Service extends Observable<Service> {
             r.onerror = () => {
                 if (r.status === 0) {
                     const noInternet = NoInternetMessage.messages[navigator.language.split("-")[0].toLowerCase()] || NoInternetMessage.messages["en"];
-                    if (url.endsWith("GetClientData?v=2"))
+                    if (url.endsWith("GetClientData?v=3"))
                         reject(noInternet);
                     else
                         reject(noInternet.message);
@@ -518,7 +518,7 @@ export class Service extends Observable<Service> {
         // if (ServiceWorker.Monitor.available)
         //     await ServiceWorker.Monitor.activation;
 
-        let url = "GetClientData?v=2";
+        let url = "GetClientData?v=3";
         if (this.requestedLanguage)
             url = `${url}&lang=${this.requestedLanguage}`;
 
