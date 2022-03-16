@@ -222,6 +222,9 @@ export class Select extends WebComponent {
     }
 
     private _popupOpened() {
+        if (this.groupSeparator)
+            return;
+
         this.shadowRoot.querySelector("iron-list").fire("iron-resize");
         this._scrollItemIntoView();
     }
