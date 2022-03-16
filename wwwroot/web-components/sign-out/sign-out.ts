@@ -1,7 +1,7 @@
-import * as Polymer from "../../libs/polymer/polymer"
-import * as Vidyano from "../../libs/vidyano/vidyano"
+import * as Polymer from "../../libs/polymer/polymer.js"
+import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import { AppRoute } from '../app-route/app-route.js'
-import { WebComponent } from "../web-component/web-component"
+import { WebComponent } from "../web-component/web-component.js"
 
 @WebComponent.register({
     listeners: {

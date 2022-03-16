@@ -1,7 +1,7 @@
-import { PersistentObject } from "./persistent-object";
-import { PersistentObjectAttribute } from "./persistent-object-attribute";
-import { Query } from "./query";
-import { Service } from "./service";
+import { PersistentObject } from "./persistent-object.js"
+import { PersistentObjectAttribute } from "./persistent-object-attribute.js"
+import { Query } from "./query.js"
+import { Service } from "./service.js"
 
 export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute {
     private _objects: PersistentObject[];

@@ -1,11 +1,11 @@
-import * as Polymer from "../../../../libs/polymer/polymer"
-import * as Vidyano from "../../../../libs/vidyano/vidyano"
-import { Scroller } from "../../../scroller/scroller"
-import { SelectReferenceDialog } from "../../../select-reference-dialog/select-reference-dialog"
-import "./persistent-object-attribute-as-detail-row"
-import { WebComponent } from "../../../web-component/web-component"
-import { PersistentObjectAttribute } from "../../persistent-object-attribute"
-import { PersistentObjectDialog } from "../../../persistent-object-dialog/persistent-object-dialog"
+import * as Polymer from "../../../../libs/polymer/polymer.js"
+import * as Vidyano from "../../../../libs/vidyano/vidyano.js"
+import { Scroller } from "../../../scroller/scroller.js"
+import { SelectReferenceDialog } from "../../../select-reference-dialog/select-reference-dialog.js"
+import "./persistent-object-attribute-as-detail-row.js"
+import { WebComponent } from "../../../web-component/web-component.js"
+import { PersistentObjectAttribute } from "../../persistent-object-attribute.js"
+import { PersistentObjectDialog } from "../../../persistent-object-dialog/persistent-object-dialog.js"
 
 @WebComponent.register({
     properties: {

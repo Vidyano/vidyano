@@ -1,5 +1,5 @@
-import { KeyValue } from "../typings/common";
-import { ISubjectDisposer, ISubjectNotifier, Subject } from "./observable";
+import { KeyValue } from "../typings/common.js"
+import { ISubjectDisposer, ISubjectNotifier, Subject } from "./observable.js"
 
 export type ServiceBusCallback = (sender: any, message: string, detail: any) => void;
 

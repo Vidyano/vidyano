@@ -1,9 +1,9 @@
-import * as Polymer from "../../libs/polymer/polymer"
-import { mixinBehaviors } from "@polymer/polymer/lib/legacy/class"
+import * as Polymer from "../../libs/polymer/polymer.js"
+import { mixinBehaviors } from "@polymer/polymer/lib/legacy/class.js"
 import { IronOverlayBehavior } from "@polymer/iron-overlay-behavior"
-import { SizeTrackerEvent } from "../size-tracker/size-tracker"
-import "../size-tracker/size-tracker"
-import { IPosition, WebComponent } from "../web-component/web-component"
+import { SizeTrackerEvent } from "../size-tracker/size-tracker.js"
+import "../size-tracker/size-tracker.js"
+import { IPosition, WebComponent } from "../web-component/web-component.js"
 
 export class DialogCore extends mixinBehaviors(IronOverlayBehavior, Polymer.PolymerElement) {
     static get template() { return Polymer.html`<link rel="import" href="dialog-core.html">`; }

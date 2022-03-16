@@ -1,6 +1,6 @@
-import { IRoutes } from "./application";
-import { ProgramUnitItem, ProgramUnitItemGroup, ProgramUnitItemPersistentObject, ProgramUnitItemQuery, ProgramUnitItemUrl } from "./program-unit-item";
-import type { Service } from "./service";
+import { IRoutes } from "./application.js"
+import { ProgramUnitItem, ProgramUnitItemGroup, ProgramUnitItemPersistentObject, ProgramUnitItemQuery, ProgramUnitItemUrl } from "./program-unit-item.js"
+import type { Service } from "./service.js"
 
 export class ProgramUnit extends ProgramUnitItem {
     offset: number;

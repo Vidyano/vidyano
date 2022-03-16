@@ -1,4 +1,4 @@
-import "./../vidyano/common/array";
+import "./../vidyano/common/array.js"
 
 export class PathRoutes {
     current: string = null;

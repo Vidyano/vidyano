@@ -1,14 +1,14 @@
-import * as Polymer from "../../../libs/polymer/polymer"
-import * as Vidyano from "../../../libs/vidyano/vidyano"
-import { AppServiceHooks } from "../../app-service-hooks/app-service-hooks";
-import { WebComponent } from "../../web-component/web-component"
-import { AppSetting } from "./app-setting";
-import { PersistentObjectAttributeConfig } from "./persistent-object-attribute-config";
-import { PersistentObjectConfig } from "./persistent-object-config";
-import { PersistentObjectTabConfig } from "./persistent-object-tab-config";
-import { ProgramUnitConfig } from "./program-unit-config";
-import { QueryChartConfig } from "./query-chart-config";
-import { QueryConfig } from "./query-config";
+import * as Polymer from "../../../libs/polymer/polymer.js"
+import * as Vidyano from "../../../libs/vidyano/vidyano.js"
+import { AppServiceHooks } from "../../app-service-hooks/app-service-hooks.js"
+import { WebComponent } from "../../web-component/web-component.js"
+import { AppSetting } from "./app-setting.js"
+import { PersistentObjectAttributeConfig } from "./persistent-object-attribute-config.js"
+import { PersistentObjectConfig } from "./persistent-object-config.js"
+import { PersistentObjectTabConfig } from "./persistent-object-tab-config.js"
+import { ProgramUnitConfig } from "./program-unit-config.js"
+import { QueryChartConfig } from "./query-chart-config.js"
+import { QueryConfig } from "./query-config.js"
 
 @WebComponent.register()
 export class AppConfig extends WebComponent {

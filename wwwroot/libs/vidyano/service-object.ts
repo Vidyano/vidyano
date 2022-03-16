@@ -1,5 +1,5 @@
-import { Observable } from "./common/observable";
-import type { Service } from "./service";
+import { Observable } from "./common/observable.js"
+import type { Service } from "./service.js"
 
 export class ServiceObject extends Observable<ServiceObject> {
     constructor(public service: Service) {

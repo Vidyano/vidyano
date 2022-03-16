@@ -1,9 +1,9 @@
-import * as Polymer from "../../../../libs/polymer/polymer";
-import * as Vidyano from "../../../../libs/vidyano/vidyano"
-import { WebComponent } from "../../../web-component/web-component"
-import { PersistentObjectAttribute } from "../../persistent-object-attribute"
+import * as Polymer from "../../../../libs/polymer/polymer.js"
+import * as Vidyano from "../../../../libs/vidyano/vidyano.js"
+import { WebComponent } from "../../../web-component/web-component.js"
+import { PersistentObjectAttribute } from "../../persistent-object-attribute.js"
 import { Select } from '../../../select/select.js'
-import "../../../select/select"
+import "../../../select/select.js"
 
 @WebComponent.register({
     properties: {

@@ -1,9 +1,9 @@
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
-import * as Polymer from "../../libs/polymer/polymer"
-import { AppRoute } from "../../web-components/app-route/app-route"
-import { WebComponent } from "../../web-components/web-component/web-component"
-import "../../web-components/scroller/scroller"
-import "../../web-components/query-grid/query-grid"
+import * as Polymer from "../../libs/polymer/polymer.js"
+import { AppRoute } from "../../web-components/app-route/app-route.js"
+import { WebComponent } from "../../web-components/web-component/web-component.js"
+import "../../web-components/scroller/scroller.js"
+import "../../web-components/query-grid/query-grid.js"
 
 @WebComponent.register({
     properties: {

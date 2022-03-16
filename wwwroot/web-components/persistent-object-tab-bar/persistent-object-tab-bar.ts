@@ -1,8 +1,8 @@
-import * as Polymer from "../../libs/polymer/polymer";
-import type * as Vidyano from "../../libs/vidyano/vidyano"
-import "./persistent-object-tab-bar-item"
-import { Popup } from "../popup/popup"
-import { WebComponent, IObserveChainDisposer } from "../web-component/web-component"
+import * as Polymer from "../../libs/polymer/polymer.js"
+import type * as Vidyano from "../../libs/vidyano/vidyano.js"
+import "./persistent-object-tab-bar-item.js"
+import { Popup } from "../popup/popup.js"
+import { WebComponent, IObserveChainDisposer } from "../web-component/web-component.js"
 
 @WebComponent.register({
     properties: {

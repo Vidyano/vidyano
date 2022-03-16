@@ -1,7 +1,7 @@
-import * as Dto from "./typings/service";
-import { PersistentObject } from "./persistent-object";
-import type { Service } from "./service";
-import { ProgramUnit } from "./program-unit";
+import * as Dto from "./typings/service.js"
+import { PersistentObject } from "./persistent-object.js"
+import type { Service } from "./service.js"
+import { ProgramUnit } from "./program-unit.js"
 
 export class Application extends PersistentObject {
     private _userId: string;

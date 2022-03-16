@@ -1,11 +1,11 @@
-import * as Polymer from "../../libs/polymer/polymer"
-import * as Vidyano from "../../libs/vidyano/vidyano"
-import { AppServiceHooks } from "../app-service-hooks/app-service-hooks"
-import { IFileDropDetails } from "../file-drop/file-drop"
-import { QueryGrid } from "../query-grid/query-grid"
-import { WebComponent, ConfigurableWebComponent } from "../web-component/web-component"
+import * as Polymer from "../../libs/polymer/polymer.js"
+import * as Vidyano from "../../libs/vidyano/vidyano.js"
+import { AppServiceHooks } from "../app-service-hooks/app-service-hooks.js"
+import { IFileDropDetails } from "../file-drop/file-drop.js"
+import { QueryGrid } from "../query-grid/query-grid.js"
+import { ConfigurableWebComponent } from "../web-component/web-component-configurable.js"
 
-@WebComponent.register({
+@ConfigurableWebComponent.register({
     properties: {
         query: Object,
         loading: {

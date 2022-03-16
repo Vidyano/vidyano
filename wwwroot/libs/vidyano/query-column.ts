@@ -1,12 +1,12 @@
-import * as Dto from "./typings/service";
-import type { QueryResultItemValue } from "./query-result-item-value";
-import { Service } from "./service";
-import { ServiceObject } from "./service-object";
-import type { Query } from "./query";
-import { PersistentObjectAttribute } from "./persistent-object-attribute";
-import type { PersistentObject } from "./persistent-object";
-import { PropertyChangedArgs } from "./common/observable";
-import type { QueryResultItem } from "./query-result-item";
+import * as Dto from "./typings/service.js"
+import type { QueryResultItemValue } from "./query-result-item-value.js"
+import { Service } from "./service.js"
+import { ServiceObject } from "./service-object.js"
+import type { Query } from "./query.js"
+import { PersistentObjectAttribute } from "./persistent-object-attribute.js"
+import type { PersistentObject } from "./persistent-object.js"
+import { PropertyChangedArgs } from "./common/observable.js"
+import type { QueryResultItem } from "./query-result-item.js"
 
 export interface IQueryColumnDistincts {
     matching: string[];

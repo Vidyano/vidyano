@@ -1,10 +1,10 @@
-import * as Polymer from "../../libs/polymer/polymer"
-import { Popup } from "../popup/popup"
-import "./popup-menu-item"
-import "./popup-menu-item-separator"
-import "./popup-menu-item-split"
-import "./popup-menu-item-with-actions"
-import { WebComponent } from "../../web-components/web-component/web-component"
+import * as Polymer from "../../libs/polymer/polymer.js"
+import { Popup } from "../popup/popup.js"
+import "./popup-menu-item.js"
+import "./popup-menu-item-separator.js"
+import "./popup-menu-item-split.js"
+import "./popup-menu-item-with-actions.js"
+import { WebComponent } from "../../web-components/web-component/web-component.js"
 
 @WebComponent.register({
     properties: {

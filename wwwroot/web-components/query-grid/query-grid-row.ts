@@ -1,16 +1,16 @@
-import * as Vidyano from "../../libs/vidyano/vidyano"
-import * as Polymer from "../../libs/polymer/polymer"
-import { Path } from "../../libs/pathjs/pathjs"
-import { App } from "../app/app"
-import { ActionButton } from "../action-button/action-button"
-import { Popup } from "../popup/popup"
-import { QueryGrid } from "./query-grid"
-import { QueryGridCell } from "./cell-templates/query-grid-cell";
-import { QueryGridCellBoolean } from "./cell-templates/query-grid-cell-boolean";
-import { QueryGridCellDefault } from "./cell-templates/query-grid-cell-default";
-import { QueryGridCellImage } from "./cell-templates/query-grid-cell-image";
-import { QueryGridRowGroup } from "./query-grid-row-group";
-import { WebComponent } from "../web-component/web-component"
+import * as Vidyano from "../../libs/vidyano/vidyano.js"
+import * as Polymer from "../../libs/polymer/polymer.js"
+import { Path } from "../../libs/pathjs/pathjs.js"
+import { App } from "../app/app.js"
+import { ActionButton } from "../action-button/action-button.js"
+import { Popup } from "../popup/popup.js"
+import { QueryGrid } from "./query-grid.js"
+import { QueryGridCell } from "./cell-templates/query-grid-cell.js"
+import { QueryGridCellBoolean } from "./cell-templates/query-grid-cell-boolean.js"
+import { QueryGridCellDefault } from "./cell-templates/query-grid-cell-default.js"
+import { QueryGridCellImage } from "./cell-templates/query-grid-cell-image.js"
+import { QueryGridRowGroup } from "./query-grid-row-group.js"
+import { WebComponent } from "../web-component/web-component.js"
 
 export interface IItemTapEventArgs {
     item: Vidyano.QueryResultItem;

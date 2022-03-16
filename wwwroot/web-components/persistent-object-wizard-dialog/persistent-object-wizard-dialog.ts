@@ -1,8 +1,8 @@
-import * as Polymer from "../../libs/polymer/polymer"
-import * as Vidyano from "../../libs/vidyano/vidyano"
-import { Dialog } from "../dialog/dialog"
-import { SizeTrackerEvent } from "../size-tracker/size-tracker"
-import { WebComponent } from "../web-component/web-component"
+import * as Polymer from "../../libs/polymer/polymer.js"
+import * as Vidyano from "../../libs/vidyano/vidyano.js"
+import { Dialog } from "../dialog/dialog.js"
+import { SizeTrackerEvent } from "../size-tracker/size-tracker.js"
+import { WebComponent } from "../web-component/web-component.js"
 
 @WebComponent.register({
     properties: {

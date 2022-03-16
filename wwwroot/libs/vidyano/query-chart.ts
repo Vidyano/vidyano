@@ -1,5 +1,5 @@
-import { Observable } from "./common/observable";
-import { Query } from "./query";
+import { Observable } from "./common/observable.js"
+import { Query } from "./query.js"
 
 export class QueryChart extends Observable<QueryChart> {
     constructor(private _query: Query, private _label: string, private _name: string, private _options: any, private _type: string) {

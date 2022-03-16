@@ -1,7 +1,7 @@
-import { PersistentObject } from "./persistent-object";
-import { Query } from "./query";
-import { QueryResultItem } from "./query-result-item";
-import { Service } from "./service";
+import { PersistentObject } from "./persistent-object.js"
+import { Query } from "./query.js"
+import { QueryResultItem } from "./query-result-item.js"
+import { Service } from "./service.js"
 
 export class ExecuteActionArgs {
     private _action: string;

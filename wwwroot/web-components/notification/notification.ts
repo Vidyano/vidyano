@@ -1,7 +1,7 @@
-import * as Polymer from "../../libs/polymer/polymer"
-import * as Vidyano from "../../libs/vidyano/vidyano"
-import { Icon } from "../icon/icon";
-import { WebComponent } from "../web-component/web-component"
+import * as Polymer from "../../libs/polymer/polymer.js"
+import * as Vidyano from "../../libs/vidyano/vidyano.js"
+import { Icon } from "../icon/icon.js"
+import { WebComponent } from "../web-component/web-component.js"
 
 const findUriLabel = /\[url:([^|]+)\|((https?:\/\/[-\w]+(\.[-\w]+)*(:\d+)?(\/#?!?[^\.\s]*(\.[^\.\s]+)*)?)|(#!\/)?[^\]]+)]/g;
 const findUri = /(https?:\/\/[-\w]+(\.[-\w]+)*(:\d+)?(\/#?!?[^\.\s]*(\.[^\.\s]+)*)?)/g;

@@ -1,4 +1,4 @@
-import { CultureInfo } from "./../cultures";
+import { CultureInfo } from "./../cultures.js"
 
 declare global {
     export interface Date {

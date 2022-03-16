@@ -1,9 +1,9 @@
-import * as Polymer from "../../../../libs/polymer/polymer";
-import * as Vidyano from "../../../../libs/vidyano/vidyano"
-import "../../../button/button"
-import { SelectReferenceDialog } from "../../../select-reference-dialog/select-reference-dialog"
-import { WebComponent } from "../../../web-component/web-component"
-import { PersistentObjectAttribute } from "../../persistent-object-attribute"
+import * as Polymer from "../../../../libs/polymer/polymer.js"
+import * as Vidyano from "../../../../libs/vidyano/vidyano.js"
+import "../../../button/button.js"
+import { SelectReferenceDialog } from "../../../select-reference-dialog/select-reference-dialog.js"
+import { WebComponent } from "../../../web-component/web-component.js"
+import { PersistentObjectAttribute } from "../../persistent-object-attribute.js"
 
 @WebComponent.register({
     properties: {

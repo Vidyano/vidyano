@@ -1,7 +1,7 @@
-import { Observable } from "./common/observable";
-import { PersistentObject } from "./persistent-object";
-import { PersistentObjectAttribute } from "./persistent-object-attribute";
-import { Service } from "./service";
+import { Observable } from "./common/observable.js"
+import { PersistentObject } from "./persistent-object.js"
+import { PersistentObjectAttribute } from "./persistent-object-attribute.js"
+import { Service } from "./service.js"
 
 export class PersistentObjectAttributeGroup extends Observable<PersistentObjectAttributeGroup> {
     private _attributes: PersistentObjectAttribute[];

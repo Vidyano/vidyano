@@ -1,8 +1,8 @@
-import * as Polymer from "../../libs/polymer/polymer"
-import { IronFitBehavior } from "@polymer/iron-fit-behavior/iron-fit-behavior"
-import "../size-tracker/size-tracker"
-import { ISize } from "../size-tracker/size-tracker"
-import { WebComponent } from "../web-component/web-component"
+import * as Polymer from "../../libs/polymer/polymer.js"
+import { IronFitBehavior } from "@polymer/iron-fit-behavior"
+import "../size-tracker/size-tracker.js"
+import { ISize } from "../size-tracker/size-tracker.js"
+import { WebComponent } from "../web-component/web-component.js"
 
 let _documentClosePopupListener: EventListener;
 document.addEventListener("mousedown", _documentClosePopupListener = e => {

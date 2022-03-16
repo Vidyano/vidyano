@@ -1,10 +1,9 @@
-import * as Polymer from "../../libs/polymer/polymer"
-import * as Vidyano from "../../libs/vidyano/vidyano"
-import { Path } from "../../libs/pathjs/pathjs"
-import { AppBase } from "../app/app-base"
-import type { App } from "../app/app"
-import * as Keyboard from "../utils/keyboard"
-import { ConfigurableWebComponent, IConfigurableAction }  from "./web-component-configurable"
+import * as Polymer from "../../libs/polymer/polymer.js"
+import * as Vidyano from "../../libs/vidyano/vidyano.js"
+import { Path } from "../../libs/pathjs/pathjs.js"
+import type { AppBase } from "../app/app-base.js"
+import type { App } from "../app/app.js"
+import * as Keyboard from "../utils/keyboard.js"
 import { IronA11yKeysElement } from "@polymer/iron-a11y-keys"
 
 Polymer.Settings.setLegacyUndefined(true);
@@ -811,7 +810,5 @@ class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerElement)
 
 export {
     Keyboard,
-    WebComponent,
-    ConfigurableWebComponent,
-    IConfigurableAction
+    WebComponent
 }

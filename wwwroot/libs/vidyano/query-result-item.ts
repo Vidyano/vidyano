@@ -1,9 +1,9 @@
-import { Query } from "./query";
-import { Service } from "./service";
-import { ServiceObject } from "./service-object";
-import { QueryResultItemValue } from "./query-result-item-value";
-import { PersistentObject } from "./persistent-object";
-import { PersistentObjectAttribute } from "./persistent-object-attribute";
+import { Query } from "./query.js"
+import { Service } from "./service.js"
+import { ServiceObject } from "./service-object.js"
+import { QueryResultItemValue } from "./query-result-item-value.js"
+import { PersistentObject } from "./persistent-object.js"
+import { PersistentObjectAttribute } from "./persistent-object-attribute.js"
 
 export class QueryResultItem extends ServiceObject {
     private _ignoreSelect: boolean;

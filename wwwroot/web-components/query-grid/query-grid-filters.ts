@@ -1,8 +1,8 @@
-import * as Vidyano from "../../libs/vidyano/vidyano"
-import * as Polymer from "../../libs/polymer/polymer"
-import { Popup } from "../popup/popup"
-import { QueryGridFilterDialog } from "./query-grid-filter-dialog"
-import { WebComponent } from "../web-component/web-component"
+import * as Vidyano from "../../libs/vidyano/vidyano.js"
+import * as Polymer from "../../libs/polymer/polymer.js"
+import { Popup } from "../popup/popup.js"
+import { QueryGridFilterDialog } from "./query-grid-filter-dialog.js"
+import { WebComponent } from "../web-component/web-component.js"
 
 interface IQueryFilter {
     filter?: Vidyano.QueryFilter;

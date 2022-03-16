@@ -1,6 +1,6 @@
-import * as Polymer from "../../libs/polymer/polymer"
-import { QueryGridColumn } from "./query-grid-column"
-import { WebComponent } from "../web-component/web-component"
+import * as Polymer from "../../libs/polymer/polymer.js"
+import { QueryGridColumn } from "./query-grid-column.js"
+import { WebComponent } from "../web-component/web-component.js"
 
 @WebComponent.register({
     properties: {

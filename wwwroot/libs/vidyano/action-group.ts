@@ -1,8 +1,8 @@
-import { Action } from "./action";
-import type { ActionDefinition } from "./action-definition";
-import { ISubjectDisposer, PropertyChangedArgs } from "./common/observable";
-import type { Service } from "./service";
-import { ServiceObject } from "./service-object";
+import { Action } from "./action.js"
+import type { ActionDefinition } from "./action-definition.js"
+import { ISubjectDisposer, PropertyChangedArgs } from "./common/observable.js"
+import type { Service } from "./service.js"
+import { ServiceObject } from "./service-object.js"
 
 interface IActionGroupAction {
     action: Action;

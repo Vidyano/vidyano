@@ -1,10 +1,10 @@
-import * as Vidyano from "../../libs/vidyano/vidyano"
-import * as Polymer from "../../libs/polymer/polymer"
-import { AppCacheEntryQuery } from "../app-cache/app-cache-entry-query"
-import { App } from "../app/app"
-import { Query } from "../query/query"
-import "../query-items-presenter/query-items-presenter"
-import { WebComponent } from "../web-component/web-component"
+import * as Vidyano from "../../libs/vidyano/vidyano.js"
+import * as Polymer from "../../libs/polymer/polymer.js"
+import { AppCacheEntryQuery } from "../app-cache/app-cache-entry-query.js"
+import { App } from "../app/app.js"
+import { Query } from "../query/query.js"
+import "../query-items-presenter/query-items-presenter.js"
+import { WebComponent } from "../web-component/web-component.js"
 
 interface IQueryPresenterRouteParameters {
     programUnitName: string;

@@ -1,6 +1,6 @@
-import * as Polymer from "../../libs/polymer/polymer"
-import { AppServiceHooks } from "../app-service-hooks/app-service-hooks"
-import { WebComponent } from "../web-component/web-component"
+import * as Polymer from "../../libs/polymer/polymer.js"
+import { AppServiceHooks } from "../app-service-hooks/app-service-hooks.js"
+import { WebComponent } from "../web-component/web-component.js"
 
 export interface IAppRouteActivatedArgs {
     route: AppRoute;

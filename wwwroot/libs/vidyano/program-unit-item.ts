@@ -1,7 +1,7 @@
-import type { IRoutes } from "./application";
-import type { ProgramUnit } from "./program-unit";
-import type { Service } from "./service";
-import { ServiceObject } from "./service-object";
+import type { IRoutes } from "./application.js"
+import type { ProgramUnit } from "./program-unit.js"
+import type { Service } from "./service.js"
+import { ServiceObject } from "./service-object.js"
 
 export class ProgramUnitItem extends ServiceObject {
     id: string;

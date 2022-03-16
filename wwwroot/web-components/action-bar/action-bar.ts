@@ -1,9 +1,9 @@
-﻿import * as Polymer from "../../libs/polymer/polymer"
-import * as Vidyano from "../../libs/vidyano/vidyano"
-import "../action-button/action-button"
-import { App } from "../app/app"
-import "../overflow/overflow"
-import { WebComponent } from "../web-component/web-component"
+﻿import * as Polymer from "../../libs/polymer/polymer.js"
+import * as Vidyano from "../../libs/vidyano/vidyano.js"
+import "../action-button/action-button.js"
+import { App } from "../app/app.js"
+import "../overflow/overflow.js"
+import { WebComponent } from "../web-component/web-component.js"
 
 @WebComponent.register({
     properties:

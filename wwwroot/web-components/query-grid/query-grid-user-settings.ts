@@ -1,5 +1,5 @@
-import * as Vidyano from "../../libs/vidyano/vidyano"
-import { QueryGridColumn, IQueryGridUserSettingsColumnData } from "./query-grid-column"
+import * as Vidyano from "../../libs/vidyano/vidyano.js"
+import { QueryGridColumn, IQueryGridUserSettingsColumnData } from "./query-grid-column.js"
 
 export class QueryGridUserSettings extends Vidyano.Observable<QueryGridUserSettings> {
     private _columnsByName: { [key: string]: QueryGridColumn; } = {};

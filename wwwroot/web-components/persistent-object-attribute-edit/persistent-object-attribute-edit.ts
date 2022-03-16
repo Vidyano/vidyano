@@ -1,7 +1,7 @@
-import * as Polymer from "../../libs/polymer/polymer";
-import * as Vidyano from "../../libs/vidyano/vidyano"
-import "../persistent-object-attribute-validation-error/persistent-object-attribute-validation-error"
-import { WebComponent } from "../web-component/web-component"
+import * as Polymer from "../../libs/polymer/polymer.js"
+import * as Vidyano from "../../libs/vidyano/vidyano.js"
+import "../persistent-object-attribute-validation-error/persistent-object-attribute-validation-error.js"
+import { WebComponent } from "../web-component/web-component.js"
 
 @WebComponent.register({
     properties: {

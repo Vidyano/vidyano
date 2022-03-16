@@ -1,4 +1,4 @@
-import { WebComponent } from "../web-component/web-component"
+import { WebComponent } from "../web-component/web-component.js"
 import * as Sortablejs from "sortablejs"
 
 const _groups: Sortable[] = [];

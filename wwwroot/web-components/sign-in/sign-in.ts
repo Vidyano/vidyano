@@ -1,8 +1,8 @@
-import * as Polymer from "../../libs/polymer/polymer"
-import * as Vidyano from "../../libs/vidyano/vidyano"
+import * as Polymer from "../../libs/polymer/polymer.js"
+import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import type { PersistentObjectTabPresenter } from '../persistent-object-tab-presenter/persistent-object-tab-presenter.js'
 import { ISize } from '../size-tracker/size-tracker.js'
-import { Keyboard, WebComponent } from "../web-component/web-component"
+import { Keyboard, WebComponent } from "../web-component/web-component.js"
 
 declare type Step = "username" | "password" | "twofactor" | "register" | "initial";
 

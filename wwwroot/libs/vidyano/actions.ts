@@ -1,9 +1,9 @@
-import { Action, IActionExecuteOptions, Actions } from "./action";
-import type { ActionDefinition } from "./action-definition";
-import type { Service } from "./service";
-import type { ServiceObjectWithActions } from "./service-object-with-actions";
-import type { PersistentObject } from "./persistent-object";
-import type { IExecuteMethodOperation, IOpenOperation } from "./client-operations";
+import { Action, IActionExecuteOptions, Actions } from "./action.js"
+import type { ActionDefinition } from "./action-definition.js"
+import type { Service } from "./service.js"
+import type { ServiceObjectWithActions } from "./service-object-with-actions.js"
+import type { PersistentObject } from "./persistent-object.js"
+import type { IExecuteMethodOperation, IOpenOperation } from "./client-operations.js"
 
 Actions.CancelEdit = class CancelEdit extends Action {
     constructor(service: Service, definition: ActionDefinition, owner: ServiceObjectWithActions) {

@@ -1,12 +1,12 @@
-import * as Polymer from "../../../../libs/polymer/polymer";
-import * as Vidyano from "../../../../libs/vidyano/vidyano"
-import { Path } from "../../../../libs/pathjs/pathjs"
-import { App } from "../../../app/app";
-import { PersistentObjectAttribute } from "../../persistent-object-attribute"
-import { SelectReferenceDialog } from "../../../select-reference-dialog/select-reference-dialog"
-import { WebComponent } from "../../../web-component/web-component"
-import type { Select } from "../../../select/select"
-import "../../../select/select"
+import * as Polymer from "../../../../libs/polymer/polymer.js"
+import * as Vidyano from "../../../../libs/vidyano/vidyano.js"
+import { Path } from "../../../../libs/pathjs/pathjs.js"
+import { App } from "../../../app/app.js"
+import { PersistentObjectAttribute } from "../../persistent-object-attribute.js"
+import { SelectReferenceDialog } from "../../../select-reference-dialog/select-reference-dialog.js"
+import { WebComponent } from "../../../web-component/web-component.js"
+import type { Select } from "../../../select/select.js"
+import "../../../select/select.js"
 
 @WebComponent.register({
     properties: {

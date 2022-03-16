@@ -1,23 +1,23 @@
-import * as Dto from "./typings/service";
-import { NotificationType, Service } from "./service";
-import { ServiceObjectWithActions } from "./service-object-with-actions";
-import { Action, ISelectedItemsActionArgs } from "./action";
-import { ClientOperations, IClientOperation, IExecuteMethodOperation, IOpenOperation } from "./client-operations";
-import { PersistentObject } from "./persistent-object";
-import { ExecuteActionArgs } from "./execute-action-args";
-import { ServiceObject } from "./service-object";
-import { Application } from "./application";
-import { PersistentObjectAttributeGroup } from "./persistent-object-attribute-group";
-import { PersistentObjectAttributeTab, PersistentObjectQueryTab, PersistentObjectTab } from "./persistent-object-tab";
-import { Query } from "./query";
-import { PersistentObjectAttribute } from "./persistent-object-attribute";
-import { PersistentObjectAttributeWithReference } from "./persistent-object-attribute-with-reference";
-import { PersistentObjectAttributeAsDetail } from "./persistent-object-attribute-as-detail";
-import { QueryResultItem } from "./query-result-item";
-import { QueryResultItemValue } from "./query-result-item-value";
-import { QueryColumn } from "./query-column";
-import { Language } from "./language";
-import { cookiePrefix } from "./cookie";
+import * as Dto from "./typings/service.js"
+import { NotificationType, Service } from "./service.js"
+import { ServiceObjectWithActions } from "./service-object-with-actions.js"
+import { Action, ISelectedItemsActionArgs } from "./action.js"
+import { ClientOperations, IClientOperation, IExecuteMethodOperation, IOpenOperation } from "./client-operations.js"
+import { PersistentObject } from "./persistent-object.js"
+import { ExecuteActionArgs } from "./execute-action-args.js"
+import { ServiceObject } from "./service-object.js"
+import { Application } from "./application.js"
+import { PersistentObjectAttributeGroup } from "./persistent-object-attribute-group.js"
+import { PersistentObjectAttributeTab, PersistentObjectQueryTab, PersistentObjectTab } from "./persistent-object-tab.js"
+import { Query } from "./query.js"
+import { PersistentObjectAttribute } from "./persistent-object-attribute.js"
+import { PersistentObjectAttributeWithReference } from "./persistent-object-attribute-with-reference.js"
+import { PersistentObjectAttributeAsDetail } from "./persistent-object-attribute-as-detail.js"
+import { QueryResultItem } from "./query-result-item.js"
+import { QueryResultItemValue } from "./query-result-item-value.js"
+import { QueryColumn } from "./query-column.js"
+import { Language } from "./language.js"
+import { cookiePrefix } from "./cookie.js"
 
 export class ServiceHooks {
     private _service: Service;

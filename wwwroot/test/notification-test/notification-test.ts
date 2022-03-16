@@ -1,7 +1,7 @@
-import * as Vidyano from "../../libs/vidyano/vidyano"
-import * as Polymer from "../../libs/polymer/polymer"
-import "../../web-components/notification/notification"
-import { WebComponent } from "../../web-components/web-component/web-component"
+import * as Vidyano from "../../libs/vidyano/vidyano.js"
+import * as Polymer from "../../libs/polymer/polymer.js"
+import "../../web-components/notification/notification.js"
+import { WebComponent } from "../../web-components/web-component/web-component.js"
 
 @WebComponent.register({
     properties: {

@@ -1,12 +1,12 @@
-import * as Polymer from "../../libs/polymer/polymer";
-import * as Vidyano from "../../libs/vidyano/vidyano"
-import { ISize } from "../size-tracker/size-tracker"
-import { ConfigurableWebComponent, WebComponent } from "../web-component/web-component"
-import "../persistent-object-group/persistent-object-group"
-import { PersistentObjectAttributePresenter } from "../persistent-object-attribute-presenter/persistent-object-attribute-presenter"
-import "../size-tracker/size-tracker"
+import * as Polymer from "../../libs/polymer/polymer.js"
+import * as Vidyano from "../../libs/vidyano/vidyano.js"
+import { ISize } from "../size-tracker/size-tracker.js"
+import "../persistent-object-group/persistent-object-group.js"
+import { PersistentObjectAttributePresenter } from "../persistent-object-attribute-presenter/persistent-object-attribute-presenter.js"
+import "../size-tracker/size-tracker.js"
+import { ConfigurableWebComponent } from "../web-component/web-component-configurable.js"
 
-@WebComponent.register({
+@ConfigurableWebComponent.register({
     properties: {
         tab: Object,
         columns: {

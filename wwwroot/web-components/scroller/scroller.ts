@@ -1,6 +1,6 @@
-import * as Polymer from "../../libs/polymer/polymer"
-import "../size-tracker/size-tracker"
-import { WebComponent } from "../web-component/web-component"
+import * as Polymer from "../../libs/polymer/polymer.js"
+import "../size-tracker/size-tracker.js"
+import { WebComponent } from "../web-component/web-component.js"
 
 @WebComponent.register({
     properties: {

@@ -1,7 +1,7 @@
-import { Queue } from "./common/queue";
-import { ServiceObject } from "./service-object";
-import type { NotificationType, Service } from "./service";
-import { Action } from "./action";
+import { Queue } from "./common/queue.js"
+import { ServiceObject } from "./service-object.js"
+import type { NotificationType, Service } from "./service.js"
+import { Action } from "./action.js"
 
 export class ServiceObjectWithActions extends ServiceObject {
     private _queue: Queue;

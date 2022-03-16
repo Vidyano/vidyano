@@ -1,8 +1,8 @@
 import BigNumber from 'bignumber.js';
-import * as Polymer from "../../../../libs/polymer/polymer";
-import * as Vidyano from "../../../../libs/vidyano/vidyano"
-import { Keyboard, WebComponent } from "../../../web-component/web-component"
-import { PersistentObjectAttribute } from "../../persistent-object-attribute"
+import * as Polymer from "../../../../libs/polymer/polymer.js"
+import * as Vidyano from "../../../../libs/vidyano/vidyano.js"
+import { Keyboard, WebComponent } from "../../../web-component/web-component.js"
+import { PersistentObjectAttribute } from "../../persistent-object-attribute.js"
 
 @WebComponent.register({
     properties: {

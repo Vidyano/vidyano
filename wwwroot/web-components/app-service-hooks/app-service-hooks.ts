@@ -1,12 +1,12 @@
-﻿import * as Vidyano from "../../libs/vidyano/vidyano"
-import { guid } from "../../libs/utils/guid"
-import { App } from "../app/app"
-import { AppServiceHooksBase } from "./app-service-hooks-base"
-import { AppCacheEntryPersistentObject } from "../app-cache/app-cache-entry-persistent-object"
-import { AppCacheEntryPersistentObjectFromAction } from "../app-cache/app-cache-entry-persistent-object-from-action"
-import { AppCacheEntryQuery } from "../app-cache/app-cache-entry-query"
-import { PersistentObjectDialog } from "../persistent-object-dialog/persistent-object-dialog"
-import { PersistentObjectWizardDialog } from "../persistent-object-wizard-dialog/persistent-object-wizard-dialog"
+﻿import * as Vidyano from "../../libs/vidyano/vidyano.js"
+import { guid } from "../../libs/utils/guid.js"
+import { App } from "../app/app.js"
+import { AppServiceHooksBase } from "./app-service-hooks-base.js"
+import { AppCacheEntryPersistentObject } from "../app-cache/app-cache-entry-persistent-object.js"
+import { AppCacheEntryPersistentObjectFromAction } from "../app-cache/app-cache-entry-persistent-object-from-action.js"
+import { AppCacheEntryQuery } from "../app-cache/app-cache-entry-query.js"
+import { PersistentObjectDialog } from "../persistent-object-dialog/persistent-object-dialog.js"
+import { PersistentObjectWizardDialog } from "../persistent-object-wizard-dialog/persistent-object-wizard-dialog.js"
 
 export class AppServiceHooks extends AppServiceHooksBase {
     constructor(public app: App) {

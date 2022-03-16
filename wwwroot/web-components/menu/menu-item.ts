@@ -1,17 +1,17 @@
-import * as Vidyano from "../../libs/vidyano/vidyano"
-import * as Polymer from "../../libs/polymer/polymer"
-import { Path } from "../../libs/pathjs/pathjs"
+import * as Vidyano from "../../libs/vidyano/vidyano.js"
+import * as Polymer from "../../libs/polymer/polymer.js"
+import { Path } from "../../libs/pathjs/pathjs.js"
 import "@polymer/iron-collapse"
-import { App } from "../app/app"
-import { AppCacheEntryPersistentObject } from "../app-cache/app-cache-entry-persistent-object"
-import { AppCacheEntryQuery } from "../app-cache/app-cache-entry-query"
-import { Icon } from "../icon/icon"
-import { Menu } from "./menu"
-import { SelectReferenceDialog } from "../select-reference-dialog/select-reference-dialog"
-import "../scroller/scroller"
-import { WebComponent, ConfigurableWebComponent } from "../web-component/web-component"
+import { App } from "../app/app.js"
+import { AppCacheEntryPersistentObject } from "../app-cache/app-cache-entry-persistent-object.js"
+import { AppCacheEntryQuery } from "../app-cache/app-cache-entry-query.js"
+import { Icon } from "../icon/icon.js"
+import { Menu } from "./menu.js"
+import { SelectReferenceDialog } from "../select-reference-dialog/select-reference-dialog.js"
+import "../scroller/scroller.js"
+import { ConfigurableWebComponent } from "../web-component/web-component-configurable.js"
 
-@WebComponent.register({
+@ConfigurableWebComponent.register({
     properties: {
         item: Object,
         items: Array,

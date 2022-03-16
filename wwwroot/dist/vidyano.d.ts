@@ -8574,6 +8574,694 @@ declare namespace renderStatus_d {
  *   https://github.com/Polymer/tools/tree/master/packages/gen-typescript-declarations
  *
  * To modify these typings, edit the source file(s):
+ *   iron-fit-behavior.js
+ */
+
+
+/**
+ * `Polymer.IronFitBehavior` fits an element in another element using `max-height`
+ * and `max-width`, and optionally centers it in the window or another element.
+ *
+ * The element will only be sized and/or positioned if it has not already been
+ * sized and/or positioned by CSS.
+ *
+ * CSS properties            | Action
+ * --------------------------|-------------------------------------------
+ * `position` set            | Element is not centered horizontally or vertically
+ * `top` or `bottom` set     | Element is not vertically centered
+ * `left` or `right` set     | Element is not horizontally centered
+ * `max-height` set          | Element respects `max-height`
+ * `max-width` set           | Element respects `max-width`
+ *
+ * `Polymer.IronFitBehavior` can position an element into another element using
+ * `verticalAlign` and `horizontalAlign`. This will override the element's css
+ * position.
+ *
+ *     <div class="container">
+ *       <iron-fit-impl vertical-align="top" horizontal-align="auto">
+ *         Positioned into the container
+ *       </iron-fit-impl>
+ *     </div>
+ *
+ * Use `noOverlap` to position the element around another element without
+ * overlapping it.
+ *
+ *     <div class="container">
+ *       <iron-fit-impl no-overlap vertical-align="auto" horizontal-align="auto">
+ *         Positioned around the container
+ *       </iron-fit-impl>
+ *     </div>
+ *
+ * Use `horizontalOffset, verticalOffset` to offset the element from its
+ * `positionTarget`; `Polymer.IronFitBehavior` will collapse these in order to
+ * keep the element within `fitInto` boundaries, while preserving the element's
+ * CSS margin values.
+ *
+ *     <div class="container">
+ *       <iron-fit-impl vertical-align="top" vertical-offset="20">
+ *         With vertical offset
+ *       </iron-fit-impl>
+ *     </div>
+ */
+interface IronFitBehavior {
+
+  /**
+   * The element that will receive a `max-height`/`width`. By default it is
+   * the same as `this`, but it can be set to a child element. This is useful,
+   * for example, for implementing a scrolling region inside the element.
+   */
+  sizingTarget: Element;
+
+  /**
+   * The element to fit `this` into.
+   */
+  fitInto: object|null|undefined;
+
+  /**
+   * Will position the element around the positionTarget without overlapping
+   * it.
+   */
+  noOverlap: boolean|null|undefined;
+
+  /**
+   * The element that should be used to position the element. If not set, it
+   * will default to the parent node.
+   */
+  positionTarget: Element;
+
+  /**
+   * The orientation against which to align the element horizontally
+   * relative to the `positionTarget`. Possible values are "left", "right",
+   * "center", "auto".
+   */
+  horizontalAlign: string|null|undefined;
+
+  /**
+   * The orientation against which to align the element vertically
+   * relative to the `positionTarget`. Possible values are "top", "bottom",
+   * "middle", "auto".
+   */
+  verticalAlign: string|null|undefined;
+
+  /**
+   * If true, it will use `horizontalAlign` and `verticalAlign` values as
+   * preferred alignment and if there's not enough space, it will pick the
+   * values which minimize the cropping.
+   */
+  dynamicAlign: boolean|null|undefined;
+
+  /**
+   * A pixel value that will be added to the position calculated for the
+   * given `horizontalAlign`, in the direction of alignment. You can think
+   * of it as increasing or decreasing the distance to the side of the
+   * screen given by `horizontalAlign`.
+   *
+   * If `horizontalAlign` is "left" or "center", this offset will increase or
+   * decrease the distance to the left side of the screen: a negative offset
+   * will move the dropdown to the left; a positive one, to the right.
+   *
+   * Conversely if `horizontalAlign` is "right", this offset will increase
+   * or decrease the distance to the right side of the screen: a negative
+   * offset will move the dropdown to the right; a positive one, to the left.
+   */
+  horizontalOffset: number|null|undefined;
+
+  /**
+   * A pixel value that will be added to the position calculated for the
+   * given `verticalAlign`, in the direction of alignment. You can think
+   * of it as increasing or decreasing the distance to the side of the
+   * screen given by `verticalAlign`.
+   *
+   * If `verticalAlign` is "top" or "middle", this offset will increase or
+   * decrease the distance to the top side of the screen: a negative offset
+   * will move the dropdown upwards; a positive one, downwards.
+   *
+   * Conversely if `verticalAlign` is "bottom", this offset will increase
+   * or decrease the distance to the bottom side of the screen: a negative
+   * offset will move the dropdown downwards; a positive one, upwards.
+   */
+  verticalOffset: number|null|undefined;
+
+  /**
+   * Set to true to auto-fit on attach.
+   */
+  autoFitOnAttach: boolean|null|undefined;
+
+  /**
+   * If true and scrollbars are added to `sizingTarget` after it is
+   * positioned, the size of the added scrollbars will be added to its
+   * `maxWidth` and `maxHeight`.
+   */
+  expandSizingTargetForScrollbars: boolean|null|undefined;
+  _fitInfo: object|null;
+  readonly _fitWidth: any;
+  readonly _fitHeight: any;
+  readonly _fitLeft: any;
+  readonly _fitTop: any;
+
+  /**
+   * The element that should be used to position the element,
+   * if no position target is configured.
+   *    
+   */
+  readonly _defaultPositionTarget: any;
+
+  /**
+   * The horizontal align value, accounting for the RTL/LTR text direction.
+   *    
+   */
+  readonly _localeHorizontalAlign: any;
+  attached(): void;
+  detached(): void;
+
+  /**
+   * Positions and fits the element into the `fitInto` element.
+   */
+  fit(): void;
+
+  /**
+   * Memoize information needed to position and size the target element.
+   */
+  _discoverInfo(): void;
+
+  /**
+   * Resets the target element's position and size constraints, and clear
+   * the memoized data.
+   */
+  resetFit(): void;
+
+  /**
+   * Equivalent to calling `resetFit()` and `fit()`. Useful to call this after
+   * the element or the `fitInto` element has been resized, or if any of the
+   * positioning properties (e.g. `horizontalAlign, verticalAlign`) is updated.
+   * It preserves the scroll position of the sizingTarget.
+   */
+  refit(): void;
+
+  /**
+   * Positions the element according to `horizontalAlign, verticalAlign`.
+   */
+  position(): void;
+
+  /**
+   * Constrains the size of the element to `fitInto` by setting `max-height`
+   * and/or `max-width`.
+   */
+  constrain(): void;
+  _sizeDimension(rect: any, positionedBy: any, start: any, end: any, extent: any): void;
+
+  /**
+   * Centers horizontally and vertically if not already positioned. This also
+   * sets `position:fixed`.
+   */
+  center(): void;
+}
+
+declare const IronFitBehavior: object;
+
+/**
+ * DO NOT EDIT
+ *
+ * This file was automatically generated by
+ *   https://github.com/Polymer/tools/tree/master/packages/gen-typescript-declarations
+ *
+ * To modify these typings, edit the source file(s):
+ *   iron-resizable-behavior.js
+ */
+
+
+/**
+ * `IronResizableBehavior` is a behavior that can be used in Polymer elements to
+ * coordinate the flow of resize events between "resizers" (elements that
+ * control the size or hidden state of their children) and "resizables" (elements
+ * that need to be notified when they are resized or un-hidden by their parents
+ * in order to take action on their new measurements).
+ *
+ * Elements that perform measurement should add the `IronResizableBehavior`
+ * behavior to their element definition and listen for the `iron-resize` event on
+ * themselves. This event will be fired when they become showing after having
+ * been hidden, when they are resized explicitly by another resizable, or when
+ * the window has been resized.
+ *
+ * Note, the `iron-resize` event is non-bubbling.
+ */
+interface IronResizableBehavior {
+
+  /**
+   * The closest ancestor element that implements `IronResizableBehavior`.
+   */
+  _parentResizable: object|null|undefined;
+
+  /**
+   * True if this element is currently notifying its descendant elements of
+   * resize.
+   */
+  _notifyingDescendant: boolean|null|undefined;
+  created(): void;
+  attached(): void;
+  detached(): void;
+
+  /**
+   * Can be called to manually notify a resizable and its descendant
+   * resizables of a resize change.
+   */
+  notifyResize(): void;
+
+  /**
+   * Used to assign the closest resizable ancestor to this resizable
+   * if the ancestor detects a request for notifications.
+   */
+  assignParentResizable(parentResizable: any): void;
+
+  /**
+   * Used to remove a resizable descendant from the list of descendants
+   * that should be notified of a resize change.
+   */
+  stopResizeNotificationsFor(target: any): void;
+
+  /**
+   * Subscribe this element to listen to iron-resize events on the given target.
+   *
+   * Preferred over target.listen because the property renamer does not
+   * understand to rename when the target is not specifically "this"
+   *
+   * @param target Element to listen to for iron-resize events.
+   */
+  _subscribeIronResize(target: HTMLElement): void;
+
+  /**
+   * Unsubscribe this element from listening to to iron-resize events on the
+   * given target.
+   *
+   * Preferred over target.unlisten because the property renamer does not
+   * understand to rename when the target is not specifically "this"
+   *
+   * @param target Element to listen to for iron-resize events.
+   */
+  _unsubscribeIronResize(target: HTMLElement): void;
+
+  /**
+   * This method can be overridden to filter nested elements that should or
+   * should not be notified by the current element. Return true if an element
+   * should be notified, or false if it should not be notified.
+   *
+   * @param element A candidate descendant element that
+   * implements `IronResizableBehavior`.
+   * @returns True if the `element` should be notified of resize.
+   */
+  resizerShouldNotify(element: HTMLElement|null): boolean;
+  _onDescendantIronResize(event: any): void;
+  _fireResize(): void;
+  _onIronRequestResizeNotifications(event: any): void;
+  _parentResizableChanged(parentResizable: any): void;
+  _notifyDescendant(descendant: any): void;
+  _requestResizeNotifications(): void;
+  _findParent(): void;
+}
+
+declare const IronResizableBehavior: object;
+
+/**
+ * DO NOT EDIT
+ *
+ * This file was automatically generated by
+ *   https://github.com/Polymer/tools/tree/master/packages/gen-typescript-declarations
+ *
+ * To modify these typings, edit the source file(s):
+ *   iron-a11y-keys-behavior.js
+ */
+
+
+/**
+ * `Polymer.IronA11yKeysBehavior` provides a normalized interface for processing
+ * keyboard commands that pertain to [WAI-ARIA best
+ * practices](http://www.w3.org/TR/wai-aria-practices/#kbd_general_binding). The
+ * element takes care of browser differences with respect to Keyboard events and
+ * uses an expressive syntax to filter key presses.
+ *
+ * Use the `keyBindings` prototype property to express what combination of keys
+ * will trigger the callback. A key binding has the format
+ * `"KEY+MODIFIER:EVENT": "callback"` (`"KEY": "callback"` or
+ * `"KEY:EVENT": "callback"` are valid as well). Some examples:
+ *
+ *      keyBindings: {
+ *        'space': '_onKeydown', // same as 'space:keydown'
+ *        'shift+tab': '_onKeydown',
+ *        'enter:keypress': '_onKeypress',
+ *        'esc:keyup': '_onKeyup'
+ *      }
+ *
+ * The callback will receive with an event containing the following information
+ * in `event.detail`:
+ *
+ *      _onKeydown: function(event) {
+ *        console.log(event.detail.combo); // KEY+MODIFIER, e.g. "shift+tab"
+ *        console.log(event.detail.key); // KEY only, e.g. "tab"
+ *        console.log(event.detail.event); // EVENT, e.g. "keydown"
+ *        console.log(event.detail.keyboardEvent); // the original KeyboardEvent
+ *      }
+ *
+ * Use the `keyEventTarget` attribute to set up event handlers on a specific
+ * node.
+ *
+ * See the [demo source
+ * code](https://github.com/PolymerElements/iron-a11y-keys-behavior/blob/master/demo/x-key-aware.html)
+ * for an example.
+ */
+interface IronA11yKeysBehavior {
+
+  /**
+   * The EventTarget that will be firing relevant KeyboardEvents. Set it to
+   * `null` to disable the listeners.
+   */
+  keyEventTarget: EventTarget|null;
+
+  /**
+   * If true, this property will cause the implementing element to
+   * automatically stop propagation on any handled KeyboardEvents.
+   */
+  stopKeyboardEventPropagation: boolean|null|undefined;
+  _boundKeyHandlers: any[]|null|undefined;
+
+  /**
+   * own properties of everything on the "prototype".
+   */
+  _imperativeKeyBindings: object|null|undefined;
+
+  /**
+   * To be used to express what combination of keys  will trigger the relative
+   * callback. e.g. `keyBindings: { 'esc': '_onEscPressed'}`
+   */
+  keyBindings: object;
+  registered(): void;
+  attached(): void;
+  detached(): void;
+
+  /**
+   * Can be used to imperatively add a key binding to the implementing
+   * element. This is the imperative equivalent of declaring a keybinding
+   * in the `keyBindings` prototype property.
+   */
+  addOwnKeyBinding(eventString: string, handlerName: string): void;
+
+  /**
+   * When called, will remove all imperatively-added key bindings.
+   */
+  removeOwnKeyBindings(): void;
+
+  /**
+   * Returns true if a keyboard event matches `eventString`.
+   */
+  keyboardEventMatchesKeys(event: KeyboardEvent|null, eventString: string): boolean;
+  _collectKeyBindings(): any;
+  _prepKeyBindings(): void;
+  _addKeyBinding(eventString: any, handlerName: any): void;
+  _resetKeyEventListeners(): void;
+  _listenKeyEventListeners(): void;
+  _unlistenKeyEventListeners(): void;
+  _onKeyBindingEvent(keyBindings: any, event: any): void;
+  _triggerKeyHandler(keyCombo: any, handlerName: any, keyboardEvent: any): void;
+}
+
+declare const IronA11yKeysBehavior: object;
+
+/**
+ * DO NOT EDIT
+ *
+ * This file was automatically generated by
+ *   https://github.com/Polymer/tools/tree/master/packages/gen-typescript-declarations
+ *
+ * To modify these typings, edit the source file(s):
+ *   iron-overlay-behavior.js
+ */
+
+
+interface IronOverlayBehaviorImpl {
+
+  /**
+   * True if the overlay is currently displayed.
+   */
+  opened: boolean|null|undefined;
+
+  /**
+   * True if the overlay was canceled when it was last closed.
+   */
+  readonly canceled: boolean|null|undefined;
+
+  /**
+   * Set to true to display a backdrop behind the overlay. It traps the focus
+   * within the light DOM of the overlay.
+   */
+  withBackdrop: boolean|null|undefined;
+
+  /**
+   * Set to true to disable auto-focusing the overlay or child nodes with
+   * the `autofocus` attribute` when the overlay is opened.
+   */
+  noAutoFocus: boolean|null|undefined;
+
+  /**
+   * Set to true to disable canceling the overlay with the ESC key.
+   */
+  noCancelOnEscKey: boolean|null|undefined;
+
+  /**
+   * Set to true to disable canceling the overlay by clicking outside it.
+   */
+  noCancelOnOutsideClick: boolean|null|undefined;
+
+  /**
+   * Contains the reason(s) this overlay was last closed (see
+   * `iron-overlay-closed`). `IronOverlayBehavior` provides the `canceled`
+   * reason; implementers of the behavior can provide other reasons in
+   * addition to `canceled`.
+   */
+  closingReason: object|null|undefined;
+
+  /**
+   * Set to true to enable restoring of focus when overlay is closed.
+   */
+  restoreFocusOnClose: boolean|null|undefined;
+
+  /**
+   * Set to true to allow clicks to go through overlays.
+   * When the user clicks outside this overlay, the click may
+   * close the overlay below.
+   */
+  allowClickThrough: boolean|null|undefined;
+
+  /**
+   * Set to true to keep overlay always on top.
+   */
+  alwaysOnTop: boolean|null|undefined;
+
+  /**
+   * Determines which action to perform when scroll outside an opened overlay
+   * happens. Possible values: lock - blocks scrolling from happening, refit -
+   * computes the new position on the overlay cancel - causes the overlay to
+   * close
+   */
+  scrollAction: string|null|undefined;
+
+  /**
+   * The node being focused.
+   */
+  _focusedChild: Node|null;
+
+  /**
+   * The backdrop element.
+   */
+  readonly backdropElement: Element;
+
+  /**
+   * Returns the node to give focus to.
+   */
+  readonly _focusNode: Node;
+
+  /**
+   * Array of nodes that can receive focus (overlay included), ordered by
+   * `tabindex`. This is used to retrieve which is the first and last focusable
+   * nodes in order to wrap the focus for overlays `with-backdrop`.
+   *
+   * If you know what is your content (specifically the first and last focusable
+   * children), you can override this method to return only `[firstFocusable,
+   * lastFocusable];`
+   */
+  readonly _focusableNodes: Node[];
+  ready(): void;
+  attached(): void;
+  detached(): void;
+
+  /**
+   * Toggle the opened state of the overlay.
+   */
+  toggle(): void;
+
+  /**
+   * Open the overlay.
+   */
+  open(): void;
+
+  /**
+   * Close the overlay.
+   */
+  close(): void;
+
+  /**
+   * Cancels the overlay.
+   *
+   * @param event The original event
+   */
+  cancel(event?: Event|null): void;
+
+  /**
+   * Invalidates the cached tabbable nodes. To be called when any of the
+   * focusable content changes (e.g. a button is disabled).
+   */
+  invalidateTabbables(): void;
+  _ensureSetup(): void;
+
+  /**
+   * Called when `opened` changes.
+   */
+  _openedChanged(opened?: boolean): void;
+  _canceledChanged(): void;
+  _withBackdropChanged(): void;
+
+  /**
+   * tasks which must occur before opening; e.g. making the element visible.
+   */
+  _prepareRenderOpened(): void;
+
+  /**
+   * Tasks which cause the overlay to actually open; typically play an
+   * animation.
+   */
+  _renderOpened(): void;
+
+  /**
+   * Tasks which cause the overlay to actually close; typically play an
+   * animation.
+   */
+  _renderClosed(): void;
+
+  /**
+   * Tasks to be performed at the end of open action. Will fire
+   * `iron-overlay-opened`.
+   */
+  _finishRenderOpened(): void;
+
+  /**
+   * Tasks to be performed at the end of close action. Will fire
+   * `iron-overlay-closed`.
+   */
+  _finishRenderClosed(): void;
+  _preparePositioning(): void;
+  _finishPositioning(): void;
+
+  /**
+   * Applies focus according to the opened state.
+   */
+  _applyFocus(): void;
+
+  /**
+   * Cancels (closes) the overlay. Call when click happens outside the overlay.
+   */
+  _onCaptureClick(event: Event): void;
+
+  /**
+   * Keeps track of the focused child. If withBackdrop, traps focus within
+   * overlay.
+   */
+  _onCaptureFocus(event: Event): void;
+
+  /**
+   * Handles the ESC key event and cancels (closes) the overlay.
+   */
+  _onCaptureEsc(event: Event): void;
+
+  /**
+   * Handles TAB key events to track focus changes.
+   * Will wrap focus for overlays withBackdrop.
+   */
+  _onCaptureTab(event: Event): void;
+
+  /**
+   * Refits if the overlay is opened and not animating.
+   */
+  _onIronResize(): void;
+
+  /**
+   * Will call notifyResize if overlay is opened.
+   * Can be overridden in order to avoid multiple observers on the same node.
+   */
+  _onNodesChange(): void;
+}
+
+declare const IronOverlayBehaviorImpl: object;
+
+
+/**
+ *   Use `Polymer.IronOverlayBehavior` to implement an element that can be hidden
+ *   or shown, and displays on top of other content. It includes an optional
+ *   backdrop, and can be used to implement a variety of UI controls including
+ *   dialogs and drop downs. Multiple overlays may be displayed at once.
+ *
+ *   See the [demo source
+ *   code](https://github.com/PolymerElements/iron-overlay-behavior/blob/master/demo/simple-overlay.html)
+ *   for an example.
+ *
+ *   ### Closing and canceling
+ *
+ *   An overlay may be hidden by closing or canceling. The difference between close
+ *   and cancel is user intent. Closing generally implies that the user
+ *   acknowledged the content on the overlay. By default, it will cancel whenever
+ *   the user taps outside it or presses the escape key. This behavior is
+ *   configurable with the `no-cancel-on-esc-key` and the
+ *   `no-cancel-on-outside-click` properties. `close()` should be called explicitly
+ *   by the implementer when the user interacts with a control in the overlay
+ *   element. When the dialog is canceled, the overlay fires an
+ *   'iron-overlay-canceled' event. Call `preventDefault` on this event to prevent
+ *   the overlay from closing.
+ *
+ *   ### Positioning
+ *
+ *   By default the element is sized and positioned to fit and centered inside the
+ *   window. You can position and size it manually using CSS. See
+ *   `Polymer.IronFitBehavior`.
+ *
+ *   ### Backdrop
+ *
+ *   Set the `with-backdrop` attribute to display a backdrop behind the overlay.
+ *   The backdrop is appended to `<body>` and is of type `<iron-overlay-backdrop>`.
+ *   See its doc page for styling options.
+ *
+ *   In addition, `with-backdrop` will wrap the focus within the content in the
+ *   light DOM. Override the [`_focusableNodes`
+ *   getter](#Polymer.IronOverlayBehavior:property-_focusableNodes) to achieve a
+ *   different behavior.
+ *
+ *   ### Limitations
+ *
+ *   The element is styled to appear on top of other content by setting its
+ *   `z-index` property. You must ensure no element has a stacking context with a
+ *   higher `z-index` than its parent stacking context. You should place this
+ *   element as a child of `<body>` whenever possible.
+ *
+ *   
+ */
+interface IronOverlayBehavior extends IronFitBehavior, IronResizableBehavior, IronOverlayBehaviorImpl {
+}
+
+declare const IronOverlayBehavior: object;
+
+/**
+ * DO NOT EDIT
+ *
+ * This file was automatically generated by
+ *   https://github.com/Polymer/tools/tree/master/packages/gen-typescript-declarations
+ *
+ * To modify these typings, edit the source file(s):
  *   iron-media-query.js
  */
 
@@ -8687,6 +9375,8 @@ declare const polymer_enqueueDebouncer: typeof enqueueDebouncer;
 type polymer_GestureEventListeners = GestureEventListeners;
 type polymer_GestureEventListenersConstructor = GestureEventListenersConstructor;
 declare const polymer_dedupingMixin: typeof dedupingMixin;
+declare const polymer_IronOverlayBehaviorImpl: typeof IronOverlayBehaviorImpl;
+declare const polymer_IronOverlayBehavior: typeof IronOverlayBehavior;
 declare namespace polymer {
   export {
     polymer_IronFocusablesHelper as IronFocusablesHelper,
@@ -8712,6 +9402,8 @@ declare namespace polymer {
     polymer_GestureEventListeners as GestureEventListeners,
     polymer_GestureEventListenersConstructor as GestureEventListenersConstructor,
     polymer_dedupingMixin as dedupingMixin,
+    polymer_IronOverlayBehaviorImpl as IronOverlayBehaviorImpl,
+    polymer_IronOverlayBehavior as IronOverlayBehavior,
   };
 }
 
@@ -9149,110 +9841,6 @@ declare class MessageDialog extends Dialog {
 declare class Sensitive extends WebComponent {
     static get template(): HTMLTemplateElement;
 }
-
-/**
- * DO NOT EDIT
- *
- * This file was automatically generated by
- *   https://github.com/Polymer/tools/tree/master/packages/gen-typescript-declarations
- *
- * To modify these typings, edit the source file(s):
- *   iron-a11y-keys-behavior.js
- */
-
-
-/**
- * `Polymer.IronA11yKeysBehavior` provides a normalized interface for processing
- * keyboard commands that pertain to [WAI-ARIA best
- * practices](http://www.w3.org/TR/wai-aria-practices/#kbd_general_binding). The
- * element takes care of browser differences with respect to Keyboard events and
- * uses an expressive syntax to filter key presses.
- *
- * Use the `keyBindings` prototype property to express what combination of keys
- * will trigger the callback. A key binding has the format
- * `"KEY+MODIFIER:EVENT": "callback"` (`"KEY": "callback"` or
- * `"KEY:EVENT": "callback"` are valid as well). Some examples:
- *
- *      keyBindings: {
- *        'space': '_onKeydown', // same as 'space:keydown'
- *        'shift+tab': '_onKeydown',
- *        'enter:keypress': '_onKeypress',
- *        'esc:keyup': '_onKeyup'
- *      }
- *
- * The callback will receive with an event containing the following information
- * in `event.detail`:
- *
- *      _onKeydown: function(event) {
- *        console.log(event.detail.combo); // KEY+MODIFIER, e.g. "shift+tab"
- *        console.log(event.detail.key); // KEY only, e.g. "tab"
- *        console.log(event.detail.event); // EVENT, e.g. "keydown"
- *        console.log(event.detail.keyboardEvent); // the original KeyboardEvent
- *      }
- *
- * Use the `keyEventTarget` attribute to set up event handlers on a specific
- * node.
- *
- * See the [demo source
- * code](https://github.com/PolymerElements/iron-a11y-keys-behavior/blob/master/demo/x-key-aware.html)
- * for an example.
- */
-interface IronA11yKeysBehavior {
-
-  /**
-   * The EventTarget that will be firing relevant KeyboardEvents. Set it to
-   * `null` to disable the listeners.
-   */
-  keyEventTarget: EventTarget|null;
-
-  /**
-   * If true, this property will cause the implementing element to
-   * automatically stop propagation on any handled KeyboardEvents.
-   */
-  stopKeyboardEventPropagation: boolean|null|undefined;
-  _boundKeyHandlers: any[]|null|undefined;
-
-  /**
-   * own properties of everything on the "prototype".
-   */
-  _imperativeKeyBindings: object|null|undefined;
-
-  /**
-   * To be used to express what combination of keys  will trigger the relative
-   * callback. e.g. `keyBindings: { 'esc': '_onEscPressed'}`
-   */
-  keyBindings: object;
-  registered(): void;
-  attached(): void;
-  detached(): void;
-
-  /**
-   * Can be used to imperatively add a key binding to the implementing
-   * element. This is the imperative equivalent of declaring a keybinding
-   * in the `keyBindings` prototype property.
-   */
-  addOwnKeyBinding(eventString: string, handlerName: string): void;
-
-  /**
-   * When called, will remove all imperatively-added key bindings.
-   */
-  removeOwnKeyBindings(): void;
-
-  /**
-   * Returns true if a keyboard event matches `eventString`.
-   */
-  keyboardEventMatchesKeys(event: KeyboardEvent|null, eventString: string): boolean;
-  _collectKeyBindings(): any;
-  _prepKeyBindings(): void;
-  _addKeyBinding(eventString: any, handlerName: any): void;
-  _resetKeyEventListeners(): void;
-  _listenKeyEventListeners(): void;
-  _unlistenKeyEventListeners(): void;
-  _onKeyBindingEvent(keyBindings: any, event: any): void;
-  _triggerKeyHandler(keyCombo: any, handlerName: any, keyboardEvent: any): void;
-}
-
-declare const IronA11yKeysBehavior: object;
 
 /**
  * DO NOT EDIT
@@ -9788,108 +10376,6 @@ declare class InputSearch extends WebComponent {
     private _computeHasValue;
     focus(): void;
 }
-
-/**
- * DO NOT EDIT
- *
- * This file was automatically generated by
- *   https://github.com/Polymer/tools/tree/master/packages/gen-typescript-declarations
- *
- * To modify these typings, edit the source file(s):
- *   iron-resizable-behavior.js
- */
-
-
-/**
- * `IronResizableBehavior` is a behavior that can be used in Polymer elements to
- * coordinate the flow of resize events between "resizers" (elements that
- * control the size or hidden state of their children) and "resizables" (elements
- * that need to be notified when they are resized or un-hidden by their parents
- * in order to take action on their new measurements).
- *
- * Elements that perform measurement should add the `IronResizableBehavior`
- * behavior to their element definition and listen for the `iron-resize` event on
- * themselves. This event will be fired when they become showing after having
- * been hidden, when they are resized explicitly by another resizable, or when
- * the window has been resized.
- *
- * Note, the `iron-resize` event is non-bubbling.
- */
-interface IronResizableBehavior {
-
-  /**
-   * The closest ancestor element that implements `IronResizableBehavior`.
-   */
-  _parentResizable: object|null|undefined;
-
-  /**
-   * True if this element is currently notifying its descendant elements of
-   * resize.
-   */
-  _notifyingDescendant: boolean|null|undefined;
-  created(): void;
-  attached(): void;
-  detached(): void;
-
-  /**
-   * Can be called to manually notify a resizable and its descendant
-   * resizables of a resize change.
-   */
-  notifyResize(): void;
-
-  /**
-   * Used to assign the closest resizable ancestor to this resizable
-   * if the ancestor detects a request for notifications.
-   */
-  assignParentResizable(parentResizable: any): void;
-
-  /**
-   * Used to remove a resizable descendant from the list of descendants
-   * that should be notified of a resize change.
-   */
-  stopResizeNotificationsFor(target: any): void;
-
-  /**
-   * Subscribe this element to listen to iron-resize events on the given target.
-   *
-   * Preferred over target.listen because the property renamer does not
-   * understand to rename when the target is not specifically "this"
-   *
-   * @param target Element to listen to for iron-resize events.
-   */
-  _subscribeIronResize(target: HTMLElement): void;
-
-  /**
-   * Unsubscribe this element from listening to to iron-resize events on the
-   * given target.
-   *
-   * Preferred over target.unlisten because the property renamer does not
-   * understand to rename when the target is not specifically "this"
-   *
-   * @param target Element to listen to for iron-resize events.
-   */
-  _unsubscribeIronResize(target: HTMLElement): void;
-
-  /**
-   * This method can be overridden to filter nested elements that should or
-   * should not be notified by the current element. Return true if an element
-   * should be notified, or false if it should not be notified.
-   *
-   * @param element A candidate descendant element that
-   * implements `IronResizableBehavior`.
-   * @returns True if the `element` should be notified of resize.
-   */
-  resizerShouldNotify(element: HTMLElement|null): boolean;
-  _onDescendantIronResize(event: any): void;
-  _fireResize(): void;
-  _onIronRequestResizeNotifications(event: any): void;
-  _parentResizableChanged(parentResizable: any): void;
-  _notifyDescendant(descendant: any): void;
-  _requestResizeNotifications(): void;
-  _findParent(): void;
-}
-
-declare const IronResizableBehavior: object;
 
 /**
  * DO NOT EDIT
@@ -12252,6 +12738,20 @@ declare class PersistentObjectAttributePresenter extends ConfigurableWebComponen
     private _configure;
 }
 
+declare class PersistentObjectAttributeImageDialog extends Dialog {
+    label: string;
+    static get template(): HTMLTemplateElement;
+    private _updated;
+    readonly sources: string[];
+    source: string;
+    constructor(label: string, ...sources: string[]);
+    private _showImage;
+    private _computeHasMultiple;
+    private _next;
+    private _previous;
+    private _close;
+}
+
 declare class PersistentObjectAttributeString extends PersistentObjectAttribute {
     static get template(): HTMLTemplateElement;
     private _suggestionsSeparator;
@@ -12275,20 +12775,6 @@ declare class PersistentObjectAttributeString extends PersistentObjectAttribute 
     private _computeHasSuggestions;
     private _computeLink;
     private _computeLinkTitle;
-}
-
-declare class PersistentObjectAttributeImageDialog extends Dialog {
-    label: string;
-    static get template(): HTMLTemplateElement;
-    private _updated;
-    readonly sources: string[];
-    source: string;
-    constructor(label: string, ...sources: string[]);
-    private _showImage;
-    private _computeHasMultiple;
-    private _next;
-    private _previous;
-    private _close;
 }
 
 declare class PersistentObjectAttributeTranslatedStringDialog extends Dialog {

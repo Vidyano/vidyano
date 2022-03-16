@@ -1,10 +1,10 @@
-import { Observable } from "./common/observable";
-import type { PersistentObject } from "./persistent-object";
-import type { PersistentObjectAttribute } from "./persistent-object-attribute";
-import type { PersistentObjectAttributeGroup } from "./persistent-object-attribute-group";
-import type { Query } from "./query";
-import type { Service } from "./service";
-import type { ServiceObjectWithActions } from "./service-object-with-actions";
+import { Observable } from "./common/observable.js"
+import type { PersistentObject } from "./persistent-object.js"
+import type { PersistentObjectAttribute } from "./persistent-object-attribute.js"
+import type { PersistentObjectAttributeGroup } from "./persistent-object-attribute-group.js"
+import type { Query } from "./query.js"
+import type { Service } from "./service.js"
+import type { ServiceObjectWithActions } from "./service-object-with-actions.js"
 
 export class PersistentObjectTab extends Observable<PersistentObjectTab> {
     tabGroupIndex: number;
