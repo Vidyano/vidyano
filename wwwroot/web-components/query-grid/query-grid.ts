@@ -225,9 +225,7 @@ export class QueryGrid extends WebComponent {
     private _columnWidthChanged(e: CustomEvent) {
         e.stopPropagation();
 
-        if (!this.initializing)
-            return;
-
+        // Always attempt to update column widths when this event is triggered.
         const detail: { type: "cell" | "column", entries: [column: string, width: number][] } = e.detail;
         detail.entries.forEach(entry => {
             const columnWidthDetail = {};

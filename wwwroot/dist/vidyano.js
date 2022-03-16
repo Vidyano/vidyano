@@ -57080,8 +57080,6 @@ let QueryGrid = class QueryGrid extends WebComponent {
     }
     _columnWidthChanged(e) {
         e.stopPropagation();
-        if (!this.initializing)
-            return;
         const detail = e.detail;
         detail.entries.forEach(entry => {
             const columnWidthDetail = {};
