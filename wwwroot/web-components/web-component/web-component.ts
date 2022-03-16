@@ -127,7 +127,7 @@ export interface IObserveChainDisposer {
     (): void;
 }
 
-class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerElement) {
+export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerElement) {
     private _appChangedListener: EventListener;
     private _serviceChangedListener: EventListener;
     readonly isConnected: boolean; private _setIsConnected: (isConnected: boolean) => void;
@@ -806,9 +806,4 @@ class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerElement)
 
         return output;
     }
-}
-
-export {
-    Keyboard,
-    WebComponent
 }

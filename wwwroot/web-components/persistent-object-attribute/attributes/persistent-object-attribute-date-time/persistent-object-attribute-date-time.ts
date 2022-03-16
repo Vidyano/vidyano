@@ -1,8 +1,9 @@
 import * as Polymer from "../../../../libs/polymer/polymer.js"
 import * as Vidyano from "../../../../libs/vidyano/vidyano.js"
 import moment from "moment"
+import * as Keyboard from "../../../utils/keyboard.js"
 import "../../../masked-input/masked-input.js"
-import { WebComponent, Keyboard } from "../../../web-component/web-component.js"
+import { WebComponent } from "../../../web-component/web-component.js"
 import { PersistentObjectAttribute } from "../../persistent-object-attribute.js"
 import type { TimePicker } from '../../../time-picker/time-picker.js'
 import '../../../time-picker/time-picker.js'
