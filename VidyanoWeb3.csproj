@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="RavenDB.Embedded" Version="5.2.3" />
-    <PackageReference Include="Vidyano.RavenDB" Version="6.0.20210822.3278-rc1" />
+    <PackageReference Include="Vidyano.RavenDB" Version="6.0.20220316.3876" />
   </ItemGroup>
 
   <ItemGroup>
