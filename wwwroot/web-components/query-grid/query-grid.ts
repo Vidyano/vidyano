@@ -332,10 +332,10 @@ export class QueryGrid extends WebComponent {
             }
         );
 
-        if (this.initializing && items.length === 0) {
+        if (this.initializing && !this.query.isBusy && items.length === 0) {
             // Query grid is displayed for the first time but query has no items, there will be no rows to trigger the column width synchronization.
             this.query.queueWork(async () => {
-                if (this.initializing && items.length === 0)
+                if (this.initializing && !this.query.isBusy && items.length === 0)
                     this._setInitializing(false);
             });
         }
