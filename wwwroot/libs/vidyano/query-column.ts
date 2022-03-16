@@ -1,11 +1,11 @@
-import * as Dto from "./typings/service.js"
+import type * as Dto from "./typings/service.js"
 import type { QueryResultItemValue } from "./query-result-item-value.js"
-import { Service } from "./service.js"
+import type { Service } from "./service.js"
 import { ServiceObject } from "./service-object.js"
 import type { Query } from "./query.js"
 import { PersistentObjectAttribute } from "./persistent-object-attribute.js"
 import type { PersistentObject } from "./persistent-object.js"
-import { PropertyChangedArgs } from "./common/observable.js"
+import type { PropertyChangedArgs } from "./common/observable.js"
 import type { QueryResultItem } from "./query-result-item.js"
 
 export interface IQueryColumnDistincts {

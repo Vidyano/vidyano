@@ -1,11 +1,11 @@
-import * as Dto from "./typings/service.js"
+import type * as Dto from "./typings/service.js"
 import { ServiceObjectWithActions } from "./service-object-with-actions.js"
 import type { Action } from "./action.js"
 import { PersistentObjectAttribute } from "./persistent-object-attribute.js"
 import { PersistentObjectTab, PersistentObjectAttributeTab, PersistentObjectQueryTab } from "./persistent-object-tab.js"
 import type { Query } from "./query.js"
 import type { Service } from "./service.js"
-import { PersistentObjectAttributeAsDetail } from "./persistent-object-attribute-as-detail.js"
+import type { PersistentObjectAttributeAsDetail } from "./persistent-object-attribute-as-detail.js"
 import { PersistentObjectAttributeWithReference } from "./persistent-object-attribute-with-reference.js"
 import type { PersistentObjectAttributeGroup } from "./persistent-object-attribute-group.js"
 

@@ -1,8 +1,8 @@
-import { Query } from "./query.js"
+import type { Query } from "./query.js"
 import { Service } from "./service.js"
 import { ServiceObject } from "./service-object.js"
-import { QueryResultItemValue } from "./query-result-item-value.js"
-import { PersistentObject } from "./persistent-object.js"
+import type { QueryResultItemValue } from "./query-result-item-value.js"
+import type { PersistentObject } from "./persistent-object.js"
 import { PersistentObjectAttribute } from "./persistent-object-attribute.js"
 
 export class QueryResultItem extends ServiceObject {

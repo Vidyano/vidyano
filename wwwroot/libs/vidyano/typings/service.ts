@@ -1,4 +1,4 @@
-import { KeyValueString } from "./common.js"
+import type { KeyValueString } from "./common.js"
 
 export declare type NotificationType = "" | "OK" | "Notice" | "Warning" | "Error";
 export declare type SortDirection = "" | "ASC" | "DESC";

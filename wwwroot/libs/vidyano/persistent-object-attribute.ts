@@ -1,11 +1,11 @@
-import * as Dto from "./typings/service.js"
-import { KeyValuePair } from "./typings/common.js"
+import type * as Dto from "./typings/service.js"
+import type { KeyValuePair } from "./typings/common.js"
 import type { PersistentObject } from "./persistent-object.js"
 import type { PersistentObjectAttributeTab } from "./persistent-object-tab.js"
 import { Service } from "./service.js"
 import { ServiceObject } from "./service-object.js"
 import { CultureInfo } from "./cultures.js"
-import { PersistentObjectAttributeGroup } from "./persistent-object-attribute-group.js"
+import type { PersistentObjectAttributeGroup } from "./persistent-object-attribute-group.js"
 import type { PersistentObjectAttributeWithReference } from "./persistent-object-attribute-with-reference.js"
 
 export type PersistentObjectAttributeVisibility = "Always" | "Read" | "New" | "Never" | "Query" | "Read, Query" | "Read, New" | "Query, New";

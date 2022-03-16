@@ -1,4 +1,4 @@
-import * as Dto from "./typings/service.js"
+import type * as Dto from "./typings/service.js"
 import { PersistentObject } from "./persistent-object.js"
 import type { Service } from "./service.js"
 import { ProgramUnit } from "./program-unit.js"

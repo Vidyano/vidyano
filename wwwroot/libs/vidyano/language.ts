@@ -1,6 +1,6 @@
-import * as Dto from "./typings/service.js"
+import type * as Dto from "./typings/service.js"
 import { Observable } from "./common/observable.js"
-import { ServiceObject } from "./service-object.js"
+import type { ServiceObject } from "./service-object.js"
 
 export class Language extends Observable<ServiceObject> implements Dto.Language {
     constructor(private _language: Dto.Language, private _culture: string) {

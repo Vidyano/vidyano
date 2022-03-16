@@ -1,4 +1,4 @@
-import { KeyValuePair } from "./../typings/common.js"
+import type { KeyValuePair } from "./../typings/common.js"
 
 declare global {
     export interface Array<T> {

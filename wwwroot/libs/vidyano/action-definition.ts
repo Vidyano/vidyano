@@ -1,6 +1,6 @@
 import { ExpressionParser } from "./common/expression-parser.js"
-import { QueryResultItem } from "./query-result-item.js"
-import { Service } from "./service.js"
+import type { QueryResultItem } from "./query-result-item.js"
+import type { Service } from "./service.js"
 
 export class ActionDefinition {
     private _name: string;

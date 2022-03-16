@@ -1,4 +1,4 @@
-import { KeyValue } from "./typings/common.js"
+import type { KeyValue } from "./typings/common.js"
 
 export class CultureInfo {
     static currentCulture: CultureInfo;

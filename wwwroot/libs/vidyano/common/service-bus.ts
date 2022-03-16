@@ -1,4 +1,4 @@
-import { KeyValue } from "../typings/common.js"
+import type { KeyValue } from "../typings/common.js"
 import { ISubjectDisposer, ISubjectNotifier, Subject } from "./observable.js"
 
 export type ServiceBusCallback = (sender: any, message: string, detail: any) => void;

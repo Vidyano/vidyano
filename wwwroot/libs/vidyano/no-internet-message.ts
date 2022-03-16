@@ -1,4 +1,4 @@
-import { KeyValue } from "./typings/common.js"
+import type { KeyValue } from "./typings/common.js"
 
 export class NoInternetMessage {
     static messages: KeyValue<NoInternetMessage> = Object.assign({}, ...[

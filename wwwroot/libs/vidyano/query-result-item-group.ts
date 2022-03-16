@@ -1,7 +1,7 @@
 import { Observable } from "./common/observable.js"
 import type { Query } from "./query.js"
 import type { QueryResultItem } from "./query-result-item.js"
-import * as Dto from "./typings/service.js"
+import type * as Dto from "./typings/service.js"
 
 export interface IQueryGroupingInfo extends Dto.QueryGroupingInfo {
     groups?: QueryResultItemGroup[];

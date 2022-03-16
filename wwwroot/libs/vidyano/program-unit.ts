@@ -1,4 +1,4 @@
-import { IRoutes } from "./application.js"
+import type { IRoutes } from "./application.js"
 import { ProgramUnitItem, ProgramUnitItemGroup, ProgramUnitItemPersistentObject, ProgramUnitItemQuery, ProgramUnitItemUrl } from "./program-unit-item.js"
 import type { Service } from "./service.js"
 

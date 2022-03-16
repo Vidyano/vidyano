@@ -3,7 +3,7 @@ import { ActionGroup } from "./action-group.js"
 import type { QueryResultItem } from "./query-result-item.js"
 import type { NotificationType, Service } from "./service.js"
 import { ServiceObject } from "./service-object.js"
-import { ServiceObjectWithActions } from "./service-object-with-actions.js"
+import type { ServiceObjectWithActions } from "./service-object-with-actions.js"
 import { PersistentObject } from "./persistent-object.js"
 import type { Query } from "./query.js"
 
