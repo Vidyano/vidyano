@@ -18,6 +18,14 @@
             "problemMatcher": [],
             "label": "npm: build",
             "detail": "rollup -c"
+        },
+        {
+            "type": "npm",
+            "script": "build",
+            "group": "build",
+            "problemMatcher": [],
+            "label": "npm: watch",
+            "detail": "rollup -c -w"
         }
     ]
 }
