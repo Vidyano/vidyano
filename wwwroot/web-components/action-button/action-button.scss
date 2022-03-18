@@ -1,11 +1,10 @@
 @import "../_vars.scss";
 
 :host {
-    display: block;
+    display: flex;
     box-sizing: border-box;
 
     vi-button {
-        display: inline-block;
         padding: 0 var(--theme-h5);
         text-align: left;
         height: var(--theme-h1);
