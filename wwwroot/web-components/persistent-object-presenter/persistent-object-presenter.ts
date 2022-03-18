@@ -4,6 +4,7 @@ import { App, AppBase } from "../app/app.js"
 import { AppCacheEntryPersistentObject } from "../app-cache/app-cache-entry-persistent-object.js"
 import { AppCacheEntryPersistentObjectFromAction } from "../app-cache/app-cache-entry-persistent-object-from-action.js"
 import { AppRoute } from "../app-route/app-route.js"
+import "../error/error.js"
 import { PersistentObject } from "../persistent-object/persistent-object.js"
 import { ConfigurableWebComponent } from "../web-component/web-component-configurable.js"
 
@@ -239,7 +240,7 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
     }
 
     private _configure(e: CustomEvent) {
-        if (this.persistentObject.isSystem)
+        if (!this.persistentObject || this.persistentObject.isSystem)
             return;
 
         e.detail.push({

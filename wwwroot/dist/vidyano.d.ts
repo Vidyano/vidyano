@@ -9524,6 +9524,10 @@ declare class AppRoute extends WebComponent {
     private _titleChanged;
 }
 
+declare class Error extends WebComponent {
+    static get template(): HTMLTemplateElement;
+}
+
 declare class AppRoutePresenter extends WebComponent {
     static get template(): HTMLTemplateElement;
     private _routesObserver;
@@ -10630,54 +10634,6 @@ declare class SignOut extends WebComponent {
 declare class Spinner extends WebComponent {
     static get template(): HTMLTemplateElement;
     private _updateColor;
-}
-
-declare type ProfilerRequest = ProfilerRequest$1 & {
-    hasNPlusOne: boolean;
-    parameters: {
-        key: string;
-        value: string;
-    }[];
-    flattenedEntries: FlattenedProfilerRequestEntry[];
-};
-declare type FlattenedProfilerRequestEntry = {
-    entry: ProfilerEntry;
-    level: number;
-};
-declare class Profiler extends WebComponent {
-    static get template(): HTMLTemplateElement;
-    private _boundMousehweel;
-    readonly lastRequest: ProfilerRequest;
-    private _setLastRequest;
-    readonly selectedRequest: ProfilerRequest;
-    private _setSelectedRequest;
-    readonly hoveredEntry: ProfilerEntry;
-    private _setHoveredEntry;
-    readonly selectedEntry: ProfilerEntry;
-    private _setSelectedEntry;
-    readonly zoom: number;
-    private _setZoom;
-    timelineSize: ISize;
-    profiledRequests: ProfilerRequest[];
-    connectedCallback(): void;
-    disconnectedCallback(): void;
-    private _requestSQL;
-    private _requestSharpSQL;
-    private _requestHasWarnings;
-    private _hasNPlusOne;
-    private _onMousewheel;
-    private _selectRequest;
-    private _selectedRequestChanged;
-    private _profiledRequestsChanged;
-    private _renderRequestTimeline;
-    private _flattenEntries;
-    private _computeEntryClassName;
-    private _requestParameters;
-    private _ms;
-    private _requestDate;
-    private _selectedEntryChanged;
-    private _closeSelectedEntry;
-    private _close;
 }
 
 declare class App extends AppBase {
@@ -12969,6 +12925,54 @@ declare class PopupMenu extends WebComponent {
     private _stopTap;
 }
 
+declare type ProfilerRequest = ProfilerRequest$1 & {
+    hasNPlusOne: boolean;
+    parameters: {
+        key: string;
+        value: string;
+    }[];
+    flattenedEntries: FlattenedProfilerRequestEntry[];
+};
+declare type FlattenedProfilerRequestEntry = {
+    entry: ProfilerEntry;
+    level: number;
+};
+declare class Profiler extends WebComponent {
+    static get template(): HTMLTemplateElement;
+    private _boundMousehweel;
+    readonly lastRequest: ProfilerRequest;
+    private _setLastRequest;
+    readonly selectedRequest: ProfilerRequest;
+    private _setSelectedRequest;
+    readonly hoveredEntry: ProfilerEntry;
+    private _setHoveredEntry;
+    readonly selectedEntry: ProfilerEntry;
+    private _setSelectedEntry;
+    readonly zoom: number;
+    private _setZoom;
+    timelineSize: ISize;
+    profiledRequests: ProfilerRequest[];
+    connectedCallback(): void;
+    disconnectedCallback(): void;
+    private _requestSQL;
+    private _requestSharpSQL;
+    private _requestHasWarnings;
+    private _hasNPlusOne;
+    private _onMousewheel;
+    private _selectRequest;
+    private _selectedRequestChanged;
+    private _profiledRequestsChanged;
+    private _renderRequestTimeline;
+    private _flattenEntries;
+    private _computeEntryClassName;
+    private _requestParameters;
+    private _ms;
+    private _requestDate;
+    private _selectedEntryChanged;
+    private _closeSelectedEntry;
+    private _close;
+}
+
 declare class ProgramUnitPresenter extends WebComponent {
     static get template(): HTMLTemplateElement;
     readonly programUnit: ProgramUnit;
@@ -13496,4 +13500,4 @@ interface IKeybindingRegistration {
     scope?: AppRoute | Dialog;
 }
 
-export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, DialogCore, FileDrop, IConfigurableAction, IDatePickerCell, IEvent, IFileDropDetails, IItemTapEventArgs, IKeybindingRegistration, IKeysEvent, IMessageDialogOptions, IObserveChainDisposer, IPersistentObjectDialogOptions, IPosition, IQueryGridColumnFilterDistinct, IQueryGridUserSettingsColumnData, IRGB, ISelectItem, ISize, ISortableDragEndDetails, ITranslatedString, IWebComponentKeybindingInfo, IWebComponentProperties, IWebComponentProperty, IWebComponentRegistrationInfo, Icon, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeConstructor, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellDefault, QueryGridCellImage, QueryGridCellPresenter, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, SelectOption, SelectOptionItem, SelectReferenceDialog, Sensitive, SignIn, SignOut, SizeTracker, SizeTrackerEvent, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, vidyano as Vidyano, WebComponent, moment_d as moment };
+export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, DialogCore, Error, FileDrop, IConfigurableAction, IDatePickerCell, IEvent, IFileDropDetails, IItemTapEventArgs, IKeybindingRegistration, IKeysEvent, IMessageDialogOptions, IObserveChainDisposer, IPersistentObjectDialogOptions, IPosition, IQueryGridColumnFilterDistinct, IQueryGridUserSettingsColumnData, IRGB, ISelectItem, ISize, ISortableDragEndDetails, ITranslatedString, IWebComponentKeybindingInfo, IWebComponentProperties, IWebComponentProperty, IWebComponentRegistrationInfo, Icon, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeConstructor, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellDefault, QueryGridCellImage, QueryGridCellPresenter, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, SelectOption, SelectOptionItem, SelectReferenceDialog, Sensitive, SignIn, SignOut, SizeTracker, SizeTrackerEvent, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, vidyano as Vidyano, WebComponent, moment_d as moment };

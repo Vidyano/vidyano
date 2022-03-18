@@ -1,5 +1,6 @@
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import * as Polymer from "../../libs/polymer/polymer.js"
+import "../error/error.js"
 import { WebComponent } from "../../web-components/web-component/web-component.js"
 
 interface IProgramUnitPresenterRouteParameters {

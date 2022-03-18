@@ -27,7 +27,7 @@
 
     #grid {
         display: grid;
-        grid-template-areas: var(--vi-persistent-object-group--grid-areas);
+        grid-template-areas: var(--vi-persistent-object-group--grid-areas, none);
         grid-auto-columns: 1fr;
         grid-gap: 0 var(--vi-persistent-object-group--attribute-padding, var(--theme-h4));
 

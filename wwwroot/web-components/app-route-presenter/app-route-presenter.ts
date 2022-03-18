@@ -5,6 +5,7 @@ import { AppBase } from "../app/app-base.js"
 import { AppRoute } from "../app-route/app-route.js"
 import { AppServiceHooks } from "../app-service-hooks/app-service-hooks.js"
 import { Dialog } from "../dialog/dialog.js"
+import "../error/error.js"
 import { WebComponent } from "../web-component/web-component.js"
 
 @WebComponent.register({
