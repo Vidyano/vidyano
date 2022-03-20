@@ -10636,6 +10636,54 @@ declare class Spinner extends WebComponent {
     private _updateColor;
 }
 
+declare type ProfilerRequest = ProfilerRequest$1 & {
+    hasNPlusOne: boolean;
+    parameters: {
+        key: string;
+        value: string;
+    }[];
+    flattenedEntries: FlattenedProfilerRequestEntry[];
+};
+declare type FlattenedProfilerRequestEntry = {
+    entry: ProfilerEntry;
+    level: number;
+};
+declare class Profiler extends WebComponent {
+    static get template(): HTMLTemplateElement;
+    private _boundMousehweel;
+    readonly lastRequest: ProfilerRequest;
+    private _setLastRequest;
+    readonly selectedRequest: ProfilerRequest;
+    private _setSelectedRequest;
+    readonly hoveredEntry: ProfilerEntry;
+    private _setHoveredEntry;
+    readonly selectedEntry: ProfilerEntry;
+    private _setSelectedEntry;
+    readonly zoom: number;
+    private _setZoom;
+    timelineSize: ISize;
+    profiledRequests: ProfilerRequest[];
+    connectedCallback(): void;
+    disconnectedCallback(): void;
+    private _requestSQL;
+    private _requestSharpSQL;
+    private _requestHasWarnings;
+    private _hasNPlusOne;
+    private _onMousewheel;
+    private _selectRequest;
+    private _selectedRequestChanged;
+    private _profiledRequestsChanged;
+    private _renderRequestTimeline;
+    private _flattenEntries;
+    private _computeEntryClassName;
+    private _requestParameters;
+    private _ms;
+    private _requestDate;
+    private _selectedEntryChanged;
+    private _closeSelectedEntry;
+    private _close;
+}
+
 declare class App extends AppBase {
     static get template(): HTMLTemplateElement;
     private _cache;
@@ -12925,54 +12973,6 @@ declare class PopupMenu extends WebComponent {
     private _stopTap;
 }
 
-declare type ProfilerRequest = ProfilerRequest$1 & {
-    hasNPlusOne: boolean;
-    parameters: {
-        key: string;
-        value: string;
-    }[];
-    flattenedEntries: FlattenedProfilerRequestEntry[];
-};
-declare type FlattenedProfilerRequestEntry = {
-    entry: ProfilerEntry;
-    level: number;
-};
-declare class Profiler extends WebComponent {
-    static get template(): HTMLTemplateElement;
-    private _boundMousehweel;
-    readonly lastRequest: ProfilerRequest;
-    private _setLastRequest;
-    readonly selectedRequest: ProfilerRequest;
-    private _setSelectedRequest;
-    readonly hoveredEntry: ProfilerEntry;
-    private _setHoveredEntry;
-    readonly selectedEntry: ProfilerEntry;
-    private _setSelectedEntry;
-    readonly zoom: number;
-    private _setZoom;
-    timelineSize: ISize;
-    profiledRequests: ProfilerRequest[];
-    connectedCallback(): void;
-    disconnectedCallback(): void;
-    private _requestSQL;
-    private _requestSharpSQL;
-    private _requestHasWarnings;
-    private _hasNPlusOne;
-    private _onMousewheel;
-    private _selectRequest;
-    private _selectedRequestChanged;
-    private _profiledRequestsChanged;
-    private _renderRequestTimeline;
-    private _flattenEntries;
-    private _computeEntryClassName;
-    private _requestParameters;
-    private _ms;
-    private _requestDate;
-    private _selectedEntryChanged;
-    private _closeSelectedEntry;
-    private _close;
-}
-
 declare class ProgramUnitPresenter extends WebComponent {
     static get template(): HTMLTemplateElement;
     readonly programUnit: ProgramUnit;
@@ -12993,6 +12993,8 @@ declare class QueryChartSelector extends WebComponent {
 
 declare abstract class QueryGridCell extends WebComponent {
     #private;
+    readonly sensitive: boolean;
+    protected _setSensitive: (sensitive: boolean) => void;
     column: QueryColumn;
     value: QueryResultItemValue;
     valueQueued: QueryResultItemValue;
@@ -13009,8 +13011,6 @@ declare class QueryGridCellBoolean extends QueryGridCell {
     private _textNode;
     readonly oldValue: QueryResultItemValue;
     private _setOldValue;
-    readonly sensitive: boolean;
-    private _setSensitive;
     private _valueChanged;
     private _update;
 }
@@ -13024,8 +13024,6 @@ declare class QueryGridCellDefault extends QueryGridCell {
     private _foreground;
     private _textAlign;
     right: boolean;
-    readonly sensitive: boolean;
-    private _setSensitive;
     private _valueChanged;
     private _getTypeHint;
 }
@@ -13034,8 +13032,6 @@ declare class QueryGridCellImage extends QueryGridCell {
     static get template(): HTMLTemplateElement;
     private _isHidden;
     private _image;
-    readonly sensitive: boolean;
-    private _setSensitive;
     private _valueChanged;
 }
 
@@ -13053,8 +13049,6 @@ interface IQueryGridUserSettingsColumnData {
 declare class QueryGridColumn extends Observable<QueryGridColumn> implements IQueryGridUserSettingsColumnData {
     private _column;
     private _userSettingsColumnData;
-    calculatedWidth: number;
-    calculatedOffset: number;
     constructor(_column: QueryColumn, _userSettingsColumnData: IQueryGridUserSettingsColumnData);
     get column(): QueryColumn;
     get query(): Query$1;
@@ -13075,7 +13069,6 @@ declare class QueryGridColumn extends Observable<QueryGridColumn> implements IQu
     set isHidden(isHidden: boolean);
     get width(): string;
     set width(width: string);
-    reset(): void;
 }
 
 interface IQueryGridColumnFilterDistinct {
@@ -13142,6 +13135,8 @@ declare class QueryGridColumnHeader extends WebComponent {
     private _hide;
     private _configure;
     private _queueMeasure;
+    private _resizeTrack;
+    private _resize;
 }
 
 declare class QueryGridColumnMeasure extends WebComponent {
@@ -13156,7 +13151,6 @@ declare class QueryGridConfigureDialogColumn extends WebComponent {
     offset: number;
     isPinned: boolean;
     isHidden: boolean;
-    calculatedWidth: number;
     constructor(column: QueryGridColumn);
     private _togglePin;
     private _toggleVisible;
@@ -13328,8 +13322,6 @@ declare class QueryGrid extends WebComponent {
     readonly columns: QueryGridColumn[];
     readonly pinnedColumns: QueryGridColumn[];
     private _setPinnedColumns;
-    readonly columnWidths: number[];
-    private _setColumnWidths;
     readonly viewportHeight: number;
     readonly virtualRowCount: number;
     readonly hasGrouping: boolean;
@@ -13344,7 +13336,6 @@ declare class QueryGrid extends WebComponent {
     ready(): void;
     private _queryChanged;
     private _controlsSizeChanged;
-    private _columnWidthsChanged;
     private _columnWidthChanged;
     private _updateScrollOffsetForItems;
     private _update;
