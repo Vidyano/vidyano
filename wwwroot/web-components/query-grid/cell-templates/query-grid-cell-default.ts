@@ -13,11 +13,6 @@ import { WebComponent } from "../../web-component/web-component.js"
         right: {
             type: Boolean,
             reflectToAttribute: true
-        },
-        sensitive: {
-            type: Boolean,
-            readOnly: true,
-            reflectToAttribute: true
         }
     },
     sensitive: true
@@ -32,7 +27,6 @@ export class QueryGridCellDefault extends QueryGridCell {
     private _foreground: { currentValue?: any; originalValue?: any } = { currentValue: null };
     private _textAlign: { currentValue?: any; originalValue?: any } = { currentValue: null };
     right: boolean;
-    readonly sensitive: boolean; private _setSensitive: (sensitive: boolean) => void;
 
     private _valueChanged(itemValue: Vidyano.QueryResultItemValue) {
         this._setSensitive(itemValue?.column.isSensitive);

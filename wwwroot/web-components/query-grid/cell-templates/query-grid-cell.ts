@@ -33,7 +33,12 @@ resizeObserver = new ResizeObserver(allEntries => {
 @WebComponent.register({
     properties: {
         column: Object,
-        value: Object
+        value: Object,
+        sensitive: {
+            type: Boolean,
+            readOnly: true,
+            reflectToAttribute: true
+        }
     },
     observers: [
         "_queueMeasure(value, isConnected)"
@@ -42,6 +47,8 @@ resizeObserver = new ResizeObserver(allEntries => {
 export abstract class QueryGridCell extends WebComponent {
     #_lastMeasuredColumn: Vidyano.QueryColumn;
     #_isObserved: boolean;
+
+    readonly sensitive: boolean; protected _setSensitive: (sensitive: boolean) => void;
 
     column: Vidyano.QueryColumn;
     value: Vidyano.QueryResultItemValue;

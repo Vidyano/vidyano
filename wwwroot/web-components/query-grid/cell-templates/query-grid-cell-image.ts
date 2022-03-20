@@ -17,7 +17,6 @@ export class QueryGridCellImage extends QueryGridCell {
 
     private _isHidden: boolean;
     private _image: HTMLDivElement;
-    readonly sensitive: boolean; private _setSensitive: (sensitive: boolean) => void;
 
     private _valueChanged(value: Vidyano.QueryResultItemValue) {
         this._setSensitive(value?.column.isSensitive);
