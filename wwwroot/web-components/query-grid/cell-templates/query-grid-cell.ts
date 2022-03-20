@@ -4,29 +4,35 @@ import type { QueryGridRow } from "../query-grid-row.js"
 
 let resizeObserver: ResizeObserver;
 resizeObserver = new ResizeObserver(allEntries => {
-    // Entries may be batched for multiple grids, make sure the event is dispatched to the correct grid
-    
-    const parents = new Map<HTMLElement, ResizeObserverEntry[]>();
-    allEntries.forEach(e => {
-        const parent = parents.get(e.target.parentElement) || parents.set(e.target.parentElement, []).get(e.target.parentElement);
-        parent.push(e);
-    });
+    window.requestAnimationFrame(() => {
+        // Entries may be batched for multiple grids, make sure the event is dispatched to the correct grid
+        
+        const parents = new Map<HTMLElement, ResizeObserverEntry[]>();
+        allEntries.forEach(e => {
+            const parent = parents.get(e.target.parentElement) || parents.set(e.target.parentElement, []).get(e.target.parentElement);
+            parent.push(e);
+        });
 
-    parents.forEach((entries, parent) => {
-        parent.dispatchEvent(new CustomEvent("column-width-changed", {
-            detail: {
-                type: "cell",
-                entries: entries.map(e => {
-                    let width = e["borderBoxSize"] != null ? e["borderBoxSize"][0].inlineSize : (<HTMLElement>e.target).offsetWidth;
-                    return [(<QueryGridCell>e.target).column.name, width];
-                }),
-            },
-            bubbles: true,
-            cancelable: true,
-            composed: true
-        }));
-    
-        entries.forEach(e => (e.target as QueryGridCell)._unobserve());
+        parents.forEach((entries, parent) => {
+            try {
+                // parent can be null if the the element is no longer in the DOM
+                parent?.dispatchEvent(new CustomEvent("column-width-changed", {
+                    detail: {
+                        type: "cell",
+                        entries: entries.map(e => {
+                            let width = e["borderBoxSize"] != null ? e["borderBoxSize"][0].inlineSize : (<HTMLElement>e.target).offsetWidth;
+                            return [(<QueryGridCell>e.target).column.name, width];
+                        }),
+                    },
+                    bubbles: true,
+                    cancelable: true,
+                    composed: true
+                }));
+            }
+            finally {
+                entries.forEach(e => (e.target as QueryGridCell)._unobserve());
+            }
+        });
     });
 });
 
