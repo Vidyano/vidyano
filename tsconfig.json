@@ -15,7 +15,10 @@
       "removeComments": true,
       "experimentalDecorators": true,
       "noEmitOnError": false,
-      "rootDir": "."
+      "rootDir": ".",
+      "types": [
+          "qunit"
+      ]
   },
   "exclude": [
       "wwwroot/dist"

@@ -11,6 +11,13 @@
       "Bindings": [
         "*/legacy"
       ]
+    },
+    "Test": {
+      "Type": 1,
+      "Bindings": [
+        "*/test"
+      ],
+      "DefaultUser": "f345b3f8-57ad-4242-8575-cf93335e3b9a"
     }
   }
 }

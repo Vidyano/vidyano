@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="../web3/libs/modules/qunit/qunit/qunit.css" rel="stylesheet" type="text/css">
+        <style>
+            html, body {
+                margin: 0;
+            }
+
+            body {
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
+                width: 100vw;
+            }
+
+            #qunit {
+                position: initial;
+                flex: 1;
+            }
+
+            iframe {
+                flex: 1;
+                border: none;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="qunit"></div>
+        <iframe id="app"></iframe>
+        <script src="../web3/libs/modules/qunit/qunit/qunit.js"></script>
+        <script type="module" src="../web3/test/index.js"></script>
+    </body>
+</html>
