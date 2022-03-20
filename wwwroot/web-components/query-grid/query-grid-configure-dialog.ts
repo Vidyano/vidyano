@@ -62,11 +62,6 @@ export class QueryGridConfigureDialog extends Dialog {
             c.column.isPinned = c.isPinned;
             c.column.isHidden = c.isHidden;
             c.column.offset = c.offset;
-
-            if (c.calculatedWidth !== c.column.calculatedWidth) {
-                c.column.calculatedWidth = c.calculatedWidth;
-                c.column.width = c.column.column.width;
-            }
         });
 
         this.close(true);
@@ -77,7 +72,7 @@ export class QueryGridConfigureDialog extends Dialog {
             c.isPinned = c.column.column.isPinned;
             c.isHidden = c.column.column.isHidden;
             c.offset = c.column.column.offset;
-            c.calculatedWidth = undefined;
+            c.column.width = undefined;
         });
 
         this._distributeColumns();

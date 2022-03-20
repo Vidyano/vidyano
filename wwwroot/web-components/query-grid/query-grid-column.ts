@@ -8,9 +8,6 @@ export interface IQueryGridUserSettingsColumnData {
 }
 
 export class QueryGridColumn extends Vidyano.Observable<QueryGridColumn> implements IQueryGridUserSettingsColumnData {
-    calculatedWidth: number;
-    calculatedOffset: number;
-
     constructor(private _column: Vidyano.QueryColumn, private _userSettingsColumnData: IQueryGridUserSettingsColumnData) {
         super();
     }
@@ -93,9 +90,5 @@ export class QueryGridColumn extends Vidyano.Observable<QueryGridColumn> impleme
 
     set width(width: string) {
         this._userSettingsColumnData.width = width;
-    }
-
-    reset() {
-        this.calculatedWidth = this.calculatedOffset = undefined;
     }
 }

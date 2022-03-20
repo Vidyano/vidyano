@@ -21,7 +21,6 @@ export class QueryGridConfigureDialogColumn extends WebComponent {
     offset: number;
     isPinned: boolean;
     isHidden: boolean;
-    calculatedWidth: number;
 
     constructor(public column: QueryGridColumn) {
         super();
@@ -33,7 +32,6 @@ export class QueryGridConfigureDialogColumn extends WebComponent {
         this.offset = this.column.offset;
         this.isPinned = this.column.isPinned;
         this.isHidden = this.column.isHidden;
-        this.calculatedWidth = this.column.calculatedWidth;
     }
 
     private _togglePin() {

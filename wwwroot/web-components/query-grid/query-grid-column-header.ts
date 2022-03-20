@@ -21,8 +21,10 @@ resizeObserver = new ResizeObserver(allEntries => {
             detail: {
                 type: "column",
                 entries: entries.map(e => {
-                    let width = e["borderBoxSize"] != null ? e["borderBoxSize"][0].inlineSize : (<HTMLElement>e.target).offsetWidth;
-                    return [(<QueryGridColumnHeader>e.target).column.name, width];
+                    const header = e.target as QueryGridColumnHeader;
+
+                    let width = e["borderBoxSize"] != null ? e["borderBoxSize"][0].inlineSize : header.offsetWidth;
+                    return [header.column.name, width];
                 }),
             },
             bubbles: true,
@@ -86,6 +88,9 @@ export class QueryGridColumnHeader extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-column-header.html">` }
 
     #_lastMeasuredColumn: Vidyano.QueryColumn;
+    #_minimumColumnWidth: number;
+    #_calculatedWidth: number;
+    #_resizingRAF: number;
 
     column: QueryGridColumn;
     readonly canSort: boolean; private _setCanSort: (canSort: boolean) => void;
@@ -190,5 +195,47 @@ export class QueryGridColumnHeader extends WebComponent {
 
         resizeObserver.observe(this, { box: "border-box" });
         this.#_lastMeasuredColumn = column.column;
+    }
+
+    private _resizeTrack(e: TrackEvent, detail: Polymer.Gestures.TrackEventDetail) {
+        if (detail.state === "start") {
+            if (!this.#_minimumColumnWidth)
+                this.#_minimumColumnWidth = parseInt(getComputedStyle(this).getPropertyValue("--vi-query-grid--minimum-column-width") || "50");
+
+            this.#_calculatedWidth = Math.max(this.getBoundingClientRect().width, this.#_minimumColumnWidth);
+
+            this.app.isTracking = true;
+            this.classList.add("resizing");
+        }
+        else if (detail.state === "track") {
+            if (this.#_resizingRAF)
+                cancelAnimationFrame(this.#_resizingRAF);
+
+            this.#_resizingRAF = requestAnimationFrame(() => {
+                this._resize(Math.max(this.#_calculatedWidth + detail.dx, this.#_minimumColumnWidth));
+            });
+        }
+        else if (detail.state === "end") {
+            this.classList.remove("resizing");
+
+            this.#_calculatedWidth = Math.max(this.#_calculatedWidth + detail.dx, this.#_minimumColumnWidth);
+            this.column.width = `${this.#_calculatedWidth}px`;
+
+            this._resize(this.#_calculatedWidth, true);
+            this.app.isTracking = false;
+        }
+    }
+
+    private _resize(width: number, save?: boolean) {
+        this.dispatchEvent(new CustomEvent("column-width-changed", {
+            detail: {
+                type: "current",
+                entries: [[this.column.name, width]],
+                save: save
+            },
+            bubbles: true,
+            cancelable: true,
+            composed: true
+        }));
     }
 }

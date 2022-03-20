@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="query-grid-column-header.css" />
 
-<div>
+<div class="relative">
     <div class="layout horizontal relative">
         <div class="label flex relative">
             <label class="flex">[[column.label]]</label>
@@ -28,4 +28,5 @@
         </dom-if>
     </div>
     <vi-query-grid-column-filter column="[[column]]" part="filter"></vi-query-grid-column-filter>
+    <div class="resizer" on-track="_resizeTrack"></div>
 </div>

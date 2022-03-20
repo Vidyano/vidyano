@@ -25,6 +25,7 @@ interface QueryGridItems {
 }
 
 type QueryGridItem = Vidyano.QueryResultItem | Vidyano.QueryResultItemGroup;
+type ColumnWidthDetail = { cell?: number; column?: number; current?: number };
 
 @WebComponent.register({
     properties: {
@@ -58,11 +59,6 @@ type QueryGridItem = Vidyano.QueryResultItem | Vidyano.QueryResultItemGroup;
         pinnedColumns: {
             type: Array,
             readOnly: true
-        },
-        columnWidths: {
-            type: Array,
-            readOnly: true,
-            observer: "_columnWidthsChanged"
         },
         horizontalScrollOffset: {
             type: Number,
@@ -149,7 +145,7 @@ type QueryGridItem = Vidyano.QueryResultItem | Vidyano.QueryResultItemGroup;
 export class QueryGrid extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid.html">` }
 
-    private readonly _columnWidths = new Map<string, any>();
+    private readonly _columnWidths = new Map<string, ColumnWidthDetail>();
     private readonly items: QueryGridItems;
     private _virtualGridStartIndex: number = 0;
     private _verticalSpacerCorrection: number = 1;
@@ -168,7 +164,6 @@ export class QueryGrid extends WebComponent {
     readonly virtualItems: QueryGridItem[]; private _setVirtualItems: (virtualItems: QueryGridItem[]) => void;
     readonly columns: QueryGridColumn[];
     readonly pinnedColumns: QueryGridColumn[]; private _setPinnedColumns: (pinnedColumns: QueryGridColumn[]) => void;
-    readonly columnWidths: number[]; private _setColumnWidths: (columnsWidths: number[]) => void;
     readonly viewportHeight: number;
     readonly virtualRowCount: number;
     readonly hasGrouping: boolean; private _setHasGrouping: (hasGrouping: boolean) => void;
@@ -213,25 +208,21 @@ export class QueryGrid extends WebComponent {
     }
 
     /**
-     * Updated the --vi-query-grid-columns custom css property, used by all rows and headers for column width.
-     */
-    private _columnWidthsChanged(columnWidths: number[]) {
-        this.style.setProperty("--vi-query-grid-columns", `${columnWidths.map(width => `${width}px`).join(" ")} minmax(0, 1fr)`);
-    }
-
-    /**
      * Is called when the first query grid row or the header columns report their size.
      */
     private _columnWidthChanged(e: CustomEvent) {
         e.stopPropagation();
 
         // Always attempt to update column widths when this event is triggered.
-        const detail: { type: "cell" | "column", entries: [column: string, width: number][] } = e.detail;
-        detail.entries.forEach(entry => {
-            const columnWidthDetail = {};
-            columnWidthDetail[detail.type] = entry[1];
+        const detail: { type: "cell" | "column" | "current", entries: [column: string, width: number][], save?: boolean } = e.detail;
+        detail.entries.forEach(([column, width]) => {
+            let columnWidthDetail: ColumnWidthDetail = this._columnWidths.get(column);
+            if (!columnWidthDetail)
+                this._columnWidths.set(column, columnWidthDetail = {});
 
-            this._columnWidths.set(entry[0], Object.assign(this._columnWidths.get(entry[0]) || {}, columnWidthDetail));
+            columnWidthDetail[detail.type] = width;
+            if (detail.type !== "current")
+                columnWidthDetail.current = Math.max(columnWidthDetail.cell, columnWidthDetail.column) || Number.NaN;
         });
 
         if (this._columnWidths.size < this.columns.length)
@@ -241,11 +232,14 @@ export class QueryGrid extends WebComponent {
         Array.from(this._columnWidths).filter(cw => !this.columns.find(c => c.name === cw[0])).forEach(c => this._columnWidths.delete(c[0]));
 
         const widths = Array.from(this._columnWidths.values());
-        if (widths.some(w => w.cell === undefined || w.column === undefined))
+        if (widths.some(w => Number.isNaN(w.current)))
             return;
 
-        this._setColumnWidths(this.columns.map(c => Math.ceil(Object.values(this._columnWidths.get(c.name) as number[]).max(e => e))));
+        this.style.setProperty("--vi-query-grid-columns", `${this.columns.map(c => `${Math.ceil(this._columnWidths.get(c.name).current)}px`).join(" ")} minmax(0, 1fr)`);
         this._setInitializing(false);
+
+        if (detail.save)
+            this.userSettings.save(false);
     }
 
     /**
@@ -461,16 +455,13 @@ export class QueryGrid extends WebComponent {
         columns = columns.filter(c => !c.isHidden);
 
         if (this.columns) {
-            const newColumns = columns.orderBy(c => c.name).map(c => c.name).join(";");
-            const currentColumns = this.columns.orderBy(c => c.name).map(c => c.name).join(";");
-
-            if (currentColumns !== newColumns) {
+            const signature = (columns: QueryGridColumn[]) => columns.orderBy(c => c.name).map(c => c.name).join(";");
+            if (signature(columns) !== signature(this.columns))
                 this._setInitializing(true);
-                this.style.setProperty("--vi-query-grid-columns", `repeat(${columns.length}, max-content)`);
-            }
         }
-        else
-            this.style.setProperty("--vi-query-grid-columns", `repeat(${columns.length}, max-content)`);
+
+        if (this.initializing)
+            this.style.setProperty("--vi-query-grid-columns", columns.map(c => c.width || "max-content").join(" "));
 
         return [...columns.filter(c => c.isPinned).orderBy(c => c.offset), ...columns.filter(c => !c.isPinned).orderBy(c => c.offset)];
     }
