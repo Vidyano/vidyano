@@ -64,25 +64,23 @@ export class AppRoute extends WebComponent {
         this._documentTitleBackup = document.title;
         this._parameters = parameters;
 
-        if (this.preserveContent && this.children.length > 0)
-            this._fireActivate(<WebComponent>this.children[0]);
+        if (this.preserveContent && this.shadowRoot.querySelector("slot").assignedElements().length > 0)
+            this._fireActivate(<WebComponent>this.shadowRoot.querySelector("slot").assignedElements()[0]);
         else {
             this._clearChildren();
 
             const template = this.querySelector("template");
-            if (template) {
-                const templateClass = Polymer.Templatize.templatize(template);
-                const templateInstance = new templateClass({ app: this.app });
-                this.appendChild(templateInstance.root);
-                this.shadowRoot.querySelector("slot").assignedElements().forEach(this._fireActivate.bind(this));
+            if (!template)
+                return;
 
-                this._hasChildren = true;
-            }
-            else {
-                const firstChild = <WebComponent>this.children[0];
-                if (firstChild)
-                    this._fireActivate(firstChild);
-            }
+            template.setAttribute("slot", "none");
+
+            const templateClass = Polymer.Templatize.templatize(template);
+            const templateInstance = new templateClass({ app: this.app });
+            this.appendChild(templateInstance.root);
+            this.shadowRoot.querySelector("slot").assignedElements().forEach(this._fireActivate.bind(this));
+
+            this._hasChildren = true;
         }
 
         this._setActive(true);
@@ -100,12 +98,12 @@ export class AppRoute extends WebComponent {
         if (!this._hasChildren)
             return;
 
-        Array.from(this.children).filter(c => c.tagName !== "TEMPLATE" && c.getAttribute("is") !== "dom-template").forEach(c => this.removeChild(c));
+        this.shadowRoot.querySelector("slot").assignedElements().forEach(c => this.removeChild(c));
         this._hasChildren = false;
     }
 
     deactivate(nextRoute?: AppRoute): Promise<boolean> {
-        const component = <WebComponent>this.children[0];
+        const component = <WebComponent>this.shadowRoot.querySelector("slot").assignedElements()[0];
 
         return new Promise<boolean>(resolve => {
             this.deactivator = resolve;
