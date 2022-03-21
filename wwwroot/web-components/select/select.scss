@@ -72,26 +72,24 @@ $border-color: #ddd;
             margin: 0;
             list-style: none;
 
-            vi-select-option-item {
-                padding-left: var(--theme-h5);
+            .group, vi-select-option-item {
+                display: block;
                 line-height: calc(var(--theme-h2) - 2px);
                 height: calc(var(--theme-h2) - 2px);
                 white-space: nowrap;
+            }
 
-                &:not(.group) {
-                    cursor: pointer;
+            .group {
+                padding-left: var(--theme-h5);
+                color: #888;
+            }
 
-                    &:hover {
-                        background-color: var(--theme-color-faint);
-                    }
-                }
+            vi-select-option-item {
+                padding-left: var(--theme-h3);
+                cursor: pointer;
 
-                &.group {
-                    color: #888;
-                }
-
-                &[group] {
-                    padding-left: var(--theme-h3);
+                &:hover {
+                    background-color: var(--theme-color-faint);
                 }
             }
 
