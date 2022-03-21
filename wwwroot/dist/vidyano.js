@@ -11565,8 +11565,6 @@ class Query$1 extends ServiceObjectWithActions {
         this.id = query.id;
         this.name = query.name;
         this.autoQuery = query.autoQuery;
-        if (!this.autoQuery)
-            this.items = [];
         this._allowTextSearch = query.allowTextSearch;
         this._canRead = !!query.canRead;
         this._canReorder = !!query.canReorder && !asLookup;
@@ -37029,23 +37027,19 @@ let AppRoute = class AppRoute extends WebComponent {
             return;
         this._documentTitleBackup = document.title;
         this._parameters = parameters;
-        if (this.preserveContent && this.children.length > 0)
-            this._fireActivate(this.children[0]);
+        if (this.preserveContent && this.shadowRoot.querySelector("slot").assignedElements().length > 0)
+            this._fireActivate(this.shadowRoot.querySelector("slot").assignedElements()[0]);
         else {
             this._clearChildren();
             const template = this.querySelector("template");
-            if (template) {
-                const templateClass = templatize(template);
-                const templateInstance = new templateClass({ app: this.app });
-                this.appendChild(templateInstance.root);
-                this.shadowRoot.querySelector("slot").assignedElements().forEach(this._fireActivate.bind(this));
-                this._hasChildren = true;
-            }
-            else {
-                const firstChild = this.children[0];
-                if (firstChild)
-                    this._fireActivate(firstChild);
-            }
+            if (!template)
+                return;
+            template.setAttribute("slot", "none");
+            const templateClass = templatize(template);
+            const templateInstance = new templateClass({ app: this.app });
+            this.appendChild(templateInstance.root);
+            this.shadowRoot.querySelector("slot").assignedElements().forEach(this._fireActivate.bind(this));
+            this._hasChildren = true;
         }
         this._setActive(true);
         this._setPath(this.app.path);
@@ -37058,11 +37052,11 @@ let AppRoute = class AppRoute extends WebComponent {
     _clearChildren() {
         if (!this._hasChildren)
             return;
-        Array.from(this.children).filter(c => c.tagName !== "TEMPLATE" && c.getAttribute("is") !== "dom-template").forEach(c => this.removeChild(c));
+        this.shadowRoot.querySelector("slot").assignedElements().forEach(c => this.removeChild(c));
         this._hasChildren = false;
     }
     deactivate(nextRoute) {
-        const component = this.children[0];
+        const component = this.shadowRoot.querySelector("slot").assignedElements()[0];
         return new Promise(resolve => {
             this.deactivator = resolve;
             if (!component || !component.fire || !component.fire("app-route-deactivate", null, { bubbles: false, cancelable: true }).defaultPrevented)
@@ -50244,25 +50238,31 @@ function guid() {
 var _QueryGridCell__lastMeasuredColumn, _QueryGridCell__isObserved;
 let resizeObserver$1;
 resizeObserver$1 = new ResizeObserver(allEntries => {
-    const parents = new Map();
-    allEntries.forEach(e => {
-        const parent = parents.get(e.target.parentElement) || parents.set(e.target.parentElement, []).get(e.target.parentElement);
-        parent.push(e);
-    });
-    parents.forEach((entries, parent) => {
-        parent.dispatchEvent(new CustomEvent("column-width-changed", {
-            detail: {
-                type: "cell",
-                entries: entries.map(e => {
-                    let width = e["borderBoxSize"] != null ? e["borderBoxSize"][0].inlineSize : e.target.offsetWidth;
-                    return [e.target.column.name, width];
-                }),
-            },
-            bubbles: true,
-            cancelable: true,
-            composed: true
-        }));
-        entries.forEach(e => e.target._unobserve());
+    window.requestAnimationFrame(() => {
+        const parents = new Map();
+        allEntries.forEach(e => {
+            const parent = parents.get(e.target.parentElement) || parents.set(e.target.parentElement, []).get(e.target.parentElement);
+            parent.push(e);
+        });
+        parents.forEach((entries, parent) => {
+            try {
+                parent?.dispatchEvent(new CustomEvent("column-width-changed", {
+                    detail: {
+                        type: "cell",
+                        entries: entries.map(e => {
+                            let width = e["borderBoxSize"] != null ? e["borderBoxSize"][0].inlineSize : e.target.offsetWidth;
+                            return [e.target.column.name, width];
+                        }),
+                    },
+                    bubbles: true,
+                    cancelable: true,
+                    composed: true
+                }));
+            }
+            finally {
+                entries.forEach(e => e.target._unobserve());
+            }
+        });
     });
 });
 let QueryGridCell = class QueryGridCell extends WebComponent {
@@ -51490,26 +51490,32 @@ QueryGridColumnFilter = __decorate([
 var _QueryGridColumnHeader__lastMeasuredColumn, _QueryGridColumnHeader__minimumColumnWidth, _QueryGridColumnHeader__calculatedWidth, _QueryGridColumnHeader__resizingRAF;
 let resizeObserver;
 resizeObserver = new ResizeObserver(allEntries => {
-    const parents = new Map();
-    allEntries.forEach(e => {
-        const parent = parents.get(e.target.parentElement) || parents.set(e.target.parentElement, []).get(e.target.parentElement);
-        parent.push(e);
-    });
-    parents.forEach((entries, parent) => {
-        parent.dispatchEvent(new CustomEvent("column-width-changed", {
-            detail: {
-                type: "column",
-                entries: entries.map(e => {
-                    const header = e.target;
-                    let width = e["borderBoxSize"] != null ? e["borderBoxSize"][0].inlineSize : header.offsetWidth;
-                    return [header.column.name, width];
-                }),
-            },
-            bubbles: true,
-            cancelable: true,
-            composed: true
-        }));
-        entries.forEach(e => resizeObserver.unobserve(e.target));
+    window.requestAnimationFrame(() => {
+        const parents = new Map();
+        allEntries.forEach(e => {
+            const parent = parents.get(e.target.parentElement) || parents.set(e.target.parentElement, []).get(e.target.parentElement);
+            parent.push(e);
+        });
+        parents.forEach((entries, parent) => {
+            try {
+                parent?.dispatchEvent(new CustomEvent("column-width-changed", {
+                    detail: {
+                        type: "column",
+                        entries: entries.map(e => {
+                            const header = e.target;
+                            let width = e["borderBoxSize"] != null ? e["borderBoxSize"][0].inlineSize : header.offsetWidth;
+                            return [header.column.name, width];
+                        }),
+                    },
+                    bubbles: true,
+                    cancelable: true,
+                    composed: true
+                }));
+            }
+            finally {
+                entries.forEach(e => resizeObserver.unobserve(e.target));
+            }
+        });
     });
 });
 let QueryGridColumnHeader = class QueryGridColumnHeader extends WebComponent {
@@ -52975,7 +52981,6 @@ let QueryGridRow = class QueryGridRow extends WebComponent {
     static get template() { return html `<style>:host {
   display: grid;
   position: relative;
-  grid-template-columns: auto auto auto var(--vi-query-grid-columns);
   width: initial;
   height: var(--vi-query-grid-row-height);
   line-height: var(--vi-query-grid-row-height);
@@ -56951,11 +56956,11 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host(:not([can-select]):not([can-filter]):not([inline-actions])) vi-query-grid-row {
-  grid-template-columns: var(--vi-query-grid-columns);
+  grid-template-columns: var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host(:not([can-select]):not([can-filter]):not([inline-actions])[has-grouping]) vi-query-grid-row {
-  grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns);
+  grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host([can-select]:not([can-filter]):not([inline-actions])) .controls {
@@ -56963,7 +56968,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host([can-select]:not([can-filter]):not([inline-actions])) vi-query-grid-row {
-  grid-template-columns: auto var(--vi-query-grid-columns);
+  grid-template-columns: auto var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host([can-select]:not([can-filter]):not([inline-actions])[has-grouping]) .controls {
@@ -56971,7 +56976,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host([can-select]:not([can-filter]):not([inline-actions])[has-grouping]) vi-query-grid-row {
-  grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns);
+  grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host(:not([can-select])[can-filter]:not([inline-actions])) .controls {
@@ -56984,7 +56989,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host(:not([can-select])[can-filter]:not([inline-actions])) vi-query-grid-row {
-  grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns);
+  grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host(:not([can-select])[can-filter]:not([inline-actions])) vi-query-grid-row::part(actions) {
@@ -57000,7 +57005,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host(:not([can-select])[can-filter]:not([inline-actions])[has-grouping]) vi-query-grid-row {
-  grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns);
+  grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host(:not([can-select]):not([can-filter])[inline-actions]) .controls {
@@ -57012,11 +57017,11 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host(:not([can-select]):not([can-filter])[inline-actions]) vi-query-grid-row {
-  grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns);
+  grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host(:not([can-select]):not([can-filter])[inline-actions][has-grouping]) vi-query-grid-row {
-  grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns);
+  grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host(:not([can-select]):not([can-filter])[inline-actions][has-grouping]) .controls {
@@ -57036,7 +57041,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host([can-select][can-filter]:not([inline-actions])) vi-query-grid-row {
-  grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns);
+  grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host([can-select][can-filter]:not([inline-actions])) vi-query-grid-row::part(filter) {
@@ -57044,7 +57049,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host([can-select][can-filter]:not([inline-actions])[has-grouping]) vi-query-grid-row {
-  grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns);
+  grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host([can-select][can-filter]:not([inline-actions])[has-grouping]) .controls {
@@ -57060,7 +57065,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host([can-select]:not([can-filter])[inline-actions]) vi-query-grid-row {
-  grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns);
+  grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host([can-select]:not([can-filter])[inline-actions][has-grouping]) .controls {
@@ -57068,7 +57073,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host([can-select]:not([can-filter])[inline-actions][has-grouping]) vi-query-grid-row {
-  grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns);
+  grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host([can-select][can-filter][inline-actions]) .controls {
@@ -57084,7 +57089,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host([can-select][can-filter][inline-actions]) vi-query-grid-row {
-  grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns);
+  grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host([can-select][can-filter][inline-actions][has-grouping]) .controls {
@@ -57096,7 +57101,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host([can-select][can-filter][inline-actions][has-grouping]) vi-query-grid-row {
-  grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns);
+  grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 </style>
 
@@ -57187,9 +57192,14 @@ let QueryGrid = class QueryGrid extends WebComponent {
             return;
         Array.from(this._columnWidths).filter(cw => !this.columns.find(c => c.name === cw[0])).forEach(c => this._columnWidths.delete(c[0]));
         const widths = Array.from(this._columnWidths.values());
-        if (widths.some(w => Number.isNaN(w.current)))
-            return;
+        if (widths.some(w => Number.isNaN(w.current))) {
+            if (this.query.items.length || this.query.isBusy)
+                return;
+            this._columnWidths.forEach(cw => cw.current = cw.column);
+        }
         this.style.setProperty("--vi-query-grid-columns", `${this.columns.map(c => `${Math.ceil(this._columnWidths.get(c.name).current)}px`).join(" ")} minmax(0, 1fr)`);
+        if (widths.every(w => w.cell >= 0))
+            this.style.removeProperty("--vi-query-grid-columns-no-data");
         this._setInitializing(false);
         if (detail.save)
             this.userSettings.save(false);
@@ -57224,7 +57234,6 @@ let QueryGrid = class QueryGrid extends WebComponent {
             newVirtualGridStartIndex--;
         if (newVirtualGridStartIndex < 0)
             newVirtualGridStartIndex = 0;
-        this._setUpdating(true);
         const queuedItemIndexes = [];
         for (let virtualIndex = 0; virtualIndex < this.virtualRowCount; virtualIndex++) {
             const index = newVirtualGridStartIndex + virtualIndex;
@@ -57244,16 +57253,15 @@ let QueryGrid = class QueryGrid extends WebComponent {
             this._virtualGridStartIndex = newVirtualGridStartIndex;
             this.splice("virtualItems", 0, this.virtualRowCount, ...this.virtualItems);
             this.$.grid.style.transform = `translateY(${newVirtualGridStartIndex * rowHeight}px)`;
-            this._setUpdating(false);
         });
         this._getItemsDebouncer = Debouncer.debounce(this._getItemsDebouncer, timeOut.after(20), () => {
             if (this._virtualGridStartIndex !== newVirtualGridStartIndex)
                 return;
             queuedItemIndexes.forEach(index => this._getItem(index));
         });
-        if (this.initializing && !this.query.isBusy && items.length === 0) {
+        if (this.initializing && !this.query.isBusy) {
             this.query.queueWork(async () => {
-                if (this.initializing && !this.query.isBusy && items.length === 0)
+                if (this.initializing && !this.query.isBusy)
                     this._setInitializing(false);
             });
         }
@@ -57359,8 +57367,11 @@ let QueryGrid = class QueryGrid extends WebComponent {
             if (signature(columns) !== signature(this.columns))
                 this._setInitializing(true);
         }
-        if (this.initializing)
-            this.style.setProperty("--vi-query-grid-columns", columns.map(c => c.width || "max-content").join(" "));
+        if (this.initializing) {
+            const init = columns.map(c => c.width || "max-content").join(" ");
+            this.style.setProperty("--vi-query-grid-columns-no-data", init);
+            this.style.setProperty("--vi-query-grid-columns", init);
+        }
         return [...columns.filter(c => c.isPinned).orderBy(c => c.offset), ...columns.filter(c => !c.isPinned).orderBy(c => c.offset)];
     }
     _computeVirtualRowCount(viewportHeight, rowHeight) {
@@ -57433,10 +57444,6 @@ QueryGrid = __decorate([
                 readOnly: true,
                 value: true,
                 reflectToAttribute: true
-            },
-            updating: {
-                type: Boolean,
-                readOnly: true
             },
             query: {
                 type: Object,

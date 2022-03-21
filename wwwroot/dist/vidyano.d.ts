@@ -13315,8 +13315,6 @@ declare class QueryGrid extends WebComponent {
     noInlineActions: boolean;
     readonly initializing: boolean;
     private _setInitializing;
-    readonly updating: boolean;
-    private _setUpdating;
     readonly virtualItems: QueryGridItem[];
     private _setVirtualItems;
     readonly columns: QueryGridColumn[];
