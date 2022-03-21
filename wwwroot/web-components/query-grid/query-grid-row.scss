@@ -1,7 +1,6 @@
 :host {   
     display: grid;
     position: relative;
-    grid-template-columns: auto auto auto var(--vi-query-grid-columns);
     width: initial;
     height: var(--vi-query-grid-row-height);
     line-height: var(--vi-query-grid-row-height);

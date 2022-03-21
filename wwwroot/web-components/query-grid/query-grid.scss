@@ -107,12 +107,12 @@
         }
 
         vi-query-grid-row {
-            grid-template-columns: var(--vi-query-grid-columns);
+            grid-template-columns: var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
         }
 
         &[has-grouping] {
             vi-query-grid-row {
-                grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns);
+                grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
             }
         }
     }
@@ -124,7 +124,7 @@
         }
 
         vi-query-grid-row {
-            grid-template-columns: auto var(--vi-query-grid-columns);
+            grid-template-columns: auto var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
         }
 
         &[has-grouping] {
@@ -133,7 +133,7 @@
             }
 
             vi-query-grid-row {
-                grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns);
+                grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
             }
         }
     }
@@ -150,7 +150,7 @@
         }
 
         vi-query-grid-row {
-            grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns);
+            grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 
             &::part(actions) {
                 display: none;
@@ -167,7 +167,7 @@
             }
 
             vi-query-grid-row {
-                grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns);
+                grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
             }
         }
     }
@@ -183,12 +183,12 @@
         }
 
         vi-query-grid-row {
-            grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns);
+            grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
         }
 
         &[has-grouping] {
             vi-query-grid-row {
-                grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns);
+                grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
             }
 
             .controls {
@@ -212,7 +212,7 @@
         }
 
         vi-query-grid-row {
-            grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns);
+            grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 
             &::part(filter) {
                 display: block;
@@ -221,7 +221,7 @@
 
         &[has-grouping] {
             vi-query-grid-row {
-                grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns);
+                grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
             }
 
             .controls {
@@ -241,7 +241,7 @@
         }
         
         vi-query-grid-row {
-            grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns);
+            grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
         }
 
         &[has-grouping] {
@@ -250,7 +250,7 @@
             }
 
             vi-query-grid-row {
-                grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns);
+                grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
             }
         }
     }
@@ -270,7 +270,7 @@
         }
 
         vi-query-grid-row {
-            grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns);
+            grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
         }
 
         &[has-grouping] {
@@ -283,7 +283,7 @@
             }
 
             vi-query-grid-row {
-                grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns);
+                grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
             }
         }
     }

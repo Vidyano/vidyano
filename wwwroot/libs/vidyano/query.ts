@@ -145,8 +145,6 @@ export class Query extends ServiceObjectWithActions {
         this.id = query.id;
         this.name = query.name;
         this.autoQuery = query.autoQuery;
-        if (!this.autoQuery)
-            this.items = [];
 
         this._allowTextSearch = query.allowTextSearch;
         this._canRead = !!query.canRead;

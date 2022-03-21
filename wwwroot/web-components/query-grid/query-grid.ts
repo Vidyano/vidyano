@@ -35,10 +35,6 @@ type ColumnWidthDetail = { cell?: number; column?: number; current?: number };
             value: true,
             reflectToAttribute: true
         },
-        updating: {
-            type: Boolean,
-            readOnly: true
-        },
         query: {
             type: Object,
             observer: "_queryChanged"
@@ -160,7 +156,6 @@ export class QueryGrid extends WebComponent {
     noSelection: boolean;
     noInlineActions: boolean;
     readonly initializing: boolean; private _setInitializing: (initializing: boolean) => void;
-    readonly updating: boolean; private _setUpdating: (updating: boolean) => void;
     readonly virtualItems: QueryGridItem[]; private _setVirtualItems: (virtualItems: QueryGridItem[]) => void;
     readonly columns: QueryGridColumn[];
     readonly pinnedColumns: QueryGridColumn[]; private _setPinnedColumns: (pinnedColumns: QueryGridColumn[]) => void;
@@ -232,10 +227,17 @@ export class QueryGrid extends WebComponent {
         Array.from(this._columnWidths).filter(cw => !this.columns.find(c => c.name === cw[0])).forEach(c => this._columnWidths.delete(c[0]));
 
         const widths = Array.from(this._columnWidths.values());
-        if (widths.some(w => Number.isNaN(w.current)))
-            return;
+        if (widths.some(w => Number.isNaN(w.current))) {
+            if (this.query.items.length || this.query.isBusy)
+                return;
+            
+            this._columnWidths.forEach(cw => cw.current = cw.column);
+        }
 
         this.style.setProperty("--vi-query-grid-columns", `${this.columns.map(c => `${Math.ceil(this._columnWidths.get(c.name).current)}px`).join(" ")} minmax(0, 1fr)`);
+        if (widths.every(w => w.cell >= 0))
+            this.style.removeProperty("--vi-query-grid-columns-no-data");
+
         this._setInitializing(false);
 
         if (detail.save)
@@ -282,8 +284,6 @@ export class QueryGrid extends WebComponent {
         if (newVirtualGridStartIndex < 0)
             newVirtualGridStartIndex = 0;
 
-        this._setUpdating(true);
-
         const queuedItemIndexes: number[] = [];
         for (let virtualIndex=0; virtualIndex < this.virtualRowCount; virtualIndex++) {
             const index = newVirtualGridStartIndex + virtualIndex;
@@ -310,8 +310,6 @@ export class QueryGrid extends WebComponent {
                 this.splice("virtualItems", 0, this.virtualRowCount, ...this.virtualItems);
 
                 this.$.grid.style.transform = `translateY(${newVirtualGridStartIndex * rowHeight}px)`;
-
-                this._setUpdating(false);
             }
         );
 
@@ -326,10 +324,10 @@ export class QueryGrid extends WebComponent {
             }
         );
 
-        if (this.initializing && !this.query.isBusy && items.length === 0) {
+        if (this.initializing && !this.query.isBusy) {
             // Query grid is displayed for the first time but query has no items, there will be no rows to trigger the column width synchronization.
             this.query.queueWork(async () => {
-                if (this.initializing && !this.query.isBusy && items.length === 0)
+                if (this.initializing && !this.query.isBusy)
                     this._setInitializing(false);
             });
         }
@@ -460,8 +458,11 @@ export class QueryGrid extends WebComponent {
                 this._setInitializing(true);
         }
 
-        if (this.initializing)
-            this.style.setProperty("--vi-query-grid-columns", columns.map(c => c.width || "max-content").join(" "));
+        if (this.initializing) {
+            const init = columns.map(c => c.width || "max-content").join(" ");
+            this.style.setProperty("--vi-query-grid-columns-no-data", init);
+            this.style.setProperty("--vi-query-grid-columns", init);
+        }
 
         return [...columns.filter(c => c.isPinned).orderBy(c => c.offset), ...columns.filter(c => !c.isPinned).orderBy(c => c.offset)];
     }
