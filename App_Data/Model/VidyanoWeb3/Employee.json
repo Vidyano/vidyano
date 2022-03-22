@@ -258,7 +258,6 @@
       "$id": "Query:026c4ca7-53f4-42ac-b196-158f0cb871a1",
       "Id": "026c4ca7-53f4-42ac-b196-158f0cb871a1",
       "Source": "Database.Employees",
-      "AutoQuery": true,
       "Name": "Employees",
       "Label": {
         "en": "Employees",
