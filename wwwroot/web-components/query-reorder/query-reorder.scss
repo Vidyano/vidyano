@@ -1,0 +1,93 @@
+:host {
+    vi-side-pane-core {
+        display: flex;
+        flex-direction: column;
+
+        > header, > footer {
+            background-color: #FAFAFA;
+        }
+
+        > header {
+            position: relative;
+            flex: 0 0 auto;
+            line-height: var(--theme-h1);
+            padding: var(--theme-h5) var(--theme-h4);
+            height: calc(var(--theme-h1) + var(--theme-h5) * 2);
+            border-bottom: 1px solid #EEE;
+            box-sizing: border-box;
+
+            vi-icon {
+                --vi-icon-height: var(--theme-h2);
+                --vi-icon-width: var(--theme-h2);
+                margin-right: var(--theme-h4);
+            }
+
+            h4 {
+                margin: 0;
+                font-weight: 500;
+                font-size: 120%;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+
+            vi-button.close {
+                margin: 0;
+                padding: 0 var(--theme-h5);
+                fill: #888;
+                background: none;
+                border: none;
+                cursor: pointer;
+
+                &:hover {
+                    fill: #555;
+                }
+
+                &:active {
+                    fill: #333;
+                }
+
+                &:focus {
+                    outline: none;
+                }
+            }
+        }
+
+        > footer {
+            padding: var(--theme-h4);
+            border-top: 1px solid #EEE;
+            flex: 0 0 auto;
+
+            vi-button {
+                line-height: var(--theme-h1);
+                padding: 0 var(--theme-h1);
+
+                &:not(:first-of-type) {
+                    margin-left: var(--theme-h5);
+                }
+            }
+        }
+
+        main {
+            position: relative;
+            z-index: 1;
+            padding: var(--theme-h4);
+
+            vi-query-reorder-sortable {
+                .item {
+                    line-height: var(--theme-h2);
+                    margin-bottom: var(--theme-h4);
+                    padding: var(--theme-h4);
+                    background: #f2f2f2;
+                    cursor: grabbing;
+
+                    vi-icon {
+                        margin-right: var(--theme-h4);
+                        --vi-icon-width: var(--theme-h3);
+                        --vi-icon-height: var(--theme-h3);
+                    }
+                }
+            }
+        }
+    }
+}

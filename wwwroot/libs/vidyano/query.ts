@@ -1,15 +1,16 @@
 import type * as Dto from "./typings/service.js"
 import { Observable, IPropertyChangedObserver, ISubjectDisposer, PropertyChangedArgs } from "./common/observable.js"
 import { QueryColumn, SortDirection } from "./query-column.js"
-import type { QueryResultItem } from "./query-result-item.js"
+import { QueryResultItem } from "./query-result-item.js"
 import type { Service } from "./service.js"
 import { ServiceObjectWithActions } from "./service-object-with-actions.js"
 import { QueryFilters } from "./query-filters.js"
 import { QueryChart } from "./query-chart.js"
 import { IQueryGroupingInfo, QueryResultItemGroup } from "./query-result-item-group.js"
 import { PersistentObject } from "./persistent-object.js"
-import type { Action } from "./action.js"
+import { Action } from "./action.js"
 import { ExpressionParser } from "./common/expression-parser.js"
+import { ActionDefinition } from "./action-definition.js"
 
 export interface ISortOption {
     column: QueryColumn;
@@ -148,7 +149,6 @@ export class Query extends ServiceObjectWithActions {
 
         this._allowTextSearch = query.allowTextSearch;
         this._canRead = !!query.canRead;
-        this._canReorder = !!query.canReorder && !asLookup;
         this.isHidden = query.isHidden;
         this.label = query.label;
         this.setNotification(query.notification, query.notificationType, query.notificationDuration);
@@ -163,6 +163,25 @@ export class Query extends ServiceObjectWithActions {
 
         this._updateColumns(query.columns);
         this._initializeActions();
+
+        this._canReorder = !!query.canReorder && !asLookup;
+        if (this._canReorder) {
+            const action = this.actions["viQueryReorder"] = new Action(this.service, new ActionDefinition(this.service, {
+                name: "viQueryReorder",
+                isPinned: true
+            }), this);
+
+            let firstPinned = this.actions.findIndex(a => a.isPinned);
+            if (firstPinned >= 0) {
+                this.actions.splice(firstPinned, 0, action);
+                this.actions.slice(firstPinned).forEach(a => a.offset = firstPinned++);
+            }
+            else {
+                this.actions.push(action);
+                action.offset = this.actions.length - 1;
+            }
+        }
+
         this.selectAll = new QuerySelectAllImpl(this, (!!query.isSystem || !!query.enableSelectAll) && !query.maxSelectedItems && this.actions.some(a => a.isVisible && a.definition.selectionRule !== ExpressionParser.alwaysTrue), this._selectAllPropertyChanged.bind(this));
 
         this._setTotalItems(query.totalItems);

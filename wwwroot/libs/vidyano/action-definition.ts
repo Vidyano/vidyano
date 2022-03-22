@@ -1,65 +1,78 @@
 import { ExpressionParser } from "./common/expression-parser.js"
-import type { QueryResultItem } from "./query-result-item.js"
+import { QueryResultItem } from "./query-result-item.js"
 import type { Service } from "./service.js"
 
+export interface ActionDefinitionParams {
+    name: string;
+    displayName?: string;
+    isPinned?: boolean;
+    showedOn?: string[];
+    confirmation?: string
+    refreshQueryOnCompleted?: boolean;
+    keepSelectionOnRefresh?: boolean
+    offset?: number;
+    selectionRule?: string
+    options?: ("PersistentObject" | "Query")[];
+}
 export class ActionDefinition {
-    private _name: string;
-    private _displayName: string;
-    private _isPinned: boolean;
-    private _refreshQueryOnCompleted: boolean;
-    private _keepSelectionOnRefresh: boolean;
-    private _offset: number;
-    private _confirmation: string;
     private _groupDefinition: string | ActionDefinition;
     private _options: Array<string> = [];
     private _selectionRule: (count: number) => boolean;
-    private _showedOn: string[];
+    private readonly _definition: ActionDefinitionParams;
 
-    constructor(private readonly _service: Service, item: QueryResultItem) {
-        this._name = item.getValue("Name");
-        this._displayName = item.getValue("DisplayName");
-        this._isPinned = item.getValue("IsPinned");
-        this._confirmation = item.getValue("Confirmation");
-        this._selectionRule = ExpressionParser.get(item.getValue("SelectionRule"));
-        this._refreshQueryOnCompleted = item.getValue("RefreshQueryOnCompleted");
-        this._keepSelectionOnRefresh = item.getValue("KeepSelectionOnRefresh");
-        this._offset = item.getValue("Offset");
-        this._showedOn = (<string>item.getValue("ShowedOn") || "").split(",").map(v => v.trim());
+    constructor(service: Service, definition: ActionDefinitionParams);
+    constructor(service: Service, item: QueryResultItem);
+    constructor(private readonly _service: Service, itemOrDefinition: QueryResultItem | ActionDefinitionParams) {
+        if (itemOrDefinition instanceof QueryResultItem) {
+            this._definition = {
+                name: itemOrDefinition.getValue("Name"),
+                displayName: itemOrDefinition.getValue("DisplayName"),
+                isPinned: itemOrDefinition.getValue("IsPinned"),
+                confirmation: itemOrDefinition.getValue("Confirmation"),
+                refreshQueryOnCompleted: itemOrDefinition.getValue("RefreshQueryOnCompleted"),
+                keepSelectionOnRefresh: itemOrDefinition.getValue("KeepSelectionOnRefresh"),
+                offset: itemOrDefinition.getValue("Offset"),
+                showedOn: (<string>itemOrDefinition.getValue("ShowedOn") || "").split(",").map(v => v.trim()),
+                selectionRule: itemOrDefinition.getValue("SelectionRule"),
+                options: itemOrDefinition.getValue("Options")?.split(";") ?? []
+            };
 
-        const groupAction = item.getFullValue("GroupAction");
-        if (groupAction != null)
-            this._groupDefinition = groupAction.objectId;
+            const groupAction = itemOrDefinition.getFullValue("GroupAction");
+            if (groupAction != null)
+                this._groupDefinition = groupAction.objectId;
+        }
+        else
+            this._definition = itemOrDefinition;
 
-        const options = item.getValue("Options");
-        this._options = options && options.trim().length > 0 ? options.split(";") : [];
+        this._selectionRule = ExpressionParser.get(this._definition.selectionRule);
     }
 
     get name(): string {
-        return this._name;
+        return this._definition.name;
     }
 
     get displayName(): string {
-        return this._displayName;
+        return this._definition.displayName;
     }
 
     get isPinned(): boolean {
-        return this._isPinned;
+        return this._definition.isPinned ?? false;
     }
 
     get refreshQueryOnCompleted(): boolean {
-        return this._refreshQueryOnCompleted;
+        return this._definition.refreshQueryOnCompleted;
     }
 
     get keepSelectionOnRefresh(): boolean {
-        return this._keepSelectionOnRefresh;
+        return this._definition.keepSelectionOnRefresh;
     }
 
     get offset(): number {
-        return this._offset;
+        return this._definition.offset;
     }
 
     get confirmation(): string {
-        return this._confirmation;
+        return this._definition.confirmation;
     }
 
     get options(): Array<string> {
@@ -71,7 +84,7 @@ export class ActionDefinition {
     }
 
     get showedOn(): string[] {
-        return this._showedOn;
+        return this._definition.showedOn;
     }
 
     get groupDefinition(): ActionDefinition {

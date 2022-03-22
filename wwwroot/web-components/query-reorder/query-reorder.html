@@ -1,0 +1,24 @@
+<link rel="stylesheet" href="query-reorder.css" />
+
+<header class="layout horizontal">
+    <vi-icon source="Action_viQueryReorder"></vi-icon>
+    <h4 class="flex">[[query.label]]</h4>
+</header>
+<vi-scroller class="flex">
+    <main>
+        <vi-query-reorder-sortable enabled>
+            <dom-repeat items="[[query.items]]" id="itemsDomRepeat">
+                <template>
+                    <div class="layout horizontal center item">
+                        <vi-icon source="Hamburger" class="sort-handle" part="icon" hidden$="[[sensitive]]"></vi-icon>
+                        <span>[[_getItemDisplayValue(item, displayColumn)]]</span>
+                    </div>
+                </template>
+            </dom-repeat>
+        </vi-query-reorder-sortable>
+    </main>
+</vi-scroller>
+<footer class="horizontal layout end-justified">
+    <vi-button on-tap="cancel" inverse label="[[translations.Cancel]]" disabled="[[isSaving]]"></vi-button>
+    <vi-button on-tap="_save" label="[[translations.Save]]" disabled="[[isSaving]]" busy="[[isSaving]]"></vi-button>
+</footer>

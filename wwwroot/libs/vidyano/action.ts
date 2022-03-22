@@ -49,6 +49,7 @@ export class Action extends ServiceObject {
         this.displayName = definition.displayName;
         this.selectionRule = definition.selectionRule;
         this._isPinned = definition.isPinned;
+        this._offset = definition.offset;
 
         if (owner["persistentObject"]) { //} instanceof Query) { // TODO: Other way to check?
             this._targetType = "Query";

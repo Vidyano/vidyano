@@ -18,6 +18,7 @@ import { Dialog } from "../dialog/dialog.js"
 import * as Keyboard from "../utils/keyboard.js"
 import { MessageDialog, IMessageDialogOptions } from "../message-dialog/message-dialog.js"
 import "../sensitive/sensitive.js"
+import { SidePane } from "../side-pane/side-pane.js"
 import { WebComponent } from "../web-component/web-component.js"
 import "@polymer/iron-a11y-keys/iron-a11y-keys"
 import { IronA11yKeysElement } from "@polymer/iron-a11y-keys/iron-a11y-keys"
@@ -181,6 +182,7 @@ export abstract class AppBase extends WebComponent {
 
     private _keybindingRegistrations: { [key: string]: Keyboard.IKeybindingRegistration[]; } = {};
     private _activeDialogs: Dialog[] = [];
+    private _activePanes: SidePane[] = [];
     private _updateAvailableSnoozeTimer: any;
     private _initializeResolve: (app: Vidyano.Application) => void;
     private _initialize: Promise<Vidyano.Application> = new Promise(resolve => { this._initializeResolve = resolve; });
@@ -381,6 +383,19 @@ export abstract class AppBase extends WebComponent {
 
     showAlert(notification: string, type: Vidyano.NotificationType = "Notice", duration: number = 3000) {
         (this.$.alert as Alert).log(notification, type, duration);
+    }
+
+    async showPane(pane: SidePane) {
+        this.shadowRoot.appendChild(pane);
+        this._activePanes.push(pane);
+
+        try {
+            return await pane.open();
+        }
+        finally {
+            this.shadowRoot.removeChild(pane);
+            this._activePanes.pop();
+        }
     }
 
     redirectToSignIn(keepUrl: boolean = true) {
