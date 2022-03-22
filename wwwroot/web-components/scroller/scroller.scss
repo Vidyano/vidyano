@@ -223,6 +223,7 @@
             pointer-events: none;
             will-change: transform;
             transition: transform 0.3s ease-out;
+            z-index: 1;
 
             &.top {
                 transform: translateY(calc(var(--vi-scroller--scroll-shadow-top-offset, var(--theme-h2)) * -1.5));
