@@ -3517,20 +3517,26 @@ declare class QueryResultItem extends ServiceObject {
     _toServiceObject(): any;
 }
 
+interface ActionDefinitionParams {
+    name: string;
+    displayName?: string;
+    isPinned?: boolean;
+    showedOn?: string[];
+    confirmation?: string;
+    refreshQueryOnCompleted?: boolean;
+    keepSelectionOnRefresh?: boolean;
+    offset?: number;
+    selectionRule?: string;
+    options?: ("PersistentObject" | "Query")[];
+}
 declare class ActionDefinition {
     private readonly _service;
-    private _name;
-    private _displayName;
-    private _isPinned;
-    private _refreshQueryOnCompleted;
-    private _keepSelectionOnRefresh;
-    private _offset;
-    private _confirmation;
     private _groupDefinition;
     private _options;
     private _selectionRule;
-    private _showedOn;
-    constructor(_service: Service, item: QueryResultItem);
+    private readonly _definition;
+    constructor(service: Service, definition: ActionDefinitionParams);
+    constructor(service: Service, item: QueryResultItem);
     get name(): string;
     get displayName(): string;
     get isPinned(): boolean;
@@ -4146,6 +4152,7 @@ type vidyano_ActionExecutionHandlerDispose = ActionExecutionHandlerDispose;
 type vidyano_Action = Action;
 declare const vidyano_Action: typeof Action;
 declare const vidyano_Actions: typeof Actions;
+type vidyano_ActionDefinitionParams = ActionDefinitionParams;
 type vidyano_ActionDefinition = ActionDefinition;
 declare const vidyano_ActionDefinition: typeof ActionDefinition;
 type vidyano_ActionGroup = ActionGroup;
@@ -4256,6 +4263,7 @@ declare namespace vidyano {
     vidyano_ActionExecutionHandlerDispose as ActionExecutionHandlerDispose,
     vidyano_Action as Action,
     vidyano_Actions as Actions,
+    vidyano_ActionDefinitionParams as ActionDefinitionParams,
     vidyano_ActionDefinition as ActionDefinition,
     vidyano_ActionGroup as ActionGroup,
     vidyano_Application as Application,
@@ -9846,6 +9854,17 @@ declare class Sensitive extends WebComponent {
     static get template(): HTMLTemplateElement;
 }
 
+declare abstract class SidePane extends WebComponent {
+    static sidePaneTemplate(sidePane: HTMLTemplateElement): HTMLTemplateElement;
+    private _resolve;
+    private get sidePaneCore();
+    open(): Promise<unknown>;
+    close(result?: any): void;
+    cancel(): void;
+    private _onClosed;
+    private _computeWithBackdrop;
+}
+
 /**
  * DO NOT EDIT
  *
@@ -10066,6 +10085,7 @@ declare abstract class AppBase extends WebComponent {
     static get template(): HTMLTemplateElement;
     private _keybindingRegistrations;
     private _activeDialogs;
+    private _activePanes;
     private _updateAvailableSnoozeTimer;
     private _initializeResolve;
     private _initialize;
@@ -10102,6 +10122,7 @@ declare abstract class AppBase extends WebComponent {
     showDialog(dialog: Dialog): Promise<any>;
     showMessageDialog(options: IMessageDialogOptions): Promise<any>;
     showAlert(notification: string, type?: NotificationType, duration?: number): void;
+    showPane(pane: SidePane): Promise<unknown>;
     redirectToSignIn(keepUrl?: boolean): void;
     redirectToSignOut(keepUrl?: boolean): void;
     private _sensitiveChanged;
@@ -13393,6 +13414,19 @@ declare class QueryPresenter extends WebComponent {
     private _updateTitle;
 }
 
+declare class QueryReorder extends SidePane {
+    query: Query$1;
+    static get template(): HTMLTemplateElement;
+    readonly isSaving: boolean;
+    private _setIsSaving;
+    private _operations;
+    constructor(query: Query$1);
+    private _onReorder;
+    _save(): Promise<void>;
+    private _computeDisplayColumn;
+    private _getItemDisplayValue;
+}
+
 declare class Query extends WebComponent {
     static get template(): HTMLTemplateElement;
     private _cacheEntry;
@@ -13489,4 +13523,4 @@ interface IKeybindingRegistration {
     scope?: AppRoute | Dialog;
 }
 
-export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, DialogCore, Error, FileDrop, IConfigurableAction, IDatePickerCell, IEvent, IFileDropDetails, IItemTapEventArgs, IKeybindingRegistration, IKeysEvent, IMessageDialogOptions, IObserveChainDisposer, IPersistentObjectDialogOptions, IPosition, IQueryGridColumnFilterDistinct, IQueryGridUserSettingsColumnData, IRGB, ISelectItem, ISize, ISortableDragEndDetails, ITranslatedString, IWebComponentKeybindingInfo, IWebComponentProperties, IWebComponentProperty, IWebComponentRegistrationInfo, Icon, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeConstructor, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellDefault, QueryGridCellImage, QueryGridCellPresenter, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, SelectOption, SelectOptionItem, SelectReferenceDialog, Sensitive, SignIn, SignOut, SizeTracker, SizeTrackerEvent, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, vidyano as Vidyano, WebComponent, moment_d as moment };
+export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, DialogCore, Error, FileDrop, IConfigurableAction, IDatePickerCell, IEvent, IFileDropDetails, IItemTapEventArgs, IKeybindingRegistration, IKeysEvent, IMessageDialogOptions, IObserveChainDisposer, IPersistentObjectDialogOptions, IPosition, IQueryGridColumnFilterDistinct, IQueryGridUserSettingsColumnData, IRGB, ISelectItem, ISize, ISortableDragEndDetails, ITranslatedString, IWebComponentKeybindingInfo, IWebComponentProperties, IWebComponentProperty, IWebComponentRegistrationInfo, Icon, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeConstructor, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellDefault, QueryGridCellImage, QueryGridCellPresenter, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, QueryReorder, RetryActionDialog, Scroller, Select, SelectOption, SelectOptionItem, SelectReferenceDialog, Sensitive, SidePane, SignIn, SignOut, SizeTracker, SizeTrackerEvent, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, vidyano as Vidyano, WebComponent, moment_d as moment };
