@@ -1,8 +1,77 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <script type="importmap">
+            {
+                "imports": {
+                    "tslib": "../web3/libs/modules/tslib/tslib.es6.js",
+                    "bignumber.js": "../web3/libs/modules/bignumber.js/bignumber.mjs",
+                    "@polymer/polymer": "../web3/libs/modules/@polymer/polymer/polymer-element.js",
+                    "@polymer/polymer/lib/": "../web3/libs/modules/@polymer/polymer/lib/",
+                    "@polymer/iron-a11y-keys/iron-a11y-keys": "../web3/libs/modules/@polymer/iron-a11y-keys/iron-a11y-keys.js",
+                    "@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js": "../web3/libs/modules/@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js",
+                    "@polymer/iron-collapse": "../web3/libs/modules/@polymer/iron-collapse/iron-collapse.js",
+                    "@polymer/iron-collapse/": "../web3/libs/modules/@polymer/iron-collapse/",
+                    "@polymer/iron-list": "../web3/libs/modules/@polymer/iron-list/iron-list.js",
+                    "@polymer/iron-resizable-behavior/iron-resizable-behavior.js": "../web3/libs/modules/@polymer/iron-resizable-behavior/iron-resizable-behavior.js",
+                    "@polymer/iron-scroll-target-behavior/iron-scroll-target-behavior.js": "../web3/libs/modules/@polymer/iron-scroll-target-behavior/iron-scroll-target-behavior.js",
+                    "@polymer/iron-overlay-behavior": "../web3/libs/modules/@polymer/iron-overlay-behavior/iron-overlay-behavior.js",
+                    "@polymer/iron-overlay-behavior/iron-focusables-helper": "../web3/libs/modules/@polymer/iron-overlay-behavior/iron-focusables-helper.js",
+                    "@polymer/iron-fit-behavior": "../web3/libs/modules/@polymer/iron-fit-behavior/iron-fit-behavior.js",
+                    "@polymer/iron-fit-behavior/": "../web3/libs/modules/@polymer/iron-fit-behavior/",
+                    "@polymer/iron-media-query": "../web3/libs/modules/@polymer/iron-media-query/iron-media-query.js",
+                    "@polymer/polymer/polymer-legacy.js": "../web3/libs/modules/@polymer/polymer/polymer-legacy.js",
+                    "@polymer/paper-ripple": "../web3/libs/modules/@polymer/paper-ripple/paper-ripple.js",
+                    "@polymer/marked-element": "../web3/libs/modules/@polymer/marked-element/marked-element.js",
+                    "marked/lib/marked.js": "../web3/libs/modules/marked/lib/marked.js",
+                    "@webcomponents/shadycss/entrypoints/apply-shim.js": "../web3/libs/modules/@webcomponents/shadycss/entrypoints/apply-shim.js",
+                    "@webcomponents/shadycss/entrypoints/custom-style-interface.js": "../web3/libs/modules/@webcomponents/shadycss/entrypoints/custom-style-interface.js",
+                    "moment": "../web3/libs/modules/moment/dist/moment.js",
+                    "codemirror": "../web3/libs/modules/codemirror/lib/codemirror.js",
+                    "sortablejs": "../web3/libs/modules/sortablejs/modular/sortable.esm.js",
+                    "d3": "../web3/libs/modules/d3/src/index.js",
+                    "d3-array": "../web3/libs/modules/d3-array/src/index.js",
+                    "d3-axis": "../web3/libs/modules/d3-axis/src/index.js",
+                    "d3-brush": "../web3/libs/modules/d3-brush/src/index.js",
+                    "d3-chord": "../web3/libs/modules/d3-chord/src/index.js",
+                    "d3-color": "../web3/libs/modules/d3-color/src/index.js",
+                    "d3-contour": "../web3/libs/modules/d3-contour/src/index.js",
+                    "d3-delaunay": "../web3/libs/modules/d3-delaunay/src/index.js",
+                    "d3-dispatch": "../web3/libs/modules/d3-dispatch/src/index.js",
+                    "d3-drag": "../web3/libs/modules/d3-drag/src/index.js",
+                    "d3-dsv": "../web3/libs/modules/d3-dsv/src/index.js",
+                    "d3-ease": "../web3/libs/modules/d3-ease/src/index.js",
+                    "d3-fetch": "../web3/libs/modules/d3-fetch/src/index.js",
+                    "d3-force": "../web3/libs/modules/d3-force/src/index.js",
+                    "d3-format": "../web3/libs/modules/d3-format/src/index.js",
+                    "d3-geo": "../web3/libs/modules/d3-geo/src/index.js",
+                    "d3-hierarchy": "../web3/libs/modules/d3-hierarchy/src/index.js",
+                    "d3-interpolate": "../web3/libs/modules/d3-interpolate/src/index.js",
+                    "d3-path": "../web3/libs/modules/d3-path/src/index.js",
+                    "d3-polygon": "../web3/libs/modules/d3-polygon/src/index.js",
+                    "d3-quadtree": "../web3/libs/modules/d3-quadtree/src/index.js",
+                    "d3-random": "../web3/libs/modules/d3-random/src/index.js",
+                    "d3-scale": "../web3/libs/modules/d3-scale/src/index.js",
+                    "d3-scale-chromatic": "../web3/libs/modules/d3-scale-chromatic/src/index.js",
+                    "d3-selection": "../web3/libs/modules/d3-selection/src/index.js",
+                    "d3-shape": "../web3/libs/modules/d3-shape/src/index.js",
+                    "d3-time": "../web3/libs/modules/d3-time/src/index.js",
+                    "d3-time-format": "../web3/libs/modules/d3-time-format/src/index.js",
+                    "d3-timer": "../web3/libs/modules/d3-timer/src/index.js",
+                    "d3-transition": "../web3/libs/modules/d3-transition/src/index.js",
+                    "d3-zoom": "../web3/libs/modules/d3-zoom/src/index.js",
+                    "internmap": "../web3/libs/modules/internmap/src/index.js",
+                    "delaunator": "../web3/libs/modules/delaunator/index.js",
+                    "robust-predicates": "../web3/libs/modules/robust-predicates/index.js"
+                }
+            }
+        </script>
+
         <link href="//fonts.googleapis.com/css?family=Open+Sans:400,300,600,700,800" rel="stylesheet" type="text/css">
         <link href="../web3/libs/modules/qunit/qunit/qunit.css" rel="stylesheet" type="text/css">
+        <script src="../web3/libs/modules/qunit/qunit/qunit.js" defer></script>
+        <script type="module" src="../web3/test/index.js" defer></script>
+
         <style>
             html, body {
                 margin: 0;
@@ -29,8 +98,5 @@
 
     <body>
         <div id="qunit"></div>
-        <iframe id="app"></iframe>
-        <script src="../web3/libs/modules/qunit/qunit/qunit.js"></script>
-        <script type="module" src="../web3/test/index.js"></script>
     </body>
 </html>
