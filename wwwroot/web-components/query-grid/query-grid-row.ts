@@ -35,7 +35,8 @@ export interface IItemTapEventArgs {
         visibleRange: Array,
         initializing: {
             type: Boolean,
-            reflectToAttribute: true
+            reflectToAttribute: true,
+            value: false
         }
     },
     forwardObservers: [
