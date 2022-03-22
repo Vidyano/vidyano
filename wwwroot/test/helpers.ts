@@ -21,6 +21,12 @@ export async function init(url: string = "") {
     });
 }
 
+export function rightClick(element: Node) {
+    element.dispatchEvent(new MouseEvent("contextmenu", {
+        button: 2
+    }));
+}
+
 export async function waitForPolymerAsync(fnc: () => void) {
     return new Promise(resolve => {
         Polymer.Async.microTask.run(() => {
