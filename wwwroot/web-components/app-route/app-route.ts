@@ -41,7 +41,7 @@ export class AppRoute extends WebComponent {
 
     private _hasChildren: boolean;
     private _parameters: { [key: string]: string } = {};
-    private _documentTitleBackup: string;
+    private _documentTitle: string;
     readonly active: boolean; private _setActive: (val: boolean) => void;
     readonly path: string; private _setPath: (val: string) => void;
     allowSignedOut: boolean;
@@ -61,7 +61,6 @@ export class AppRoute extends WebComponent {
         if (this.active && this.matchesParameters(parameters))
             return;
 
-        this._documentTitleBackup = document.title;
         this._parameters = parameters;
 
         if (this.preserveContent && this.shadowRoot.querySelector("slot").assignedElements().length > 0)
@@ -85,6 +84,9 @@ export class AppRoute extends WebComponent {
 
         this._setActive(true);
         this._setPath(this.app.path);
+
+        if (this._documentTitle)
+            document.title = this._documentTitle;
 
         (<AppServiceHooks>this.service.hooks).trackPageView(this.app.path);
     }
@@ -110,12 +112,8 @@ export class AppRoute extends WebComponent {
             if (!component || !component.fire || !component.fire("app-route-deactivate", null, { bubbles: false, cancelable: true }).defaultPrevented)
                 resolve(true);
         }).then(result => {
-            if (result) {
-                if (!this.preserveContent || nextRoute !== this)
-                    this._setActive(false);
-
-                document.title = this._documentTitleBackup;
-            }
+            if (result && (!this.preserveContent || nextRoute !== this))
+                this._setActive(false);
 
             return result;
         });
@@ -136,14 +134,12 @@ export class AppRoute extends WebComponent {
 
     private _titleChanged(e: CustomEvent) {
         const { title }: { title: string; } = e.detail;
+        this._documentTitle = title;
+
         if (!this.active || e.defaultPrevented || (e.target as HTMLElement).parentNode !== this)
             return;
 
-        if (this._documentTitleBackup !== title && !!title)
-            document.title = `${title} · ${this._documentTitleBackup}`;
-        else
-            document.title = this._documentTitleBackup;
-
+        document.title = this._documentTitle;
         e.stopPropagation();
     }
 }

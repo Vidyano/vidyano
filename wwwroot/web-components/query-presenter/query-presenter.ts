@@ -67,8 +67,6 @@ export class QueryPresenter extends WebComponent {
             this.queryId = this.query = undefined;
             this.queryId = parameters.id;
         }
-
-        this.fire("title-changed", { title: this.query ? this.query.label : null }, { bubbles: true });
     }
 
     private _computeHasError(error: string): boolean {
@@ -120,8 +118,6 @@ export class QueryPresenter extends WebComponent {
 
             this._renderQuery(query);
         }
-
-        this.fire("title-changed", { title: query ? query.labelWithTotalItems : null }, { bubbles: true });
     }
 
     private _renderQuery(query: Vidyano.Query) {

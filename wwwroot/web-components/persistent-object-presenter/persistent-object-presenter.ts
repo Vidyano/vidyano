@@ -46,7 +46,10 @@ interface IPersistentObjectPresenterRouteParameters {
     },
     observers: [
         "_updatePersistentObject(persistentObjectId, persistentObjectObjectId, isConnected)",
-        "_updateTitle(persistentObject.isBreadcrumbSensitive, isAppSensitive)"
+        "_updateTitle(persistentObject.breadcrumb)"
+    ],
+    forwardObservers: [
+        "persistentObject.breadcrumb"
     ],
     listeners: {
         "app-route-activate": "_activate",
@@ -101,8 +104,6 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
                 this.persistentObjectObjectId = this._cacheEntry.objectId || "";
                 this.persistentObjectId = this._cacheEntry.id;
             }
-
-            this.fire("title-changed", { title: this.persistentObject ? this.persistentObject.breadcrumb : null }, { bubbles: true });
         }
     }
 
@@ -189,16 +190,11 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
             }
             else
                 this._renderPersistentObject(persistentObject);
-
-            this._updateTitle(persistentObject.isBreadcrumbSensitive, this.isAppSensitive);
         }
     }
 
-    private _updateTitle(isBreadcrumbSensitive: boolean, isAppSensitive: boolean) {
-        if (!this.persistentObject)
-            return;
-
-        this.fire("title-changed", { title: isBreadcrumbSensitive && isAppSensitive ? null : this.persistentObject.breadcrumb }, { bubbles: true });
+    private _updateTitle(breadcrumb: string) {
+        this.fire("title-changed", { title: this.persistentObject.isBreadcrumbSensitive && this.isAppSensitive ? null : breadcrumb }, { bubbles: true });
     }
 
     private async _renderPersistentObject(persistentObject: Vidyano.PersistentObject) {
