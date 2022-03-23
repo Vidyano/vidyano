@@ -165,22 +165,6 @@ export class Query extends ServiceObjectWithActions {
         this._initializeActions();
 
         this._canReorder = !!query.canReorder && !asLookup;
-        if (this._canReorder) {
-            const action = this.actions["viQueryReorder"] = new Action(this.service, new ActionDefinition(this.service, {
-                name: "viQueryReorder",
-                isPinned: true
-            }), this);
-
-            let firstPinned = this.actions.findIndex(a => a.isPinned);
-            if (firstPinned >= 0) {
-                this.actions.splice(firstPinned, 0, action);
-                this.actions.slice(firstPinned).forEach(a => a.offset = firstPinned++);
-            }
-            else {
-                this.actions.push(action);
-                action.offset = this.actions.length - 1;
-            }
-        }
 
         this.selectAll = new QuerySelectAllImpl(this, (!!query.isSystem || !!query.enableSelectAll) && !query.maxSelectedItems && this.actions.some(a => a.isVisible && a.definition.selectionRule !== ExpressionParser.alwaysTrue), this._selectAllPropertyChanged.bind(this));
 

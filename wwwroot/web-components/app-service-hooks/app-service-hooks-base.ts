@@ -8,7 +8,6 @@ import { PersistentObjectTabConfig } from "../app/config/persistent-object-tab-c
 import { ProgramUnitConfig } from "../app/config/program-unit-config.js"
 import { QueryConfig } from "../app/config/query-config.js"
 import { QueryChartConfig } from "../app/config/query-chart-config.js"
-import { QueryReorder } from "../query-reorder/query-reorder.js"
 import { RetryActionDialog } from "../retry-action-dialog/retry-action-dialog.js"
 import { SelectReferenceDialog } from "../select-reference-dialog/select-reference-dialog.js"
 
@@ -172,12 +171,6 @@ export class AppServiceHooksBase extends Vidyano.ServiceHooks {
             }
             else
                 return null;
-        }
-        else if (args.action === "viQueryReorder") {
-            args.isHandled = true;
-            this.app.showPane(new QueryReorder(args.query));
-
-            return null;
         }
 
         return super.onAction(args);
