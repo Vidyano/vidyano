@@ -37,7 +37,8 @@ export interface IItemTapEventArgs {
             type: Boolean,
             reflectToAttribute: true,
             value: false
-        }
+        },
+        canReorder: Boolean
     },
     forwardObservers: [
         "item.isSelected"

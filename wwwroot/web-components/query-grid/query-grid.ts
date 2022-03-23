@@ -13,7 +13,9 @@ import "../scroller/scroller.js"
 import { Popup } from "../popup/popup.js"
 import { QueryGridColumn } from "./query-grid-column.js"
 import { QueryGridConfigureDialog } from "./query-grid-configure-dialog.js"
+import { QueryGridRow } from "./query-grid-row.js"
 import { QueryGridUserSettings } from "./query-grid-user-settings.js"
+import { ISortableDragEndDetails, Sortable } from "../sortable/sortable.js"
 import { WebComponent } from "../web-component/web-component.js"
 
 const placeholder: { query?: Vidyano.Query; } = {};
@@ -79,7 +81,7 @@ type ColumnWidthDetail = { cell?: number; column?: number; current?: number };
         viewportWidth: Number,
         virtualRowCount: {
             type: Number,
-            computed: "_computeVirtualRowCount(viewportHeight, rowHeight)",
+            computed: "_computeVirtualRowCount(viewportHeight, rowHeight, query.canReorder, query.totalItems)",
             value: 0
         },
         virtualItems: {
@@ -115,21 +117,30 @@ type ColumnWidthDetail = { cell?: number; column?: number; current?: number };
             type: Boolean,
             reflectToAttribute: true,
             computed: "query.canFilter"
+        },
+        canReorder: {
+            type: Boolean,
+            reflectToAttribute: true,
+            computed: "_computeCanReorder(query.canReorder, hasGrouping)"
         }
     },
     forwardObservers: [
+        "query.canReorder",
         "query.columns",
         "query.isBusy",
         "query.lastUpdated",
         "query.items.*",
         "query.totalItem",
+        "query.totalItems",
         "_updatePinnedColumns(columns.*.isPinned)"
     ],
     listeners: {
         "column-width-changed": "_columnWidthChanged",
         "item-select": "_itemSelect",
         "query-grid-column:configure": "_onConfigure",
-        "query-grid-column:update": "_onColumnUpdate"
+        "query-grid-column:update": "_onColumnUpdate",
+        "drag-start": "_onReorderStart",
+        "drag-end": "_onReorderEnd"
     },
     observers: [
         "_updateScrollOffsetForItems(query.items)",
@@ -467,9 +478,12 @@ export class QueryGrid extends WebComponent {
         return [...columns.filter(c => c.isPinned).orderBy(c => c.offset), ...columns.filter(c => !c.isPinned).orderBy(c => c.offset)];
     }
 
-    private _computeVirtualRowCount(viewportHeight: number, rowHeight: number) {
+    private _computeVirtualRowCount(viewportHeight: number, rowHeight: number, canReorder: boolean, totalItems: number) {
         if (!viewportHeight)
             return 0;
+
+        if (canReorder && totalItems > 0)
+            return totalItems;
 
         return Math.ceil(Math.max(Math.ceil(viewportHeight / rowHeight) * 1.5, this.virtualRowCount || 0));
     }
@@ -491,6 +505,10 @@ export class QueryGrid extends WebComponent {
 
     private _computeInlineActions(query: Vidyano.Query, noInlineActions: boolean): boolean {
         return !noInlineActions && !!query && !query.asLookup && !this.asLookup && (query.actions.some(a => a.isVisible && a.definition.selectionRule !== Vidyano.ExpressionParser.alwaysTrue && a.definition.selectionRule(1)));
+    }
+
+    private _computeCanReorder(canReorder: boolean, hasGrouping: boolean) {
+        return canReorder && !hasGrouping;
     }
 
     private _rowHeightChanged(rowHeight: number) {
@@ -530,6 +548,28 @@ export class QueryGrid extends WebComponent {
             this._lastSelectedItemIndex = indexOfItem;
     }
 
+    private __rowsBeforeDragEnd: QueryGridRow[]; 
+    private async _onReorderStart(e: CustomEvent) {
+        this.__rowsBeforeDragEnd = Array.from(this.$.grid.querySelectorAll("vi-query-grid-row"));
+    }
+
+    private async _onReorderEnd(e: CustomEvent) {
+        const details: ISortableDragEndDetails = e.detail;
+
+        if (details.newIndex == null)
+            return;
+
+        try {
+            await this.query.reorder(
+                (details.element.previousElementSibling as QueryGridRow)?.item as Vidyano.QueryResultItem ?? null,
+                (details.element as QueryGridRow).item as Vidyano.QueryResultItem,
+                (details.element.nextElementSibling as QueryGridRow)?.item as Vidyano.QueryResultItem ?? null);
+        }
+        finally {
+            this.__rowsBeforeDragEnd.forEach(row => this.$.grid.appendChild(row));
+        }
+    }
+
     private async _onColumnUpdate() {
         await this.userSettings.save();
         this._reset();
@@ -544,4 +584,9 @@ export class QueryGrid extends WebComponent {
         this._updateUserSettings(this.query);
         this._update(this.verticalScrollOffset, this.virtualRowCount, this.rowHeight, this.items);
     }
+}
+
+@WebComponent.register()
+class QueryGridSortable extends Sortable {
+    static get template() { return Polymer.html`<style>:host { display: block; }</style><slot></slot>` }
 }

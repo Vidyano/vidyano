@@ -6,6 +6,12 @@
 
         <div part="groupspacer" class="pinned"></div>
 
+        <dom-if if="[[canReorder]]">
+            <template>
+                <vi-icon class="reorder pinned" source="Hamburger" class="sort-handle" part="reorder"></vi-icon>
+            </template>
+        </dom-if>
+
         <div class="selector pinned" on-tap="_onSelect" part="selector">
             <vi-icon source="Selected" is-selected$="[[item.isSelected]]"></vi-icon>
         </div>

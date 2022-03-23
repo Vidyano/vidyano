@@ -39,7 +39,12 @@
         z-index: 0;
     }
 
-    .selector, .actions {
+    .reorder {
+        pointer-events: all;
+        cursor: grabbing;
+    }
+
+    .selector, .actions, .reorder {
         vi-icon {
             width: var(--vi-query-grid-row-height);
             height: var(--vi-query-grid-row-height);
