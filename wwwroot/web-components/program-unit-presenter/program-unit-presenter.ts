@@ -35,7 +35,7 @@ export class ProgramUnitPresenter extends WebComponent {
         if (!this.service || !this.service.application)
             return;
 
-        this._setProgramUnit(this.service.application.programUnits.find(pu => pu.name === parameters.programUnitName));
+        this._setProgramUnit(this.service.application.programUnits.find(pu => pu.name === parameters.programUnitName || pu.nameKebab === parameters.programUnitName));
         if (!this.programUnit) {
             e.preventDefault();
 
