@@ -1,5 +1,5 @@
 import { AppRoute } from "../web-components/app-route/app-route";
-import { init, waitForQuery, querySelectorDeep } from "./helpers.js"
+import { init, waitForQueryPresenter, querySelectorDeep } from "./helpers.js"
 
 QUnit.module("Routing tests", hooks => {
     QUnit.test("Automatically open first program unit", async assert => {
@@ -13,6 +13,6 @@ QUnit.module("Routing tests", hooks => {
         const app = await init();
         app.changePath("home/employees");
 
-        assert.equal((await waitForQuery("Employees"))?.query?.name, "Employees");
+        assert.equal((await waitForQueryPresenter("Employees"))?.query?.name, "Employees");
     });
 });

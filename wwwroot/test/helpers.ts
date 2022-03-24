@@ -1,5 +1,6 @@
 import * as Polymer from "../libs/polymer/polymer.js";
 import { App } from "../web-components/app/app";
+import { QueryGrid } from "../web-components/query-grid/query-grid.js";
 import QueryPresenter from "../web-components/query-presenter/query-presenter";
 
 export async function init(url: string = "", htmlFile?: string) {
@@ -81,10 +82,10 @@ export async function waitFor<T>(callback: () => T | Promise<T>, timeBetween: nu
             const result = callback();
             if (result instanceof Promise) {
                 const promiseResult = await result;
-                if (promiseResult)
+                if (promiseResult ?? false)
                     return promiseResult;
             }
-            else if (!!result)
+            else if (result ?? false)
                 return result;
 
             await sleep(timeBetween);
@@ -96,7 +97,7 @@ export async function waitFor<T>(callback: () => T | Promise<T>, timeBetween: nu
     }
 }
 
-export async function waitForQuery(queryName: string): Promise<QueryPresenter> {
+export async function waitForQueryPresenter(queryName: string): Promise<QueryPresenter> {
     return await waitFor(async () => {
         const queryPresenter = await querySelectorDeep("vi-app", "vi-app-route-presenter vi-app-route.active vi-query-presenter") as QueryPresenter;
         if (!queryPresenter)
@@ -104,6 +105,16 @@ export async function waitForQuery(queryName: string): Promise<QueryPresenter> {
 
         if ((queryPresenter).query?.name === queryName)
             return queryPresenter;
+    });
+}
+
+export async function waitForQueryQrid(queryName: string): Promise<QueryGrid> {
+    return await waitFor(async () => {
+        const queryPresenter = await waitForQueryPresenter(queryName)
+        const queryGrid = await queryPresenter.querySelector("vi-query").shadowRoot.querySelector("vi-query-items-presenter > vi-query-grid") as QueryGrid;
+        await waitFor(() => !queryGrid.initializing);
+        
+        return queryGrid;
     });
 }
 
