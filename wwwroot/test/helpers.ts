@@ -2,14 +2,29 @@ import * as Polymer from "../libs/polymer/polymer.js";
 import { App } from "../web-components/app/app";
 import QueryPresenter from "../web-components/query-presenter/query-presenter";
 
-export async function init(url: string = "") {
+export async function init(url: string = "", htmlFile?: string) {
     document.body.querySelectorAll("iframe").forEach(f => f.parentElement.removeChild(f));
     
     const appFrame = document.createElement("iframe");
     appFrame.id = "app";
-    appFrame.src = `../${url}`;
+    appFrame.src = `${new URL(document.querySelector("base").href).origin}/${url}`;
     
     document.body.appendChild(appFrame);
+
+    if (htmlFile) {
+        await waitFor(() => {
+            if (appFrame.contentDocument.body == null)
+                return;
+
+            if (appFrame.contentDocument.body.innerHTML?.indexOf("vi-app") >= 0)
+                return true;
+        });
+
+        appFrame.contentDocument.body.innerHTML = "";
+        await waitFor(() => appFrame.contentDocument.body.innerHTML.length == 0);
+
+        appFrame.contentDocument.body.innerHTML = (await (await fetch(htmlFile)).text());
+    }
 
     return await waitFor(async () => {
         const app = appFrame.contentDocument?.querySelector("vi-app") as App;
