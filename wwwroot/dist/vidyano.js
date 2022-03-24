@@ -80483,7 +80483,7 @@ let ProgramUnitPresenter = class ProgramUnitPresenter extends WebComponent {
         const { parameters } = e.detail;
         if (!this.service || !this.service.application)
             return;
-        this._setProgramUnit(this.service.application.programUnits.find(pu => pu.name === parameters.programUnitName));
+        this._setProgramUnit(this.service.application.programUnits.find(pu => pu.name === parameters.programUnitName || pu.nameKebab === parameters.programUnitName));
         if (!this.programUnit) {
             e.preventDefault();
             this._setError(this.translateMessage("NotFound"));
