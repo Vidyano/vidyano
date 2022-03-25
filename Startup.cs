@@ -80,7 +80,17 @@ namespace VidyanoWeb3
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseVidyano(Environment, Configuration);
+            app.UseCors(builder =>
+            {
+                builder
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+            });
+        
+            app.UseStaticFiles();
+
+            app.UseVidyano(Environment, Configuration, cors => cors.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
         }
 
         private static void EnsureDatabaseExists(DatabaseSettings settings)
