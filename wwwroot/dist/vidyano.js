@@ -36407,6 +36407,10 @@ class ConfigurableWebComponent extends WebComponent {
 }
 _ConfigurableWebComponent__onContextmenu = new WeakMap();
 
+function guid() {
+    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
+}
+
 const styleElement$3 = document.createElement("dom-module");
 styleElement$3.innerHTML = `<template>
     <style>
@@ -36584,70 +36588,6 @@ styleElement$1.innerHTML = `<template>
     </style>
 </template>`;
 styleElement$1.register("vi-responsive-style-module");
-
-class AppCacheEntry {
-    constructor(id) {
-        this.id = id;
-    }
-    isMatch(entry) {
-        return entry.id === this.id;
-    }
-}
-
-class AppCacheEntryPersistentObject extends AppCacheEntry {
-    constructor(idOrPo, objectId) {
-        super(typeof idOrPo === "string" ? idOrPo : (idOrPo instanceof PersistentObject$1 ? idOrPo.id : null));
-        this.objectId = objectId;
-        if (idOrPo instanceof PersistentObject$1) {
-            this.persistentObject = idOrPo;
-            this.objectId = this.persistentObject.objectId;
-        }
-    }
-    get persistentObject() {
-        return this._persistentObject;
-    }
-    set persistentObject(po) {
-        if (po === this._persistentObject)
-            return;
-        this._persistentObject = po;
-        this.selectedMasterTab = this.selectedDetailTab = null;
-    }
-    isMatch(entry) {
-        if (!(entry instanceof AppCacheEntryPersistentObject))
-            return false;
-        if (entry.persistentObject != null && entry.persistentObject === this.persistentObject)
-            return true;
-        return (super.isMatch(entry) || (entry.persistentObject && this.id === entry.persistentObject.fullTypeName)) && (entry.objectId === this.objectId || String.isNullOrEmpty(entry.objectId) && String.isNullOrEmpty(this.objectId));
-    }
-}
-
-class AppCacheEntryPersistentObjectFromAction extends AppCacheEntryPersistentObject {
-    constructor(po, fromActionId, fromActionIdReturnPath) {
-        super(po);
-        this.fromActionId = fromActionId;
-        this.fromActionIdReturnPath = fromActionIdReturnPath;
-    }
-    isMatch(entry) {
-        if (!(entry instanceof AppCacheEntryPersistentObjectFromAction))
-            return false;
-        return this.fromActionId === entry.fromActionId || entry.persistentObject === this.persistentObject;
-    }
-}
-
-class AppCacheEntryQuery extends AppCacheEntry {
-    constructor(idOrQuery) {
-        super(typeof idOrQuery === "string" ? idOrQuery : null);
-        if (idOrQuery instanceof Query$1)
-            this.query = idOrQuery;
-    }
-    isMatch(entry) {
-        if (!(entry instanceof AppCacheEntryQuery))
-            return false;
-        if (entry.query === this.query)
-            return true;
-        return entry instanceof AppCacheEntryQuery && super.isMatch(entry);
-    }
-}
 
 class AppColor {
     constructor(_base) {
@@ -36885,125 +36825,6 @@ let AppConfig = class AppConfig extends WebComponent {
 AppConfig = __decorate([
     WebComponent.register()
 ], AppConfig);
-
-let AppSetting = class AppSetting extends WebComponent {
-    connectedCallback() {
-        super.connectedCallback();
-        this.setAttribute("slot", "vi-app-config");
-    }
-};
-AppSetting = __decorate([
-    WebComponent.register({
-        properties: {
-            key: String,
-            value: String
-        }
-    })
-], AppSetting);
-
-let PersistentObjectConfig = class PersistentObjectConfig extends TemplateConfig {
-};
-PersistentObjectConfig = __decorate([
-    WebComponent.register({
-        properties: {
-            id: {
-                type: String,
-                reflectToAttribute: true
-            },
-            type: {
-                type: String,
-                reflectToAttribute: true
-            },
-            objectId: {
-                type: String,
-                reflectToAttribute: true
-            }
-        }
-    })
-], PersistentObjectConfig);
-
-let PersistentObjectTabConfig = class PersistentObjectTabConfig extends TemplateConfig {
-};
-PersistentObjectTabConfig = __decorate([
-    WebComponent.register({
-        properties: {
-            id: String,
-            name: String,
-            type: String,
-            objectId: String,
-            hideActionBar: {
-                type: Boolean,
-                reflectToAttribute: true
-            }
-        }
-    })
-], PersistentObjectTabConfig);
-
-let ProgramUnitConfig = class ProgramUnitConfig extends TemplateConfig {
-};
-ProgramUnitConfig = __decorate([
-    WebComponent.register({
-        properties: {
-            name: String
-        }
-    })
-], ProgramUnitConfig);
-
-let QueryChartConfig = class QueryChartConfig extends TemplateConfig {
-};
-QueryChartConfig = __decorate([
-    WebComponent.register({
-        properties: {
-            type: String
-        }
-    })
-], QueryChartConfig);
-
-let QueryConfig = class QueryConfig extends TemplateConfig {
-};
-QueryConfig = __decorate([
-    WebComponent.register({
-        properties: {
-            name: {
-                type: String,
-                reflectToAttribute: true
-            },
-            id: {
-                type: String,
-                reflectToAttribute: true
-            },
-            type: {
-                type: String,
-                reflectToAttribute: true
-            },
-            defaultChart: {
-                type: String,
-                reflectToAttribute: true
-            },
-            fileDropAttribute: {
-                type: String,
-                reflectToAttribute: true
-            },
-            fileDropAction: {
-                type: String,
-                reflectToAttribute: true,
-                value: "New"
-            },
-            hideHeader: {
-                type: Boolean,
-                reflectToAttribute: true
-            },
-            selectAll: {
-                type: Boolean,
-                reflectToAttribute: true
-            },
-            rowHeight: {
-                type: Number,
-                reflectToAttribute: true
-            }
-        }
-    })
-], QueryConfig);
 
 let AppRoute = class AppRoute extends WebComponent {
     constructor(route) {
@@ -42347,11 +42168,15 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
         }
         let hooksInstance;
         if (hooks) {
-            const ctor = this.hooks.split(".").reduce((obj, path) => obj && obj[path], window);
-            if (ctor)
-                hooksInstance = new ctor(this);
-            else
-                console.error(`Service hooks "${this.hooks}" was not found.`);
+            const moduleUrl = this.base + hooks;
+            try {
+                const module = await import(moduleUrl);
+                hooksInstance = new module.default(this);
+            }
+            catch (e) {
+                console.error(`An error occured while loading service hooks module from "${moduleUrl}", using default.`);
+                hooksInstance = this._createServiceHooks();
+            }
         }
         else
             hooksInstance = this._createServiceHooks();
@@ -43412,6 +43237,57 @@ Polymer({
     return this.getBoundingClientRect()[this.dimension] + 'px';
   }
 });
+
+class AppCacheEntry {
+    constructor(id) {
+        this.id = id;
+    }
+    isMatch(entry) {
+        return entry.id === this.id;
+    }
+}
+
+class AppCacheEntryPersistentObject extends AppCacheEntry {
+    constructor(idOrPo, objectId) {
+        super(typeof idOrPo === "string" ? idOrPo : (idOrPo instanceof PersistentObject$1 ? idOrPo.id : null));
+        this.objectId = objectId;
+        if (idOrPo instanceof PersistentObject$1) {
+            this.persistentObject = idOrPo;
+            this.objectId = this.persistentObject.objectId;
+        }
+    }
+    get persistentObject() {
+        return this._persistentObject;
+    }
+    set persistentObject(po) {
+        if (po === this._persistentObject)
+            return;
+        this._persistentObject = po;
+        this.selectedMasterTab = this.selectedDetailTab = null;
+    }
+    isMatch(entry) {
+        if (!(entry instanceof AppCacheEntryPersistentObject))
+            return false;
+        if (entry.persistentObject != null && entry.persistentObject === this.persistentObject)
+            return true;
+        return (super.isMatch(entry) || (entry.persistentObject && this.id === entry.persistentObject.fullTypeName)) && (entry.objectId === this.objectId || String.isNullOrEmpty(entry.objectId) && String.isNullOrEmpty(this.objectId));
+    }
+}
+
+class AppCacheEntryQuery extends AppCacheEntry {
+    constructor(idOrQuery) {
+        super(typeof idOrQuery === "string" ? idOrQuery : null);
+        if (idOrQuery instanceof Query$1)
+            this.query = idOrQuery;
+    }
+    isMatch(entry) {
+        if (!(entry instanceof AppCacheEntryQuery))
+            return false;
+        if (entry.query === this.query)
+            return true;
+        return entry instanceof AppCacheEntryQuery && super.isMatch(entry);
+    }
+}
 
 var Scroller_1;
 let Scroller = Scroller_1 = class Scroller extends WebComponent {
@@ -50252,8 +50128,317 @@ Profiler = __decorate([
     })
 ], Profiler);
 
-function guid() {
-    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
+var App_1;
+let App = App_1 = class App extends AppBase {
+    constructor() {
+        super();
+        this._cache = [];
+        if (!this.label)
+            this.label = this.title;
+    }
+    static get template() {
+        const baseTemplate = AppBase.template;
+        baseTemplate.content.appendChild(html `<style>:host {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  box-sizing: border-box;
+  font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+}
+
+:host vi-app-route-presenter {
+  display: flex;
+  flex: 1;
+}
+
+:host vi-app-route-presenter > vi-app-route, :host vi-app-route-presenter > ::slotted(*) {
+  flex: 1;
+}
+</style>
+
+<vi-profiler service="[[service]]" hidden$="[[!sProfiling]]"></vi-profiler>
+<dom-if if="[[showMenu]]" restamp>
+    <template>
+        <vi-menu menu label="[[label]]" program-units="[[service.application.programUnits]]" active-program-unit="[[programUnit]]">
+            <slot name="menu-label"></slot>
+        </vi-menu>
+    </template>
+</dom-if>
+<vi-app-route-presenter path="{{pathExtended}}">
+    <vi-app-route route=""></vi-app-route>
+    <vi-app-route route="query.:id" route-alt="Query.:id">
+        <template>
+            <vi-query-presenter></vi-query-presenter>
+        </template>
+    </vi-app-route>
+    <vi-app-route route=":programUnitName/query.:id" route-alt=":programUnitName/Query.:id">
+        <template>
+            <vi-query-presenter></vi-query-presenter>
+        </template>
+    </vi-app-route>
+    <vi-app-route route="persistent-object.:id(/:objectId*)" route-alt="PersistentObject.:id(/:objectId*)">
+        <template>
+            <vi-persistent-object-presenter></vi-persistent-object-presenter>
+        </template>
+    </vi-app-route>
+    <vi-app-route route=":programUnitName/persistent-object.:id(/:objectId*)" route-alt=":programUnitName/PersistentObject.:id(/:objectId*)">
+        <template>
+            <vi-persistent-object-presenter></vi-persistent-object-presenter>
+        </template>
+    </vi-app-route>
+    <vi-app-route route=":programUnitName/from-action/:fromActionId">
+        <template>
+            <vi-persistent-object-presenter></vi-persistent-object-presenter>
+        </template>
+    </vi-app-route>
+    <vi-app-route route=":programUnitName(/)">
+        <template>
+            <vi-program-unit-presenter></vi-program-unit-presenter>
+        </template>
+    </vi-app-route>
+    <vi-app-route class="fit" route="sign-in(/:stateOrReturnUrl*)(/:returnUrl*)" route-alt="SignIn(/:stateOrReturnUrl*)(/:returnUrl*)" allow-signed-out>
+        <template>
+            <vi-sign-in label="[[app.label]]" logo="[[app.signInLogo]]">
+                <slot name="sign-in-background"></slot>
+                <slot name="sign-in-footer"></slot>
+            </vi-sign-in>
+        </template>
+    </vi-app-route>
+    <vi-app-route route="sign-out(/)(:returnUrl*)" route-alt="SignOut(/)(:returnUrl*)" allow-signed-out>
+        <template>
+            <vi-sign-out></vi-sign-out>
+        </template>
+    </vi-app-route>
+    <slot name="app-route"></slot>
+</vi-app-route-presenter>
+<dom-if if="[[service.application.hasManagement]]">
+    <template>
+        <vi-popup-menu id="viConfigure" ctrl-key context-menu-only></vi-popup-menu>
+    </template>
+</dom-if>`.content);
+        return baseTemplate;
+    }
+    _initPathRescue() {
+        Path.rescue(() => {
+            const path = App_1.removeRootPath(Path.routes.current);
+            let mappedPath = this._convertPath(this.app.service.application, path);
+            if (mappedPath !== path)
+                Path["dispatch"](Path.routes.rootPath + mappedPath);
+            else if (path.contains("/")) {
+                const parts = path.split("/");
+                const kebabPath = [parts[0].toKebabCase(), parts[1].toKebabCase(), ...parts.slice(2)].join("/");
+                const mappedKebabPath = this._convertPath(this.app.service.application, kebabPath);
+                if (kebabPath !== mappedKebabPath) {
+                    microTask.run(() => this.changePath(kebabPath, true));
+                    return;
+                }
+            }
+            this.path = path;
+        });
+    }
+    _createServiceHooks() {
+        return new AppServiceHooks(this);
+    }
+    async _pathChanged(path) {
+        await this.initialize;
+        if (path !== this.path)
+            return;
+        path = App_1.removeRootPath(this._convertPath(this.service.application, path));
+        if (this.service && this.service.isSignedIn && path === "") {
+            let programUnit = this.programUnit;
+            if (!programUnit && this.service.application.programUnits.length > 0)
+                programUnit = this.service.application.programUnits[0];
+            if (programUnit) {
+                if (programUnit.openFirst && programUnit.path && path !== programUnit.path) {
+                    microTask.run(() => this.changePath(programUnit.path));
+                    return;
+                }
+                else {
+                    const config = this.app.configuration.getProgramUnitConfig(programUnit.name);
+                    if (!!config && config.hasTemplate) {
+                        microTask.run(() => this.changePath(programUnit.path));
+                        return;
+                    }
+                }
+            }
+        }
+        ServiceBus.send(this, "path-changed", { path: path });
+    }
+    _pathExtendedChanged(pathExtended) {
+        this.path = pathExtended;
+    }
+    _computeProgramUnit(application, path) {
+        path = this._convertPath(application, path);
+        const mappedPathRoute = Path.match(Path.routes.rootPath + App_1.removeRootPath(path), true);
+        if (application) {
+            if (mappedPathRoute && mappedPathRoute.params && mappedPathRoute.params.programUnitName)
+                return application.programUnits.find(pu => pu.nameKebab === mappedPathRoute.params.programUnitName || pu.name === mappedPathRoute.params.programUnitName) || application.programUnits[0];
+            else if (application.programUnits.length > 0)
+                return application.programUnits[0];
+        }
+        return null;
+    }
+    _computeShowMenu(application, noMenu) {
+        if (!application || noMenu)
+            return false;
+        return true;
+    }
+    _hookWindowBeforeUnload(isConnected) {
+        if (this._beforeUnloadEventHandler) {
+            window.removeEventListener("beforeunload", this._beforeUnloadEventHandler);
+            this._beforeUnloadEventHandler = null;
+        }
+        if (isConnected)
+            window.addEventListener("beforeunload", this._beforeUnloadEventHandler = this._beforeUnload.bind(this));
+    }
+    _beforeUnload(e) {
+        if (this._cache.some(entry => entry instanceof AppCacheEntryPersistentObject && !!entry.persistentObject && entry.persistentObject.isDirty && entry.persistentObject.actions.some(a => a.name === "Save" || a.name === "EndEdit")) && this.service) {
+            const confirmationMessage = this.service.getTranslatedMessage("PagesWithUnsavedChanges");
+            (e || window.event).returnValue = confirmationMessage;
+            return confirmationMessage;
+        }
+    }
+    _configureContextmenu(e) {
+        if (!this.service || !this.service.application)
+            return;
+        const configureItems = e["vi:configure"];
+        if (!this.service.application.hasManagement || !configureItems?.length || window.getSelection().toString()) {
+            e.stopImmediatePropagation();
+            return;
+        }
+        const popupMenu = this.shadowRoot.querySelector("#viConfigure");
+        Array.from(popupMenu.children).forEach(item => popupMenu.removeChild(item));
+        configureItems.forEach(item => popupMenu.appendChild(item));
+    }
+    _cleanUpOnSignOut(isSignedIn) {
+        if (isSignedIn === false) {
+            this.cacheClear();
+            super._cleanUpOnSignOut(isSignedIn);
+        }
+    }
+    cache(entry) {
+        if (this._cache.length >= this.cacheSize)
+            this._cache.splice(0, this._cache.length - this.cacheSize);
+        let cacheEntry = this.cachePing(entry);
+        if (!cacheEntry)
+            this._cache.push(cacheEntry = entry);
+        return cacheEntry;
+    }
+    cachePing(entry) {
+        const cacheEntry = this._cache.slice().reverse().find(e => entry.isMatch(e));
+        if (cacheEntry) {
+            this._cache.remove(cacheEntry);
+            this._cache.push(cacheEntry);
+        }
+        return cacheEntry;
+    }
+    cacheRemove(key) {
+        const entry = this._cache.find(e => key.isMatch(e));
+        if (entry)
+            this._cache.remove(entry);
+    }
+    get cacheEntries() {
+        return this._cache;
+    }
+    cacheClear() {
+        this._cache = [];
+    }
+    getUrlForPersistentObject(id, objectId, pu = this.programUnit) {
+        const persistentObjects = this.service.application.routes.persistentObjects;
+        for (const type in persistentObjects) {
+            if (persistentObjects[type] === id)
+                return (pu ? pu.nameKebab + "/" : "") + type + (objectId ? "/" + objectId : "");
+        }
+        return (pu ? pu.nameKebab + "/" : "") + `persistent-object.${id}${objectId ? "/" + objectId : ""}`;
+    }
+    getUrlForQuery(id, pu = this.programUnit) {
+        const queries = this.service.application.routes.persistentObjects;
+        for (const name in queries) {
+            if (queries[name] === id)
+                return (pu ? pu.nameKebab + "/" : "") + `${name}`;
+        }
+        return (pu ? pu.nameKebab + "/" : "") + `query.${id}`;
+    }
+    getUrlForFromAction(id, pu = this.programUnit) {
+        return (pu ? pu.nameKebab + "/" : "") + `from-action/${id}`;
+    }
+    async _importConfigs(configs, isConnected) {
+        if (!configs || !isConnected)
+            return;
+    }
+    _convertPath(application, path) {
+        if (application) {
+            let match = application.poRe.exec(path);
+            if (match)
+                path = (match[1] || "") + "persistent-object." + application.routes.persistentObjects[match[3].toKebabCase()] + (match[4] || "");
+            else {
+                match = application.queryRe.exec(path);
+                if (match)
+                    path = (match[1] || "") + "query." + application.routes.queries[match[3].toKebabCase()];
+            }
+        }
+        return path;
+    }
+};
+App = App_1 = __decorate([
+    WebComponent.register({
+        properties: {
+            cacheSize: {
+                type: Number,
+                value: 25,
+                reflectToAttribute: true
+            },
+            pathExtended: {
+                type: String,
+                observer: "_pathExtendedChanged"
+            },
+            programUnit: {
+                type: Object,
+                computed: "_computeProgramUnit(service.application, path)"
+            },
+            noMenu: {
+                type: Boolean,
+                reflectToAttribute: true,
+                value: false
+            },
+            label: {
+                type: String,
+                reflectToAttribute: true
+            },
+            isProfiling: {
+                type: Boolean,
+                reflectToAttribute: true,
+                computed: "op_every(service.isSignedIn, service.profile)"
+            },
+            signInLogo: String,
+            showMenu: {
+                type: Boolean,
+                computed: "_computeShowMenu(service.application, noMenu)"
+            }
+        },
+        observers: [
+            "_hookWindowBeforeUnload(isConnected)"
+        ],
+        listeners: {
+            "contextmenu": "_configureContextmenu"
+        },
+        forwardObservers: [
+            "service.profile"
+        ]
+    })
+], App);
+
+class AppCacheEntryPersistentObjectFromAction extends AppCacheEntryPersistentObject {
+    constructor(po, fromActionId, fromActionIdReturnPath) {
+        super(po);
+        this.fromActionId = fromActionId;
+        this.fromActionIdReturnPath = fromActionIdReturnPath;
+    }
+    isMatch(entry) {
+        if (!(entry instanceof AppCacheEntryPersistentObjectFromAction))
+            return false;
+        return this.fromActionId === entry.fromActionId || entry.persistentObject === this.persistentObject;
+    }
 }
 
 var _QueryGridCell__lastMeasuredColumn, _QueryGridCell__isObserved;
@@ -53042,12 +53227,12 @@ let QueryGridRow = class QueryGridRow extends WebComponent {
   cursor: grabbing;
 }
 
-:host .selector vi-icon, :host .actions vi-icon, :host .reorder vi-icon {
+:host .selector vi-icon, :host .actions vi-icon, :host vi-icon.reorder {
   width: var(--vi-query-grid-row-height);
   height: var(--vi-query-grid-row-height);
 }
 
-:host .selector:hover vi-icon, :host .actions:hover vi-icon, :host .reorder:hover vi-icon {
+:host .selector:hover, :host .actions:hover, :host .reorder:hover {
   background-color: rgba(0, 0, 0, 0.05) !important;
 }
 
@@ -78170,305 +78355,124 @@ class AppServiceHooks extends AppServiceHooksBase {
     }
 }
 
-var App_1;
-let App = App_1 = class App extends AppBase {
-    constructor() {
-        super();
-        this._cache = [];
-        if (!this.label)
-            this.label = this.title;
-    }
-    static get template() {
-        const baseTemplate = AppBase.template;
-        baseTemplate.content.appendChild(html `<style>:host {
-  display: flex;
-  width: 100vw;
-  height: 100vh;
-  box-sizing: border-box;
-  font-family: 'Open Sans', Arial, Helvetica, sans-serif;
-}
-
-:host vi-app-route-presenter {
-  display: flex;
-  flex: 1;
-}
-
-:host vi-app-route-presenter > vi-app-route, :host vi-app-route-presenter > ::slotted(*) {
-  flex: 1;
-}
-</style>
-
-<vi-profiler service="[[service]]" hidden$="[[!sProfiling]]"></vi-profiler>
-<dom-if if="[[showMenu]]" restamp>
-    <template>
-        <vi-menu menu label="[[label]]" program-units="[[service.application.programUnits]]" active-program-unit="[[programUnit]]">
-            <slot name="menu-label"></slot>
-        </vi-menu>
-    </template>
-</dom-if>
-<vi-app-route-presenter path="{{pathExtended}}">
-    <vi-app-route route=""></vi-app-route>
-    <vi-app-route route="query.:id" route-alt="Query.:id">
-        <template>
-            <vi-query-presenter></vi-query-presenter>
-        </template>
-    </vi-app-route>
-    <vi-app-route route=":programUnitName/query.:id" route-alt=":programUnitName/Query.:id">
-        <template>
-            <vi-query-presenter></vi-query-presenter>
-        </template>
-    </vi-app-route>
-    <vi-app-route route="persistent-object.:id(/:objectId*)" route-alt="PersistentObject.:id(/:objectId*)">
-        <template>
-            <vi-persistent-object-presenter></vi-persistent-object-presenter>
-        </template>
-    </vi-app-route>
-    <vi-app-route route=":programUnitName/persistent-object.:id(/:objectId*)" route-alt=":programUnitName/PersistentObject.:id(/:objectId*)">
-        <template>
-            <vi-persistent-object-presenter></vi-persistent-object-presenter>
-        </template>
-    </vi-app-route>
-    <vi-app-route route=":programUnitName/from-action/:fromActionId">
-        <template>
-            <vi-persistent-object-presenter></vi-persistent-object-presenter>
-        </template>
-    </vi-app-route>
-    <vi-app-route route=":programUnitName(/)">
-        <template>
-            <vi-program-unit-presenter></vi-program-unit-presenter>
-        </template>
-    </vi-app-route>
-    <vi-app-route class="fit" route="sign-in(/:stateOrReturnUrl*)(/:returnUrl*)" route-alt="SignIn(/:stateOrReturnUrl*)(/:returnUrl*)" allow-signed-out>
-        <template>
-            <vi-sign-in label="[[app.label]]" logo="[[app.signInLogo]]">
-                <slot name="sign-in-background"></slot>
-                <slot name="sign-in-footer"></slot>
-            </vi-sign-in>
-        </template>
-    </vi-app-route>
-    <vi-app-route route="sign-out(/)(:returnUrl*)" route-alt="SignOut(/)(:returnUrl*)" allow-signed-out>
-        <template>
-            <vi-sign-out></vi-sign-out>
-        </template>
-    </vi-app-route>
-    <slot name="app-route"></slot>
-</vi-app-route-presenter>
-<dom-if if="[[service.application.hasManagement]]">
-    <template>
-        <vi-popup-menu id="viConfigure" ctrl-key context-menu-only></vi-popup-menu>
-    </template>
-</dom-if>`.content);
-        return baseTemplate;
-    }
-    _initPathRescue() {
-        Path.rescue(() => {
-            const path = App_1.removeRootPath(Path.routes.current);
-            let mappedPath = this._convertPath(this.app.service.application, path);
-            if (mappedPath !== path)
-                Path["dispatch"](Path.routes.rootPath + mappedPath);
-            else if (path.contains("/")) {
-                const parts = path.split("/");
-                const kebabPath = [parts[0].toKebabCase(), parts[1].toKebabCase(), ...parts.slice(2)].join("/");
-                const mappedKebabPath = this._convertPath(this.app.service.application, kebabPath);
-                if (kebabPath !== mappedKebabPath) {
-                    microTask.run(() => this.changePath(kebabPath, true));
-                    return;
-                }
-            }
-            this.path = path;
-        });
-    }
-    _createServiceHooks() {
-        return new AppServiceHooks(this);
-    }
-    async _pathChanged(path) {
-        await this.initialize;
-        if (path !== this.path)
-            return;
-        path = App_1.removeRootPath(this._convertPath(this.service.application, path));
-        if (this.service && this.service.isSignedIn && path === "") {
-            let programUnit = this.programUnit;
-            if (!programUnit && this.service.application.programUnits.length > 0)
-                programUnit = this.service.application.programUnits[0];
-            if (programUnit) {
-                if (programUnit.openFirst && programUnit.path && path !== programUnit.path) {
-                    microTask.run(() => this.changePath(programUnit.path));
-                    return;
-                }
-                else {
-                    const config = this.app.configuration.getProgramUnitConfig(programUnit.name);
-                    if (!!config && config.hasTemplate) {
-                        microTask.run(() => this.changePath(programUnit.path));
-                        return;
-                    }
-                }
-            }
-        }
-        ServiceBus.send(this, "path-changed", { path: path });
-    }
-    _pathExtendedChanged(pathExtended) {
-        this.path = pathExtended;
-    }
-    _computeProgramUnit(application, path) {
-        path = this._convertPath(application, path);
-        const mappedPathRoute = Path.match(Path.routes.rootPath + App_1.removeRootPath(path), true);
-        if (application) {
-            if (mappedPathRoute && mappedPathRoute.params && mappedPathRoute.params.programUnitName)
-                return application.programUnits.find(pu => pu.nameKebab === mappedPathRoute.params.programUnitName || pu.name === mappedPathRoute.params.programUnitName) || application.programUnits[0];
-            else if (application.programUnits.length > 0)
-                return application.programUnits[0];
-        }
-        return null;
-    }
-    _computeShowMenu(application, noMenu) {
-        if (!application || noMenu)
-            return false;
-        return true;
-    }
-    _hookWindowBeforeUnload(isConnected) {
-        if (this._beforeUnloadEventHandler) {
-            window.removeEventListener("beforeunload", this._beforeUnloadEventHandler);
-            this._beforeUnloadEventHandler = null;
-        }
-        if (isConnected)
-            window.addEventListener("beforeunload", this._beforeUnloadEventHandler = this._beforeUnload.bind(this));
-    }
-    _beforeUnload(e) {
-        if (this._cache.some(entry => entry instanceof AppCacheEntryPersistentObject && !!entry.persistentObject && entry.persistentObject.isDirty && entry.persistentObject.actions.some(a => a.name === "Save" || a.name === "EndEdit")) && this.service) {
-            const confirmationMessage = this.service.getTranslatedMessage("PagesWithUnsavedChanges");
-            (e || window.event).returnValue = confirmationMessage;
-            return confirmationMessage;
-        }
-    }
-    _configureContextmenu(e) {
-        if (!this.service || !this.service.application)
-            return;
-        const configureItems = e["vi:configure"];
-        if (!this.service.application.hasManagement || !configureItems?.length || window.getSelection().toString()) {
-            e.stopImmediatePropagation();
-            return;
-        }
-        const popupMenu = this.shadowRoot.querySelector("#viConfigure");
-        Array.from(popupMenu.children).forEach(item => popupMenu.removeChild(item));
-        configureItems.forEach(item => popupMenu.appendChild(item));
-    }
-    _cleanUpOnSignOut(isSignedIn) {
-        if (isSignedIn === false) {
-            this.cacheClear();
-            super._cleanUpOnSignOut(isSignedIn);
-        }
-    }
-    cache(entry) {
-        if (this._cache.length >= this.cacheSize)
-            this._cache.splice(0, this._cache.length - this.cacheSize);
-        let cacheEntry = this.cachePing(entry);
-        if (!cacheEntry)
-            this._cache.push(cacheEntry = entry);
-        return cacheEntry;
-    }
-    cachePing(entry) {
-        const cacheEntry = this._cache.slice().reverse().find(e => entry.isMatch(e));
-        if (cacheEntry) {
-            this._cache.remove(cacheEntry);
-            this._cache.push(cacheEntry);
-        }
-        return cacheEntry;
-    }
-    cacheRemove(key) {
-        const entry = this._cache.find(e => key.isMatch(e));
-        if (entry)
-            this._cache.remove(entry);
-    }
-    get cacheEntries() {
-        return this._cache;
-    }
-    cacheClear() {
-        this._cache = [];
-    }
-    getUrlForPersistentObject(id, objectId, pu = this.programUnit) {
-        const persistentObjects = this.service.application.routes.persistentObjects;
-        for (const type in persistentObjects) {
-            if (persistentObjects[type] === id)
-                return (pu ? pu.nameKebab + "/" : "") + type + (objectId ? "/" + objectId : "");
-        }
-        return (pu ? pu.nameKebab + "/" : "") + `persistent-object.${id}${objectId ? "/" + objectId : ""}`;
-    }
-    getUrlForQuery(id, pu = this.programUnit) {
-        const queries = this.service.application.routes.persistentObjects;
-        for (const name in queries) {
-            if (queries[name] === id)
-                return (pu ? pu.nameKebab + "/" : "") + `${name}`;
-        }
-        return (pu ? pu.nameKebab + "/" : "") + `query.${id}`;
-    }
-    getUrlForFromAction(id, pu = this.programUnit) {
-        return (pu ? pu.nameKebab + "/" : "") + `from-action/${id}`;
-    }
-    async _importConfigs(configs, isConnected) {
-        if (!configs || !isConnected)
-            return;
-    }
-    _convertPath(application, path) {
-        if (application) {
-            let match = application.poRe.exec(path);
-            if (match)
-                path = (match[1] || "") + "persistent-object." + application.routes.persistentObjects[match[3].toKebabCase()] + (match[4] || "");
-            else {
-                match = application.queryRe.exec(path);
-                if (match)
-                    path = (match[1] || "") + "query." + application.routes.queries[match[3].toKebabCase()];
-            }
-        }
-        return path;
+let AppSetting = class AppSetting extends WebComponent {
+    connectedCallback() {
+        super.connectedCallback();
+        this.setAttribute("slot", "vi-app-config");
     }
 };
-App = App_1 = __decorate([
+AppSetting = __decorate([
     WebComponent.register({
         properties: {
-            cacheSize: {
-                type: Number,
-                value: 25,
-                reflectToAttribute: true
-            },
-            pathExtended: {
-                type: String,
-                observer: "_pathExtendedChanged"
-            },
-            programUnit: {
-                type: Object,
-                computed: "_computeProgramUnit(service.application, path)"
-            },
-            noMenu: {
-                type: Boolean,
-                reflectToAttribute: true,
-                value: false
-            },
-            label: {
-                type: String,
-                reflectToAttribute: true
-            },
-            isProfiling: {
-                type: Boolean,
-                reflectToAttribute: true,
-                computed: "op_every(service.isSignedIn, service.profile)"
-            },
-            signInLogo: String,
-            showMenu: {
-                type: Boolean,
-                computed: "_computeShowMenu(service.application, noMenu)"
-            }
-        },
-        observers: [
-            "_hookWindowBeforeUnload(isConnected)"
-        ],
-        listeners: {
-            "contextmenu": "_configureContextmenu"
-        },
-        forwardObservers: [
-            "service.profile"
-        ]
+            key: String,
+            value: String
+        }
     })
-], App);
+], AppSetting);
+
+let PersistentObjectConfig = class PersistentObjectConfig extends TemplateConfig {
+};
+PersistentObjectConfig = __decorate([
+    WebComponent.register({
+        properties: {
+            id: {
+                type: String,
+                reflectToAttribute: true
+            },
+            type: {
+                type: String,
+                reflectToAttribute: true
+            },
+            objectId: {
+                type: String,
+                reflectToAttribute: true
+            }
+        }
+    })
+], PersistentObjectConfig);
+
+let PersistentObjectTabConfig = class PersistentObjectTabConfig extends TemplateConfig {
+};
+PersistentObjectTabConfig = __decorate([
+    WebComponent.register({
+        properties: {
+            id: String,
+            name: String,
+            type: String,
+            objectId: String,
+            hideActionBar: {
+                type: Boolean,
+                reflectToAttribute: true
+            }
+        }
+    })
+], PersistentObjectTabConfig);
+
+let ProgramUnitConfig = class ProgramUnitConfig extends TemplateConfig {
+};
+ProgramUnitConfig = __decorate([
+    WebComponent.register({
+        properties: {
+            name: String
+        }
+    })
+], ProgramUnitConfig);
+
+let QueryChartConfig = class QueryChartConfig extends TemplateConfig {
+};
+QueryChartConfig = __decorate([
+    WebComponent.register({
+        properties: {
+            type: String
+        }
+    })
+], QueryChartConfig);
+
+let QueryConfig = class QueryConfig extends TemplateConfig {
+};
+QueryConfig = __decorate([
+    WebComponent.register({
+        properties: {
+            name: {
+                type: String,
+                reflectToAttribute: true
+            },
+            id: {
+                type: String,
+                reflectToAttribute: true
+            },
+            type: {
+                type: String,
+                reflectToAttribute: true
+            },
+            defaultChart: {
+                type: String,
+                reflectToAttribute: true
+            },
+            fileDropAttribute: {
+                type: String,
+                reflectToAttribute: true
+            },
+            fileDropAction: {
+                type: String,
+                reflectToAttribute: true,
+                value: "New"
+            },
+            hideHeader: {
+                type: Boolean,
+                reflectToAttribute: true
+            },
+            selectAll: {
+                type: Boolean,
+                reflectToAttribute: true
+            },
+            rowHeight: {
+                type: Number,
+                reflectToAttribute: true
+            }
+        }
+    })
+], QueryConfig);
 
 let Overflow = class Overflow extends WebComponent {
     static get template() { return html `<style>:host {
@@ -80962,4 +80966,4 @@ SidePane = __decorate([
     })
 ], SidePane);
 
-export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, DialogCore, Error$1 as Error, FileDrop, Icon, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellDefault, QueryGridCellImage, QueryGridCellPresenter, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, SelectOptionItem, SelectReferenceDialog, Sensitive, SidePane, SignIn, SignOut, SizeTracker, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, vidyano as Vidyano, WebComponent, moment$1 as moment };
+export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppServiceHooks, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, DialogCore, Error$1 as Error, FileDrop, Icon, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellDefault, QueryGridCellImage, QueryGridCellPresenter, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, SelectOptionItem, SelectReferenceDialog, Sensitive, SidePane, SignIn, SignOut, SizeTracker, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, vidyano as Vidyano, WebComponent, moment$1 as moment };

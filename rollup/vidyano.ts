@@ -9,6 +9,8 @@ export * as Polymer from "../wwwroot/libs/polymer/polymer.js"
 export * from "../wwwroot/web-components/web-component/web-component-configurable.js"
 export * from "../wwwroot/web-components/web-component/web-component.js"
 
+export * from "../wwwroot/web-components/app-service-hooks/app-service-hooks.js"
+
 export * from "../wwwroot/web-components/app/style-modules/flex-layout.js"
 export * from "../wwwroot/web-components/app/style-modules/reset-css.js"
 export * from "../wwwroot/web-components/app/style-modules/responsive.js"

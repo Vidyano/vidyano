@@ -273,11 +273,15 @@ export abstract class AppBase extends WebComponent {
 
         let hooksInstance: Vidyano.ServiceHooks;
         if (hooks) {
-            const ctor = this.hooks.split(".").reduce((obj: any, path: string) => obj && obj[path], window);
-            if (ctor)
-                hooksInstance = new ctor(this);
-            else
-                console.error(`Service hooks "${this.hooks}" was not found.`);
+            const moduleUrl = this.base + hooks;
+            try {
+                const module = await import(moduleUrl);
+                hooksInstance = new module.default(this);
+            }
+            catch (e) {
+                console.error(`An error occured while loading service hooks module from "${moduleUrl}", using default.`);
+                hooksInstance = this._createServiceHooks();
+            }
         }
         else
             hooksInstance = this._createServiceHooks();
