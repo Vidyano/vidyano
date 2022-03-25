@@ -10241,6 +10241,70 @@ declare abstract class ConfigurableWebComponent extends WebComponent {
     disconnectedCallback(): void;
 }
 
+declare class AppCacheEntry {
+    id: string;
+    constructor(id: string);
+    isMatch(entry: AppCacheEntry): boolean;
+}
+
+declare class AppCacheEntryPersistentObject extends AppCacheEntry {
+    objectId?: string;
+    private _persistentObject;
+    selectedMasterTab: PersistentObjectTab$1;
+    selectedDetailTab: PersistentObjectTab$1;
+    constructor(idOrPo: string | PersistentObject$1, objectId?: string);
+    get persistentObject(): PersistentObject$1;
+    set persistentObject(po: PersistentObject$1);
+    isMatch(entry: AppCacheEntryPersistentObject): boolean;
+}
+
+declare class AppCacheEntryPersistentObjectFromAction extends AppCacheEntryPersistentObject {
+    fromActionId?: string;
+    fromActionIdReturnPath?: string;
+    constructor(po: PersistentObject$1, fromActionId?: string, fromActionIdReturnPath?: string);
+    isMatch(entry: AppCacheEntryPersistentObjectFromAction): boolean;
+}
+
+declare class AppCacheEntryQuery extends AppCacheEntry {
+    query: Query$1;
+    constructor(idOrQuery: string | Query$1);
+    isMatch(entry: AppCacheEntryQuery): boolean;
+}
+
+interface IRGB {
+    r: number;
+    g: number;
+    b: number;
+}
+declare class AppColor {
+    private _base;
+    private _rgb;
+    private _faint;
+    private _semiFaint;
+    private _lighter;
+    private _light;
+    private _dark;
+    private _darker;
+    constructor(_base: string);
+    get rgb(): string;
+    get faint(): string;
+    get semiFaint(): string;
+    get lighter(): string;
+    get light(): string;
+    get base(): string;
+    get dark(): string;
+    get darker(): string;
+    private _calculateVariant;
+    private _hexToRgb;
+    private _rgbToHex;
+}
+
+declare class AppSetting extends WebComponent {
+    key: string;
+    value: string;
+    connectedCallback(): void;
+}
+
 declare class Button extends WebComponent {
     static get template(): HTMLTemplateElement;
     readonly customLayout: boolean;
@@ -10641,12 +10705,6 @@ declare class Profiler extends WebComponent {
     private _close;
 }
 
-declare class AppCacheEntry {
-    id: string;
-    constructor(id: string);
-    isMatch(entry: AppCacheEntry): boolean;
-}
-
 declare class App extends AppBase {
     static get template(): HTMLTemplateElement;
     private _cache;
@@ -10720,64 +10778,6 @@ declare class AppServiceHooks extends AppServiceHooksBase {
     onQueryFileDrop(query: Query$1, name: string, contents: string): Promise<boolean>;
     onRedirectToSignIn(keepUrl: boolean): void;
     onRedirectToSignOut(keepUrl: boolean): void;
-}
-
-declare class AppCacheEntryPersistentObject extends AppCacheEntry {
-    objectId?: string;
-    private _persistentObject;
-    selectedMasterTab: PersistentObjectTab$1;
-    selectedDetailTab: PersistentObjectTab$1;
-    constructor(idOrPo: string | PersistentObject$1, objectId?: string);
-    get persistentObject(): PersistentObject$1;
-    set persistentObject(po: PersistentObject$1);
-    isMatch(entry: AppCacheEntryPersistentObject): boolean;
-}
-
-declare class AppCacheEntryPersistentObjectFromAction extends AppCacheEntryPersistentObject {
-    fromActionId?: string;
-    fromActionIdReturnPath?: string;
-    constructor(po: PersistentObject$1, fromActionId?: string, fromActionIdReturnPath?: string);
-    isMatch(entry: AppCacheEntryPersistentObjectFromAction): boolean;
-}
-
-declare class AppCacheEntryQuery extends AppCacheEntry {
-    query: Query$1;
-    constructor(idOrQuery: string | Query$1);
-    isMatch(entry: AppCacheEntryQuery): boolean;
-}
-
-interface IRGB {
-    r: number;
-    g: number;
-    b: number;
-}
-declare class AppColor {
-    private _base;
-    private _rgb;
-    private _faint;
-    private _semiFaint;
-    private _lighter;
-    private _light;
-    private _dark;
-    private _darker;
-    constructor(_base: string);
-    get rgb(): string;
-    get faint(): string;
-    get semiFaint(): string;
-    get lighter(): string;
-    get light(): string;
-    get base(): string;
-    get dark(): string;
-    get darker(): string;
-    private _calculateVariant;
-    private _hexToRgb;
-    private _rgbToHex;
-}
-
-declare class AppSetting extends WebComponent {
-    key: string;
-    value: string;
-    connectedCallback(): void;
 }
 
 declare class ActionButton extends ConfigurableWebComponent {
@@ -13558,4 +13558,4 @@ interface IKeybindingRegistration {
     scope?: AppRoute | Dialog;
 }
 
-export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppServiceHooks, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, DialogCore, Error, FileDrop, IConfigurableAction, IDatePickerCell, IEvent, IFileDropDetails, IItemTapEventArgs, IKeybindingRegistration, IKeysEvent, IMessageDialogOptions, IObserveChainDisposer, IPersistentObjectDialogOptions, IPosition, IQueryGridColumnFilterDistinct, IQueryGridUserSettingsColumnData, IRGB, ISelectItem, ISize, ISortableDragEndDetails, ITranslatedString, IWebComponentKeybindingInfo, IWebComponentProperties, IWebComponentProperty, IWebComponentRegistrationInfo, Icon, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeConstructor, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellDefault, QueryGridCellImage, QueryGridCellPresenter, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, SelectOption, SelectOptionItem, SelectReferenceDialog, Sensitive, SidePane, SignIn, SignOut, SizeTracker, SizeTrackerEvent, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, vidyano as Vidyano, WebComponent, moment_d as moment };
+export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppServiceHooks, AppServiceHooksBase, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, DialogCore, Error, FileDrop, IConfigurableAction, IDatePickerCell, IEvent, IFileDropDetails, IItemTapEventArgs, IKeybindingRegistration, IKeysEvent, IMessageDialogOptions, IObserveChainDisposer, IPersistentObjectDialogOptions, IPosition, IQueryGridColumnFilterDistinct, IQueryGridUserSettingsColumnData, IRGB, ISelectItem, ISize, ISortableDragEndDetails, ITranslatedString, IWebComponentKeybindingInfo, IWebComponentProperties, IWebComponentProperty, IWebComponentRegistrationInfo, Icon, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeConstructor, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellDefault, QueryGridCellImage, QueryGridCellPresenter, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, SelectOption, SelectOptionItem, SelectReferenceDialog, Sensitive, SidePane, SignIn, SignOut, SizeTracker, SizeTrackerEvent, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, vidyano as Vidyano, WebComponent, moment_d as moment };

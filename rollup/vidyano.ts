@@ -9,8 +9,6 @@ export * as Polymer from "../wwwroot/libs/polymer/polymer.js"
 export * from "../wwwroot/web-components/web-component/web-component-configurable.js"
 export * from "../wwwroot/web-components/web-component/web-component.js"
 
-export * from "../wwwroot/web-components/app-service-hooks/app-service-hooks.js"
-
 export * from "../wwwroot/web-components/app/style-modules/flex-layout.js"
 export * from "../wwwroot/web-components/app/style-modules/reset-css.js"
 export * from "../wwwroot/web-components/app/style-modules/responsive.js"
@@ -29,6 +27,8 @@ export * from "../wwwroot/web-components/app/config/query-chart-config.js"
 export * from "../wwwroot/web-components/app/config/query-config.js"
 export * from "../wwwroot/web-components/app/config/template-config.js"
 export * from "../wwwroot/web-components/app/app.js"
+export * from "../wwwroot/web-components/app-service-hooks/app-service-hooks.js"
+export * from "../wwwroot/web-components/app-service-hooks/app-service-hooks-base.js"
 
 export * from "../wwwroot/web-components/action-bar/action-bar.js"
 export * from "../wwwroot/web-components/action-button/action-button.js"
