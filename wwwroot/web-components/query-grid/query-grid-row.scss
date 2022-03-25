@@ -44,13 +44,13 @@
         cursor: grabbing;
     }
 
-    .selector, .actions, .reorder {
-        vi-icon {
-            width: var(--vi-query-grid-row-height);
-            height: var(--vi-query-grid-row-height);
-        }
+    .selector vi-icon, .actions vi-icon, vi-icon.reorder {
+        width: var(--vi-query-grid-row-height);
+        height: var(--vi-query-grid-row-height);
+    }
 
-        &:hover vi-icon {
+    .selector, .actions, .reorder {
+        &:hover {
             background-color: rgba(0, 0, 0, .05) !important;
         }
     }
