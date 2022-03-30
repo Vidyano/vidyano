@@ -9863,11 +9863,11 @@ declare class Sensitive extends WebComponent {
 declare abstract class SidePane extends WebComponent {
     static sidePaneTemplate(sidePane: HTMLTemplateElement): HTMLTemplateElement;
     private _resolve;
+    connectedCallback(): void;
     private get sidePaneCore();
     open(): Promise<unknown>;
     close(result?: any): void;
-    cancel(): void;
-    private _onClosed;
+    private _onCancel;
     private _computeWithBackdrop;
 }
 

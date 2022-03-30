@@ -4,35 +4,6 @@ import { WebComponent } from "../web-component/web-component.js"
 
 class SidePaneCore extends Polymer.mixinBehaviors(Polymer.IronOverlayBehavior, Polymer.PolymerElement) {
     static get template() { return Polymer.html`<link rel="import" href="side-pane-core.html">`; }
-
-    private async _openedChanged(value: boolean, oldValue: boolean) {
-        if (typeof oldValue === "boolean") {
-            if (value) {
-                this.animate([
-                    { transform: "translateX(0)" }
-                ], {
-                    duration: 300,
-                    fill: "forwards",
-                    easing: "cubic-bezier(0.215, 0.610, 0.355, 1.000)"
-                });
-            }
-            else {
-                await new Promise(done => {
-                    requestAnimationFrame(() => {
-                        this.animate([
-                            { transform: "translateX(calc(100% + 10px))" }
-                        ], {
-                            duration: 300,
-                            fill: "forwards",
-                            easing: "cubic-bezier(0.190, 1.000, 0.220, 1.000)"
-                        }).finished.then(done);
-                    });
-                });
-            }
-        }
-
-        Polymer.IronOverlayBehaviorImpl["_openedChanged"].apply(this, arguments);
-    }
 }
 
 customElements.define("vi-side-pane-core", <CustomElementConstructor><any>SidePaneCore);
@@ -46,8 +17,7 @@ customElements.define("vi-side-pane-core", <CustomElementConstructor><any>SidePa
         }
     },
     listeners: {
-        "iron-overlay-closed": "_onClosed",
-        "iron-overlay-canceled": "cancel"
+        "iron-overlay-canceled": "_onCancel"
     },
     mediaQueryAttributes: true
 })
@@ -62,6 +32,12 @@ export abstract class SidePane extends WebComponent {
 
     private _resolve: Function;
 
+    connectedCallback() {
+        super.connectedCallback();
+
+        this.sidePaneCore.positionTarget = this.app;
+    }
+
     private get sidePaneCore() {
         return this.shadowRoot.querySelector("vi-side-pane-core") as (Polymer.IronOverlayBehavior & Polymer.PolymerElement);
     }
@@ -69,9 +45,31 @@ export abstract class SidePane extends WebComponent {
     async open() {
         document.body.style.setProperty("--iron-overlay-backdrop-opacity", ".3");
         this.sidePaneCore.open();
+        this.sidePaneCore.animate([
+            { transform: "translateX(0)" }
+        ], {
+            duration: 500,
+            fill: "forwards",
+            easing: "cubic-bezier(0.215, 0.610, 0.355, 1.000)"
+        });
 
         return new Promise(resolve => {
-            this._resolve = resolve;
+            this._resolve = result => {
+                requestAnimationFrame(() => {
+                    this.sidePaneCore.animate([
+                        { transform: "translateX(calc(100% + 10px))" }
+                    ], {
+                        duration: 500,
+                        fill: "forwards",
+                        easing: "cubic-bezier(0.190, 1.000, 0.220, 1.000)"
+                    }).finished.then(() => {
+                        if (this.sidePaneCore.opened)
+                            this.sidePaneCore.close();
+
+                        resolve(result);
+                    });
+                });
+            };
         });
     }
 
@@ -79,12 +77,8 @@ export abstract class SidePane extends WebComponent {
         this._resolve(result);
     }
 
-    cancel() {
-        this.sidePaneCore.close();
-    }
-
-    private _onClosed() {
-        this._resolve();
+    private _onCancel() {
+        this._resolve(undefined);
     }
 
     private _computeWithBackdrop(withBackdrop: boolean, isPhone: boolean) {

@@ -80878,43 +80878,14 @@ QueryPresenter = __decorate([
 class SidePaneCore extends mixinBehaviors(IronOverlayBehavior, PolymerElement) {
     static get template() { return html `<style>:host {
   display: block;
-  box-shadow: -5px 0px 10px -5px #000000;
   transform: translateX(calc(100% + 10px));
   height: 100vh;
   max-height: 100vh;
   background: white;
-  width: 40rem;
 }
 </style>
 
 <slot></slot>`; }
-    async _openedChanged(value, oldValue) {
-        if (typeof oldValue === "boolean") {
-            if (value) {
-                this.animate([
-                    { transform: "translateX(0)" }
-                ], {
-                    duration: 300,
-                    fill: "forwards",
-                    easing: "cubic-bezier(0.215, 0.610, 0.355, 1.000)"
-                });
-            }
-            else {
-                await new Promise(done => {
-                    requestAnimationFrame(() => {
-                        this.animate([
-                            { transform: "translateX(calc(100% + 10px))" }
-                        ], {
-                            duration: 300,
-                            fill: "forwards",
-                            easing: "cubic-bezier(0.190, 1.000, 0.220, 1.000)"
-                        }).finished.then(done);
-                    });
-                });
-            }
-        }
-        IronOverlayBehaviorImpl["_openedChanged"].apply(this, arguments);
-    }
 }
 customElements.define("vi-side-pane-core", SidePaneCore);
 let SidePane = class SidePane extends WebComponent {
@@ -80924,6 +80895,15 @@ let SidePane = class SidePane extends WebComponent {
   max-height: unset !important;
   bottom: 0;
 }
+
+:host(:not([is-phone])) vi-side-pane-core {
+  box-shadow: -5px 0px 10px -5px #000000;
+  width: 40rem;
+}
+
+:host([is-phone]) vi-side-pane-core {
+  width: 100vw;
+}
 </style>
 
 <vi-side-pane-core with-backdrop="[[_computeWithBackdrop(withBackdrop, isPhone)]]" horizontal-align="right"></vi-side-pane-core>`;
@@ -80931,24 +80911,46 @@ let SidePane = class SidePane extends WebComponent {
         sidePaneCore.appendChild(sidePane.content.cloneNode(true));
         return template;
     }
+    connectedCallback() {
+        super.connectedCallback();
+        this.sidePaneCore.positionTarget = this.app;
+    }
     get sidePaneCore() {
         return this.shadowRoot.querySelector("vi-side-pane-core");
     }
     async open() {
         document.body.style.setProperty("--iron-overlay-backdrop-opacity", ".3");
         this.sidePaneCore.open();
+        this.sidePaneCore.animate([
+            { transform: "translateX(0)" }
+        ], {
+            duration: 500,
+            fill: "forwards",
+            easing: "cubic-bezier(0.215, 0.610, 0.355, 1.000)"
+        });
         return new Promise(resolve => {
-            this._resolve = resolve;
+            this._resolve = result => {
+                requestAnimationFrame(() => {
+                    this.sidePaneCore.animate([
+                        { transform: "translateX(calc(100% + 10px))" }
+                    ], {
+                        duration: 500,
+                        fill: "forwards",
+                        easing: "cubic-bezier(0.190, 1.000, 0.220, 1.000)"
+                    }).finished.then(() => {
+                        if (this.sidePaneCore.opened)
+                            this.sidePaneCore.close();
+                        resolve(result);
+                    });
+                });
+            };
         });
     }
     close(result) {
         this._resolve(result);
     }
-    cancel() {
-        this.sidePaneCore.close();
-    }
-    _onClosed() {
-        this._resolve();
+    _onCancel() {
+        this._resolve(undefined);
     }
     _computeWithBackdrop(withBackdrop, isPhone) {
         return withBackdrop && !isPhone;
@@ -80964,8 +80966,7 @@ SidePane = __decorate([
             }
         },
         listeners: {
-            "iron-overlay-closed": "_onClosed",
-            "iron-overlay-canceled": "cancel"
+            "iron-overlay-canceled": "_onCancel"
         },
         mediaQueryAttributes: true
     })
