@@ -24,12 +24,6 @@ import "@polymer/iron-a11y-keys/iron-a11y-keys"
 import { IronA11yKeysElement } from "@polymer/iron-a11y-keys/iron-a11y-keys"
 import "@polymer/paper-ripple"
 
-declare global {
-    interface Window {
-        app: AppBase;
-    }
-}
-
 const hashBangRe = /(.+)#!\/(.*)/;
 if (hashBangRe.test(document.location.href)) {
     const hashBangParts = hashBangRe.exec(document.location.href);
@@ -202,7 +196,7 @@ export abstract class AppBase extends WebComponent {
     constructor() {
         super();
 
-        window.app = this;
+        window["app"] = this;
         window.dispatchEvent(new CustomEvent("app-changed", { detail: { value: this }}));
 
         if (!this.uri && document.location.hash)
