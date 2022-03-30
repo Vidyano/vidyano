@@ -21,7 +21,7 @@
         },
         {
             "type": "npm",
-            "script": "build",
+            "script": "dev",
             "group": "build",
             "problemMatcher": [],
             "label": "npm: watch",
