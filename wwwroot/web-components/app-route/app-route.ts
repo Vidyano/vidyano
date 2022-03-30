@@ -69,8 +69,10 @@ export class AppRoute extends WebComponent {
             this._clearChildren();
 
             const template = this.querySelector("template");
-            if (!template)
+            if (!template) {
+                console.warn(`Missing template on route "${this.path}"`);
                 return;
+            }
 
             template.setAttribute("slot", "none");
 

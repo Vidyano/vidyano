@@ -35397,22 +35397,25 @@ class WebComponent extends GestureEventListeners(PolymerElement) {
         const template = element["template"];
         if (!template)
             return;
-        if (WebComponent._scanTemplateForLayoutClasses(template)) {
-            const style = document.createElement("style");
-            style.setAttribute("include", "vi-flex-layout-style-module");
-            template.content.insertBefore(style, template.content.firstChild);
-        }
-        const style = document.createElement("style");
-        style.setAttribute("include", "vi-reset-css-style-module");
-        template.content.insertBefore(style, template.content.firstChild);
-        const userStyleModule = DomModule.import(`${elementName}-style-module`);
-        if (userStyleModule != null) {
-            const style = document.createElement("style");
-            style.setAttribute("include", `${elementName}-style-module`);
-            template.content.appendChild(style);
-        }
         Object.defineProperty(element, "template", {
-            get: () => template,
+            get: () => {
+                const finalTemplate = DomModule.import(`${elementName}-template-module`, "template") || template;
+                if (WebComponent._scanTemplateForLayoutClasses(finalTemplate)) {
+                    const style = document.createElement("style");
+                    style.setAttribute("include", "vi-flex-layout-style-module");
+                    finalTemplate.content.insertBefore(style, finalTemplate.content.firstChild);
+                }
+                const style = document.createElement("style");
+                style.setAttribute("include", "vi-reset-css-style-module");
+                finalTemplate.content.insertBefore(style, finalTemplate.content.firstChild);
+                const userStyleModule = DomModule.import(`${elementName}-style-module`);
+                if (userStyleModule != null) {
+                    const style = document.createElement("style");
+                    style.setAttribute("include", `${elementName}-style-module`);
+                    finalTemplate.content.insertBefore(style, finalTemplate.content.firstChild);
+                }
+                return finalTemplate;
+            },
             enumerable: false
         });
     }
@@ -37038,8 +37041,10 @@ let AppRoute = class AppRoute extends WebComponent {
         else {
             this._clearChildren();
             const template = this.querySelector("template");
-            if (!template)
+            if (!template) {
+                console.warn(`Missing template on route "${this.path}"`);
                 return;
+            }
             template.setAttribute("slot", "none");
             const templateClass = templatize(template);
             const templateInstance = new templateClass({ app: this.app });
@@ -41769,7 +41774,7 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
         this._activeDialogs = [];
         this._activePanes = [];
         this._initialize = new Promise(resolve => { this._initializeResolve = resolve; });
-        window.app = this;
+        window["app"] = this;
         window.dispatchEvent(new CustomEvent("app-changed", { detail: { value: this } }));
         if (!this.uri && document.location.hash)
             this.uri = document.location.hash.trimStart("#");
@@ -80966,4 +80971,4 @@ SidePane = __decorate([
     })
 ], SidePane);
 
-export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppServiceHooks, AppServiceHooksBase, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, DialogCore, Error$1 as Error, FileDrop, Icon, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellDefault, QueryGridCellImage, QueryGridCellPresenter, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, SelectOptionItem, SelectReferenceDialog, Sensitive, SidePane, SignIn, SignOut, SizeTracker, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, vidyano as Vidyano, WebComponent, moment$1 as moment };
+export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppRoute, AppRoutePresenter, AppServiceHooks, AppServiceHooksBase, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, DialogCore, Error$1 as Error, FileDrop, Icon, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellDefault, QueryGridCellImage, QueryGridCellPresenter, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, SelectOptionItem, SelectReferenceDialog, Sensitive, SidePane, SignIn, SignOut, SizeTracker, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, vidyano as Vidyano, WebComponent, moment };

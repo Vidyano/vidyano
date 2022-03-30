@@ -391,26 +391,30 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
         if (!template)
             return;
 
-        // Add vi-flex-layout-style-module if template contains layout or flex class
-        if (WebComponent._scanTemplateForLayoutClasses(template)) {
-            const style = document.createElement("style");
-            style.setAttribute("include", "vi-flex-layout-style-module");
-            template.content.insertBefore(style, template.content.firstChild);
-        }
-
-        const style = document.createElement("style");
-        style.setAttribute("include", "vi-reset-css-style-module");
-        template.content.insertBefore(style, template.content.firstChild);
-
-        const userStyleModule = <HTMLTemplateElement>Polymer.DomModule.import(`${elementName}-style-module`);
-        if (userStyleModule != null) {
-            const style = document.createElement("style");
-            style.setAttribute("include", `${elementName}-style-module`);
-            template.content.appendChild(style);
-        }
-
         Object.defineProperty(element, "template", {
-            get: () => template,
+            get: () => {
+                const finalTemplate = <HTMLTemplateElement>Polymer.DomModule.import(`${elementName}-template-module`, "template") || template;
+
+                // Add vi-flex-layout-style-module if template contains layout or flex class
+                if (WebComponent._scanTemplateForLayoutClasses(finalTemplate)) {
+                    const style = document.createElement("style");
+                    style.setAttribute("include", "vi-flex-layout-style-module");
+                    finalTemplate.content.insertBefore(style, finalTemplate.content.firstChild);
+                }
+
+                const style = document.createElement("style");
+                style.setAttribute("include", "vi-reset-css-style-module");
+                finalTemplate.content.insertBefore(style, finalTemplate.content.firstChild);
+
+                const userStyleModule = <HTMLTemplateElement>Polymer.DomModule.import(`${elementName}-style-module`);
+                if (userStyleModule != null) {
+                    const style = document.createElement("style");
+                    style.setAttribute("include", `${elementName}-style-module`);
+                    finalTemplate.content.insertBefore(style, finalTemplate.content.firstChild);
+                }
+
+                return finalTemplate;
+            },
             enumerable: false
         });
     }
