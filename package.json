@@ -19,6 +19,7 @@
     "@polymer/paper-ripple": "3.0.2",
     "@polymer/polymer": "vidyano/polymer",
     "@rollup/plugin-node-resolve": "13.1.3",
+    "@rollup/plugin-replace": "^4.0.0",
     "@types/qunit": "2.11.3",
     "bignumber.js": "9.0.1",
     "chokidar": "^3.5.3",

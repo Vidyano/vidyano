@@ -3,6 +3,7 @@ import execute from 'rollup-plugin-execute';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import vulcanize from './rollup/vulcanize.js';
 import dts from "rollup-plugin-dts";
+import replace from "@rollup/plugin-replace";
 
 export default [
 	{
@@ -11,7 +12,10 @@ export default [
 		plugins: [
 			nodeResolve(),
 			commonjs(),
-			vulcanize()
+			vulcanize(),
+			replace({
+				"moment$1 as moment": "moment"
+			})
 		],
 		output: [{ file: 'wwwroot/dist/vidyano.js' }],
 		watch: {
@@ -32,6 +36,9 @@ export default [
 		plugins: [
 			dts({
 				respectExternal: true
+			}),
+			replace({
+				"moment_d as moment": "moment"
 			})
 		],
 		output: [{ file: "wwwroot/dist/vidyano.d.ts", format: "es" }]
