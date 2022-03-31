@@ -13,6 +13,11 @@ export class AppServiceHooks extends AppServiceHooksBase {
         super(app);
     }
 
+    onSessionExpired(): Promise<boolean> {
+        this.app.redirectToSignIn();
+        return Promise.resolve(false);
+    }
+
     async onAction(args: Vidyano.ExecuteActionArgs): Promise<Vidyano.PersistentObject> {
         if (args.action === "ShowHelp") {
             // Only pass selected tab for actions on persistent objects

@@ -236,11 +236,6 @@ export class AppServiceHooksBase extends Vidyano.ServiceHooks {
     }
 
     async onSessionExpired(): Promise<boolean> {
-        if (!(this.app instanceof App)) {
-            this.app.redirectToSignIn();
-            return false;
-        }
-
         await this.app.service.signOut(true);
         return true;
     }
