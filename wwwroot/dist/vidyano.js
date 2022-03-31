@@ -38822,10 +38822,6 @@ class AppServiceHooksBase extends ServiceHooks {
         }
     }
     async onSessionExpired() {
-        if (!(this.app instanceof App)) {
-            this.app.redirectToSignIn();
-            return false;
-        }
         await this.app.service.signOut(true);
         return true;
     }
@@ -78043,6 +78039,10 @@ class AppServiceHooks extends AppServiceHooksBase {
     constructor(app) {
         super(app);
         this.app = app;
+    }
+    onSessionExpired() {
+        this.app.redirectToSignIn();
+        return Promise.resolve(false);
     }
     async onAction(args) {
         if (args.action === "ShowHelp") {

@@ -10772,6 +10772,7 @@ declare class AppServiceHooksBase extends ServiceHooks {
 declare class AppServiceHooks extends AppServiceHooksBase {
     app: App;
     constructor(app: App);
+    onSessionExpired(): Promise<boolean>;
     onAction(args: ExecuteActionArgs): Promise<PersistentObject$1>;
     onOpen(obj: ServiceObject, replaceCurrent?: boolean, fromAction?: boolean): Promise<void>;
     onClose(parent: ServiceObject): void;
