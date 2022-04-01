@@ -220,10 +220,7 @@ export class SignIn extends WebComponent {
                 this.step = "username";
 
                 try {
-                    const credentialType = await this.service.postJSON("authenticate/GetCredentialType", {
-                        userName: this.userName
-                    });
-
+                    const credentialType = await this.service.getCredentialType(this.userName);
                     if (credentialType.redirectUri) {
                         setTimeout(() => {
                             Vidyano.cookie("returnUrl", this.returnUrl, { expires: 1, force: true });
@@ -387,10 +384,7 @@ export class SignIn extends WebComponent {
         try {
             if (this.step === "username") {
                 if (this.service.providers.Vidyano.getCredentialType) {
-                    const credentialType = await this.service.postJSON("authenticate/GetCredentialType", {
-                        userName: this.userName
-                    });
-
+                    const credentialType = await this.service.getCredentialType(this.userName);
                     if (credentialType.redirectUri) {
                         setTimeout(() => {
                             Vidyano.cookie("returnUrl", this.returnUrl, { expires: 1, force: true });

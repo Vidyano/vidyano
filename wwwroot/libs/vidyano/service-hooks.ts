@@ -30,6 +30,10 @@ export class ServiceHooks {
         // Noop
     }
 
+    onFetch(request: Request): Promise<Response> {
+        return fetch(request);
+    }
+
     trackEvent(name: string, option: string, owner: ServiceObjectWithActions) {
         // Noop
     }

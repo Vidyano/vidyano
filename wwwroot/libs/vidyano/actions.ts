@@ -95,7 +95,7 @@ Actions.ExportToCsv = class ExportToCsv extends Action {
     }
 
     protected _onExecute({ menuOption, parameters, selectedItems, skipOpen, noConfirmation, throwExceptions }: IActionExecuteOptions): Promise<PersistentObject> {
-        this.service._getStream(null, "Query.ExportToCsv", this.parent, this.query, null, this._getParameters(parameters, menuOption));
+        this.service.getStream(null, "Query.ExportToCsv", this.parent, this.query, null, this._getParameters(parameters, menuOption));
         return Promise.resolve(null);
     }
 }
@@ -106,7 +106,7 @@ Actions.ExportToExcel = class ExportToExcel extends Action {
     }
 
     protected _onExecute({ menuOption, parameters, selectedItems, skipOpen, noConfirmation, throwExceptions }: IActionExecuteOptions): Promise<PersistentObject> {
-        this.service._getStream(null, "Query.ExportToExcel", this.parent, this.query, null, this._getParameters(parameters, menuOption));
+        this.service.getStream(null, "Query.ExportToExcel", this.parent, this.query, null, this._getParameters(parameters, menuOption));
         return Promise.resolve(null);
     }
 }
@@ -194,7 +194,7 @@ Actions.ShowHelp = class ShowHelp extends Action {
             if (po != null) {
                 if (po.fullTypeName === "Vidyano.RegisteredStream" || po.getAttributeValue("Type") === "0") {
                     helpWindow.close();
-                    this.service._getStream(po);
+                    this.service.getStream(po);
                 } else {
                     helpWindow.location.href = po.getAttributeValue("Document");
                     helpWindow.focus();

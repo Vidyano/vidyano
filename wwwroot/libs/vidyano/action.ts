@@ -250,7 +250,7 @@ export class Action extends ServiceObject {
 
                     po = null;
                 } else if (po.fullTypeName === "Vidyano.RegisteredStream") {
-                    this.service._getStream(po);
+                    this.service.getStream(po);
                 } else if (po.fullTypeName === "Vidyano.AddReference") {
                     const query = po.queries[0];
                     query.parent = this.parent;
