@@ -9478,6 +9478,10 @@ function extend$2(target, ...sources) {
 function noop$1() {
 }
 
+function sleep$1(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 class Language extends Observable {
     constructor(_language, _culture) {
         super();
@@ -9768,7 +9772,7 @@ class Action extends ServiceObject {
                     po = null;
                 }
                 else if (po.fullTypeName === "Vidyano.RegisteredStream") {
-                    this.service._getStream(po);
+                    this.service.getStream(po);
                 }
                 else if (po.fullTypeName === "Vidyano.AddReference") {
                     const query = po.queries[0];
@@ -12490,6 +12494,9 @@ class ServiceHooks {
     }
     createData(data) {
     }
+    onFetch(request) {
+        return fetch(request);
+    }
     trackEvent(name, option, owner) {
     }
     onInitialize(clientData) {
@@ -13025,7 +13032,7 @@ Actions.ExportToCsv = class ExportToCsv extends Action {
         super(service, definition, owner);
     }
     _onExecute({ menuOption, parameters, selectedItems, skipOpen, noConfirmation, throwExceptions }) {
-        this.service._getStream(null, "Query.ExportToCsv", this.parent, this.query, null, this._getParameters(parameters, menuOption));
+        this.service.getStream(null, "Query.ExportToCsv", this.parent, this.query, null, this._getParameters(parameters, menuOption));
         return Promise.resolve(null);
     }
 };
@@ -13034,7 +13041,7 @@ Actions.ExportToExcel = class ExportToExcel extends Action {
         super(service, definition, owner);
     }
     _onExecute({ menuOption, parameters, selectedItems, skipOpen, noConfirmation, throwExceptions }) {
-        this.service._getStream(null, "Query.ExportToExcel", this.parent, this.query, null, this._getParameters(parameters, menuOption));
+        this.service.getStream(null, "Query.ExportToExcel", this.parent, this.query, null, this._getParameters(parameters, menuOption));
         return Promise.resolve(null);
     }
 };
@@ -13105,7 +13112,7 @@ Actions.ShowHelp = class ShowHelp extends Action {
             if (po != null) {
                 if (po.fullTypeName === "Vidyano.RegisteredStream" || po.getAttributeValue("Type") === "0") {
                     helpWindow.close();
-                    this.service._getStream(po);
+                    this.service.getStream(po);
                 }
                 else {
                     helpWindow.location.href = po.getAttributeValue("Document");
@@ -13187,42 +13194,83 @@ class Service extends Observable {
         this.hooks.createData(data);
         return data;
     }
-    _getMs() {
-        return Service._getMs();
-    }
-    postJSON(method, data) {
-        return this._postJSON(this._createUri(method), data);
-    }
-    _postJSON(url, data) {
-        const createdRequest = new Date();
-        if (this.profile) {
-            var requestStart = this._getMs();
-            var requestMethod = url.split("/").pop();
-        }
-        return new Promise((resolve, reject) => {
-            const r = new XMLHttpRequest();
-            r.open("POST", url, true);
-            r.overrideMimeType("application/json; charset=utf-8");
-            r.setRequestHeader("Content-type", "application/json");
-            if (this.authTokenType === "JWT") {
-                r.setRequestHeader("Authorization", "bearer " + this.authToken.substr(4));
-                if (data) {
-                    delete data.userName;
-                    delete data.authToken;
-                }
+    async _fetch(request) {
+        let response;
+        do {
+            response = await this.hooks.onFetch(request);
+            if (response.status !== 429)
+                return response;
+            const retryAfter = response.headers?.get("Retry-After") || "5";
+            let seconds = parseInt(retryAfter) * 1000;
+            if (Number.isNaN(seconds)) {
+                const when = new Date(retryAfter).getTime();
+                if (!Number.isNaN(when))
+                    seconds = Math.max(0, when - new Date().getTime());
             }
-            r.onload = async () => {
-                if (r.status !== 200) {
-                    if (r.status === 429) {
-                        setTimeout(() => {
-                            this._postJSON(url, data).then(result => resolve(result), err => reject(err));
-                        }, parseInt(r.getResponseHeader("retry-after") || "5") * 1000 + 1000);
-                        return;
-                    }
-                    reject(`${r.statusText} (${r.status})`);
-                    return;
-                }
-                const result = JSON.parse(r.responseText);
+            await sleep$1(seconds || 5000);
+        } while (true);
+    }
+    async _getJSON(url, headers) {
+        const request = new Request(url, {
+            method: "GET",
+            headers: headers != null ? new Headers(headers) : undefined
+        });
+        try {
+            const response = await this._fetch(request);
+            if (response.ok)
+                return await response.json();
+            throw response.text;
+        }
+        catch (e) {
+            throw e || (NoInternetMessage.messages[navigator.language.split("-")[0].toLowerCase()] || NoInternetMessage.messages["en"]).message;
+        }
+    }
+    async _postJSON(url, data) {
+        const createdRequest = new Date();
+        let requestStart;
+        let requestMethod;
+        if (this.profile) {
+            requestStart = window.performance.now();
+            requestMethod = url.split("/").pop();
+        }
+        const headers = new Headers();
+        if (this.authTokenType === "JWT") {
+            headers.set("Authorization", "bearer " + this.authToken.substring(4));
+            if (data) {
+                delete data.userName;
+                delete data.authToken;
+            }
+        }
+        let body;
+        if (!data.__form_data) {
+            headers.append("Content-type", "application/json");
+            body = JSON.stringify(data);
+        }
+        else {
+            const formData = data.__form_data;
+            delete data.__form_data;
+            formData.set("data", JSON.stringify(data));
+            body = formData;
+        }
+        const request = new Request(url, {
+            method: "POST",
+            headers: headers,
+            body: body
+        });
+        try {
+            const response = await this._fetch(request);
+            if (!response.ok)
+                throw response.statusText;
+            let result;
+            if (response.headers.get("content-type") === "application/json")
+                result = await response.json();
+            else if (response.headers.get("content-type") === "text/html") {
+                const regex = /({(.*)+)</gm;
+                result = JSON.parse(regex.exec(await response.text())[1]);
+            }
+            else
+                throw "Invalid content-type";
+            try {
                 if (result.exception == null)
                     result.exception = result.ExceptionMessage;
                 if (result.exception == null) {
@@ -13232,47 +13280,39 @@ class Service extends Observable {
                     }
                     if (this.application)
                         this.application._updateSession(result.session);
-                    resolve(result);
+                    return result;
                 }
                 else if (result.exception === "Session expired") {
                     this.authToken = null;
                     delete data.authToken;
                     if (this.defaultUserName && this.defaultUserName === this.userName) {
                         delete data.password;
-                        this._postJSON(url, data).then(resolve, reject);
+                        return await this._postJSON(url, data);
                     }
                     else if (!await this.hooks.onSessionExpired())
-                        reject(result.exception);
+                        throw result.exception;
                     else if (this.defaultUserName) {
                         delete data.password;
                         data.userName = this.defaultUserName;
-                        this._postJSON(url, data).then(resolve, reject);
+                        return await this._postJSON(url, data);
                     }
                     else
-                        reject(result.exception);
-                    return;
+                        throw result.exception;
                 }
                 else
-                    reject(result.exception);
-                this._postJSONProcess(data, result, requestMethod, createdRequest, requestStart, result.profiler ? r.getResponseHeader("X-ElapsedMilliseconds") : undefined);
-            };
-            r.onerror = () => {
-                if (r.status === 0) {
-                    const noInternet = NoInternetMessage.messages[navigator.language.split("-")[0].toLowerCase()] || NoInternetMessage.messages["en"];
-                    if (url.endsWith("GetClientData?v=3"))
-                        reject(noInternet);
-                    else
-                        reject(noInternet.message);
-                }
-                else
-                    reject(r.statusText);
-            };
-            r.send(JSON.stringify(data));
-        });
+                    throw result.exception;
+            }
+            finally {
+                this._postJSONProcess(data, result, requestMethod, createdRequest, requestStart, result.profiler ? response.headers.get("X-ElapsedMilliseconds") : undefined);
+            }
+        }
+        catch (e) {
+            throw e || (NoInternetMessage.messages[navigator.language.split("-")[0].toLowerCase()] || NoInternetMessage.messages["en"]).message;
+        }
     }
     _postJSONProcess(data, result, requestMethod, createdRequest, requestStart, elapsedMs) {
         if (this.profile && result.profiler) {
-            const requestEnd = this._getMs();
+            const requestEnd = window.performance.now();
             if (!result.profiler) {
                 result.profiler = { elapsedMilliseconds: -1 };
                 if (result.exception)
@@ -13303,92 +13343,6 @@ class Service extends Observable {
                     this.hooks.onClientOperation(operation);
             }, 0);
         }
-    }
-    _getJSON(url, headers) {
-        return new Promise((resolve, reject) => {
-            const r = new XMLHttpRequest();
-            r.open("GET", url, true);
-            if (headers) {
-                for (const key in headers)
-                    r.setRequestHeader(key, headers[key]);
-            }
-            r.onload = () => {
-                if (r.status !== 200) {
-                    reject(r.statusText);
-                    return;
-                }
-                resolve(JSON.parse(r.responseText));
-            };
-            r.onerror = () => { reject(r.statusText || (NoInternetMessage.messages[navigator.language.split("-")[0].toLowerCase()] || NoInternetMessage.messages["en"]).message); };
-            r.send();
-        });
-    }
-    static _decodeBase64(input) {
-        let output = "";
-        let chr1, chr2, chr3;
-        let enc1, enc2, enc3, enc4;
-        let i = 0;
-        const base64test = /[^A-Za-z0-9\+\/\=]/g;
-        if (base64test.exec(input)) {
-            throw "There were invalid base64 characters in the input text.";
-        }
-        input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
-        do {
-            enc1 = Service._base64KeyStr.indexOf(input.charAt(i++));
-            enc2 = Service._base64KeyStr.indexOf(input.charAt(i++));
-            enc3 = Service._base64KeyStr.indexOf(input.charAt(i++));
-            enc4 = Service._base64KeyStr.indexOf(input.charAt(i++));
-            chr1 = (enc1 << 2) | (enc2 >> 4);
-            chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
-            chr3 = ((enc3 & 3) << 6) | enc4;
-            output = output + String.fromCharCode(chr1);
-            if (enc3 !== 64) {
-                output = output + String.fromCharCode(chr2);
-            }
-            if (enc4 !== 64) {
-                output = output + String.fromCharCode(chr3);
-            }
-        } while (i < input.length);
-        return decodeURIComponent(output);
-    }
-    _getStream(obj, action, parent, query, selectedItems, parameters) {
-        const data = this._createData("getStream");
-        data.action = action;
-        if (obj != null)
-            data.id = obj.objectId;
-        if (parent != null)
-            data.parent = parent.toServiceObject();
-        if (query != null)
-            data.query = query._toServiceObject();
-        if (selectedItems != null)
-            data.selectedItems = selectedItems.map(si => si._toServiceObject());
-        if (parameters != null)
-            data.parameters = parameters;
-        const name = "iframe-vidyano-download";
-        let iframe = document.querySelector("iframe[name='" + name + "']");
-        if (!iframe) {
-            iframe = document.createElement("iframe");
-            iframe.src = "javascript:false;";
-            iframe.name = name;
-            iframe.style.position = "absolute";
-            iframe.style.top = "-1000px";
-            iframe.style.left = "-1000px";
-            document.body.appendChild(iframe);
-        }
-        const form = document.createElement("form");
-        form.enctype = "multipart/form-data";
-        form.encoding = "multipart/form-data";
-        form.method = "post";
-        form.action = this._createUri("GetStream");
-        form.target = name;
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = "data";
-        input.value = JSON.stringify(data);
-        form.appendChild(input);
-        document.body.appendChild(form);
-        form.submit();
-        document.body.removeChild(form);
     }
     get queuedClientOperations() {
         return this._queuedClientOperations;
@@ -13432,9 +13386,12 @@ class Service extends Observable {
     _setIsSignedIn(val) {
         const oldIsSignedIn = this._isSignedIn;
         this._isSignedIn = val;
-        this._setIsUsingDefaultCredentials(this.defaultUserName && this.userName && this.defaultUserName.toLowerCase() === this.userName.toLowerCase());
-        if (val !== oldIsSignedIn)
+        const oldIsUsingDefaultCredentials = this._isUsingDefaultCredentials;
+        this._isUsingDefaultCredentials = this.defaultUserName && this.userName && this.defaultUserName.toLowerCase() === this.userName.toLowerCase();
+        if (oldIsSignedIn !== this._isSignedIn)
             this.notifyPropertyChanged("isSignedIn", this._isSignedIn, oldIsSignedIn);
+        if (oldIsSignedIn !== this._isUsingDefaultCredentials)
+            this.notifyPropertyChanged("isUsingDefaultCredentials", this._isUsingDefaultCredentials, oldIsUsingDefaultCredentials);
     }
     get languages() {
         return this._languages;
@@ -13448,14 +13405,10 @@ class Service extends Observable {
     get isUsingDefaultCredentials() {
         return this._isUsingDefaultCredentials;
     }
-    _setIsUsingDefaultCredentials(val) {
-        const oldIsUsingDefaultCredentials = this._isUsingDefaultCredentials;
-        this.notifyPropertyChanged("isUsingDefaultCredentials", this._isUsingDefaultCredentials = val, oldIsUsingDefaultCredentials);
-    }
     get userName() {
         return !this.isTransient ? cookie("userName") : this._userName;
     }
-    _setUserName(val) {
+    set userName(val) {
         const oldUserName = this.userName;
         if (oldUserName === val)
             return;
@@ -13518,6 +13471,9 @@ class Service extends Observable {
     getTranslatedMessage(key, ...params) {
         return String.format.apply(null, [this.language.messages[key] || key].concat(params));
     }
+    async getCredentialType(userName) {
+        return this._postJSON("authenticate/GetCredentialType", { userName: userName });
+    }
     async initialize(skipDefaultCredentialLogin = false) {
         let url = "GetClientData?v=3";
         if (this.requestedLanguage)
@@ -13537,7 +13493,7 @@ class Service extends Observable {
         if (Service._token) {
             if (!Service._token.startsWith("JWT:")) {
                 const tokenParts = Service._token.split("/", 2);
-                this._setUserName(Service._decodeBase64(tokenParts[0]));
+                this.userName = atob(tokenParts[0]);
                 this.authToken = tokenParts[1].replace("_", "/");
             }
             else
@@ -13549,7 +13505,7 @@ class Service extends Observable {
             this.hooks.onNavigate(returnUrl, true);
             return this._getApplication();
         }
-        this._setUserName(this.userName || this._clientData.defaultUser);
+        this.userName = this.userName || this._clientData.defaultUser;
         let application;
         if (!String.isNullOrEmpty(this.authToken) || ((this._clientData.defaultUser || this.windowsAuthentication) && !skipDefaultCredentialLogin)) {
             try {
@@ -13569,7 +13525,7 @@ class Service extends Observable {
         document.location.href = this.providers[providerName].requestUri;
     }
     async signInUsingCredentials(userName, password, codeOrStaySignedIn, staySignedIn) {
-        this._setUserName(userName);
+        this.userName = userName;
         const data = this._createData("getApplication");
         data.userName = userName;
         data.password = password;
@@ -13588,12 +13544,12 @@ class Service extends Observable {
         }
     }
     signInUsingDefaultCredentials() {
-        this._setUserName(this.defaultUserName);
+        this.userName = this.defaultUserName;
         return this._getApplication();
     }
     signOut(skipAcs) {
         if (this.userName === this.defaultUserName || this.userName === this.registerUserName)
-            this._setUserName(null);
+            this.userName = null;
         this.authToken = null;
         this._setApplication(null);
         if (!skipAcs && this._providers["Acs"] && this._providers["Acs"].signOutUri) {
@@ -13621,7 +13577,7 @@ class Service extends Observable {
     async _getApplication(data = this._createData("")) {
         if (!(data.authToken || data.accessToken || data.password) && this.userName && this.userName !== this.defaultUserName && this.userName !== this.registerUserName) {
             if (this.defaultUserName)
-                this._setUserName(this.defaultUserName);
+                this.userName = this.defaultUserName;
             if (!this.userName && !this.hooks.onSessionExpired())
                 throw "Session expired";
             data.userName = this.userName;
@@ -13647,7 +13603,7 @@ class Service extends Observable {
         if (result.initial != null)
             this._initial = this.hooks.onConstructPersistentObject(this, result.initial);
         if (result.userName !== this.registerUserName || result.userName === this.defaultUserName) {
-            this._setUserName(result.userName);
+            this.userName = result.userName;
             if (result.session)
                 this.application._updateSession(result.session);
             this._setIsSignedIn(true);
@@ -13758,131 +13714,35 @@ class Service extends Observable {
             data.selectedItems = selectedItems.map(item => item && item._toServiceObject());
         if (parameters != null)
             data.parameters = parameters;
+        const executeThen = async (result) => {
+            if (result.operations) {
+                this._queuedClientOperations.push(...result.operations);
+                result.operations = null;
+            }
+            if (!result.retry)
+                return result.result ? await this.hooks.onConstructPersistentObject(this, result.result) : null;
+            if (result.retry.persistentObject)
+                result.retry.persistentObject = this.hooks.onConstructPersistentObject(this, result.retry.persistentObject);
+            const option = await this.hooks.onRetryAction(result.retry);
+            (data.parameters || (data.parameters = {})).RetryActionOption = option;
+            if (result.retry.persistentObject instanceof PersistentObject$1)
+                data.retryPersistentObject = result.retry.persistentObject.toServiceObject();
+            const retryResult = await this._postJSON(this._createUri("ExecuteAction"), data);
+            return await executeThen(retryResult);
+        };
         try {
-            const executeThen = async (result) => {
-                if (result.operations) {
-                    this._queuedClientOperations.push(...result.operations);
-                    result.operations = null;
-                }
-                if (!result.retry)
-                    return result.result ? await this.hooks.onConstructPersistentObject(this, result.result) : null;
-                if (result.retry.persistentObject)
-                    result.retry.persistentObject = this.hooks.onConstructPersistentObject(this, result.retry.persistentObject);
-                const option = await this.hooks.onRetryAction(result.retry);
-                (data.parameters || (data.parameters = {})).RetryActionOption = option;
-                if (result.retry.persistentObject instanceof PersistentObject$1)
-                    data.retryPersistentObject = result.retry.persistentObject.toServiceObject();
-                const retryResult = await this._postJSON(this._createUri("ExecuteAction"), data);
-                return await executeThen(retryResult);
-            };
-            if (parent == null) {
-                if (isFreezingAction)
-                    parent.freeze();
-                const result = await this._postJSON(this._createUri("ExecuteAction"), data);
-                return await executeThen(result);
-            }
-            const inputs = parent.attributes.filter(i => i.input != null).map(attribute => ({ attribute, input: attribute.input, replacement: null }));
-            if (!inputs.length || !inputs.some(i => i.attribute.isValueChanged)) {
-                if (isFreezingAction)
-                    parent.freeze();
-                const result = await this._postJSON(this._createUri("ExecuteAction"), data);
-                return await executeThen(result);
-            }
-            const origin = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ":" + window.location.port : "");
-            if (this.serviceUri.startsWith("http") && !this.serviceUri.startsWith(origin)) {
-                for (let i of inputs) {
-                    await new Promise((resolve, reject) => {
-                        const file = i.input.files[0];
-                        if (!file) {
-                            resolve(true);
-                            return;
-                        }
-                        const reader = new FileReader();
-                        reader.onload = event => {
-                            const fileName = i.attribute.value;
-                            i.attribute.value = event.target.result.match(/,(.*)$/)[1];
-                            if (i.attribute.type === "BinaryFile")
-                                i.attribute.value = fileName + "|" + i.attribute.value;
-                            resolve(true);
-                        };
-                        reader.onerror = function (e) {
-                            reject(e);
-                        };
-                        reader.readAsDataURL(file);
-                    });
-                }
-                if (isFreezingAction)
-                    parent.freeze();
-                data.parent = parent.toServiceObject();
-                const result = await this._postJSON(this._createUri("ExecuteAction"), data);
-                return await executeThen(result);
-            }
             if (isFreezingAction)
-                parent.freeze();
-            const iframeName = "iframe-" + new Date();
-            const iframe = document.createElement("iframe");
-            iframe.src = "javascript:false;";
-            iframe.name = iframeName;
-            iframe.style.position = "absolute";
-            iframe.style.top = "-1000px";
-            iframe.style.left = "-1000px";
-            const clonedForm = document.createElement("form");
-            clonedForm.enctype = "multipart/form-data";
-            clonedForm.encoding = "multipart/form-data";
-            clonedForm.method = "post";
-            clonedForm.action = this._createUri("ExecuteAction");
-            clonedForm.target = iframeName;
-            const input = document.createElement("input");
-            input.type = "hidden";
-            input.name = "data";
-            input.value = JSON.stringify(data);
-            clonedForm.appendChild(input);
-            clonedForm.style.display = "none";
-            inputs.filter(i => i.input.value !== "").forEach(i => {
-                i.input.name = i.attribute.name;
-                i.replacement = document.createElement("input");
-                i.replacement.type = "file";
-                i.input.insertAdjacentElement("afterend", i.replacement);
-                clonedForm.appendChild(i.input);
-            });
-            const createdRequest = new Date();
-            if (this.profile)
-                var requestStart = this._getMs();
-            const service = this;
-            const result = await new Promise((resolve, reject) => {
-                iframe.onload = function (e) {
-                    iframe.onload = function (e) {
-                        const frame = this;
-                        const doc = frame.contentDocument || frame.contentWindow.document, root = doc.documentElement ? doc.documentElement : doc.body, textarea = root.getElementsByTagName("textarea")[0], type = textarea ? textarea.getAttribute("data-type") : null, content = {
-                            html: root.innerHTML,
-                            text: type ?
-                                textarea.value :
-                                root ? (root.textContent || root.innerText) : null
-                        };
-                        const result = JSON.parse(content.text);
-                        service._postJSONProcess(data, result, "ExecuteAction", createdRequest, requestStart, (service._getMs() - requestStart).toString());
-                        resolve(result);
-                    };
-                    Array.prototype.forEach.call(clonedForm.querySelectorAll("input"), (input) => { input.disabled = false; });
-                    clonedForm.submit();
-                };
-                document.body.appendChild(clonedForm);
-                document.body.appendChild(iframe);
-            });
-            document.body.removeChild(clonedForm);
-            document.body.removeChild(iframe);
-            inputs.forEach(i => i.attribute.input = null);
-            inputs.forEach(i => {
-                if (i.replacement != null) {
-                    const tempParent = document.createElement("div");
-                    tempParent.innerHTML = i.input.outerHTML;
-                    const newInput = tempParent.querySelector("input");
-                    i.replacement.parentNode.replaceChild(newInput, i.replacement);
-                    i.attribute.input = newInput;
-                }
-                else
-                    i.attribute.input = i.replacement;
-            });
+                parent?.freeze();
+            const inputs = parent?.attributes.filter(a => a.input != null && a.isValueChanged).map(a => [a, a.input]);
+            if (inputs?.length > 0) {
+                const formData = new FormData();
+                inputs.forEach(i => {
+                    const [attribute, input] = i;
+                    formData.set(attribute.name, input.files[0]);
+                });
+                data.__form_data = formData;
+            }
+            const result = await this._postJSON(this._createUri("ExecuteAction"), data);
             return await executeThen(result);
         }
         catch (e) {
@@ -13894,7 +13754,41 @@ class Service extends Observable {
         }
         finally {
             if (isFreezingAction)
-                parent.unfreeze();
+                parent?.unfreeze();
+        }
+    }
+    async getStream(obj, action, parent, query, selectedItems, parameters) {
+        const data = this._createData("getStream");
+        data.action = action;
+        if (obj != null)
+            data.id = obj.objectId;
+        if (parent != null)
+            data.parent = parent.toServiceObject();
+        if (query != null)
+            data.query = query._toServiceObject();
+        if (selectedItems != null)
+            data.selectedItems = selectedItems.map(si => si._toServiceObject());
+        if (parameters != null)
+            data.parameters = parameters;
+        const formData = new FormData();
+        formData.append("data", JSON.stringify(data));
+        const response = await this._fetch(new Request(this._createUri("GetStream"), {
+            body: formData,
+            method: "POST"
+        }));
+        if (response.ok) {
+            const blob = await response.blob();
+            const a = document.createElement("a");
+            a.style.display = "none";
+            const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+            const matches = filenameRegex.exec(response.headers.get("Content-Disposition"));
+            if (matches != null && matches[1])
+                a.download = matches[1].replace(/['"]/g, '');
+            a.href = URL.createObjectURL(blob);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
         }
     }
     async getReport(token, { filter = "", orderBy, top, skip, hideIds, hideType = true } = {}) {
@@ -13909,8 +13803,7 @@ class Service extends Observable {
             uri = `${uri}&hideIds=true`;
         if (hideType)
             uri = `${uri}&hideType=true`;
-        const data = await this._getJSON(uri);
-        return data.d;
+        return (await this._getJSON(uri)).d;
     }
     async getInstantSearch(search) {
         const uri = this._createUri(`Instant?q=${encodeURIComponent(search)}`);
@@ -13922,10 +13815,9 @@ class Service extends Observable {
         }
         else
             authorization = this.authToken.substr(4);
-        const data = await this._getJSON(uri, {
+        return (await this._getJSON(uri, {
             "Authorization": `Bearer ${authorization}`
-        });
-        return data.d;
+        })).d;
     }
     forgotPassword(userName) {
         return this._postJSON(this._createUri("forgotpassword"), { userName: userName });
@@ -13937,8 +13829,6 @@ class Service extends Observable {
         return DataType.toServiceString(value, typeName);
     }
 }
-Service._getMs = window.performance && window.performance.now ? () => window.performance.now() : () => new Date().getTime();
-Service._base64KeyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 
 var service = /*#__PURE__*/Object.freeze({
 	__proto__: null
@@ -13956,6 +13846,7 @@ var vidyano = /*#__PURE__*/Object.freeze({
 	ServiceBus: ServiceBus,
 	extend: extend$2,
 	noop: noop$1,
+	sleep: sleep$1,
 	version: version$2,
 	Service: Service,
 	Action: Action,
@@ -45748,9 +45639,7 @@ let SignIn = class SignIn extends WebComponent {
                 this._setIsBusy(true);
                 this.step = "username";
                 try {
-                    const credentialType = await this.service.postJSON("authenticate/GetCredentialType", {
-                        userName: this.userName
-                    });
+                    const credentialType = await this.service.getCredentialType(this.userName);
                     if (credentialType.redirectUri) {
                         setTimeout(() => {
                             cookie("returnUrl", this.returnUrl, { expires: 1, force: true });
@@ -45885,9 +45774,7 @@ let SignIn = class SignIn extends WebComponent {
         try {
             if (this.step === "username") {
                 if (this.service.providers.Vidyano.getCredentialType) {
-                    const credentialType = await this.service.postJSON("authenticate/GetCredentialType", {
-                        userName: this.userName
-                    });
+                    const credentialType = await this.service.getCredentialType(this.userName);
                     if (credentialType.redirectUri) {
                         setTimeout(() => {
                             cookie("returnUrl", this.returnUrl, { expires: 1, force: true });

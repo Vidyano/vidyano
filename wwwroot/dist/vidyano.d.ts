@@ -2747,44 +2747,46 @@ declare function extend(target: any, ...sources: any[]): any;
 
 declare function noop(): void;
 
+declare function sleep(ms: number): Promise<void>;
+
 declare type NotificationType$1 = "" | "OK" | "Notice" | "Warning" | "Error";
 declare type SortDirection$1 = "" | "ASC" | "DESC";
-declare type Request = {
+declare type Request$1 = {
     userName?: string;
     authToken?: string;
     clientVersion?: string;
     environment: "Web" | "Web,ServiceWorker";
     environmentVersion: string;
 };
-declare type Response = {
+declare type Response$1 = {
     authToken?: string;
     exception?: string;
 };
 declare type GetApplicationRequest = {
     password?: string;
-} & Request;
+} & Request$1;
 declare type GetQueryRequest = {
     id: string;
-} & Request;
+} & Request$1;
 declare type GetQueryResponse = {
     query: Query$2;
-} & Response;
+} & Response$1;
 declare type GetPersistentObjectRequest = {
     persistentObjectTypeId: string;
     objectId?: string;
     isNew?: boolean;
     parent?: PersistentObject$2;
-} & Request;
+} & Request$1;
 declare type GetPersistentObjectResponse = {
     result: PersistentObject$2;
-} & Response;
+} & Response$1;
 declare type ExecuteActionParameters = {
     [key: string]: string;
 };
 declare type ExecuteActionRequest = {
     action: string;
     parameters: ExecuteActionParameters;
-} & Request;
+} & Request$1;
 declare type ExecuteActionRefreshParameters = {
     RefreshedPersistentObjectAttributeId: string;
 } & ExecuteActionParameters;
@@ -2801,14 +2803,14 @@ declare type ExecutePersistentObjectActionRequest = {
 } & ExecuteActionRequest;
 declare type ExecuteActionResponse = {
     result: PersistentObject$2;
-} & Response;
+} & Response$1;
 declare type ExecuteQueryRequest = {
     query: Query$2;
     parent: PersistentObject$2;
-} & Request;
+} & Request$1;
 declare type ExecuteQueryResponse = {
     result: QueryResult;
-} & Response;
+} & Response$1;
 declare type ProviderParameters = {
     label: string;
     description: string;
@@ -2845,7 +2847,7 @@ declare type ApplicationResponse = {
     userLanguage: string;
     userName: string;
     hasSensitive: boolean;
-} & Response;
+} & Response$1;
 declare type PersistentObject$2 = {
     actions: string[];
     attributes: PersistentObjectAttribute$2[];
@@ -3025,8 +3027,6 @@ declare type ProfilerSqlParameter = {
     value: string;
 };
 
-type service_Request = Request;
-type service_Response = Response;
 type service_GetApplicationRequest = GetApplicationRequest;
 type service_GetQueryRequest = GetQueryRequest;
 type service_GetQueryResponse = GetQueryResponse;
@@ -3055,8 +3055,8 @@ declare namespace service {
   export {
     NotificationType$1 as NotificationType,
     SortDirection$1 as SortDirection,
-    service_Request as Request,
-    service_Response as Response,
+    Request$1 as Request,
+    Response$1 as Response,
     service_GetApplicationRequest as GetApplicationRequest,
     service_GetQueryRequest as GetQueryRequest,
     service_GetQueryResponse as GetQueryResponse,
@@ -3866,6 +3866,7 @@ declare class ServiceHooks {
     private _service;
     get service(): Service;
     createData(data: any): void;
+    onFetch(request: Request): Promise<Response>;
     trackEvent(name: string, option: string, owner: ServiceObjectWithActions): void;
     onInitialize(clientData: ClientData): Promise<ClientData>;
     onSessionExpired(): Promise<boolean>;
@@ -3931,8 +3932,6 @@ declare class Service extends Observable<Service> {
     serviceUri: string;
     hooks: ServiceHooks;
     readonly isTransient: boolean;
-    private static _getMs;
-    private static _base64KeyStr;
     private static _token;
     private _lastAuthTokenUpdate;
     private _isUsingDefaultCredentials;
@@ -3958,13 +3957,10 @@ declare class Service extends Observable<Service> {
     static set token(token: string);
     private _createUri;
     private _createData;
-    private _getMs;
-    postJSON(method: string, data: any): Promise<any>;
+    private _fetch;
+    private _getJSON;
     private _postJSON;
     private _postJSONProcess;
-    private _getJSON;
-    private static _decodeBase64;
-    _getStream(obj: PersistentObject$1, action?: string, parent?: PersistentObject$1, query?: Query$1, selectedItems?: Array<QueryResultItem>, parameters?: any): void;
     get queuedClientOperations(): IClientOperation[];
     get application(): Application;
     private _setApplication;
@@ -3981,9 +3977,8 @@ declare class Service extends Observable<Service> {
         [name: string]: ProviderParameters;
     };
     get isUsingDefaultCredentials(): boolean;
-    private _setIsUsingDefaultCredentials;
     get userName(): string;
-    private _setUserName;
+    private set userName(value);
     get defaultUserName(): string;
     get registerUserName(): string;
     get authToken(): string;
@@ -3994,6 +3989,7 @@ declare class Service extends Observable<Service> {
     get profiledRequests(): ProfilerRequest$1[];
     private _setProfiledRequests;
     getTranslatedMessage(key: string, ...params: string[]): string;
+    getCredentialType(userName: string): Promise<any>;
     initialize(skipDefaultCredentialLogin?: boolean): Promise<Application>;
     signInExternal(providerName: string): void;
     signInUsingCredentials(userName: string, password: string, staySignedIn?: boolean): Promise<Application>;
@@ -4005,6 +4001,7 @@ declare class Service extends Observable<Service> {
     getPersistentObject(parent: PersistentObject$1, id: string, objectId?: string, isNew?: boolean): Promise<PersistentObject$1>;
     executeQuery(parent: PersistentObject$1, query: Query$1, asLookup?: boolean, throwExceptions?: boolean): Promise<QueryResult>;
     executeAction(action: string, parent: PersistentObject$1, query: Query$1, selectedItems: Array<QueryResultItem>, parameters?: any, skipHooks?: boolean): Promise<PersistentObject$1>;
+    getStream(obj: PersistentObject$1, action?: string, parent?: PersistentObject$1, query?: Query$1, selectedItems?: Array<QueryResultItem>, parameters?: any): Promise<void>;
     getReport(token: string, { filter, orderBy, top, skip, hideIds, hideType }?: IReportOptions): Promise<any[]>;
     getInstantSearch(search: string): Promise<IInstantSearchResult[]>;
     forgotPassword(userName: string): Promise<IForgotPassword>;
@@ -4138,6 +4135,7 @@ type vidyano_IServiceBus = IServiceBus;
 declare const vidyano_ServiceBus: typeof ServiceBus;
 declare const vidyano_extend: typeof extend;
 declare const vidyano_noop: typeof noop;
+declare const vidyano_sleep: typeof sleep;
 declare const vidyano_version: typeof version;
 type vidyano_NotificationType = NotificationType;
 type vidyano_Service = Service;
@@ -4251,6 +4249,7 @@ declare namespace vidyano {
     vidyano_ServiceBus as ServiceBus,
     vidyano_extend as extend,
     vidyano_noop as noop,
+    vidyano_sleep as sleep,
     vidyano_version as version,
     vidyano_NotificationType as NotificationType,
     vidyano_Service as Service,
