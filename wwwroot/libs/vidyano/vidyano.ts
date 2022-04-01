@@ -9,6 +9,7 @@ export * from "./common/service-bus.js"
 export * from "./common/string.js"
 export * from "./common/extend.js"
 export * from "./common/noop.js"
+export * from "./common/sleep.js"
 
 export * from "./service.js"
 
