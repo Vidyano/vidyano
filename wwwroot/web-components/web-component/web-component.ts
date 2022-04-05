@@ -3,6 +3,7 @@ import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import { Path } from "../../libs/pathjs/pathjs.js"
 import type { AppBase } from "../app/app-base.js"
 import type { App } from "../app/app.js"
+import * as IconRegister from "../icon/icon-register.js"
 import * as Keyboard from "../utils/keyboard.js"
 import { IronA11yKeysElement } from "@polymer/iron-a11y-keys"
 
@@ -387,33 +388,49 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
     }
 
     private static _updateTemplateProperty(element: CustomElementConstructor, elementName: string) {
-        const template = <HTMLTemplateElement>element["template"];
-        if (!template)
+        const baseTemplate = <HTMLTemplateElement>element["template"];
+        if (!baseTemplate)
             return;
 
         Object.defineProperty(element, "template", {
             get: () => {
-                const finalTemplate = <HTMLTemplateElement>Polymer.DomModule.import(`${elementName}-template-module`, "template") || template;
+                const template = <HTMLTemplateElement>Polymer.DomModule.import(`${elementName}-template-module`, "template") || baseTemplate;
+
+                const resetStyle = document.createElement("style");
+                resetStyle.setAttribute("include", "vi-reset-css-style-module");
+                template.content.insertBefore(resetStyle, template.content.firstChild);
 
                 // Add vi-flex-layout-style-module if template contains layout or flex class
-                if (WebComponent._scanTemplateForLayoutClasses(finalTemplate)) {
-                    const style = document.createElement("style");
-                    style.setAttribute("include", "vi-flex-layout-style-module");
-                    finalTemplate.content.insertBefore(style, finalTemplate.content.firstChild);
+                if (WebComponent._scanTemplateForLayoutClasses(template)) {
+                    const flexStyle = document.createElement("style");
+                    flexStyle.setAttribute("include", "vi-flex-layout-style-module");
+                    template.content.insertBefore(flexStyle, resetStyle.nextSibling);
                 }
 
-                const style = document.createElement("style");
-                style.setAttribute("include", "vi-reset-css-style-module");
-                finalTemplate.content.insertBefore(style, finalTemplate.content.firstChild);
-
+                // Add style module by naming pattern "elementName-style-module" if it exists
                 const userStyleModule = <HTMLTemplateElement>Polymer.DomModule.import(`${elementName}-style-module`);
                 if (userStyleModule != null) {
                     const style = document.createElement("style");
                     style.setAttribute("include", `${elementName}-style-module`);
-                    finalTemplate.content.insertBefore(style, finalTemplate.content.firstChild);
+
+                    const lastStyle = template.querySelector("style:last-of-type");
+                    if (lastStyle != null)
+                        template.content.insertBefore(style, lastStyle.nextSibling);
+                    else
+                        template.content.insertBefore(style, template.content.firstChild);
                 }
 
-                return finalTemplate;
+                // Move icons out of the template and register for later reuse
+                const icons = template.content.querySelectorAll("vi-icon[name]");
+                icons.forEach(icon => {
+                    const iconTemplate = document.createElement("template");
+                    iconTemplate.innerHTML = icon.outerHTML;
+                    IconRegister.add(Polymer.html`${iconTemplate}`);
+
+                    template.content.removeChild(icon);
+                });
+
+                return template;
             },
             enumerable: false
         });

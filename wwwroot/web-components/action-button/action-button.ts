@@ -1,6 +1,6 @@
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import * as Polymer from "../../libs/polymer/polymer.js"
-import { Icon } from "../icon/icon.js"
+import * as IconRegister from "../icon/icon-register.js"
 import { ConfigurableWebComponent } from "../web-component/web-component-configurable.js"
 
 @ConfigurableWebComponent.register({
@@ -228,19 +228,19 @@ export class ActionButton extends ConfigurableWebComponent {
             return "";
 
         const actionIcon = `Action_${action.definition.name}`;
-        return action.isPinned && !Icon.Exists(actionIcon) ? "Action_Default$" : actionIcon;
+        return action.isPinned && !IconRegister.exists(actionIcon) ? "Action_Default$" : actionIcon;
     }
 
     private _computeHasIcon(icon: string): boolean {
-        return !String.isNullOrEmpty(icon) && Icon.Exists(icon);
+        return !String.isNullOrEmpty(icon) && IconRegister.exists(icon);
     }
 
     private _computeIconSpace(icon: string, siblingIcon: boolean, overflow: boolean, grouped: boolean): boolean {
-        return (overflow || grouped) && !Icon.Exists(icon) && siblingIcon;
+        return (overflow || grouped) && !IconRegister.exists(icon) && siblingIcon;
     }
 
     private _computeSiblingIcon(overflow: boolean, grouped: boolean, isAttached: boolean) {
-        const siblingIcon = (overflow || grouped) && isAttached && this.parentElement != null && Array.from(this.parentElement.children).find((c: ActionButton) => c.action && Icon.Exists(this._computeIcon(<Vidyano.Action>c.action))) != null;
+        const siblingIcon = (overflow || grouped) && isAttached && this.parentElement != null && Array.from(this.parentElement.children).find((c: ActionButton) => c.action && IconRegister.exists(this._computeIcon(<Vidyano.Action>c.action))) != null;
         this._setSiblingIcon(siblingIcon);
         if (siblingIcon) {
             Array.from(this.parentElement.children).forEach((ab: ActionButton) => {

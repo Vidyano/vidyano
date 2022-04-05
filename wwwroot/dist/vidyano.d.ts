@@ -11005,10 +11005,6 @@ declare class Icon extends WebComponent {
     get aliases(): string[];
     addAlias(...alias: string[]): void;
     private _load;
-    static Load(name: string): Icon;
-    static Exists(name: string): boolean;
-    static Add(strings: TemplateStringsArray): any;
-    static Add(template: HTMLTemplateElement): any;
 }
 
 /**

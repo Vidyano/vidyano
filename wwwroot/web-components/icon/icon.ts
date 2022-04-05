@@ -1,7 +1,6 @@
 import * as Polymer from "../../libs/polymer/polymer.js"
 import { WebComponent } from "../web-component/web-component.js"
-
-const icons: { [key: string]: Icon } = {};
+import * as IconRegister from "./icon-register.js"
 
 @WebComponent.register({
     properties: {
@@ -52,7 +51,7 @@ export class Icon extends WebComponent {
         if (this.$.svgHost.children.length > 0)
             this.$.svgHost.innerHTML = "";
 
-        const resource = Icon.Load(this._source = source);
+        const resource = IconRegister.load(this._source = source);
         this._setUnresolved(!resource);
         if (this.unresolved)
             return;
@@ -63,27 +62,6 @@ export class Icon extends WebComponent {
 
         this.$.svgHost.querySelectorAll("svg").forEach(svg => svg.setAttribute("part", "svg"));
     }
-
-    static Load(name: string): Icon {
-        return icons[name] || icons[Object.keys(icons).find(key => !!icons[key].aliases && icons[key].aliases.some(a => a === name))];
-    }
-
-    static Exists(name: string): boolean {
-        return !!Icon.Load(name);
-    }
-
-    static Add(strings: TemplateStringsArray);
-    static Add(template: HTMLTemplateElement);
-    static Add(stringOrTemplate: HTMLTemplateElement | TemplateStringsArray) {
-        if (Array.isArray(stringOrTemplate))
-            stringOrTemplate = Polymer.html(<TemplateStringsArray>stringOrTemplate);
-
-        Array.from((<HTMLTemplateElement>stringOrTemplate).content.querySelectorAll("vi-icon")).forEach((icon: Icon) => {
-            document.body.appendChild(icon);
-            icons[icon.name] = icon;
-            document.body.removeChild(icon);
-        });
-    }
 }
 
-Icon.Add(Polymer.html`<link rel="import" href="icons.html">`);
+IconRegister.add(Polymer.html`<link rel="import" href="icons.html">`);

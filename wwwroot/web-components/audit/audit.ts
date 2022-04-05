@@ -1,7 +1,7 @@
 ﻿import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import * as Polymer from "../../libs/polymer/polymer.js"
 import { App } from "../app/app.js"
-import { Icon } from "../icon/icon.js"
+import * as IconRegister from "../icon/icon-register.js"
 import { WebComponent } from "../web-component/web-component.js"
 
 interface ILogEntryGroup {
@@ -245,7 +245,7 @@ export class Audit extends WebComponent {
 
     private _entryActionIcon(item: ILogEntry): string {
         const icon = `Action_${item.actionName}`;
-        return !Icon.Exists(icon) ? "Action_Default$" : icon;
+        return !IconRegister.exists(icon) ? "Action_Default$" : icon;
     }
 
     private _open(e: Polymer.Gestures.TapEvent) {

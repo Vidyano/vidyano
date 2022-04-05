@@ -5,7 +5,7 @@ import "@polymer/iron-collapse"
 import { App } from "../app/app.js"
 import { AppCacheEntryPersistentObject } from "../app-cache/app-cache-entry-persistent-object.js"
 import { AppCacheEntryQuery } from "../app-cache/app-cache-entry-query.js"
-import { Icon } from "../icon/icon.js"
+import * as IconRegister from "../icon/icon-register.js"
 import { Menu } from "./menu.js"
 import { SelectReferenceDialog } from "../select-reference-dialog/select-reference-dialog.js"
 import "../scroller/scroller.js"
@@ -210,7 +210,7 @@ export class MenuItem extends ConfigurableWebComponent {
         else if (item instanceof Vidyano.ProgramUnitItemUrl)
             prefix = "ProgramUnitItem_Url_";
 
-        if (Icon.Exists(prefix + item.name))
+        if (IconRegister.exists(prefix + item.name))
              return prefix + item.name;
 
         return null;

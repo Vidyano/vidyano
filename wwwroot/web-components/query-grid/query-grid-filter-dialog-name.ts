@@ -1,11 +1,6 @@
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import * as Polymer from "../../libs/polymer/polymer.js"
-import { Icon } from "../icon/icon.js"
 import { WebComponent } from "../web-component/web-component.js"
-
-Icon.Add `
-
-`;
 
 @WebComponent.register({
     properties: {

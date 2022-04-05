@@ -1,6 +1,6 @@
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import * as Polymer from "../../libs/polymer/polymer.js"
-import { Icon } from "../icon/icon.js"
+import * as IconRegister from "../icon/icon-register.js"
 import { WebComponent } from "../web-component/web-component.js"
 
 @WebComponent.register({
@@ -41,7 +41,7 @@ class ChartType {
     private _icon: string;
 
     constructor(private _type: string, public charts: Vidyano.QueryChart[]) {
-        if (!Icon.Exists(this._icon = "Chart_" + _type))
+        if (!IconRegister.exists(this._icon = "Chart_" + _type))
             this._icon = "Chart_Unknown";
     }
 
