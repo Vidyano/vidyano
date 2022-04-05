@@ -35338,7 +35338,7 @@ class WebComponent extends GestureEventListeners(PolymerElement) {
                     const iconTemplate = document.createElement("template");
                     iconTemplate.innerHTML = icon.outerHTML;
                     add(html `${iconTemplate}`);
-                    template.content.removeChild(icon);
+                    icon.parentNode.removeChild(icon);
                 });
                 return template;
             },

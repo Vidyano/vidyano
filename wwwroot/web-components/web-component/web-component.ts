@@ -427,7 +427,7 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
                     iconTemplate.innerHTML = icon.outerHTML;
                     IconRegister.add(Polymer.html`${iconTemplate}`);
 
-                    template.content.removeChild(icon);
+                    icon.parentNode.removeChild(icon);
                 });
 
                 return template;
