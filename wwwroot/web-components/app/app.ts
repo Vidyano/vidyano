@@ -75,8 +75,8 @@ export class App extends AppBase {
     label: string;
     cacheSize: number;
 
-    private constructor() {
-        super();
+    private constructor(readonly hooks: AppServiceHooks = new AppServiceHooks()) {
+        super(hooks);
 
         if (!this.label)
             this.label = this.title;
@@ -100,10 +100,6 @@ export class App extends AppBase {
 
             this.path = path;
         });
-    }
-
-    protected _createServiceHooks(): Vidyano.ServiceHooks {
-        return new AppServiceHooks(this);
     }
 
     protected async _pathChanged(path: string) {

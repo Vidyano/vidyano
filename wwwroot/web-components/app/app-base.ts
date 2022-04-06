@@ -47,11 +47,6 @@ const missing_base_tag_error = new Error("Document is missing base tag");
             reflectToAttribute: true,
             value: ""
         },
-        hooks: {
-            type: String,
-            reflectToAttribute: true,
-            value: null
-        },
         base: {
             type: String,
             readOnly: true,
@@ -155,7 +150,7 @@ const missing_base_tag_error = new Error("Document is missing base tag");
         }
     },
     observers: [
-        "_computeInitialService(uri, hooks, isConnected)",
+        "_computeInitialService(uri, isConnected)",
         "_cleanUpOnSignOut(service.isSignedIn)",
         "_computeThemeColorVariants(themeColor, 'color', isConnected)",
         "_computeThemeColorVariants(themeAccentColor, 'accent-color', isConnected)",
@@ -188,14 +183,13 @@ export abstract class AppBase extends WebComponent {
     readonly sessionLost: boolean; private _setSessionLost: (sessionLost: boolean) => void;
     readonly base: string;
     uri: string;
-    hooks: string;
     isTracking: boolean;
     sensitive: boolean;
     path: string;
 
-    constructor() {
+    constructor(readonly hooks: AppServiceHooksBase = new AppServiceHooksBase()) {
         super();
-
+        
         window["app"] = this;
         window.dispatchEvent(new CustomEvent("app-changed", { detail: { value: this }}));
 
@@ -252,53 +246,29 @@ export abstract class AppBase extends WebComponent {
         this._setAppRoutePresenter(appRoutePresenter);
     }
 
-    protected _createServiceHooks(): Vidyano.ServiceHooks {
-        return new AppServiceHooksBase(this);
-    }
-
-    private async _computeInitialService(uri: string, hooks: string, isConnected: boolean) {
+    private async _computeInitialService(uri: string, isConnected: boolean) {
         if (!isConnected)
             return;
 
         if (this.service) {
-            console.warn("Service uri and hooks cannot be altered.");
+            console.warn("Service uri cannot be altered.");
             return this.service;
         }
 
-        let hooksInstance: Vidyano.ServiceHooks;
-        if (hooks) {
-            const moduleUrl = this.base + hooks;
-            try {
-                const module = await import(moduleUrl);
-                hooksInstance = new module.default(this);
-            }
-            catch (e) {
-                console.error(`An error occured while loading service hooks module from "${moduleUrl}", using default.`);
-                hooksInstance = this._createServiceHooks();
-            }
-        }
-        else
-            hooksInstance = this._createServiceHooks();
-
-        this._setService(new Vidyano.Service(uri, hooksInstance));
+        this._setService(new Vidyano.Service(uri, this.hooks));
         const path = AppBase.removeRootPath(document.location.pathname);
         const skipDefaultCredentialLogin = path.startsWith("sign-in");
 
         this._setInitializing(true);
         try {
             await this.service.initialize(skipDefaultCredentialLogin);
-
-            if (hooksInstance instanceof AppServiceHooksBase)
-                await hooksInstance.onBeforeAppInitialized();
+            await this.hooks.onBeforeAppInitialized();
 
             this._initializeResolve(this.service.application);
             this._setInitializing(false);
         }
         catch (e) {
-            if (hooksInstance instanceof AppServiceHooksBase)
-                await hooksInstance.onAppInitializeFailed(e);
-            else
-                throw e;
+            this.hooks.onAppInitializeFailed(e);
         }
     }
 

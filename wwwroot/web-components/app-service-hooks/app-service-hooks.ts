@@ -9,10 +9,6 @@ import { PersistentObjectDialog } from "../persistent-object-dialog/persistent-o
 import { PersistentObjectWizardDialog } from "../persistent-object-wizard-dialog/persistent-object-wizard-dialog.js"
 
 export class AppServiceHooks extends AppServiceHooksBase {
-    constructor(public app: App) {
-        super(app);
-    }
-
     onSessionExpired(): Promise<boolean> {
         this.app.redirectToSignIn();
         return Promise.resolve(false);

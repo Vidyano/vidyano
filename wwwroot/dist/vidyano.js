@@ -37885,9 +37885,8 @@ SelectReferenceDialog = __decorate([
 
 var _gaq;
 class AppServiceHooksBase extends ServiceHooks {
-    constructor(app) {
-        super();
-        this.app = app;
+    get app() {
+        return window["app"];
     }
     _initializeGoogleAnalytics() {
         let addScript = false;
@@ -40997,8 +40996,9 @@ if (hashBangRe.test(document.location.href)) {
 }
 const missing_base_tag_error = new Error("Document is missing base tag");
 let AppBase = AppBase_1 = class AppBase extends WebComponent {
-    constructor() {
+    constructor(hooks = new AppServiceHooksBase()) {
         super();
+        this.hooks = hooks;
         this._keybindingRegistrations = {};
         this._activeDialogs = [];
         this._activePanes = [];
@@ -41569,46 +41569,25 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
         const appRoutePresenter = e.composedPath()[0];
         this._setAppRoutePresenter(appRoutePresenter);
     }
-    _createServiceHooks() {
-        return new AppServiceHooksBase(this);
-    }
-    async _computeInitialService(uri, hooks, isConnected) {
+    async _computeInitialService(uri, isConnected) {
         if (!isConnected)
             return;
         if (this.service) {
-            console.warn("Service uri and hooks cannot be altered.");
+            console.warn("Service uri cannot be altered.");
             return this.service;
         }
-        let hooksInstance;
-        if (hooks) {
-            const moduleUrl = this.base + hooks;
-            try {
-                const module = await import(moduleUrl);
-                hooksInstance = new module.default(this);
-            }
-            catch (e) {
-                console.error(`An error occured while loading service hooks module from "${moduleUrl}", using default.`);
-                hooksInstance = this._createServiceHooks();
-            }
-        }
-        else
-            hooksInstance = this._createServiceHooks();
-        this._setService(new Service(uri, hooksInstance));
+        this._setService(new Service(uri, this.hooks));
         const path = AppBase_1.removeRootPath(document.location.pathname);
         const skipDefaultCredentialLogin = path.startsWith("sign-in");
         this._setInitializing(true);
         try {
             await this.service.initialize(skipDefaultCredentialLogin);
-            if (hooksInstance instanceof AppServiceHooksBase)
-                await hooksInstance.onBeforeAppInitialized();
+            await this.hooks.onBeforeAppInitialized();
             this._initializeResolve(this.service.application);
             this._setInitializing(false);
         }
         catch (e) {
-            if (hooksInstance instanceof AppServiceHooksBase)
-                await hooksInstance.onAppInitializeFailed(e);
-            else
-                throw e;
+            this.hooks.onAppInitializeFailed(e);
         }
     }
     _onSessionStorage(event) {
@@ -41823,11 +41802,6 @@ AppBase = AppBase_1 = __decorate([
                 reflectToAttribute: true,
                 value: ""
             },
-            hooks: {
-                type: String,
-                reflectToAttribute: true,
-                value: null
-            },
             base: {
                 type: String,
                 readOnly: true,
@@ -41927,7 +41901,7 @@ AppBase = AppBase_1 = __decorate([
             }
         },
         observers: [
-            "_computeInitialService(uri, hooks, isConnected)",
+            "_computeInitialService(uri, isConnected)",
             "_cleanUpOnSignOut(service.isSignedIn)",
             "_computeThemeColorVariants(themeColor, 'color', isConnected)",
             "_computeThemeColorVariants(themeAccentColor, 'accent-color', isConnected)",
@@ -77941,10 +77915,6 @@ PersistentObjectWizardDialog = __decorate([
 ], PersistentObjectWizardDialog);
 
 class AppServiceHooks extends AppServiceHooksBase {
-    constructor(app) {
-        super(app);
-        this.app = app;
-    }
     onSessionExpired() {
         this.app.redirectToSignIn();
         return Promise.resolve(false);
@@ -78086,8 +78056,9 @@ class AppServiceHooks extends AppServiceHooksBase {
 
 var App_1;
 let App = App_1 = class App extends AppBase {
-    constructor() {
-        super();
+    constructor(hooks = new AppServiceHooks()) {
+        super(hooks);
+        this.hooks = hooks;
         this._cache = [];
         if (!this.label)
             this.label = this.title;
@@ -78191,9 +78162,6 @@ let App = App_1 = class App extends AppBase {
             }
             this.path = path;
         });
-    }
-    _createServiceHooks() {
-        return new AppServiceHooks(this);
     }
     async _pathChanged(path) {
         await this.initialize;

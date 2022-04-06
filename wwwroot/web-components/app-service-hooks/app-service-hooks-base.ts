@@ -16,8 +16,8 @@ var _gaq: any[];
 /* tslint:enable:no-var-keyword */
 
 export class AppServiceHooksBase extends Vidyano.ServiceHooks {
-    constructor(public app: AppBase) {
-        super();
+    get app() {
+        return window["app"];
     }
 
     private _initializeGoogleAnalytics() {
