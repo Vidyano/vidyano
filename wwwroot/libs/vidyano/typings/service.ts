@@ -1,4 +1,4 @@
-import type { KeyValueString } from "./common.js"
+import type { KeyValue, KeyValueString } from "./common.js"
 
 export declare type NotificationType = "" | "OK" | "Notice" | "Warning" | "Error";
 export declare type SortDirection = "" | "ASC" | "DESC";
@@ -100,42 +100,46 @@ export declare type ApplicationResponse = {
     hasSensitive: boolean;
 } & Response;
 export declare type PersistentObject = {
-    actions: string[];
-    attributes: PersistentObjectAttribute[];
+    actions?: string[];
+    attributes?: PersistentObjectAttribute[];
     breadcrumb?: string;
-    dialogSaveAction: string;
+    dialogSaveAction?: string;
     fullTypeName: string;
     id: string;
-    isBreadcrumbSensitive: boolean;
+    isBreadcrumbSensitive?: boolean;
     isNew?: boolean;
-    isSystem: boolean;
-    label: string;
-    newOptions: string;
-    notification: string;
-    notificationType: NotificationType;
-    notificationDuration: number;
-    objectId: string;
-    queries: Query[];
-    queryLayoutMode: string;
-    securityToken: never;
-    stateBehavior: "OpenInEdit" | "StayInEdit" | "AsDialog";
-    tabs: PersistentObjectTab[];
+    isSystem?: boolean;
+    label?: string;
+    newOptions?: string;
+    notification?: string;
+    notificationType?: NotificationType;
+    notificationDuration?: number;
+    objectId?: string;
+    queries?: Query[];
+    queryLayoutMode?: string;
+    securityToken?: never;
+    stateBehavior?: "None" | "OpenInEdit" | "StayInEdit" | "AsDialog";
+    tabs?: KeyValue<PersistentObjectTab>;
     type: string;
 };
 export declare type PersistentObjectAttribute = {
+    id?: string;
     name: string;
     type: string;
-    group: string;
-    tab: string;
-    label: string;
-    value: string;
+    group?: string;
+    tab?: string;
+    label?: string;
+    value?: string;
     isReadOnly?: boolean;
     isRequired?: boolean;
     isSensitive?: boolean;
     isValueChanged?: boolean;
-    offset: number;
+    offset?: number;
     rules?: string;
-    visibility: string;
+    visibility?: string;
+    toolTip?: string;
+    columnSpan?: number;
+    typeHints?: KeyValue<string>;
 };
 export declare type PersistentObjectAttributeWithReference = {
     displayAttribute: string;
@@ -144,7 +148,7 @@ export declare type PersistentObjectAttributeWithReference = {
 } & PersistentObjectAttribute;
 export declare type PersistentObjectTab = {
     columnCount: number;
-    id: string;
+    id?: string;
     name: string;
 };
 export declare type Query = {
