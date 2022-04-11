@@ -66,7 +66,7 @@ document.addEventListener("keyup", e => {
         nonEdit: {
             type: Boolean,
             reflectToAttribute: true,
-            value: false,
+            computed: "_computeNonEdit(attribute)",
             observer: "_nonEditChanged"
         },
         required: {
@@ -274,6 +274,10 @@ export class PersistentObjectAttributePresenter extends ConfigurableWebComponent
 
     private _computeEditing(isEditing: boolean, nonEdit: boolean): boolean {
         return !nonEdit && isEditing;
+    }
+
+    private _computeNonEdit(attribute: Vidyano.PersistentObjectAttribute) {
+        return attribute?.getTypeHint("nonedit", "false", undefined, true) === "true";
     }
 
     private _nonEditChanged(nonEdit: boolean) {
