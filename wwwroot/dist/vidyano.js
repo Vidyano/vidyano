@@ -77659,6 +77659,9 @@ let PersistentObjectAttributePresenter = class PersistentObjectAttributePresente
     _computeEditing(isEditing, nonEdit) {
         return !nonEdit && isEditing;
     }
+    _computeNonEdit(attribute) {
+        return attribute?.getTypeHint("nonedit", "false", undefined, true) === "true";
+    }
     _nonEditChanged(nonEdit) {
         if (this._renderedAttributeElement)
             this._renderedAttributeElement.nonEdit = nonEdit;
@@ -77715,7 +77718,7 @@ PersistentObjectAttributePresenter = __decorate([
             nonEdit: {
                 type: Boolean,
                 reflectToAttribute: true,
-                value: false,
+                computed: "_computeNonEdit(attribute)",
                 observer: "_nonEditChanged"
             },
             required: {

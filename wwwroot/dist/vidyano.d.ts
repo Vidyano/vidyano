@@ -12736,6 +12736,7 @@ declare class PersistentObjectAttributePresenter extends ConfigurableWebComponen
     private _attributeChanged;
     private _renderAttribute;
     private _computeEditing;
+    private _computeNonEdit;
     private _nonEditChanged;
     private _disabledChanged;
     private _computeRequired;
