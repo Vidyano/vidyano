@@ -178,7 +178,7 @@ export class Service extends Observable<Service> {
                 throw response.statusText;
 
             let result: any;
-            if (response.headers.get("content-type") === "application/json")
+            if (response.headers.get("content-type")?.contains("application/json"))
                 result = await response.json();
             else if (response.headers.get("content-type") === "text/html") {
                 const regex = /({(.*)+)</gm;

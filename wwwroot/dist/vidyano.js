@@ -13262,7 +13262,7 @@ class Service extends Observable {
             if (!response.ok)
                 throw response.statusText;
             let result;
-            if (response.headers.get("content-type") === "application/json")
+            if (response.headers.get("content-type")?.contains("application/json"))
                 result = await response.json();
             else if (response.headers.get("content-type") === "text/html") {
                 const regex = /({(.*)+)</gm;
@@ -42083,21 +42083,29 @@ let Button = class Button extends WebComponent {
 }
 
 :host(:not([custom-layout])) {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
   padding: 1px var(--theme-h5);
   text-align: center;
   white-space: nowrap;
 }
 
-:host(:not([custom-layout])) > *:not(style) {
-  display: inline-block;
-}
-
-:host(:not([custom-layout])) > vi-icon {
+:host(:not([custom-layout])) vi-icon {
   height: 100%;
   margin-right: 2px;
 }
 
-:host(:not([custom-layout])[busy]) > span, :host(:not([custom-layout])[busy]) > vi-icon {
+:host(:not([custom-layout])) span, :host(:not([custom-layout])) vi-icon {
+  -ms-flex-item-align: center;
+      -ms-grid-row-align: center;
+      align-self: center;
+}
+
+:host(:not([custom-layout])[busy]) span, :host(:not([custom-layout])[busy]) vi-icon {
   visibility: hidden;
 }
 
