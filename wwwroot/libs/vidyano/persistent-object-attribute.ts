@@ -8,8 +8,6 @@ import { CultureInfo } from "./cultures.js"
 import type { PersistentObjectAttributeGroup } from "./persistent-object-attribute-group.js"
 import type { PersistentObjectAttributeWithReference } from "./persistent-object-attribute-with-reference.js"
 
-export type PersistentObjectAttributeVisibility = "Always" | "Read" | "New" | "Never" | "Query" | "Read, Query" | "Read, New" | "Query, New";
-
 export type PersistentObjectAttributeOption = KeyValuePair<string, string>;
 export class PersistentObjectAttribute extends ServiceObject {
     private _isSystem: boolean;
@@ -29,7 +27,7 @@ export class PersistentObjectAttribute extends ServiceObject {
     private _isReadOnly: boolean;
     private _isValueChanged: boolean;
     private _isSensitive: boolean;
-    private _visibility: PersistentObjectAttributeVisibility;
+    private _visibility: Dto.PersistentObjectAttributeVisibility;
     private _isVisible: boolean;
 
     protected _shouldRefresh: boolean = false;
@@ -43,8 +41,6 @@ export class PersistentObjectAttribute extends ServiceObject {
     type: string;
     toolTip: string;
     typeHints: any;
-    editTemplateKey: string;
-    templateKey: string;
     disableSort: boolean;
     triggersRefresh: boolean;
     column: number;
@@ -52,7 +48,7 @@ export class PersistentObjectAttribute extends ServiceObject {
     input: HTMLInputElement;
 
     constructor(service: Service, attr: Dto.PersistentObjectAttribute, parent: PersistentObject);
-    constructor(service: Service, attr: any, public parent: PersistentObject) {
+    constructor(service: Service, attr: Dto.PersistentObjectAttribute, public parent: PersistentObject) {
         super(service);
 
         this.id = attr.id;
@@ -72,8 +68,6 @@ export class PersistentObjectAttribute extends ServiceObject {
         this._rules = attr.rules;
         this.validationError = attr.validationError || null;
         this.typeHints = attr.typeHints || {};
-        this.editTemplateKey = attr.editTemplateKey;
-        this.templateKey = attr.templateKey;
         this.disableSort = !!attr.disableSort;
         this.triggersRefresh = !!attr.triggersRefresh;
         this.column = attr.column;
@@ -120,11 +114,11 @@ export class PersistentObjectAttribute extends ServiceObject {
         return this._isSystem;
     }
 
-    get visibility(): PersistentObjectAttributeVisibility {
+    get visibility(): Dto.PersistentObjectAttributeVisibility {
         return this._visibility;
     }
 
-    set visibility(visibility: PersistentObjectAttributeVisibility) {
+    set visibility(visibility: Dto.PersistentObjectAttributeVisibility) {
         if (this._visibility === visibility)
             return;
 

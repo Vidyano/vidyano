@@ -37,6 +37,7 @@ export declare type ExecuteActionParameters = {
 export declare type ExecuteActionRequest = {
     action: string;
     parameters: ExecuteActionParameters;
+    parent: PersistentObject;
 } & Request;
 export declare type ExecuteActionRefreshParameters = {
     RefreshedPersistentObjectAttributeId: string;
@@ -99,6 +100,7 @@ export declare type ApplicationResponse = {
     userName: string;
     hasSensitive: boolean;
 } & Response;
+export declare type PersistentObjectStateBehavior = "None" | "OpenInEdit" | "StayInEdit" | "AsDialog";
 export declare type PersistentObject = {
     actions?: string[];
     attributes?: PersistentObjectAttribute[];
@@ -118,12 +120,15 @@ export declare type PersistentObject = {
     queries?: Query[];
     queryLayoutMode?: string;
     securityToken?: never;
-    stateBehavior?: "None" | "OpenInEdit" | "StayInEdit" | "AsDialog";
+    stateBehavior?: PersistentObjectStateBehavior;
     tabs?: KeyValue<PersistentObjectTab>;
     type: string;
 };
+export declare type PersistentObjectAttributeVisibility = "Always" | "Read" | "New" | "Never" | "Query" | "Read, Query" | "Read, New" | "Query, New";
 export declare type PersistentObjectAttribute = {
+    disableSort?: boolean;
     id?: string;
+    column?: number;
     name: string;
     type: string;
     group?: string;
@@ -133,13 +138,17 @@ export declare type PersistentObjectAttribute = {
     isReadOnly?: boolean;
     isRequired?: boolean;
     isSensitive?: boolean;
+    isSystem?: boolean;
     isValueChanged?: boolean;
     offset?: number;
     rules?: string;
-    visibility?: string;
+    visibility?: PersistentObjectAttributeVisibility;
     toolTip?: string;
     columnSpan?: number;
     typeHints?: KeyValue<string>;
+    validationError?: string;
+    triggersRefresh?: boolean;
+    options?: string[];
 };
 export declare type PersistentObjectAttributeWithReference = {
     displayAttribute: string;
