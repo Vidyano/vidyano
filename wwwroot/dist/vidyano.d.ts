@@ -2786,6 +2786,7 @@ declare type ExecuteActionParameters = {
 declare type ExecuteActionRequest = {
     action: string;
     parameters: ExecuteActionParameters;
+    parent: PersistentObject$2;
 } & Request$1;
 declare type ExecuteActionRefreshParameters = {
     RefreshedPersistentObjectAttributeId: string;
@@ -2848,43 +2849,55 @@ declare type ApplicationResponse = {
     userName: string;
     hasSensitive: boolean;
 } & Response$1;
+declare type PersistentObjectStateBehavior = "None" | "OpenInEdit" | "StayInEdit" | "AsDialog";
 declare type PersistentObject$2 = {
-    actions: string[];
-    attributes: PersistentObjectAttribute$2[];
+    actions?: string[];
+    attributes?: PersistentObjectAttribute$2[];
     breadcrumb?: string;
-    dialogSaveAction: string;
+    dialogSaveAction?: string;
     fullTypeName: string;
     id: string;
-    isBreadcrumbSensitive: boolean;
+    isBreadcrumbSensitive?: boolean;
     isNew?: boolean;
-    isSystem: boolean;
-    label: string;
-    newOptions: string;
-    notification: string;
-    notificationType: NotificationType$1;
-    notificationDuration: number;
-    objectId: string;
-    queries: Query$2[];
-    queryLayoutMode: string;
-    securityToken: never;
-    stateBehavior: "OpenInEdit" | "StayInEdit" | "AsDialog";
-    tabs: PersistentObjectTab$2[];
+    isSystem?: boolean;
+    label?: string;
+    newOptions?: string;
+    notification?: string;
+    notificationType?: NotificationType$1;
+    notificationDuration?: number;
+    objectId?: string;
+    queries?: Query$2[];
+    queryLayoutMode?: string;
+    securityToken?: never;
+    stateBehavior?: PersistentObjectStateBehavior;
+    tabs?: KeyValue<PersistentObjectTab$2>;
     type: string;
 };
+declare type PersistentObjectAttributeVisibility = "Always" | "Read" | "New" | "Never" | "Query" | "Read, Query" | "Read, New" | "Query, New";
 declare type PersistentObjectAttribute$2 = {
+    disableSort?: boolean;
+    id?: string;
+    column?: number;
     name: string;
     type: string;
-    group: string;
-    tab: string;
-    label: string;
-    value: string;
+    group?: string;
+    tab?: string;
+    label?: string;
+    value?: string;
     isReadOnly?: boolean;
     isRequired?: boolean;
     isSensitive?: boolean;
+    isSystem?: boolean;
     isValueChanged?: boolean;
-    offset: number;
+    offset?: number;
     rules?: string;
-    visibility: string;
+    visibility?: PersistentObjectAttributeVisibility;
+    toolTip?: string;
+    columnSpan?: number;
+    typeHints?: KeyValue<string>;
+    validationError?: string;
+    triggersRefresh?: boolean;
+    options?: string[];
 };
 declare type PersistentObjectAttributeWithReference$1 = {
     displayAttribute: string;
@@ -2893,7 +2906,7 @@ declare type PersistentObjectAttributeWithReference$1 = {
 } & PersistentObjectAttribute$2;
 declare type PersistentObjectTab$2 = {
     columnCount: number;
-    id: string;
+    id?: string;
     name: string;
 };
 declare type Query$2 = {
@@ -3045,6 +3058,8 @@ type service_ProviderParameters = ProviderParameters;
 type service_ClientData = ClientData;
 type service_Languages = Languages;
 type service_ApplicationResponse = ApplicationResponse;
+type service_PersistentObjectStateBehavior = PersistentObjectStateBehavior;
+type service_PersistentObjectAttributeVisibility = PersistentObjectAttributeVisibility;
 type service_QueryResult = QueryResult;
 type service_QueryGroupingInfo = QueryGroupingInfo;
 type service_RetryAction = RetryAction;
@@ -3076,7 +3091,9 @@ declare namespace service {
     service_Languages as Languages,
     Language$1 as Language,
     service_ApplicationResponse as ApplicationResponse,
+    service_PersistentObjectStateBehavior as PersistentObjectStateBehavior,
     PersistentObject$2 as PersistentObject,
+    service_PersistentObjectAttributeVisibility as PersistentObjectAttributeVisibility,
     PersistentObjectAttribute$2 as PersistentObjectAttribute,
     PersistentObjectAttributeWithReference$1 as PersistentObjectAttributeWithReference,
     PersistentObjectTab$2 as PersistentObjectTab,
@@ -3224,7 +3241,6 @@ declare class PersistentObjectQueryTab extends PersistentObjectTab$1 {
     constructor(service: Service, query: Query$1);
 }
 
-declare type PersistentObjectAttributeVisibility = "Always" | "Read" | "New" | "Never" | "Query" | "Read, Query" | "Read, New" | "Query, New";
 declare type PersistentObjectAttributeOption = KeyValuePair<string, string>;
 declare class PersistentObjectAttribute$1 extends ServiceObject {
     parent: PersistentObject$1;
@@ -3257,8 +3273,6 @@ declare class PersistentObjectAttribute$1 extends ServiceObject {
     type: string;
     toolTip: string;
     typeHints: any;
-    editTemplateKey: string;
-    templateKey: string;
     disableSort: boolean;
     triggersRefresh: boolean;
     column: number;
@@ -4178,7 +4192,6 @@ type vidyano_NoInternetMessage = NoInternetMessage;
 declare const vidyano_NoInternetMessage: typeof NoInternetMessage;
 type vidyano_PersistentObjectLayoutMode = PersistentObjectLayoutMode;
 declare const vidyano_PersistentObjectLayoutMode: typeof PersistentObjectLayoutMode;
-type vidyano_PersistentObjectAttributeVisibility = PersistentObjectAttributeVisibility;
 type vidyano_PersistentObjectAttributeOption = PersistentObjectAttributeOption;
 type vidyano_PersistentObjectAttributeGroup = PersistentObjectAttributeGroup;
 declare const vidyano_PersistentObjectAttributeGroup: typeof PersistentObjectAttributeGroup;
@@ -4282,7 +4295,6 @@ declare namespace vidyano {
     vidyano_NoInternetMessage as NoInternetMessage,
     vidyano_PersistentObjectLayoutMode as PersistentObjectLayoutMode,
     PersistentObject$1 as PersistentObject,
-    vidyano_PersistentObjectAttributeVisibility as PersistentObjectAttributeVisibility,
     vidyano_PersistentObjectAttributeOption as PersistentObjectAttributeOption,
     PersistentObjectAttribute$1 as PersistentObjectAttribute,
     PersistentObjectAttributeAsDetail$1 as PersistentObjectAttributeAsDetail,
@@ -9890,17 +9902,6 @@ declare class Sensitive extends WebComponent {
     static get template(): HTMLTemplateElement;
 }
 
-declare abstract class SidePane extends WebComponent {
-    static sidePaneTemplate(sidePane: HTMLTemplateElement): HTMLTemplateElement;
-    private _resolve;
-    connectedCallback(): void;
-    private get sidePaneCore();
-    open(): Promise<unknown>;
-    close(result?: any): void;
-    private _onCancel;
-    private _computeWithBackdrop;
-}
-
 /**
  * DO NOT EDIT
  *
@@ -10117,7 +10118,6 @@ declare abstract class AppBase extends WebComponent {
     static get template(): HTMLTemplateElement;
     private _keybindingRegistrations;
     private _activeDialogs;
-    private _activePanes;
     private _updateAvailableSnoozeTimer;
     private _initializeResolve;
     private _initialize;
@@ -10152,7 +10152,6 @@ declare abstract class AppBase extends WebComponent {
     showDialog(dialog: Dialog): Promise<any>;
     showMessageDialog(options: IMessageDialogOptions): Promise<any>;
     showAlert(notification: string, type?: NotificationType, duration?: number): void;
-    showPane(pane: SidePane): Promise<unknown>;
     redirectToSignIn(keepUrl?: boolean): void;
     redirectToSignOut(keepUrl?: boolean): void;
     private _sensitiveChanged;
@@ -12726,7 +12725,6 @@ declare class PersistentObjectAttributePresenter extends ConfigurableWebComponen
     attribute: PersistentObjectAttribute$1;
     nonEdit: boolean;
     noLabel: boolean;
-    height: number;
     disabled: boolean;
     readOnly: boolean;
     connectedCallback(): Promise<void>;
@@ -12735,6 +12733,7 @@ declare class PersistentObjectAttributePresenter extends ConfigurableWebComponen
     queueFocus(): void;
     private _attributeChanged;
     private _renderAttribute;
+    private _updateRowSpan;
     private _computeEditing;
     private _computeNonEdit;
     private _nonEditChanged;
@@ -13568,4 +13567,4 @@ interface IKeybindingRegistration {
     scope?: AppRoute | Dialog;
 }
 
-export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppRoute, AppRoutePresenter, AppServiceHooks, AppServiceHooksBase, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, DialogCore, Error, FileDrop, IAppRouteActivatedArgs, IConfigurableAction, IDatePickerCell, IEvent, IFileDropDetails, IItemTapEventArgs, IKeybindingRegistration, IKeysEvent, IMessageDialogOptions, IObserveChainDisposer, IPersistentObjectDialogOptions, IPosition, IQueryGridColumnFilterDistinct, IQueryGridUserSettingsColumnData, IRGB, ISelectItem, ISize, ISortableDragEndDetails, ITranslatedString, IWebComponentKeybindingInfo, IWebComponentProperties, IWebComponentProperty, IWebComponentRegistrationInfo, Icon, iconRegister as IconRegiser, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeConstructor, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellDefault, QueryGridCellImage, QueryGridCellPresenter, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, SelectOption, SelectOptionItem, SelectReferenceDialog, Sensitive, SidePane, SignIn, SignOut, SizeTracker, SizeTrackerEvent, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, vidyano as Vidyano, WebComponent, moment };
+export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppRoute, AppRoutePresenter, AppServiceHooks, AppServiceHooksBase, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, DialogCore, Error, FileDrop, IAppRouteActivatedArgs, IConfigurableAction, IDatePickerCell, IEvent, IFileDropDetails, IItemTapEventArgs, IKeybindingRegistration, IKeysEvent, IMessageDialogOptions, IObserveChainDisposer, IPersistentObjectDialogOptions, IPosition, IQueryGridColumnFilterDistinct, IQueryGridUserSettingsColumnData, IRGB, ISelectItem, ISize, ISortableDragEndDetails, ITranslatedString, IWebComponentKeybindingInfo, IWebComponentProperties, IWebComponentProperty, IWebComponentRegistrationInfo, Icon, iconRegister as IconRegiser, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeConstructor, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellDefault, QueryGridCellImage, QueryGridCellPresenter, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, SelectOption, SelectOptionItem, SelectReferenceDialog, Sensitive, SignIn, SignOut, SizeTracker, SizeTrackerEvent, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, vidyano as Vidyano, WebComponent, moment };

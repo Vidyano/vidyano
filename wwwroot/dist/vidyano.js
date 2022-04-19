@@ -9962,8 +9962,6 @@ class PersistentObjectAttribute$1 extends ServiceObject {
         this._rules = attr.rules;
         this.validationError = attr.validationError || null;
         this.typeHints = attr.typeHints || {};
-        this.editTemplateKey = attr.editTemplateKey;
-        this.templateKey = attr.templateKey;
         this.disableSort = !!attr.disableSort;
         this.triggersRefresh = !!attr.triggersRefresh;
         this.column = attr.column;
@@ -35766,13 +35764,8 @@ let Popup = Popup_1 = class Popup extends WebComponent {
         this._refitAF = null;
     }
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   position: relative;
 }
 
@@ -35780,12 +35773,10 @@ let Popup = Popup_1 = class Popup extends WebComponent {
   visibility: hidden;
   background-color: white;
   opacity: 0;
-  -webkit-transition: opacity 0.1s ease-out;
   transition: opacity 0.1s ease-out;
   overflow: visible;
   padding: 1px;
-  -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-          box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 }
 
 :host([open]) #fit {
@@ -35796,8 +35787,7 @@ let Popup = Popup_1 = class Popup extends WebComponent {
 
 :host [toggle] {
   width: 100%;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   cursor: pointer;
 }
 </style>
@@ -36056,9 +36046,7 @@ let PopupMenuItemSplit = class PopupMenuItemSplit extends WebComponent {
 
 :host vi-button {
   position: relative;
-  -webkit-box-flex: 1;
-      -ms-flex: 1 0 auto;
-          flex: 1 0 auto;
+  flex: 1 0 auto;
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
   line-height: var(--vi-popup-menu-item-height, var(--theme-h1));
   padding: 0;
@@ -36105,13 +36093,8 @@ let PopupMenuItemSplit = class PopupMenuItemSplit extends WebComponent {
 }
 
 :host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
 }
 
 :host #split {
@@ -36196,9 +36179,7 @@ let PopupMenuItem = class PopupMenuItem extends WebComponent {
 
 :host vi-button {
   position: relative;
-  -webkit-box-flex: 1;
-      -ms-flex: 1 0 auto;
-          flex: 1 0 auto;
+  flex: 1 0 auto;
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
   line-height: var(--vi-popup-menu-item-height, var(--theme-h1));
   padding: 0;
@@ -36958,16 +36939,12 @@ let AppRoute = class AppRoute extends WebComponent {
         this._parameters = {};
     }
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
   position: relative;
 }
 
 :host ::slotted(*) {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
 }
 
 :host(:not(.active)) {
@@ -37095,8 +37072,7 @@ let Alert = class Alert extends WebComponent {
   opacity: 0;
   padding: var(--theme-h3, 22px);
   color: white;
-  -webkit-box-shadow: 0 0 6px 1px rgba(0, 0, 0, 0.25);
-          box-shadow: 0 0 6px 1px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 0 6px 1px rgba(0, 0, 0, 0.25);
 }
 
 :host article.log-error {
@@ -37146,19 +37122,10 @@ Alert = __decorate([
 
 let Error$1 = class Error extends WebComponent {
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
   color: var(--theme-color-error);
   fill: var(--theme-color-error);
 }
@@ -37316,8 +37283,7 @@ AppRoutePresenter = __decorate([
 class DialogCore extends mixinBehaviors(IronOverlayBehavior, PolymerElement) {
     static get template() { return html `<style>:host {
   background: white;
-  -webkit-box-shadow: rgba(0, 0, 0, 0.24) -2px 5px 12px 0px, rgba(0, 0, 0, 0.12) 0px 0px 12px 0px;
-          box-shadow: rgba(0, 0, 0, 0.24) -2px 5px 12px 0px, rgba(0, 0, 0, 0.12) 0px 0px 12px 0px;
+  box-shadow: rgba(0, 0, 0, 0.24) -2px 5px 12px 0px, rgba(0, 0, 0, 0.12) 0px 0px 12px 0px;
 }
 </style>
 
@@ -37332,15 +37298,12 @@ let Dialog = class Dialog extends WebComponent {
 
 :host vi-dialog-core > header {
   position: relative;
-  -webkit-box-flex: 0;
-      -ms-flex: 0 0 auto;
-          flex: 0 0 auto;
+  flex: 0 0 auto;
   line-height: var(--theme-h1);
   padding: var(--theme-h5) var(--theme-h4);
   height: calc(var(--theme-h1) + var(--theme-h5) * 2);
   border-bottom: 1px solid #EEE;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 :host vi-dialog-core > header h4 {
@@ -37376,9 +37339,7 @@ let Dialog = class Dialog extends WebComponent {
 :host vi-dialog-core > footer {
   padding: var(--theme-h4);
   border-top: 1px solid #EEE;
-  -webkit-box-flex: 0;
-      -ms-flex: 0 0 auto;
-          flex: 0 0 auto;
+  flex: 0 0 auto;
 }
 
 :host vi-dialog-core > footer vi-button {
@@ -37513,13 +37474,8 @@ let RetryActionDialog = class RetryActionDialog extends Dialog {
 }
 
 :host main {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  flex-direction: column;
   padding: 0;
 }
 
@@ -37532,18 +37488,11 @@ let RetryActionDialog = class RetryActionDialog extends Dialog {
 }
 
 :host main > vi-persistent-object-tab-presenter {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  flex-direction: column;
   min-height: calc(var(--theme-h2) * 3);
 }
 
@@ -37620,19 +37569,11 @@ const findUri = /(https?:\/\/[-\w]+(\.[-\w]+)*(:\d+)?(\/#?!?[^\.\s]*(\.[^\.\s]+)
 const findNewLine = /\r?\n|\r/g;
 let Notification = class Notification extends WebComponent {
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
+  flex-direction: row;
+  align-items: center;
   height: var(--theme-h1);
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   border-bottom-width: 2px;
   border-bottom-style: solid;
 }
@@ -37842,8 +37783,7 @@ let SelectReferenceDialog = class SelectReferenceDialog extends Dialog {
   border-right: 1px solid #EAEAEA;
   border-bottom: 1px solid #EAEAEA;
   border-left: 1px solid #EAEAEA;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 :host vi-input-search::part(input) {
@@ -39963,13 +39903,8 @@ let MessageDialog = class MessageDialog extends Dialog {
     static get template() { return Dialog.dialogTemplate(html `<style>:host main {
   min-width: 17em;
   max-width: 70vw;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
 }
 
 :host main:not([rich]) {
@@ -39977,9 +39912,7 @@ let MessageDialog = class MessageDialog extends Dialog {
 }
 
 :host main:not([rich]) pre {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
   white-space: pre-wrap;
@@ -40132,8 +40065,7 @@ let Sensitive = class Sensitive extends WebComponent {
 }
 
 :host(:not([disabled])[is-app-sensitive]) {
-  -webkit-filter: blur(5px);
-          filter: blur(5px);
+  filter: blur(5px);
 }
 </style>
 
@@ -41067,7 +40999,6 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
         this.hooks = hooks;
         this._keybindingRegistrations = {};
         this._activeDialogs = [];
-        this._activePanes = [];
         this._initialize = new Promise(resolve => { this._initializeResolve = resolve; });
         window["app"] = this;
         window.dispatchEvent(new CustomEvent("app-changed", { detail: { value: this } }));
@@ -41352,32 +41283,22 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
 :host([is-tracking]) {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-   -ms-user-select: none;
-       user-select: none;
+  user-select: none;
 }
 
 :host [dialog] {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  flex-direction: column;
   background-color: white;
   max-height: 90vh;
   max-width: 90vw;
-  -webkit-box-shadow: var(--theme-box-shadow);
-          box-shadow: var(--theme-box-shadow);
+  box-shadow: var(--theme-box-shadow);
 }
 
 :host [dialog][dragging] {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-   -ms-user-select: none;
-       user-select: none;
+  user-select: none;
   cursor: move !important;
 }
 
@@ -41395,15 +41316,12 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
 }
 
 :host [dialog] ::content > header {
-  -webkit-box-flex: 0;
-      -ms-flex: 0 0 auto;
-          flex: 0 0 auto;
+  flex: 0 0 auto;
   line-height: var(--theme-h1);
   padding: var(--theme-h5) var(--theme-h4);
   height: calc(var(--theme-h1) + var(--theme-h5) * 2);
   border-bottom: 1px solid #EEE;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 :host [dialog] ::content > header h4 {
@@ -41439,10 +41357,10 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
 :host [dialog] ::content > footer {
   padding: var(--theme-h4);
   border-top: 1px solid #EEE;
+  -webkit-flex: 0 0 auto;
   -moz-flex: 0 0 auto;
   -ms-flex: 0 0 auto;
-  -webkit-box-flex: 0;
-          flex: 0 0 auto;
+  flex: 0 0 auto;
 }
 
 :host [dialog] ::content > footer vi-button {
@@ -41469,8 +41387,7 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
   background-color: #fefbda;
   border-bottom: 2px solid black;
   color: #6a541f;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   padding: 0 calc((var(--theme-h1) - var(--theme-h2)) / 2) 0 var(--theme-h5);
 }
 
@@ -41505,7 +41422,6 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
   right: 0;
   background-color: black;
   opacity: 0;
-  -webkit-transition: all 500ms ease-out;
   transition: all 500ms ease-out;
   will-change: opacity;
 }
@@ -41514,15 +41430,12 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
   position: fixed;
   top: calc(var(--theme-h1) + var(--theme-h5));
   left: 50%;
-  -webkit-transform: translate(-50%, calc((var(--theme-h1) + var(--theme-h5)) * -2));
-          transform: translate(-50%, calc((var(--theme-h1) + var(--theme-h5)) * -2));
+  transform: translate(-50%, calc((var(--theme-h1) + var(--theme-h5)) * -2));
   background-color: var(--theme-foreground);
   color: white;
   padding: var(--theme-h4) var(--theme-h3);
   cursor: pointer;
-  -webkit-box-shadow: 3px 3px 12px 0px rgba(0, 0, 0, 0.5);
-          box-shadow: 3px 3px 12px 0px rgba(0, 0, 0, 0.5);
-  -webkit-transition: all 500ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 3px 3px 12px 0px rgba(0, 0, 0, 0.5);
   transition: all 500ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
   will-change: transform;
 }
@@ -41538,8 +41451,7 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
 }
 
 :host #update.show .message {
-  -webkit-transform: translate(-50%, 0px);
-          transform: translate(-50%, 0px);
+  transform: translate(-50%, 0px);
 }
 </style>
 <style include="vi-responsive-style-module"></style>
@@ -41738,17 +41650,6 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
     }
     showAlert(notification, type = "Notice", duration = 3000) {
         this.$.alert.log(notification, type, duration);
-    }
-    async showPane(pane) {
-        this.shadowRoot.appendChild(pane);
-        this._activePanes.push(pane);
-        try {
-            return await pane.open();
-        }
-        finally {
-            this.shadowRoot.removeChild(pane);
-            this._activePanes.pop();
-        }
     }
     redirectToSignIn(keepUrl = true) {
         this.service.hooks.onRedirectToSignIn(keepUrl);
@@ -42010,20 +41911,13 @@ let Button = class Button extends WebComponent {
   contain: content;
   position: relative;
   cursor: pointer;
-  -webkit-transition-property: fill, color, background-color;
   transition-property: fill, color, background-color;
-  -webkit-transition-duration: 0.1s;
-          transition-duration: 0.1s;
-  -webkit-transition-timing-function: ease-out;
-          transition-timing-function: ease-out;
+  transition-duration: 0.1s;
+  transition-timing-function: ease-out;
   border: none;
   outline: none;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
+  box-sizing: border-box;
+  user-select: none;
   --vi-spinner-size: 1.5em;
   /* elevation values from http://codepen.io/shyndman/pen/c5394ddf2e8b2a5c9185904b57421cdb */
 }
@@ -42040,41 +41934,32 @@ let Button = class Button extends WebComponent {
 }
 
 :host([elevation]) {
-  -webkit-transition: -webkit-box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-  transition: -webkit-box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
   transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-  transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1), -webkit-box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transition;
 }
 
 :host([elevation]:active) {
-  -webkit-box-shadow: none;
-          box-shadow: none;
+  box-shadow: none;
 }
 
 :host([elevation="1"]) {
-  -webkit-box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
-          box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
 }
 
 :host([elevation="2"]) {
-  -webkit-box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
-          box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
 }
 
 :host([elevation="3"]) {
-  -webkit-box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12), 0 3px 5px -1px rgba(0, 0, 0, 0.4);
-          box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12), 0 3px 5px -1px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12), 0 3px 5px -1px rgba(0, 0, 0, 0.4);
 }
 
 :host([elevation="4"]) {
-  -webkit-box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12), 0 5px 5px -3px rgba(0, 0, 0, 0.4);
-          box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12), 0 5px 5px -3px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12), 0 5px 5px -3px rgba(0, 0, 0, 0.4);
 }
 
 :host([elevation="5"]) {
-  -webkit-box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14), 0 6px 30px 5px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.4);
-          box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14), 0 6px 30px 5px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14), 0 6px 30px 5px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.4);
 }
 
 :host([disabled]) {
@@ -42083,29 +41968,21 @@ let Button = class Button extends WebComponent {
 }
 
 :host(:not([custom-layout])) {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
   padding: 1px var(--theme-h5);
   text-align: center;
   white-space: nowrap;
 }
 
-:host(:not([custom-layout])) vi-icon {
+:host(:not([custom-layout])) > *:not(style) {
+  display: inline-block;
+}
+
+:host(:not([custom-layout])) > vi-icon {
   height: 100%;
   margin-right: 2px;
 }
 
-:host(:not([custom-layout])) span, :host(:not([custom-layout])) vi-icon {
-  -ms-flex-item-align: center;
-      -ms-grid-row-align: center;
-      align-self: center;
-}
-
-:host(:not([custom-layout])[busy]) span, :host(:not([custom-layout])[busy]) vi-icon {
+:host(:not([custom-layout])[busy]) > span, :host(:not([custom-layout])[busy]) > vi-icon {
   visibility: hidden;
 }
 
@@ -42352,46 +42229,26 @@ Button = __decorate([
 let InputSearch = class InputSearch extends WebComponent {
     static get template() { return html `<style include="vi-reset-css-style-module"></style>
 <style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   line-height: var(--theme-h2);
   position: relative;
 }
 
 :host form {
   margin: 0;
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
 }
 
 :host input {
   border: none;
   outline: none;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   padding-right: var(--theme-h2);
   padding-left: var(--theme-h5);
   background-color: transparent;
   color: white;
   width: 100%;
-}
-
-:host input::-webkit-input-placeholder {
-  color: var(--vi-input-search-placeholder-color, #aaa);
-}
-
-:host input:-ms-input-placeholder {
-  color: var(--vi-input-search-placeholder-color, #aaa);
-}
-
-:host input::-ms-input-placeholder {
-  color: var(--vi-input-search-placeholder-color, #aaa);
 }
 
 :host input::placeholder {
@@ -42757,10 +42614,8 @@ Polymer({
 var Scroller_1;
 let Scroller = Scroller_1 = class Scroller extends WebComponent {
     static get template() { return html `<style>:host {
-  display: -ms-grid;
   display: grid;
-  -ms-grid-rows: 1fr;
-      grid-template-rows: 1fr;
+  grid-template-rows: 1fr;
   position: relative;
   --vi-scroller-thumb-color: #888;
   --vi-scroller-thumb-hover-color: #777;
@@ -42772,20 +42627,13 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
 
 :host .scroll-host {
   overflow: hidden;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   position: relative;
 }
 
 :host .wrapper {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
   position: relative;
@@ -42801,13 +42649,8 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
 }
 
 :host([no-horizontal]:not([no-vertical])) .wrapper {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  flex-direction: column;
 }
 
 :host([no-horizontal]:not([no-vertical])) .wrapper .content {
@@ -42815,50 +42658,31 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
 }
 
 :host([no-vertical]:not([no-horizontal])) .wrapper {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   margin-right: 0;
   overflow-y: hidden;
 }
 
 :host([no-vertical][no-horizontal]) .wrapper {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   overflow: hidden;
   margin: 0 !important;
 }
 
 :host([no-vertical][no-horizontal]) .wrapper .content {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   min-height: initial;
   min-width: initial;
 }
 
 :host([no-vertical][no-horizontal]) .wrapper .content > :not(vi-size-tracker) {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
 }
@@ -42883,7 +42707,6 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
   position: absolute;
   content: " ";
   background-color: transparent;
-  -webkit-transition: all 0.2s ease-in-out;
   transition: all 0.2s ease-in-out;
 }
 
@@ -42904,7 +42727,6 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
 :host .scrollbar-parent .scrollbar {
   position: absolute;
   opacity: 1;
-  -webkit-transition: opacity 0.2s ease-in-out;
   transition: opacity 0.2s ease-in-out;
 }
 
@@ -42926,7 +42748,6 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
   top: 0;
   bottom: 0;
   width: var(--vi-scroller-thumb-size);
-  -webkit-transition: width 0.2s ease-in-out;
   transition: width 0.2s ease-in-out;
 }
 
@@ -42941,7 +42762,6 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
   left: 0;
   right: 0;
   height: var(--vi-scroller-thumb-size);
-  -webkit-transition: height 0.2s ease-in-out;
   transition: height 0.2s ease-in-out;
 }
 
@@ -43012,29 +42832,23 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
   right: 0;
   bottom: 0;
   left: 0;
-  -webkit-box-shadow: 0 0 calc(var(--theme-h2) / 2) rgba(0, 0, 0, 0.3);
-          box-shadow: 0 0 calc(var(--theme-h2) / 2) rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 calc(var(--theme-h2) / 2) rgba(0, 0, 0, 0.3);
   bottom: 0;
   border-radius: 100%;
   left: calc(var(--theme-h2) * -1);
   right: calc(var(--theme-h2) * -1);
   pointer-events: none;
   will-change: transform;
-  -webkit-transition: -webkit-transform 0.3s ease-out;
-  transition: -webkit-transform 0.3s ease-out;
   transition: transform 0.3s ease-out;
-  transition: transform 0.3s ease-out, -webkit-transform 0.3s ease-out;
   z-index: 1;
 }
 
 :host .scroll-shadow-parent > .scroll-shadow.top {
-  -webkit-transform: translateY(calc(var(--vi-scroller--scroll-shadow-top-offset, var(--theme-h2)) * -1.5));
-          transform: translateY(calc(var(--vi-scroller--scroll-shadow-top-offset, var(--theme-h2)) * -1.5));
+  transform: translateY(calc(var(--vi-scroller--scroll-shadow-top-offset, var(--theme-h2)) * -1.5));
 }
 
 :host .scroll-shadow-parent > .scroll-shadow.bottom {
-  -webkit-transform: translateY(calc(var(--vi-scroller--scroll-shadow-top-offset, var(--theme-h2)) * 1.5));
-          transform: translateY(calc(var(--vi-scroller--scroll-shadow-top-offset, var(--theme-h2)) * 1.5));
+  transform: translateY(calc(var(--vi-scroller--scroll-shadow-top-offset, var(--theme-h2)) * 1.5));
 }
 
 :host .scroll-shadow-parent.top {
@@ -43046,13 +42860,11 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
 }
 
 :host([scroll-top-shadow]) .scroll-shadow-parent > .scroll-shadow.top {
-  -webkit-transform: translateY(calc(var(--theme-h2) * -1));
-          transform: translateY(calc(var(--theme-h2) * -1));
+  transform: translateY(calc(var(--theme-h2) * -1));
 }
 
 :host([scroll-bottom-shadow]) .scroll-shadow-parent > .scroll-shadow.bottom {
-  -webkit-transform: translateY(var(--theme-h2));
-          transform: translateY(var(--theme-h2));
+  transform: translateY(var(--theme-h2));
 }
 
 :host([hide-scrollbars]) .scrollbar-parent {
@@ -43377,8 +43189,7 @@ var MenuItem_1;
 let MenuItem = MenuItem_1 = class MenuItem extends ConfigurableWebComponent {
     static get template() { return html `<style>:host {
   position: relative;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   display: block;
   line-height: var(--theme-h2);
   color: var(--vi-menu-color, #FAFAFA);
@@ -43394,13 +43205,8 @@ let MenuItem = MenuItem_1 = class MenuItem extends ConfigurableWebComponent {
 }
 
 :host > .title {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   position: relative;
   padding-right: var(--theme-h5);
   text-decoration: none;
@@ -43422,12 +43228,8 @@ let MenuItem = MenuItem_1 = class MenuItem extends ConfigurableWebComponent {
   --vi-icon-height: 1em;
   margin-left: calc(var(--theme-h3) * var(--vi-menu-item-indent-level, 0));
   fill: var(--vi-menu-color, #FAFAFA);
-  -webkit-transition: -webkit-transform 0.2s ease;
-  transition: -webkit-transform 0.2s ease;
   transition: transform 0.2s ease;
-  transition: transform 0.2s ease, -webkit-transform 0.2s ease;
-  -webkit-transform: rotate(0deg);
-          transform: rotate(0deg);
+  transform: rotate(0deg);
 }
 
 :host > .title > vi-icon[unresolved] {
@@ -43443,6 +43245,9 @@ let MenuItem = MenuItem_1 = class MenuItem extends ConfigurableWebComponent {
 }
 
 :host([expand]) > .title > vi-icon[source="ProgramUnitGroup"], :host([filtering]) > .title > vi-icon[source="ProgramUnitGroup"] {
+  -moz-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+  -o-transform: rotate(90deg);
   -webkit-transform: rotate(90deg);
   transform: rotate(90deg);
 }
@@ -43476,8 +43281,7 @@ let MenuItem = MenuItem_1 = class MenuItem extends ConfigurableWebComponent {
 :host(.program-unit[collapsed]) > .title > vi-icon[has-resource] {
   display: block;
   width: var(--theme-h1);
-  -webkit-transform: rotate(0);
-          transform: rotate(0);
+  transform: rotate(0);
 }
 
 :host(.program-unit[collapsed]) > .title > vi-icon[has-resource] + span {
@@ -43765,11 +43569,8 @@ let User = class User extends WebComponent {
 }
 
 :host .actions {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -ms-flex-pack: distribute;
-      justify-content: space-around;
+  justify-content: space-around;
   background-color: var(--vi-user--background-color, #2b3940);
 }
 
@@ -43801,15 +43602,20 @@ let User = class User extends WebComponent {
 
 :host vi-button#settings {
   width: var(--theme-h1);
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   border-left: 1px solid rgba(255, 255, 255, 0.12);
   background-color: rgba(255, 255, 255, 0.05);
   color: white;
+  -moz-transition-property: fill, color, background-color;
+  -o-transition-property: fill, color, background-color;
   -webkit-transition-property: fill, color, background-color;
   transition-property: fill, color, background-color;
+  -moz-transition-duration: 0.1s;
+  -o-transition-duration: 0.1s;
   -webkit-transition-duration: 0.1s;
   transition-duration: 0.1s;
+  -moz-transition-timing-function: ease-out;
+  -o-transition-timing-function: ease-out;
   -webkit-transition-timing-function: ease-out;
   transition-timing-function: ease-out;
 }
@@ -43844,13 +43650,8 @@ let User = class User extends WebComponent {
 }
 
 :host-context([collapsed]) .actions {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  flex-direction: column;
 }
 
 :host-context([collapsed]) .actions vi-button {
@@ -44001,19 +43802,12 @@ User = __decorate([
 var Menu_1;
 let Menu = Menu_1 = class Menu extends WebComponent {
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  flex-direction: column;
   position: relative;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-   -ms-user-select: none;
-       user-select: none;
+  user-select: none;
   color: var(--vi-menu-color, #FAFAFA);
   background-color: var(--vi-menu-background, #263238);
 }
@@ -44082,8 +43876,7 @@ let Menu = Menu_1 = class Menu extends WebComponent {
   font-weight: 100;
   text-transform: uppercase;
   line-height: var(--theme-h2);
-  -webkit-transform: translateY(1px);
-          transform: translateY(1px);
+  transform: translateY(1px);
 }
 
 :host(:not([collapsed])) .instantSearch a:hover {
@@ -44104,6 +43897,9 @@ let Menu = Menu_1 = class Menu extends WebComponent {
 }
 
 :host([collapsed]) header #toggleCollapse > vi-icon {
+  -moz-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  -o-transform: rotate(180deg);
   -webkit-transform: rotate(180deg);
   transform: rotate(180deg);
 }
@@ -44144,8 +43940,7 @@ let Menu = Menu_1 = class Menu extends WebComponent {
 :host header, :host footer {
   display: block;
   line-height: var(--theme-h1);
-  -ms-flex-negative: 0;
-      flex-shrink: 0;
+  flex-shrink: 0;
 }
 
 :host header {
@@ -44173,10 +43968,7 @@ let Menu = Menu_1 = class Menu extends WebComponent {
 }
 
 :host header #toggleCollapse::part(icon) {
-  -webkit-transition: -webkit-transform 0.3s ease-in-out;
-  transition: -webkit-transform 0.3s ease-in-out;
   transition: transform 0.3s ease-in-out;
-  transition: transform 0.3s ease-in-out, -webkit-transform 0.3s ease-in-out;
   --vi-icon-width: var(--theme-h4);
   --vi-icon-height: var(--theme-h4);
 }
@@ -44220,8 +44012,7 @@ let Menu = Menu_1 = class Menu extends WebComponent {
   width: var(--theme-h1);
   height: var(--theme-h1);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 :host([collapsed]) #resizer {
@@ -44238,8 +44029,7 @@ let Menu = Menu_1 = class Menu extends WebComponent {
   cursor: ew-resize;
   z-index: 99;
   opacity: 0.5;
-  -webkit-transform: translateX(calc(var(--theme-h5) / 2));
-          transform: translateX(calc(var(--theme-h5) / 2));
+  transform: translateX(calc(var(--theme-h5) / 2));
 }
 
 :host([is-resizing]) #resizer, :host #resizer:hover {
@@ -44540,24 +44330,13 @@ let SignIn = class SignIn extends WebComponent {
 }
 
 :host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-   -ms-user-select: none;
-       user-select: none;
+  user-select: none;
   position: relative;
   --vi-sign-in-persistent-object-width-base: 400px;
 }
@@ -44606,17 +44385,11 @@ let SignIn = class SignIn extends WebComponent {
 }
 
 :host .dialog {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  flex-direction: column;
   position: relative;
   background-color: white;
-  -webkit-box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0);
-          box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0);
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0);
 }
 
 :host .dialog .loader {
@@ -44638,14 +44411,11 @@ let SignIn = class SignIn extends WebComponent {
   width: 200px;
   height: 4px;
   background-color: var(--theme-color-dark);
-  -webkit-animation: loading 2s linear infinite;
-          animation: loading 2s linear infinite;
+  animation: loading 2s linear infinite;
 }
 
 :host .dialog main {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
 }
@@ -44685,8 +44455,7 @@ let SignIn = class SignIn extends WebComponent {
 }
 
 :host .dialog main input {
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   padding: var(--theme-h5);
   border: 1px solid #ddd;
   outline: none;
@@ -44774,26 +44543,14 @@ let SignIn = class SignIn extends WebComponent {
 }
 
 :host .dialog main .brands {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
+  flex-direction: column;
+  align-items: center;
 }
 
 :host .dialog main .brands .brand {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   line-height: var(--theme-h1);
   width: 300px;
   padding: 0;
@@ -44804,9 +44561,7 @@ let SignIn = class SignIn extends WebComponent {
 }
 
 :host .dialog main .brands .brand span {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
   border-left: 1px solid rgba(255, 255, 255, 0.1);
@@ -44877,8 +44632,7 @@ let SignIn = class SignIn extends WebComponent {
   position: relative;
   color: white;
   padding: var(--theme-h4);
-  -webkit-box-shadow: inset 0px 6px 4px 0px rgba(0, 0, 0, 0.15);
-          box-shadow: inset 0px 6px 4px 0px rgba(0, 0, 0, 0.15);
+  box-shadow: inset 0px 6px 4px 0px rgba(0, 0, 0, 0.15);
 }
 
 :host .dialog footer[type="error"], :host .dialog footer[type="Error"], :host .dialog footer[type="0"] {
@@ -44910,8 +44664,7 @@ let SignIn = class SignIn extends WebComponent {
 }
 
 :host #sideHost {
-  -webkit-box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
-          box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
   overflow: hidden;
 }
 
@@ -44969,28 +44722,6 @@ let SignIn = class SignIn extends WebComponent {
   }
   ::slotted([slot="sign-in-footer"]) {
     width: auto !important;
-  }
-}
-
-@-webkit-keyframes loading {
-  from {
-    left: -200px;
-    width: 30%;
-  }
-  50% {
-    width: 30%;
-  }
-  70% {
-    width: 70%;
-  }
-  80% {
-    left: 50%;
-  }
-  95% {
-    left: 120%;
-  }
-  to {
-    left: 100%;
   }
 }
 
@@ -45578,8 +45309,7 @@ let Spinner = class Spinner extends WebComponent {
   position: absolute;
   left: 50%;
   top: 50%;
-  -webkit-transform: translate(calc(var(--vi-spinner-size, var(--theme-h2)) / -2), calc(var(--vi-spinner-size, var(--theme-h2)) / -2));
-          transform: translate(calc(var(--vi-spinner-size, var(--theme-h2)) / -2), calc(var(--vi-spinner-size, var(--theme-h2)) / -2));
+  transform: translate(calc(var(--vi-spinner-size, var(--theme-h2)) / -2), calc(var(--vi-spinner-size, var(--theme-h2)) / -2));
 }
 
 :host .box {
@@ -45587,32 +45317,28 @@ let Spinner = class Spinner extends WebComponent {
   height: 45%;
   background: var(--vi-spinner-color, #7f7f7f);
   opacity: 0.1;
-  -webkit-animation: loadAnimation 1s linear infinite;
-          animation: loadAnimation 1s linear infinite;
+  animation: loadAnimation 1s linear infinite;
 }
 
 :host .box:nth-of-type(1) {
   position: absolute;
   top: 2.5%;
   left: 2.5%;
-  -webkit-animation-delay: -0.75s;
-          animation-delay: -0.75s;
+  animation-delay: -0.75s;
 }
 
 :host .box:nth-of-type(2) {
   position: absolute;
   top: 2.5%;
   right: 2.5%;
-  -webkit-animation-delay: -0.5s;
-          animation-delay: -0.5s;
+  animation-delay: -0.5s;
 }
 
 :host .box:nth-of-type(3) {
   position: absolute;
   bottom: 2.5%;
   right: 2.5%;
-  -webkit-animation-delay: -0.25s;
-          animation-delay: -0.25s;
+  animation-delay: -0.25s;
 }
 
 :host .box:nth-of-type(4) {
@@ -45623,21 +45349,6 @@ let Spinner = class Spinner extends WebComponent {
 
 :host([hidden]) {
   display: none !important;
-}
-
-@-webkit-keyframes loadAnimation {
-  0% {
-    opacity: 0.1;
-  }
-  30% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 0.1;
-  }
-  100% {
-    opacity: 0.1;
-  }
 }
 
 @keyframes loadAnimation {
@@ -49033,13 +48744,8 @@ let Profiler = class Profiler extends WebComponent {
         this._boundMousehweel = this._onMousewheel.bind(this);
     }
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   background-color: #444;
   --vi-profiler-entry-height: var(--theme-h2);
   --vi-profiler-entry-level-gap: var(--theme-h5);
@@ -49057,9 +48763,7 @@ let Profiler = class Profiler extends WebComponent {
 }
 
 :host vi-popup {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
 }
@@ -49074,16 +48778,9 @@ let Profiler = class Profiler extends WebComponent {
 }
 
 :host vi-popup [slot="header"] #lastRequest > div {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
+  flex-direction: column;
+  justify-content: center;
   margin-right: var(--theme-h3);
 }
 
@@ -49108,8 +48805,7 @@ let Profiler = class Profiler extends WebComponent {
   height: calc(15 * var(--theme-h1));
   max-height: 40vh;
   background-color: #e7e7e7;
-  -webkit-box-shadow: var(--theme-box-shadow);
-          box-shadow: var(--theme-box-shadow);
+  box-shadow: var(--theme-box-shadow);
   padding: 6px;
 }
 
@@ -49121,8 +48817,7 @@ let Profiler = class Profiler extends WebComponent {
 :host vi-popup main > *:first-child {
   width: 40%;
   z-index: 1;
-  -webkit-box-shadow: var(--theme-box-shadow);
-          box-shadow: var(--theme-box-shadow);
+  box-shadow: var(--theme-box-shadow);
 }
 
 :host vi-popup main > *:first-child .request {
@@ -49133,7 +48828,6 @@ let Profiler = class Profiler extends WebComponent {
   padding: var(--theme-h5);
   cursor: pointer !important;
   border: 1px solid #EAEAEA;
-  -webkit-transition: all 0.2s ease;
   transition: all 0.2s ease;
 }
 
@@ -49174,7 +48868,6 @@ let Profiler = class Profiler extends WebComponent {
 :host vi-popup main > *:first-child .request h3 {
   font-size: 10px;
   font-weight: 300;
-  -webkit-transition: margin-right 0.2s ease;
   transition: margin-right 0.2s ease;
 }
 
@@ -49261,8 +48954,7 @@ let Profiler = class Profiler extends WebComponent {
   padding: 0 6px;
   font-size: 12px;
   line-height: var(--vi-profiler-entry-height);
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 :host vi-popup main #hoveredEntry {
@@ -49290,8 +48982,7 @@ let Profiler = class Profiler extends WebComponent {
   height: var(--theme-h2);
   line-height: var(--theme-h2);
   border-bottom: 1px solid var(--theme-light-border);
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 :host vi-popup main #selectedEntry header h1 {
@@ -49854,8 +49545,7 @@ let QueryGridCellDefault = class QueryGridCellDefault extends QueryGridCell {
 }
 
 :host([is-app-sensitive][sensitive]) {
-  -webkit-filter: blur(5px);
-          filter: blur(5px);
+  filter: blur(5px);
 }
 </style>`; }
     _valueChanged(itemValue) {
@@ -50017,13 +49707,8 @@ let PopupMenuItemWithActions = class PopupMenuItemWithActions extends WebCompone
         this._action = _action;
     }
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
   cursor: pointer;
   color: var(--theme-color);
@@ -50033,9 +49718,7 @@ let PopupMenuItemWithActions = class PopupMenuItemWithActions extends WebCompone
 :host > div {
   position: relative;
   z-index: 0;
-  -webkit-box-flex: 1;
-      -ms-flex: 1 0 auto;
-          flex: 1 0 auto;
+  flex: 1 0 auto;
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
   line-height: var(--vi-popup-menu-item-height, var(--theme-h1));
   padding: 0;
@@ -50049,9 +49732,7 @@ let PopupMenuItemWithActions = class PopupMenuItemWithActions extends WebCompone
 }
 
 :host > div span {
-  -webkit-box-flex: 1;
-      -ms-flex: 1 0 auto;
-          flex: 1 0 auto;
+  flex: 1 0 auto;
   padding: 0 var(--theme-h5) !important;
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
   line-height: var(--vi-popup-menu-item-height, var(--theme-h1));
@@ -50069,13 +49750,8 @@ let PopupMenuItemWithActions = class PopupMenuItemWithActions extends WebCompone
 }
 
 :host .actions {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   padding-left: var(--theme-h5);
 }
 
@@ -50264,8 +49940,7 @@ PopupMenu = __decorate([
 let Checkbox = class Checkbox extends WebComponent {
     static get template() { return html `<style>:host {
   display: block;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 :host(:not([disabled])) {
@@ -50369,8 +50044,7 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   position: relative;
   display: block;
   border-top: 1px solid var(--theme-light-border);
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   height: var(--theme-h2);
   line-height: var(--theme-h2);
   cursor: pointer;
@@ -50382,8 +50056,7 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   border-right: 1px solid var(--theme-light-border);
   border-bottom: 1px solid var(--theme-light-border);
   border-left: 1px solid var(--theme-light-border);
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   margin-top: 0;
   margin-right: 0;
   margin-bottom: var(--theme-h5);
@@ -50426,8 +50099,7 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
 }
 
 :host button[slot="header"], :host #preRender {
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   overflow: hidden;
   text-align: left;
   font-weight: 500;
@@ -50469,9 +50141,7 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
 :host #filterContentHost {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-   -ms-user-select: none;
-       user-select: none;
+  user-select: none;
 }
 
 :host #filterContentHost #filterContent {
@@ -50534,19 +50204,10 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
 }
 
 :host #filterContentHost .advanced > div button#inverse {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
   position: absolute;
   top: 0;
   left: 0;
@@ -50556,10 +50217,16 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   background-color: transparent;
   color: var(--theme-color);
   fill: #595959;
+  -moz-transition-property: fill, color, background-color;
+  -o-transition-property: fill, color, background-color;
   -webkit-transition-property: fill, color, background-color;
   transition-property: fill, color, background-color;
+  -moz-transition-duration: 0.1s;
+  -o-transition-duration: 0.1s;
   -webkit-transition-duration: 0.1s;
   transition-duration: 0.1s;
+  -moz-transition-timing-function: ease-out;
+  -o-transition-timing-function: ease-out;
   -webkit-transition-timing-function: ease-out;
   transition-timing-function: ease-out;
 }
@@ -50595,8 +50262,7 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
 :host #filterContentHost #distincts {
   border: 1px solid var(--theme-light-border);
   margin-left: var(--theme-h5);
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   cursor: default;
   font-weight: normal;
 }
@@ -50610,13 +50276,8 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
 }
 
 :host #filterContentHost #distincts .item vi-checkbox {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   line-height: var(--theme-h3);
   height: var(--theme-h3);
   padding: 0 var(--theme-h5);
@@ -50662,8 +50323,7 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   line-height: var(--theme-h3);
   height: var(--theme-h3);
   padding: 0 var(--theme-h5);
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 :host #filterContentHost #distincts div.hasMore vi-icon:first-of-type ::content svg #check {
@@ -51082,15 +50742,12 @@ let QueryGridColumnHeader = class QueryGridColumnHeader extends WebComponent {
     }
     static get template() { return html `<style>:host {
   display: block;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   border-right: 1px solid var(--theme-light-border);
   background-color: white;
 }
 
 :host .label {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
   position: relative;
   padding: 0 var(--vi-query-grid-cell-padding, var(--theme-h5));
@@ -51356,13 +51013,8 @@ QueryGridColumnHeader = __decorate([
 let QueryGridFilterDialogName = class QueryGridFilterDialogName extends WebComponent {
     static get template() { return html `<style include="vi-reset-css-style-module"></style>
 <style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
 }
 
 :host vi-icon {
@@ -51520,15 +51172,12 @@ let QueryGridFilters = class QueryGridFilters extends WebComponent {
   width: var(--vi-query-grid-row-height);
   height: var(--vi-query-grid-row-height);
   line-height: var(--vi-query-grid-row-height);
-  -ms-flex-item-align: end;
-      align-self: flex-end;
+  align-self: flex-end;
 }
 
 :host > vi-popup-menu vi-button[slot="header"] {
   position: relative;
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
   z-index: 1;
@@ -51807,10 +51456,8 @@ QueryGridFilters = __decorate([
 
 let QueryGridFooter = class QueryGridFooter extends WebComponent {
     static get template() { return html `<style>:host {
-  display: -ms-grid;
   display: grid;
-  -ms-grid-columns: var(--vi-query-grid-columns);
-      grid-template-columns: var(--vi-query-grid-columns);
+  grid-template-columns: var(--vi-query-grid-columns);
 }
 
 :host .column {
@@ -51922,11 +51569,8 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
             this._applyItemSelection(item, action);
     }
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 :host vi-button {
@@ -51952,9 +51596,7 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
 }
 
 :host vi-button span {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   padding: 0 var(--theme-h5);
 }
 
@@ -51975,8 +51617,7 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
 }
 
 :host([grouped]) vi-icon.down-icon {
-  -webkit-transform: rotate(-90deg);
-          transform: rotate(-90deg);
+  transform: rotate(-90deg);
 }
 
 :host([overflow]) vi-button, :host([grouped]) vi-button {
@@ -52001,6 +51642,9 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
 }
 
 :host([overflow]) vi-icon[source="Down"], :host([grouped]) vi-icon[source="Down"] {
+  -moz-transform: rotate(-90deg);
+  -ms-transform: rotate(-90deg);
+  -o-transform: rotate(-90deg);
   -webkit-transform: rotate(-90deg);
   transform: rotate(-90deg);
 }
@@ -52342,7 +51986,6 @@ let Icon = class Icon extends WebComponent {
 }
 
 :host > div {
-  display: -ms-grid;
   display: grid;
   place-items: center;
   height: 100%;
@@ -53013,8 +52656,7 @@ let QueryGridCellBoolean = class QueryGridCellBoolean extends QueryGridCell {
 }
 
 :host([is-app-sensitive][sensitive]) {
-  -webkit-filter: blur(5px);
-          filter: blur(5px);
+  filter: blur(5px);
 }
 </style>`; }
     _valueChanged(value, oldValue) {
@@ -53110,8 +52752,7 @@ let QueryGridCellImage = class QueryGridCellImage extends QueryGridCell {
 }
 
 :host([is-app-sensitive][sensitive]) {
-  -webkit-filter: blur(5px);
-          filter: blur(5px);
+  filter: blur(5px);
 }
 </style>`; }
     _valueChanged(value) {
@@ -53149,11 +52790,8 @@ QueryGridCellImage = __decorate([
 
 let QueryGridRowGroup = class QueryGridRowGroup extends WebComponent {
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   border-bottom: 1px solid var(--theme-light-border);
   cursor: pointer;
   background-color: #f5f5f5;
@@ -53165,17 +52803,13 @@ let QueryGridRowGroup = class QueryGridRowGroup extends WebComponent {
 }
 
 :host([collapsed]) vi-icon {
-  -webkit-transform: rotate(-45deg);
-          transform: rotate(-45deg);
+  transform: rotate(-45deg);
 }
 
 :host vi-icon {
   height: var(--vi-query-grid--row-height, var(--theme-h2));
   width: var(--theme-h2);
-  -webkit-transition: -webkit-transform 0.2s ease;
-  transition: -webkit-transform 0.2s ease;
   transition: transform 0.2s ease;
-  transition: transform 0.2s ease, -webkit-transform 0.2s ease;
 }
 
 :host label {
@@ -53183,8 +52817,7 @@ let QueryGridRowGroup = class QueryGridRowGroup extends WebComponent {
 }
 
 :host > div {
-  -webkit-transform: translateX(var(--vi-query-grid-horizontal));
-          transform: translateX(var(--vi-query-grid-horizontal));
+  transform: translateX(var(--vi-query-grid-horizontal));
 }
 </style>
 
@@ -53236,7 +52869,6 @@ let QueryGridRow = class QueryGridRow extends WebComponent {
         this._invisibleCellValues = [];
     }
     static get template() { return html `<style>:host {
-  display: -ms-grid;
   display: grid;
   position: relative;
   width: initial;
@@ -53270,14 +52902,12 @@ let QueryGridRow = class QueryGridRow extends WebComponent {
 }
 
 :host .pinned {
-  -webkit-transform: translateX(var(--vi-query-grid-horizontal));
-          transform: translateX(var(--vi-query-grid-horizontal));
+  transform: translateX(var(--vi-query-grid-horizontal));
   z-index: 0;
 }
 
 :host .reorder {
   pointer-events: all;
-  cursor: -webkit-grabbing;
   cursor: grabbing;
 }
 
@@ -53303,8 +52933,7 @@ let QueryGridRow = class QueryGridRow extends WebComponent {
 }
 
 :host([is-group]) {
-  -ms-grid-columns: 1fr !important;
-      grid-template-columns: 1fr !important;
+  grid-template-columns: 1fr !important;
 }
 
 :host([is-group]) ::slotted(.column), :host([is-group]) .pinned {
@@ -53596,10 +53225,8 @@ let QueryGridSelectAll = class QueryGridSelectAll extends WebComponent {
   display: block;
   position: relative;
   width: var(--vi-query-grid-row-height);
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
-  -ms-flex-item-align: end;
-      align-self: flex-end;
+  box-sizing: border-box;
+  align-self: flex-end;
   cursor: pointer;
 }
 
@@ -53685,18 +53312,14 @@ let QueryGridConfigureDialogColumn = class QueryGridConfigureDialogColumn extend
         this.isHidden = this.column.isHidden;
     }
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   min-width: 20em;
   margin-bottom: 4px;
   height: var(--theme-h2);
   line-height: var(--theme-h2);
   font-size: 15px;
+  cursor: -moz-grab;
   cursor: -webkit-grab;
 }
 
@@ -53708,9 +53331,7 @@ let QueryGridConfigureDialogColumn = class QueryGridConfigureDialogColumn extend
 }
 
 :host label {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
   background-color: #f9f9f9;
@@ -56901,26 +56522,17 @@ let QueryGridConfigureDialog = class QueryGridConfigureDialog extends Dialog {
         this._settings = _settings;
     }
     static get template() { return Dialog.dialogTemplate(html `<style>:host main {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  flex-direction: column;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-   -ms-user-select: none;
-       user-select: none;
+  user-select: none;
   padding: var(--theme-h4) 0 var(--theme-h4) var(--theme-h5);
   max-height: calc(80vh - (var(--theme-h1) + var(--theme-h5) * 2) - (var(--theme-h2) + var(--theme-h4) * 2));
 }
 
 :host main > vi-scroller {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
   margin-top: var(--theme-h4);
@@ -57147,20 +56759,13 @@ let QueryGrid = class QueryGrid extends WebComponent {
         this._verticalSpacerCorrection = 1;
     }
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  flex-direction: column;
   position: relative;
   overflow: hidden;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-   -ms-user-select: none;
-       user-select: none;
+  user-select: none;
 }
 
 :host([initializing]) header, :host([initializing]) vi-scroller {
@@ -57176,28 +56781,19 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host vi-scroller {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
 }
 
 :host [grid] {
-  display: -ms-grid;
   display: grid;
-  -ms-grid-columns: var(--vi-query-grid-columns);
-      grid-template-columns: var(--vi-query-grid-columns);
+  grid-template-columns: var(--vi-query-grid-columns);
 }
 
 :host header {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   position: relative;
   z-index: 1;
   border-bottom: 1px solid var(--theme-light-border);
@@ -57208,7 +56804,6 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host header .controls {
-  display: -ms-grid;
   display: grid;
   background-color: white;
   position: relative;
@@ -57222,33 +56817,22 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host header .controls .reorder {
-  -ms-grid-row: 2;
-  -ms-grid-column: 1;
   grid-area: reorder;
 }
 
 :host header .controls .spacer {
-  -ms-grid-row: 1;
-  -ms-grid-column: 1;
-  -ms-grid-column-span: 3;
   grid-area: spacer;
 }
 
 :host header .controls vi-query-grid-grouping {
-  -ms-grid-row: 2;
-  -ms-grid-column: 1;
   grid-area: grouping;
 }
 
 :host header .controls vi-query-grid-select-all {
-  -ms-grid-row: 2;
-  -ms-grid-column: 2;
   grid-area: select;
 }
 
 :host header .controls vi-query-grid-filters {
-  -ms-grid-row: 2;
-  -ms-grid-column: 3;
   grid-area: filter;
   line-height: var(--vi-query-grid-row-height);
 }
@@ -57278,21 +56862,19 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host(:not([can-select]):not([can-filter]):not([inline-actions])) .controls {
-      grid-template-areas: none;
+  grid-template-areas: none;
 }
 
 :host(:not([can-select]):not([can-filter]):not([inline-actions])) vi-query-grid-row {
-  -ms-grid-columns: var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
-      grid-template-columns: var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+  grid-template-columns: var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host(:not([can-select]):not([can-filter]):not([inline-actions])[has-grouping]) vi-query-grid-row {
-  -ms-grid-columns: (var(--vi-query-grid-row-height))[1] var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
-      grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+  grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host(:not([can-select]):not([can-filter]):not([inline-actions])[can-reorder]) .controls {
-      grid-template-areas: "reorder";
+  grid-template-areas: "reorder";
 }
 
 :host(:not([can-select]):not([can-filter]):not([inline-actions])[can-reorder]) .controls .reorder {
@@ -57300,30 +56882,27 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host(:not([can-select]):not([can-filter]):not([inline-actions])[can-reorder]) vi-query-grid-row {
-  -ms-grid-columns: (var(--vi-query-grid-row-height))[1] var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
-      grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+  grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host([can-select]:not([can-filter]):not([inline-actions])) .controls {
-      grid-template-areas: "select";
+  grid-template-areas: "select";
 }
 
 :host([can-select]:not([can-filter]):not([inline-actions])) vi-query-grid-row {
-  -ms-grid-columns: auto var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
-      grid-template-columns: auto var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+  grid-template-columns: auto var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host([can-select]:not([can-filter]):not([inline-actions])[has-grouping]) .controls {
-      grid-template-areas: "grouping select";
+  grid-template-areas: "grouping select";
 }
 
 :host([can-select]:not([can-filter]):not([inline-actions])[has-grouping]) vi-query-grid-row {
-  -ms-grid-columns: (var(--vi-query-grid-row-height))[2] var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
-      grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+  grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host([can-select]:not([can-filter]):not([inline-actions])[can-reorder]) .controls {
-      grid-template-areas: "reorder select";
+  grid-template-areas: "reorder select";
 }
 
 :host([can-select]:not([can-filter]):not([inline-actions])[can-reorder]) .controls .reorder {
@@ -57331,12 +56910,11 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host([can-select]:not([can-filter]):not([inline-actions])[can-reorder]) vi-query-grid-row {
-  -ms-grid-columns: (var(--vi-query-grid-row-height))[1] auto var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
-      grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) auto var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+  grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) auto var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host(:not([can-select])[can-filter]:not([inline-actions])) .controls {
-      grid-template-areas: "spacer" "filter";
+  grid-template-areas: "spacer" "filter";
 }
 
 :host(:not([can-select])[can-filter]:not([inline-actions])) .controls .spacer {
@@ -57345,8 +56923,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host(:not([can-select])[can-filter]:not([inline-actions])) vi-query-grid-row {
-  -ms-grid-columns: (var(--vi-query-grid-row-height))[1] var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
-      grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+  grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host(:not([can-select])[can-filter]:not([inline-actions])) vi-query-grid-row::part(actions) {
@@ -57358,17 +56935,15 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host(:not([can-select])[can-filter]:not([inline-actions])[has-grouping]) .controls {
-      grid-template-areas: "spacer spacer" "grouping filter";
+  grid-template-areas: "spacer spacer" "grouping filter";
 }
 
 :host(:not([can-select])[can-filter]:not([inline-actions])[has-grouping]) vi-query-grid-row {
-  -ms-grid-columns: (var(--vi-query-grid-row-height))[2] var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
-      grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+  grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host(:not([can-select])[can-filter]:not([inline-actions])[can-reorder]) vi-query-grid-row {
-  -ms-grid-columns: (var(--vi-query-grid-row-height))[1] var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
-      grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+  grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host(:not([can-select])[can-filter]:not([inline-actions])[can-reorder]) vi-query-grid-row::part(filter) {
@@ -57376,7 +56951,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host(:not([can-select]):not([can-filter])[inline-actions]) .controls {
-      grid-template-areas: "spacer";
+  grid-template-areas: "spacer";
 }
 
 :host(:not([can-select]):not([can-filter])[inline-actions]) .controls .spacer {
@@ -57384,21 +56959,19 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host(:not([can-select]):not([can-filter])[inline-actions]) vi-query-grid-row {
-  -ms-grid-columns: (var(--vi-query-grid-row-height))[1] var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
-      grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+  grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host(:not([can-select]):not([can-filter])[inline-actions][has-grouping]) vi-query-grid-row {
-  -ms-grid-columns: (var(--vi-query-grid-row-height))[2] var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
-      grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+  grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host(:not([can-select]):not([can-filter])[inline-actions][has-grouping]) .controls {
-      grid-template-areas: "grouping spacer";
+  grid-template-areas: "grouping spacer";
 }
 
 :host(:not([can-select]):not([can-filter])[inline-actions][can-reorder]) .controls {
-      grid-template-areas: "reorder spacer";
+  grid-template-areas: "reorder spacer";
 }
 
 :host(:not([can-select]):not([can-filter])[inline-actions][can-reorder]) .controls .reorder {
@@ -57406,12 +56979,11 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host(:not([can-select]):not([can-filter])[inline-actions][can-reorder]) vi-query-grid-row {
-  -ms-grid-columns: (var(--vi-query-grid-row-height))[2] var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
-      grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+  grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host([can-select][can-filter]:not([inline-actions])) .controls {
-      grid-template-areas: "spacer spacer" "select filter";
+  grid-template-areas: "spacer spacer" "select filter";
 }
 
 :host([can-select][can-filter]:not([inline-actions])) .controls .spacer {
@@ -57420,8 +56992,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host([can-select][can-filter]:not([inline-actions])) vi-query-grid-row {
-  -ms-grid-columns: (var(--vi-query-grid-row-height))[2] var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
-      grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+  grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host([can-select][can-filter]:not([inline-actions])) vi-query-grid-row::part(filter) {
@@ -57429,16 +57000,15 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host([can-select][can-filter]:not([inline-actions])[has-grouping]) vi-query-grid-row {
-  -ms-grid-columns: (var(--vi-query-grid-row-height))[3] var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
-      grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+  grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host([can-select][can-filter]:not([inline-actions])[has-grouping]) .controls {
-      grid-template-areas: "spacer spacer spacer" "grouping select filter";
+  grid-template-areas: "spacer spacer spacer" "grouping select filter";
 }
 
 :host([can-select][can-filter]:not([inline-actions])[can-reorder]) .controls {
-      grid-template-areas: "spacer spacer spacer" "reorder select filter";
+  grid-template-areas: "spacer spacer spacer" "reorder select filter";
 }
 
 :host([can-select][can-filter]:not([inline-actions])[can-reorder]) .controls .reorder {
@@ -57446,8 +57016,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host([can-select][can-filter]:not([inline-actions])[can-reorder]) vi-query-grid-row {
-  -ms-grid-columns: (var(--vi-query-grid-row-height))[2] var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
-      grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+  grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host([can-select][can-filter]:not([inline-actions])[can-reorder]) vi-query-grid-row::part(filter) {
@@ -57455,7 +57024,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host([can-select]:not([can-filter])[inline-actions]) .controls {
-      grid-template-areas: "select spacer";
+  grid-template-areas: "select spacer";
 }
 
 :host([can-select]:not([can-filter])[inline-actions]) .controls .spacer {
@@ -57463,21 +57032,19 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host([can-select]:not([can-filter])[inline-actions]) vi-query-grid-row {
-  -ms-grid-columns: (var(--vi-query-grid-row-height))[2] var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
-      grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+  grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host([can-select]:not([can-filter])[inline-actions][has-grouping]) .controls {
-      grid-template-areas: "grouping select spacer";
+  grid-template-areas: "grouping select spacer";
 }
 
 :host([can-select]:not([can-filter])[inline-actions][has-grouping]) vi-query-grid-row {
-  -ms-grid-columns: (var(--vi-query-grid-row-height))[3] var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
-      grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+  grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host([can-select]:not([can-filter])[inline-actions][can-reorder]) .controls {
-      grid-template-areas: "reorder select spacer";
+  grid-template-areas: "reorder select spacer";
 }
 
 :host([can-select]:not([can-filter])[inline-actions][can-reorder]) .controls .reorder {
@@ -57485,12 +57052,11 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host([can-select]:not([can-filter])[inline-actions][can-reorder]) vi-query-grid-row {
-  -ms-grid-columns: (var(--vi-query-grid-row-height))[3] var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
-      grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+  grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host([can-select][can-filter][inline-actions]) .controls {
-      grid-template-areas: "spacer spacer" "select filter";
+  grid-template-areas: "spacer spacer" "select filter";
 }
 
 :host([can-select][can-filter][inline-actions]) .controls .spacer {
@@ -57499,21 +57065,19 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host([can-select][can-filter][inline-actions]) vi-query-grid-row {
-  -ms-grid-columns: (var(--vi-query-grid-row-height))[2] var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
-      grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+  grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host([can-select][can-filter][inline-actions][has-grouping]) .controls {
-      grid-template-areas: "spacer spacer spacer" "grouping select filter";
+  grid-template-areas: "spacer spacer spacer" "grouping select filter";
 }
 
 :host([can-select][can-filter][inline-actions][has-grouping]) vi-query-grid-row {
-  -ms-grid-columns: (var(--vi-query-grid-row-height))[3] var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
-      grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+  grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 
 :host([can-select][can-filter][inline-actions][can-reorder]) .controls {
-      grid-template-areas: "spacer spacer spacer" "reorder select filter";
+  grid-template-areas: "spacer spacer spacer" "reorder select filter";
 }
 
 :host([can-select][can-filter][inline-actions][can-reorder]) .controls .reorder {
@@ -57521,8 +57085,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host([can-select][can-filter][inline-actions][can-reorder]) vi-query-grid-row {
-  -ms-grid-columns: (var(--vi-query-grid-row-height))[3] var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
-      grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+  grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
 </style>
 
@@ -58012,20 +57575,13 @@ QueryGridSortable = __decorate([
 
 let QueryItemsPresenter = class QueryItemsPresenter extends ConfigurableWebComponent {
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   position: relative;
 }
 
 :host > * {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
 }
@@ -58035,9 +57591,7 @@ let QueryItemsPresenter = class QueryItemsPresenter extends ConfigurableWebCompo
 }
 
 :host ::slotted(*) {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
 }
@@ -58214,13 +57768,11 @@ let PersistentObjectAttributeValidationError = class PersistentObjectAttributeVa
 }
 
 :host #content.top {
-  -webkit-transform: translateY(var(--theme-h4));
-          transform: translateY(var(--theme-h4));
+  transform: translateY(var(--theme-h4));
 }
 
 :host #content.bottom {
-  -webkit-transform: translateY(calc(var(--theme-h4) * -1));
-          transform: translateY(calc(var(--theme-h4) * -1));
+  transform: translateY(calc(var(--theme-h4) * -1));
 }
 </style>
 
@@ -58264,43 +57816,27 @@ PersistentObjectAttributeValidationError = __decorate([
 
 let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends WebComponent {
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex-direction: row;
+  flex: 1;
   min-height: 0;
   min-width: 0;
-  position: relative;
   line-height: var(--theme-h2);
 }
 
-:host fieldset {
-  margin: 0;
-  padding: 0;
-  border: none;
-}
-
 :host .box {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
-  -webkit-box-pack: justify;
-      -ms-flex-pack: justify;
-          justify-content: space-between;
+  flex-direction: row;
+  justify-content: space-between;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
   background-color: white;
-  min-height: calc(var(--theme-h2) - 2px);
+  height: var(--vi-persistent-object-attribute-presenter--attribute-height, 100%);
   line-height: calc(var(--theme-h2) - 2px);
   border: 1px solid var(--theme-light-border);
+  box-sizing: border-box;
 }
 
 :host([read-only]) .box {
@@ -58346,9 +57882,7 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
 }
 
 :host .box > ::slotted(*) {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
 }
@@ -58366,19 +57900,23 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
   height: calc(var(--theme-h2) - 2px);
   line-height: calc(var(--theme-h2) - 2px);
   padding: 0;
-  -webkit-box-sizing: content-box;
-          box-sizing: content-box;
+  box-sizing: content-box;
   text-align: center;
   background-color: transparent;
   color: var(--theme-color);
   fill: #595959;
+  -moz-transition-property: fill, color, background-color;
+  -o-transition-property: fill, color, background-color;
   -webkit-transition-property: fill, color, background-color;
   transition-property: fill, color, background-color;
+  -moz-transition-duration: 0.1s;
+  -o-transition-duration: 0.1s;
   -webkit-transition-duration: 0.1s;
   transition-duration: 0.1s;
+  -moz-transition-timing-function: ease-out;
+  -o-transition-timing-function: ease-out;
   -webkit-transition-timing-function: ease-out;
   transition-timing-function: ease-out;
-  -webkit-transition: background-color 0.1s ease-out;
   transition: background-color 0.1s ease-out;
 }
 
@@ -58404,7 +57942,6 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
   right: 4px;
   content: " ";
   border-bottom: 1px solid var(--theme-light-border);
-  -webkit-transition: all 0.1s ease-in-out;
   transition: all 0.1s ease-in-out;
 }
 
@@ -58413,7 +57950,6 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
   top: 4px;
   bottom: 4px;
   content: " ";
-  -webkit-transition: all 0.1s ease-in-out;
   transition: all 0.1s ease-in-out;
 }
 
@@ -58452,13 +57988,8 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
 }
 
 :host .box .extras.left, :host .box .extras.right {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
 }
 
 :host .box .extras ::slotted(*::part(popup)) {
@@ -58487,17 +58018,15 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
 }
 </style>
 
-<fieldset class="flex relative" disabled$="[[attribute.parent.isFrozen]]">
-    <div class="box fit layout horizontal justified">
-        <div class="left extras">
-            <slot name="left"></slot>
-        </div>
-        <slot></slot>
-        <div class="right extras">
-            <slot name="right"></slot>
-        </div>
+<div class="box" disabled$="[[attribute.parent.isFrozen]]">
+    <div class="left extras">
+        <slot name="left"></slot>
     </div>
-</fieldset>
+    <slot></slot>
+    <div class="right extras">
+        <slot name="right"></slot>
+    </div>
+</div>
 <vi-persistent-object-attribute-validation-error attribute="[[attribute]]"></vi-persistent-object-attribute-validation-error>`; }
     _focus(e) {
         this._setFocus(true);
@@ -58558,7 +58087,11 @@ PersistentObjectAttributeEdit = __decorate([
 const styleElement = document.createElement("dom-module");
 styleElement.innerHTML = `<template>
     <style include="vi-flex-layout-style-module"></style>
-    <style>:host textarea {
+    <style>:host {
+  height: var(--vi-persistent-object-attribute-presenter--attribute-height, 100%);
+}
+
+:host textarea {
   overflow: auto;
   resize: none;
   padding: var(--theme-h5);
@@ -58572,8 +58105,7 @@ styleElement.innerHTML = `<template>
 
 :host input, :host textarea, :host *::part(input) {
   background-color: transparent;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   margin: 0;
   border: none;
   outline: none;
@@ -58742,10 +58274,8 @@ const registeredAttributeTypes = {};
 let PersistentObjectAttributeAsDetailRow = class PersistentObjectAttributeAsDetailRow extends WebComponent {
     static get template() { return html `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
-  display: -ms-grid;
   display: grid;
-  -ms-grid-columns: var(--column-widths);
-      grid-template-columns: var(--column-widths);
+  grid-template-columns: var(--column-widths);
   white-space: nowrap;
   height: var(--theme-h2);
   line-height: var(--theme-h2);
@@ -58755,8 +58285,7 @@ let PersistentObjectAttributeAsDetailRow = class PersistentObjectAttributeAsDeta
   padding: 0 1px 1px 0;
   height: var(--theme-h2);
   line-height: var(--theme-h2);
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   min-width: 0;
 }
 
@@ -58782,8 +58311,7 @@ let PersistentObjectAttributeAsDetailRow = class PersistentObjectAttributeAsDeta
   display: block;
   position: relative;
   border: 1px solid var(--theme-light-border);
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   overflow: hidden;
   text-overflow: ellipsis;
   padding: 0 var(--theme-h5);
@@ -58831,8 +58359,7 @@ let PersistentObjectAttributeAsDetailRow = class PersistentObjectAttributeAsDeta
   width: var(--persistent-object-attribute-as-detail--delete-width);
   height: var(--theme-h2);
   line-height: var(--theme-h2);
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   border: 1px solid var(--theme-light-border);
   fill: var(--theme-color-light);
   margin-left: 1px;
@@ -58985,13 +58512,8 @@ PersistentObjectAttributeAsDetailRow = __decorate([
 let PersistentObjectAttributeAsDetail = class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute {
     static get template() { return html `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   position: relative;
   overflow: hidden;
   --persistent-object-attribute-as-detail--delete-width: var(--theme-h2);
@@ -59002,16 +58524,9 @@ let PersistentObjectAttributeAsDetail = class PersistentObjectAttributeAsDetail 
 }
 
 :host #table {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex-direction: column;
+  flex: 1;
   min-height: 0;
   min-width: 0;
   line-height: var(--theme-h2);
@@ -59019,10 +58534,8 @@ let PersistentObjectAttributeAsDetail = class PersistentObjectAttributeAsDetail 
 }
 
 :host #table #head {
-  display: -ms-grid;
   display: grid;
-  -ms-grid-columns: var(--column-widths);
-      grid-template-columns: var(--column-widths);
+  grid-template-columns: var(--column-widths);
   height: var(--theme-h2);
   border-style: solid;
   border-color: var(--theme-light-border);
@@ -59030,8 +58543,7 @@ let PersistentObjectAttributeAsDetail = class PersistentObjectAttributeAsDetail 
 }
 
 :host #table #head .column {
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   border-style: solid;
   border-color: var(--theme-light-border);
   border-width: 0;
@@ -59050,9 +58562,7 @@ let PersistentObjectAttributeAsDetail = class PersistentObjectAttributeAsDetail 
 
 :host #table #body {
   position: relative;
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
 }
@@ -59070,9 +58580,7 @@ let PersistentObjectAttributeAsDetail = class PersistentObjectAttributeAsDetail 
 :host([editing]) #table {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-   -ms-user-select: none;
-       user-select: none;
+  user-select: none;
 }
 
 :host([editing]) #table #head {
@@ -59084,8 +58592,7 @@ let PersistentObjectAttributeAsDetail = class PersistentObjectAttributeAsDetail 
   padding: 0 1px 1px 0;
   height: var(--theme-h2);
   line-height: var(--theme-h2);
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   width: auto;
   min-width: 0;
 }
@@ -59381,21 +58888,14 @@ PersistentObjectAttribute.registerAttributeType("AsDetail", PersistentObjectAttr
 let PersistentObjectAttributeBinaryFile = class PersistentObjectAttributeBinaryFile extends PersistentObjectAttribute {
     static get template() { return html `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   position: relative;
   outline: none;
 }
 
 :host input[readonly] {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
   z-index: 1;
@@ -59521,8 +59021,7 @@ let Toggle = class Toggle extends WebComponent {
     static get template() { return html `<style>:host {
   display: block;
   padding-right: var(--theme-h5);
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 :host(:not([disabled])) {
@@ -59539,13 +59038,9 @@ let Toggle = class Toggle extends WebComponent {
   background-color: #333;
   width: calc(var(--theme-h4) - 2px);
   height: calc(var(--theme-h4) - 2px);
-  -webkit-transform: translateX(0px);
-          transform: translateX(0px);
+  transform: translateX(0px);
   -webkit-transition: transform 0.25s cubic-bezier(0, 1, 0.6, 1);
-  -webkit-transition: -webkit-transform 0.25s cubic-bezier(0, 1, 0.6, 1);
-  transition: -webkit-transform 0.25s cubic-bezier(0, 1, 0.6, 1);
   transition: transform 0.25s cubic-bezier(0, 1, 0.6, 1);
-  transition: transform 0.25s cubic-bezier(0, 1, 0.6, 1), -webkit-transform 0.25s cubic-bezier(0, 1, 0.6, 1);
 }
 
 :host span {
@@ -59574,8 +59069,7 @@ let Toggle = class Toggle extends WebComponent {
 
 :host([toggled]) #box #switch {
   background-color: white;
-  -webkit-transform: translateX(calc(var(--theme-h2) - var(--theme-h4) + 2px));
-          transform: translateX(calc(var(--theme-h2) - var(--theme-h4) + 2px));
+  transform: translateX(calc(var(--theme-h2) - var(--theme-h4) + 2px));
 }
 
 :host([disabled][toggled]) #box {
@@ -59651,17 +59145,11 @@ let PersistentObjectAttributeBoolean = class PersistentObjectAttributeBoolean ex
     static get template() { return html `<style>:host {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-   -ms-user-select: none;
-       user-select: none;
-  display: -webkit-box;
-  display: -ms-flexbox;
+  user-select: none;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   line-height: normal;
+  height: var(--vi-persistent-object-attribute-presenter--attribute-height, 100%);
 }
 
 :host vi-checkbox {
@@ -61989,44 +61477,29 @@ Polymer({
 
 let Select = class Select extends WebComponent {
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   position: relative;
   border: 1px solid #ddd;
   outline: none !important;
 }
 
 :host vi-popup {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
 }
 
 :host vi-popup #content {
-  -webkit-transform: translate(0, 1px);
-          transform: translate(0, 1px);
+  transform: translate(0, 1px);
 }
 
 :host vi-popup [slot="header"] {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   position: relative;
 }
 
@@ -62124,8 +61597,7 @@ let Select = class Select extends WebComponent {
 }
 
 :host([sensitive]) input, :host([sensitive]) vi-select-option-item {
-  -webkit-filter: blur(5px);
-          filter: blur(5px);
+  filter: blur(5px);
 }
 
 :host([sensitive]) input + vi-icon {
@@ -62570,13 +62042,8 @@ SelectOptionItem = __decorate([
 let PersistentObjectAttributeComboBox = class PersistentObjectAttributeComboBox extends PersistentObjectAttribute {
     static get template() { return html `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
 }
 
 :host vi-select {
@@ -62682,20 +62149,13 @@ PersistentObjectAttribute.registerAttributeType("ComboBox", PersistentObjectAttr
 let PersistentObjectAttributeCommonMark = class PersistentObjectAttributeCommonMark extends PersistentObjectAttribute {
     static get template() { return html `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   overflow: hidden;
 }
 
 :host marked-element {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
   resize: none;
@@ -62954,9 +62414,7 @@ let TimePicker = class TimePicker extends WebComponent {
   position: relative;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-   -ms-user-select: none;
-       user-select: none;
+  user-select: none;
 }
 
 :host(:hover) vi-popup[open] [slot="header"], :host vi-popup[hover] [slot="header"] {
@@ -62986,11 +62444,15 @@ let TimePicker = class TimePicker extends WebComponent {
   width: 220px;
   height: 220px;
   background: #eee;
+  -moz-border-radius: 50%;
+  -webkit-border-radius: 50%;
   border-radius: 50%;
   content: "";
 }
 
 :host #clockHost .list {
+  -moz-transition: all 0.3s ease-in-out;
+  -o-transition: all 0.3s ease-in-out;
   -webkit-transition: all 0.3s ease-in-out;
   transition: all 0.3s ease-in-out;
   left: 90px;
@@ -63010,16 +62472,14 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host #clockHost .list .item:nth-child(12) {
-  -webkit-transform: rotate(330deg) translate(0, -90px);
-          transform: rotate(330deg) translate(0, -90px);
+  transform: rotate(330deg) translate(0, -90px);
 }
 
 :host #clockHost .list .item:nth-child(12) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
-  -webkit-transform: rotate(-330deg);
-          transform: rotate(-330deg);
+  transform: rotate(-330deg);
 }
 
 :host #clockHost .list .item:nth-child(12) span::before {
@@ -63029,16 +62489,14 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host #clockHost .list .item:nth-child(11) {
-  -webkit-transform: rotate(300deg) translate(0, -90px);
-          transform: rotate(300deg) translate(0, -90px);
+  transform: rotate(300deg) translate(0, -90px);
 }
 
 :host #clockHost .list .item:nth-child(11) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
-  -webkit-transform: rotate(-300deg);
-          transform: rotate(-300deg);
+  transform: rotate(-300deg);
 }
 
 :host #clockHost .list .item:nth-child(11) span::before {
@@ -63048,16 +62506,14 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host #clockHost .list .item:nth-child(10) {
-  -webkit-transform: rotate(270deg) translate(0, -90px);
-          transform: rotate(270deg) translate(0, -90px);
+  transform: rotate(270deg) translate(0, -90px);
 }
 
 :host #clockHost .list .item:nth-child(10) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
-  -webkit-transform: rotate(-270deg);
-          transform: rotate(-270deg);
+  transform: rotate(-270deg);
 }
 
 :host #clockHost .list .item:nth-child(10) span::before {
@@ -63067,16 +62523,14 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host #clockHost .list .item:nth-child(9) {
-  -webkit-transform: rotate(240deg) translate(0, -90px);
-          transform: rotate(240deg) translate(0, -90px);
+  transform: rotate(240deg) translate(0, -90px);
 }
 
 :host #clockHost .list .item:nth-child(9) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
-  -webkit-transform: rotate(-240deg);
-          transform: rotate(-240deg);
+  transform: rotate(-240deg);
 }
 
 :host #clockHost .list .item:nth-child(9) span::before {
@@ -63086,16 +62540,14 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host #clockHost .list .item:nth-child(8) {
-  -webkit-transform: rotate(210deg) translate(0, -90px);
-          transform: rotate(210deg) translate(0, -90px);
+  transform: rotate(210deg) translate(0, -90px);
 }
 
 :host #clockHost .list .item:nth-child(8) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
-  -webkit-transform: rotate(-210deg);
-          transform: rotate(-210deg);
+  transform: rotate(-210deg);
 }
 
 :host #clockHost .list .item:nth-child(8) span::before {
@@ -63105,16 +62557,14 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host #clockHost .list .item:nth-child(7) {
-  -webkit-transform: rotate(180deg) translate(0, -90px);
-          transform: rotate(180deg) translate(0, -90px);
+  transform: rotate(180deg) translate(0, -90px);
 }
 
 :host #clockHost .list .item:nth-child(7) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
-  -webkit-transform: rotate(-180deg);
-          transform: rotate(-180deg);
+  transform: rotate(-180deg);
 }
 
 :host #clockHost .list .item:nth-child(7) span::before {
@@ -63124,16 +62574,14 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host #clockHost .list .item:nth-child(6) {
-  -webkit-transform: rotate(150deg) translate(0, -90px);
-          transform: rotate(150deg) translate(0, -90px);
+  transform: rotate(150deg) translate(0, -90px);
 }
 
 :host #clockHost .list .item:nth-child(6) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
-  -webkit-transform: rotate(-150deg);
-          transform: rotate(-150deg);
+  transform: rotate(-150deg);
 }
 
 :host #clockHost .list .item:nth-child(6) span::before {
@@ -63143,16 +62591,14 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host #clockHost .list .item:nth-child(5) {
-  -webkit-transform: rotate(120deg) translate(0, -90px);
-          transform: rotate(120deg) translate(0, -90px);
+  transform: rotate(120deg) translate(0, -90px);
 }
 
 :host #clockHost .list .item:nth-child(5) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
-  -webkit-transform: rotate(-120deg);
-          transform: rotate(-120deg);
+  transform: rotate(-120deg);
 }
 
 :host #clockHost .list .item:nth-child(5) span::before {
@@ -63162,16 +62608,14 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host #clockHost .list .item:nth-child(4) {
-  -webkit-transform: rotate(90deg) translate(0, -90px);
-          transform: rotate(90deg) translate(0, -90px);
+  transform: rotate(90deg) translate(0, -90px);
 }
 
 :host #clockHost .list .item:nth-child(4) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
-  -webkit-transform: rotate(-90deg);
-          transform: rotate(-90deg);
+  transform: rotate(-90deg);
 }
 
 :host #clockHost .list .item:nth-child(4) span::before {
@@ -63181,16 +62625,14 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host #clockHost .list .item:nth-child(3) {
-  -webkit-transform: rotate(60deg) translate(0, -90px);
-          transform: rotate(60deg) translate(0, -90px);
+  transform: rotate(60deg) translate(0, -90px);
 }
 
 :host #clockHost .list .item:nth-child(3) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
-  -webkit-transform: rotate(-60deg);
-          transform: rotate(-60deg);
+  transform: rotate(-60deg);
 }
 
 :host #clockHost .list .item:nth-child(3) span::before {
@@ -63200,16 +62642,14 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host #clockHost .list .item:nth-child(2) {
-  -webkit-transform: rotate(30deg) translate(0, -90px);
-          transform: rotate(30deg) translate(0, -90px);
+  transform: rotate(30deg) translate(0, -90px);
 }
 
 :host #clockHost .list .item:nth-child(2) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
-  -webkit-transform: rotate(-30deg);
-          transform: rotate(-30deg);
+  transform: rotate(-30deg);
 }
 
 :host #clockHost .list .item:nth-child(2) span::before {
@@ -63219,16 +62659,14 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host #clockHost .list .item:nth-child(1) {
-  -webkit-transform: rotate(0deg) translate(0, -90px);
-          transform: rotate(0deg) translate(0, -90px);
+  transform: rotate(0deg) translate(0, -90px);
 }
 
 :host #clockHost .list .item:nth-child(1) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
-  -webkit-transform: rotate(0deg);
-          transform: rotate(0deg);
+  transform: rotate(0deg);
 }
 
 :host #clockHost .list .item:nth-child(1) span::before {
@@ -63257,16 +62695,14 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(12) {
-  -webkit-transform: rotate(330deg) translate(0, -57px);
-          transform: rotate(330deg) translate(0, -57px);
+  transform: rotate(330deg) translate(0, -57px);
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(12) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
-  -webkit-transform: rotate(-330deg);
-          transform: rotate(-330deg);
+  transform: rotate(-330deg);
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(12) span::before {
@@ -63276,16 +62712,14 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(11) {
-  -webkit-transform: rotate(300deg) translate(0, -57px);
-          transform: rotate(300deg) translate(0, -57px);
+  transform: rotate(300deg) translate(0, -57px);
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(11) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
-  -webkit-transform: rotate(-300deg);
-          transform: rotate(-300deg);
+  transform: rotate(-300deg);
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(11) span::before {
@@ -63295,16 +62729,14 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(10) {
-  -webkit-transform: rotate(270deg) translate(0, -57px);
-          transform: rotate(270deg) translate(0, -57px);
+  transform: rotate(270deg) translate(0, -57px);
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(10) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
-  -webkit-transform: rotate(-270deg);
-          transform: rotate(-270deg);
+  transform: rotate(-270deg);
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(10) span::before {
@@ -63314,16 +62746,14 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(9) {
-  -webkit-transform: rotate(240deg) translate(0, -57px);
-          transform: rotate(240deg) translate(0, -57px);
+  transform: rotate(240deg) translate(0, -57px);
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(9) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
-  -webkit-transform: rotate(-240deg);
-          transform: rotate(-240deg);
+  transform: rotate(-240deg);
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(9) span::before {
@@ -63333,16 +62763,14 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(8) {
-  -webkit-transform: rotate(210deg) translate(0, -57px);
-          transform: rotate(210deg) translate(0, -57px);
+  transform: rotate(210deg) translate(0, -57px);
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(8) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
-  -webkit-transform: rotate(-210deg);
-          transform: rotate(-210deg);
+  transform: rotate(-210deg);
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(8) span::before {
@@ -63352,16 +62780,14 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(7) {
-  -webkit-transform: rotate(180deg) translate(0, -57px);
-          transform: rotate(180deg) translate(0, -57px);
+  transform: rotate(180deg) translate(0, -57px);
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(7) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
-  -webkit-transform: rotate(-180deg);
-          transform: rotate(-180deg);
+  transform: rotate(-180deg);
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(7) span::before {
@@ -63371,16 +62797,14 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(6) {
-  -webkit-transform: rotate(150deg) translate(0, -57px);
-          transform: rotate(150deg) translate(0, -57px);
+  transform: rotate(150deg) translate(0, -57px);
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(6) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
-  -webkit-transform: rotate(-150deg);
-          transform: rotate(-150deg);
+  transform: rotate(-150deg);
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(6) span::before {
@@ -63390,16 +62814,14 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(5) {
-  -webkit-transform: rotate(120deg) translate(0, -57px);
-          transform: rotate(120deg) translate(0, -57px);
+  transform: rotate(120deg) translate(0, -57px);
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(5) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
-  -webkit-transform: rotate(-120deg);
-          transform: rotate(-120deg);
+  transform: rotate(-120deg);
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(5) span::before {
@@ -63409,16 +62831,14 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(4) {
-  -webkit-transform: rotate(90deg) translate(0, -57px);
-          transform: rotate(90deg) translate(0, -57px);
+  transform: rotate(90deg) translate(0, -57px);
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(4) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
-  -webkit-transform: rotate(-90deg);
-          transform: rotate(-90deg);
+  transform: rotate(-90deg);
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(4) span::before {
@@ -63428,16 +62848,14 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(3) {
-  -webkit-transform: rotate(60deg) translate(0, -57px);
-          transform: rotate(60deg) translate(0, -57px);
+  transform: rotate(60deg) translate(0, -57px);
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(3) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
-  -webkit-transform: rotate(-60deg);
-          transform: rotate(-60deg);
+  transform: rotate(-60deg);
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(3) span::before {
@@ -63447,16 +62865,14 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(2) {
-  -webkit-transform: rotate(30deg) translate(0, -57px);
-          transform: rotate(30deg) translate(0, -57px);
+  transform: rotate(30deg) translate(0, -57px);
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(2) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
-  -webkit-transform: rotate(-30deg);
-          transform: rotate(-30deg);
+  transform: rotate(-30deg);
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(2) span::before {
@@ -63466,16 +62882,14 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(1) {
-  -webkit-transform: rotate(0deg) translate(0, -57px);
-          transform: rotate(0deg) translate(0, -57px);
+  transform: rotate(0deg) translate(0, -57px);
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(1) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
-  -webkit-transform: rotate(0deg);
-          transform: rotate(0deg);
+  transform: rotate(0deg);
 }
 
 :host #clockHost .list:nth-child(2) .item:nth-child(1) span::before {
@@ -63525,6 +62939,9 @@ let TimePicker = class TimePicker extends WebComponent {
   position: absolute;
   width: 220px;
   height: 220px;
+  -moz-transform-origin: 50% 50%;
+  -ms-transform-origin: 50% 50%;
+  -o-transform-origin: 50% 50%;
   -webkit-transform-origin: 50% 50%;
   transform-origin: 50% 50%;
 }
@@ -63542,15 +62959,13 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host([state="minutes"]) .list:nth-child(3) {
-  -webkit-transform: scale(1);
-          transform: scale(1);
+  transform: scale(1);
   opacity: 1;
   z-index: 2;
 }
 
 :host([state="minutes"]) .list:nth-child(1), :host([state="minutes"]) .list:nth-child(2) {
-  -webkit-transform: scale(1.3);
-          transform: scale(1.3);
+  transform: scale(1.3);
   opacity: 0;
   z-index: -2;
 }
@@ -63560,15 +62975,13 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 
 :host([state="hours"]) .list:nth-child(3) {
-  -webkit-transform: scale(0.7);
-          transform: scale(0.7);
+  transform: scale(0.7);
   opacity: 0;
   z-index: 1;
 }
 
 :host([state="hours"]) .list:nth-child(1), :host([state="hours"]) .list:nth-child(2) {
-  -webkit-transform: scale(1);
-          transform: scale(1);
+  transform: scale(1);
   opacity: 1;
   z-index: 2;
 }
@@ -63738,9 +63151,7 @@ let DatePicker = class DatePicker extends WebComponent {
   display: block;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-   -ms-user-select: none;
-       user-select: none;
+  user-select: none;
 }
 
 :host(:hover) vi-popup[open] [slot="header"], :host vi-popup[hover] [slot="header"] {
@@ -63780,8 +63191,7 @@ let DatePicker = class DatePicker extends WebComponent {
   border-style: solid;
   border-width: 0 0 1px 1px;
   border-color: var(--theme-color-faint);
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   cursor: pointer;
   position: relative;
 }
@@ -64157,23 +63567,13 @@ DatePicker = __decorate([
 let PersistentObjectAttributeDateTime = class PersistentObjectAttributeDateTime extends PersistentObjectAttribute {
     static get template() { return html `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
 }
 
 :host([editing]) [slot="content"] {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
 }
 
 :host([editing]) vi-masked-input {
@@ -64189,9 +63589,7 @@ let PersistentObjectAttributeDateTime = class PersistentObjectAttributeDateTime 
 }
 
 :host([editing]) vi-masked-input:last-of-type:not([hidden]), :host([editing]) vi-masked-input[flex] {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
 }
@@ -64611,13 +64009,8 @@ PersistentObjectAttribute.registerAttributeType("DateTime", PersistentObjectAttr
 let PersistentObjectAttributeDropDown = class PersistentObjectAttributeDropDown extends PersistentObjectAttribute {
     static get template() { return html `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
 }
 
 :host vi-select {
@@ -64633,15 +64026,9 @@ let PersistentObjectAttributeDropDown = class PersistentObjectAttributeDropDown 
 }
 
 :host #radiobuttons[orientation="horizontal"] {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
-  -ms-flex-wrap: wrap;
-      flex-wrap: wrap;
+  flex-direction: row;
+  flex-wrap: wrap;
 }
 </style>
 
@@ -64808,13 +64195,8 @@ PersistentObjectAttributeFlagsEnumFlag = __decorate([
 let PersistentObjectAttributeFlagsEnum = class PersistentObjectAttributeFlagsEnum extends PersistentObjectAttribute {
     static get template() { return html `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
 }
 
 :host ul {
@@ -64826,9 +64208,7 @@ let PersistentObjectAttributeFlagsEnum = class PersistentObjectAttributeFlagsEnu
 :host ul li {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-   -ms-user-select: none;
-       user-select: none;
+  user-select: none;
   padding-left: var(--theme-h5);
   line-height: calc(var(--theme-h2) - 2px);
   height: calc(var(--theme-h2) - 2px);
@@ -64986,16 +64366,11 @@ PersistentObjectAttributeImageDialog = __decorate([
 
 let PersistentObjectAttributeImage = class PersistentObjectAttributeImage extends PersistentObjectAttribute {
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   position: relative;
   outline: none;
-  min-height: var(--theme-h2) !important;
+  height: var(--vi-persistent-object-attribute-presenter--attribute-height, 100%);
 }
 
 :host img {
@@ -65005,7 +64380,6 @@ let PersistentObjectAttributeImage = class PersistentObjectAttributeImage extend
 }
 
 :host img[can-open] {
-  cursor: -webkit-zoom-in;
   cursor: zoom-in;
 }
 
@@ -65173,13 +64547,8 @@ PersistentObjectAttribute.registerAttributeType("Image", PersistentObjectAttribu
 let PersistentObjectAttributeKeyValueList = class PersistentObjectAttributeKeyValueList extends PersistentObjectAttribute {
     static get template() { return html `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
 }
 
 :host vi-select {
@@ -65195,15 +64564,9 @@ let PersistentObjectAttributeKeyValueList = class PersistentObjectAttributeKeyVa
 }
 
 :host #radiobuttons[orientation="horizontal"] {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
-  -ms-flex-wrap: wrap;
-      flex-wrap: wrap;
+  flex-direction: row;
+  flex-wrap: wrap;
 }
 </style>
 
@@ -75129,13 +74492,8 @@ createCommonjsModule(function (module, exports) {
 let PersistentObjectAttributeMultiLineString = class PersistentObjectAttributeMultiLineString extends PersistentObjectAttribute {
     static get template() { return html `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   overflow: hidden;
 }
 
@@ -75229,27 +74587,22 @@ let PersistentObjectAttributeMultiStringItem = class PersistentObjectAttributeMu
         super();
         this.value = value;
     }
-    static get template() { return html `<style include="vi-persistent-object-attribute-style-module"></style>
-<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
+    static get template() { return html `<style>:host {
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   margin-bottom: 2px;
 }
 
 :host .inputhost {
   border: 1px solid var(--theme-light-border);
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 :host .inputhost input {
   height: calc(var(--theme-h2) - 2px);
   line-height: calc(var(--theme-h2) - 2px);
+  -moz-transition: border-color 0.2s ease-in-out;
+  -o-transition: border-color 0.2s ease-in-out;
   -webkit-transition: border-color 0.2s ease-in-out;
   transition: border-color 0.2s ease-in-out;
   padding: 0 6px;
@@ -75271,12 +74624,11 @@ let PersistentObjectAttributeMultiStringItem = class PersistentObjectAttributeMu
 }
 
 :host vi-icon {
-  -ms-flex-item-align: center;
-      -ms-grid-row-align: center;
-      align-self: center;
+  align-self: center;
   margin-right: var(--theme-h5);
   fill: #666;
   cursor: pointer;
+  cursor: -moz-grab;
   cursor: -webkit-grab;
   pointer-events: all;
 }
@@ -75365,18 +74717,12 @@ PersistentObjectAttributeMultiStringItem = __decorate([
 
 let Tags = class Tags extends WebComponent {
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
 }
 
 :host .wrapContainer {
-  -ms-flex-wrap: wrap;
-      flex-wrap: wrap;
+  flex-wrap: wrap;
 }
 
 :host(:not([readonly])) {
@@ -75397,9 +74743,7 @@ let Tags = class Tags extends WebComponent {
   color: white;
   border-radius: var(--theme-h5);
   text-align: center;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
+  justify-content: center;
 }
 
 :host .tag .tagValue {
@@ -75499,14 +74843,10 @@ PersistentObjectAttributeMultiStringItems = __decorate([
     WebComponent.register()
 ], PersistentObjectAttributeMultiStringItems);
 let PersistentObjectAttributeMultiString = class PersistentObjectAttributeMultiString extends PersistentObjectAttribute {
-    static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
+    static get template() { return html `<style include="vi-persistent-object-attribute-style-module"></style>
+<style>:host {
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
 }
 
 :host #strings:empty {
@@ -75733,16 +75073,9 @@ let PersistentObjectAttributeNullableBoolean = class PersistentObjectAttributeNu
 <style>:host {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-   -ms-user-select: none;
-       user-select: none;
-  display: -webkit-box;
-  display: -ms-flexbox;
+  user-select: none;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   line-height: normal;
 }
 
@@ -75759,13 +75092,8 @@ let PersistentObjectAttributeNullableBoolean = class PersistentObjectAttributeNu
 }
 
 :host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
 }
 
 :host vi-select {
@@ -75834,13 +75162,8 @@ var PersistentObjectAttributeNumeric_1;
 let PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = class PersistentObjectAttributeNumeric extends PersistentObjectAttribute {
     static get template() { return html `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
 }
 
 :host span, :host input {
@@ -75854,9 +75177,7 @@ let PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = clas
   cursor: default;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-   -ms-user-select: none;
-       user-select: none;
+  user-select: none;
 }
 
 :host vi-persistent-object-attribute-edit span:before, :host vi-persistent-object-attribute-edit span:after {
@@ -75864,7 +75185,6 @@ let PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = clas
   top: 4px;
   bottom: 4px;
   content: " ";
-  -webkit-transition: all 0.1s ease-in-out;
   transition: all 0.1s ease-in-out;
 }
 
@@ -76119,13 +75439,8 @@ PersistentObjectAttribute.registerAttributeType("Numeric", PersistentObjectAttri
 let PersistentObjectAttributePassword = class PersistentObjectAttributePassword extends PersistentObjectAttribute {
     static get template() { return html `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
 }
 
 :host span, :host input {
@@ -76160,13 +75475,8 @@ PersistentObjectAttribute.registerAttributeType("Password", PersistentObjectAttr
 let PersistentObjectAttributeReference = class PersistentObjectAttributeReference extends PersistentObjectAttribute {
     static get template() { return html `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   position: relative;
 }
 
@@ -76183,13 +75493,8 @@ let PersistentObjectAttributeReference = class PersistentObjectAttributeReferenc
 }
 
 :host(:not([editing])) a {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   text-decoration: none;
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
   fill: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
@@ -76225,8 +75530,7 @@ let PersistentObjectAttributeReference = class PersistentObjectAttributeReferenc
   min-width: var(--theme-h4);
   height: 1em;
   fill: var(--theme-color);
-  -webkit-transform: translateY(2px);
-          transform: translateY(2px);
+  transform: translateY(2px);
 }
 
 :host([editing]) vi-select {
@@ -76234,8 +75538,7 @@ let PersistentObjectAttributeReference = class PersistentObjectAttributeReferenc
 }
 
 :host([editing]) vi-select vi-popup > #content {
-  -webkit-transform: translateY(1px);
-          transform: translateY(1px);
+  transform: translateY(1px);
 }
 
 :host([editing]) a[disabled] {
@@ -76247,15 +75550,9 @@ let PersistentObjectAttributeReference = class PersistentObjectAttributeReferenc
 }
 
 :host #radiobuttons[orientation="horizontal"] {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
-  -ms-flex-wrap: wrap;
-      flex-wrap: wrap;
+  flex-direction: row;
+  flex-wrap: wrap;
 }
 </style>
 
@@ -76540,13 +75837,8 @@ PersistentObjectAttribute.registerAttributeType("Reference", PersistentObjectAtt
 let PersistentObjectAttributeString = class PersistentObjectAttributeString extends PersistentObjectAttribute {
     static get template() { return html `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   overflow: hidden;
 }
 
@@ -76591,13 +75883,8 @@ let PersistentObjectAttributeString = class PersistentObjectAttributeString exte
 }
 
 :host a {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -76628,6 +75915,7 @@ let PersistentObjectAttributeString = class PersistentObjectAttributeString exte
 
 :host a span {
   -ms-text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
   text-overflow: ellipsis;
   overflow: hidden;
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
@@ -76637,8 +75925,7 @@ let PersistentObjectAttributeString = class PersistentObjectAttributeString exte
   margin: 0 var(--theme-h5);
   min-width: var(--theme-h4);
   height: 1em;
-  -webkit-transform: translateY(2px);
-          transform: translateY(2px);
+  transform: translateY(2px);
 }
 </style>
 
@@ -76854,8 +76141,7 @@ let PersistentObjectAttributeTranslatedStringDialog = class PersistentObjectAttr
 :host ul li input, :host ul li textarea {
   width: 100%;
   resize: none;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   margin: 0;
   padding: var(--theme-h5);
   border: 1px solid #ddd;
@@ -76940,13 +76226,8 @@ PersistentObjectAttributeTranslatedStringDialog = __decorate([
 let PersistentObjectAttributeTranslatedString = class PersistentObjectAttributeTranslatedString extends PersistentObjectAttribute {
     static get template() { return html `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   overflow: hidden;
 }
 
@@ -77105,19 +76386,12 @@ PersistentObjectAttribute.registerAttributeType("TranslatedString", PersistentOb
 let PersistentObjectAttributeUser = class PersistentObjectAttributeUser extends PersistentObjectAttribute {
     static get template() { return html `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
 }
 
 :host span {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
   overflow: hidden;
@@ -77204,19 +76478,11 @@ PersistentObjectAttribute.registerAttributeType("User", PersistentObjectAttribut
 
 let PersistentObjectAttributeLabel = class PersistentObjectAttributeLabel extends WebComponent {
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
-  -webkit-box-align: end;
-      -ms-flex-align: end;
-          align-items: flex-end;
+  flex-direction: row;
+  align-items: flex-end;
   height: var(--theme-h2);
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   overflow: hidden;
 }
 
@@ -77414,80 +76680,24 @@ let PersistentObjectAttributePresenter = class PersistentObjectAttributePresente
   white-space: nowrap;
   color: #222;
   position: relative;
+  --vi-persistent-object-attribute-presenter--attribute-height: calc(var(--vi-persistent-object-attribute-presenter--row-height, var(--theme-h2)) * 2 * (var(--vi-persistent-object-attribute-presenter--row-span) - .5));
 }
 
-:host([height="1"]) > #contentWrapper > #content {
-  height: calc(var(--theme-h2) * 2 * (1 - 0.5));
-}
-
-:host([height="2"]) > #contentWrapper > #content {
-  height: calc(var(--theme-h2) * 2 * (2 - 0.5));
-}
-
-:host([height="3"]) > #contentWrapper > #content {
-  height: calc(var(--theme-h2) * 2 * (3 - 0.5));
-}
-
-:host([height="4"]) > #contentWrapper > #content {
-  height: calc(var(--theme-h2) * 2 * (4 - 0.5));
-}
-
-:host([height="5"]) > #contentWrapper > #content {
-  height: calc(var(--theme-h2) * 2 * (5 - 0.5));
-}
-
-:host([height="6"]) > #contentWrapper > #content {
-  height: calc(var(--theme-h2) * 2 * (6 - 0.5));
-}
-
-:host([height="7"]) > #contentWrapper > #content {
-  height: calc(var(--theme-h2) * 2 * (7 - 0.5));
-}
-
-:host([height="8"]) > #contentWrapper > #content {
-  height: calc(var(--theme-h2) * 2 * (8 - 0.5));
-}
-
-:host([height="9"]) > #contentWrapper > #content {
-  height: calc(var(--theme-h2) * 2 * (9 - 0.5));
-}
-
-:host([height="10"]) > #contentWrapper > #content {
-  height: calc(var(--theme-h2) * 2 * (10 - 0.5));
-}
-
-:host #content {
-  display: -webkit-box;
-  display: -ms-flexbox;
+:host([height="flex"]), :host(.flex) {
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex-direction: column;
+}
+
+:host([height="flex"]) #content, :host(.flex) #content {
+  flex: 1;
   min-height: 0;
   min-width: 0;
 }
 
-:host #content ::slotted(.attribute), :host #content .attribute {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+:host ::slotted(*), :host([height="flex"]), :host(.flex) {
+  flex: 1;
   min-height: 0;
   min-width: 0;
-  outline: 0;
-}
-
-:host(:empty) #content {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-:host([bulk-edit]) #content > vi-checkbox {
-  -ms-flex-item-align: start;
-      align-self: flex-start;
-  width: var(--theme-h3);
 }
 
 :host vi-checkbox {
@@ -77498,15 +76708,11 @@ let PersistentObjectAttributePresenter = class PersistentObjectAttributePresente
   background-color: #eee;
 }
 
-:host input, :host textarea {
-  background-color: white;
-}
-
 :host(:focus) {
   outline: 0;
 }
 
-:host([developer]) #contentWrapper, :host([developer]) vi-persistent-object-attribute-label {
+:host([developer]) #content, :host([developer]) vi-persistent-object-attribute-label {
   opacity: 0.2;
 }
 
@@ -77516,19 +76722,10 @@ let PersistentObjectAttributePresenter = class PersistentObjectAttributePresente
   right: 0;
   bottom: 0;
   left: 0;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
   background-color: rgba(255, 255, 255, 0.3);
   border: 1px dashed var(--theme-color-faint);
   cursor: pointer;
@@ -77550,15 +76747,13 @@ let PersistentObjectAttributePresenter = class PersistentObjectAttributePresente
         <vi-persistent-object-attribute-label non-edit="[[nonEdit]]" attribute="[[attribute]]"></vi-persistent-object-attribute-label>
     </template>
 </dom-if>
-<div id="contentWrapper" class="layout horizontal flex">
+<div id="content" class="layout horizontal">
     <dom-if if="[[attribute.parent.isBulkEdit]]">
         <template>
             <vi-checkbox checked="{{attribute.isValueChanged}}" disabled="[[readOnly]]"></vi-checkbox>
         </template>
     </dom-if>
-    <div id="content">
-        <slot></slot>
-    </div>
+    <slot></slot>
 </div>
 <dom-if if="[[developer]]">
     <template>
@@ -77600,8 +76795,6 @@ let PersistentObjectAttributePresenter = class PersistentObjectAttributePresente
         if (!attribute || !isConnected)
             return;
         this._setLoading(true);
-        if (!this.getAttribute("height"))
-            this.height = this.app.configuration.getAttributeConfig(attribute).calculateHeight(attribute);
         let attributeType;
         if (DataType.isNumericType(attribute.type))
             attributeType = "Numeric";
@@ -77663,6 +76856,13 @@ let PersistentObjectAttributePresenter = class PersistentObjectAttributePresente
                 this._focusQueued = false;
             }
         }
+    }
+    _updateRowSpan(attribute, height) {
+        height = height || this.app.configuration.getAttributeConfig(attribute).calculateHeight(attribute);
+        if (height > 0)
+            this.style.setProperty("--vi-persistent-object-attribute-presenter--row-span", `${height}`);
+        else
+            this.style.removeProperty("--vi-persistent-object-attribute-presenter--row-span");
     }
     _computeEditing(isEditing, nonEdit) {
         return !nonEdit && isEditing;
@@ -77759,7 +76959,8 @@ PersistentObjectAttributePresenter = __decorate([
             },
             height: {
                 type: Number,
-                reflectToAttribute: true
+                reflectToAttribute: true,
+                value: null
             },
             hidden: {
                 type: Boolean,
@@ -77780,7 +76981,8 @@ PersistentObjectAttributePresenter = __decorate([
             "vi:configure": "_configure"
         },
         observers: [
-            "_attributeChanged(attribute, isConnected)"
+            "_attributeChanged(attribute, isConnected)",
+            "_updateRowSpan(attribute, height)"
         ],
         forwardObservers: [
             "attribute.parent.isEditing",
@@ -77812,9 +77014,7 @@ let PersistentObjectGroup = class PersistentObjectGroup extends WebComponent {
 }
 
 :host label {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
   display: block;
@@ -77833,9 +77033,8 @@ let PersistentObjectGroup = class PersistentObjectGroup extends WebComponent {
 }
 
 :host #grid {
-  display: -ms-grid;
   display: grid;
-      grid-template-areas: var(--vi-persistent-object-group--grid-areas, none);
+  grid-template-areas: var(--vi-persistent-object-group--grid-areas, none);
   grid-auto-columns: 1fr;
   grid-gap: 0 var(--vi-persistent-object-group--attribute-padding, var(--theme-h4));
 }
@@ -78063,19 +77262,12 @@ PersistentObjectGroup = __decorate([
 
 let PersistentObjectTab = class PersistentObjectTab extends ConfigurableWebComponent {
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
 }
 
 :host > vi-scroller {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
 }
@@ -78207,13 +77399,8 @@ PersistentObjectTab = __decorate([
 
 let PersistentObjectTabPresenter = class PersistentObjectTabPresenter extends WebComponent {
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   position: relative;
 }
 
@@ -78311,22 +77498,15 @@ let PersistentObjectDialog = class PersistentObjectDialog extends Dialog {
 }
 
 :host main {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  flex-direction: column;
   padding: 0;
   max-height: calc(80vh - (var(--theme-h1) + var(--theme-h5) * 2) - (var(--theme-h2) + var(--theme-h4) * 2));
   min-height: calc(var(--theme-h2) * 3);
 }
 
 :host main > vi-persistent-object-tab-presenter {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
   min-height: calc(var(--theme-h2) * 3);
@@ -78541,22 +77721,15 @@ let PersistentObjectWizardDialog = class PersistentObjectWizardDialog extends Di
 }
 
 :host main {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  flex-direction: column;
   padding: 0;
   max-height: calc(80vh - (var(--theme-h1) + var(--theme-h5) * 2) - (var(--theme-h2) + var(--theme-h4) * 2));
   min-height: calc(var(--theme-h2) * 3);
 }
 
 :host main > vi-persistent-object-tab-presenter {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
   min-height: calc(var(--theme-h2) * 3);
@@ -78838,29 +78011,20 @@ let App = App_1 = class App extends AppBase {
     static get template() {
         const baseTemplate = AppBase.template;
         baseTemplate.content.appendChild(html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
   width: 100vw;
   height: 100vh;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   font-family: 'Open Sans', Arial, Helvetica, sans-serif;
 }
 
 :host vi-app-route-presenter {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
 }
 
 :host vi-app-route-presenter > vi-app-route, :host vi-app-route-presenter > ::slotted(*) {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
 }
 </style>
 
@@ -79139,16 +78303,9 @@ let Overflow = class Overflow extends WebComponent {
   line-height: var(--theme-h1);
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-   -ms-user-select: none;
-       user-select: none;
-  display: -webkit-box;
-  display: -ms-flexbox;
+  user-select: none;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   position: relative;
 }
 
@@ -79157,8 +78314,6 @@ let Overflow = class Overflow extends WebComponent {
 }
 
 :host .visible {
-  display: -webkit-inline-box;
-  display: -ms-inline-flexbox;
   display: inline-flex;
   position: relative;
 }
@@ -79260,14 +78415,10 @@ let ActionBar = class ActionBar extends WebComponent {
         this.accent = false;
     }
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-   -ms-user-select: none;
-       user-select: none;
+  user-select: none;
   height: var(--theme-h1);
   background-color: var(--vi-action-bar-background-color, #F9F9F9);
 }
@@ -79300,13 +78451,11 @@ let ActionBar = class ActionBar extends WebComponent {
 :host .search vi-input-search {
   min-width: 16em;
   height: var(--theme-h2);
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 :host .search vi-input-search::part(input) {
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   border-width: 1px;
   border-style: solid;
   border-color: transparent;
@@ -79319,18 +78468,6 @@ let ActionBar = class ActionBar extends WebComponent {
 :host .search vi-input-search::part(input):focus {
   background-color: white;
   border-color: #EAEAEA;
-}
-
-:host .search vi-input-search::part(input)::-webkit-input-placeholder {
-  color: #B3B3B3;
-}
-
-:host .search vi-input-search::part(input):-ms-input-placeholder {
-  color: #B3B3B3;
-}
-
-:host .search vi-input-search::part(input)::-ms-input-placeholder {
-  color: #B3B3B3;
 }
 
 :host .search vi-input-search::part(input)::placeholder {
@@ -79441,13 +78578,8 @@ ActionBar = __decorate([
 
 let Audit = class Audit extends WebComponent {
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  flex-direction: column;
   --vi-audit-spacing: var(--theme-h2);
 }
 
@@ -79460,6 +78592,7 @@ let Audit = class Audit extends WebComponent {
   white-space: nowrap;
   overflow: hidden;
   -ms-text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
   text-overflow: ellipsis;
   padding: 0 var(--theme-h4);
   z-index: 2;
@@ -79467,16 +78600,10 @@ let Audit = class Audit extends WebComponent {
 }
 
 :host nav {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: reverse;
-      -ms-flex-direction: column-reverse;
-          flex-direction: column-reverse;
+  flex-direction: column-reverse;
   background-color: var(--vi-action-bar-background-color, #F9F9F9);
-  -webkit-box-shadow: var(--theme-box-shadow);
-          box-shadow: var(--theme-box-shadow);
+  box-shadow: var(--theme-box-shadow);
   margin-bottom: 3px;
   height: var(--theme-h1);
 }
@@ -79489,13 +78616,11 @@ let Audit = class Audit extends WebComponent {
 :host nav vi-input-search {
   min-width: 16em;
   height: var(--theme-h2);
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 :host nav vi-input-search::part(input) {
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   border-width: 1px;
   border-style: solid;
   border-color: transparent;
@@ -79503,18 +78628,6 @@ let Audit = class Audit extends WebComponent {
   padding-bottom: 0;
   padding-left: calc(var(--theme-h1) - var(--theme-h2));
   color: #333;
-}
-
-:host nav vi-input-search::part(input)::-webkit-input-placeholder {
-  color: #B3B3B3;
-}
-
-:host nav vi-input-search::part(input):-ms-input-placeholder {
-  color: #B3B3B3;
-}
-
-:host nav vi-input-search::part(input)::-ms-input-placeholder {
-  color: #B3B3B3;
 }
 
 :host nav vi-input-search::part(input)::placeholder {
@@ -79533,9 +78646,7 @@ let Audit = class Audit extends WebComponent {
 :host main {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-   -ms-user-select: none;
-       user-select: none;
+  user-select: none;
   padding: var(--theme-h5) var(--theme-h3) var(--theme-h3) var(--theme-h3);
   color: #333;
   fill: #333;
@@ -79563,16 +78674,14 @@ let Audit = class Audit extends WebComponent {
   font-weight: bold;
   font-size: 10px;
   line-height: calc(var(--theme-h1) / 2);
-  -webkit-transform: translateY(4px);
-          transform: translateY(4px);
+  transform: translateY(4px);
 }
 
 :host main .date .monthYear {
   color: #777;
   font-size: 11px;
   line-height: calc(var(--theme-h1) / 2);
-  -webkit-transform: translateY(-4px);
-          transform: translateY(-4px);
+  transform: translateY(-4px);
 }
 
 :host main .date:last-of-type {
@@ -79597,8 +78706,6 @@ let Audit = class Audit extends WebComponent {
 }
 
 :host main .entry:hover .expand {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
 }
 
@@ -79628,8 +78735,7 @@ let Audit = class Audit extends WebComponent {
   border-radius: 50%;
   width: var(--theme-h4);
   height: var(--theme-h4);
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   margin-top: calc(var(--theme-h5) / 2);
   margin-right: var(--theme-h4);
   z-index: 2;
@@ -79649,8 +78755,7 @@ let Audit = class Audit extends WebComponent {
 :host main .entry .time {
   padding-left: var(--theme-h2);
   width: 100px;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 :host main .entry .time span {
@@ -79658,38 +78763,28 @@ let Audit = class Audit extends WebComponent {
 }
 
 :host main .entry .time + div {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
 }
 
 :host main .entry .content vi-icon.icon {
-  -ms-flex-item-align: start;
-      align-self: flex-start;
+  align-self: flex-start;
   width: var(--theme-h2);
 }
 
 :host main .entry .content .action {
-  -webkit-transform: translateY(-2px);
-          transform: translateY(-2px);
+  transform: translateY(-2px);
   font-weight: 600;
 }
 
 :host main .entry .content .grid {
-  display: -ms-grid;
   display: grid;
-  -ms-grid-columns: var(--theme-h2) max-content auto;
-      grid-template-columns: var(--theme-h2) -webkit-max-content auto;
-      grid-template-columns: var(--theme-h2) max-content auto;
+  grid-template-columns: var(--theme-h2) max-content auto;
   line-height: var(--theme-h3);
-  -webkit-transform: translateY(-2px);
-          transform: translateY(-2px);
+  transform: translateY(-2px);
 }
 
 :host main .entry .content .grid > * {
-  -ms-flex-item-align: center;
-      -ms-grid-row-align: center;
-      align-self: center;
+  align-self: center;
 }
 
 :host main .entry .content .grid > vi-icon {
@@ -79707,7 +78802,6 @@ let Audit = class Audit extends WebComponent {
 }
 
 :host main .entry .content .grid > label.change {
-  -ms-grid-column: 2;
   grid-column: 2;
 }
 
@@ -79751,12 +78845,8 @@ let Audit = class Audit extends WebComponent {
   top: 0;
   bottom: 0;
   display: none;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
+  align-items: center;
+  justify-content: center;
   width: var(--theme-h1);
   background: var(--theme-color-lighter);
 }
@@ -79765,17 +78855,12 @@ let Audit = class Audit extends WebComponent {
   --vi-icon-width: 24px;
   --vi-icon-height: 24px;
   fill: var(--theme-color);
-  -webkit-transform: none;
-          transform: none;
-  -webkit-transition: -webkit-transform 0.3s ease-out;
-  transition: -webkit-transform 0.3s ease-out;
+  transform: none;
   transition: transform 0.3s ease-out;
-  transition: transform 0.3s ease-out, -webkit-transform 0.3s ease-out;
 }
 
 :host main .entry .expand vi-icon[expanded] {
-  -webkit-transform: rotate(180deg);
-          transform: rotate(180deg);
+  transform: rotate(180deg);
 }
 
 :host main .entry .info {
@@ -80145,19 +79230,10 @@ let FileDrop = class FileDrop extends WebComponent {
 }
 
 :host #dragOver {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
   position: absolute;
   top: 0;
   right: 0;
@@ -80173,8 +79249,7 @@ let FileDrop = class FileDrop extends WebComponent {
   bottom: 0;
   left: 0;
   background-color: rgba(255, 255, 255, 0.6);
-  -webkit-transform: translate3d(0, 0, 0);
-          transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
 }
 
 :host #dragOver vi-icon {
@@ -80265,13 +79340,8 @@ FileDrop = __decorate([
 let List = class List extends WebComponent {
     static get template() { return html `<style>:host {
   position: relative;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
 }
 </style>
 
@@ -80336,14 +79406,11 @@ let PersistentObjectTabBarItem = class PersistentObjectTabBarItem extends WebCom
     static get template() { return html `<style>:host {
   line-height: var(--theme-h1);
   height: var(--theme-h1);
-  -webkit-box-align: end;
-      -ms-flex-align: end;
-          align-items: flex-end;
+  align-items: flex-end;
   cursor: pointer !important;
   padding: 0 var(--theme-h4);
   border-bottom: 3px solid transparent;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
+  box-sizing: border-box;
   white-space: nowrap;
   overflow: hidden;
   color: var(--theme-color);
@@ -80461,9 +79528,7 @@ let PersistentObjectTabBar = class PersistentObjectTabBar extends WebComponent {
   height: var(--theme-h1);
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-   -ms-user-select: none;
-       user-select: none;
+  user-select: none;
 }
 
 :host vi-overflow::part(button) {
@@ -80532,13 +79597,8 @@ PersistentObjectTabBar = __decorate([
 
 let PersistentObject = class PersistentObject extends WebComponent {
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: reverse;
-      -ms-flex-direction: column-reverse;
-          flex-direction: column-reverse;
+  flex-direction: column-reverse;
   --vi-persistent-object-master-width: 40%;
 }
 
@@ -80556,6 +79616,7 @@ let PersistentObject = class PersistentObject extends WebComponent {
   white-space: nowrap;
   overflow: hidden;
   -ms-text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
   text-overflow: ellipsis;
   padding: 0 var(--theme-h4);
   z-index: 2;
@@ -80564,8 +79625,7 @@ let PersistentObject = class PersistentObject extends WebComponent {
 
 :host .tabs {
   background-color: #f1f1f1;
-  -webkit-box-shadow: var(--theme-box-shadow);
-          box-shadow: var(--theme-box-shadow);
+  box-shadow: var(--theme-box-shadow);
 }
 
 :host vi-persistent-object-tab-presenter > vi-query-items-presenter {
@@ -80591,9 +79651,7 @@ let PersistentObject = class PersistentObject extends WebComponent {
 :host([layout-master-detail]) #splitter {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-   -ms-user-select: none;
-       user-select: none;
+  user-select: none;
   position: relative;
   width: 4px;
   background-color: #f1f1f1;
@@ -80610,8 +79668,7 @@ let PersistentObject = class PersistentObject extends WebComponent {
   opacity: 0.01;
   background-color: white;
   z-index: 3;
-  -webkit-transform: translateX(-3px);
-          transform: translateX(-3px);
+  transform: translateX(-3px);
 }
 
 :host([layout-master-detail]) .master {
@@ -80627,9 +79684,7 @@ let PersistentObject = class PersistentObject extends WebComponent {
 }
 
 :host([layout-full-page]) .master {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
 }
@@ -80645,8 +79700,7 @@ let PersistentObject = class PersistentObject extends WebComponent {
 :host(:not([layout-master-tabs]):not([layout-detail-tabs])) .content vi-action-bar {
   padding-top: 0;
   z-index: 1;
-  -webkit-box-shadow: var(--theme-box-shadow);
-          box-shadow: var(--theme-box-shadow);
+  box-shadow: var(--theme-box-shadow);
   margin-bottom: 3px;
 }
 
@@ -81003,22 +80057,13 @@ PersistentObjectDetailsHeader = __decorate([
 
 let PersistentObjectPresenter = class PersistentObjectPresenter extends ConfigurableWebComponent {
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
 }
 
 :host([has-error]) {
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
+  align-items: center;
+  justify-content: center;
   color: var(--theme-color-error);
   fill: var(--theme-color-error);
 }
@@ -81035,9 +80080,7 @@ let PersistentObjectPresenter = class PersistentObjectPresenter extends Configur
 }
 
 :host ::slotted(*) {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
 }
@@ -81305,8 +80348,6 @@ ProgramUnitPresenter = __decorate([
 
 let QueryChartSelector = class QueryChartSelector extends WebComponent {
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
   border-left: 1px solid #EAEAEA;
   margin-left: var(--theme-h5);
@@ -81387,17 +80428,13 @@ class ChartType {
 
 let Query = class Query extends WebComponent {
     static get template() { return html `<style>:host {
-  display: -ms-grid;
   display: grid;
-  -ms-grid-columns: minmax(0, 1fr);
-      grid-template-columns: minmax(0, 1fr);
-  -ms-grid-rows: auto auto auto minmax(0, 1fr);
-      grid-template-rows: auto auto auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto auto minmax(0, 1fr);
 }
 
 :host vi-action-bar {
-  -webkit-box-shadow: var(--theme-box-shadow);
-          box-shadow: var(--theme-box-shadow);
+  box-shadow: var(--theme-box-shadow);
   z-index: 1;
 }
 
@@ -81410,6 +80447,7 @@ let Query = class Query extends WebComponent {
   white-space: nowrap;
   overflow: hidden;
   -ms-text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
   text-overflow: ellipsis;
   padding: 0 var(--theme-h4);
   z-index: 2;
@@ -81421,8 +80459,7 @@ let Query = class Query extends WebComponent {
 }
 
 :host([no-actions]) > header {
-  -webkit-box-shadow: var(--theme-box-shadow);
-          box-shadow: var(--theme-box-shadow);
+  box-shadow: var(--theme-box-shadow);
 }
 
 :host([no-actions]) vi-action-bar {
@@ -81434,7 +80471,6 @@ let Query = class Query extends WebComponent {
 }
 
 :host vi-query-items-presenter {
-  -ms-grid-row: 4;
   grid-row: 4;
 }
 </style>
@@ -81511,23 +80547,14 @@ Query = __decorate([
 
 let QueryPresenter = class QueryPresenter extends WebComponent {
     static get template() { return html `<style>:host {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   position: relative;
 }
 
 :host([has-error]) {
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
+  align-items: center;
+  justify-content: center;
   color: var(--theme-color-error);
   fill: var(--theme-color-error);
 }
@@ -81544,9 +80571,7 @@ let QueryPresenter = class QueryPresenter extends WebComponent {
 }
 
 :host ::slotted(vi-query-items-presenter), :host ::slotted(vi-query) {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
   min-width: 0;
 }
@@ -81668,103 +80693,4 @@ QueryPresenter = __decorate([
     })
 ], QueryPresenter);
 
-class SidePaneCore extends mixinBehaviors(IronOverlayBehavior, PolymerElement) {
-    static get template() { return html `<style>:host {
-  display: block;
-  -webkit-transform: translateX(calc(100% + 10px));
-          transform: translateX(calc(100% + 10px));
-  height: 100vh;
-  max-height: 100vh;
-  background: white;
-}
-</style>
-
-<slot></slot>`; }
-}
-customElements.define("vi-side-pane-core", SidePaneCore);
-let SidePane = class SidePane extends WebComponent {
-    static sidePaneTemplate(sidePane) {
-        const template = html `<style>:host {
-  display: block;
-  max-height: unset !important;
-  bottom: 0;
-}
-
-:host(:not([is-phone])) vi-side-pane-core {
-  -webkit-box-shadow: -5px 0px 10px -5px #000000;
-          box-shadow: -5px 0px 10px -5px #000000;
-  width: 40rem;
-}
-
-:host([is-phone]) vi-side-pane-core {
-  width: 100vw;
-}
-</style>
-
-<vi-side-pane-core with-backdrop="[[_computeWithBackdrop(withBackdrop, isPhone)]]" horizontal-align="right"></vi-side-pane-core>`;
-        const sidePaneCore = template.content.querySelector("vi-side-pane-core");
-        sidePaneCore.appendChild(sidePane.content.cloneNode(true));
-        return template;
-    }
-    connectedCallback() {
-        super.connectedCallback();
-        this.sidePaneCore.positionTarget = this.app;
-    }
-    get sidePaneCore() {
-        return this.shadowRoot.querySelector("vi-side-pane-core");
-    }
-    async open() {
-        document.body.style.setProperty("--iron-overlay-backdrop-opacity", ".3");
-        this.sidePaneCore.open();
-        this.sidePaneCore.animate([
-            { transform: "translateX(0)" }
-        ], {
-            duration: 500,
-            fill: "forwards",
-            easing: "cubic-bezier(0.215, 0.610, 0.355, 1.000)"
-        });
-        return new Promise(resolve => {
-            this._resolve = result => {
-                requestAnimationFrame(() => {
-                    this.sidePaneCore.animate([
-                        { transform: "translateX(calc(100% + 10px))" }
-                    ], {
-                        duration: 500,
-                        fill: "forwards",
-                        easing: "cubic-bezier(0.190, 1.000, 0.220, 1.000)"
-                    }).finished.then(() => {
-                        if (this.sidePaneCore.opened)
-                            this.sidePaneCore.close();
-                        resolve(result);
-                    });
-                });
-            };
-        });
-    }
-    close(result) {
-        this._resolve(result);
-    }
-    _onCancel() {
-        this._resolve(undefined);
-    }
-    _computeWithBackdrop(withBackdrop, isPhone) {
-        return withBackdrop && !isPhone;
-    }
-};
-SidePane = __decorate([
-    WebComponent.register({
-        properties: {
-            withBackdrop: {
-                type: Boolean,
-                reflectToAttribute: true,
-                value: true
-            }
-        },
-        listeners: {
-            "iron-overlay-canceled": "_onCancel"
-        },
-        mediaQueryAttributes: true
-    })
-], SidePane);
-
-export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppRoute, AppRoutePresenter, AppServiceHooks, AppServiceHooksBase, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, DialogCore, Error$1 as Error, FileDrop, Icon, iconRegister as IconRegiser, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellDefault, QueryGridCellImage, QueryGridCellPresenter, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, SelectOptionItem, SelectReferenceDialog, Sensitive, SidePane, SignIn, SignOut, SizeTracker, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, vidyano as Vidyano, WebComponent, moment };
+export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppRoute, AppRoutePresenter, AppServiceHooks, AppServiceHooksBase, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, DialogCore, Error$1 as Error, FileDrop, Icon, iconRegister as IconRegiser, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellDefault, QueryGridCellImage, QueryGridCellPresenter, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, SelectOptionItem, SelectReferenceDialog, Sensitive, SignIn, SignOut, SizeTracker, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, vidyano as Vidyano, WebComponent, moment };
