@@ -12727,6 +12727,8 @@ declare class PersistentObjectAttributePresenter extends ConfigurableWebComponen
     noLabel: boolean;
     disabled: boolean;
     readOnly: boolean;
+    readonly name: string;
+    readonly type: string;
     connectedCallback(): Promise<void>;
     disconnectedCallback(): void;
     private _devToggle;

@@ -76913,6 +76913,16 @@ PersistentObjectAttributePresenter = __decorate([
     ConfigurableWebComponent.register({
         properties: {
             attribute: Object,
+            name: {
+                type: String,
+                computed: "attribute.name",
+                reflectToAttribute: true
+            },
+            type: {
+                type: String,
+                computed: "attribute.type",
+                reflectToAttribute: true
+            },
             noLabel: {
                 type: Boolean,
                 reflectToAttribute: true,
