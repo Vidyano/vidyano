@@ -53,6 +53,16 @@ document.addEventListener("keyup", e => {
 @ConfigurableWebComponent.register({
     properties: {
         attribute: Object,
+        name: {
+            type: String,
+            computed: "attribute.name",
+            reflectToAttribute: true
+        },
+        type: {
+            type: String,
+            computed: "attribute.type",
+            reflectToAttribute: true
+        },
         noLabel: {
             type: Boolean,
             reflectToAttribute: true,
@@ -150,6 +160,8 @@ export class PersistentObjectAttributePresenter extends ConfigurableWebComponent
     noLabel: boolean;
     disabled: boolean;
     readOnly: boolean;
+    readonly name: string;
+    readonly type: string;
 
     async connectedCallback() {
         super.connectedCallback();
