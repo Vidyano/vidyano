@@ -5,34 +5,18 @@
     white-space: nowrap;
     color: #222;
     position: relative;
+    --vi-persistent-object-attribute-presenter--attribute-height: calc(var(--vi-persistent-object-attribute-presenter--row-height, var(--theme-h2)) * 2 * (var(--vi-persistent-object-attribute-presenter--row-span) - .5));
 
-    @for $i from 1 through 10 {
-        &[height="#{$i}"] > #contentWrapper > #content {
-            height: calc(var(--theme-h2) * 2 * (#{$i} - 0.5));
-        }
-    }
+    &[height="flex"], &.flex {
+        @include layout-vertical();
 
-    #content {
-        @include layout-horizontal();
-        @include flex();
-
-        ::slotted(.attribute), .attribute {
-            @include flex();
-            outline: 0;
-        }
-    }
-
-    &:empty #content{
-        background-color: rgba(0, 0, 0, 0.05);
-    }
-
-    &[bulk-edit] {
         #content {
-            > vi-checkbox {
-                @include self-start();
-                width: var(--theme-h3);
-            }
+            @include flex();
         }
+    }
+
+    ::slotted(*), &[height="flex"], &.flex {
+        @include flex();
     }
 
     vi-checkbox {
@@ -43,16 +27,12 @@
         }
     }
 
-    input, textarea {
-        background-color: white;
-    }
-
     &:focus {
         outline: 0;
     }
 
     &[developer] {
-        #contentWrapper, vi-persistent-object-attribute-label {
+        #content, vi-persistent-object-attribute-label {
             opacity: 0.2;
         }
 

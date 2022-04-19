@@ -99,7 +99,8 @@ document.addEventListener("keyup", e => {
         },
         height: {
             type: Number,
-            reflectToAttribute: true
+            reflectToAttribute: true,
+            value: null
         },
         hidden: {
             type: Boolean,
@@ -120,7 +121,8 @@ document.addEventListener("keyup", e => {
         "vi:configure": "_configure"
     },
     observers: [
-        "_attributeChanged(attribute, isConnected)"
+        "_attributeChanged(attribute, isConnected)",
+        "_updateRowSpan(attribute, height)"
     ],
     forwardObservers: [
         "attribute.parent.isEditing",
@@ -146,7 +148,6 @@ export class PersistentObjectAttributePresenter extends ConfigurableWebComponent
     attribute: Vidyano.PersistentObjectAttribute;
     nonEdit: boolean;
     noLabel: boolean;
-    height: number;
     disabled: boolean;
     readOnly: boolean;
 
@@ -193,9 +194,6 @@ export class PersistentObjectAttributePresenter extends ConfigurableWebComponent
             return;
 
         this._setLoading(true);
-
-        if (!this.getAttribute("height"))
-            this.height = this.app.configuration.getAttributeConfig(attribute).calculateHeight(attribute);
 
         let attributeType: string;
         if (Vidyano.DataType.isNumericType(attribute.type))
@@ -270,6 +268,14 @@ export class PersistentObjectAttributePresenter extends ConfigurableWebComponent
                 this._focusQueued = false;
             }
         }
+    }
+
+    private _updateRowSpan(attribute: Vidyano.PersistentObjectAttribute, height: number) {
+        height = height || this.app.configuration.getAttributeConfig(attribute).calculateHeight(attribute);
+        if (height > 0)
+            this.style.setProperty("--vi-persistent-object-attribute-presenter--row-span", `${height}`);
+        else
+            this.style.removeProperty("--vi-persistent-object-attribute-presenter--row-span");
     }
 
     private _computeEditing(isEditing: boolean, nonEdit: boolean): boolean {

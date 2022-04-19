@@ -1,14 +1,12 @@
 <link rel="stylesheet" href="persistent-object-attribute-edit.css" />
 
-<fieldset class="flex relative" disabled$="[[attribute.parent.isFrozen]]">
-    <div class="box fit layout horizontal justified">
-        <div class="left extras">
-            <slot name="left"></slot>
-        </div>
-        <slot></slot>
-        <div class="right extras">
-            <slot name="right"></slot>
-        </div>
+<div class="box" disabled$="[[attribute.parent.isFrozen]]">
+    <div class="left extras">
+        <slot name="left"></slot>
     </div>
-</fieldset>
+    <slot></slot>
+    <div class="right extras">
+        <slot name="right"></slot>
+    </div>
+</div>
 <vi-persistent-object-attribute-validation-error attribute="[[attribute]]"></vi-persistent-object-attribute-validation-error>

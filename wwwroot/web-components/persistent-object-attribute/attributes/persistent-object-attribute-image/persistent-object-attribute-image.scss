@@ -4,7 +4,7 @@
     @include layout-horizontal();
     @include relative();
     outline: none;
-    min-height: var(--theme-h2) !important;
+    height: var(--vi-persistent-object-attribute-presenter--attribute-height, 100%);
 
     img {
         position: absolute;

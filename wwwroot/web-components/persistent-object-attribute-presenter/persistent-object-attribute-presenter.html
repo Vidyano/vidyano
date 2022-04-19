@@ -5,15 +5,13 @@
         <vi-persistent-object-attribute-label non-edit="[[nonEdit]]" attribute="[[attribute]]"></vi-persistent-object-attribute-label>
     </template>
 </dom-if>
-<div id="contentWrapper" class="layout horizontal flex">
+<div id="content" class="layout horizontal">
     <dom-if if="[[attribute.parent.isBulkEdit]]">
         <template>
             <vi-checkbox checked="{{attribute.isValueChanged}}" disabled="[[readOnly]]"></vi-checkbox>
         </template>
     </dom-if>
-    <div id="content">
-        <slot></slot>
-    </div>
+    <slot></slot>
 </div>
 <dom-if if="[[developer]]">
     <template>

@@ -4,6 +4,7 @@
     @include noSelection();
     @include layout-horizontal();
     line-height: normal;
+    height: var(--vi-persistent-object-attribute-presenter--attribute-height, 100%);
 
     vi-checkbox {
         display: inline-block;

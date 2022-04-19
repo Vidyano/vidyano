@@ -3,22 +3,18 @@
 :host {
     @include layout-horizontal();
     @include flex();
-    @include relative();
     line-height: var(--theme-h2);
-
-    fieldset {
-        margin: 0;
-        padding: 0;
-        border: none;
-    }
 
     .box {
         @include layout-horizontal();
         @include layout-justified();
+        @include flex();
+        position: relative;
         background-color: white;
-        min-height: calc(var(--theme-h2) - 2px);
+        height: var(--vi-persistent-object-attribute-presenter--attribute-height, 100%);
         line-height: calc(var(--theme-h2) - 2px);
         border: 1px solid var(--theme-light-border);
+        box-sizing: border-box;
     }
 
     &[read-only] {
