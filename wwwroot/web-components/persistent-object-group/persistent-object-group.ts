@@ -23,7 +23,10 @@ interface IPersistentObjectGroupRow {
     properties: {
         group: Object,
         groupIndex: Number,
-        columns: Number,
+        columns: {
+            type: Number,
+            value: 1
+        },
         label: {
             type: String,
             computed: "_computeLabel(group, groupIndex, translations)"
@@ -115,7 +118,7 @@ export class PersistentObjectGroup extends WebComponent {
             return;
 
         this._clearAsyncTasks();
-        oldItems.filter(item => item.presenter.isConnected).forEach(item => this.$.grid.removeChild(item.presenter));
+        oldItems.filter(item => item.presenter.isConnected).forEach(item => this.removeChild(item.presenter));
 
         const areas: string[][] = [];
 
@@ -211,7 +214,7 @@ export class PersistentObjectGroup extends WebComponent {
 
             const renderItem = item;
             const renderHandle = Polymer.Async.animationFrame.run(() => {
-                this.$.grid.appendChild(renderItem.presenter);
+                this.appendChild(renderItem.presenter);
                 renderItem.presenter.updateStyles({
                     "--vi-persistent-object-group--attribute-area": renderItem.area
                 });

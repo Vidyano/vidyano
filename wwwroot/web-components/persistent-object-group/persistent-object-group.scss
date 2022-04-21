@@ -2,7 +2,7 @@
 
 :host {
     display: block;
-    padding: 0 var(--vi-persistent-object-group--attribute-padding, var(--theme-h4));
+    padding: var(--vi-persistent-object-group--attribute-padding, 0 var(--theme-h4));
 
     &[loading] {
         visibility: hidden;
@@ -29,11 +29,10 @@
         display: grid;
         grid-template-areas: var(--vi-persistent-object-group--grid-areas, none);
         grid-auto-columns: 1fr;
-        grid-gap: 0 var(--vi-persistent-object-group--attribute-padding, var(--theme-h4));
+        grid-gap: var(--vi-persistent-object-group--attribute-gap, var(--theme-h4));
 
-        vi-persistent-object-attribute-presenter {
+        ::slotted(vi-persistent-object-attribute-presenter) {
             grid-area: var(--vi-persistent-object-group--attribute-area);
-            overflow: hidden;
         }
     }
 }
