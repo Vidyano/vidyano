@@ -7,15 +7,7 @@
     position: relative;
     --vi-persistent-object-attribute-presenter--attribute-height: calc(var(--vi-persistent-object-attribute-presenter--row-height, var(--theme-h2)) * 2 * (var(--vi-persistent-object-attribute-presenter--row-span) - .5));
 
-    &[height="flex"], &.flex {
-        @include layout-vertical();
-
-        #content {
-            @include flex();
-        }
-    }
-
-    ::slotted(*), &[height="flex"], &.flex {
+    ::slotted(*) {
         @include flex();
     }
 
