@@ -207,6 +207,10 @@ export class PersistentObjectAttributePresenter extends ConfigurableWebComponent
 
         this._setLoading(true);
 
+        const nolabel = attribute.getTypeHint("nolabel", undefined, undefined, true);
+        if (nolabel !== undefined)
+            this.noLabel = nolabel === "true";
+
         let attributeType: string;
         if (Vidyano.DataType.isNumericType(attribute.type))
             attributeType = "Numeric";
