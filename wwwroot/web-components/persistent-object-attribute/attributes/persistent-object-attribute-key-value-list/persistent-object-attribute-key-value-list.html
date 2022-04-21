@@ -11,7 +11,7 @@
         <dom-if if="[[!radio]]">
             <template>
                 <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-                    <vi-select options="[[options]]" selected-option="{{value}}" readonly="[[readOnly]]" disabled="[[attribute.parent.isFrozen]]" placeholder="[[placeholder]]" group-separator="[[groupSeparator]]" sensitive$="[[sensitive]]"></vi-select>
+                    <vi-select options="[[options]]" selected-option="{{value}}" readonly="[[readOnly]]" disabled="[[attribute.parent.isFrozen]]" placeholder="[[placeholder]]" group-separator="[[groupSeparator]]" disable-filtering="[[disableFiltering]]" sensitive$="[[sensitive]]"></vi-select>
                 </vi-persistent-object-attribute-edit>
             </template>
         </dom-if>

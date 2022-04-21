@@ -18,6 +18,11 @@ import "../../../checkbox/checkbox.js"
         groupSeparator: {
             type: String,
             computed: "_computeGroupSeparator(attribute)"
+        },
+        disableFiltering: {
+            type: Boolean,
+            reflectToAttribute: true,
+            computed: "_computeDisableFiltering(attribute)"
         }
     }    
 })
@@ -39,6 +44,10 @@ export class PersistentObjectAttributeKeyValueList extends PersistentObjectAttri
 
     private _computeGroupSeparator(attribute: Vidyano.PersistentObjectAttribute): string {
         return attribute && attribute.getTypeHint("groupseparator", null, undefined, true);
+    }
+
+    private _computeDisableFiltering(attribute: Vidyano.PersistentObjectAttribute): string {
+        return attribute && attribute.getTypeHint("disablefiltering", null, undefined, true);
     }
 
     private _isRadioChecked(option: Vidyano.PersistentObjectAttributeOption, value: string): boolean {
