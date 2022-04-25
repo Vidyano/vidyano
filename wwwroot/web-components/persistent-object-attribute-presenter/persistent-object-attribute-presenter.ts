@@ -122,6 +122,11 @@ document.addEventListener("keyup", e => {
             reflectToAttribute: true,
             computed: "_computeHasError(attribute.validationError)"
         },
+        hasValue: {
+            type: Boolean,
+            reflectToAttribute: true,
+            computed: "_computeHasValue(attribute.value)"
+        },
         developer: {
             type: Boolean,
             reflectToAttribute: true
@@ -324,6 +329,10 @@ export class PersistentObjectAttributePresenter extends ConfigurableWebComponent
 
     private _computeHasError(validationError: string): boolean {
         return !String.isNullOrEmpty(validationError);
+    }
+
+    private _computeHasValue(value: any): boolean {
+        return value != null && value !== "";
     }
 
     private _loadingChanged(loading: boolean) {
