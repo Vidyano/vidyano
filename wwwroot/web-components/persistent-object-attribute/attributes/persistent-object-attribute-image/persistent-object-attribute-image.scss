@@ -4,7 +4,6 @@
     @include layout-horizontal();
     @include relative();
     outline: none;
-    height: var(--vi-persistent-object-attribute-presenter--attribute-height, 100%);
 
     img {
         position: absolute;

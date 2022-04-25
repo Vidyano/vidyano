@@ -2,7 +2,6 @@
 
 :host {
     @include layout-horizontal();
-    overflow: hidden;
 
     textarea {
         resize: none;
