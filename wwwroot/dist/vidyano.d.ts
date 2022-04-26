@@ -12515,6 +12515,7 @@ declare class PersistentObjectAttributeKeyValueList extends PersistentObjectAttr
     private _computeRadio;
     private _computeOrientation;
     private _computeGroupSeparator;
+    private _computeDisableFiltering;
     private _isRadioChecked;
     private _radioLabel;
     private _radioChanged;
@@ -12743,6 +12744,7 @@ declare class PersistentObjectAttributePresenter extends ConfigurableWebComponen
     private _computeRequired;
     private _computeReadOnly;
     private _computeHasError;
+    private _computeHasValue;
     private _loadingChanged;
     private _openAttributeManagement;
     private _configure;

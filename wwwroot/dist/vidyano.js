@@ -57833,7 +57833,6 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
   min-width: 0;
   position: relative;
   background-color: white;
-  height: var(--vi-persistent-object-attribute-presenter--attribute-height, 100%);
   line-height: calc(var(--theme-h2) - 2px);
   border: 1px solid var(--theme-light-border);
   box-sizing: border-box;
@@ -58087,11 +58086,7 @@ PersistentObjectAttributeEdit = __decorate([
 const styleElement = document.createElement("dom-module");
 styleElement.innerHTML = `<template>
     <style include="vi-flex-layout-style-module"></style>
-    <style>:host {
-  height: var(--vi-persistent-object-attribute-presenter--attribute-height, 100%);
-}
-
-:host textarea {
+    <style>:host textarea {
   overflow: auto;
   resize: none;
   padding: var(--theme-h5);
@@ -59149,7 +59144,6 @@ let PersistentObjectAttributeBoolean = class PersistentObjectAttributeBoolean ex
   display: flex;
   flex-direction: row;
   line-height: normal;
-  height: var(--vi-persistent-object-attribute-presenter--attribute-height, 100%);
 }
 
 :host vi-checkbox {
@@ -64370,7 +64364,6 @@ let PersistentObjectAttributeImage = class PersistentObjectAttributeImage extend
   flex-direction: row;
   position: relative;
   outline: none;
-  height: var(--vi-persistent-object-attribute-presenter--attribute-height, 100%);
 }
 
 :host img {
@@ -64580,7 +64573,7 @@ let PersistentObjectAttributeKeyValueList = class PersistentObjectAttributeKeyVa
         <dom-if if="[[!radio]]">
             <template>
                 <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-                    <vi-select options="[[options]]" selected-option="{{value}}" readonly="[[readOnly]]" disabled="[[attribute.parent.isFrozen]]" placeholder="[[placeholder]]" group-separator="[[groupSeparator]]" sensitive$="[[sensitive]]"></vi-select>
+                    <vi-select options="[[options]]" selected-option="{{value}}" readonly="[[readOnly]]" disabled="[[attribute.parent.isFrozen]]" placeholder="[[placeholder]]" group-separator="[[groupSeparator]]" disable-filtering="[[disableFiltering]]" sensitive$="[[sensitive]]"></vi-select>
                 </vi-persistent-object-attribute-edit>
             </template>
         </dom-if>
@@ -64619,6 +64612,9 @@ let PersistentObjectAttributeKeyValueList = class PersistentObjectAttributeKeyVa
     _computeGroupSeparator(attribute) {
         return attribute && attribute.getTypeHint("groupseparator", null, undefined, true);
     }
+    _computeDisableFiltering(attribute) {
+        return attribute && attribute.getTypeHint("disablefiltering", null, undefined, true);
+    }
     _isRadioChecked(option, value) {
         return option == null && value == null || (option && option.key === value);
     }
@@ -64644,6 +64640,11 @@ PersistentObjectAttributeKeyValueList = __decorate([
             groupSeparator: {
                 type: String,
                 computed: "_computeGroupSeparator(attribute)"
+            },
+            disableFiltering: {
+                type: Boolean,
+                reflectToAttribute: true,
+                computed: "_computeDisableFiltering(attribute)"
             }
         }
     })
@@ -74494,7 +74495,6 @@ let PersistentObjectAttributeMultiLineString = class PersistentObjectAttributeMu
 <style>:host {
   display: flex;
   flex-direction: row;
-  overflow: hidden;
 }
 
 :host textarea {
@@ -76486,20 +76486,20 @@ let PersistentObjectAttributeLabel = class PersistentObjectAttributeLabel extend
   overflow: hidden;
 }
 
-:host label {
-  font-size: 11px;
+label {
+  font-size: .9em;
   font-weight: 400;
   color: var(--vi-persistent-object-attribute-label-color, #888);
   letter-spacing: 0.5px;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding-bottom: var(--theme-h5);
+  line-height: 2em;
 }
 
-:host .required {
+.required {
   display: none;
   position: relative;
-  font-size: 10px;
+  font-size: .8em;
   color: white;
   line-height: 1.5em;
   height: 14px;
@@ -76508,7 +76508,7 @@ let PersistentObjectAttributeLabel = class PersistentObjectAttributeLabel extend
   background-color: var(--theme-color);
 }
 
-:host .required::before {
+.required::before {
   content: "";
   position: absolute;
   right: 100%;
@@ -76521,27 +76521,27 @@ let PersistentObjectAttributeLabel = class PersistentObjectAttributeLabel extend
   border-right-style: solid;
 }
 
-:host .locked {
+.locked {
   fill: #666;
   display: none;
   margin: 0 0 2px var(--theme-h5);
 }
 
-:host .locked > vi-icon {
+.locked > vi-icon {
   height: var(--theme-h3);
   --vi-icon-width: 10px;
   --vi-icon-height: 10px;
   fill: var(--vi-persistent-object-attribute-label-color, #888);
 }
 
-:host .info {
+.info {
   width: var(--theme-h3);
   height: var(--theme-h3);
   margin-bottom: 2px;
   margin-left: 2px;
 }
 
-:host .info vi-icon {
+.info vi-icon {
   --vi-icon-width: 12px;
   --vi-icon-height: 12px;
   fill: var(--theme-color);
@@ -76683,18 +76683,11 @@ let PersistentObjectAttributePresenter = class PersistentObjectAttributePresente
   --vi-persistent-object-attribute-presenter--attribute-height: calc(var(--vi-persistent-object-attribute-presenter--row-height, var(--theme-h2)) * 2 * (var(--vi-persistent-object-attribute-presenter--row-span) - .5));
 }
 
-:host([height="flex"]), :host(.flex) {
-  display: flex;
-  flex-direction: column;
+:host #content {
+  min-height: var(--vi-persistent-object-attribute-presenter--attribute-height);
 }
 
-:host([height="flex"]) #content, :host(.flex) #content {
-  flex: 1;
-  min-height: 0;
-  min-width: 0;
-}
-
-:host ::slotted(*), :host([height="flex"]), :host(.flex) {
+:host ::slotted(*) {
   flex: 1;
   min-height: 0;
   min-width: 0;
@@ -76744,7 +76737,7 @@ let PersistentObjectAttributePresenter = class PersistentObjectAttributePresente
 
 <dom-if if="[[!noLabel]]">
     <template>
-        <vi-persistent-object-attribute-label non-edit="[[nonEdit]]" attribute="[[attribute]]"></vi-persistent-object-attribute-label>
+        <vi-persistent-object-attribute-label non-edit="[[nonEdit]]" attribute="[[attribute]]" part="label"></vi-persistent-object-attribute-label>
     </template>
 </dom-if>
 <div id="content" class="layout horizontal">
@@ -76795,6 +76788,9 @@ let PersistentObjectAttributePresenter = class PersistentObjectAttributePresente
         if (!attribute || !isConnected)
             return;
         this._setLoading(true);
+        const nolabel = attribute.getTypeHint("nolabel", undefined, undefined, true);
+        if (nolabel !== undefined)
+            this.noLabel = nolabel === "true";
         let attributeType;
         if (DataType.isNumericType(attribute.type))
             attributeType = "Numeric";
@@ -76857,7 +76853,9 @@ let PersistentObjectAttributePresenter = class PersistentObjectAttributePresente
             }
         }
     }
-    _updateRowSpan(attribute, height) {
+    _updateRowSpan(attribute, height, isConnected) {
+        if (!isConnected)
+            return;
         height = height || this.app.configuration.getAttributeConfig(attribute).calculateHeight(attribute);
         if (height > 0)
             this.style.setProperty("--vi-persistent-object-attribute-presenter--row-span", `${height}`);
@@ -76887,6 +76885,9 @@ let PersistentObjectAttributePresenter = class PersistentObjectAttributePresente
     }
     _computeHasError(validationError) {
         return !String.isNullOrEmpty(validationError);
+    }
+    _computeHasValue(value) {
+        return value != null && value !== "";
     }
     _loadingChanged(loading) {
         if (loading)
@@ -76982,6 +76983,11 @@ PersistentObjectAttributePresenter = __decorate([
                 reflectToAttribute: true,
                 computed: "_computeHasError(attribute.validationError)"
             },
+            hasValue: {
+                type: Boolean,
+                reflectToAttribute: true,
+                computed: "_computeHasValue(attribute.value)"
+            },
             developer: {
                 type: Boolean,
                 reflectToAttribute: true
@@ -76992,7 +76998,7 @@ PersistentObjectAttributePresenter = __decorate([
         },
         observers: [
             "_attributeChanged(attribute, isConnected)",
-            "_updateRowSpan(attribute, height)"
+            "_updateRowSpan(attribute, height, isConnected)"
         ],
         forwardObservers: [
             "attribute.parent.isEditing",
@@ -77016,7 +77022,7 @@ let PersistentObjectGroup = class PersistentObjectGroup extends WebComponent {
     }
     static get template() { return html `<style>:host {
   display: block;
-  padding: 0 var(--vi-persistent-object-group--attribute-padding, var(--theme-h4));
+  padding: var(--vi-persistent-object-group--attribute-padding, 0 var(--theme-h4));
 }
 
 :host([loading]) {
@@ -77046,17 +77052,18 @@ let PersistentObjectGroup = class PersistentObjectGroup extends WebComponent {
   display: grid;
   grid-template-areas: var(--vi-persistent-object-group--grid-areas, none);
   grid-auto-columns: 1fr;
-  grid-gap: 0 var(--vi-persistent-object-group--attribute-padding, var(--theme-h4));
+  grid-gap: var(--vi-persistent-object-group--attribute-gap, 0 var(--theme-h4));
 }
 
-:host #grid vi-persistent-object-attribute-presenter {
+:host #grid ::slotted(vi-persistent-object-attribute-presenter) {
   grid-area: var(--vi-persistent-object-group--attribute-area);
-  overflow: hidden;
 }
 </style>
 
 <label>[[label]]</label>
-<div id="grid"></div>`; }
+<div id="grid">
+    <slot></slot>
+</div>`; }
     disconnectedCallback() {
         super.disconnectedCallback();
         this._clearAsyncTasks();
@@ -77100,7 +77107,7 @@ let PersistentObjectGroup = class PersistentObjectGroup extends WebComponent {
         if (this._itemsChecksum === itemsChecksum)
             return;
         this._clearAsyncTasks();
-        oldItems.filter(item => item.presenter.isConnected).forEach(item => this.$.grid.removeChild(item.presenter));
+        oldItems.filter(item => item.presenter.isConnected).forEach(item => this.removeChild(item.presenter));
         const areas = [];
         let item = items.shift();
         let column = 0, row = 0;
@@ -77177,7 +77184,7 @@ let PersistentObjectGroup = class PersistentObjectGroup extends WebComponent {
             }
             const renderItem = item;
             const renderHandle = animationFrame.run(() => {
-                this.$.grid.appendChild(renderItem.presenter);
+                this.appendChild(renderItem.presenter);
                 renderItem.presenter.updateStyles({
                     "--vi-persistent-object-group--attribute-area": renderItem.area
                 });
@@ -77241,7 +77248,10 @@ PersistentObjectGroup = __decorate([
         properties: {
             group: Object,
             groupIndex: Number,
-            columns: Number,
+            columns: {
+                type: Number,
+                value: 1
+            },
             label: {
                 type: String,
                 computed: "_computeLabel(group, groupIndex, translations)"
