@@ -137,7 +137,7 @@ document.addEventListener("keyup", e => {
     },
     observers: [
         "_attributeChanged(attribute, isConnected)",
-        "_updateRowSpan(attribute, height)"
+        "_updateRowSpan(attribute, height, isConnected)"
     ],
     forwardObservers: [
         "attribute.parent.isEditing",
@@ -291,7 +291,10 @@ export class PersistentObjectAttributePresenter extends ConfigurableWebComponent
         }
     }
 
-    private _updateRowSpan(attribute: Vidyano.PersistentObjectAttribute, height: number) {
+    private _updateRowSpan(attribute: Vidyano.PersistentObjectAttribute, height: number, isConnected: boolean) {
+        if (!isConnected)
+            return;
+
         height = height || this.app.configuration.getAttributeConfig(attribute).calculateHeight(attribute);
         if (height > 0)
             this.style.setProperty("--vi-persistent-object-attribute-presenter--row-span", `${height}`);
