@@ -8,7 +8,7 @@
     --vi-persistent-object-attribute-presenter--attribute-height: calc(var(--vi-persistent-object-attribute-presenter--row-height, var(--theme-h2)) * 2 * (var(--vi-persistent-object-attribute-presenter--row-span) - .5));
 
     #content {
-        min-height: var(--vi-persistent-object-attribute-presenter--attribute-height);
+        height: var(--vi-persistent-object-attribute-presenter--attribute-height);
     }
 
     ::slotted(*) {
