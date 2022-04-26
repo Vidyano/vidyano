@@ -40062,6 +40062,8 @@ MessageDialog = __decorate([
 let Sensitive = class Sensitive extends WebComponent {
     static get template() { return html `<style>:host {
   display: block;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 :host(:not([disabled])[is-app-sensitive]) {
@@ -77057,6 +77059,7 @@ let PersistentObjectGroup = class PersistentObjectGroup extends WebComponent {
 
 :host #grid ::slotted(vi-persistent-object-attribute-presenter) {
   grid-area: var(--vi-persistent-object-group--attribute-area);
+  overflow: hidden;
 }
 </style>
 
