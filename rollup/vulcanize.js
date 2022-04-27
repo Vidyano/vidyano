@@ -16,7 +16,7 @@ async function replaceAsync(str, regex, asyncFn) {
 
 const htmlLink = /<link.*?href=[\"'](.+?.html)[\"'].*?>/gm;
 const cssLink = /<link.*?href=[\"'](.+?.css)[\"'].*?>/gm;
-const cssReplaceHost = /:host([^{( >-][^{> ,]+)([{> ,])/gm;
+const cssReplaceHost = /:host([^{( >-][^{> ,]+?)([{> ,]|::before|::after)/gm;
 
 export default function vulcanize() {
     return {
