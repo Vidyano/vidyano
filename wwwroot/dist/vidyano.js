@@ -35664,7 +35664,7 @@ WebComponent.registrations = {};
 let resizeObserver$2;
 resizeObserver$2 = new ResizeObserver(entries => {
     entries.forEach(e => {
-        let tracker = Array.from(e.target.shadowRoot?.children || e.target.children).find(e => e instanceof SizeTracker);
+        let tracker = [...Array.from(e.target.shadowRoot?.children || []), ...Array.from(e.target.children || [])].find(e => e instanceof SizeTracker);
         if (tracker)
             tracker["_triggerSizeChanged"](e.contentRect);
     });
@@ -37358,10 +37358,7 @@ let Dialog = class Dialog extends WebComponent {
 </style>
 
 <vi-dialog-core with-backdrop>
-    <div class="fit">
-        <vi-size-tracker on-sizechanged="_sizechanged"></vi-size-tracker>
-    </div>
-    <slot></slot>
+    <vi-size-tracker on-sizechanged="_sizechanged"></vi-size-tracker>
 </vi-dialog-core>`;
         const dialogCore = template.content.querySelector("vi-dialog-core");
         dialogCore.appendChild(dialog.content.cloneNode(true));
@@ -37454,7 +37451,8 @@ Dialog = __decorate([
         },
         keybindings: {
             "esc": "_esc"
-        }
+        },
+        mediaQueryAttributes: true
     })
 ], Dialog);
 
@@ -37776,36 +37774,34 @@ let SelectReferenceDialog = class SelectReferenceDialog extends Dialog {
         if (forceSearch || !!query.textSearch || !query.hasSearched)
             query.search();
     }
-    static get template() { return Dialog.dialogTemplate(html `<style>:host vi-input-search {
+    static get template() { return Dialog.dialogTemplate(html `<style>vi-input-search {
   line-height: var(--theme-h2);
   height: var(--theme-h2);
-  border-top: 1px solid #EAEAEA;
-  border-right: 1px solid #EAEAEA;
-  border-bottom: 1px solid #EAEAEA;
-  border-left: 1px solid #EAEAEA;
+  border: 1px solid #EAEAEA;
   box-sizing: border-box;
 }
 
-:host vi-input-search::part(input) {
+vi-input-search::part(input) {
   color: #333;
 }
 
-:host vi-input-search::part(input):focus {
+vi-input-search::part(input):focus {
   background-color: white;
 }
 
-:host-context(vi-app[is-phone]) main vi-query-grid {
-  width: 85vw;
-  min-height: 75vh;
+main vi-query-grid {
+  height: 75vh;
 }
 
-:host-context(vi-app[is-tablet]) main vi-query-grid {
-  min-height: 60vh;
+:host([is-phone]) main vi-query-grid {
+  width: 85vw;
+}
+
+:host([is-tablet]) main vi-query-grid {
   width: 90vw;
 }
 
-:host-context(vi-app[is-desktop]) main vi-query-grid {
-  min-height: 60vh;
+:host([is-desktop]) main vi-query-grid {
   width: 75vw;
 }
 </style>
@@ -37814,9 +37810,9 @@ let SelectReferenceDialog = class SelectReferenceDialog extends Dialog {
     <h4 class="flex">[[query.label]]</h4>
     <vi-input-search id="search" value="{{query.textSearch}}" on-search="_search" hidden$="[[initializing]]" autofocus></vi-input-search>
 </header>
-<main class="vertical layout">
+<main>
     <vi-notification service-object="[[query]]"></vi-notification>
-    <vi-query-grid class="flex" query="[[query]]" on-item-tap="_selectReference" as-lookup initializing="{{initializing}}"></vi-query-grid>
+    <vi-query-grid query="[[query]]" on-item-tap="_selectReference" as-lookup initializing="{{initializing}}"></vi-query-grid>
 </main>
 <footer class="horizontal-reverse layout justified">
     <div class="horizontal layout end-justified">
@@ -57250,9 +57246,9 @@ let QueryGrid = class QueryGrid extends WebComponent {
                 return;
             queuedItemIndexes.forEach(index => this._getItem(index));
         });
-        if (this.initializing && !this.query.isBusy) {
+        if (this.initializing && this.query.isBusy) {
             this.query.queueWork(async () => {
-                if (this.initializing && !this.query.isBusy)
+                if (this.initializing && !this.query.items.length)
                     this._setInitializing(false);
             });
         }
@@ -63611,7 +63607,9 @@ let PersistentObjectAttributeDateTime = class PersistentObjectAttributeDateTime 
 
 <dom-if if="[[!editing]]">
     <template>
-        <vi-sensitive disabled="[[!sensitive]]">[[attribute.displayValue]]</vi-sensitive>
+        <vi-sensitive disabled="[[!sensitive]]">
+            <span>[[attribute.displayValue]]</span>
+        </vi-sensitive>
     </template>
 </dom-if>
 <dom-if if="[[editing]]">
@@ -63641,7 +63639,9 @@ let PersistentObjectAttributeDateTime = class PersistentObjectAttributeDateTime 
                 </dom-if>
                 <dom-if if="[[monthMode]]">
                     <template>
-                        <vi-sensitive id="monthMode" hidden$="[[!hasDateComponent]]" disabled="[[!sensitive]]">[[attribute.displayValue]]</vi-sensitive>
+                        <vi-sensitive id="monthMode" hidden$="[[!hasDateComponent]]" disabled="[[!sensitive]]">
+                            <span>[[attribute.displayValue]]</span>
+                        </vi-sensitive>
                     </template>
                 </dom-if>
             </vi-sensitive>
@@ -64030,7 +64030,9 @@ let PersistentObjectAttributeDropDown = class PersistentObjectAttributeDropDown 
 
 <dom-if if="[[!editing]]">
     <template>
-        <vi-sensitive disabled="[[!sensitive]]">[[attribute.displayValue]]</vi-sensitive>
+        <vi-sensitive disabled="[[!sensitive]]">
+            <span>[[attribute.displayValue]]</span>
+        </vi-sensitive>
     </template>
 </dom-if>
 <dom-if if="[[editing]]">
@@ -64057,7 +64059,9 @@ let PersistentObjectAttributeDropDown = class PersistentObjectAttributeDropDown 
                 </dom-if>
                 <dom-if if="[[sensitive]]">
                     <template>
-                        <vi-sensitive>[[attribute.displayValue]]</vi-sensitive>
+                        <vi-sensitive>
+                            <span>[[attribute.displayValue]]</span>
+                        </vi-sensitive>
                     </template>
                 </dom-if>
             </template>
@@ -64567,7 +64571,9 @@ let PersistentObjectAttributeKeyValueList = class PersistentObjectAttributeKeyVa
 
 <dom-if if="[[!editing]]">
     <template>
-        <vi-sensitive disabled="[[!sensitive]]">[[attribute.displayValue]]</vi-sensitive>
+        <vi-sensitive disabled="[[!sensitive]]">
+            <span>[[attribute.displayValue]]</span>
+        </vi-sensitive>
     </template>
 </dom-if>
 <dom-if if="[[editing]]">
@@ -64594,7 +64600,9 @@ let PersistentObjectAttributeKeyValueList = class PersistentObjectAttributeKeyVa
                 </dom-if>
                 <dom-if if="[[sensitive]]">
                     <template>
-                        <vi-sensitive>[[attribute.displayValue]]</vi-sensitive>
+                        <vi-sensitive>
+                            <span>[[attribute.displayValue]]</span>
+                        </vi-sensitive>
                     </template>
                 </dom-if>
             </template>
@@ -75109,7 +75117,9 @@ let PersistentObjectAttributeNullableBoolean = class PersistentObjectAttributeNu
 
 <dom-if if="[[!editing]]" restamp>
     <template>
-        <vi-sensitive disabled="[[!sensitive]]">[[attribute.displayValue]]</vi-sensitive>
+        <vi-sensitive disabled="[[!sensitive]]">
+            <span>[[attribute.displayValue]]</span>
+        </vi-sensitive>
     </template>
 </dom-if>
 <dom-if if="[[editing]]">
@@ -75216,7 +75226,9 @@ let PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = clas
 
 <dom-if if="[[!editing]]">
     <template>
-        <vi-sensitive disabled="[[!sensitive]]">[[attribute.displayValue]]</vi-sensitive>
+        <vi-sensitive disabled="[[!sensitive]]">
+            <span>[[attribute.displayValue]]</span>
+        </vi-sensitive>
     </template>
 </dom-if>
 <dom-if if="[[editing]]">
@@ -75452,7 +75464,9 @@ let PersistentObjectAttributePassword = class PersistentObjectAttributePassword 
 
 <dom-if if="[[!editing]]">
     <template>
-        <vi-sensitive disabled="[[!sensitive]]">&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;</vi-sensitive>
+        <vi-sensitive disabled="[[!sensitive]]">
+            <span>&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;&#x25cf;</span>
+        </vi-sensitive>
     </template>
 </dom-if>
 <dom-if if="[[editing]]">
@@ -75561,7 +75575,9 @@ let PersistentObjectAttributeReference = class PersistentObjectAttributeReferenc
 <dom-if if="[[!editing]]">
     <template>
         <a href$="[[href]]" title$="[[title]]" disabled$="[[!href]]" on-tap="_open" target$="[[target]]">
-            <vi-sensitive disabled="[[!sensitive]]">[[attribute.displayValue]]</vi-sensitive>
+            <vi-sensitive disabled="[[!sensitive]]">
+                <span>[[attribute.displayValue]]</span>
+            </vi-sensitive>
             <dom-if if="[[href]]">
                 <template>
                     <vi-icon source="ArrowUpRight" class="size-h4"></vi-icon>
@@ -75935,13 +75951,17 @@ let PersistentObjectAttributeString = class PersistentObjectAttributeString exte
     <template>
         <dom-if if="[[!link]]">
             <template>
-                <vi-sensitive disabled="[[!sensitive]]">[[attribute.displayValue]]</vi-sensitive>
+                <vi-sensitive disabled="[[!sensitive]]">
+                    <span>[[attribute.displayValue]]</span>
+                </vi-sensitive>
             </template>
         </dom-if>
         <dom-if if="[[link]]">
             <template>
                 <a href$="[[link]]" title$="[[linkTitle]]" rel="external noopener" target="_blank">
-                    <vi-sensitive disabled="[[!sensitive]]">[[attribute.displayValue]]</vi-sensitive>
+                    <vi-sensitive disabled="[[!sensitive]]">
+                        <span>[[attribute.displayValue]]</span>
+                    </vi-sensitive>
                     <dom-if if="[[attribute.value]]">
                         <template>
                             <vi-icon source="ArrowUpRight" class="size-h4"></vi-icon>
@@ -76261,7 +76281,9 @@ let PersistentObjectAttributeTranslatedString = class PersistentObjectAttributeT
     <template>
         <dom-if if="[[!multiline]]">
             <template>
-                <vi-sensitive disabled="[[!sensitive]]">[[attribute.displayValue]]</vi-sensitive>
+                <vi-sensitive disabled="[[!sensitive]]">
+                    <span>[[attribute.displayValue]]</span>
+                </vi-sensitive>
             </template>
         </dom-if>
         <dom-if if="[[multiline]]">
@@ -76407,7 +76429,9 @@ let PersistentObjectAttributeUser = class PersistentObjectAttributeUser extends 
 
 <dom-if if="[[!editing]]">
     <template>
-        <vi-sensitive disabled="[[!sensitive]]">[[friendlyName]]</vi-sensitive>
+        <vi-sensitive disabled="[[!sensitive]]">
+            <span>[[friendlyName]]</span>
+        </vi-sensitive>
     </template>
 </dom-if>
 <dom-if if="[[editing]]">
