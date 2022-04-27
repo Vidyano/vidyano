@@ -24,7 +24,8 @@ customElements.define("vi-dialog-core", <CustomElementConstructor><any>DialogCor
     },
     keybindings: {
         "esc": "_esc"
-    }
+    },
+    mediaQueryAttributes: true
 })
 export abstract class Dialog extends WebComponent {
     static dialogTemplate(dialog: HTMLTemplateElement) {

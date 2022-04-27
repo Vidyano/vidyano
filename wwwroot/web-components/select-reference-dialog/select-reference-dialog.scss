@@ -1,42 +1,38 @@
 @import "../_vars.scss";
 
-:host {
-    vi-input-search {
-        line-height: var(--theme-h2);
-        height: var(--theme-h2);
-        border-top: 1px solid #EAEAEA;
-        border-right: 1px solid #EAEAEA;
-        border-bottom: 1px solid #EAEAEA;
-        border-left: 1px solid #EAEAEA;
-        box-sizing: border-box;
+vi-input-search {
+    line-height: var(--theme-h2);
+    height: var(--theme-h2);
+    border: 1px solid #EAEAEA;
+    box-sizing: border-box;
 
-        &::part(input) {
-            color: #333;
+    &::part(input) {
+        color: #333;
 
-            &:focus {
-                background-color: white;
-            }
+        &:focus {
+            background-color: white;
         }
     }
 }
 
-:host-context(vi-app[is-phone]) {
+main vi-query-grid {
+    height: 75vh;
+}
+
+:host([is-phone]) {
     main vi-query-grid {
         width: 85vw;
-        min-height: 75vh;
     }
 }
 
-:host-context(vi-app[is-tablet]) {
+:host([is-tablet]) {
     main vi-query-grid {
-        min-height: 60vh;
         width: 90vw;
     }
 }
 
-:host-context(vi-app[is-desktop]) {
+:host([is-desktop]) {
     main vi-query-grid {
-        min-height: 60vh;
         width: 75vw;
     }
 }

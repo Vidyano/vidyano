@@ -4,9 +4,9 @@
     <h4 class="flex">[[query.label]]</h4>
     <vi-input-search id="search" value="{{query.textSearch}}" on-search="_search" hidden$="[[initializing]]" autofocus></vi-input-search>
 </header>
-<main class="vertical layout">
+<main>
     <vi-notification service-object="[[query]]"></vi-notification>
-    <vi-query-grid class="flex" query="[[query]]" on-item-tap="_selectReference" as-lookup initializing="{{initializing}}"></vi-query-grid>
+    <vi-query-grid query="[[query]]" on-item-tap="_selectReference" as-lookup initializing="{{initializing}}"></vi-query-grid>
 </main>
 <footer class="horizontal-reverse layout justified">
     <div class="horizontal layout end-justified">
