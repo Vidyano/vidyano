@@ -23,7 +23,7 @@ declare class ResizeObserver implements IResizeObserver {
 let resizeObserver: ResizeObserver;
 resizeObserver = new ResizeObserver(entries => {	
     entries.forEach(e => {
-        let tracker = <SizeTracker>Array.from(e.target.shadowRoot?.children || e.target.children).find(e => e instanceof SizeTracker);
+        let tracker = <SizeTracker>[...Array.from(e.target.shadowRoot?.children || []), ...Array.from(e.target.children || [])].find(e => e instanceof SizeTracker);
         if (tracker)
             tracker["_triggerSizeChanged"](e.contentRect);	
     });	
