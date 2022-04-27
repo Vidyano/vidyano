@@ -3,7 +3,9 @@
 
 <dom-if if="[[!editing]]">
     <template>
-        <vi-sensitive disabled="[[!sensitive]]">[[attribute.displayValue]]</vi-sensitive>
+        <vi-sensitive disabled="[[!sensitive]]">
+            <span>[[attribute.displayValue]]</span>
+        </vi-sensitive>
     </template>
 </dom-if>
 <dom-if if="[[editing]]">
@@ -33,7 +35,9 @@
                 </dom-if>
                 <dom-if if="[[monthMode]]">
                     <template>
-                        <vi-sensitive id="monthMode" hidden$="[[!hasDateComponent]]" disabled="[[!sensitive]]">[[attribute.displayValue]]</vi-sensitive>
+                        <vi-sensitive id="monthMode" hidden$="[[!hasDateComponent]]" disabled="[[!sensitive]]">
+                            <span>[[attribute.displayValue]]</span>
+                        </vi-sensitive>
                     </template>
                 </dom-if>
             </vi-sensitive>

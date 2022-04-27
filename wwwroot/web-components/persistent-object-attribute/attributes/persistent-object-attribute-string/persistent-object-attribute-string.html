@@ -5,13 +5,17 @@
     <template>
         <dom-if if="[[!link]]">
             <template>
-                <vi-sensitive disabled="[[!sensitive]]">[[attribute.displayValue]]</vi-sensitive>
+                <vi-sensitive disabled="[[!sensitive]]">
+                    <span>[[attribute.displayValue]]</span>
+                </vi-sensitive>
             </template>
         </dom-if>
         <dom-if if="[[link]]">
             <template>
                 <a href$="[[link]]" title$="[[linkTitle]]" rel="external noopener" target="_blank">
-                    <vi-sensitive disabled="[[!sensitive]]">[[attribute.displayValue]]</vi-sensitive>
+                    <vi-sensitive disabled="[[!sensitive]]">
+                        <span>[[attribute.displayValue]]</span>
+                    </vi-sensitive>
                     <dom-if if="[[attribute.value]]">
                         <template>
                             <vi-icon source="ArrowUpRight" class="size-h4"></vi-icon>

@@ -4,7 +4,9 @@
 <dom-if if="[[!editing]]">
     <template>
         <a href$="[[href]]" title$="[[title]]" disabled$="[[!href]]" on-tap="_open" target$="[[target]]">
-            <vi-sensitive disabled="[[!sensitive]]">[[attribute.displayValue]]</vi-sensitive>
+            <vi-sensitive disabled="[[!sensitive]]">
+                <span>[[attribute.displayValue]]</span>
+            </vi-sensitive>
             <dom-if if="[[href]]">
                 <template>
                     <vi-icon source="ArrowUpRight" class="size-h4"></vi-icon>

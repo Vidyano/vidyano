@@ -3,7 +3,9 @@
 
 <dom-if if="[[!editing]]">
     <template>
-        <vi-sensitive disabled="[[!sensitive]]">[[friendlyName]]</vi-sensitive>
+        <vi-sensitive disabled="[[!sensitive]]">
+            <span>[[friendlyName]]</span>
+        </vi-sensitive>
     </template>
 </dom-if>
 <dom-if if="[[editing]]">

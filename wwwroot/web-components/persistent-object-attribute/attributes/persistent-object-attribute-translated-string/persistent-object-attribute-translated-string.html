@@ -5,7 +5,9 @@
     <template>
         <dom-if if="[[!multiline]]">
             <template>
-                <vi-sensitive disabled="[[!sensitive]]">[[attribute.displayValue]]</vi-sensitive>
+                <vi-sensitive disabled="[[!sensitive]]">
+                    <span>[[attribute.displayValue]]</span>
+                </vi-sensitive>
             </template>
         </dom-if>
         <dom-if if="[[multiline]]">
