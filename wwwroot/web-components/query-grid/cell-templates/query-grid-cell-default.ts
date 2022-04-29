@@ -86,11 +86,11 @@ export class QueryGridCellDefault extends QueryGridCell {
 
         const foreground = this._getTypeHint(itemValue.column, "foreground", null);
         if (foreground !== this._foreground.currentValue)
-            this.style.color = this._foreground.currentValue = foreground || this._foreground.originalValue;
+            this.style.color = this._foreground.currentValue = foreground || this._foreground.originalValue || null;
 
         const textAlign = this._getTypeHint(itemValue.column, "horizontalcontentalignment", Vidyano.DataType.isNumericType(itemValue.column.type) ? "right" : null);
         if (textAlign !== this._textAlign.currentValue)
-            this.style.textAlign = this._textAlign.currentValue = textAlign || this._textAlign.originalValue;
+            this.style.textAlign = this._textAlign.currentValue = textAlign || this._textAlign.originalValue || null;
 
         const extraClass = itemValue.column.getTypeHint("extraclass", undefined, value && itemValue.typeHints, true);
         if (extraClass !== this._extraClass) {
