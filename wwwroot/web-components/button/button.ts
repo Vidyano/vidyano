@@ -40,6 +40,8 @@ export class Button extends WebComponent {
 
     readonly customLayout: boolean; private _setCustomLayout: (custom: boolean) => void;
     disabled: boolean;
+    icon: string;
+    label: string;
 
     connectedCallback() {
         super.connectedCallback();

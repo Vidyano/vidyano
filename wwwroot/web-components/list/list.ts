@@ -20,6 +20,8 @@ import { WebComponent } from "../web-component/web-component.js"
 export class List extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="list.html">` }
 
+    items: any[];
+    as: string;
     parentScroller: boolean;
 
     private _hookIronListToScroller(parentScroller: boolean, isConnected: boolean) {
