@@ -10913,27 +10913,27 @@ class ActionDefinition {
     }
 }
 
-class ClientOperations {
-    navigate(hooks, path, replaceCurrent) {
+const ClientOperations = {
+    navigate: function (hooks, path, replaceCurrent) {
         hooks.onNavigate(path, replaceCurrent);
-    }
-    openUrl(hooks, url) {
+    },
+    openUrl: function (hooks, url) {
         if (!url.startsWith("http"))
             url = `http://${url}`;
         window.open(url, "_blank");
-    }
-    refreshForUpdate(hooks, path, replaceCurrent) {
+    },
+    refreshForUpdate: function (hooks, path, replaceCurrent) {
         hooks.onUpdateAvailable();
-    }
-    reloadPage() {
+    },
+    reloadPage: function () {
         document.location.reload();
-    }
-    showMessageBox(hooks, title, message, rich = false, delay = 0) {
+    },
+    showMessageBox: function (hooks, title, message, rich = false, delay = 0) {
         setTimeout(function () {
             hooks.onMessageDialog(title, message, rich, hooks.service.getTranslatedMessage("OK"));
         }, delay);
     }
-}
+};
 
 class ProgramUnitItem extends ServiceObject {
     constructor(service, unitItem, path, nameKebab) {

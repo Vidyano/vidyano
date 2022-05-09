@@ -10339,6 +10339,8 @@ declare class Button extends WebComponent {
     readonly customLayout: boolean;
     private _setCustomLayout;
     disabled: boolean;
+    icon: string;
+    label: string;
     connectedCallback(): void;
     private _fireTap;
     private _tap;
@@ -12142,6 +12144,8 @@ declare global {
 
 declare class List extends WebComponent {
     static get template(): HTMLTemplateElement;
+    items: any[];
+    as: string;
     parentScroller: boolean;
     private _hookIronListToScroller;
     private _bindIronListDataHost;
