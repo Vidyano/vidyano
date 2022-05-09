@@ -21,27 +21,23 @@ export interface IOpenOperation extends IClientOperation {
     replace?: boolean;
 }
 
-export class ClientOperations {
-    navigate(hooks: ServiceHooks, path: string, replaceCurrent?: boolean): void {
+export const ClientOperations = {
+    navigate: function (hooks: ServiceHooks, path: string, replaceCurrent?: boolean): void {
         hooks.onNavigate(path, replaceCurrent);
-    }
-
-    openUrl(hooks: ServiceHooks, url: string) {
+    },
+    openUrl: function (hooks: ServiceHooks, url: string) {
         if (!url.startsWith("http"))
             url = `http://${url}`;
 
         window.open(url, "_blank");
-    }
-
-    refreshForUpdate(hooks: ServiceHooks, path: string, replaceCurrent?: boolean): void {
+    },
+    refreshForUpdate: function (hooks: ServiceHooks, path: string, replaceCurrent?: boolean): void {
         hooks.onUpdateAvailable();
-    }
-
-    reloadPage(): void {
+    },
+    reloadPage: function (): void {
         document.location.reload();
-    }
-
-    showMessageBox(hooks: ServiceHooks, title: string, message: string, rich: boolean = false, delay: number = 0): void {
+    },
+    showMessageBox: function(hooks: ServiceHooks, title: string, message: string, rich: boolean = false, delay: number = 0): void {
         setTimeout(function () {
             hooks.onMessageDialog(title, message, rich, hooks.service.getTranslatedMessage("OK"));
         }, delay);
