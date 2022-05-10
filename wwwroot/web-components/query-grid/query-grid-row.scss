@@ -65,6 +65,17 @@
         display: none !important;
     }
 
+    &.disabled, &.readonly {
+        .selector, .actions {
+            visibility: hidden;
+            pointer-events: none;
+        }
+    }
+
+    &.disabled {
+        cursor: default;
+    }
+
     &[initializing] {
         &[is-group], .pinned {
             display: none !important;

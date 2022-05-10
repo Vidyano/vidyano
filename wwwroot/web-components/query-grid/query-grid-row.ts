@@ -59,6 +59,7 @@ export class QueryGridRow extends WebComponent {
     private _groupElement: QueryGridRowGroup;
     private _visibleCells: QueryGridCell[];
     private _invisibleCellValues: [QueryGridCell, Vidyano.QueryResultItemValue][] = [];
+    private _extraclass: string;
     readonly isGroup: boolean; private _setIsGroup: (isGroup: boolean) => void;
     columns: Vidyano.QueryColumn[];
     offsets: number[];
@@ -115,6 +116,17 @@ export class QueryGridRow extends WebComponent {
         const cells = (<HTMLSlotElement>this.$.columns).assignedElements();
 
         if (item instanceof Vidyano.QueryResultItem || oldItem instanceof Vidyano.QueryResultItem) {
+            const extraclass = (item as Vidyano.QueryResultItem).getTypeHint("extraclass", "");
+            if (this._extraclass && this._extraclass !== extraclass) {
+                this.classList.remove(...this._extraclass.split(" "));
+                this._extraclass = null;
+            }
+
+            if (extraclass) {
+                this.classList.add(...(extraclass.split(" ")));
+                this._extraclass = extraclass;
+            }
+
             this._invisibleCellValues = [];
             cells.forEach((cell: QueryGridCell, index: number) => {
                 if (!this._visibleCells || this._visibleCells.indexOf(cell) >= 0)
@@ -210,6 +222,9 @@ export class QueryGridRow extends WebComponent {
 
     private async _onContextmenu(e: MouseEvent) {
         if (!(this.item instanceof Vidyano.QueryResultItem) || this.item.query.asLookup)
+            return;
+
+        if (this.item.getTypeHint("extraclass", "").split(" ").map(c => c.toUpperCase()).some(c => c === "DISABLED" || c === "READONLY"))
             return;
 
         const grid = <QueryGrid>this.findParent(e => e instanceof QueryGrid);
