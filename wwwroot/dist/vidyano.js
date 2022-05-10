@@ -35325,7 +35325,7 @@ class WebComponent extends GestureEventListeners(PolymerElement) {
                 if (userStyleModule != null) {
                     const style = document.createElement("style");
                     style.setAttribute("include", `${elementName}-style-module`);
-                    const lastStyle = template.content.querySelector("style:last-of-type");
+                    const lastStyle = Array.from(template.content.querySelectorAll("style")).pop();
                     if (lastStyle != null)
                         template.content.insertBefore(style, lastStyle.nextSibling);
                     else
@@ -52926,6 +52926,15 @@ let QueryGridRow = class QueryGridRow extends WebComponent {
   display: none !important;
 }
 
+:host(.disabled) .selector, :host(.disabled) .actions, :host(.readonly) .selector, :host(.readonly) .actions {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+:host(.disabled) {
+  cursor: default;
+}
+
 :host([initializing][is-group]), :host([initializing]) .pinned {
   display: none !important;
 }
@@ -53025,6 +53034,15 @@ let QueryGridRow = class QueryGridRow extends WebComponent {
             this.classList.add("hidden");
         const cells = this.$.columns.assignedElements();
         if (item instanceof QueryResultItem || oldItem instanceof QueryResultItem) {
+            const extraclass = item.getTypeHint("extraclass", "");
+            if (this._extraclass && this._extraclass !== extraclass) {
+                this.classList.remove(...this._extraclass.split(" "));
+                this._extraclass = null;
+            }
+            if (extraclass) {
+                this.classList.add(...(extraclass.split(" ")));
+                this._extraclass = extraclass;
+            }
             this._invisibleCellValues = [];
             cells.forEach((cell, index) => {
                 if (!this._visibleCells || this._visibleCells.indexOf(cell) >= 0)
@@ -53100,6 +53118,8 @@ let QueryGridRow = class QueryGridRow extends WebComponent {
     }
     async _onContextmenu(e) {
         if (!(this.item instanceof QueryResultItem) || this.item.query.asLookup)
+            return;
+        if (this.item.getTypeHint("extraclass", "").split(" ").map(c => c.toUpperCase()).some(c => c === "DISABLED" || c === "READONLY"))
             return;
         const grid = this.findParent(e => e instanceof QueryGrid);
         if (e.button !== 2 || e.shiftKey || e.ctrlKey || grid.asLookup)

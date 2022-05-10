@@ -3932,13 +3932,13 @@ interface IOpenOperation extends IClientOperation {
     persistentObject: any;
     replace?: boolean;
 }
-declare class ClientOperations {
-    navigate(hooks: ServiceHooks, path: string, replaceCurrent?: boolean): void;
-    openUrl(hooks: ServiceHooks, url: string): void;
-    refreshForUpdate(hooks: ServiceHooks, path: string, replaceCurrent?: boolean): void;
-    reloadPage(): void;
-    showMessageBox(hooks: ServiceHooks, title: string, message: string, rich?: boolean, delay?: number): void;
-}
+declare const ClientOperations: {
+    navigate: (hooks: ServiceHooks, path: string, replaceCurrent?: boolean) => void;
+    openUrl: (hooks: ServiceHooks, url: string) => void;
+    refreshForUpdate: (hooks: ServiceHooks, path: string, replaceCurrent?: boolean) => void;
+    reloadPage: () => void;
+    showMessageBox: (hooks: ServiceHooks, title: string, message: string, rich?: boolean, delay?: number) => void;
+};
 
 declare let version: string;
 declare type NotificationType = NotificationType$1;
@@ -4176,7 +4176,6 @@ type vidyano_IClientOperation = IClientOperation;
 type vidyano_IRefreshOperation = IRefreshOperation;
 type vidyano_IExecuteMethodOperation = IExecuteMethodOperation;
 type vidyano_IOpenOperation = IOpenOperation;
-type vidyano_ClientOperations = ClientOperations;
 declare const vidyano_ClientOperations: typeof ClientOperations;
 declare const vidyano_cookiePrefix: typeof cookiePrefix;
 declare const vidyano_cookie: typeof cookie;
