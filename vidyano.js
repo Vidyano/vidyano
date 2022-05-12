@@ -35325,7 +35325,7 @@ class WebComponent extends GestureEventListeners(PolymerElement) {
                 if (userStyleModule != null) {
                     const style = document.createElement("style");
                     style.setAttribute("include", `${elementName}-style-module`);
-                    const lastStyle = Array.from(template.content.querySelectorAll("style")).pop();
+                    const lastStyle = Array.from(template.content.querySelectorAll(":scope style")).filter(s => s.parentNode === template.content).pop();
                     if (lastStyle != null)
                         template.content.insertBefore(style, lastStyle.nextSibling);
                     else
