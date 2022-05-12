@@ -414,7 +414,7 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
                     style.setAttribute("include", `${elementName}-style-module`);
 
                     // Safari doesn't allow style:last-of-type here
-                    const lastStyle = Array.from(template.content.querySelectorAll("style")).pop();
+                    const lastStyle = Array.from(template.content.querySelectorAll(":scope style")).filter(s => s.parentNode === template.content).pop();
                     if (lastStyle != null)
                         template.content.insertBefore(style, lastStyle.nextSibling);
                     else
