@@ -13352,6 +13352,7 @@ declare class QueryGridRow extends WebComponent {
     private _groupElement;
     private _visibleCells;
     private _invisibleCellValues;
+    private _extraclass;
     readonly isGroup: boolean;
     private _setIsGroup;
     columns: QueryColumn[];
