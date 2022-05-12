@@ -17,18 +17,13 @@ export default [
 				"moment$1 as moment": "moment"
 			})
 		],
-		output: [{ file: 'wwwroot/dist/vidyano.js' }],
+		output: [{ file: 'vidyano.js' }, { file: "wwwroot/dist/vidyano.js" }],
 		watch: {
 			chokidar: {
 			  usePolling: true,
 			  interval: 5000
 			}
 		}
-	},
-	{
-		input: "wwwroot/dist/vidyano.js",
-		plugins: [execute('uglifyjs wwwroot/dist/vidyano.js -o wwwroot/dist/vidyano.min.js')],
-		output: [{ file: 'wwwroot/dist/vidyano.min.js' }]
 	},
 	{
 		input: 'rollup/vidyano.ts',
@@ -41,6 +36,6 @@ export default [
 				"moment_d as moment": "moment"
 			})
 		],
-		output: [{ file: "wwwroot/dist/vidyano.d.ts", format: "es" }]
+		output: [{ file: "vidyano.d.ts", format: "es" }, { file: "wwwroot/dist/vidyano.d.ts", format: "es" }],
 	}
 ];
