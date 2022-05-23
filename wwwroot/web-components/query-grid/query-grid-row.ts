@@ -116,7 +116,7 @@ export class QueryGridRow extends WebComponent {
         const cells = (<HTMLSlotElement>this.$.columns).assignedElements();
 
         if (item instanceof Vidyano.QueryResultItem || oldItem instanceof Vidyano.QueryResultItem) {
-            const extraclass = (item as Vidyano.QueryResultItem)?.getTypeHint("extraclass", "");
+            const extraclass = item instanceof Vidyano.QueryResultItem ? item.getTypeHint("extraclass", "") : "";
             if (this._extraclass && this._extraclass !== extraclass) {
                 this.classList.remove(...this._extraclass.split(" "));
                 this._extraclass = null;
