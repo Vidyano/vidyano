@@ -53034,7 +53034,7 @@ let QueryGridRow = class QueryGridRow extends WebComponent {
             this.classList.add("hidden");
         const cells = this.$.columns.assignedElements();
         if (item instanceof QueryResultItem || oldItem instanceof QueryResultItem) {
-            const extraclass = item?.getTypeHint("extraclass", "");
+            const extraclass = item instanceof QueryResultItem ? item.getTypeHint("extraclass", "") : "";
             if (this._extraclass && this._extraclass !== extraclass) {
                 this.classList.remove(...this._extraclass.split(" "));
                 this._extraclass = null;
@@ -80262,6 +80262,8 @@ let PersistentObjectPresenter = class PersistentObjectPresenter extends Configur
         }
     }
     _updateTitle(breadcrumb) {
+        if (!breadcrumb)
+            return;
         this.fire("title-changed", { title: this.persistentObject.isBreadcrumbSensitive && this.isAppSensitive ? null : breadcrumb }, { bubbles: true });
     }
     async _renderPersistentObject(persistentObject) {
