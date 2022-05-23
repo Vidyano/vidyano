@@ -194,6 +194,9 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
     }
 
     private _updateTitle(breadcrumb: string) {
+        if (!breadcrumb)
+            return;
+
         this.fire("title-changed", { title: this.persistentObject.isBreadcrumbSensitive && this.isAppSensitive ? null : breadcrumb }, { bubbles: true });
     }
 
