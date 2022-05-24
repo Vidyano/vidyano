@@ -12921,6 +12921,7 @@ declare class PersistentObjectTab extends ConfigurableWebComponent {
     noAutofocus: boolean;
     disconnectedCallback(): void;
     private _computeColumns;
+    private _computeGroups;
     private _autofocus;
     private _attributeLoaded;
     private _innerSizeChanged;

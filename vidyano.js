@@ -10409,8 +10409,7 @@ class PersistentObject$1 extends ServiceObjectWithActions {
         this.attributes.forEach(attr => this.attributes[attr.name] = attr);
         this.queries = po.queries ? po.queries.map(query => service.hooks.onConstructQuery(service, query, this)).orderBy(q => q.offset) : [];
         this.queries.forEach(query => this.queries[query.name] = query);
-        const visibility = this.isNew ? "New" : "Read";
-        const attributeTabs = po.tabs ? this.attributes.filter(attr => attr.visibility === "Always" || attr.visibility.contains(visibility)).orderBy(attr => attr.offset).groupBy(attr => attr.tabKey).map(attributesByTab => {
+        const attributeTabs = po.tabs ? this.attributes.orderBy(attr => attr.offset).groupBy(attr => attr.tabKey).map(attributesByTab => {
             const groups = attributesByTab.value.orderBy(attr => attr.offset).groupBy(attr => attr.groupKey).map(attributesByGroup => {
                 const newGroup = this.service.hooks.onConstructPersistentObjectAttributeGroup(service, attributesByGroup.key, attributesByGroup.value, this);
                 attributesByGroup.value.forEach(attr => attr.group = newGroup);
@@ -77126,12 +77125,11 @@ let PersistentObjectGroup = class PersistentObjectGroup extends WebComponent {
         return group.label;
     }
     _arrange(attributes, columns, isConnected) {
-        if (!isConnected || !columns || !attributes || attributes.length === 0)
+        attributes = attributes.filter(a => a.isVisible);
+        if (!isConnected || !columns || !attributes?.length)
             return;
         let oldItems = [];
-        if (!attributes || attributes.length === 0)
-            this._items = [];
-        else if (!this._items)
+        if (!this._items)
             this._items = attributes.map(attr => this._itemFromAttribute(attr));
         else {
             oldItems = this._items.slice();
@@ -77315,7 +77313,7 @@ PersistentObjectGroup = __decorate([
             }
         },
         observers: [
-            "_arrange(group.attributes, columns, isConnected)"
+            "_arrange(group.attributes, columns, isConnected, group.attributes.isVisible.*)"
         ],
         listeners: {
             "attribute-loading": "_onAttributeLoading",
@@ -77352,7 +77350,7 @@ let PersistentObjectTab = class PersistentObjectTab extends ConfigurableWebCompo
             <div class="relative">
                 <vi-size-tracker size="{{innerSize}}"></vi-size-tracker>
                 <div class="groups">
-                    <dom-repeat items="[[tab.groups]]" as="group">
+                    <dom-repeat items="[[groups]]" as="group">
                         <template>
                             <vi-persistent-object-group group="[[group]]" group-index="[[index]]" columns="[[columns]]"></vi-persistent-object-group>
                         </template>
@@ -77365,7 +77363,7 @@ let PersistentObjectTab = class PersistentObjectTab extends ConfigurableWebCompo
 <dom-if if="[[noScroll]]" restamp>
     <template>
         <div class="groups relative">
-            <dom-repeat items="[[tab.groups]]" as="group">
+            <dom-repeat items="[[groups]]" as="group">
                 <template>
                     <vi-persistent-object-group group="[[group]]" group-index="[[index]]" columns="[[columns]]"></vi-persistent-object-group>
                 </template>
@@ -77387,6 +77385,9 @@ let PersistentObjectTab = class PersistentObjectTab extends ConfigurableWebCompo
         else if (size.width > 500)
             return 2;
         return 1;
+    }
+    _computeGroups(groups) {
+        return groups.filter(g => g.attributes.some(a => a.isVisible));
     }
     _autofocus(noAutofocus, isEditing) {
         if (!noAutofocus && isEditing && this._autofocusTarget)
@@ -77433,6 +77434,10 @@ PersistentObjectTab = __decorate([
             columns: {
                 type: Number,
                 computed: "_computeColumns(size, tab.columnCount)"
+            },
+            groups: {
+                type: Array,
+                computed: "_computeGroups(tab.groups, tab.parent.attributes.isVisible.*)"
             },
             size: Object,
             innerSize: {
