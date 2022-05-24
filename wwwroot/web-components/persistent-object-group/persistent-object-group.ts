@@ -43,7 +43,7 @@ interface IPersistentObjectGroupRow {
         }
     },
     observers: [
-        "_arrange(group.attributes, columns, isConnected)"
+        "_arrange(group.attributes, columns, isConnected, group.attributes.isVisible.*)"
     ],
     listeners: {
         "attribute-loading": "_onAttributeLoading",
@@ -83,13 +83,12 @@ export class PersistentObjectGroup extends WebComponent {
     }
 
     private _arrange(attributes: Vidyano.PersistentObjectAttribute[], columns: number, isConnected: boolean) {
-        if (!isConnected || !columns || !attributes || attributes.length === 0)
+        attributes = attributes.filter(a => a.isVisible);
+        if (!isConnected || !columns || !attributes?.length)
             return;
 
         let oldItems: IPersistentObjectGroupItem[] = [];
-        if (!attributes || attributes.length === 0)
-            this._items = [];
-        else if (!this._items)
+        if (!this._items)
             this._items = attributes.map(attr => this._itemFromAttribute(attr));
         else {
             oldItems = this._items.slice();

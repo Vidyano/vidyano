@@ -7,7 +7,7 @@
             <div class="relative">
                 <vi-size-tracker size="{{innerSize}}"></vi-size-tracker>
                 <div class="groups">
-                    <dom-repeat items="[[tab.groups]]" as="group">
+                    <dom-repeat items="[[groups]]" as="group">
                         <template>
                             <vi-persistent-object-group group="[[group]]" group-index="[[index]]" columns="[[columns]]"></vi-persistent-object-group>
                         </template>
@@ -20,7 +20,7 @@
 <dom-if if="[[noScroll]]" restamp>
     <template>
         <div class="groups relative">
-            <dom-repeat items="[[tab.groups]]" as="group">
+            <dom-repeat items="[[groups]]" as="group">
                 <template>
                     <vi-persistent-object-group group="[[group]]" group-index="[[index]]" columns="[[columns]]"></vi-persistent-object-group>
                 </template>

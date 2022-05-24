@@ -13,6 +13,10 @@ import { ConfigurableWebComponent } from "../web-component/web-component-configu
             type: Number,
             computed: "_computeColumns(size, tab.columnCount)"
         },
+        groups: {
+            type: Array,
+            computed: "_computeGroups(tab.groups, tab.parent.attributes.isVisible.*)"
+        },
         size: Object,
         innerSize: {
             type: Object,
@@ -67,6 +71,10 @@ export class PersistentObjectTab extends ConfigurableWebComponent {
             return 2;
 
         return 1;
+    }
+
+    private _computeGroups(groups: Vidyano.PersistentObjectAttributeGroup[]) {
+        return groups.filter(g => g.attributes.some(a => a.isVisible));
     }
 
     private _autofocus(noAutofocus: boolean, isEditing: boolean) {

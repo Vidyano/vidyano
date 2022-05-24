@@ -83,8 +83,7 @@ export class PersistentObject extends ServiceObjectWithActions {
         this.queries = po.queries ? (<Query[]>po.queries).map(query => service.hooks.onConstructQuery(service, query, this)).orderBy(q => q.offset) : [];
         this.queries.forEach(query => this.queries[query.name] = query);
 
-        const visibility = this.isNew ? "New" : "Read";
-        const attributeTabs = po.tabs ? this.attributes.filter(attr => attr.visibility === "Always" || attr.visibility.contains(visibility)).orderBy(attr => attr.offset).groupBy(attr => attr.tabKey).map(attributesByTab => {
+        const attributeTabs = po.tabs ? this.attributes.orderBy(attr => attr.offset).groupBy(attr => attr.tabKey).map(attributesByTab => {
             const groups = attributesByTab.value.orderBy(attr => attr.offset).groupBy(attr => attr.groupKey).map(attributesByGroup => {
                 const newGroup = this.service.hooks.onConstructPersistentObjectAttributeGroup(service, attributesByGroup.key, attributesByGroup.value, this);
                 attributesByGroup.value.forEach(attr => attr.group = newGroup);
