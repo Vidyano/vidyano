@@ -16,7 +16,6 @@ export interface ActionDefinitionParams {
 }
 export class ActionDefinition {
     private _groupDefinition: string | ActionDefinition;
-    private _options: Array<string> = [];
     private _selectionRule: (count: number) => boolean;
     private readonly _definition: ActionDefinitionParams;
 
@@ -34,7 +33,7 @@ export class ActionDefinition {
                 offset: itemOrDefinition.getValue("Offset"),
                 showedOn: (<string>itemOrDefinition.getValue("ShowedOn") || "").split(",").map(v => v.trim()),
                 selectionRule: itemOrDefinition.getValue("SelectionRule"),
-                options: itemOrDefinition.getValue("Options")?.split(";") ?? []
+                options: itemOrDefinition.getValue("Options")?.split(";").filter(o => !!o) ?? []
             };
 
             const groupAction = itemOrDefinition.getFullValue("GroupAction");
@@ -76,7 +75,7 @@ export class ActionDefinition {
     }
 
     get options(): Array<string> {
-        return this._options;
+        return this._definition.options;
     }
 
     get selectionRule(): (count: number) => boolean {
