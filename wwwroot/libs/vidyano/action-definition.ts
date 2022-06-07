@@ -40,8 +40,11 @@ export class ActionDefinition {
             if (groupAction != null)
                 this._groupDefinition = groupAction.objectId;
         }
-        else
-            this._definition = itemOrDefinition;
+        else {
+            this._definition = Object.assign({
+                options: []
+            }, itemOrDefinition);
+        }
 
         this._selectionRule = ExpressionParser.get(this._definition.selectionRule);
     }
