@@ -3546,7 +3546,6 @@ interface ActionDefinitionParams {
 declare class ActionDefinition {
     private readonly _service;
     private _groupDefinition;
-    private _options;
     private _selectionRule;
     private readonly _definition;
     constructor(service: Service, definition: ActionDefinitionParams);

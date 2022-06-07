@@ -10851,7 +10851,6 @@ class QueryResultItem extends ServiceObject {
 class ActionDefinition {
     constructor(_service, itemOrDefinition) {
         this._service = _service;
-        this._options = [];
         if (itemOrDefinition instanceof QueryResultItem) {
             this._definition = {
                 name: itemOrDefinition.getValue("Name"),
@@ -10863,7 +10862,7 @@ class ActionDefinition {
                 offset: itemOrDefinition.getValue("Offset"),
                 showedOn: (itemOrDefinition.getValue("ShowedOn") || "").split(",").map(v => v.trim()),
                 selectionRule: itemOrDefinition.getValue("SelectionRule"),
-                options: itemOrDefinition.getValue("Options")?.split(";") ?? []
+                options: itemOrDefinition.getValue("Options")?.split(";").filter(o => !!o) ?? []
             };
             const groupAction = itemOrDefinition.getFullValue("GroupAction");
             if (groupAction != null)
@@ -10895,7 +10894,7 @@ class ActionDefinition {
         return this._definition.confirmation;
     }
     get options() {
-        return this._options;
+        return this._definition.options;
     }
     get selectionRule() {
         return this._selectionRule;
@@ -41904,7 +41903,9 @@ AppBase = AppBase_1 = __decorate([
 
 let Button = class Button extends WebComponent {
     static get template() { return html `<style>:host {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   contain: content;
   position: relative;
   cursor: pointer;
@@ -41968,15 +41969,11 @@ let Button = class Button extends WebComponent {
   padding: 1px var(--theme-h5);
   text-align: center;
   white-space: nowrap;
+  gap: 2px;
 }
 
 :host(:not([custom-layout])) > *:not(style) {
   display: inline-block;
-}
-
-:host(:not([custom-layout])) > vi-icon {
-  height: 100%;
-  margin-right: 2px;
 }
 
 :host(:not([custom-layout])[busy]) > span, :host(:not([custom-layout])[busy]) > vi-icon {
@@ -44495,10 +44492,10 @@ let SignIn = class SignIn extends WebComponent {
 }
 
 :host .dialog main .user {
-  margin: 4px calc(var(--theme-h2) * -1) 0 calc(var(--theme-h2) * -1);
+  margin: var(--theme-h5) calc(var(--theme-h2) * -1) 0 calc(var(--theme-h2) * -1);
   padding: 0 var(--theme-h2);
   background-color: #eee;
-  margin-bottom: var(--theme-h4);
+  gap: var(--theme-h5);
 }
 
 :host .dialog main .user h3, :host .dialog main .user vi-button {
@@ -44507,12 +44504,7 @@ let SignIn = class SignIn extends WebComponent {
   line-height: var(--theme-h3);
 }
 
-:host .dialog main .user h3 {
-  margin-right: 2px;
-}
-
 :host .dialog main .user vi-icon {
-  margin-right: var(--theme-h5);
   fill: #555;
   --vi-icon-height: 12px;
 }
@@ -50841,7 +50833,15 @@ let QueryGridColumnHeader = class QueryGridColumnHeader extends WebComponent {
     </div>
     <vi-query-grid-column-filter column="[[column]]" part="filter"></vi-query-grid-column-filter>
     <div class="resizer" on-track="_resizeTrack"></div>
-</div>`; }
+</div>
+
+<vi-icon name="QueryGrid_Group">
+    <svg viewBox="0 0 32 32">
+        <g>
+            <path d="M 2 8 L 2 14 L 22 14 L 22 8 L 2 8 z M 10 18 L 10 24 L 30 24 L 30 18 L 10 18 z " />
+        </g>
+    </svg>
+</vi-icon>`; }
     _renderPopupMenu(e) {
         e.stopPropagation();
         this._setRenderPopupMenu(true);
@@ -51195,9 +51195,7 @@ let QueryGridFilters = class QueryGridFilters extends WebComponent {
 </style>
 
 <vi-popup-menu disabled="[[disabled]]">
-    <vi-button slot="header" inverse$="[[!isFiltering]]" disabled$="[[disabled]]">
-        <vi-icon source="Filter_Menu"></vi-icon>
-    </vi-button>
+    <vi-button slot="header" inverse$="[[!isFiltering]]" icon="Filter_Menu" disabled$="[[disabled]]"></vi-button>
     <dom-if if="[[canReset]]">
         <template>
             <vi-popup-menu-item icon="Filter_Reset" label="[[translations.Reset]]" on-tap="_reset"></vi-popup-menu-item>
@@ -51511,14 +51509,6 @@ let QueryGridGrouping = class QueryGridGrouping extends WebComponent {
     <vi-popup-menu-item icon="Remove" label="Remove grouping" on-tap="_remove"></vi-popup-menu-item>
 </vi-popup-menu>
 
-<vi-icon name="QueryGrid_Group">
-    <svg viewBox="0 0 32 32">
-        <g>
-            <path d="M 2 8 L 2 14 L 22 14 L 22 8 L 2 8 z M 10 18 L 10 24 L 30 24 L 30 18 L 10 18 z " />
-        </g>
-    </svg>
-</vi-icon>
-
 <vi-icon name="QueryGrid_Group_Collapse">
     <svg viewBox="0 0 32 32">
         <g>
@@ -51571,6 +51561,7 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
 }
 
 :host vi-button {
+  justify-content: start;
   padding: 0 var(--theme-h5);
   text-align: left;
   height: var(--theme-h1);
@@ -51629,8 +51620,8 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
   padding: 0 var(--theme-h4);
 }
 
-:host([overflow][icon-space]) vi-button vi-icon[source^="Action_"], :host([grouped][icon-space]) vi-button vi-icon[source^="Action_"] {
-  display: block;
+:host([overflow][icon-space]) vi-button > div, :host([grouped][icon-space]) vi-button > div {
+  padding-left: var(--theme-h2);
 }
 
 :host([overflow]) vi-icon, :host([grouped]) vi-icon {
@@ -51835,8 +51826,8 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
     _computeIconSpace(icon, siblingIcon, overflow, grouped) {
         return (overflow || grouped) && !exists(icon) && siblingIcon;
     }
-    _computeSiblingIcon(overflow, grouped, isAttached) {
-        const siblingIcon = (overflow || grouped) && isAttached && this.parentElement != null && Array.from(this.parentElement.children).find((c) => c.action && exists(this._computeIcon(c.action))) != null;
+    _computeSiblingIcon(overflow, grouped, isConnected) {
+        const siblingIcon = (overflow || grouped) && isConnected && this.parentElement != null && Array.from(this.parentElement.children).find((c) => c.action && exists(this._computeIcon(c.action))) != null;
         this._setSiblingIcon(siblingIcon);
         if (siblingIcon) {
             Array.from(this.parentElement.children).forEach((ab) => {
@@ -51975,7 +51966,6 @@ let Icon = class Icon extends WebComponent {
   position: relative;
   display: block;
   pointer-events: none;
-  height: 100%;
 }
 
 :host([unresolved]) {
@@ -76586,7 +76576,7 @@ label {
   margin-left: 2px;
 }
 
-.info vi-icon {
+.info::part(icon) {
   --vi-icon-width: 12px;
   --vi-icon-height: 12px;
   fill: var(--theme-color);
@@ -76614,9 +76604,7 @@ label {
 <div class="locked">
     <vi-icon source="Lock"></vi-icon>
 </div>
-<vi-button inverse class="info" on-tap="_showTooltip" hidden$="[[!hasToolTip]]" tabindex="-1">
-    <vi-icon source="Info"></vi-icon>
-</vi-button>`; }
+<vi-button inverse class="info" icon="Info" on-tap="_showTooltip" hidden$="[[!hasToolTip]]" tabindex="-1"></vi-button>`; }
     _computeRequired(attribute, required, value) {
         return required && (value == null || (attribute && attribute.rules && attribute.rules.contains("NotEmpty") && value === ""));
     }
@@ -78457,11 +78445,17 @@ let Overflow = class Overflow extends WebComponent {
     }
     _popupOpening() {
         this._overflownChildren = this._getChildren().filter(child => child.offsetTop > 0);
-        this._overflownChildren.forEach(child => child.setAttribute("slot", "overflow"));
+        this._overflownChildren.forEach(child => {
+            child.setAttribute("slot", "overflow");
+            child.setAttribute("overflow", "");
+        });
         flush$1();
     }
     _popupClosed() {
-        this._overflownChildren.forEach(child => child.removeAttribute("slot"));
+        this._overflownChildren.forEach(child => {
+            child.removeAttribute("slot");
+            child.removeAttribute("overflow");
+        });
         flush$1();
         this._setHasOverflow(this._overflownChildren.some(child => child.offsetTop > 0));
     }
