@@ -59,13 +59,19 @@ export class Overflow extends WebComponent {
 
     private _popupOpening() {
         this._overflownChildren = this._getChildren().filter(child => child.offsetTop > 0);
-        this._overflownChildren.forEach(child => child.setAttribute("slot", "overflow"));
+        this._overflownChildren.forEach(child => {
+            child.setAttribute("slot", "overflow");
+            child.setAttribute("overflow", "");
+        });
 
         Polymer.flush();
     }
 
     private _popupClosed() {
-        this._overflownChildren.forEach(child => child.removeAttribute("slot"));
+        this._overflownChildren.forEach(child => {
+            child.removeAttribute("slot");
+            child.removeAttribute("overflow");
+        });
         Polymer.flush();
 
         this._setHasOverflow(this._overflownChildren.some(child => child.offsetTop > 0));
