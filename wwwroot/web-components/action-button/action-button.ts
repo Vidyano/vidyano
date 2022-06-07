@@ -239,8 +239,8 @@ export class ActionButton extends ConfigurableWebComponent {
         return (overflow || grouped) && !IconRegister.exists(icon) && siblingIcon;
     }
 
-    private _computeSiblingIcon(overflow: boolean, grouped: boolean, isAttached: boolean) {
-        const siblingIcon = (overflow || grouped) && isAttached && this.parentElement != null && Array.from(this.parentElement.children).find((c: ActionButton) => c.action && IconRegister.exists(this._computeIcon(<Vidyano.Action>c.action))) != null;
+    private _computeSiblingIcon(overflow: boolean, grouped: boolean, isConnected: boolean) {
+        const siblingIcon = (overflow || grouped) && isConnected && this.parentElement != null && Array.from(this.parentElement.children).find((c: ActionButton) => c.action && IconRegister.exists(this._computeIcon(<Vidyano.Action>c.action))) != null;
         this._setSiblingIcon(siblingIcon);
         if (siblingIcon) {
             Array.from(this.parentElement.children).forEach((ab: ActionButton) => {
