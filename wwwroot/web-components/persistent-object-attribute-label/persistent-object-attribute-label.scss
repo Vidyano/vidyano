@@ -62,7 +62,7 @@ label {
     margin-bottom: 2px;
     margin-left: 2px;
 
-    vi-icon {
+    &::part(icon) {
         --vi-icon-width: 12px;
         --vi-icon-height: 12px;
         fill: var(--theme-color);

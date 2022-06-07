@@ -172,10 +172,10 @@
             }
 
             .user {
-                margin: 4px calc(var(--theme-h2) * -1) 0 calc(var(--theme-h2) * -1);
+                margin: var(--theme-h5) calc(var(--theme-h2) * -1) 0 calc(var(--theme-h2) * -1);
                 padding: 0 var(--theme-h2);
                 background-color: #eee;
-                margin-bottom: var(--theme-h4);
+                gap: var(--theme-h5);
 
                 h3, vi-button {
                     font-weight: 300;
@@ -183,12 +183,7 @@
                     line-height: var(--theme-h3);
                 }
 
-                h3 {
-                    margin-right: 2px;
-                }
-
                 vi-icon {
-                    margin-right: var(--theme-h5);
                     fill: #555;
                     --vi-icon-height: 12px;
                 }

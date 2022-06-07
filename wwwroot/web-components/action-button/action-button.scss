@@ -5,6 +5,7 @@
     box-sizing: border-box;
 
     vi-button {
+        justify-content: start;
         padding: 0 var(--theme-h5);
         text-align: left;
         height: var(--theme-h1);
@@ -69,10 +70,8 @@
         }
 
         &[icon-space] {
-            vi-button {
-                vi-icon[source^="Action_"] {
-                    display: block;
-                }
+            vi-button > div {
+                padding-left: var(--theme-h2);
             }
         }
 

@@ -72,7 +72,7 @@
             background-color: white;
 
             ::slotted(*) {
-                @include relative();
+                position: relative;
                 outline: none;
                 cursor: pointer;
                 width: calc(var(--theme-h2) - 2px);

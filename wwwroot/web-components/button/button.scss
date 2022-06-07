@@ -18,7 +18,9 @@
 }
 
 :host {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     contain: content;
     position: relative;
     cursor: pointer;
@@ -81,14 +83,10 @@
         padding: 1px var(--theme-h5);
         text-align: center;
         white-space: nowrap;
+        gap: 2px;
 
         > *:not(style) {
             display: inline-block;
-        }
-
-        > vi-icon {
-            height: 100%;
-            margin-right: 2px;
         }
 
         &[busy] {
