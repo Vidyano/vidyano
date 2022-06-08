@@ -43,14 +43,15 @@ interface IPersistentObjectGroupRow {
         }
     },
     observers: [
-        "_arrange(group.attributes, columns, isConnected, group.attributes.isVisible.*)"
+        "_arrange(group.attributes, columns, isConnected)"
     ],
     listeners: {
         "attribute-loading": "_onAttributeLoading",
         "attribute-loaded": "_onAttributeLoaded"
     },
     forwardObservers: [
-        "group.attributes"
+        "group.attributes",
+        "_onAttributeVisibilityChanged(group.attributes.*.isVisible)"
     ]
 })
 export class PersistentObjectGroup extends WebComponent {
@@ -283,5 +284,12 @@ export class PersistentObjectGroup extends WebComponent {
     private _onAttributeLoaded(e: CustomEvent) {
         if (--this._presentersLoading <= 0)
             this._setLoading(false);
+    }
+
+    private _onAttributeVisibilityChanged(info: string) {
+        if (!info)
+            return;
+
+        this._arrange(this.group.attributes, this.columns, this.isConnected);
     }
 }
