@@ -10868,8 +10868,11 @@ class ActionDefinition {
             if (groupAction != null)
                 this._groupDefinition = groupAction.objectId;
         }
-        else
-            this._definition = itemOrDefinition;
+        else {
+            this._definition = Object.assign({
+                options: []
+            }, itemOrDefinition);
+        }
         this._selectionRule = ExpressionParser.get(this._definition.selectionRule);
     }
     get name() {
@@ -77275,6 +77278,11 @@ let PersistentObjectGroup = class PersistentObjectGroup extends WebComponent {
         if (--this._presentersLoading <= 0)
             this._setLoading(false);
     }
+    _onAttributeVisibilityChanged(info) {
+        if (!info)
+            return;
+        this._arrange(this.group.attributes, this.columns, this.isConnected);
+    }
 };
 PersistentObjectGroup = __decorate([
     WebComponent.register({
@@ -77301,14 +77309,15 @@ PersistentObjectGroup = __decorate([
             }
         },
         observers: [
-            "_arrange(group.attributes, columns, isConnected, group.attributes.isVisible.*)"
+            "_arrange(group.attributes, columns, isConnected)"
         ],
         listeners: {
             "attribute-loading": "_onAttributeLoading",
             "attribute-loaded": "_onAttributeLoaded"
         },
         forwardObservers: [
-            "group.attributes"
+            "group.attributes",
+            "_onAttributeVisibilityChanged(group.attributes.*.isVisible)"
         ]
     })
 ], PersistentObjectGroup);
