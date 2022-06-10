@@ -19,11 +19,6 @@ import { WebComponent } from "../../../web-component/web-component.js"
             computed: "_computeSoftEdit(serviceObject)",
             value: false
         },
-        lastUpdated: {
-            type: Object,
-            value: null,
-            readOnly: true
-        },
         isSensitive: {
             type: Boolean,
             computed: "_computeIsSensitive(column, isAppSensitive)"
@@ -42,68 +37,67 @@ export class PersistentObjectAttributeAsDetailRow extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-as-detail-row.html">`; }
 
     private fullEdit: boolean;
-        readonly lastUpdated: Date; private _setLastUpdated: (lastUpdated: Date) => void;
-        serviceObject: Vidyano.PersistentObject;
+    serviceObject: Vidyano.PersistentObject;
 
-        private _isColumnVisible(column: Vidyano.QueryColumn) {
-            return !column.isHidden && column.width !== "0";
-        }
+    private _isColumnVisible(column: Vidyano.QueryColumn) {
+        return !column.isHidden && column.width !== "0";
+    }
 
-        private _attributeForColumn(obj: Vidyano.PersistentObject, column: Vidyano.QueryColumn): Vidyano.PersistentObjectAttribute {
-            return obj.attributes[column.name];
-        }
+    private _attributeForColumn(obj: Vidyano.PersistentObject, column: Vidyano.QueryColumn): Vidyano.PersistentObjectAttribute {
+        return obj.attributes[column.name];
+    }
 
-        private _displayValue(obj: Vidyano.PersistentObject, column: Vidyano.QueryColumn): string {
-            const attr = this._attributeForColumn(obj, column);
-            return attr && attr.displayValue || "";
-        }
+    private _displayValue(obj: Vidyano.PersistentObject, column: Vidyano.QueryColumn): string {
+        const attr = this._attributeForColumn(obj, column);
+        return attr && attr.displayValue || "";
+    }
 
-        private _computeSoftEdit(serviceObject: Vidyano.PersistentObject): boolean {
-            return serviceObject && serviceObject.ownerDetailAttribute.objects[0] === serviceObject;
-        }
+    private _computeSoftEdit(serviceObject: Vidyano.PersistentObject): boolean {
+        return serviceObject && serviceObject.ownerDetailAttribute.objects[0] === serviceObject;
+    }
 
-        private _isSoftEditOnly(fullEdit: boolean, softEdit: boolean): boolean {
-            return !fullEdit && softEdit;
-        }
+    private _isSoftEditOnly(fullEdit: boolean, softEdit: boolean): boolean {
+        return !fullEdit && softEdit;
+    }
 
-        private _computeIsSensitive(column: Vidyano.QueryColumn, isAppSensitive: boolean): boolean {
-            return column.isSensitive && isAppSensitive;
-        }
+    private _computeIsSensitive(column: Vidyano.QueryColumn, isAppSensitive: boolean): boolean {
+        return column.isSensitive && isAppSensitive;
+    }
 
-        private _setFullEdit(e: Polymer.Gestures.TapEvent) {
-            this.fire("full-edit", null);
-            Polymer.flush();
+    private _setFullEdit(e: Polymer.Gestures.TapEvent) {
+        this.fire("full-edit", null);
+        Polymer.flush();
 
-            const attribute = this._attributeForColumn(this.serviceObject, e.model.column);
-            const presenters = Array.from(this.shadowRoot.querySelectorAll("vi-persistent-object-attribute-presenter"));
-            const presenter = <PersistentObjectAttributePresenter>presenters.find(p => (<PersistentObjectAttributePresenter>p).attribute === attribute);
-            if (!presenter)
-                return;
+        const attribute = this._attributeForColumn(this.serviceObject, e.model.column);
+        const presenters = Array.from(this.shadowRoot.querySelectorAll("vi-persistent-object-attribute-presenter"));
+        const presenter = <PersistentObjectAttributePresenter>presenters.find(p => (<PersistentObjectAttributePresenter>p).attribute === attribute);
+        if (!presenter)
+            return;
 
-            presenter.queueFocus();
-        }
+        presenter.queueFocus();
+    }
 
-        private _delete() {
-            if (this.serviceObject.isReadOnly)
-                return;
-            
-            if (!this.serviceObject.isNew)
-                this.serviceObject.isDeleted = true;
-            else
-                this.splice("attribute.objects", this.serviceObject.ownerDetailAttribute.objects.indexOf(this.serviceObject), 1);
-    
-            this.serviceObject.ownerDetailAttribute.isValueChanged = true;
-            this.serviceObject.ownerDetailAttribute.parent.triggerDirty();
-    
-            if (this.serviceObject.ownerDetailAttribute.triggersRefresh)
-                this.serviceObject.ownerDetailAttribute._triggerAttributeRefresh(true);
-        }
+    private _delete() {
+        if (this.serviceObject.isReadOnly)
+            return;
+        
+        if (!this.serviceObject.isNew)
+            this.serviceObject.isDeleted = true;
+        else
+            this.splice("attribute.objects", this.serviceObject.ownerDetailAttribute.objects.indexOf(this.serviceObject), 1);
 
-        private _onAttributeLoading(e: CustomEvent) {
-            e.stopPropagation();
-        }
+        this.serviceObject.ownerDetailAttribute.isValueChanged = true;
+        this.serviceObject.ownerDetailAttribute.parent.triggerDirty();
 
-        private _onAttributeLoaded(e: CustomEvent) {
-            e.stopPropagation();
-        }
+        if (this.serviceObject.ownerDetailAttribute.triggersRefresh)
+            this.serviceObject.ownerDetailAttribute._triggerAttributeRefresh(true);
+    }
+
+    private _onAttributeLoading(e: CustomEvent) {
+        e.stopPropagation();
+    }
+
+    private _onAttributeLoaded(e: CustomEvent) {
+        e.stopPropagation();
+    }
 }

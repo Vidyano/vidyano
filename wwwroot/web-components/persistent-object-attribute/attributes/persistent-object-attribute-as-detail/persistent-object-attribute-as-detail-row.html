@@ -11,7 +11,7 @@
                             <vi-persistent-object-attribute-presenter class="flex" no-label attribute="[[_attributeForColumn(serviceObject, column)]]" soft-edit-only$="[[_isSoftEditOnly(fullEdit, softEdit)]]"></vi-persistent-object-attribute-presenter>
                         </template>
                     </dom-if>
-                    <dom-if if="[[!fullEdit]]">
+                    <dom-if if="[[!fullEdit]]" restamp>
                         <template>
                             <div pre-edit on-tap="_setFullEdit" class="flex layout horizontal-reverse">
                                 <vi-persistent-object-attribute-validation-error attribute="[[_attributeForColumn(serviceObject, column)]]"></vi-persistent-object-attribute-validation-error>
@@ -26,7 +26,7 @@
             <dom-if if="[[!editing]]">
                 <template>
                     <vi-sensitive class="flex layout horizontal" disabled="[[!sensitive]]">
-                        <span class="flex">[[_displayValue(serviceObject, column, lastUpdated)]]</span>
+                        <span class="flex">[[_displayValue(serviceObject, column, serviceObject.lastUpdated)]]</span>
                     </vi-sensitive>
                 </template>
             </dom-if>
