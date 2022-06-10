@@ -12229,8 +12229,6 @@ declare class PersistentObjectAttributeLabel extends WebComponent {
 declare class PersistentObjectAttributeAsDetailRow extends WebComponent {
     static get template(): HTMLTemplateElement;
     private fullEdit;
-    readonly lastUpdated: Date;
-    private _setLastUpdated;
     serviceObject: PersistentObject$1;
     private _isColumnVisible;
     private _attributeForColumn;

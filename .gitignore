@@ -360,7 +360,7 @@ wwwroot/web-components/**/*.js
 wwwroot/web-components/**/*.css
 wwwroot/web-components/**/*.css.map
 
-wwwroot/dist/vidyano.min.js
+wwwroot/dist
 
 !wwwroot/libs/polymer/*.*
 

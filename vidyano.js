@@ -10768,6 +10768,105 @@ class PersistentObject$1 extends ServiceObjectWithActions {
     }
 }
 
+class PersistentObjectAttributeAsDetail$1 extends PersistentObjectAttribute$1 {
+    constructor(service, attr, parent) {
+        super(service, attr, parent);
+        this.parent = parent;
+        if (attr.details)
+            this.details = this.service.hooks.onConstructQuery(service, attr.details, parent, false, 1);
+        else
+            this.details = null;
+        if (attr.objects) {
+            this._objects = attr.objects.map(po => {
+                const detailObj = this.service.hooks.onConstructPersistentObject(service, po);
+                detailObj.parent = this.parent;
+                detailObj.ownerDetailAttribute = this;
+                return detailObj;
+            });
+        }
+        else
+            this._objects = [];
+        this.parent.propertyChanged.attach((sender, args) => {
+            if (args.propertyName === "isEditing" && args.newValue)
+                this.objects.forEach(o => o.beginEdit());
+            else if (args.propertyName === "isFrozen") {
+                if (args.newValue)
+                    this.objects.forEach(obj => obj.freeze());
+                else
+                    this.objects.forEach(obj => obj.unfreeze());
+            }
+        });
+        this.lookupAttribute = attr.lookupAttribute;
+    }
+    get objects() {
+        return this._objects;
+    }
+    _setObjects(objects) {
+        if (objects === this._objects) {
+            if (!!objects && objects.length === this._objects.length) {
+                let hasDifferences;
+                for (let n = 0; n < objects.length; n++) {
+                    if (objects[n] !== this.objects[n]) {
+                        hasDifferences = true;
+                        break;
+                    }
+                }
+                if (!hasDifferences)
+                    return;
+            }
+        }
+        const oldObjects = this.objects;
+        this.notifyPropertyChanged("objects", this._objects = objects, oldObjects);
+    }
+    async newObject() {
+        const po = await this.details.actions["New"].execute({ throwExceptions: true, skipOpen: true });
+        if (!po)
+            return null;
+        po.ownerQuery = null;
+        po.ownerDetailAttribute = this;
+        return po;
+    }
+    _refreshFromResult(resultAttr, resultWins) {
+        const asDetailAttr = resultAttr;
+        const visibilityChanged = super._refreshFromResult(resultAttr, resultWins);
+        if (this.objects != null && asDetailAttr.objects != null) {
+            const isEditing = this.parent.isEditing;
+            this._setObjects(asDetailAttr.objects.map(obj => {
+                obj.parent = this.parent;
+                obj.ownerDetailAttribute = this;
+                if (isEditing)
+                    obj.beginEdit();
+                return obj;
+            }));
+        }
+        return visibilityChanged;
+    }
+    _toServiceObject() {
+        const result = super._toServiceObject();
+        if (this.objects != null) {
+            result.objects = this.objects.map(obj => {
+                const detailObj = obj.toServiceObject(true);
+                if (obj.isDeleted)
+                    detailObj.isDeleted = true;
+                return detailObj;
+            });
+        }
+        return result;
+    }
+    async onChanged(allowRefresh) {
+        if (!this.parent.isEditing || this.isReadOnly)
+            return this.value;
+        this.parent.triggerDirty();
+        if (this.triggersRefresh) {
+            if (allowRefresh)
+                await this._triggerAttributeRefresh();
+            else
+                this._shouldRefresh = true;
+        }
+        return this.value;
+    }
+}
+
 class QueryResultItem extends ServiceObject {
     constructor(service, item, query, _isSelected) {
         super(service);
@@ -12263,105 +12362,6 @@ class Query$1 extends ServiceObjectWithActions {
     }
 }
 
-class PersistentObjectAttributeAsDetail$1 extends PersistentObjectAttribute$1 {
-    constructor(service, attr, parent) {
-        super(service, attr, parent);
-        this.parent = parent;
-        if (attr.details)
-            this.details = this.service.hooks.onConstructQuery(service, attr.details, parent, false, 1);
-        else
-            this.details = null;
-        if (attr.objects) {
-            this._objects = attr.objects.map(po => {
-                const detailObj = this.service.hooks.onConstructPersistentObject(service, po);
-                detailObj.parent = this.parent;
-                detailObj.ownerDetailAttribute = this;
-                return detailObj;
-            });
-        }
-        else
-            this._objects = [];
-        this.parent.propertyChanged.attach((sender, args) => {
-            if (args.propertyName === "isEditing" && args.newValue)
-                this.objects.forEach(o => o.beginEdit());
-            else if (args.propertyName === "isFrozen") {
-                if (args.newValue)
-                    this.objects.forEach(obj => obj.freeze());
-                else
-                    this.objects.forEach(obj => obj.unfreeze());
-            }
-        });
-        this.lookupAttribute = attr.lookupAttribute;
-    }
-    get objects() {
-        return this._objects;
-    }
-    _setObjects(objects) {
-        if (objects === this._objects) {
-            if (!!objects && objects.length === this._objects.length) {
-                let hasDifferences;
-                for (let n = 0; n < objects.length; n++) {
-                    if (objects[n] !== this.objects[n]) {
-                        hasDifferences = true;
-                        break;
-                    }
-                }
-                if (!hasDifferences)
-                    return;
-            }
-        }
-        const oldObjects = this.objects;
-        this.notifyPropertyChanged("objects", this._objects = objects, oldObjects);
-    }
-    async newObject() {
-        const po = await this.details.actions["New"].execute({ throwExceptions: true, skipOpen: true });
-        if (!po)
-            return null;
-        po.ownerQuery = null;
-        po.ownerDetailAttribute = this;
-        return po;
-    }
-    _refreshFromResult(resultAttr, resultWins) {
-        const asDetailAttr = resultAttr;
-        const visibilityChanged = super._refreshFromResult(resultAttr, resultWins);
-        if (this.objects != null && asDetailAttr.objects != null) {
-            const isEditing = this.parent.isEditing;
-            this._setObjects(asDetailAttr.objects.map(obj => {
-                obj.parent = this.parent;
-                obj.ownerDetailAttribute = this;
-                if (isEditing)
-                    obj.beginEdit();
-                return obj;
-            }));
-        }
-        return visibilityChanged;
-    }
-    _toServiceObject() {
-        const result = super._toServiceObject();
-        if (this.objects != null) {
-            result.objects = this.objects.map(obj => {
-                const detailObj = obj.toServiceObject(true);
-                if (obj.isDeleted)
-                    detailObj.isDeleted = true;
-                return detailObj;
-            });
-        }
-        return result;
-    }
-    async onChanged(allowRefresh) {
-        if (!this.parent.isEditing || this.isReadOnly)
-            return this.value;
-        this.parent.triggerDirty();
-        if (this.triggersRefresh) {
-            if (allowRefresh)
-                await this._triggerAttributeRefresh();
-            else
-                this._shouldRefresh = true;
-        }
-        return this.value;
-    }
-}
-
 class QueryResultItemValue extends ServiceObject {
     constructor(service, _item, value) {
         super(service);
@@ -13732,12 +13732,23 @@ class Service extends Observable {
         try {
             if (isFreezingAction)
                 parent?.freeze();
-            const inputs = parent?.attributes.filter(a => a.input != null && a.isValueChanged).map(a => [a, a.input]);
+            const getInputs = (result, attribute) => {
+                if (attribute.input != null && attribute.isValueChanged) {
+                    result.push([
+                        !attribute.parent.ownerDetailAttribute ? attribute.name : `${attribute.parent.ownerDetailAttribute.name}.${attribute.parent.ownerDetailAttribute.objects.indexOf(attribute.parent)}.${attribute.name}`,
+                        attribute.input
+                    ]);
+                }
+                else if (attribute instanceof PersistentObjectAttributeAsDetail$1)
+                    attribute.objects?.flatMap(parent => parent.attributes).reduce(getInputs, result);
+                return result;
+            };
+            const inputs = parent?.attributes.reduce(getInputs, []);
             if (inputs?.length > 0) {
                 const formData = new FormData();
                 inputs.forEach(i => {
-                    const [attribute, input] = i;
-                    formData.set(attribute.name, input.files[0]);
+                    const [attributeName, input] = i;
+                    formData.set(attributeName, input.files[0]);
                 });
                 data.__form_data = formData;
             }
@@ -36967,7 +36978,7 @@ let AppRoute = class AppRoute extends WebComponent {
             this._clearChildren();
             const template = this.querySelector("template");
             if (!template) {
-                console.warn(`Missing template on route "${this.path}"`);
+                console.error(`Missing template on route "${this.path}"`);
                 return;
             }
             template.setAttribute("slot", "none");
@@ -58398,7 +58409,7 @@ let PersistentObjectAttributeAsDetailRow = class PersistentObjectAttributeAsDeta
                             <vi-persistent-object-attribute-presenter class="flex" no-label attribute="[[_attributeForColumn(serviceObject, column)]]" soft-edit-only$="[[_isSoftEditOnly(fullEdit, softEdit)]]"></vi-persistent-object-attribute-presenter>
                         </template>
                     </dom-if>
-                    <dom-if if="[[!fullEdit]]">
+                    <dom-if if="[[!fullEdit]]" restamp>
                         <template>
                             <div pre-edit on-tap="_setFullEdit" class="flex layout horizontal-reverse">
                                 <vi-persistent-object-attribute-validation-error attribute="[[_attributeForColumn(serviceObject, column)]]"></vi-persistent-object-attribute-validation-error>
@@ -58413,7 +58424,7 @@ let PersistentObjectAttributeAsDetailRow = class PersistentObjectAttributeAsDeta
             <dom-if if="[[!editing]]">
                 <template>
                     <vi-sensitive class="flex layout horizontal" disabled="[[!sensitive]]">
-                        <span class="flex">[[_displayValue(serviceObject, column, lastUpdated)]]</span>
+                        <span class="flex">[[_displayValue(serviceObject, column, serviceObject.lastUpdated)]]</span>
                     </vi-sensitive>
                 </template>
             </dom-if>
@@ -58492,11 +58503,6 @@ PersistentObjectAttributeAsDetailRow = __decorate([
                 type: Boolean,
                 computed: "_computeSoftEdit(serviceObject)",
                 value: false
-            },
-            lastUpdated: {
-                type: Object,
-                value: null,
-                readOnly: true
             },
             isSensitive: {
                 type: Boolean,
@@ -75571,6 +75577,10 @@ let PersistentObjectAttributeReference = class PersistentObjectAttributeReferenc
 
 :host([editing]) a[disabled] {
   display: none;
+}
+
+:host([editing]) a vi-icon {
+  height: 100%;
 }
 
 :host #radiobuttons {
