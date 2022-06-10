@@ -70,7 +70,7 @@ export class AppRoute extends WebComponent {
 
             const template = this.querySelector("template");
             if (!template) {
-                console.warn(`Missing template on route "${this.path}"`);
+                console.error(`Missing template on route "${this.path}"`);
                 return;
             }
 
