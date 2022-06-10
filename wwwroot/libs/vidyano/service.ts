@@ -7,6 +7,7 @@ import { Language } from "./language.js"
 import type { KeyValue } from "./typings/common.js"
 import { PersistentObject } from "./persistent-object.js"
 import { PersistentObjectAttribute } from "./persistent-object-attribute.js"
+import { PersistentObjectAttributeAsDetail } from "./persistent-object-attribute-as-detail.js"
 import { ActionDefinition } from "./action-definition.js"
 import { ServiceHooks } from "./service-hooks.js"
 import { cookie, cookiePrefix } from "./cookie.js"
@@ -786,12 +787,25 @@ export class Service extends Observable<Service> {
             if (isFreezingAction)
                 parent?.freeze();
 
-            const inputs: [attribute: PersistentObjectAttribute, input: HTMLInputElement][] = parent?.attributes.filter(a => a.input != null && a.isValueChanged).map(a => [a, a.input]);
+            const getInputs = (result: [attributeName: string, input: HTMLInputElement][], attribute: PersistentObjectAttribute) => {
+                if (attribute.input != null && attribute.isValueChanged) {
+                    result.push([
+                        !attribute.parent.ownerDetailAttribute ? attribute.name : `${attribute.parent.ownerDetailAttribute.name}.${attribute.parent.ownerDetailAttribute.objects.indexOf(attribute.parent)}.${attribute.name}`,
+                        attribute.input
+                    ]);
+                }
+                else if (attribute instanceof PersistentObjectAttributeAsDetail)
+                    attribute.objects?.flatMap(parent => parent.attributes).reduce(getInputs, result);
+
+                return result;
+            };
+
+            const inputs = parent?.attributes.reduce(getInputs, []);
             if (inputs?.length > 0) {
                 const formData = new FormData();
                 inputs.forEach(i => {
-                    const [attribute, input] = i;
-                    formData.set(attribute.name, input.files[0]);
+                    const [attributeName, input] = i;
+                    formData.set(attributeName, input.files[0]);
                 });
 
                 data.__form_data = formData;
