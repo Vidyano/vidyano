@@ -65,8 +65,14 @@
             }
         }
 
-        a[disabled] {
-            display: none;
+        a {
+            &[disabled] {
+                display: none;
+            }
+
+            vi-icon {
+                height: 100%;
+            }
         }
     }
 
