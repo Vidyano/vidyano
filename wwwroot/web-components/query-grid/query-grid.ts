@@ -1,5 +1,6 @@
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import * as Polymer from "../../libs/polymer/polymer.js"
+import { AppRoute, IAppRouteDeactivateArgs } from "../app-route/app-route.js"
 import "./cell-templates/query-grid-cell-default.js"
 import "./query-grid-cell-presenter.js"
 import "./query-grid-column-measure.js"
@@ -29,13 +30,17 @@ interface QueryGridItems {
 type QueryGridItem = Vidyano.QueryResultItem | Vidyano.QueryResultItemGroup;
 type ColumnWidthDetail = { cell?: number; column?: number; current?: number };
 
+type QueryScrollOffset = { vertical: number, horizontal: number };
+const queryScrollOffsets: WeakMap<Vidyano.Query, QueryScrollOffset> = new WeakMap();
+
 @WebComponent.register({
     properties: {
         initializing: {
             type: Boolean,
             readOnly: true,
             value: true,
-            reflectToAttribute: true
+            reflectToAttribute: true,
+            observer: "_onInitializingChanged"
         },
         query: {
             type: Object,
@@ -147,7 +152,10 @@ type ColumnWidthDetail = { cell?: number; column?: number; current?: number };
         "_update(verticalScrollOffset, virtualRowCount, rowHeight, items)",
         "_updateVerticalSpacer(viewportHeight, rowHeight, items)",
         "_updateUserSettings(query, query.columns)"
-    ]
+    ],
+    serviceBusObservers: {
+        "app-route:deactivate": "_onAppRouteDeactivate"
+    }
 })
 export class QueryGrid extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid.html">` }
@@ -195,6 +203,35 @@ export class QueryGrid extends WebComponent {
         super.ready();
 
         requestAnimationFrame(() => this.rowHeight = parseInt(window.getComputedStyle(this).getPropertyValue("--vi-query-grid-row-height")) || 32);
+    }
+
+    /**
+     * Service bus observer for storing query grid state when the parent app route changes
+     */
+    private _onAppRouteDeactivate(sender: AppRoute, message: string, detail: IAppRouteDeactivateArgs) {
+        if (!this.findParent(e => e === sender))
+            return;
+
+        queryScrollOffsets.set(this.query, {
+            vertical: this.verticalScrollOffset,
+            horizontal: this.horizontalScrollOffset
+        });
+    }
+
+    private _onInitializingChanged(initializing: boolean, oldInitializing: boolean) {
+        if (initializing)
+            return;
+
+        const offset = queryScrollOffsets.get(this.query);
+        if (offset !== undefined) {
+            // Run as animation frame, otherwise the browser will set an incorrect scroll height
+            Polymer.Async.animationFrame.run(() => {
+                this.verticalScrollOffset = offset.vertical;
+                this.horizontalScrollOffset = offset.horizontal;
+
+                queryScrollOffsets.delete(this.query);
+            });
+        }
     }
 
     /**
