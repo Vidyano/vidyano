@@ -59,7 +59,8 @@
         display: block;
     }
 
-    button[slot="header"], #preRender {
+    vi-button[slot="header"], #preRender {
+        justify-content: start;
         box-sizing: border-box;
         overflow: hidden;
         text-align: left;
