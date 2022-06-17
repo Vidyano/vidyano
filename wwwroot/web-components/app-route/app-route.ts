@@ -1,10 +1,16 @@
 import * as Polymer from "../../libs/polymer/polymer.js"
+import * as Vidyano from "../../libs/vidyano/vidyano.js";
 import { AppServiceHooks } from "../app-service-hooks/app-service-hooks.js"
 import { WebComponent } from "../web-component/web-component.js"
 
 export interface IAppRouteActivatedArgs {
     route: AppRoute;
     parameters: { [key: string]: string };
+}
+
+export interface IAppRouteDeactivateArgs {
+    route: AppRoute;
+    cancel: boolean;
 }
 
 @WebComponent.register({
@@ -110,6 +116,12 @@ export class AppRoute extends WebComponent {
         const component = <WebComponent>this.shadowRoot.querySelector("slot").assignedElements()[0];
 
         return new Promise<boolean>(resolve => {
+            const deactivate: IAppRouteDeactivateArgs = { route: this, cancel: false };
+            Vidyano.ServiceBus.send(this, "app-route:deactivate", deactivate);
+
+            if (deactivate.cancel)
+                resolve(false);
+
             this.deactivator = resolve;
             if (!component || !component.fire || !component.fire("app-route-deactivate", null, { bubbles: false, cancelable: true }).defaultPrevented)
                 resolve(true);
