@@ -37007,6 +37007,10 @@ let AppRoute = class AppRoute extends WebComponent {
     deactivate(nextRoute) {
         const component = this.shadowRoot.querySelector("slot").assignedElements()[0];
         return new Promise(resolve => {
+            const deactivate = { route: this, cancel: false };
+            ServiceBus.send(this, "app-route:deactivate", deactivate);
+            if (deactivate.cancel)
+                resolve(false);
             this.deactivator = resolve;
             if (!component || !component.fire || !component.fire("app-route-deactivate", null, { bubbles: false, cancelable: true }).defaultPrevented)
                 resolve(true);
@@ -56772,6 +56776,7 @@ class QueryGridUserSettings extends Observable {
 }
 
 const placeholder = {};
+const queryScrollOffsets = new WeakMap();
 let QueryGrid = class QueryGrid extends WebComponent {
     constructor() {
         super(...arguments);
@@ -57179,6 +57184,26 @@ let QueryGrid = class QueryGrid extends WebComponent {
         super.ready();
         requestAnimationFrame(() => this.rowHeight = parseInt(window.getComputedStyle(this).getPropertyValue("--vi-query-grid-row-height")) || 32);
     }
+    _onAppRouteDeactivate(sender, message, detail) {
+        if (!this.findParent(e => e === sender))
+            return;
+        queryScrollOffsets.set(this.query, {
+            vertical: this.verticalScrollOffset,
+            horizontal: this.horizontalScrollOffset
+        });
+    }
+    _onInitializingChanged(initializing, oldInitializing) {
+        if (initializing)
+            return;
+        const offset = queryScrollOffsets.get(this.query);
+        if (offset !== undefined) {
+            animationFrame.run(() => {
+                this.verticalScrollOffset = offset.vertical;
+                this.horizontalScrollOffset = offset.horizontal;
+                queryScrollOffsets.delete(this.query);
+            });
+        }
+    }
     _queryChanged(query, oldQuery) {
         if (oldQuery)
             this._setInitializing(true);
@@ -57472,7 +57497,8 @@ QueryGrid = __decorate([
                 type: Boolean,
                 readOnly: true,
                 value: true,
-                reflectToAttribute: true
+                reflectToAttribute: true,
+                observer: "_onInitializingChanged"
             },
             query: {
                 type: Object,
@@ -57584,7 +57610,10 @@ QueryGrid = __decorate([
             "_update(verticalScrollOffset, virtualRowCount, rowHeight, items)",
             "_updateVerticalSpacer(viewportHeight, rowHeight, items)",
             "_updateUserSettings(query, query.columns)"
-        ]
+        ],
+        serviceBusObservers: {
+            "app-route:deactivate": "_onAppRouteDeactivate"
+        }
     })
 ], QueryGrid);
 let QueryGridSortable = class QueryGridSortable extends Sortable {
