@@ -212,6 +212,7 @@
         height: var(--theme-h2);
         overflow: hidden;
         pointer-events: none;
+        z-index: 0;
 
         > .scroll-shadow {
             @include fit();
