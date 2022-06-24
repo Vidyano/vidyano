@@ -39,7 +39,8 @@
         border-bottom: 1px solid var(--theme-light-border);
 
         [grid] {
-            margin-left: calc(var(--vi-query-grid-horizontal, 0) * -1);
+            transform: translateX(calc(var(--vi-query-grid-horizontal, 0) * -1));
+            will-change: transform;
         }
 
         .controls {
@@ -73,6 +74,22 @@
             vi-query-grid-filters {
                 grid-area: filter;
                 line-height: var(--vi-query-grid-row-height);
+            }
+        }
+
+        .more {
+            position: absolute;
+            width: var(--theme-h2);
+            height: var(--theme-h2);
+            background-color: white;
+            z-index: 1;
+
+            &.left {
+                left: 0;
+            }
+
+            &.right {
+                right: 0;
             }
         }
     }

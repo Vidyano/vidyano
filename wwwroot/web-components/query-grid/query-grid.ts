@@ -5,6 +5,7 @@ import "./cell-templates/query-grid-cell-default.js"
 import "./query-grid-cell-presenter.js"
 import "./query-grid-column-measure.js"
 import "./query-grid-column-header.js"
+import { QueryGridColumnHeader } from "./query-grid-column-header.js"
 import "./query-grid-filters.js"
 import "./query-grid-footer.js"
 import "./query-grid-grouping.js"
@@ -16,8 +17,10 @@ import { QueryGridColumn } from "./query-grid-column.js"
 import { QueryGridConfigureDialog } from "./query-grid-configure-dialog.js"
 import { QueryGridRow } from "./query-grid-row.js"
 import { QueryGridUserSettings } from "./query-grid-user-settings.js"
+import { ISize, SizeTracker } from "../size-tracker/size-tracker.js";
 import { ISortableDragEndDetails, Sortable } from "../sortable/sortable.js"
 import { WebComponent } from "../web-component/web-component.js"
+import { PopupMenuItem } from "../popup-menu/popup-menu-item.js"
 
 const placeholder: { query?: Vidyano.Query; } = {};
 
@@ -32,6 +35,8 @@ type ColumnWidthDetail = { cell?: number; column?: number; current?: number };
 
 type QueryScrollOffset = { vertical: number, horizontal: number };
 const queryScrollOffsets: WeakMap<Vidyano.Query, QueryScrollOffset> = new WeakMap();
+
+type HasMore = { left: QueryGridColumnHeader[], right: QueryGridColumnHeader[] };
 
 @WebComponent.register({
     properties: {
@@ -127,6 +132,11 @@ const queryScrollOffsets: WeakMap<Vidyano.Query, QueryScrollOffset> = new WeakMa
             type: Boolean,
             reflectToAttribute: true,
             computed: "_computeCanReorder(query.canReorder, hasGrouping)"
+        },
+        visibleColumnHeaderSize: Object,
+        hasMore: {
+            type: Object,
+            readOnly: true
         }
     },
     forwardObservers: [
@@ -151,7 +161,8 @@ const queryScrollOffsets: WeakMap<Vidyano.Query, QueryScrollOffset> = new WeakMa
         "_updateScrollOffsetForItems(query.items)",
         "_update(verticalScrollOffset, virtualRowCount, rowHeight, items)",
         "_updateVerticalSpacer(viewportHeight, rowHeight, items)",
-        "_updateUserSettings(query, query.columns)"
+        "_updateUserSettings(query, query.columns)",
+        "_updateMore(visibleColumnHeaderSize, horizontalScrollOffset)"
     ],
     serviceBusObservers: {
         "app-route:deactivate": "_onAppRouteDeactivate"
@@ -169,6 +180,9 @@ export class QueryGrid extends WebComponent {
     private _pinnedStyle: HTMLStyleElement;
     private _lastSelectedItemIndex: number;
     private _controlsSizeObserver: ResizeObserver;
+    private _headerSize: ISize;
+    private _headerOffsets: { left: number, width: number }[];
+    private _updateMoreDebouncer: Polymer.Debounce.Debouncer;
 
     query: Vidyano.Query;
     asLookup: boolean;
@@ -185,6 +199,8 @@ export class QueryGrid extends WebComponent {
     rowHeight: number;
     horizontalScrollOffset: number;
     verticalScrollOffset: number;
+    visibleColumnHeaderSize: ISize;
+    readonly hasMore: HasMore; private _setHasMore: (hasMore: HasMore) => void;
 
     connectedCallback() {
         super.connectedCallback();
@@ -620,6 +636,44 @@ export class QueryGrid extends WebComponent {
     private _reset() {
         this._updateUserSettings(this.query);
         this._update(this.verticalScrollOffset, this.virtualRowCount, this.rowHeight, this.items);
+    }
+
+    private _updateMore(visibleColumnHeaderSize: ISize, horizontalScrollOffset: number) {
+        if (visibleColumnHeaderSize == null || horizontalScrollOffset == null)
+            return;          
+
+        this._updateMoreDebouncer = Polymer.Debounce.Debouncer.debounce(
+            this._updateMoreDebouncer,
+            Polymer.Async.timeOut.after(50),
+            () => {
+                const sizeTracker = this.$.columnHeadersDomRepeat as SizeTracker;
+                const headers = Array.from(sizeTracker.parentElement.querySelectorAll("vi-query-grid-column-header")) as QueryGridColumnHeader[];
+
+                this._setHasMore({
+                    left: headers.filter(h => h.offsetLeft - horizontalScrollOffset < 0),
+                    right: headers.filter(h => ((h.offsetLeft - horizontalScrollOffset) + h.offsetWidth / 2) > visibleColumnHeaderSize.width)
+                });
+            });
+    }
+
+    private _onMoreOpening(e: CustomEvent) {
+        const popup = e.target as Popup;
+        const isLeft = popup.classList.contains("left");
+        const headers = isLeft ? this.hasMore.left : this.hasMore.right;
+        
+        popup.querySelector("vi-scroller").append(...headers.map(h => {
+            return new PopupMenuItem(h.column.label, null, () => {
+                if (isLeft)
+                    this.horizontalScrollOffset = h.offsetLeft;
+                else
+                    this.horizontalScrollOffset = h.offsetLeft + h.offsetWidth - this.visibleColumnHeaderSize.width;
+            });
+        }));
+    }
+
+    private _onMoreClosed(e: CustomEvent) {
+        const popup = e.target as Popup;
+        popup.querySelector("vi-scroller").innerHTML = "";
     }
 }
 

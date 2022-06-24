@@ -24,15 +24,32 @@
         </dom-if>
         <div class="spacer"></div>
     </div>
-    <div>
-        <div grid>
-            <dom-repeat items="[[columns]]" as="column">
+    <div class="relative layout horizontal flex">
+        <div class="relative flex" grid>
+            <dom-repeat items="[[columns]]" as="column" id="columnHeadersDomRepeat">
                 <template>
                     <vi-query-grid-column-header column="[[column]]"></vi-query-grid-column-header>
                 </template>
             </dom-repeat>
+            <vi-size-tracker size="{{visibleColumnHeaderSize}}"></vi-size-tracker>
         </div>
+        <dom-if if="[[hasMore.left.length]]">
+            <template>
+                <vi-popup class="more left" on-popup-opening="_onMoreOpening" on-popup-closed="_onMoreClosed">
+                    <vi-button slot="header" inverse icon="ChevronLeft"></vi-button>
+                    <vi-scroller></vi-scroller>
+                </vi-popup>
+            </template>
+        </dom-if>
     </div>
+    <dom-if if="[[hasMore.right.length]]">
+        <template>
+            <vi-popup class="more right" on-popup-opening="_onMoreOpening" on-popup-closed="_onMoreClosed">
+                <vi-button slot="header" inverse icon="ChevronRight"></vi-button>
+                <vi-scroller></vi-scroller>
+            </vi-popup>
+        </template>
+    </dom-if>
 </header>
 
 <vi-scroller horizontal-scroll-offset="{{horizontalScrollOffset}}" vertical-scroll-offset="{{verticalScrollOffset}}" outer-height="{{viewportHeight}}" outer-width="{{viewportWidth}}">
