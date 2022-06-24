@@ -42836,6 +42836,7 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
   height: var(--theme-h2);
   overflow: hidden;
   pointer-events: none;
+  z-index: 0;
 }
 
 :host .scroll-shadow-parent > .scroll-shadow {
@@ -50105,7 +50106,8 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   display: block;
 }
 
-:host button[slot="header"], :host #preRender {
+:host vi-button[slot="header"], :host #preRender {
+  justify-content: start;
   box-sizing: border-box;
   overflow: hidden;
   text-align: left;
@@ -50115,7 +50117,7 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   padding: 0;
 }
 
-:host button[slot="header"] span, :host #preRender span {
+:host vi-button[slot="header"] span, :host #preRender span {
   overflow: hidden;
 }
 
@@ -56826,7 +56828,8 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host header [grid] {
-  margin-left: calc(var(--vi-query-grid-horizontal, 0) * -1);
+  transform: translateX(calc(var(--vi-query-grid-horizontal, 0) * -1));
+  will-change: transform;
 }
 
 :host header .controls {
@@ -56861,6 +56864,22 @@ let QueryGrid = class QueryGrid extends WebComponent {
 :host header .controls vi-query-grid-filters {
   grid-area: filter;
   line-height: var(--vi-query-grid-row-height);
+}
+
+:host header .more {
+  position: absolute;
+  width: var(--theme-h2);
+  height: var(--theme-h2);
+  background-color: white;
+  z-index: 1;
+}
+
+:host header .more.left {
+  left: 0;
+}
+
+:host header .more.right {
+  right: 0;
 }
 
 :host footer {
@@ -57139,15 +57158,32 @@ let QueryGrid = class QueryGrid extends WebComponent {
         </dom-if>
         <div class="spacer"></div>
     </div>
-    <div>
-        <div grid>
-            <dom-repeat items="[[columns]]" as="column">
+    <div class="relative layout horizontal flex">
+        <div class="relative flex" grid>
+            <dom-repeat items="[[columns]]" as="column" id="columnHeadersDomRepeat">
                 <template>
                     <vi-query-grid-column-header column="[[column]]"></vi-query-grid-column-header>
                 </template>
             </dom-repeat>
+            <vi-size-tracker size="{{visibleColumnHeaderSize}}"></vi-size-tracker>
         </div>
+        <dom-if if="[[hasMore.left.length]]">
+            <template>
+                <vi-popup class="more left" on-popup-opening="_onMoreOpening" on-popup-closed="_onMoreClosed">
+                    <vi-button slot="header" inverse icon="ChevronLeft"></vi-button>
+                    <vi-scroller></vi-scroller>
+                </vi-popup>
+            </template>
+        </dom-if>
     </div>
+    <dom-if if="[[hasMore.right.length]]">
+        <template>
+            <vi-popup class="more right" on-popup-opening="_onMoreOpening" on-popup-closed="_onMoreClosed">
+                <vi-button slot="header" inverse icon="ChevronRight"></vi-button>
+                <vi-scroller></vi-scroller>
+            </vi-popup>
+        </template>
+    </dom-if>
 </header>
 
 <vi-scroller horizontal-scroll-offset="{{horizontalScrollOffset}}" vertical-scroll-offset="{{verticalScrollOffset}}" outer-height="{{viewportHeight}}" outer-width="{{viewportWidth}}">
@@ -57489,6 +57525,35 @@ let QueryGrid = class QueryGrid extends WebComponent {
         this._updateUserSettings(this.query);
         this._update(this.verticalScrollOffset, this.virtualRowCount, this.rowHeight, this.items);
     }
+    _updateMore(visibleColumnHeaderSize, horizontalScrollOffset) {
+        if (visibleColumnHeaderSize == null || horizontalScrollOffset == null)
+            return;
+        this._updateMoreDebouncer = Debouncer.debounce(this._updateMoreDebouncer, timeOut.after(50), () => {
+            const sizeTracker = this.$.columnHeadersDomRepeat;
+            const headers = Array.from(sizeTracker.parentElement.querySelectorAll("vi-query-grid-column-header"));
+            this._setHasMore({
+                left: headers.filter(h => h.offsetLeft - horizontalScrollOffset < 0),
+                right: headers.filter(h => ((h.offsetLeft - horizontalScrollOffset) + h.offsetWidth / 2) > visibleColumnHeaderSize.width)
+            });
+        });
+    }
+    _onMoreOpening(e) {
+        const popup = e.target;
+        const isLeft = popup.classList.contains("left");
+        const headers = isLeft ? this.hasMore.left : this.hasMore.right;
+        popup.querySelector("vi-scroller").append(...headers.map(h => {
+            return new PopupMenuItem(h.column.label, null, () => {
+                if (isLeft)
+                    this.horizontalScrollOffset = h.offsetLeft;
+                else
+                    this.horizontalScrollOffset = h.offsetLeft + h.offsetWidth - this.visibleColumnHeaderSize.width;
+            });
+        }));
+    }
+    _onMoreClosed(e) {
+        const popup = e.target;
+        popup.querySelector("vi-scroller").innerHTML = "";
+    }
 };
 QueryGrid = __decorate([
     WebComponent.register({
@@ -57585,6 +57650,11 @@ QueryGrid = __decorate([
                 type: Boolean,
                 reflectToAttribute: true,
                 computed: "_computeCanReorder(query.canReorder, hasGrouping)"
+            },
+            visibleColumnHeaderSize: Object,
+            hasMore: {
+                type: Object,
+                readOnly: true
             }
         },
         forwardObservers: [
@@ -57609,7 +57679,8 @@ QueryGrid = __decorate([
             "_updateScrollOffsetForItems(query.items)",
             "_update(verticalScrollOffset, virtualRowCount, rowHeight, items)",
             "_updateVerticalSpacer(viewportHeight, rowHeight, items)",
-            "_updateUserSettings(query, query.columns)"
+            "_updateUserSettings(query, query.columns)",
+            "_updateMore(visibleColumnHeaderSize, horizontalScrollOffset)"
         ],
         serviceBusObservers: {
             "app-route:deactivate": "_onAppRouteDeactivate"

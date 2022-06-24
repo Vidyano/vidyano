@@ -13383,6 +13383,10 @@ declare class QueryGridSelectAll extends WebComponent {
 }
 
 declare type QueryGridItem = QueryResultItem | QueryResultItemGroup;
+declare type HasMore = {
+    left: QueryGridColumnHeader[];
+    right: QueryGridColumnHeader[];
+};
 declare class QueryGrid extends WebComponent {
     static get template(): HTMLTemplateElement;
     private readonly _columnWidths;
@@ -13394,6 +13398,9 @@ declare class QueryGrid extends WebComponent {
     private _pinnedStyle;
     private _lastSelectedItemIndex;
     private _controlsSizeObserver;
+    private _headerSize;
+    private _headerOffsets;
+    private _updateMoreDebouncer;
     query: Query$1;
     asLookup: boolean;
     noSelection: boolean;
@@ -13414,6 +13421,9 @@ declare class QueryGrid extends WebComponent {
     rowHeight: number;
     horizontalScrollOffset: number;
     verticalScrollOffset: number;
+    visibleColumnHeaderSize: ISize;
+    readonly hasMore: HasMore;
+    private _setHasMore;
     connectedCallback(): void;
     disconnectedCallback(): void;
     ready(): void;
@@ -13446,6 +13456,9 @@ declare class QueryGrid extends WebComponent {
     private _onColumnUpdate;
     private _onConfigure;
     private _reset;
+    private _updateMore;
+    private _onMoreOpening;
+    private _onMoreClosed;
 }
 
 declare class QueryItemsPresenter extends ConfigurableWebComponent {
