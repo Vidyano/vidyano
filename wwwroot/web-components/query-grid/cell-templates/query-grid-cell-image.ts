@@ -44,3 +44,5 @@ export class QueryGridCellImage extends QueryGridCell {
         this._image.style.backgroundImage = "url(" + value.value.asDataUri() + ")";
     }
 }
+
+QueryGridCell.registerCellType("Image", QueryGridCellImage);

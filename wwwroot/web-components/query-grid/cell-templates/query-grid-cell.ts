@@ -91,4 +91,16 @@ export abstract class QueryGridCell extends WebComponent {
         resizeObserver.unobserve(this);
         this.#_isObserved = false;
     }
+
+    static registerCellType(type: string, constructor: QueryGridCellConstructor) {
+        registeredQueyGridCellTypes[type] = constructor;
+    }
+
+    static getCellTypeConstructor(type: string) {
+        return registeredQueyGridCellTypes[type];
+    }
 }
+
+export type QueryGridCellConstructor = new (...args:any[]) => QueryGridCell;
+
+const registeredQueyGridCellTypes: { [type: string]: QueryGridCellConstructor} = {};

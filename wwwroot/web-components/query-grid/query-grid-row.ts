@@ -6,9 +6,9 @@ import { ActionButton } from "../action-button/action-button.js"
 import { Popup } from "../popup/popup.js"
 import { QueryGrid } from "./query-grid.js"
 import { QueryGridCell } from "./cell-templates/query-grid-cell.js"
-import { QueryGridCellBoolean } from "./cell-templates/query-grid-cell-boolean.js"
+import "./cell-templates/query-grid-cell-boolean.js"
+import "./cell-templates/query-grid-cell-image.js"
 import { QueryGridCellDefault } from "./cell-templates/query-grid-cell-default.js"
-import { QueryGridCellImage } from "./cell-templates/query-grid-cell-image.js"
 import { QueryGridRowGroup } from "./query-grid-row-group.js"
 import { WebComponent } from "../web-component/web-component.js"
 
@@ -72,24 +72,7 @@ export class QueryGridRow extends WebComponent {
             const column = columns[i];
             let cell: QueryGridCell = existingCells.find(c => c.column.name === column.name);
             if (!cell) {
-                let cellConstructor: new() => QueryGridCell;
-                switch(column.type) {
-                    case "Boolean":
-                    case "NullableBoolean": {
-                        cellConstructor = QueryGridCellBoolean;
-                        break;
-                    }
-                    case "Image": {
-                        cellConstructor = QueryGridCellImage;
-                        break;
-                    }
-                    default: {
-                        cellConstructor = QueryGridCellDefault;
-                        break;
-                    }
-                }
-
-                cell = new cellConstructor();
+                cell = new (QueryGridCell.getCellTypeConstructor(column.type) || QueryGridCellDefault)();
                 cell.classList.add("column");
                 cell.value = this.item instanceof Vidyano.QueryResultItem ? this.item.getFullValue(column.name) : undefined;
             }

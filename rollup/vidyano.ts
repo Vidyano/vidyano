@@ -105,7 +105,6 @@ export * from "../wwwroot/web-components/query-grid/cell-templates/query-grid-ce
 export * from "../wwwroot/web-components/query-grid/cell-templates/query-grid-cell-default.js"
 export * from "../wwwroot/web-components/query-grid/cell-templates/query-grid-cell-image.js"
 export * from "../wwwroot/web-components/query-grid/cell-templates/query-grid-cell.js"
-export * from "../wwwroot/web-components/query-grid/query-grid-cell-presenter.js"
 export * from "../wwwroot/web-components/query-grid/query-grid-column-filter.js"
 export * from "../wwwroot/web-components/query-grid/query-grid-column-header.js"
 export * from "../wwwroot/web-components/query-grid/query-grid-column-measure.js"

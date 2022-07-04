@@ -94,3 +94,6 @@ export class QueryGridCellBoolean extends QueryGridCell {
         }
     }
 }
+
+QueryGridCell.registerCellType("Boolean", QueryGridCellBoolean);
+QueryGridCell.registerCellType("NullableBoolean", QueryGridCellBoolean);
