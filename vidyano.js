@@ -49517,6 +49517,12 @@ let QueryGridCell = class QueryGridCell extends WebComponent {
         resizeObserver$1.unobserve(this);
         __classPrivateFieldSet(this, _QueryGridCell__isObserved, false, "f");
     }
+    static registerCellType(type, constructor) {
+        registeredQueyGridCellTypes[type] = constructor;
+    }
+    static getCellTypeConstructor(type) {
+        return registeredQueyGridCellTypes[type];
+    }
 };
 _QueryGridCell__lastMeasuredColumn = new WeakMap(), _QueryGridCell__isObserved = new WeakMap();
 QueryGridCell = __decorate([
@@ -49535,6 +49541,7 @@ QueryGridCell = __decorate([
         ]
     })
 ], QueryGridCell);
+const registeredQueyGridCellTypes = {};
 
 let QueryGridCellDefault = class QueryGridCellDefault extends QueryGridCell {
     constructor() {
@@ -49645,26 +49652,6 @@ QueryGridCellDefault = __decorate([
         sensitive: true
     })
 ], QueryGridCellDefault);
-
-let QueryGridCellPresenter = class QueryGridCellPresenter extends WebComponent {
-    _valueChanged(value) {
-        if (!this.cell) {
-            this.cell = new QueryGridCellDefault();
-            this.appendChild(this.cell);
-        }
-        this.cell.value = value;
-    }
-};
-QueryGridCellPresenter = __decorate([
-    WebComponent.register({
-        properties: {
-            value: {
-                type: Object,
-                observer: "_valueChanged"
-            }
-        }
-    })
-], QueryGridCellPresenter);
 
 let QueryGridColumnMeasure = class QueryGridColumnMeasure extends WebComponent {
     static get template() {
@@ -52743,6 +52730,8 @@ QueryGridCellBoolean = __decorate([
         sensitive: true
     })
 ], QueryGridCellBoolean);
+QueryGridCell.registerCellType("Boolean", QueryGridCellBoolean);
+QueryGridCell.registerCellType("NullableBoolean", QueryGridCellBoolean);
 
 let QueryGridCellImage = class QueryGridCellImage extends QueryGridCell {
     static get template() { return html `<style>:host {
@@ -52794,6 +52783,7 @@ QueryGridCellImage = __decorate([
         sensitive: true
     })
 ], QueryGridCellImage);
+QueryGridCell.registerCellType("Image", QueryGridCellImage);
 
 let QueryGridRowGroup = class QueryGridRowGroup extends WebComponent {
     static get template() { return html `<style>:host {
@@ -53005,23 +52995,7 @@ let QueryGridRow = class QueryGridRow extends WebComponent {
             const column = columns[i];
             let cell = existingCells.find(c => c.column.name === column.name);
             if (!cell) {
-                let cellConstructor;
-                switch (column.type) {
-                    case "Boolean":
-                    case "NullableBoolean": {
-                        cellConstructor = QueryGridCellBoolean;
-                        break;
-                    }
-                    case "Image": {
-                        cellConstructor = QueryGridCellImage;
-                        break;
-                    }
-                    default: {
-                        cellConstructor = QueryGridCellDefault;
-                        break;
-                    }
-                }
-                cell = new cellConstructor();
+                cell = new (QueryGridCell.getCellTypeConstructor(column.type) || QueryGridCellDefault)();
                 cell.classList.add("column");
                 cell.value = this.item instanceof QueryResultItem ? this.item.getFullValue(column.name) : undefined;
             }
@@ -80880,4 +80854,4 @@ QueryPresenter = __decorate([
     })
 ], QueryPresenter);
 
-export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppRoute, AppRoutePresenter, AppServiceHooks, AppServiceHooksBase, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, DialogCore, Error$1 as Error, FileDrop, Icon, iconRegister as IconRegister, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellDefault, QueryGridCellImage, QueryGridCellPresenter, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, SelectOptionItem, SelectReferenceDialog, Sensitive, SignIn, SignOut, SizeTracker, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, vidyano as Vidyano, WebComponent, moment };
+export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppRoute, AppRoutePresenter, AppServiceHooks, AppServiceHooksBase, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, DialogCore, Error$1 as Error, FileDrop, Icon, iconRegister as IconRegister, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellDefault, QueryGridCellImage, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, SelectOptionItem, SelectReferenceDialog, Sensitive, SignIn, SignOut, SizeTracker, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, vidyano as Vidyano, WebComponent, moment };
