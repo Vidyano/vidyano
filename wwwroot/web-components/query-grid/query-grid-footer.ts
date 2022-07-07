@@ -22,7 +22,7 @@ export class QueryGridFooter extends WebComponent {
     private _computeItemValue(item: Vidyano.QueryResultItem, column: QueryGridColumn) {
         const value = item.getValue(column.name);
         
-        const format = item.getTypeHint("displayformat", null);
+        const format = item.getTypeHint("displayformat", column.column.getTypeHint("displayformat", null));
         return !String.isNullOrEmpty(format) ? String.format(format, value) : value;
     }
 }
