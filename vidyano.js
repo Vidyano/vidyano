@@ -51483,7 +51483,7 @@ let QueryGridFooter = class QueryGridFooter extends WebComponent {
     }
     _computeItemValue(item, column) {
         const value = item.getValue(column.name);
-        const format = item.getTypeHint("displayformat", null);
+        const format = item.getTypeHint("displayformat", column.column.getTypeHint("displayformat", null));
         return !String.isNullOrEmpty(format) ? String.format(format, value) : value;
     }
 };
@@ -76373,7 +76373,7 @@ let PersistentObjectAttributeTranslatedString = class PersistentObjectAttributeT
 }
 </style>
 
-<dom-if if="[[!editing]]">
+<dom-if if="[[!editing]]" restamp>
     <template>
         <dom-if if="[[!multiline]]">
             <template>
