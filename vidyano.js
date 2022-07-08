@@ -52732,6 +52732,7 @@ QueryGridCellBoolean = __decorate([
 ], QueryGridCellBoolean);
 QueryGridCell.registerCellType("Boolean", QueryGridCellBoolean);
 QueryGridCell.registerCellType("NullableBoolean", QueryGridCellBoolean);
+QueryGridCell.registerCellType("YesNo", QueryGridCellBoolean);
 
 let QueryGridCellImage = class QueryGridCellImage extends QueryGridCell {
     static get template() { return html `<style>:host {
