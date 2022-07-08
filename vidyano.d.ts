@@ -2855,6 +2855,7 @@ declare type PersistentObject$2 = {
     attributes?: PersistentObjectAttribute$2[];
     breadcrumb?: string;
     dialogSaveAction?: string;
+    forceFromAction?: boolean;
     fullTypeName: string;
     id: string;
     isBreadcrumbSensitive?: boolean;
@@ -3707,6 +3708,7 @@ declare class PersistentObject$1 extends ServiceObjectWithActions {
     private _tabs;
     private _isFrozen;
     readonly isBreadcrumbSensitive: boolean;
+    readonly forceFromAction: boolean;
     fullTypeName: string;
     label: string;
     objectId: string;
@@ -3885,7 +3887,7 @@ declare class ServiceHooks {
     onSessionExpired(): Promise<boolean>;
     onActionConfirmation(action: Action, option: number): Promise<boolean>;
     onAction(args: ExecuteActionArgs): Promise<PersistentObject$1>;
-    onOpen(obj: ServiceObject, replaceCurrent?: boolean, fromAction?: boolean): void;
+    onOpen(obj: ServiceObject, replaceCurrent?: boolean, forceFromAction?: boolean): void;
     onClose(obj: ServiceObject): void;
     onConstructApplication(application: ApplicationResponse): Application;
     onConstructPersistentObject(service: Service, po: any): PersistentObject$1;
@@ -10741,7 +10743,7 @@ declare class Profiler extends WebComponent {
 declare class AppServiceHooks extends AppServiceHooksBase {
     onSessionExpired(): Promise<boolean>;
     onAction(args: ExecuteActionArgs): Promise<PersistentObject$1>;
-    onOpen(obj: ServiceObject, replaceCurrent?: boolean, fromAction?: boolean): Promise<void>;
+    onOpen(obj: ServiceObject, replaceCurrent?: boolean, forceFromAction?: boolean): Promise<void>;
     onClose(parent: ServiceObject): void;
     onClientOperation(operation: IClientOperation): void;
     onQueryFileDrop(query: Query$1, name: string, contents: string): Promise<boolean>;

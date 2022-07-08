@@ -10331,7 +10331,7 @@ class PersistentObjectAttributeWithReference extends PersistentObjectAttribute$1
             const po = await this.service.executeAction("Query.New", this.parent, this.lookup, null, { PersistentObjectAttributeId: this.id });
             po.ownerAttributeWithReference = this;
             po.stateBehavior = (po.stateBehavior || "") + " OpenAsDialog";
-            this.service.hooks.onOpen(po, false, true);
+            this.service.hooks.onOpen(po, false);
         }
         catch (e) {
             this.parent.setNotification(e);
@@ -10387,6 +10387,7 @@ class PersistentObject$1 extends ServiceObjectWithActions {
         this._isSystem = !!po.isSystem;
         this._type = po.type;
         this.label = po.label;
+        this.forceFromAction = po.forceFromAction;
         this.fullTypeName = po.fullTypeName;
         this.queryLayoutMode = po.queryLayoutMode === "FullPage" ? PersistentObjectLayoutMode.FullPage : PersistentObjectLayoutMode.MasterDetail;
         this.objectId = po.objectId;
@@ -12510,7 +12511,7 @@ class ServiceHooks {
     onAction(args) {
         return Promise.resolve(null);
     }
-    onOpen(obj, replaceCurrent = false, fromAction = false) {
+    onOpen(obj, replaceCurrent = false, forceFromAction) {
     }
     onClose(obj) {
     }
@@ -12579,7 +12580,7 @@ class ServiceHooks {
                 break;
             case "Open":
                 const open = operation;
-                this.onOpen(this.onConstructPersistentObject(this.service, open.persistentObject), open.replace, true);
+                this.onOpen(this.onConstructPersistentObject(this.service, open.persistentObject), open.replace);
                 break;
             default:
                 if (window.console && console.log)
@@ -43741,7 +43742,7 @@ let User = class User extends WebComponent {
             commentOptions.push("Url: " + location);
         commentAttr.options = commentOptions;
         commentAttr.isValueChanged = true;
-        this.service.hooks.onOpen(po, false, true);
+        this.service.hooks.onOpen(po, false);
     }
     userSettings() {
         this.app.changePath((this.app.programUnit ? this.app.programUnit.name + "/" : "") + "PersistentObject." + this.service.application.userSettingsId + "/" + this.service.application.userId);
@@ -75866,7 +75867,7 @@ let PersistentObjectAttributeReference = class PersistentObjectAttributeReferenc
         try {
             const po = await this.attribute.getPersistentObject();
             if (po)
-                this.attribute.service.hooks.onOpen(po, false, !!po.parent);
+                this.attribute.service.hooks.onOpen(po, false);
         }
         catch (e) {
             this.attribute.parent.setNotification(e, "Error");
@@ -78037,7 +78038,7 @@ class AppServiceHooks extends AppServiceHooksBase {
             Promise.resolve().then(function () { return audit; });
         return super.onAction(args);
     }
-    async onOpen(obj, replaceCurrent = false, fromAction = false) {
+    async onOpen(obj, replaceCurrent = false, forceFromAction) {
         if (obj instanceof PersistentObject$1) {
             const po = obj;
             if (po.stateBehavior.indexOf("AsWizard") >= 0) {
@@ -78051,7 +78052,7 @@ class AppServiceHooks extends AppServiceHooksBase {
             else if (!(this.app instanceof App))
                 return;
             let path;
-            if (!fromAction) {
+            if (!obj.forceFromAction && !forceFromAction) {
                 path = this.app.getUrlForPersistentObject(po.id, po.objectId);
                 const cacheEntry = new AppCacheEntryPersistentObject(po);
                 const existing = this.app.cachePing(cacheEntry);
