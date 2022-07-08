@@ -650,7 +650,7 @@ export class QueryGrid extends WebComponent {
 
                 this._setHasMore({
                     left: headers.filter(h => h.offsetLeft - horizontalScrollOffset < 0),
-                    right: headers.filter(h => ((h.offsetLeft - horizontalScrollOffset) + h.offsetWidth / 2) > visibleColumnHeaderSize.width)
+                    right: headers.filter(h => (h.offsetLeft + h.offsetWidth / 2) > visibleColumnHeaderSize.width)
                 });
             });
     }

@@ -39,8 +39,7 @@
         border-bottom: 1px solid var(--theme-light-border);
 
         [grid] {
-            transform: translateX(calc(var(--vi-query-grid-horizontal, 0) * -1));
-            will-change: transform;
+            margin-left: calc(var(--vi-query-grid-horizontal, 0) * -1);
         }
 
         .controls {
