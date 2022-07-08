@@ -54,7 +54,7 @@ export class ServiceHooks {
         return Promise.resolve(null);
     }
 
-    onOpen(obj: ServiceObject, replaceCurrent: boolean = false, fromAction: boolean = false) {
+    onOpen(obj: ServiceObject, replaceCurrent: boolean = false, forceFromAction?: boolean) {
         // Noop
     }
 
@@ -149,7 +149,7 @@ export class ServiceHooks {
 
             case "Open":
                 const open = <IOpenOperation>operation;
-                this.onOpen(this.onConstructPersistentObject(this.service, open.persistentObject), open.replace, true);
+                this.onOpen(this.onConstructPersistentObject(this.service, open.persistentObject), open.replace);
                 break;
 
             default:

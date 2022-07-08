@@ -201,7 +201,7 @@ export class PersistentObjectAttributeReference extends PersistentObjectAttribut
         try {
             const po = await this.attribute.getPersistentObject();
             if (po)
-                this.attribute.service.hooks.onOpen(po, false, !!po.parent);
+                this.attribute.service.hooks.onOpen(po, false);
         }
         catch (e) {
             this.attribute.parent.setNotification(e, "Error");

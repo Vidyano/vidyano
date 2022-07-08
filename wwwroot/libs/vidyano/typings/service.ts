@@ -106,6 +106,7 @@ export declare type PersistentObject = {
     attributes?: PersistentObjectAttribute[];
     breadcrumb?: string;
     dialogSaveAction?: string;
+    forceFromAction?: boolean;
     fullTypeName: string;
     id: string;
     isBreadcrumbSensitive?: boolean;

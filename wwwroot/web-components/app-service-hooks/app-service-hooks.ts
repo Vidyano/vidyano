@@ -38,7 +38,7 @@ export class AppServiceHooks extends AppServiceHooksBase {
         return super.onAction(args);
     }
 
-    async onOpen(obj: Vidyano.ServiceObject, replaceCurrent: boolean = false, fromAction: boolean = false) {
+    async onOpen(obj: Vidyano.ServiceObject, replaceCurrent: boolean = false, forceFromAction?: boolean) {
         if (obj instanceof Vidyano.PersistentObject) {
             const po = <Vidyano.PersistentObject>obj;
 
@@ -56,7 +56,7 @@ export class AppServiceHooks extends AppServiceHooksBase {
                 return;
 
             let path: string;
-            if (!fromAction) {
+            if (!obj.forceFromAction && !forceFromAction) {
                 path = this.app.getUrlForPersistentObject(po.id, po.objectId);
 
                 const cacheEntry = new AppCacheEntryPersistentObject(po);

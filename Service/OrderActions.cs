@@ -15,6 +15,13 @@ namespace VidyanoWeb3.Service
         {
         }
 
+        public override void OnLoad(PersistentObject obj, PersistentObject? parent)
+        {
+            base.OnLoad(obj, parent);
+
+            obj.Advanced.ForceFromAction = true;
+        }
+
         protected override void GetTotalItem(Source<Order> source, TotalItemArgs args)
         {
             args.SetValue(nameof(Order.Freight), source.AsEnumerable().Sum(o => o.Freight));

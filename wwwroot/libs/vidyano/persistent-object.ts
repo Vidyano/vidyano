@@ -29,6 +29,7 @@ export class PersistentObject extends ServiceObjectWithActions {
     private _tabs: PersistentObjectTab[];
     private _isFrozen: boolean = false;
     readonly isBreadcrumbSensitive: boolean;
+    readonly forceFromAction: boolean;
     fullTypeName: string;
     label: string;
     objectId: string;
@@ -58,6 +59,7 @@ export class PersistentObject extends ServiceObjectWithActions {
         this._isSystem = !!po.isSystem;
         this._type = po.type;
         this.label = po.label;
+        this.forceFromAction = po.forceFromAction;
         this.fullTypeName = po.fullTypeName;
         this.queryLayoutMode = po.queryLayoutMode === "FullPage" ? PersistentObjectLayoutMode.FullPage : PersistentObjectLayoutMode.MasterDetail;
         this.objectId = po.objectId;

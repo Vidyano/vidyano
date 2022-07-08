@@ -36,7 +36,7 @@ export class PersistentObjectAttributeWithReference extends PersistentObjectAttr
             po.ownerAttributeWithReference = this;
             po.stateBehavior = (po.stateBehavior || "") + " OpenAsDialog";
 
-            this.service.hooks.onOpen(po, false, true);
+            this.service.hooks.onOpen(po, false);
         }
         catch (e) {
             this.parent.setNotification(e);

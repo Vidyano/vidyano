@@ -87,7 +87,7 @@ export class User extends WebComponent {
         commentAttr.options = commentOptions;
         commentAttr.isValueChanged = true;
 
-        this.service.hooks.onOpen(po, false, true);
+        this.service.hooks.onOpen(po, false);
     }
 
     userSettings() {
