@@ -355,7 +355,7 @@ export class QueryGrid extends WebComponent {
             this.virtualItems[virtualIndex] = item;
 
             if (this.virtualItems[virtualIndex] === undefined) {
-                if (realIndex < this.query.totalItems) {
+                if (realIndex < this.query.totalItems || this.query.hasMore) {
                     placeholder.query = this.query;
                     this.virtualItems[virtualIndex] = <any>placeholder;
                     queuedItemIndexes.push(realIndex);
