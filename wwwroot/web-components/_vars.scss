@@ -132,6 +132,6 @@ $notification-ok: #339f7b;
     -ms-text-overflow: ellipsis;
     -o-text-overflow: ellipsis;
     text-overflow: ellipsis;
-    padding: 0 var(--theme-h4);
+    padding-left: var(--theme-h4);
     z-index: 2;
 }

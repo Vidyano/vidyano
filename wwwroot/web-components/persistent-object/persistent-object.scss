@@ -11,7 +11,21 @@
 
     header {
         @include page-title();
-        padding-right: 4px;
+        gap: 4px;
+
+        vi-spinner {
+            align-self: center;
+        }
+
+        nav {
+            span {
+                margin-right: var(--theme-h5);
+            }
+
+            vi-button {
+                width: var(--theme-h1);
+            }
+        }
     }
 
     .tabs {

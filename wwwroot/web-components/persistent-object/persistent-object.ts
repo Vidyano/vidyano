@@ -3,6 +3,7 @@ import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import "../action-bar/action-bar.js"
 import { App } from "../app/app.js"
 import { AppCacheEntryPersistentObject } from "../app-cache/app-cache-entry-persistent-object.js"
+import { Button } from "../button/button.js"
 import "../notification/notification.js"
 import "../persistent-object-tab-bar/persistent-object-tab-bar.js"
 import "../persistent-object-tab-presenter/persistent-object-tab-presenter.js"
@@ -89,6 +90,10 @@ import { WebComponent } from "../web-component/web-component.js"
         isBusy: {
             type: Boolean,
             computed: "persistentObject.isBusy"
+        },
+        hasOwnerQuery: {
+            type: Boolean,
+            computed: "op_isNotNull(persistentObject.ownerQuery)"
         }
     },
     observers: [
@@ -318,6 +323,55 @@ export class PersistentObject extends WebComponent {
             return false;
 
         return !!config.hideActionBar;
+    }
+
+    private _getNavigationIndex(persistentObject: Vidyano.PersistentObject) {
+        if (!this.persistentObject.ownerQuery)
+            return;
+
+        const index = this.persistentObject.ownerQuery.items.findIndex(i => i.id === this.persistentObject.objectId);
+        
+        return `${index + 1} / ${this.persistentObject.ownerQuery.totalItems}${this.persistentObject.ownerQuery.hasMore ? "+" : ""}`;
+    }
+
+    private async _navigate(e: Polymer.Gestures.TapEvent) {
+        let index = this.persistentObject.ownerQuery.items.findIndex(i => i.id === this.persistentObject.objectId);
+        index += ((e.target as Button).getAttribute("data-direction") === "previous" ? -1 : 1);
+
+        if (!this.persistentObject.ownerQuery.hasMore)
+            index = (index + this.persistentObject.ownerQuery.totalItems) % this.persistentObject.ownerQuery.totalItems;
+
+        if (index < 0)
+            return;
+
+        const currentPath = this.app.path;
+        try {
+            let targetItem: Vidyano.QueryResultItem = this.persistentObject.ownerQuery.items[index] || await (this.persistentObject.ownerQuery.getItemsByIndex(index))[0];
+            if (targetItem == null) {
+                targetItem = await this.persistentObject.ownerQuery.queueWork(async () => { 
+                    return this.persistentObject.ownerQuery.items[index];
+                });
+
+                if (targetItem == null)
+                    return;
+            }
+
+            // Check if the user navigated while the item was loading
+            if (currentPath !== this.app.path)
+                return;
+
+            const targetPersistentObject = await targetItem.getPersistentObject(true);
+            
+            // Check if the user navigated while the persistent object was loading
+            if (currentPath !== this.app.path)
+                return;
+            
+            // Make sure to replace the current url so that back navigation takes the user to the query
+            this.service.hooks.onOpen(targetPersistentObject, true);
+        }
+        catch (e) {
+            this.app.showAlert(e, "Error")
+        }
     }
 }
 
