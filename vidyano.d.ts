@@ -12986,6 +12986,8 @@ declare class PersistentObject extends WebComponent {
     private _persistentObjectNotificationChanged;
     private _trackSplitter;
     private _hideActionBar;
+    private _getNavigationIndex;
+    private _navigate;
 }
 declare class PersistentObjectDetailsContent extends WebComponent {
     static get template(): HTMLTemplateElement;

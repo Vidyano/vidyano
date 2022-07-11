@@ -56804,8 +56804,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 
 :host header [grid] {
-  transform: translateX(calc(var(--vi-query-grid-horizontal, 0) * -1));
-  will-change: transform;
+  margin-left: calc(var(--vi-query-grid-horizontal, 0) * -1);
 }
 
 :host header .controls {
@@ -57287,7 +57286,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
             const [item, realIndex] = this._getItem(index, true);
             this.virtualItems[virtualIndex] = item;
             if (this.virtualItems[virtualIndex] === undefined) {
-                if (realIndex < this.query.totalItems) {
+                if (realIndex < this.query.totalItems || this.query.hasMore) {
                     placeholder.query = this.query;
                     this.virtualItems[virtualIndex] = placeholder;
                     queuedItemIndexes.push(realIndex);
@@ -78755,7 +78754,7 @@ let Audit = class Audit extends WebComponent {
   -ms-text-overflow: ellipsis;
   -o-text-overflow: ellipsis;
   text-overflow: ellipsis;
-  padding: 0 var(--theme-h4);
+  padding-left: var(--theme-h4);
   z-index: 2;
   padding-right: 4px;
 }
@@ -79779,9 +79778,21 @@ let PersistentObject = class PersistentObject extends WebComponent {
   -ms-text-overflow: ellipsis;
   -o-text-overflow: ellipsis;
   text-overflow: ellipsis;
-  padding: 0 var(--theme-h4);
+  padding-left: var(--theme-h4);
   z-index: 2;
-  padding-right: 4px;
+  gap: 4px;
+}
+
+:host header vi-spinner {
+  align-self: center;
+}
+
+:host header nav span {
+  margin-right: var(--theme-h5);
+}
+
+:host header nav vi-button {
+  width: var(--theme-h1);
 }
 
 :host .tabs {
@@ -79898,11 +79909,20 @@ let PersistentObject = class PersistentObject extends WebComponent {
     </div>
     <vi-persistent-object-details-header class="flex detail" tabs="[[detailTabs]]" tab="{{selectedDetailTab}}"></vi-persistent-object-details-header>
 </div>
-<header class="layout horizontal center">
+<header class="layout horizontal">
     <vi-sensitive class="layout horizontal flex" disabled="[[!persistentObject.isBreadcrumbSensitive]]">
         <span class="flex">[[persistentObject.breadcrumb]]</span>
     </vi-sensitive>
     <vi-spinner block color="white" hidden$="[[!isBusy]]"></vi-spinner>
+    <dom-if if="[[hasOwnerQuery]]">
+        <template>
+            <nav class="layout horizontal" hidden$="[[!hasOwnerQuery]]">
+                <span>[[_getNavigationIndex(persistentObject)]]</span>
+                <vi-button icon="ChevronLeft" data-direction="previous" on-tap="_navigate" busy$="[[isBusy]]" disabled$="[[isBusy]]"></vi-button>
+                <vi-button icon="ChevronRight" data-direction="next" on-tap="_navigate" busy$="[[isBusy]]" disabled$="[[isBusy]]"></vi-button>
+            </nav>
+        </template>
+    </dom-if>
 </header>`; }
     _persistentObjectChanged(persistentObject, isConnected) {
         if (persistentObject && isConnected) {
@@ -80058,6 +80078,40 @@ let PersistentObject = class PersistentObject extends WebComponent {
             return false;
         return !!config.hideActionBar;
     }
+    _getNavigationIndex(persistentObject) {
+        if (!this.persistentObject.ownerQuery)
+            return;
+        const index = this.persistentObject.ownerQuery.items.findIndex(i => i.id === this.persistentObject.objectId);
+        return `${index + 1} / ${this.persistentObject.ownerQuery.totalItems}${this.persistentObject.ownerQuery.hasMore ? "+" : ""}`;
+    }
+    async _navigate(e) {
+        let index = this.persistentObject.ownerQuery.items.findIndex(i => i.id === this.persistentObject.objectId);
+        index += (e.target.getAttribute("data-direction") === "previous" ? -1 : 1);
+        if (!this.persistentObject.ownerQuery.hasMore)
+            index = (index + this.persistentObject.ownerQuery.totalItems) % this.persistentObject.ownerQuery.totalItems;
+        if (index < 0)
+            return;
+        const currentPath = this.app.path;
+        try {
+            let targetItem = this.persistentObject.ownerQuery.items[index] || await (this.persistentObject.ownerQuery.getItemsByIndex(index))[0];
+            if (targetItem == null) {
+                targetItem = await this.persistentObject.ownerQuery.queueWork(async () => {
+                    return this.persistentObject.ownerQuery.items[index];
+                });
+                if (targetItem == null)
+                    return;
+            }
+            if (currentPath !== this.app.path)
+                return;
+            const targetPersistentObject = await targetItem.getPersistentObject(true);
+            if (currentPath !== this.app.path)
+                return;
+            this.service.hooks.onOpen(targetPersistentObject, true);
+        }
+        catch (e) {
+            this.app.showAlert(e, "Error");
+        }
+    }
 };
 PersistentObject = __decorate([
     WebComponent.register({
@@ -80141,6 +80195,10 @@ PersistentObject = __decorate([
             isBusy: {
                 type: Boolean,
                 computed: "persistentObject.isBusy"
+            },
+            hasOwnerQuery: {
+                type: Boolean,
+                computed: "op_isNotNull(persistentObject.ownerQuery)"
             }
         },
         observers: [
@@ -80612,7 +80670,7 @@ let Query = class Query extends WebComponent {
   -ms-text-overflow: ellipsis;
   -o-text-overflow: ellipsis;
   text-overflow: ellipsis;
-  padding: 0 var(--theme-h4);
+  padding-left: var(--theme-h4);
   z-index: 2;
 }
 
