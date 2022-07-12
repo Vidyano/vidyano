@@ -10118,7 +10118,7 @@ declare global {
 }
 
 declare abstract class AppBase extends WebComponent {
-    readonly hooks: AppServiceHooksBase;
+    private __hooks;
     static get template(): HTMLTemplateElement;
     private _keybindingRegistrations;
     private _activeDialogs;
@@ -10127,6 +10127,7 @@ declare abstract class AppBase extends WebComponent {
     private _initialize;
     private _setInitializing;
     private _setService;
+    private _hooks;
     readonly appRoutePresenter: AppRoutePresenter;
     private _setAppRoutePresenter;
     readonly keys: string;
@@ -10140,9 +10141,10 @@ declare abstract class AppBase extends WebComponent {
     isTracking: boolean;
     sensitive: boolean;
     path: string;
-    constructor(hooks?: AppServiceHooksBase);
+    constructor(__hooks: AppServiceHooksBase | string);
     connectedCallback(): Promise<void>;
     get initialize(): Promise<any>;
+    get hooks(): AppServiceHooksBase;
     get activeElement(): Element;
     get activeElementPath(): Element[];
     protected _initPathRescue(): void;
@@ -10740,19 +10742,7 @@ declare class Profiler extends WebComponent {
     private _close;
 }
 
-declare class AppServiceHooks extends AppServiceHooksBase {
-    onSessionExpired(): Promise<boolean>;
-    onAction(args: ExecuteActionArgs): Promise<PersistentObject$1>;
-    onOpen(obj: ServiceObject, replaceCurrent?: boolean, forceFromAction?: boolean): Promise<void>;
-    onClose(parent: ServiceObject): void;
-    onClientOperation(operation: IClientOperation): void;
-    onQueryFileDrop(query: Query$1, name: string, contents: string): Promise<boolean>;
-    onRedirectToSignIn(keepUrl: boolean): void;
-    onRedirectToSignOut(keepUrl: boolean): void;
-}
-
 declare class App extends AppBase {
-    readonly hooks: AppServiceHooks;
     static get template(): HTMLTemplateElement;
     private _cache;
     private _beforeUnloadEventHandler;
@@ -10780,6 +10770,17 @@ declare class App extends AppBase {
     getUrlForFromAction(id: string, pu?: ProgramUnit): string;
     private _importConfigs;
     private _convertPath;
+}
+
+declare class AppServiceHooks extends AppServiceHooksBase {
+    onSessionExpired(): Promise<boolean>;
+    onAction(args: ExecuteActionArgs): Promise<PersistentObject$1>;
+    onOpen(obj: ServiceObject, replaceCurrent?: boolean, forceFromAction?: boolean): Promise<void>;
+    onClose(parent: ServiceObject): void;
+    onClientOperation(operation: IClientOperation): void;
+    onQueryFileDrop(query: Query$1, name: string, contents: string): Promise<boolean>;
+    onRedirectToSignIn(keepUrl: boolean): void;
+    onRedirectToSignOut(keepUrl: boolean): void;
 }
 
 declare class ActionButton extends ConfigurableWebComponent {

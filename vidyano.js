@@ -41009,9 +41009,9 @@ if (hashBangRe.test(document.location.href)) {
 }
 const missing_base_tag_error = new Error("Document is missing base tag");
 let AppBase = AppBase_1 = class AppBase extends WebComponent {
-    constructor(hooks = new AppServiceHooksBase()) {
+    constructor(__hooks) {
         super();
-        this.hooks = hooks;
+        this.__hooks = __hooks;
         this._keybindingRegistrations = {};
         this._activeDialogs = [];
         this._initialize = new Promise(resolve => { this._initializeResolve = resolve; });
@@ -41562,6 +41562,9 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
     get initialize() {
         return this._initialize;
     }
+    get hooks() {
+        return this._hooks;
+    }
     get activeElement() {
         return this.activeElementPath[0];
     }
@@ -41588,6 +41591,16 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
             console.warn("Service uri cannot be altered.");
             return this.service;
         }
+        if (this.__hooks instanceof AppServiceHooksBase)
+            this._hooks = this.__hooks;
+        else if (typeof this.__hooks === "string") {
+            const currentModule = await import(import.meta.url);
+            const appServiceHooksClass = currentModule[this.__hooks];
+            if (appServiceHooksClass)
+                this._hooks = new appServiceHooksClass();
+        }
+        if (!this._hooks)
+            this._hooks = new AppServiceHooksBase();
         this._setService(new Service(uri, this.hooks));
         const path = AppBase_1.removeRootPath(document.location.pathname);
         const skipDefaultCredentialLogin = path.startsWith("sign-in");
@@ -78155,9 +78168,8 @@ class AppServiceHooks extends AppServiceHooksBase {
 
 var App_1;
 let App = App_1 = class App extends AppBase {
-    constructor(hooks = new AppServiceHooks()) {
-        super(hooks);
-        this.hooks = hooks;
+    constructor() {
+        super(document.querySelector("vi-app").getAttribute("hooks") || new AppServiceHooks());
         this._cache = [];
         if (!this.label)
             this.label = this.title;
