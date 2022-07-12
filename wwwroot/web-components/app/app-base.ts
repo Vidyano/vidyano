@@ -175,6 +175,7 @@ export abstract class AppBase extends WebComponent {
     private _initialize: Promise<Vidyano.Application> = new Promise(resolve => { this._initializeResolve = resolve; });
     private _setInitializing: (initializing: boolean) => void;
     private _setService: (service: Vidyano.Service) => void;
+    private _hooks: AppServiceHooksBase;
     readonly appRoutePresenter: AppRoutePresenter; private _setAppRoutePresenter: (appRoutePresenter: AppRoutePresenter) => void;
     readonly keys: string; private _setKeys: (keys: string) => void;
     readonly updateAvailable: boolean; private _setUpdateAvailable: (updateAvailable: boolean) => void;
@@ -185,7 +186,7 @@ export abstract class AppBase extends WebComponent {
     sensitive: boolean;
     path: string;
 
-    constructor(readonly hooks: AppServiceHooksBase = new AppServiceHooksBase()) {
+    constructor(private __hooks: AppServiceHooksBase | string) {
         super();
         
         window["app"] = this;
@@ -217,6 +218,10 @@ export abstract class AppBase extends WebComponent {
 
     get initialize(): Promise<any> {
         return this._initialize;
+    }
+
+    get hooks(): AppServiceHooksBase {
+        return this._hooks;
     }
 
     get activeElement(): Element {
@@ -252,6 +257,18 @@ export abstract class AppBase extends WebComponent {
             console.warn("Service uri cannot be altered.");
             return this.service;
         }
+
+        if (this.__hooks instanceof AppServiceHooksBase)
+            this._hooks = this.__hooks;
+        else if (typeof this.__hooks === "string") {
+            const currentModule = await import(import.meta.url);
+            const appServiceHooksClass = currentModule[this.__hooks] as new () => AppServiceHooksBase;
+            if (appServiceHooksClass)
+                this._hooks = new appServiceHooksClass();
+        }
+
+        if (!this._hooks)
+            this._hooks = new AppServiceHooksBase();
 
         this._setService(new Vidyano.Service(uri, this.hooks));
         const path = AppBase.removeRootPath(document.location.pathname);
