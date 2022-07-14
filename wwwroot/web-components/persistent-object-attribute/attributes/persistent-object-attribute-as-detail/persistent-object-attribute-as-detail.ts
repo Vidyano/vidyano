@@ -48,6 +48,10 @@ import { PersistentObjectDialog } from "../../../persistent-object-dialog/persis
         isAdding: {
             type: Boolean,
             readOnly: true
+        },
+        forceFullEdit: {
+            type: Boolean,
+            value: false
         }
     },
     observers: [
@@ -217,6 +221,10 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
             this.set("activeObject", e.model.obj);
 
         e.stopPropagation();
+    }
+
+    private _isRowFullEdit(forceFullEdit: boolean, activeObject: Vidyano.PersistentObject, obj: Vidyano.PersistentObject) {
+        return forceFullEdit || activeObject === obj;
     }
 
     private _titleMouseenter(e: MouseEvent) {

@@ -17,7 +17,7 @@
                 <div id="rows">
                     <dom-repeat items="[[attribute.objects]]" as="obj">
                         <template>
-                            <vi-persistent-object-attribute-as-detail-row class="row" service-object="[[obj]]" columns="[[attribute.details.columns]]" editing="[[editing]]" can-delete="[[canDelete]]" hidden$="[[obj.isDeleted]]" full-edit="[[op_areSame(activeObject, obj)]]" on-full-edit="_setActiveObject" read-only$="[[readOnly]]" frozen$="[[attribute.parent.isFrozen]]"></vi-persistent-object-attribute-as-detail-row>
+                            <vi-persistent-object-attribute-as-detail-row class="row" service-object="[[obj]]" columns="[[attribute.details.columns]]" editing="[[editing]]" can-delete="[[canDelete]]" hidden$="[[obj.isDeleted]]" full-edit="[[_isRowFullEdit(forceFullEdit, activeObject, obj)]]" on-full-edit="_setActiveObject" read-only$="[[readOnly]]" frozen$="[[attribute.parent.isFrozen]]"></vi-persistent-object-attribute-as-detail-row>
                         </template>
                     </dom-repeat>
                 </div>
