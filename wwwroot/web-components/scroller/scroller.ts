@@ -220,7 +220,7 @@ export class Scroller extends WebComponent {
 
         this._setVertical(!noVertical && height > 0);
 
-        const verticalScrollTop = verticalScrollOffset === 0 ? 0 : Math.round((1 / ((innerHeight - outerHeight) / verticalScrollOffset)) * this._verticalScrollSpace);
+        const verticalScrollTop = verticalScrollOffset === 0 || innerHeight - outerHeight === 0 ? 0 : Math.round((1 / ((innerHeight - outerHeight) / verticalScrollOffset)) * this._verticalScrollSpace);
         if (verticalScrollTop !== this._verticalScrollTop)
             this.$.vertical.style.transform = `translateY(${this._verticalScrollTop = verticalScrollTop}px)`;
 
