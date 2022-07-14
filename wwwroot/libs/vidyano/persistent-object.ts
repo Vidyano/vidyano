@@ -507,7 +507,11 @@ export class PersistentObject extends ServiceObjectWithActions {
     }
 
     _triggerAttributeRefresh(attr: PersistentObjectAttribute, immediate?: boolean): Promise<boolean> {
+        const attrValue = attr.value;
         const work = async () => {
+            if (attrValue !== attr.value)
+                return false;
+
             this._prepareAttributesForRefresh(attr);
             const result = await this.service.executeAction("PersistentObject.Refresh", this, null, null, { RefreshedPersistentObjectAttributeId: attr.id });
             if (this.isEditing)
@@ -522,7 +526,7 @@ export class PersistentObject extends ServiceObjectWithActions {
         else
             result = work();
 
-        if (this.ownerDetailAttribute && this.ownerDetailAttribute.triggersRefresh) {
+        if (result && this.ownerDetailAttribute && this.ownerDetailAttribute.triggersRefresh) {
             return result.then(async res => {
                 await this.ownerDetailAttribute._triggerAttributeRefresh(immediate);
                 return res;
