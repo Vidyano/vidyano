@@ -153,7 +153,7 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
         if (value && value.startsWith(this._decimalSeparator))
             value = `0${value}`;
 
-        switch (this.attribute.type) {
+        switch (numericSynonyms[this.attribute.type] || this.attribute.type) {
             case "Byte":
             case "NullableByte":
                 return this._between(parseInt(value, 10), 0, 255);
@@ -256,6 +256,12 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
 
         return position === "after" ? unit : "";
     }
+
+    static registerNumericAttributeType(attributeType: string, numericType: string): void {
+        numericSynonyms[attributeType] = numericType;
+    }
 }
 
 PersistentObjectAttribute.registerAttributeType("Numeric", PersistentObjectAttributeNumeric);
+
+const numericSynonyms: { [type: string]: string } = {};
