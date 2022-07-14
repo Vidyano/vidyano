@@ -84,7 +84,7 @@ export class PersistentObjectAttributeAsDetailRow extends WebComponent {
         if (!this.serviceObject.isNew)
             this.serviceObject.isDeleted = true;
         else
-            this.splice("attribute.objects", this.serviceObject.ownerDetailAttribute.objects.indexOf(this.serviceObject), 1);
+            this.serviceObject.ownerDetailAttribute.objects.splice(this.serviceObject.ownerDetailAttribute.objects.indexOf(this.serviceObject), 1);
 
         this.serviceObject.ownerDetailAttribute.isValueChanged = true;
         this.serviceObject.ownerDetailAttribute.parent.triggerDirty();
