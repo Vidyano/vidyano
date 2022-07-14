@@ -30,7 +30,6 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
     private _allowDecimal: boolean;
     private _isNullable: boolean;
     private _decimalSeparator: string;
-    private _dataType: string;
     readonly focused: boolean; private _setFocused: (val: boolean) => void;
     unitBefore: string;
     unitAfter: string;
@@ -42,8 +41,8 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
         super._attributeChanged();
 
         if (this.attribute) {
-            this._allowDecimal = PersistentObjectAttributeNumeric._decimalTypes.indexOf(this.attribute.type) >= 0;
-            this._isNullable = this.attribute.type.startsWith("Nullable") && !this.attribute.parent.isBulkEdit;
+            this._allowDecimal = PersistentObjectAttributeNumeric._decimalTypes.indexOf(numericSynonyms[this.attribute.type] || this.attribute.type) >= 0;
+            this._isNullable = (numericSynonyms[this.attribute.type] || this.attribute.type).startsWith("Nullable") && !this.attribute.parent.isBulkEdit;
             this._decimalSeparator = Vidyano.CultureInfo.currentCulture.numberFormat.numberDecimalSeparator;
 
             const displayFormat = this.attribute.getTypeHint("displayformat", null, null, true);
@@ -68,7 +67,7 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
 
         if (this.focused) {
             if (myValue === "" || myValue === "-")
-                myValue = this.attribute.isRequired && !this.attribute.type.startsWith("Nullable") ? "0" : "";
+                myValue = this.attribute.isRequired && !this._isNullable ? "0" : "";
             else if (myValue.endsWith("."))
                 myValue = myValue.trimEnd(".");
         }
@@ -92,7 +91,7 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
         try {
             if (this.focused) {
                 if (newValue === "" || newValue === "-")
-                    newValue = this.attribute.isRequired && !this.attribute.type.startsWith("Nullable") ? "0" : "";
+                    newValue = this.attribute.isRequired && !this._isNullable ? "0" : "";
                 else if (newValue.endsWith("."))
                     newValue = newValue.trimEnd(".");
             }
@@ -126,7 +125,7 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
             this.attribute.value = newValue;
         }
 
-        let attributeValue = this.attribute.value ? this.attribute.value.toString() : ((this.attribute.isRequired && !this.attribute.type.startsWith("Nullable")) || this.value ? "0" : "");
+        let attributeValue = this.attribute.value ? this.attribute.value.toString() : ((this.attribute.isRequired && !this._isNullable) || this.value ? "0" : "");
         if (attributeValue !== this.value) {
             if (this._decimalSeparator !== ".")
                 this.value = attributeValue.replace(".", this._decimalSeparator);
@@ -147,7 +146,7 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
     }
 
     private _canParse(value: string): boolean {
-        if (!value && this.attribute.type.startsWith("Nullable"))
+        if (!value && this._isNullable)
             return true;
 
         if (value && value.startsWith(this._decimalSeparator))
@@ -222,7 +221,7 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
                 this.value = input.value = value.insert(this._decimalSeparator, carretIndex);
                 this._setCarretIndex(input, carretIndex + 1);
             }
-            else if (e.key === Keyboard.Keys.Subtract && !value.contains("-") && carretIndex === 0 && PersistentObjectAttributeNumeric._unsignedTypes.indexOf(this.attribute.type) === -1) {
+            else if (e.key === Keyboard.Keys.Subtract && !value.contains("-") && carretIndex === 0 && PersistentObjectAttributeNumeric._unsignedTypes.indexOf(numericSynonyms[this.attribute.type] || this.attribute.type) === -1) {
                 this.value = input.value = value.insert("-", carretIndex);
                 this._setCarretIndex(input, carretIndex + 1);
             }
