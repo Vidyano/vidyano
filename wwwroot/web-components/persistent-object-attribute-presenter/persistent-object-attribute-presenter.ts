@@ -130,6 +130,11 @@ document.addEventListener("keyup", e => {
         developer: {
             type: Boolean,
             reflectToAttribute: true
+        },
+        gridArea: {
+            type: String,
+            reflectToAttribute: true,
+            observer: "_gridAreaChanged"
         }
     },
     listeners: {
@@ -360,5 +365,9 @@ export class PersistentObjectAttributePresenter extends ConfigurableWebComponent
             icon: "viConfigure",
             action: this._openAttributeManagement.bind(this)
         });
+    }
+
+    private _gridAreaChanged(gridArea: string) {
+        this.style.gridArea = gridArea;
     }
 }

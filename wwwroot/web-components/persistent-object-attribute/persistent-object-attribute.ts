@@ -71,6 +71,11 @@ styleElement.register("vi-persistent-object-attribute-style-module");
             type: Array,
             computed: "_computeOptions(attribute.options, attribute.isRequired, attribute.type)",
             observer: "_optionsChanged"
+        },
+        gridArea: {
+            type: String,
+            reflectToAttribute: true,
+            observer: "_gridAreaChanged"
         }
     },
     forwardObservers: [
@@ -188,6 +193,10 @@ export abstract class PersistentObjectAttribute extends WebComponent {
         //     return;
 
         // element.focus();
+    }
+
+    private _gridAreaChanged(gridArea: string) {
+        this.style.gridArea = gridArea;
     }
 
     static registerAttributeType(attributeType: string, constructor: PersistentObjectAttributeConstructor) {
