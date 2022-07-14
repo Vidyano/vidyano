@@ -108,7 +108,7 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
             return;
 
         let remainingFraction = 100;
-        const widths = columns.map(c => {
+        const widths = columns.filter(c => c.width !== "0").map(c => {
             if (c.width?.endsWith("%")) {
                 const width = parseInt(c.width);
                 remainingFraction -= width;
@@ -117,20 +117,27 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
             }
             
             const width = parseInt(c.width);
-            if (!isNaN(width))
+            if (!isNaN(width) && width)
                 return `${width}px`;
 
             return null;
         });
 
         const remainingWidths = widths.filter(w => w === null);
-        if (remainingWidths.length > 0)
-            remainingWidths.forEach((_, index) => remainingWidths[index] = `${remainingFraction / remainingWidths.length}fr`);
+        if (remainingWidths.length > 0) {
+            const remainingWidth = `${remainingFraction / remainingWidths.length}fr`;
+            widths.forEach((w, i) => {
+                if (w)
+                    return;
+                
+                widths[i] = remainingWidth;
+            });
+        }
 
         if (canDelete)
-            remainingWidths.push("auto");
+            widths.push("min-content");
 
-        this.style.setProperty("--column-widths", remainingWidths.join(" "));
+        this.style.setProperty("--column-widths", widths.join(" "));
 
         this._setInitializing(false);
     }
