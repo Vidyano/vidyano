@@ -42987,7 +42987,7 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
             }
         }
         this._setVertical(!noVertical && height > 0);
-        const verticalScrollTop = verticalScrollOffset === 0 ? 0 : Math.round((1 / ((innerHeight - outerHeight) / verticalScrollOffset)) * this._verticalScrollSpace);
+        const verticalScrollTop = verticalScrollOffset === 0 || innerHeight - outerHeight === 0 ? 0 : Math.round((1 / ((innerHeight - outerHeight) / verticalScrollOffset)) * this._verticalScrollSpace);
         if (verticalScrollTop !== this._verticalScrollTop)
             this.$.vertical.style.transform = `translateY(${this._verticalScrollTop = verticalScrollTop}px)`;
         this._setScrollTopShadow(!this.noScrollShadow && verticalScrollTop > 0);
@@ -58562,7 +58562,7 @@ let PersistentObjectAttributeAsDetailRow = class PersistentObjectAttributeAsDeta
         if (!this.serviceObject.isNew)
             this.serviceObject.isDeleted = true;
         else
-            this.splice("attribute.objects", this.serviceObject.ownerDetailAttribute.objects.indexOf(this.serviceObject), 1);
+            this.serviceObject.ownerDetailAttribute.objects.splice(this.serviceObject.ownerDetailAttribute.objects.indexOf(this.serviceObject), 1);
         this.serviceObject.ownerDetailAttribute.isValueChanged = true;
         this.serviceObject.ownerDetailAttribute.parent.triggerDirty();
         if (this.serviceObject.ownerDetailAttribute.triggersRefresh)
@@ -58841,23 +58841,29 @@ let PersistentObjectAttributeAsDetail = class PersistentObjectAttributeAsDetail 
         if (!isConnected || !columns?.length)
             return;
         let remainingFraction = 100;
-        const widths = columns.map(c => {
+        const widths = columns.filter(c => c.width !== "0").map(c => {
             if (c.width?.endsWith("%")) {
                 const width = parseInt(c.width);
                 remainingFraction -= width;
                 return `${width}fr`;
             }
             const width = parseInt(c.width);
-            if (!isNaN(width))
+            if (!isNaN(width) && width)
                 return `${width}px`;
             return null;
         });
         const remainingWidths = widths.filter(w => w === null);
-        if (remainingWidths.length > 0)
-            remainingWidths.forEach((_, index) => remainingWidths[index] = `${remainingFraction / remainingWidths.length}fr`);
+        if (remainingWidths.length > 0) {
+            const remainingWidth = `${remainingFraction / remainingWidths.length}fr`;
+            widths.forEach((w, i) => {
+                if (w)
+                    return;
+                widths[i] = remainingWidth;
+            });
+        }
         if (canDelete)
-            remainingWidths.push("auto");
-        this.style.setProperty("--column-widths", remainingWidths.join(" "));
+            widths.push("min-content");
+        this.style.setProperty("--column-widths", widths.join(" "));
         this._setInitializing(false);
     }
     async _add(e) {
@@ -75442,7 +75448,7 @@ let PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = clas
             return true;
         if (value && value.startsWith(this._decimalSeparator))
             value = `0${value}`;
-        switch (this.attribute.type) {
+        switch (numericSynonyms[this.attribute.type] || this.attribute.type) {
             case "Byte":
             case "NullableByte":
                 return this._between(parseInt(value, 10), 0, 255);
@@ -75530,6 +75536,9 @@ let PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = clas
             return unit;
         return position === "after" ? unit : "";
     }
+    static registerNumericAttributeType(attributeType, numericType) {
+        numericSynonyms[attributeType] = numericType;
+    }
 };
 PersistentObjectAttributeNumeric._decimalTypes = ["NullableDecimal", "Decimal", "NullableSingle", "Single", "NullableDouble", "Double"];
 PersistentObjectAttributeNumeric._unsignedTypes = ["Byte", "NullableByte", "UInt16", "NullableUInt16", "UInt32", "NullableUInt32", "UInt64", "NullableUInt64"];
@@ -75555,6 +75564,7 @@ PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = __decora
     })
 ], PersistentObjectAttributeNumeric);
 PersistentObjectAttribute.registerAttributeType("Numeric", PersistentObjectAttributeNumeric);
+const numericSynonyms = {};
 
 let PersistentObjectAttributePassword = class PersistentObjectAttributePassword extends PersistentObjectAttribute {
     static get template() { return html `<style include="vi-persistent-object-attribute-style-module"></style>
@@ -78238,8 +78248,8 @@ let App = App_1 = class App extends AppBase {
         <template>
             <vi-sign-in label="[[app.label]]" logo="[[app.signInLogo]]">
                 <slot name="sign-in-background"></slot>
-                <slot name="sign-in-footer"></slot>
             </vi-sign-in>
+            <slot name="sign-in-footer"></slot>
         </template>
     </vi-app-route>
     <vi-app-route route="sign-out(/)(:returnUrl*)" route-alt="SignOut(/)(:returnUrl*)" allow-signed-out>

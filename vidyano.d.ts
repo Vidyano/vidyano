@@ -12652,6 +12652,7 @@ declare class PersistentObjectAttributeNumeric extends PersistentObjectAttribute
     private _computeDisplayValueWithUnit;
     private _computeBeforeUnit;
     private _computeAfterUnit;
+    static registerNumericAttributeType(attributeType: string, numericType: string): void;
 }
 
 declare class PersistentObjectAttributePassword extends PersistentObjectAttribute {
