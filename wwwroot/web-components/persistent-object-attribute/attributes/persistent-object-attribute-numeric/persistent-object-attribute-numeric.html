@@ -11,6 +11,7 @@
 <dom-if if="[[editing]]">
     <template>
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
+            <slot name="left" slot="left"></slot>
             <div class="layout horizontal">
                 <span class="before" hidden$="[[!unitBefore]]">[[unitBefore]]</span>
                 <vi-sensitive class="flex layout horizontal" disabled="[[!sensitive]]">
@@ -18,6 +19,7 @@
                 </vi-sensitive>
                 <span class="after" hidden$="[[!unitAfter]]">[[unitAfter]]</span>
             </div>
+            <slot name="right" slot="right"></slot>
         </vi-persistent-object-attribute-edit>
     </template>
 </dom-if>
