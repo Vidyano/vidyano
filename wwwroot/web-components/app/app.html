@@ -44,8 +44,8 @@
         <template>
             <vi-sign-in label="[[app.label]]" logo="[[app.signInLogo]]">
                 <slot name="sign-in-background"></slot>
-                <slot name="sign-in-footer"></slot>
             </vi-sign-in>
+            <slot name="sign-in-footer"></slot>
         </template>
     </vi-app-route>
     <vi-app-route route="sign-out(/)(:returnUrl*)" route-alt="SignOut(/)(:returnUrl*)" allow-signed-out>
