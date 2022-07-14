@@ -2,7 +2,7 @@
 <link rel="stylesheet" href="persistent-object-attribute-as-detail.css" />
 
 <div id="table">
-    <div id="head" class="horizontal layout">
+    <div id="head" class="horizontal layout" part="head">
         <dom-repeat items="[[attribute.details.columns]]" as="column" filter="_isColumnVisible">
             <template>
                 <div class="column" data-column$="[[column.name]]"><label on-mouseenter="_titleMouseenter">[[column.label]]</label></div>
