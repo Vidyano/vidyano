@@ -40101,6 +40101,44 @@ Sensitive = __decorate([
     })
 ], Sensitive);
 
+let SessionPresenter = class SessionPresenter extends WebComponent {
+    static get template() { return html `<slot></slot>`; }
+    _stamp(session, isConnected) {
+        if (!isConnected)
+            return;
+        const template = this.querySelector("template");
+        if (!template) {
+            console.error("SessionPresenter expects a template child");
+            return;
+        }
+        if (!this._stampedTemplate) {
+            const templateClass = templatize(template);
+            this._stampedTemplate = new templateClass({
+                "session": session
+            });
+            this.appendChild(this._stampedTemplate.root);
+        }
+        else
+            this._stampedTemplate.set("session", session);
+    }
+};
+SessionPresenter = __decorate([
+    WebComponent.register({
+        properties: {
+            session: {
+                type: Object,
+                computed: "service.application.session"
+            }
+        },
+        forwardObservers: [
+            "service.application.session"
+        ],
+        observers: [
+            "_stamp(session, isConnected)"
+        ]
+    })
+], SessionPresenter);
+
 /**
 @license
 Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
@@ -44084,7 +44122,7 @@ let Menu = Menu_1 = class Menu extends WebComponent {
 
 <header>
     <vi-button id="toggleCollapse" icon="Menu_Collapse" on-tap="_toggleCollapse"></vi-button>
-    <div class="label">[[label]]<slot name="menu-label"></slot></div>
+    <div class="label">[[label]]<slot name="label"></slot></div>
     <div id="headerElements"></div>
     <dom-if if="[[!collapsed]]">
         <template>
@@ -44142,7 +44180,7 @@ let Menu = Menu_1 = class Menu extends WebComponent {
     </template>
 </dom-if>
 <footer>
-    <div id="footerElements"></div>
+    <slot name="footer"></slot>
     <vi-user collapsed="[[collapsed]]"></vi-user>
 </footer>
 <div id="resizer" on-track="_onResize"></div>`; }
@@ -78255,7 +78293,8 @@ let App = App_1 = class App extends AppBase {
 <dom-if if="[[showMenu]]" restamp>
     <template>
         <vi-menu menu label="[[label]]" program-units="[[service.application.programUnits]]" active-program-unit="[[programUnit]]">
-            <slot name="menu-label"></slot>
+            <slot name="menu-label" slot="label"></slot>
+            <slot name="menu-footer" slot="footer"></slot>
         </vi-menu>
     </template>
 </dom-if>
@@ -80983,4 +81022,4 @@ QueryPresenter = __decorate([
     })
 ], QueryPresenter);
 
-export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppRoute, AppRoutePresenter, AppServiceHooks, AppServiceHooksBase, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, DialogCore, Error$1 as Error, FileDrop, Icon, iconRegister as IconRegister, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellDefault, QueryGridCellImage, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, SelectOptionItem, SelectReferenceDialog, Sensitive, SignIn, SignOut, SizeTracker, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, vidyano as Vidyano, WebComponent, moment };
+export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppRoute, AppRoutePresenter, AppServiceHooks, AppServiceHooksBase, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, DialogCore, Error$1 as Error, FileDrop, Icon, iconRegister as IconRegister, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellDefault, QueryGridCellImage, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, SelectOptionItem, SelectReferenceDialog, Sensitive, SessionPresenter, SignIn, SignOut, SizeTracker, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, vidyano as Vidyano, WebComponent, moment };
