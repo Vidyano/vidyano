@@ -10738,7 +10738,10 @@ class PersistentObject$1 extends ServiceObjectWithActions {
         return this.isDirty;
     }
     _triggerAttributeRefresh(attr, immediate) {
+        const attrValue = attr.value;
         const work = async () => {
+            if (attrValue !== attr.value)
+                return false;
             this._prepareAttributesForRefresh(attr);
             const result = await this.service.executeAction("PersistentObject.Refresh", this, null, null, { RefreshedPersistentObjectAttributeId: attr.id });
             if (this.isEditing)
@@ -10750,7 +10753,7 @@ class PersistentObject$1 extends ServiceObjectWithActions {
             result = this.queueWork(work, false);
         else
             result = work();
-        if (this.ownerDetailAttribute && this.ownerDetailAttribute.triggersRefresh) {
+        if (result && this.ownerDetailAttribute && this.ownerDetailAttribute.triggersRefresh) {
             return result.then(async (res) => {
                 await this.ownerDetailAttribute._triggerAttributeRefresh(immediate);
                 return res;
@@ -42144,6 +42147,21 @@ let Button = class Button extends WebComponent {
   color: fadeout(#3D9970, 50%) !important;
 }
 
+:host([accent]) {
+  --theme-color: var(--theme-accent-color);
+  --theme-color-light: var(--theme-accent-color-light);
+  --theme-color-lighter: var(--theme-accent-color-lighter);
+  --theme-color-dark: var(--theme-accent-color-dark);
+  --theme-color-darker: var(--theme-accent-color-darker);
+  --theme-color-faint: var(--theme-accent-color-faint);
+  --theme-color-semi-faint: var(--theme-accent-color-semi-faint);
+  --theme-color-rgb: var(--theme-accent-color-rgb);
+}
+
+:host([accent]) paper-ripple {
+  color: var(--theme-accent-color);
+}
+
 vi-popup[open] > [toggle] vi-button[slot="header"][type=""]:not([inverse]), vi-popup[open] > [toggle] vi-button[slot="header"]:not([type]):not([inverse]) {
   background-color: var(--theme-color-light);
 }
@@ -58282,6 +58300,9 @@ let PersistentObjectAttribute = class PersistentObjectAttribute extends WebCompo
         if (this.shadowRoot.activeElement)
             return;
     }
+    _gridAreaChanged(gridArea) {
+        this.style.gridArea = gridArea;
+    }
     static registerAttributeType(attributeType, constructor) {
         registeredAttributeTypes[attributeType] = constructor;
     }
@@ -58354,6 +58375,11 @@ PersistentObjectAttribute = __decorate([
                 type: Array,
                 computed: "_computeOptions(attribute.options, attribute.isRequired, attribute.type)",
                 observer: "_optionsChanged"
+            },
+            gridArea: {
+                type: String,
+                reflectToAttribute: true,
+                observer: "_gridAreaChanged"
             }
         },
         forwardObservers: [
@@ -58764,7 +58790,7 @@ let PersistentObjectAttributeAsDetail = class PersistentObjectAttributeAsDetail 
 </style>
 
 <div id="table">
-    <div id="head" class="horizontal layout">
+    <div id="head" class="horizontal layout" part="head">
         <dom-repeat items="[[attribute.details.columns]]" as="column" filter="_isColumnVisible">
             <template>
                 <div class="column" data-column$="[[column.name]]"><label on-mouseenter="_titleMouseenter">[[column.label]]</label></div>
@@ -58779,7 +58805,7 @@ let PersistentObjectAttributeAsDetail = class PersistentObjectAttributeAsDetail 
                 <div id="rows">
                     <dom-repeat items="[[attribute.objects]]" as="obj">
                         <template>
-                            <vi-persistent-object-attribute-as-detail-row class="row" service-object="[[obj]]" columns="[[attribute.details.columns]]" editing="[[editing]]" can-delete="[[canDelete]]" hidden$="[[obj.isDeleted]]" full-edit="[[op_areSame(activeObject, obj)]]" on-full-edit="_setActiveObject" read-only$="[[readOnly]]" frozen$="[[attribute.parent.isFrozen]]"></vi-persistent-object-attribute-as-detail-row>
+                            <vi-persistent-object-attribute-as-detail-row class="row" service-object="[[obj]]" columns="[[attribute.details.columns]]" editing="[[editing]]" can-delete="[[canDelete]]" hidden$="[[obj.isDeleted]]" full-edit="[[_isRowFullEdit(forceFullEdit, activeObject, obj)]]" on-full-edit="_setActiveObject" read-only$="[[readOnly]]" frozen$="[[attribute.parent.isFrozen]]"></vi-persistent-object-attribute-as-detail-row>
                         </template>
                     </dom-repeat>
                 </div>
@@ -58930,6 +58956,9 @@ let PersistentObjectAttributeAsDetail = class PersistentObjectAttributeAsDetail 
             this.set("activeObject", e.model.obj);
         e.stopPropagation();
     }
+    _isRowFullEdit(forceFullEdit, activeObject, obj) {
+        return forceFullEdit || activeObject === obj;
+    }
     _titleMouseenter(e) {
         const label = e.target;
         label.setAttribute("title", label.textContent);
@@ -58977,6 +59006,10 @@ PersistentObjectAttributeAsDetail = __decorate([
             isAdding: {
                 type: Boolean,
                 readOnly: true
+            },
+            forceFullEdit: {
+                type: Boolean,
+                value: false
             }
         },
         observers: [
@@ -75346,6 +75379,7 @@ let PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = clas
 <dom-if if="[[editing]]">
     <template>
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
+            <slot name="left" slot="left"></slot>
             <div class="layout horizontal">
                 <span class="before" hidden$="[[!unitBefore]]">[[unitBefore]]</span>
                 <vi-sensitive class="flex layout horizontal" disabled="[[!sensitive]]">
@@ -75353,14 +75387,15 @@ let PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = clas
                 </vi-sensitive>
                 <span class="after" hidden$="[[!unitAfter]]">[[unitAfter]]</span>
             </div>
+            <slot name="right" slot="right"></slot>
         </vi-persistent-object-attribute-edit>
     </template>
 </dom-if>`; }
     _attributeChanged() {
         super._attributeChanged();
         if (this.attribute) {
-            this._allowDecimal = PersistentObjectAttributeNumeric_1._decimalTypes.indexOf(this.attribute.type) >= 0;
-            this._isNullable = this.attribute.type.startsWith("Nullable") && !this.attribute.parent.isBulkEdit;
+            this._allowDecimal = PersistentObjectAttributeNumeric_1._decimalTypes.indexOf(numericSynonyms[this.attribute.type] || this.attribute.type) >= 0;
+            this._isNullable = (numericSynonyms[this.attribute.type] || this.attribute.type).startsWith("Nullable") && !this.attribute.parent.isBulkEdit;
             this._decimalSeparator = CultureInfo.currentCulture.numberFormat.numberDecimalSeparator;
             const displayFormat = this.attribute.getTypeHint("displayformat", null, null, true);
             if (displayFormat) {
@@ -75381,7 +75416,7 @@ let PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = clas
             myValue = this.value.replace(this._decimalSeparator, ".");
         if (this.focused) {
             if (myValue === "" || myValue === "-")
-                myValue = this.attribute.isRequired && !this.attribute.type.startsWith("Nullable") ? "0" : "";
+                myValue = this.attribute.isRequired && !this._isNullable ? "0" : "";
             else if (myValue.endsWith("."))
                 myValue = myValue.trimEnd(".");
         }
@@ -75400,7 +75435,7 @@ let PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = clas
         try {
             if (this.focused) {
                 if (newValue === "" || newValue === "-")
-                    newValue = this.attribute.isRequired && !this.attribute.type.startsWith("Nullable") ? "0" : "";
+                    newValue = this.attribute.isRequired && !this._isNullable ? "0" : "";
                 else if (newValue.endsWith("."))
                     newValue = newValue.trimEnd(".");
             }
@@ -75427,7 +75462,7 @@ let PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = clas
                 newValue = newValue.replace(this._decimalSeparator, ".");
             this.attribute.value = newValue;
         }
-        let attributeValue = this.attribute.value ? this.attribute.value.toString() : ((this.attribute.isRequired && !this.attribute.type.startsWith("Nullable")) || this.value ? "0" : "");
+        let attributeValue = this.attribute.value ? this.attribute.value.toString() : ((this.attribute.isRequired && !this._isNullable) || this.value ? "0" : "");
         if (attributeValue !== this.value) {
             if (this._decimalSeparator !== ".")
                 this.value = attributeValue.replace(".", this._decimalSeparator);
@@ -75444,7 +75479,7 @@ let PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = clas
         input.selectionEnd = input.value.length;
     }
     _canParse(value) {
-        if (!value && this.attribute.type.startsWith("Nullable"))
+        if (!value && this._isNullable)
             return true;
         if (value && value.startsWith(this._decimalSeparator))
             value = `0${value}`;
@@ -75511,7 +75546,7 @@ let PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = clas
                 this.value = input.value = value.insert(this._decimalSeparator, carretIndex);
                 this._setCarretIndex(input, carretIndex + 1);
             }
-            else if (e.key === Keys.Subtract && !value.contains("-") && carretIndex === 0 && PersistentObjectAttributeNumeric_1._unsignedTypes.indexOf(this.attribute.type) === -1) {
+            else if (e.key === Keys.Subtract && !value.contains("-") && carretIndex === 0 && PersistentObjectAttributeNumeric_1._unsignedTypes.indexOf(numericSynonyms[this.attribute.type] || this.attribute.type) === -1) {
                 this.value = input.value = value.insert("-", carretIndex);
                 this._setCarretIndex(input, carretIndex + 1);
             }
@@ -75663,6 +75698,10 @@ let PersistentObjectAttributeReference = class PersistentObjectAttributeReferenc
   height: 1em;
   fill: var(--theme-color);
   transform: translateY(2px);
+}
+
+:host([read-only]) a {
+  background-color: var(--theme-read-only);
 }
 
 :host([editing]) vi-select {
@@ -77053,6 +77092,9 @@ let PersistentObjectAttributePresenter = class PersistentObjectAttributePresente
             action: this._openAttributeManagement.bind(this)
         });
     }
+    _gridAreaChanged(gridArea) {
+        this.style.gridArea = gridArea;
+    }
 };
 PersistentObjectAttributePresenter = __decorate([
     ConfigurableWebComponent.register({
@@ -77135,6 +77177,11 @@ PersistentObjectAttributePresenter = __decorate([
             developer: {
                 type: Boolean,
                 reflectToAttribute: true
+            },
+            gridArea: {
+                type: String,
+                reflectToAttribute: true,
+                observer: "_gridAreaChanged"
             }
         },
         listeners: {

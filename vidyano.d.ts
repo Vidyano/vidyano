@@ -12272,6 +12272,7 @@ declare abstract class PersistentObjectAttribute extends WebComponent {
     private _computeOptions;
     private _updateForegroundDataTypeHint;
     protected _onFocus(e: FocusEvent): void;
+    private _gridAreaChanged;
     static registerAttributeType(attributeType: string, constructor: PersistentObjectAttributeConstructor): void;
     static getAttributeConstructor(attributeType: string): PersistentObjectAttributeConstructor;
 }
@@ -12299,6 +12300,7 @@ declare class PersistentObjectAttributeAsDetail extends PersistentObjectAttribut
     private _add;
     private _finalizeAdd;
     private _setActiveObject;
+    private _isRowFullEdit;
     private _titleMouseenter;
 }
 
@@ -12633,7 +12635,6 @@ declare class PersistentObjectAttributeNumeric extends PersistentObjectAttribute
     private _allowDecimal;
     private _isNullable;
     private _decimalSeparator;
-    private _dataType;
     readonly focused: boolean;
     private _setFocused;
     unitBefore: string;
@@ -12756,6 +12757,7 @@ declare class PersistentObjectAttributePresenter extends ConfigurableWebComponen
     private _loadingChanged;
     private _openAttributeManagement;
     private _configure;
+    private _gridAreaChanged;
 }
 
 declare class PersistentObjectAttributeImageDialog extends Dialog {
