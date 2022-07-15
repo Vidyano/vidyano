@@ -98,6 +98,11 @@
     </head>
     <body>
         <vi-app label="Web3">
+            <vi-session-presenter slot="menu-footer">
+                <template>
+                    <vi-persistent-object-attribute-presenter no-label attribute="[[session.attributes.Reference]]"></vi-persistent-object-attribute-presenter>
+                </template>
+            </vi-session-presenter>
             <vi-app-route route="/:programUnitName/dialog" slot="app-route">
                 <template>
                     <vi-dialog-test></vi-dialog-test>

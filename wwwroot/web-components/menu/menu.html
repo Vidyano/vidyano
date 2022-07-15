@@ -2,7 +2,7 @@
 
 <header>
     <vi-button id="toggleCollapse" icon="Menu_Collapse" on-tap="_toggleCollapse"></vi-button>
-    <div class="label">[[label]]<slot name="menu-label"></slot></div>
+    <div class="label">[[label]]<slot name="label"></slot></div>
     <div id="headerElements"></div>
     <dom-if if="[[!collapsed]]">
         <template>
@@ -60,7 +60,7 @@
     </template>
 </dom-if>
 <footer>
-    <div id="footerElements"></div>
+    <slot name="footer"></slot>
     <vi-user collapsed="[[collapsed]]"></vi-user>
 </footer>
 <div id="resizer" on-track="_onResize"></div>

@@ -4,7 +4,8 @@
 <dom-if if="[[showMenu]]" restamp>
     <template>
         <vi-menu menu label="[[label]]" program-units="[[service.application.programUnits]]" active-program-unit="[[programUnit]]">
-            <slot name="menu-label"></slot>
+            <slot name="menu-label" slot="label"></slot>
+            <slot name="menu-footer" slot="footer"></slot>
         </vi-menu>
     </template>
 </dom-if>
