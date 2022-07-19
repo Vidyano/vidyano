@@ -43838,6 +43838,7 @@ let Menu = Menu_1 = class Menu extends WebComponent {
   user-select: none;
   color: var(--vi-menu-color, #FAFAFA);
   width: var(--vi-menu--expand-width, 17em);
+  min-width: var(--vi-menu--expand-width, 17em);
   will-change: width;
 }
 
@@ -44000,6 +44001,7 @@ vi-input-search::part(input):focus {
 
 :host([collapsed]) {
   width: var(--theme-h1);
+  min-width: var(--theme-h1);
 }
 
 :host([collapsed]) .container {
@@ -75634,10 +75636,6 @@ let PersistentObjectAttributeReference = class PersistentObjectAttributeReferenc
   height: 1em;
   fill: var(--theme-color);
   transform: translateY(2px);
-}
-
-:host([read-only]) a {
-  background-color: var(--theme-read-only);
 }
 
 :host([editing]) vi-select {
