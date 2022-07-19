@@ -35812,12 +35812,17 @@ let Popup = Popup_1 = class Popup extends WebComponent {
 <div toggle class="horizontal layout">
     <slot name="header"></slot>
 </div>
-<vi-popup-core-fit id="fit" dynamic-align no-overlap horizontal-align="[[horizontalAlign]]" vertical-align="[[verticalAlign]]" auto-fit-on-attach>
-    <div class="relative" id="content" on-tap="_catchContentClick" on-mouseenter="_contentMouseEnter" on-mouseleave="_contentMouseLeave">
-        <vi-size-tracker on-sizechanged="_sizeChanged"></vi-size-tracker>
-        <slot></slot>
-    </div>
-</vi-popup-core-fit>`; }
+
+<dom-if if="[[renderPopupCoreFit]]">
+    <template>
+        <vi-popup-core-fit id="fit" dynamic-align no-overlap horizontal-align="[[horizontalAlign]]" vertical-align="[[verticalAlign]]" auto-fit-on-attach>
+            <div class="relative" id="content" on-tap="_catchContentClick" on-mouseenter="_contentMouseEnter" on-mouseleave="_contentMouseLeave">
+                <vi-size-tracker on-sizechanged="_sizeChanged"></vi-size-tracker>
+                <slot></slot>
+            </div>
+        </vi-popup-core-fit>
+    </template>
+</dom-if>`; }
     connectedCallback() {
         super.connectedCallback();
         this.addEventListener("popupparent", this._onPopupparent);
@@ -35835,13 +35840,18 @@ let Popup = Popup_1 = class Popup extends WebComponent {
         });
     }
     _open(target) {
+        if (!this.renderPopupCoreFit) {
+            this._setRenderPopupCoreFit(true);
+            flush$1();
+        }
         const parentPopup = this._findParentPopup();
         if (this.open || this.hasAttribute("disabled") || this.fire("popup-opening", null, { bubbles: false, cancelable: true }).defaultPrevented)
             return;
         const firstOpenNonParentChild = openPopups[parentPopup == null ? 0 : openPopups.indexOf(parentPopup) + 1];
         if (firstOpenNonParentChild != null)
             firstOpenNonParentChild.close();
-        this.$.fit.positionTarget = this._currentTarget = target;
+        const fit = this.shadowRoot.getElementById("fit");
+        fit.positionTarget = this._currentTarget = target;
         this.refit();
         this._setOpen(true);
         openPopups.push(this);
@@ -35853,7 +35863,7 @@ let Popup = Popup_1 = class Popup extends WebComponent {
     refit() {
         this._refitAF && cancelAnimationFrame(this._refitAF);
         this._refitAF = requestAnimationFrame(() => {
-            const fit = this.$.fit;
+            const fit = this.shadowRoot.getElementById("fit");
             if (this.autoWidth && this._toggleSize?.width)
                 fit.style.minWidth = `${this._toggleSize.width}px`;
             this._refitAF = null;
@@ -36034,6 +36044,10 @@ Popup = Popup_1 = __decorate([
             autoWidth: {
                 type: Boolean,
                 reflectToAttribute: true
+            },
+            renderPopupCoreFit: {
+                type: Boolean,
+                readOnly: true
             }
         },
         observers: [
@@ -50439,8 +50453,6 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
         this._focusElement(search);
         const filter = this.$.filter || (this.$.filter = this.shadowRoot.querySelector("#filter"));
         filter.closeDelay = parseInt(this.app.configuration.getSetting("vi-query-grid-column-filter.close-delay", "750"));
-        const distinctsList = this.$.distincts || (this.$.distincts = this.shadowRoot.querySelector("#distincts"));
-        distinctsList.style.minWidth = this.offsetWidth + "px";
         if (this.column.canListDistincts && (!this.queryColumn.distincts || this.column.distincts.isDirty)) {
             this._setLoading(true);
             try {
@@ -50452,8 +50464,10 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
                 this.app.showAlert(e, "Error");
             }
         }
-        else
+        else {
+            const distinctsList = this.$.distincts || (this.$.distincts = this.shadowRoot.querySelector("#distincts"));
             distinctsList.scrollTop = 0;
+        }
     }
     _searchTextChanged(searchText, oldSearchText) {
         if (!searchText && !oldSearchText)
@@ -50595,7 +50609,8 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
             filter.sticky = false;
             this._resizeStart = null;
             this.app.isTracking = false;
-            this.$.distincts.dispatchEvent(new CustomEvent("iron-resize"));
+            const distinctsList = this.$.distincts || (this.$.distincts = this.shadowRoot.querySelector("#distincts"));
+            distinctsList.dispatchEvent(new CustomEvent("iron-resize"));
         }
     }
     _catchClick(e) {
@@ -61693,7 +61708,7 @@ let Select = class Select extends WebComponent {
 }
 </style>
 
-<vi-popup id="popup" on-tap="_openPopup" on-tap="_openPopup" on-popup-opened="_popupOpened" on-popup-closed="_popupClosed" sticky auto-width disabled$="[[op_some(readonly, disabled, sensitive)]]">
+<vi-popup id="popup" on-tap="_openPopup" on-tap="_openPopup" on-popup-closed="_popupClosed" sticky auto-width disabled$="[[op_some(readonly, disabled, sensitive)]]">
     <div slot="header" >
         <slot name="left"></slot>
         <div class="suggestions">
@@ -61707,11 +61722,14 @@ let Select = class Select extends WebComponent {
     </div>
     <dom-if if="[[!groupSeparator]]">
         <template>
-            <iron-list items="[[filteredItems]]" as="item" content filtering$="[[filtering]]" on-select-option="_select">
-                <template>
-                    <vi-select-option-item suggested="[[op_areSame(item.option, suggestion.option)]]" selected="[[op_areSame(item.option, selectedItem.option)]]" item="{{item}}" inner-h-t-m-l="[[_computeItemDisplayValue(item.displayValue, inputValue)]]"></vi-select-option-item>
-                </template>
-            </iron-list>
+            <div>
+                <vi-size-tracker on-sizechanged="_fireResize"></vi-size-tracker>
+                <iron-list items="[[filteredItems]]" as="item" content filtering$="[[filtering]]" on-select-option="_select">
+                    <template>
+                        <vi-select-option-item suggested="[[op_areSame(item.option, suggestion.option)]]" selected="[[op_areSame(item.option, selectedItem.option)]]" item="{{item}}" inner-h-t-m-l="[[_computeItemDisplayValue(item.displayValue, inputValue)]]"></vi-select-option-item>
+                    </template>
+                </iron-list>
+            </div>
         </template>
     </dom-if>
     <dom-if if="[[groupSeparator]]">
@@ -61804,18 +61822,16 @@ let Select = class Select extends WebComponent {
         if (!this.popup.open)
             this.popup.popup();
     }
-    _popupOpened() {
-        if (this.groupSeparator)
-            return;
-        this.shadowRoot.querySelector("iron-list").fire("iron-resize");
-        this._scrollItemIntoView();
-    }
     _popupClosed() {
         if (this._pendingSelectedOption) {
             const pendingSelectedOption = this._pendingSelectedOption;
             this._pendingSelectedOption = undefined;
             this._setSelectedItem(this._getItem(pendingSelectedOption));
         }
+    }
+    _fireResize() {
+        this.shadowRoot.querySelector("iron-list").fire("iron-resize");
+        this._scrollItemIntoView();
     }
     _scrollItemIntoView() {
         const focusOption = this.shadowRoot.querySelector("vi-select-option-item[selected], vi-select-option-item[suggested]");

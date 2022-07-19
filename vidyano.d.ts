@@ -10843,6 +10843,8 @@ declare class Popup extends WebComponent {
     protected _setOpen: (val: boolean) => void;
     readonly hover: boolean;
     private _setHover;
+    readonly renderPopupCoreFit: boolean;
+    private _setRenderPopupCoreFit;
     verticalAlign: "top" | "middle" | "bottom" | "auto";
     horizontalAlign: "left" | "center" | "right" | "auto";
     disabled: boolean;
@@ -12377,8 +12379,8 @@ declare class Select extends WebComponent {
     private _keyup;
     private _blur;
     private _openPopup;
-    private _popupOpened;
     private _popupClosed;
+    private _fireResize;
     private _scrollItemIntoView;
     private _computeHasOptions;
     private _computeUngroupedOptions;

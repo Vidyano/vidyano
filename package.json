@@ -1,6 +1,6 @@
 {
   "name": "vidyano",
-  "version": "3.0.0-beta.45",
+  "version": "3.0.0-beta.46",
   "description": "The Vidyano library contains all the web components for working with a Vidyano .NET backend.",
   "main": "wwwroot/dist/vidyano.js",
   "module": "wwwroot/dist/vidyano.js",
