@@ -12227,6 +12227,7 @@ declare class PersistentObjectAttributeEdit extends WebComponent {
     private _blur;
     private _computeHasError;
     private _computeSensitive;
+    private _computeHasValidationError;
 }
 
 declare class PersistentObjectAttributeLabel extends WebComponent {

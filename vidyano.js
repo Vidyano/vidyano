@@ -58091,7 +58091,12 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
         <slot name="right"></slot>
     </div>
 </div>
-<vi-persistent-object-attribute-validation-error attribute="[[attribute]]"></vi-persistent-object-attribute-validation-error>`; }
+
+<dom-if if="[[hasValidationError]]">
+    <template>
+        <vi-persistent-object-attribute-validation-error attribute="[[attribute]]"></vi-persistent-object-attribute-validation-error>
+    </template>
+</dom-if>`; }
     _focus(e) {
         this._setFocus(true);
     }
@@ -58103,6 +58108,9 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
     }
     _computeSensitive(isSensitive, isAppSensitive) {
         return isSensitive && isAppSensitive;
+    }
+    _computeHasValidationError(validationError, isReadOnly) {
+        return validationError && !isReadOnly;
     }
 };
 PersistentObjectAttributeEdit = __decorate([
@@ -58132,6 +58140,10 @@ PersistentObjectAttributeEdit = __decorate([
                 type: Boolean,
                 computed: "attribute.isReadOnly",
                 reflectToAttribute: true
+            },
+            hasValidationError: {
+                type: Boolean,
+                computed: "_computeHasValidationError(attribute.validationError, attribute.isReadOnly)"
             }
         },
         listeners: {
@@ -58142,7 +58154,8 @@ PersistentObjectAttributeEdit = __decorate([
             "attribute.isSensitive",
             "attribute.validationError",
             "attribute.parent.isFrozen",
-            "attribute.isReadOnly"
+            "attribute.isReadOnly",
+            "attribute.validationError"
         ],
         sensitive: true
     })
