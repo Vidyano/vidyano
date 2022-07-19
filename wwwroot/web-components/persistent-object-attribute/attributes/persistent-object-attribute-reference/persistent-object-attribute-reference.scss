@@ -56,12 +56,6 @@
         }
     }
 
-    &[read-only] {
-        a {
-            background-color: var(--theme-read-only);
-        }
-    }
-
     &[editing] {
         vi-select {
             border: none;
