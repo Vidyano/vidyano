@@ -162,9 +162,6 @@ export class QueryGridColumnFilter extends WebComponent {
         const filter = <Popup>this.$.filter || (this.$.filter = <Popup>this.shadowRoot.querySelector("#filter"));
         filter.closeDelay = parseInt(this.app.configuration.getSetting("vi-query-grid-column-filter.close-delay", "750"));
 
-        const distinctsList = <HTMLDivElement>this.$.distincts || (this.$.distincts = <HTMLDivElement>this.shadowRoot.querySelector("#distincts"));;
-        distinctsList.style.minWidth = this.offsetWidth + "px";
-
         if (this.column.canListDistincts && (!this.queryColumn.distincts || this.column.distincts.isDirty)) {
             this._setLoading(true);
 
@@ -177,8 +174,10 @@ export class QueryGridColumnFilter extends WebComponent {
                 this.app.showAlert(e, "Error");
             }
         }
-        else
+        else {
+            const distinctsList = <HTMLDivElement>this.$.distincts || (this.$.distincts = <HTMLDivElement>this.shadowRoot.querySelector("#distincts"));
             distinctsList.scrollTop = 0;
+        }
     }
 
     private _searchTextChanged(searchText: string, oldSearchText: string) {
@@ -359,7 +358,8 @@ export class QueryGridColumnFilter extends WebComponent {
             this._resizeStart = null;
             this.app.isTracking = false;
 
-            this.$.distincts.dispatchEvent(new CustomEvent("iron-resize"));
+            const distinctsList = <HTMLDivElement>this.$.distincts || (this.$.distincts = <HTMLDivElement>this.shadowRoot.querySelector("#distincts"));
+            distinctsList.dispatchEvent(new CustomEvent("iron-resize"));
         }
     }
 
