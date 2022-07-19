@@ -10626,6 +10626,7 @@ declare class Menu extends WebComponent {
     hasGlobalSearch: boolean;
     hideSearch: boolean;
     connectedCallback(): void;
+    ready(): void;
     disconnectedCallback(): void;
     private _filterChanged;
     private _search;

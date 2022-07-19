@@ -42414,6 +42414,7 @@ InputSearch = __decorate([
             },
             focused: {
                 type: Boolean,
+                notify: true,
                 reflectToAttribute: true
             },
             autofocus: {
@@ -43352,32 +43353,6 @@ let MenuItem = MenuItem_1 = class MenuItem extends ConfigurableWebComponent {
 :host(.program-unit) > .title > vi-icon + span {
   margin-left: var(--theme-h4);
 }
-
-:host(.program-unit[collapsed]) > .title {
-  padding: 0 !important;
-  line-height: var(--theme-h1);
-  height: var(--theme-h1);
-  width: var(--theme-h1);
-  text-align: center;
-}
-
-:host(.program-unit[collapsed]) > .title > vi-icon[has-resource] {
-  display: block;
-  width: var(--theme-h1);
-  transform: rotate(0);
-}
-
-:host(.program-unit[collapsed]) > .title > vi-icon[has-resource] + span {
-  display: none;
-}
-
-:host(.program-unit[collapsed]) > .title > span {
-  margin-left: 0 !important;
-}
-
-:host(.program-unit[collapsed]:not([header])) > .title {
-  display: none;
-}
 </style>
 
 <a class="title" href$="[[href]]" target$="[[target]]" rel$="[[rel]]">
@@ -43731,36 +43706,6 @@ let User = class User extends WebComponent {
 :host-context([is-signed-in]) vi-button {
   cursor: pointer;
 }
-
-:host-context([collapsed]) .actions {
-  display: flex;
-  flex-direction: column;
-}
-
-:host-context([collapsed]) .actions vi-button {
-  height: var(--theme-h1) !important;
-  line-height: var(--theme-h1) !important;
-}
-
-:host-context([collapsed]) .username {
-  display: none;
-}
-
-:host-context([collapsed]) #signIn {
-  border-left: none !important;
-}
-
-:host-context([collapsed]) #signIn > span {
-  display: none;
-}
-
-:host-context([collapsed]) #signIn vi-icon {
-  margin-left: 0 !important;
-}
-
-:host-context([collapsed]) vi-button.vi-user#settings {
-  border-left-width: 0;
-}
 </style>
 
 <div class="username horizontal layout center-justified" hidden$="[[!isSignedIn]]">
@@ -43886,200 +43831,14 @@ var Menu_1;
 let Menu = Menu_1 = class Menu extends WebComponent {
     static get template() { return html `<style>:host {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   position: relative;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
   color: var(--vi-menu-color, #FAFAFA);
-  background-color: var(--vi-menu-background, #263238);
-}
-
-:host(:not([collapsed])) {
   width: var(--vi-menu--expand-width, 17em);
-}
-
-:host(:not([collapsed])) header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-:host(:not([collapsed])) header #toggleCollapse {
-  background-color: transparent;
-}
-
-:host(:not([collapsed])) vi-scroller[vertical][hovering] + #resizer {
-  width: calc(var(--theme-h5) / 2);
-}
-
-:host(:not([collapsed])) #add {
-  height: var(--theme-h2);
-  line-height: var(--theme-h2);
-  padding-left: calc(var(--theme-h4) * 2);
-  cursor: pointer;
-  font-style: italic;
-}
-
-:host(:not([collapsed])) #add:hover {
-  background-color: rgba(0, 0, 0, 0.1);
-}
-
-:host(:not([collapsed])) .instantSearch {
-  position: relative;
-  margin-bottom: var(--theme-h5);
-  padding: var(--theme-h5) 0;
-  background-color: rgba(0, 0, 0, 0.2);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-:host(:not([collapsed])) .instantSearch a {
-  cursor: pointer;
-  color: var(--vi-menu-color, #FAFAFA);
-  line-height: var(--theme-h2);
-  padding: 0 var(--theme-h4);
-  text-decoration: none;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-:host(:not([collapsed])) .instantSearch a div {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding-right: var(--theme-h5);
-}
-
-:host(:not([collapsed])) .instantSearch a span.match {
-  color: #FFDD00;
-  font-weight: bold;
-  pointer-events: none;
-}
-
-:host(:not([collapsed])) .instantSearch a span.label {
-  font-size: 11px;
-  font-weight: 100;
-  text-transform: uppercase;
-  line-height: var(--theme-h2);
-  transform: translateY(1px);
-}
-
-:host(:not([collapsed])) .instantSearch a:hover {
-  background-color: rgba(0, 0, 0, 0.1);
-}
-
-:host(:not([collapsed])) .instantSearch + vi-menu-item {
-  margin-top: var(--theme-h5);
-}
-
-:host([collapsed]) {
-  width: var(--theme-h1);
-}
-
-:host([collapsed]) header #toggleCollapse {
-  position: relative;
-  background-color: var(--theme-color-dark);
-}
-
-:host([collapsed]) header #toggleCollapse > vi-icon {
-  -moz-transform: rotate(180deg);
-  -ms-transform: rotate(180deg);
-  -o-transform: rotate(180deg);
-  -webkit-transform: rotate(180deg);
-  transform: rotate(180deg);
-}
-
-:host([collapsed]) header span {
-  display: none;
-}
-
-:host([collapsed]) header .label {
-  display: none;
-}
-
-:host([collapsed]) .programUnits.vi-menu.style-scope :not(.program-unit) + .subItems {
-  display: none;
-}
-
-:host([collapsed]) .programUnits.vi-menu.style-scope vi-menu-item[expand] + .subItems, :host([collapsed]) .programUnits.vi-menu.style-scope vi-menu-item[filtering]:not([hide]) + .subItems {
-  display: block;
-}
-
-:host([collapsed]) .programUnits.vi-menu.style-scope .subItems[content] vi-menu-item {
-  padding-right: var(--theme-h4);
-}
-
-:host([collapsed]) .programUnits.vi-menu.style-scope .subItems[content][item-count="1"] > vi-menu-item {
-  height: var(--theme-h1);
-  line-height: var(--theme-h1);
-}
-
-:host([collapsed]) .programUnits.vi-menu.style-scope .subItems[content]:not([has-group-items]) > vi-menu-item {
-  padding-left: var(--theme-h5);
-}
-
-:host([collapsed]) vi-popup [content] {
-  background-color: var(--vi-menu-background, #263238);
-}
-
-:host header, :host footer {
-  display: block;
-  line-height: var(--theme-h1);
-  flex-shrink: 0;
-}
-
-:host header {
-  position: relative;
-  text-align: center;
-}
-
-:host header .label {
-  display: block;
-  font-size: var(--theme-h3);
-  line-height: calc(var(--theme-h1) * 2);
-  height: calc(var(--theme-h1) * 2);
-  background-color: var(--theme-color-dark);
-  white-space: nowrap;
-  overflow: hidden;
-}
-
-:host header #toggleCollapse {
-  position: absolute;
-  top: 0;
-  right: 0;
-  height: var(--theme-h1);
-  width: var(--theme-h1);
-  fill: rgba(255, 255, 255, 0.5);
-}
-
-:host header #toggleCollapse::part(icon) {
-  transition: transform 0.3s ease-in-out;
-  --vi-icon-width: var(--theme-h4);
-  --vi-icon-height: var(--theme-h4);
-}
-
-:host footer {
-  overflow: hidden;
-}
-
-:host vi-input-search:not([collapsed]) {
-  margin-top: calc(var(--theme-h4) / 2);
-  margin-right: calc(var(--theme-h4) - var(--theme-h4) / 2);
-  margin-bottom: calc(var(--theme-h4) / 2);
-  margin-left: calc(var(--theme-h4) - var(--theme-h4) / 2);
-}
-
-:host vi-input-search:not([collapsed])::part(input) {
-  line-height: var(--theme-h2);
-  padding-left: var(--theme-h5);
-}
-
-:host vi-input-search::part(input):focus {
-  background-color: white;
-  color: #333;
-}
-
-:host vi-input-search[collapsed]::part(input) {
-  padding-top: 0;
-  padding-bottom: 0;
+  will-change: width;
 }
 
 :host([hide-search]) vi-input-search {
@@ -44090,19 +43849,136 @@ let Menu = Menu_1 = class Menu extends WebComponent {
   margin-top: var(--theme-h5);
 }
 
-:host([collapsed]) header vi-icon[header] {
-  fill: var(--vi-menu-color, #FAFAFA);
-  width: var(--theme-h1);
+:host([is-resizing]) #resizer, :host #resizer:hover {
+  background-color: #333;
+}
+
+#toggleCollapse {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: transparent;
   height: var(--theme-h1);
+  width: var(--theme-h1);
+  fill: rgba(255, 255, 255, 0.5);
+}
+
+#toggleCollapse::part(icon) {
+  transition: transform 0.3s ease-out;
+  --vi-icon-width: var(--theme-h4);
+  --vi-icon-height: var(--theme-h4);
+}
+
+vi-scroller[vertical][hovering] + #resizer {
+  width: calc(var(--theme-h5) / 2);
+}
+
+#add {
+  height: var(--theme-h2);
+  line-height: var(--theme-h2);
+  padding-left: calc(var(--theme-h4) * 2);
+  cursor: pointer;
+  font-style: italic;
+}
+
+#add:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.instantSearch {
+  position: relative;
+  margin-bottom: var(--theme-h5);
+  padding: var(--theme-h5) 0;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.instantSearch a {
+  cursor: pointer;
+  color: var(--vi-menu-color, #FAFAFA);
+  line-height: var(--theme-h2);
+  padding: 0 var(--theme-h4);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.instantSearch a div {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: var(--theme-h5);
+}
+
+.instantSearch a span.match {
+  color: #FFDD00;
+  font-weight: bold;
+  pointer-events: none;
+}
+
+.instantSearch a span.label {
+  font-size: 11px;
+  font-weight: 100;
+  text-transform: uppercase;
+  line-height: var(--theme-h2);
+  transform: translateY(1px);
+}
+
+.instantSearch a:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.instantSearch + vi-menu-item {
+  margin-top: var(--theme-h5);
+}
+
+header, footer {
+  display: block;
+  line-height: var(--theme-h1);
+  flex-shrink: 0;
+}
+
+header {
+  position: relative;
+  text-align: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  box-sizing: border-box;
 }
 
-:host([collapsed]) #resizer {
-  display: none;
+header .background {
+  background-color: var(--theme-color-dark);
 }
 
-:host #resizer {
+header .label {
+  display: block;
+  font-size: var(--theme-h3);
+  line-height: calc(var(--theme-h1) * 2);
+  height: calc(var(--theme-h1) * 2);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+footer {
+  overflow: hidden;
+}
+
+vi-input-search {
+  margin-top: calc(var(--theme-h4) / 2);
+  margin-right: calc(var(--theme-h4) - var(--theme-h4) / 2);
+  margin-bottom: calc(var(--theme-h4) / 2);
+  margin-left: calc(var(--theme-h4) - var(--theme-h4) / 2);
+}
+
+vi-input-search::part(input) {
+  line-height: var(--theme-h2);
+  padding-left: var(--theme-h5);
+}
+
+vi-input-search::part(input):focus {
+  background-color: white;
+  color: #333;
+}
+
+#resizer {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -44115,74 +43991,89 @@ let Menu = Menu_1 = class Menu extends WebComponent {
   transform: translateX(calc(var(--theme-h5) / 2));
 }
 
-:host([is-resizing]) #resizer, :host #resizer:hover {
-  background-color: #333;
+.container {
+  width: var(--vi-menu--expand-width, 17em);
+  opacity: 1;
+  transition: opacity 0.22s cubic-bezier(0.2, 0, 0, 1);
+  background-color: var(--vi-menu-background, #263238);
+}
+
+:host([collapsed]) {
+  width: var(--theme-h1);
+}
+
+:host([collapsed]) .container {
+  transform: translateX(calc(var(--vi-menu--expand-width, 17em) * -1 + var(--theme-h1)));
+  transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
+  transition-property: transform, box-shadow;
+  transition-delay: 200ms;
+  box-shadow: none;
+  will-change: transform;
+  z-index: 100;
+}
+
+:host([collapsed]) .container > main, :host([collapsed]) .container footer, :host([collapsed]) .container header .label {
+  opacity: 0;
+  transition: opacity 0.22s ease-out;
+  transition-delay: 200ms;
+  will-change: opacity;
+}
+
+:host([collapsed]) #toggleCollapse {
+  z-index: 1000;
+  background-color: var(--theme-color-dark);
+}
+
+:host([collapsed]) #toggleCollapse::part(icon) {
+  transform: rotate(180deg);
+}
+
+:host([collapsed]:hover) .container, :host([collapsed][search-focused]) .container {
+  transform: translateX(0);
+  box-shadow: 4px 0px 10px 0px rgba(0, 0, 0, 0.5);
+}
+
+:host([collapsed]:hover) .container > main, :host([collapsed]:hover) .container footer, :host([collapsed]:hover) .container header .label, :host([collapsed][search-focused]) .container > main, :host([collapsed][search-focused]) .container footer, :host([collapsed][search-focused]) .container header .label {
+  opacity: 1;
 }
 </style>
 
-<header>
-    <vi-button id="toggleCollapse" icon="Menu_Collapse" on-tap="_toggleCollapse"></vi-button>
-    <div class="label">[[label]]<slot name="label"></slot></div>
-    <div id="headerElements"></div>
-    <dom-if if="[[!collapsed]]">
-        <template>
-            <vi-input-search value="{{filter}}" on-search="_search"></vi-input-search>
-        </template>
-    </dom-if>
-    <dom-if if="[[collapsedWithGlobalSearch]]">
-        <template>
-            <vi-popup orientation="horizontal" horizontal-align="right" sticky on-popup-opened="_focusSearch">
-                <vi-icon slot="header" source="Search"></vi-icon>
-                <vi-input-search id="collapsedInputSearch" collapsed value="{{filter}}" on-tap="_catchInputSearchTap" on-search="_search"></vi-input-search>
-            </vi-popup>
-        </template>
-    </dom-if>
-</header>
-<dom-if if="[[!collapsed]]">
-    <template>
-        <div class="horizontal layout flex relative">
-            <vi-scroller class="flex programUnits" no-horizontal>
-                <div class="instantSearch" hidden$="[[!instantSearchResults]]">
-                    <dom-repeat items="[[instantSearchResults]]" as="item">
-                        <template>
-                            <a href$="[[item.href]]" class="layout horizontal" on-mouseenter="_instantSearchResultMouseEnter"><div class="flex" inner-h-t-m-l="[[item.match]]"></div><span class="label">[[item.label]]</span></a>
-                        </template>
-                    </dom-repeat>
-                </div>
-                <dom-repeat items="[[programUnits]]" as="programUnit">
+<div class="container layout vertical fit">
+    <header>
+        <div class="background layout vertical">
+            <div class="label flex">[[label]]<slot name="label"></slot></div>
+            <div id="headerElements"></div>
+        </div>
+        <vi-input-search value="{{filter}}" on-search="_search" focused="{{searchFocused}}"></vi-input-search>
+    </header>
+    <main class="horizontal layout flex relative">
+        <vi-scroller class="flex programUnits" no-horizontal>
+            <div class="instantSearch" hidden$="[[!instantSearchResults]]">
+                <dom-repeat items="[[instantSearchResults]]" as="item">
                     <template>
-                        <vi-menu-item class="program-unit" item="[[programUnit]]" filter="[[filter]]" program-unit="[[activeProgramUnit]]" collapsed="[[collapsed]]" items="[[programUnit.items]]" collapse-groups-on-tap></vi-menu-item>
-                        <dom-if if="[[_isFirstRunProgramUnit(app.service.application, programUnit)]]">
-                            <template>
-                                <div id="add" on-tap="_add">+ Add menu item</div>
-                            </template>
-                        </dom-if>
+                        <a href$="[[item.href]]" class="layout horizontal" on-mouseenter="_instantSearchResultMouseEnter"><div class="flex" inner-h-t-m-l="[[item.match]]"></div><span class="label">[[item.label]]</span></a>
                     </template>
                 </dom-repeat>
-            </vi-scroller>
-        </div>
-    </template>
-</dom-if>
-<dom-if if="[[collapsed]]">
-    <template>
-        <div class="flex programUnits">
+            </div>
             <dom-repeat items="[[programUnits]]" as="programUnit">
                 <template>
-                    <vi-popup orientation="horizontal" content-align="right" open-on-hover>
-                        <vi-menu-item slot="header" class="program-unit" item="[[programUnit]]" program-unit="[[activeProgramUnit]]" collapsed="[[collapsed]]"></vi-menu-item>
-                        <vi-scroller no-horizontal class="subItems" has-group-items$="[[_hasGroupItems(programUnit.items)]]" item-count$="[[_programUnitItemsCount(programUnit.items)]]">
-                            <vi-menu-item class="program-unit" item="[[programUnit]]" filter="[[filter]]" program-unit="[[activeProgramUnit]]" collapsed="[[collapsed]]" items="[[programUnit.items]]"></vi-menu-item>
-                        </vi-scroller>
-                    </vi-popup>
+                    <vi-menu-item class="program-unit" item="[[programUnit]]" filter="[[filter]]" program-unit="[[activeProgramUnit]]" items="[[programUnit.items]]" collapse-groups-on-tap></vi-menu-item>
+                    <dom-if if="[[_isFirstRunProgramUnit(app.service.application, programUnit)]]">
+                        <template>
+                            <div id="add" on-tap="_add">+ Add menu item</div>
+                        </template>
+                    </dom-if>
                 </template>
             </dom-repeat>
-        </div>
-    </template>
-</dom-if>
-<footer>
-    <slot name="footer"></slot>
-    <vi-user collapsed="[[collapsed]]"></vi-user>
-</footer>
+        </vi-scroller>
+    </main>
+    <footer>
+        <slot name="footer"></slot>
+        <vi-user></vi-user>
+    </footer>
+</div>
+
+<vi-button id="toggleCollapse" icon="Menu_Collapse" on-tap="_toggleCollapse"></vi-button>
 <div id="resizer" on-track="_onResize"></div>`; }
     connectedCallback() {
         super.connectedCallback();
@@ -44192,7 +44083,10 @@ let Menu = Menu_1 = class Menu extends WebComponent {
         const menuWidth = parseInt(cookie("menu-width"));
         if (menuWidth)
             this.style.setProperty("--vi-menu--expand-width", `${menuWidth}px`);
+    }
+    ready() {
         this.collapsed = Boolean.parse(cookie("menu-collapsed"));
+        super.ready();
     }
     disconnectedCallback() {
         super.disconnectedCallback();
@@ -44362,6 +44256,10 @@ Menu = Menu_1 = __decorate([
                 readOnly: true
             },
             hideSearch: {
+                type: Boolean,
+                reflectToAttribute: true
+            },
+            searchFocused: {
                 type: Boolean,
                 reflectToAttribute: true
             }
