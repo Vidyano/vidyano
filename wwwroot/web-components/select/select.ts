@@ -221,14 +221,6 @@ export class Select extends WebComponent {
             this.popup.popup();
     }
 
-    private _popupOpened() {
-        if (this.groupSeparator)
-            return;
-
-        this.shadowRoot.querySelector("iron-list").fire("iron-resize");
-        this._scrollItemIntoView();
-    }
-
     private _popupClosed() {
         if (this._pendingSelectedOption) {
             const pendingSelectedOption = this._pendingSelectedOption;
@@ -236,6 +228,11 @@ export class Select extends WebComponent {
 
             this._setSelectedItem(this._getItem(pendingSelectedOption));
         }
+    }
+
+    private _fireResize() {
+        this.shadowRoot.querySelector("iron-list").fire("iron-resize");
+        this._scrollItemIntoView();
     }
 
     private _scrollItemIntoView() {

@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="select.css" />
 
-<vi-popup id="popup" on-tap="_openPopup" on-tap="_openPopup" on-popup-opened="_popupOpened" on-popup-closed="_popupClosed" sticky auto-width disabled$="[[op_some(readonly, disabled, sensitive)]]">
+<vi-popup id="popup" on-tap="_openPopup" on-tap="_openPopup" on-popup-closed="_popupClosed" sticky auto-width disabled$="[[op_some(readonly, disabled, sensitive)]]">
     <div slot="header" >
         <slot name="left"></slot>
         <div class="suggestions">
@@ -14,11 +14,14 @@
     </div>
     <dom-if if="[[!groupSeparator]]">
         <template>
-            <iron-list items="[[filteredItems]]" as="item" content filtering$="[[filtering]]" on-select-option="_select">
-                <template>
-                    <vi-select-option-item suggested="[[op_areSame(item.option, suggestion.option)]]" selected="[[op_areSame(item.option, selectedItem.option)]]" item="{{item}}" inner-h-t-m-l="[[_computeItemDisplayValue(item.displayValue, inputValue)]]"></vi-select-option-item>
-                </template>
-            </iron-list>
+            <div>
+                <vi-size-tracker on-sizechanged="_fireResize"></vi-size-tracker>
+                <iron-list items="[[filteredItems]]" as="item" content filtering$="[[filtering]]" on-select-option="_select">
+                    <template>
+                        <vi-select-option-item suggested="[[op_areSame(item.option, suggestion.option)]]" selected="[[op_areSame(item.option, selectedItem.option)]]" item="{{item}}" inner-h-t-m-l="[[_computeItemDisplayValue(item.displayValue, inputValue)]]"></vi-select-option-item>
+                    </template>
+                </iron-list>
+            </div>
         </template>
     </dom-if>
     <dom-if if="[[groupSeparator]]">
