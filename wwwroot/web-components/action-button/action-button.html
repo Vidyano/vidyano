@@ -7,6 +7,7 @@
                 <vi-button disabled="[[!canExecute]]" header on-tap="_onExecuteWithoutOptions" inverse>
                     <div class="layout horizontal">
                         <vi-icon class="action-icon" source="[[icon]]"></vi-icon>
+                        <div class="icon-space" hidden$="[[!iconSpace]]"></div>
                         <span class="label">[[action.displayName]]</span>
                     </div>
                 </vi-button>
@@ -16,9 +17,10 @@
             <template>
                 <vi-popup-menu open-on-hover="[[_computeOpenOnHover(overflow, openOnHover)]]" disabled="[[!canExecute]]">
                     <vi-button disabled="[[!canExecute]]" header slot="header" header inverse class="options">
-                        <div class="layout horizontal">
+                        <div class="layout horizontal flex">
                             <vi-icon class="action-icon" source="[[icon]]"></vi-icon>
-                            <span class="label">[[action.displayName]]</span>
+                            <div class="icon-space" hidden$="[[!iconSpace]]"></div>
+                            <span class="label flex">[[action.displayName]]</span>
                             <vi-icon class="down-icon" source="Down"></vi-icon>
                         </div>
                     </vi-button>
@@ -36,9 +38,10 @@
     <template>
         <vi-popup disabled="[[!canExecute]]" open-on-hover="[[_computeOpenOnHover(overflow, openOnHover)]]">
             <vi-button disabled="[[!canExecute]]" header inverse class="groupActions">
-                <div class="layout horizontal">
+                <div class="layout horizontal flex">
                     <vi-icon class="action-icon" source="[[icon]]"></vi-icon>
-                    <span class="label">[[action.displayName]]</span>
+                    <div class="icon-space" hidden$="[[!iconSpace]]"></div>
+                    <span class="label flex">[[action.displayName]]</span>
                     <vi-icon class="down-icon" source="Down"></vi-icon>
                 </div>
             </vi-button>

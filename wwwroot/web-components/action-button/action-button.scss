@@ -17,19 +17,24 @@
         vi-icon {
             height: var(--theme-h1);
 
-            &[source^="Action_"] {
+            &.action-icon, &.down-icon {
                 width: var(--theme-h3);
             }
+        }
 
-            &[source^="Down"] {
-                width: var(--theme-h3);
-            }
+        .icon-space {
+            height: var(--theme-h1);
+            width: var(--theme-h2);
         }
 
         span {
             flex: 1;
             padding: 0 var(--theme-h5);
         }
+    }
+
+    vi-popup-menu {
+        min-width: 100%;
     }
 
     vi-popup[open] vi-button.groupActions {
@@ -60,7 +65,7 @@
         vi-button {
             padding: 0 !important;
 
-            vi-icon[source^="Action_"] {
+            vi-icon.action-icon {
                 width: var(--theme-h2);
             }
 
@@ -69,26 +74,16 @@
             }
         }
 
-        &[icon-space] {
-            vi-button > div {
-                padding-left: var(--theme-h2);
-            }
-        }
-
         vi-icon {
             vertical-align: top;
             width: var(--theme-h2);
 
-            &[source="Down"] {
-                -moz-transform: rotate(-90deg);
-                -ms-transform: rotate(-90deg);
-                -o-transform: rotate(-90deg);
-                -webkit-transform: rotate(-90deg);
+            &.down-icon {
                 transform: rotate(-90deg);
             }
         }
 
-        vi-icon[source^="Action_"] {
+        vi-icon.action-icon, .icon-space {
             background-color: rgba(0, 0, 0, 0.04);
         }
     }
