@@ -74,6 +74,10 @@ customElements.define("vi-popup-core-fit", <CustomElementConstructor><any>PopupC
         autoWidth: {
             type: Boolean,
             reflectToAttribute: true
+        },
+        renderPopupCoreFit: {
+            type: Boolean,
+            readOnly: true
         }
     },
     observers: [
@@ -98,6 +102,7 @@ export class Popup extends WebComponent {
     private _currentTarget: HTMLElement | WebComponent;
     readonly open: boolean; protected _setOpen: (val: boolean) => void;
     readonly hover: boolean; private _setHover: (val: boolean) => void;
+    readonly renderPopupCoreFit: boolean; private _setRenderPopupCoreFit: (renderPopupCoreFit: boolean) => void;
     verticalAlign: "top" | "middle" | "bottom" | "auto";
     horizontalAlign: "left" | "center" | "right" | "auto";
     disabled: boolean;
@@ -129,6 +134,11 @@ export class Popup extends WebComponent {
     }
 
     private _open(target: HTMLElement | WebComponent) {
+        if (!this.renderPopupCoreFit) {
+            this._setRenderPopupCoreFit(true);
+            Polymer.flush();
+        }
+
         const parentPopup = this._findParentPopup();
         if (this.open || this.hasAttribute("disabled") || this.fire("popup-opening", null, { bubbles: false, cancelable: true }).defaultPrevented)
             return;
@@ -138,7 +148,8 @@ export class Popup extends WebComponent {
         if (firstOpenNonParentChild != null)
             firstOpenNonParentChild.close();
 
-        (<IronFitBehavior><any>this.$.fit).positionTarget = this._currentTarget = target;
+        const fit = this.shadowRoot.getElementById("fit") as PopupCoreFit;
+        (<IronFitBehavior><any>fit).positionTarget = this._currentTarget = target;
         this.refit();
 
         this._setOpen(true);
@@ -155,7 +166,7 @@ export class Popup extends WebComponent {
     refit() {
         this._refitAF && cancelAnimationFrame(this._refitAF);
         this._refitAF = requestAnimationFrame(() => {
-            const fit = this.$.fit as PopupCoreFit;
+            const fit = this.shadowRoot.getElementById("fit") as PopupCoreFit;
             if (this.autoWidth && this._toggleSize?.width)
                 fit.style.minWidth = `${this._toggleSize.width}px`;
 
