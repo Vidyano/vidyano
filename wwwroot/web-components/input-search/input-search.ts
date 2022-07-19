@@ -14,6 +14,7 @@ import * as Polymer from "../../libs/polymer/polymer.js"
         },
         focused: {
             type: Boolean,
+            notify: true,
             reflectToAttribute: true
         },
         autofocus: {
