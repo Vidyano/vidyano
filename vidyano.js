@@ -76900,6 +76900,8 @@ let PersistentObjectAttributePresenter = class PersistentObjectAttributePresente
             this._focusQueued = true;
     }
     _attributeChanged(attribute, isConnected) {
+        if (this._renderedAttribute === attribute)
+            return;
         if (this._renderedAttribute) {
             Array.from(this.children).forEach(c => this.removeChild(c));
             this._renderedAttributeElement = this._renderedAttribute = null;
@@ -77311,7 +77313,8 @@ let PersistentObjectGroup = class PersistentObjectGroup extends WebComponent {
             }
             const renderItem = item;
             const renderHandle = animationFrame.run(() => {
-                this.appendChild(renderItem.presenter);
+                if (!renderItem.presenter.isConnected || renderItem.presenter.parentElement !== this)
+                    this.appendChild(renderItem.presenter);
                 renderItem.presenter.updateStyles({
                     "--vi-persistent-object-group--attribute-area": renderItem.area
                 });
