@@ -9,6 +9,7 @@ $backgroundColor: $blue-grey-900;
     @include noSelection();
     color: var(--vi-menu-color, $color);
     width: var(--vi-menu--expand-width, 17em);
+    min-width: var(--vi-menu--expand-width, 17em);
     will-change: width;
 
     
@@ -177,6 +178,7 @@ vi-input-search {
 :host {
     &[collapsed] {
         width: var(--theme-h1);
+        min-width: var(--theme-h1);
 
         .container {
             transform: translateX(calc(var(--vi-menu--expand-width, 17em) * -1 + var(--theme-h1)));
