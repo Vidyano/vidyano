@@ -29,6 +29,10 @@ import { WebComponent } from "../web-component/web-component.js"
             type: Boolean,
             computed: "attribute.isReadOnly",
             reflectToAttribute: true
+        },
+        hasValidationError: {
+            type: Boolean,
+            computed: "_computeHasValidationError(attribute.validationError, attribute.isReadOnly)"
         }
     },
     listeners: {
@@ -39,7 +43,8 @@ import { WebComponent } from "../web-component/web-component.js"
         "attribute.isSensitive",
         "attribute.validationError",
         "attribute.parent.isFrozen",
-        "attribute.isReadOnly"
+        "attribute.isReadOnly",
+        "attribute.validationError"
     ],
     sensitive: true
 })
@@ -63,5 +68,9 @@ export class PersistentObjectAttributeEdit extends WebComponent {
 
     private _computeSensitive(isSensitive: boolean, isAppSensitive: boolean): boolean {
         return isSensitive && isAppSensitive;
+    }
+
+    private _computeHasValidationError(validationError: string, isReadOnly: boolean) {
+        return validationError && !isReadOnly;
     }
 }
