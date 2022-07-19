@@ -86,35 +86,5 @@ $backgroundColor: $blue-grey-900;
                 }
             }
         }
-
-        &[collapsed] {
-            > .title {
-                padding: 0 !important;
-                line-height: var(--theme-h1);
-                height: var(--theme-h1);
-                width: var(--theme-h1);
-                text-align: center;
-
-                > vi-icon[has-resource] {
-                    display: block;
-                    width: var(--theme-h1);
-    			    transform: rotate(0);
-
-                    & + span {
-                        display: none;
-                    }
-                }
-
-                > span {
-                    margin-left: 0 !important;
-                }
-            }
-
-            &:not([header]) {
-                > .title {
-                    display: none;
-                }
-            }
-        }
 	}
 }

@@ -1,66 +1,39 @@
 <link rel="stylesheet" href="menu.css" />
 
-<header>
-    <vi-button id="toggleCollapse" icon="Menu_Collapse" on-tap="_toggleCollapse"></vi-button>
-    <div class="label">[[label]]<slot name="label"></slot></div>
-    <div id="headerElements"></div>
-    <dom-if if="[[!collapsed]]">
-        <template>
-            <vi-input-search value="{{filter}}" on-search="_search"></vi-input-search>
-        </template>
-    </dom-if>
-    <dom-if if="[[collapsedWithGlobalSearch]]">
-        <template>
-            <vi-popup orientation="horizontal" horizontal-align="right" sticky on-popup-opened="_focusSearch">
-                <vi-icon slot="header" source="Search"></vi-icon>
-                <vi-input-search id="collapsedInputSearch" collapsed value="{{filter}}" on-tap="_catchInputSearchTap" on-search="_search"></vi-input-search>
-            </vi-popup>
-        </template>
-    </dom-if>
-</header>
-<dom-if if="[[!collapsed]]">
-    <template>
-        <div class="horizontal layout flex relative">
-            <vi-scroller class="flex programUnits" no-horizontal>
-                <div class="instantSearch" hidden$="[[!instantSearchResults]]">
-                    <dom-repeat items="[[instantSearchResults]]" as="item">
-                        <template>
-                            <a href$="[[item.href]]" class="layout horizontal" on-mouseenter="_instantSearchResultMouseEnter"><div class="flex" inner-h-t-m-l="[[item.match]]"></div><span class="label">[[item.label]]</span></a>
-                        </template>
-                    </dom-repeat>
-                </div>
-                <dom-repeat items="[[programUnits]]" as="programUnit">
+<div class="container layout vertical fit">
+    <header>
+        <div class="background layout vertical">
+            <div class="label flex">[[label]]<slot name="label"></slot></div>
+            <div id="headerElements"></div>
+        </div>
+        <vi-input-search value="{{filter}}" on-search="_search" focused="{{searchFocused}}"></vi-input-search>
+    </header>
+    <main class="horizontal layout flex relative">
+        <vi-scroller class="flex programUnits" no-horizontal>
+            <div class="instantSearch" hidden$="[[!instantSearchResults]]">
+                <dom-repeat items="[[instantSearchResults]]" as="item">
                     <template>
-                        <vi-menu-item class="program-unit" item="[[programUnit]]" filter="[[filter]]" program-unit="[[activeProgramUnit]]" collapsed="[[collapsed]]" items="[[programUnit.items]]" collapse-groups-on-tap></vi-menu-item>
-                        <dom-if if="[[_isFirstRunProgramUnit(app.service.application, programUnit)]]">
-                            <template>
-                                <div id="add" on-tap="_add">+ Add menu item</div>
-                            </template>
-                        </dom-if>
+                        <a href$="[[item.href]]" class="layout horizontal" on-mouseenter="_instantSearchResultMouseEnter"><div class="flex" inner-h-t-m-l="[[item.match]]"></div><span class="label">[[item.label]]</span></a>
                     </template>
                 </dom-repeat>
-            </vi-scroller>
-        </div>
-    </template>
-</dom-if>
-<dom-if if="[[collapsed]]">
-    <template>
-        <div class="flex programUnits">
+            </div>
             <dom-repeat items="[[programUnits]]" as="programUnit">
                 <template>
-                    <vi-popup orientation="horizontal" content-align="right" open-on-hover>
-                        <vi-menu-item slot="header" class="program-unit" item="[[programUnit]]" program-unit="[[activeProgramUnit]]" collapsed="[[collapsed]]"></vi-menu-item>
-                        <vi-scroller no-horizontal class="subItems" has-group-items$="[[_hasGroupItems(programUnit.items)]]" item-count$="[[_programUnitItemsCount(programUnit.items)]]">
-                            <vi-menu-item class="program-unit" item="[[programUnit]]" filter="[[filter]]" program-unit="[[activeProgramUnit]]" collapsed="[[collapsed]]" items="[[programUnit.items]]"></vi-menu-item>
-                        </vi-scroller>
-                    </vi-popup>
+                    <vi-menu-item class="program-unit" item="[[programUnit]]" filter="[[filter]]" program-unit="[[activeProgramUnit]]" items="[[programUnit.items]]" collapse-groups-on-tap></vi-menu-item>
+                    <dom-if if="[[_isFirstRunProgramUnit(app.service.application, programUnit)]]">
+                        <template>
+                            <div id="add" on-tap="_add">+ Add menu item</div>
+                        </template>
+                    </dom-if>
                 </template>
             </dom-repeat>
-        </div>
-    </template>
-</dom-if>
-<footer>
-    <slot name="footer"></slot>
-    <vi-user collapsed="[[collapsed]]"></vi-user>
-</footer>
+        </vi-scroller>
+    </main>
+    <footer>
+        <slot name="footer"></slot>
+        <vi-user></vi-user>
+    </footer>
+</div>
+
+<vi-button id="toggleCollapse" icon="Menu_Collapse" on-tap="_toggleCollapse"></vi-button>
 <div id="resizer" on-track="_onResize"></div>

@@ -79,35 +79,3 @@ $border-color: mix(white, $background-color, 7.5%);
         cursor: pointer;
     }
 }
-
-:host-context([collapsed]) {
-    .actions {
-        display: flex;
-        flex-direction: column;
-
-        vi-button {
-            height: var(--theme-h1) !important;
-            line-height: var(--theme-h1) !important;
-        }
-    }
-
-    .username {
-        display: none;
-    }
-
-    #signIn {
-        border-left: none !important;
-
-        & > span {
-            display: none;
-        }
-
-        vi-icon {
-            margin-left: 0 !important;
-        }
-    }
-
-    vi-button.vi-user#settings {
-        border-left-width: 0;
-    }
-}

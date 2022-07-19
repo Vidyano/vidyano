@@ -54,6 +54,10 @@ import "../user/user.js"
         hideSearch: {
             type: Boolean,
             reflectToAttribute: true
+        },
+        searchFocused: {
+            type: Boolean,
+            reflectToAttribute: true
         }
     },
     listeners: {
@@ -91,8 +95,12 @@ export class Menu extends WebComponent {
         const menuWidth = parseInt(Vidyano.cookie("menu-width"));
         if (menuWidth)
             this.style.setProperty("--vi-menu--expand-width", `${menuWidth}px`);
+    }
 
+    ready() {
         this.collapsed = Boolean.parse(Vidyano.cookie("menu-collapsed"));
+
+        super.ready();
     }
 
     disconnectedCallback() {
