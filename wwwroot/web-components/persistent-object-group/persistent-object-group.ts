@@ -214,7 +214,9 @@ export class PersistentObjectGroup extends WebComponent {
 
             const renderItem = item;
             const renderHandle = Polymer.Async.animationFrame.run(() => {
-                this.appendChild(renderItem.presenter);
+                if (!renderItem.presenter.isConnected || renderItem.presenter.parentElement !== this)
+                    this.appendChild(renderItem.presenter);
+
                 renderItem.presenter.updateStyles({
                     "--vi-persistent-object-group--attribute-area": renderItem.area
                 });

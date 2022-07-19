@@ -207,6 +207,9 @@ export class PersistentObjectAttributePresenter extends ConfigurableWebComponent
     }
 
     private _attributeChanged(attribute: Vidyano.PersistentObjectAttribute, isConnected: boolean) {
+        if (this._renderedAttribute === attribute)
+            return;
+
         if (this._renderedAttribute) {
             Array.from(this.children).forEach(c => this.removeChild(c));
             this._renderedAttributeElement = this._renderedAttribute = null;
