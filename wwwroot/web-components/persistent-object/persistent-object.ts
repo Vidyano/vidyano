@@ -91,9 +91,9 @@ import { WebComponent } from "../web-component/web-component.js"
             type: Boolean,
             computed: "persistentObject.isBusy"
         },
-        hasOwnerQuery: {
+        showNavigation: {
             type: Boolean,
-            computed: "op_isNotNull(persistentObject.ownerQuery)"
+            computed: "_computeShowNavigation(persistentObject)"
         }
     },
     observers: [
@@ -250,6 +250,10 @@ export class PersistentObject extends WebComponent {
 
     private _computeHasDetailTabs(tabs: Vidyano.PersistentObjectAttributeTab[]): boolean {
         return tabs && tabs.length > 0;
+    }
+
+    private _computeShowNavigation(persistentObject: Vidyano.PersistentObject) {
+        return !persistentObject.isNew && !!persistentObject.ownerQuery;
     }
 
     private _tabselect(e: CustomEvent) {
