@@ -13000,6 +13000,7 @@ declare class PersistentObject extends WebComponent {
     private _computeLayoutDetailTabs;
     private _computeHasMasterTabs;
     private _computeHasDetailTabs;
+    private _computeShowNavigation;
     private _tabselect;
     private _persistentObjectNotificationChanged;
     private _trackSplitter;

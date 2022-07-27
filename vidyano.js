@@ -80086,9 +80086,9 @@ let PersistentObject = class PersistentObject extends WebComponent {
         <span class="flex">[[persistentObject.breadcrumb]]</span>
     </vi-sensitive>
     <vi-spinner block color="white" hidden$="[[!isBusy]]"></vi-spinner>
-    <dom-if if="[[hasOwnerQuery]]">
+    <dom-if if="[[showNavigation]]">
         <template>
-            <nav class="layout horizontal" hidden$="[[!hasOwnerQuery]]">
+            <nav class="layout horizontal">
                 <span>[[_getNavigationIndex(persistentObject)]]</span>
                 <vi-button icon="ChevronLeft" data-direction="previous" on-tap="_navigate" busy$="[[isBusy]]" disabled$="[[isBusy]]"></vi-button>
                 <vi-button icon="ChevronRight" data-direction="next" on-tap="_navigate" busy$="[[isBusy]]" disabled$="[[isBusy]]"></vi-button>
@@ -80192,6 +80192,9 @@ let PersistentObject = class PersistentObject extends WebComponent {
     }
     _computeHasDetailTabs(tabs) {
         return tabs && tabs.length > 0;
+    }
+    _computeShowNavigation(persistentObject) {
+        return !persistentObject.isNew && !!persistentObject.ownerQuery;
     }
     _tabselect(e) {
         let { name, tab } = e.detail;
@@ -80368,9 +80371,9 @@ PersistentObject = __decorate([
                 type: Boolean,
                 computed: "persistentObject.isBusy"
             },
-            hasOwnerQuery: {
+            showNavigation: {
                 type: Boolean,
-                computed: "op_isNotNull(persistentObject.ownerQuery)"
+                computed: "_computeShowNavigation(persistentObject)"
             }
         },
         observers: [
