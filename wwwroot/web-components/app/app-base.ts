@@ -39,9 +39,7 @@ if (hashBangRe.test(document.location.href)) {
         history.replaceState(null, null, `${hashBangParts[1]}${hashBangParts[2]}`);
 }
 
-window["Vidyano"] = {
-    version: "DEVELOPMENT-VERSION"
-};
+window["Vidyano"] = Vidyano;
 
 const missing_base_tag_error = new Error("Document is missing base tag");
 @WebComponent.registerAbstract({
