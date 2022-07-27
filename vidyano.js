@@ -34880,6 +34880,30 @@ function __classPrivateFieldSet(receiver, state, value, kind, f) {
     return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 }
 
+const icons = {};
+function load(name) {
+    return icons[name] || icons[Object.keys(icons).find(key => !!icons[key].aliases && icons[key].aliases.some(a => a === name))];
+}
+function exists(name) {
+    return !!load(name);
+}
+function add(stringOrTemplate) {
+    if (Array.isArray(stringOrTemplate))
+        stringOrTemplate = html(stringOrTemplate);
+    Array.from(stringOrTemplate.content.querySelectorAll("vi-icon")).forEach((icon) => {
+        document.body.appendChild(icon);
+        icons[icon.name] = icon;
+        document.body.removeChild(icon);
+    });
+}
+
+var iconRegister = /*#__PURE__*/Object.freeze({
+	__proto__: null,
+	load: load,
+	exists: exists,
+	add: add
+});
+
 class PathRoutes {
     constructor() {
         this.current = null;
@@ -35068,30 +35092,6 @@ class Path {
 Path.routes = new PathRoutes();
 Path.history = new PathHistory();
 Path._splitRegex = /\/|\./g;
-
-const icons = {};
-function load(name) {
-    return icons[name] || icons[Object.keys(icons).find(key => !!icons[key].aliases && icons[key].aliases.some(a => a === name))];
-}
-function exists(name) {
-    return !!load(name);
-}
-function add(stringOrTemplate) {
-    if (Array.isArray(stringOrTemplate))
-        stringOrTemplate = html(stringOrTemplate);
-    Array.from(stringOrTemplate.content.querySelectorAll("vi-icon")).forEach((icon) => {
-        document.body.appendChild(icon);
-        icons[icon.name] = icon;
-        document.body.removeChild(icon);
-    });
-}
-
-var iconRegister = /*#__PURE__*/Object.freeze({
-	__proto__: null,
-	load: load,
-	exists: exists,
-	add: add
-});
 
 setLegacyUndefined(true);
 setOrderedComputed(true);
@@ -35771,6 +35771,92 @@ document.addEventListener("touchstart", _documentClosePopupListener);
 const openPopups = [];
 class PopupCoreFit extends mixinBehaviors(IronFitBehavior, PolymerElement) {
     static get template() { return html `<slot></slot>`; }
+    __getPosition(hAlign, vAlign, size, sizeNoMargins, positionRect, fitRect) {
+        const positions = [
+            {
+                verticalAlign: "top",
+                horizontalAlign: "left",
+                top: positionRect.top + this.verticalOffset,
+                left: positionRect.left - size.width + this.horizontalOffset
+            }, {
+                verticalAlign: "top",
+                horizontalAlign: "right",
+                top: positionRect.top + this.verticalOffset,
+                left: positionRect.right - this.horizontalOffset
+            }, {
+                verticalAlign: "bottom",
+                horizontalAlign: "left",
+                top: positionRect.bottom + this.verticalOffset,
+                left: positionRect.left + this.horizontalOffset
+            }, {
+                verticalAlign: "bottom",
+                horizontalAlign: "right",
+                top: positionRect.bottom - this.verticalOffset,
+                left: positionRect.right - size.width - this.horizontalOffset
+            }
+        ];
+        vAlign = vAlign === "auto" ? null : vAlign;
+        hAlign = hAlign === "auto" ? null : hAlign;
+        if (!hAlign || hAlign === "center") {
+            positions.push({
+                verticalAlign: "top",
+                horizontalAlign: "center",
+                top: positionRect.top + this.verticalOffset + (this.noOverlap ? positionRect.height : 0),
+                left: positionRect.left - sizeNoMargins.width / 2 + positionRect.width / 2 + this.horizontalOffset
+            });
+            positions.push({
+                verticalAlign: "bottom",
+                horizontalAlign: "center",
+                top: positionRect.bottom - size.height - this.verticalOffset - (this.noOverlap ? positionRect.height : 0),
+                left: positionRect.left - sizeNoMargins.width / 2 + positionRect.width / 2 + this.horizontalOffset
+            });
+        }
+        if (!vAlign || vAlign === "middle") {
+            positions.push({
+                verticalAlign: "middle",
+                horizontalAlign: "left",
+                top: positionRect.top - sizeNoMargins.height / 2 + positionRect.height / 2 + this.verticalOffset,
+                left: positionRect.left + this.horizontalOffset + (this.noOverlap ? positionRect.width : 0)
+            });
+            positions.push({
+                verticalAlign: "middle",
+                horizontalAlign: "right",
+                top: positionRect.top - sizeNoMargins.height / 2 + positionRect.height / 2 + this.verticalOffset,
+                left: positionRect.right - size.width - this.horizontalOffset - (this.noOverlap ? positionRect.width : 0)
+            });
+        }
+        if (vAlign === "middle" && hAlign === "center") {
+            positions.push({
+                verticalAlign: "middle",
+                horizontalAlign: "center",
+                top: positionRect.top - sizeNoMargins.height / 2 + positionRect.height / 2 + this.verticalOffset,
+                left: positionRect.left - sizeNoMargins.width / 2 + positionRect.width / 2 + this.horizontalOffset
+            });
+        }
+        let position;
+        for (let i = 0; i < positions.length; i++) {
+            const candidate = positions[i];
+            const vAlignOk = candidate.verticalAlign === vAlign;
+            const hAlignOk = candidate.horizontalAlign === hAlign;
+            if (!this.dynamicAlign && !this.noOverlap && vAlignOk && hAlignOk) {
+                position = candidate;
+                break;
+            }
+            const alignOk = (!vAlign || vAlignOk) && (!hAlign || hAlignOk);
+            if (!this.dynamicAlign && !alignOk)
+                continue;
+            candidate.offscreenArea = this.__getOffscreenArea(candidate, size, fitRect);
+            if (candidate.offscreenArea === 0 && alignOk) {
+                position = candidate;
+                break;
+            }
+            position = position || candidate;
+            const diff = candidate.offscreenArea - position.offscreenArea;
+            if (diff < 0 || (diff === 0 && (vAlignOk || hAlignOk)))
+                position = candidate;
+        }
+        return position;
+    }
 }
 customElements.define("vi-popup-core-fit", PopupCoreFit);
 let Popup = Popup_1 = class Popup extends WebComponent {
@@ -36030,12 +36116,12 @@ Popup = Popup_1 = __decorate([
             horizontalAlign: {
                 type: String,
                 reflectToAttribute: true,
-                value: "auto"
+                value: "left"
             },
             verticalAlign: {
                 type: String,
                 reflectToAttribute: true,
-                value: "auto"
+                value: "bottom"
             },
             sticky: {
                 type: Boolean,
@@ -36112,14 +36198,14 @@ let PopupMenuItemSplit = class PopupMenuItemSplit extends WebComponent {
   background-color: rgba(0, 0, 0, 0.04);
 }
 
-:host vi-icon#icon[unresolved] + .icon-space {
+:host(:not([icon-space])) .icon-space {
+  display: none !important;
+}
+
+.icon-space {
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
   width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
   background-color: rgba(0, 0, 0, 0.04);
-}
-
-:host(:not([icon-space])) .icon-space {
-  display: none !important;
 }
 
 :host {
@@ -36132,18 +36218,29 @@ let PopupMenuItemSplit = class PopupMenuItemSplit extends WebComponent {
   width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
   border-left: 1px solid var(--theme-light-border);
 }
+
+:host(:not([icon-space])) .icon-space {
+  display: none !important;
+}
+
+.icon-space {
+  height: var(--vi-popup-menu-item-height, var(--theme-h1));
+  width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
+  background-color: rgba(0, 0, 0, 0.04);
+}
 </style>
 
 <vi-button inverse$="[[!checked]]">
     <vi-icon id="icon" source="[[icon]]"></vi-icon>
+    <div class="icon-space"></div>
     <span class="flex">[[label]]</span>
 </vi-button>
-<vi-popup open-on-hover hidden$="[[!hasChildren]]" vertical-align="middle">
+<vi-popup open-on-hover hidden$="[[!hasChildren]]" vertical-align="top" horizontal-align="right">
     <vi-button id="split" class="flex" slot="header" icon="Forward" on-tap="_splitTap" inverse>
         <vi-icon source="Forward"></vi-icon>
     </vi-button>
     <div>
-        <slot id="subItems"></slot>
+        <slot id="subItems" on-slotchange="_popupMenuIconSpaceHandler"></slot>
     </div>
 </vi-popup>`; }
     connectedCallback() {
@@ -36156,6 +36253,11 @@ let PopupMenuItemSplit = class PopupMenuItemSplit extends WebComponent {
     disconnectedCallback() {
         this._observer.disconnect();
         super.disconnectedCallback();
+    }
+    _popupMenuIconSpaceHandler(e) {
+        const elements = e.target.assignedElements();
+        const iconSpace = elements.some(e => e.icon && exists(e.icon));
+        elements.forEach(e => e.iconSpace = iconSpace && (!e.icon || !exists(e.icon)));
     }
     _onTap(e) {
         if (this._action) {
@@ -36174,6 +36276,10 @@ PopupMenuItemSplit = __decorate([
         properties: {
             label: String,
             icon: String,
+            iconSpace: {
+                type: Boolean,
+                reflectToAttribute: true
+            },
             checked: {
                 type: Boolean,
                 reflectToAttribute: true,
@@ -36245,26 +36351,26 @@ let PopupMenuItem = class PopupMenuItem extends WebComponent {
   background-color: rgba(0, 0, 0, 0.04);
 }
 
-:host vi-icon#icon[unresolved] + .icon-space {
+:host(:not([icon-space])) .icon-space {
+  display: none !important;
+}
+
+.icon-space {
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
   width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
   background-color: rgba(0, 0, 0, 0.04);
 }
-
-:host(:not([icon-space])) .icon-space {
-  display: none !important;
-}
 </style>
 
-<vi-popup open-on-hover class="flex" id="popup" vertical-align="middle">
+<vi-popup open-on-hover class="flex" id="popup" vertical-align="top" horizontal-align="right">
     <vi-button slot="header" inverse$="[[!checked]]" class="layout horizontal" on-tap="_catchTap">
-        <vi-icon id="icon" source="[[icon]]" hidden$="[[noIcon]]"></vi-icon>
+        <vi-icon id="icon" source="[[icon]]"></vi-icon>
         <div class="icon-space"></div>
         <span class="flex">[[label]]</span>
         <vi-icon source="Forward" hidden$="[[!hasChildren]]"></vi-icon>
     </vi-button>
     <div>
-        <slot id="subItems"></slot>
+        <slot id="subItems" on-slotchange="_popupMenuIconSpaceHandler"></slot>
     </div>
 </vi-popup>`; }
     connectedCallback() {
@@ -36277,6 +36383,11 @@ let PopupMenuItem = class PopupMenuItem extends WebComponent {
     disconnectedCallback() {
         this._observer.disconnect();
         super.disconnectedCallback();
+    }
+    _popupMenuIconSpaceHandler(e) {
+        const elements = e.target.assignedElements();
+        const iconSpace = elements.some(e => e.icon && exists(e.icon));
+        elements.forEach(e => e.iconSpace = iconSpace && (!e.icon || !exists(e.icon)));
     }
     _onTap(e) {
         if (this._action) {
@@ -36301,10 +36412,9 @@ PopupMenuItem = __decorate([
         properties: {
             label: String,
             icon: String,
-            noIcon: {
+            iconSpace: {
                 type: Boolean,
-                reflectToAttribute: true,
-                value: false
+                reflectToAttribute: true
             },
             checked: {
                 type: Boolean,
@@ -49757,14 +49867,14 @@ let PopupMenuItemWithActions = class PopupMenuItemWithActions extends WebCompone
   background-color: rgba(0, 0, 0, 0.04);
 }
 
-:host vi-icon#icon[unresolved] + .icon-space {
+:host(:not([icon-space])) .icon-space {
+  display: none !important;
+}
+
+.icon-space {
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
   width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
   background-color: rgba(0, 0, 0, 0.04);
-}
-
-:host(:not([icon-space])) .icon-space {
-  display: none !important;
 }
 </style>
 
@@ -49774,9 +49884,14 @@ let PopupMenuItemWithActions = class PopupMenuItemWithActions extends WebCompone
     <div class="icon-space"></div>
     <span class="flex">[[label]]</span>
     <div class="actions" on-tap="_actionsTap" on-down="_catch">
-        <slot name="button"></slot>
+        <slot name="button" on-slotchange="_popupMenuIconSpaceHandler"></slot>
     </div>
 </div>`; }
+    _popupMenuIconSpaceHandler(e) {
+        const elements = e.target.assignedElements();
+        const iconSpace = elements.some(e => e.icon && exists(e.icon));
+        elements.forEach(e => e.iconSpace = iconSpace && (!e.icon || !exists(e.icon)));
+    }
     _onTap(e) {
         if (this._action) {
             this._action();
@@ -49798,7 +49913,11 @@ PopupMenuItemWithActions = __decorate([
     WebComponent.register({
         properties: {
             label: String,
-            icon: String
+            icon: String,
+            iconSpace: {
+                type: Boolean,
+                reflectToAttribute: true
+            },
         },
         listeners: {
             "tap": "_onTap"
@@ -49826,14 +49945,14 @@ let PopupMenu = class PopupMenu extends WebComponent {
 }
 </style>
 
-<vi-popup open-on-hover="{{openOnHover}}" id="popup" disabled="[[disabled]]" open="{{open}}" orientation="vertical">
+<vi-popup open-on-hover="{{openOnHover}}" id="popup" disabled="[[disabled]]" open="{{open}}" horizontal-align="[[horizontalAlign]]" vertical-align="[[verticalAlign]]" auto-width="[[autoWidth]]">
     <dom-if if="[[!contextMenuOnly]]">
         <template>
             <slot name="header" slot="header"></slot>
         </template>
     </dom-if>
     <div>
-        <slot id="items"></slot>
+        <slot id="items" on-slotchange="_popupMenuIconSpaceHandler"></slot>
     </div>
 </vi-popup>`; }
     popup() {
@@ -49862,6 +49981,11 @@ let PopupMenu = class PopupMenu extends WebComponent {
             e.stopPropagation();
             return false;
         }
+    }
+    _popupMenuIconSpaceHandler(e) {
+        const elements = e.target.assignedElements();
+        const iconSpace = elements.some(e => e.icon && exists(e.icon));
+        elements.forEach(e => e.iconSpace = iconSpace && (!e.icon || !exists(e.icon)));
     }
     _alignmentChanged() {
         this.$.popup.horizontalAlign = this.rightAlign ? "right" : "auto";
@@ -49903,6 +50027,20 @@ PopupMenu = __decorate([
             open: {
                 type: Boolean,
                 reflectToAttribute: true
+            },
+            autoWidth: {
+                type: Boolean,
+                reflectToAttribute: true
+            },
+            horizontalAlign: {
+                type: String,
+                reflectToAttribute: true,
+                value: "left"
+            },
+            verticalAlign: {
+                type: String,
+                reflectToAttribute: true,
+                value: "bottom"
             }
         },
         observers: [
@@ -51567,17 +51705,22 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
   height: var(--theme-h1);
 }
 
-:host vi-button vi-icon[source^="Action_"] {
+:host vi-button vi-icon.action-icon, :host vi-button vi-icon.down-icon {
   width: var(--theme-h3);
 }
 
-:host vi-button vi-icon[source^="Down"] {
-  width: var(--theme-h3);
+:host vi-button .icon-space {
+  height: var(--theme-h1);
+  width: var(--theme-h2);
 }
 
 :host vi-button span {
   flex: 1;
   padding: 0 var(--theme-h5);
+}
+
+:host vi-popup-menu {
+  min-width: 100%;
 }
 
 :host vi-popup[open] vi-button.groupActions {
@@ -51604,7 +51747,7 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
   padding: 0 !important;
 }
 
-:host([overflow]) vi-button vi-icon[source^="Action_"], :host([grouped]) vi-button vi-icon[source^="Action_"] {
+:host([overflow]) vi-button vi-icon.action-icon, :host([grouped]) vi-button vi-icon.action-icon {
   width: var(--theme-h2);
 }
 
@@ -51612,32 +51755,20 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
   padding: 0 var(--theme-h4);
 }
 
-:host([overflow][icon-space]) vi-button > div, :host([grouped][icon-space]) vi-button > div {
-  padding-left: var(--theme-h2);
-}
-
 :host([overflow]) vi-icon, :host([grouped]) vi-icon {
   vertical-align: top;
   width: var(--theme-h2);
 }
 
-:host([overflow]) vi-icon[source="Down"], :host([grouped]) vi-icon[source="Down"] {
-  -moz-transform: rotate(-90deg);
-  -ms-transform: rotate(-90deg);
-  -o-transform: rotate(-90deg);
-  -webkit-transform: rotate(-90deg);
+:host([overflow]) vi-icon.down-icon, :host([grouped]) vi-icon.down-icon {
   transform: rotate(-90deg);
 }
 
-:host([overflow]) vi-icon[source^="Action_"], :host([grouped]) vi-icon[source^="Action_"] {
+:host([overflow]) vi-icon.action-icon, :host([overflow]) .icon-space, :host([grouped]) vi-icon.action-icon, :host([grouped]) .icon-space {
   background-color: rgba(0, 0, 0, 0.04);
 }
 
 :host([no-label]:not([force-label])) vi-button span, :host([pinned]:not([force-label])) vi-button span {
-  display: none;
-}
-
-:host([no-icon]) vi-button vi-icon {
   display: none;
 }
 
@@ -51678,6 +51809,7 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
                 <vi-button disabled="[[!canExecute]]" header on-tap="_onExecuteWithoutOptions" inverse>
                     <div class="layout horizontal">
                         <vi-icon class="action-icon" source="[[icon]]"></vi-icon>
+                        <div class="icon-space" hidden$="[[!iconSpace]]"></div>
                         <span class="label">[[action.displayName]]</span>
                     </div>
                 </vi-button>
@@ -51685,17 +51817,18 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
         </dom-if>
         <dom-if if="[[options]]">
             <template>
-                <vi-popup-menu open-on-hover="[[_computeOpenOnHover(overflow, openOnHover)]]" disabled="[[!canExecute]]">
-                    <vi-button disabled="[[!canExecute]]" header slot="header" header inverse class="options">
-                        <div class="layout horizontal">
+                <vi-popup-menu open-on-hover="[[_computeOpenOnHover(overflow, openOnHover)]]" disabled="[[!canExecute]]" horizontal-align="[[_getHorizontalAlign(overflow, grouped)]]" vertical-align="[[_getVerticalAlign(overflow, grouped)]]" auto-width="[[!overflow]]">
+                    <vi-button disabled="[[!canExecute]]" slot="header" header inverse class="options">
+                        <div class="layout horizontal flex">
                             <vi-icon class="action-icon" source="[[icon]]"></vi-icon>
-                            <span class="label">[[action.displayName]]</span>
+                            <div class="icon-space" hidden$="[[!iconSpace]]"></div>
+                            <span class="label flex">[[action.displayName]]</span>
                             <vi-icon class="down-icon" source="Down"></vi-icon>
                         </div>
                     </vi-button>
                     <dom-repeat items="[[options]]" as="option">
                         <template>
-                            <vi-popup-menu-item label="[[option.value]]" on-tap="_onExecuteWithOption" no-icon></vi-popup-menu-item>
+                            <vi-popup-menu-item label="[[option.value]]" on-tap="_onExecuteWithOption"></vi-popup-menu-item>
                         </template>
                     </dom-repeat>
                 </vi-popup-menu>
@@ -51705,11 +51838,12 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
 </dom-if>
 <dom-if if="[[isGroup]]">
     <template>
-        <vi-popup disabled="[[!canExecute]]" open-on-hover="[[_computeOpenOnHover(overflow, openOnHover)]]">
-            <vi-button disabled="[[!canExecute]]" header inverse class="groupActions">
-                <div class="layout horizontal">
+        <vi-popup disabled="[[!canExecute]]" open-on-hover="[[_computeOpenOnHover(overflow, openOnHover)]]" horizontal-align="[[_getHorizontalAlign(overflow, grouped)]]" vertical-align="[[_getVerticalAlign(overflow, grouped)]]" auto-width="[[!overflow]]">
+            <vi-button disabled="[[!canExecute]]" slot="header" inverse class="groupActions">
+                <div class="layout horizontal flex">
                     <vi-icon class="action-icon" source="[[icon]]"></vi-icon>
-                    <span class="label">[[action.displayName]]</span>
+                    <div class="icon-space" hidden$="[[!iconSpace]]"></div>
+                    <span class="label flex">[[action.displayName]]</span>
                     <vi-icon class="down-icon" source="Down"></vi-icon>
                 </div>
             </vi-button>
@@ -51831,6 +51965,12 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
     _computeOpenOnHover(overflow, openOnHover) {
         return overflow || openOnHover;
     }
+    _getHorizontalAlign(overflow, grouped) {
+        return overflow || grouped ? "right" : "left";
+    }
+    _getVerticalAlign(overflow, grouped) {
+        return overflow || grouped ? "top" : "bottom";
+    }
     _hiddenChanged() {
         this.fire("sizechanged", null);
     }
@@ -51881,10 +52021,6 @@ ActionButton = ActionButton_1 = __decorate([
                 reflectToAttribute: true
             },
             forceLabel: {
-                type: Boolean,
-                reflectToAttribute: true
-            },
-            noIcon: {
                 type: Boolean,
                 reflectToAttribute: true
             },
@@ -63095,7 +63231,7 @@ let TimePicker = class TimePicker extends WebComponent {
 }
 </style>
 
-<vi-popup id="popup" horizontal-align="right" part="popup">
+<vi-popup id="popup" vertical-align="bottom" horizontal-align="right" part="popup">
     <vi-icon slot="header" part="icon" source="Clock"></vi-icon>
     <div class="clock" on-tap="_catchTap">
         <div id="current">
