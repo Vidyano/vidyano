@@ -15,7 +15,7 @@ export default [
 			vulcanize(),
 			replace({
 				"moment$1 as moment": "moment",
-				'"latest";': `"${pjson.version}";`
+				'vidyano-latest-version': pjson.version
 			})
 		],
 		output: [{ file: 'vidyano.js' }, { file: "wwwroot/dist/vidyano.js" }],

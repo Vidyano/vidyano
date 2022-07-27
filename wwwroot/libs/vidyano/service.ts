@@ -21,7 +21,7 @@ import Boolean from "./common/boolean.js"
 import "./actions.js"
 import { sleep } from "./common/sleep.js"
 
-export let version = "latest";
+export let version = "vidyano-latest-version";
 
 export declare type NotificationType = Dto.NotificationType;
 
