@@ -38,10 +38,6 @@ import { ConfigurableWebComponent } from "../web-component/web-component-configu
             type: Boolean,
             reflectToAttribute: true
         },
-        noIcon: {
-            type: Boolean,
-            reflectToAttribute: true
-        },
         overflow: {
             type: Boolean,
             reflectToAttribute: true,

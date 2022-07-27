@@ -94,12 +94,6 @@
         }
     }
 
-    &[no-icon] {
-        vi-button vi-icon {
-            display: none;
-        }
-    }
-
     &:focus {
         outline: none;
     }
