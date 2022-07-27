@@ -1,6 +1,31 @@
 <link rel="stylesheet" href="popup-menu-test.css" />
 
-<div class="grid">
+<div class="grid">  
+    <div>
+        <vi-popup vertical-align="top" horizontal-align="left">
+            <vi-button slot="header" label="Top-Left" icon="CaretDown"></vi-button>
+            <div>TEST</div>
+        </vi-popup>
+    </div>
+    <div>
+        <vi-popup vertical-align="top" horizontal-align="right">
+            <vi-button slot="header" label="Top-Right" icon="CaretDown"></vi-button>
+            <div>TEST</div>
+        </vi-popup>
+    </div>
+    <div>
+        <vi-popup vertical-align="bottom" horizontal-align="left">
+            <vi-button slot="header" label="Bottom-Left" icon="CaretDown"></vi-button>
+            <div>TEST</div>
+        </vi-popup>
+    </div>
+    <div>
+        <vi-popup vertical-align="bottom" horizontal-align="right">
+            <vi-button slot="header" label="Bottom-Right" icon="CaretDown"></vi-button>
+            <div>TEST</div>
+        </vi-popup>
+    </div>
+
     <div>
         <label>With one popup-menu-item</label>
         <vi-popup-menu>
@@ -32,7 +57,12 @@
         <vi-popup-menu>
             <vi-button slot="header" label="Test" icon="CaretDown"></vi-button>
             <vi-popup-menu-item label="Menu item 1" icon="SortAsc">
-                <vi-popup-menu-item label="Menu item 1.1"></vi-popup-menu-item>
+                <vi-popup-menu-item label="Menu item 1.1">
+                    <vi-popup-menu-item label="Menu item 1.1.1">
+                        <vi-popup-menu-item label="Menu item 1.1.1.1"></vi-popup-menu-item>
+                    </vi-popup-menu-item>
+                    <vi-popup-menu-item label="Menu item 1.1.2"></vi-popup-menu-item>
+                </vi-popup-menu-item>
             </vi-popup-menu-item>
             <vi-popup-menu-item label="Menu item 2" icon="SortDesc"></vi-popup-menu-item>
         </vi-popup-menu>

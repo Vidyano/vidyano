@@ -5,7 +5,12 @@
         grid-template-columns: 1fr 1fr;
     }
 
-    vi-popup-menu {
+    vi-popup, vi-popup-menu {
         display: inline-block;
+    }
+
+    vi-button {
+        height: var(--theme-h1);
+        line-height: var(--theme-h1);
     }
 }
