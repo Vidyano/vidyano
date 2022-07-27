@@ -31,6 +31,20 @@ import { WebComponent } from "../../web-components/web-component/web-component.j
         open: {
             type: Boolean,
             reflectToAttribute: true
+        },
+        autoWidth: {
+            type: Boolean,
+            reflectToAttribute: true
+        },
+        horizontalAlign: {
+            type: String,
+            reflectToAttribute: true,
+            value: "left"
+        },
+        verticalAlign: {
+            type: String,
+            reflectToAttribute: true,
+            value: "bottom"
         }
     },
     observers: [

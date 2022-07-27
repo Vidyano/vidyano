@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="popup-menu.css" />
 
-<vi-popup open-on-hover="{{openOnHover}}" id="popup" disabled="[[disabled]]" open="{{open}}" orientation="vertical">
+<vi-popup open-on-hover="{{openOnHover}}" id="popup" disabled="[[disabled]]" open="{{open}}" horizontal-align="[[horizontalAlign]]" vertical-align="[[verticalAlign]]" auto-width="[[autoWidth]]">
     <dom-if if="[[!contextMenuOnly]]">
         <template>
             <slot name="header" slot="header"></slot>

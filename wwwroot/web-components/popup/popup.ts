@@ -24,8 +24,142 @@ document.addEventListener("touchstart", _documentClosePopupListener);
 
 const openPopups: Popup[] = [];
 
+export type VerticalAlign = "top" | "middle" | "bottom" | "auto";
+export type HorizontalAlign = "left" | "center" | "right" | "auto";
+
+type Position = {
+    verticalAlign: VerticalAlign;
+    horizontalAlign: HorizontalAlign;
+    top: number;
+    left: number;
+    offscreenArea?: number;
+};
+
 class PopupCoreFit extends Polymer.mixinBehaviors(IronFitBehavior, Polymer.PolymerElement) {
     static get template() { return Polymer.html`<slot></slot>`; }
+
+    verticalOffset: number;
+    horizontalOffset: number;
+    noOverlap: boolean;
+    dynamicAlign: boolean;
+
+    private __getPosition(hAlign: HorizontalAlign, vAlign: VerticalAlign, size: ISize, sizeNoMargins: ISize, positionRect: DOMRect, fitRect: DOMRect) {
+        // All the possible configurations.
+        // Ordered as top-left, top-right, bottom-left, bottom-right.
+        const positions: Position[] = [
+            {
+                verticalAlign: "top",
+                horizontalAlign: "left",
+                top: positionRect.top + this.verticalOffset,
+                left: positionRect.left - size.width + this.horizontalOffset
+            }, {
+                verticalAlign: "top",
+                horizontalAlign: "right",
+                top: positionRect.top + this.verticalOffset,
+                left: positionRect.right - this.horizontalOffset
+            }, {
+                verticalAlign: "bottom",
+                horizontalAlign: "left",
+                top: positionRect.bottom + this.verticalOffset,
+                left: positionRect.left + this.horizontalOffset
+            }, {
+                verticalAlign: "bottom",
+                horizontalAlign: "right",
+                top: positionRect.bottom - this.verticalOffset,
+                left: positionRect.right - size.width - this.horizontalOffset
+            }
+        ];
+
+        // Consider auto as null for coding convenience.
+        vAlign = vAlign === "auto" ? null : vAlign;
+        hAlign = hAlign === "auto" ? null : hAlign;
+
+        if (!hAlign || hAlign === "center") {
+            positions.push({
+                verticalAlign: "top",
+                horizontalAlign: "center",
+                top: positionRect.top + this.verticalOffset + (this.noOverlap ? positionRect.height : 0),
+                left: positionRect.left - sizeNoMargins.width / 2 + positionRect.width / 2 + this.horizontalOffset
+            });
+
+            positions.push({
+                verticalAlign: "bottom",
+                horizontalAlign: "center",
+                top: positionRect.bottom - size.height - this.verticalOffset - (this.noOverlap ? positionRect.height : 0),
+                left: positionRect.left - sizeNoMargins.width / 2 + positionRect.width / 2 + this.horizontalOffset
+            });
+        }
+
+        if (!vAlign || vAlign === "middle") {
+            positions.push({
+                verticalAlign: "middle",
+                horizontalAlign: "left",
+                top: positionRect.top - sizeNoMargins.height / 2 + positionRect.height / 2 + this.verticalOffset,
+                left: positionRect.left + this.horizontalOffset + (this.noOverlap ? positionRect.width : 0)
+            });
+
+            positions.push({
+                verticalAlign: "middle",
+                horizontalAlign: "right",
+                top: positionRect.top - sizeNoMargins.height / 2 + positionRect.height / 2 + this.verticalOffset,
+                left: positionRect.right - size.width - this.horizontalOffset - (this.noOverlap ? positionRect.width : 0)
+            });
+        }
+
+        if (vAlign === "middle" && hAlign === "center") {
+            positions.push({
+                verticalAlign: "middle",
+                horizontalAlign: "center",
+                top: positionRect.top - sizeNoMargins.height / 2 + positionRect.height / 2 + this.verticalOffset,
+                left: positionRect.left - sizeNoMargins.width / 2 + positionRect.width / 2 + this.horizontalOffset
+            });
+        }
+
+        let position: Position;
+        for (let i = 0; i < positions.length; i++) {
+            const candidate = positions[i];
+            const vAlignOk = candidate.verticalAlign === vAlign;
+            const hAlignOk = candidate.horizontalAlign === hAlign;
+
+            // If both vAlign and hAlign are defined, return exact match.
+            // For dynamicAlign and noOverlap we"ll have more than one candidate, so
+            // we"ll have to check the offscreenArea to make the best choice.
+            if (!this.dynamicAlign && !this.noOverlap && vAlignOk && hAlignOk) {
+                position = candidate;
+                break;
+            }
+
+            // Align is ok if alignment preferences are respected. If no preferences,
+            // it is considered ok.
+            const alignOk = (!vAlign || vAlignOk) && (!hAlign || hAlignOk);
+
+            // Filter out elements that don"t match the alignment (if defined).
+            // With dynamicAlign, we need to consider all the positions to find the
+            // one that minimizes the cropped area.
+            if (!this.dynamicAlign && !alignOk)
+                continue;
+
+            candidate.offscreenArea = this.__getOffscreenArea(candidate, size, fitRect);
+
+            // If not cropped and respects the align requirements, keep it.
+            // This allows to prefer positions overlapping horizontally over the
+            // ones overlapping vertically.
+            if (candidate.offscreenArea === 0 && alignOk) {
+                position = candidate;
+                break;
+            }
+
+            position = position || candidate;
+            const diff = candidate.offscreenArea - position.offscreenArea;
+            // Check which crops less. If it crops equally, check if at least one align setting is ok.
+            if (diff < 0 || (diff === 0 && (vAlignOk || hAlignOk)))
+                position = candidate;
+        }
+
+        return position;
+    }
+
+    private __getOffscreenArea: (position: Position, size: ISize, fitRect: DOMRect) => number;
 }
 
 customElements.define("vi-popup-core-fit", <CustomElementConstructor><any>PopupCoreFit);
@@ -60,12 +194,12 @@ customElements.define("vi-popup-core-fit", <CustomElementConstructor><any>PopupC
         horizontalAlign: {
             type: String,
             reflectToAttribute: true,
-            value: "auto"
+            value: "left"
         },
         verticalAlign: {
             type: String,
             reflectToAttribute: true,
-            value: "auto"
+            value: "bottom"
         },
         sticky: {
             type: Boolean,
