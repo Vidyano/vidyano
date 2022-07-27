@@ -41172,6 +41172,9 @@ if (hashBangRe.test(document.location.href)) {
     else
         history.replaceState(null, null, `${hashBangParts[1]}${hashBangParts[2]}`);
 }
+window["Vidyano"] = {
+    version: "3.0.0-beta.49"
+};
 const missing_base_tag_error = new Error("Document is missing base tag");
 let AppBase = AppBase_1 = class AppBase extends WebComponent {
     constructor(__hooks) {

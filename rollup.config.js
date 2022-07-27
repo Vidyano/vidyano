@@ -1,9 +1,9 @@
 import commonjs from 'rollup-plugin-commonjs';
-import execute from 'rollup-plugin-execute';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import vulcanize from './rollup/vulcanize.js';
 import dts from "rollup-plugin-dts";
 import replace from "@rollup/plugin-replace";
+const pjson = require('./package.json');
 
 export default [
 	{
@@ -14,7 +14,8 @@ export default [
 			commonjs(),
 			vulcanize(),
 			replace({
-				"moment$1 as moment": "moment"
+				"moment$1 as moment": "moment",
+				"DEVELOPMENT-VERSION": pjson.version
 			})
 		],
 		output: [{ file: 'vidyano.js' }, { file: "wwwroot/dist/vidyano.js" }],
