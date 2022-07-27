@@ -9,4 +9,14 @@
 
         border-left: 1px solid var(--theme-light-border);
     }
+
+    &:not([icon-space]) .icon-space {
+        display: none !important;
+    }
+}
+
+.icon-space {
+    height: var(--vi-popup-menu-item-height, var(--theme-h1));
+    width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
+    background-color: rgba(0, 0, 0, 0.04);
 }

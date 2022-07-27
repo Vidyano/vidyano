@@ -2,6 +2,7 @@
 
 <vi-button inverse$="[[!checked]]">
     <vi-icon id="icon" source="[[icon]]"></vi-icon>
+    <div class="icon-space"></div>
     <span class="flex">[[label]]</span>
 </vi-button>
 <vi-popup open-on-hover hidden$="[[!hasChildren]]" vertical-align="top" horizontal-align="right">
@@ -9,6 +10,6 @@
         <vi-icon source="Forward"></vi-icon>
     </vi-button>
     <div>
-        <slot id="subItems"></slot>
+        <slot id="subItems" on-slotchange="_popupMenuIconSpaceHandler"></slot>
     </div>
 </vi-popup>

@@ -1,4 +1,5 @@
 import * as Polymer from "../../libs/polymer/polymer.js"
+import * as IconRegister from "../icon/icon-register.js"
 import { Popup } from "../popup/popup.js"
 import { PopupMenu } from "./popup-menu.js"
 import { WebComponent } from "../../web-components/web-component/web-component.js"
@@ -7,10 +8,9 @@ import { WebComponent } from "../../web-components/web-component/web-component.j
     properties: {
         label: String,
         icon: String,
-        noIcon: {
+        iconSpace: {
             type: Boolean,
-            reflectToAttribute: true,
-            value: false
+            reflectToAttribute: true
         },
         checked: {
             type: Boolean,
@@ -33,6 +33,7 @@ export class PopupMenuItem extends WebComponent {
 
     private _observer: Polymer.FlattenedNodesObserver;
     readonly hasChildren: boolean; private _setHasChildren: (hasChildren: boolean) => void;
+    iconSpace: boolean;
     checked: boolean;
 
     constructor(public label?: string, public icon?: string, private _action?: () => void) {
@@ -51,6 +52,13 @@ export class PopupMenuItem extends WebComponent {
     disconnectedCallback() {
         this._observer.disconnect();
         super.disconnectedCallback();
+    }
+
+    private _popupMenuIconSpaceHandler(e: Event) {
+        const elements = (e.target as HTMLSlotElement).assignedElements() as any[];
+        const iconSpace = elements.some(e => e.icon && IconRegister.exists(e.icon));
+    
+        elements.forEach(e => e.iconSpace = iconSpace && (!e.icon || !IconRegister.exists(e.icon)));
     }
 
     private _onTap(e: Polymer.Gestures.TapEvent) {

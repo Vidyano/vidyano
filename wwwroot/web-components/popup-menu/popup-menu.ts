@@ -1,4 +1,5 @@
 import * as Polymer from "../../libs/polymer/polymer.js"
+import * as IconRegister from "../icon/icon-register.js"
 import { Popup } from "../popup/popup.js"
 import "./popup-menu-item.js"
 import "./popup-menu-item-separator.js"
@@ -100,6 +101,13 @@ export class PopupMenu extends WebComponent {
 
             return false;
         }
+    }
+
+    private _popupMenuIconSpaceHandler(e: Event) {
+        const elements = (e.target as HTMLSlotElement).assignedElements() as any[];
+        const iconSpace = elements.some(e => e.icon && IconRegister.exists(e.icon));
+    
+        elements.forEach(e => e.iconSpace = iconSpace && (!e.icon || !IconRegister.exists(e.icon)));
     }
 
     private _alignmentChanged() {

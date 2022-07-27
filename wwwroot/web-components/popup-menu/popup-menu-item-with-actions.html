@@ -6,6 +6,6 @@
     <div class="icon-space"></div>
     <span class="flex">[[label]]</span>
     <div class="actions" on-tap="_actionsTap" on-down="_catch">
-        <slot name="button"></slot>
+        <slot name="button" on-slotchange="_popupMenuIconSpaceHandler"></slot>
     </div>
 </div>

@@ -1,4 +1,5 @@
 import * as Polymer from "../../libs/polymer/polymer.js"
+import * as IconRegister from "../icon/icon-register.js"
 import { Popup } from "../popup/popup.js"
 import { WebComponent } from "../../web-components/web-component/web-component.js"
 
@@ -6,6 +7,10 @@ import { WebComponent } from "../../web-components/web-component/web-component.j
     properties: {
         label: String,
         icon: String,
+        iconSpace: {
+            type: Boolean,
+            reflectToAttribute: true
+        },
         checked: {
             type: Boolean,
             reflectToAttribute: true,
@@ -27,6 +32,7 @@ export class PopupMenuItemSplit extends WebComponent {
 
     private _observer: Polymer.FlattenedNodesObserver;
     readonly hasChildren: boolean; private _setHasChildren: (hasChildren: boolean) => void;
+    iconSpace: boolean;
     checked: boolean;
 
     constructor(public label?: string, public icon?: string, private _action?: () => void) {
@@ -45,6 +51,13 @@ export class PopupMenuItemSplit extends WebComponent {
     disconnectedCallback() {
         this._observer.disconnect();
         super.disconnectedCallback();
+    }
+
+    private _popupMenuIconSpaceHandler(e: Event) {
+        const elements = (e.target as HTMLSlotElement).assignedElements() as any[];
+        const iconSpace = elements.some(e => e.icon && IconRegister.exists(e.icon));
+    
+        elements.forEach(e => e.iconSpace = iconSpace && (!e.icon || !IconRegister.exists(e.icon)));
     }
 
     private _onTap(e: Polymer.Gestures.TapEvent) {
