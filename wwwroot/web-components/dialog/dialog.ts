@@ -70,13 +70,21 @@ export abstract class Dialog extends WebComponent {
     async open(): Promise<any> {
         this.dialogCore.open();
 
-        const header = <HTMLElement>this.shadowRoot.querySelector("header");
-        if (header)
-            Polymer.Gestures.addListener(header, "track", (e: Polymer.Gestures.TrackEvent) => this._track(e));
-
-        return new Promise(resolve => {
+        const promise = new Promise(resolve => {
             this._resolve = resolve;
         });
+
+        const header = <HTMLElement>this.shadowRoot.querySelector("header");
+        if (header) {
+            const _track = this._track.bind(this);
+            Polymer.Gestures.addListener(header, "track", _track);
+
+            promise.finally(() => {
+                Polymer.Gestures.removeListener(header, "track", _track);
+            });
+        }
+
+        return promise;
     }
 
     private _esc(e: KeyboardEvent) {
@@ -110,6 +118,13 @@ export abstract class Dialog extends WebComponent {
             });
         }
         else if (e.detail.state === "start") {
+            const path = e.composedPath();
+            if (path[0] instanceof HTMLInputElement) {
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+            }
+
             if (!(<HTMLElement>(e.currentTarget)).tagName.startsWith("H")) {
                 e.stopPropagation();
                 e.preventDefault();
