@@ -9,15 +9,7 @@
                 "$tsc-watch"
             ],
             "group": "build",
-            "label": "tsc: watch - tsconfig.json"
-        },
-        {
-            "type": "npm",
-            "script": "build",
-            "group": "build",
-            "problemMatcher": [],
-            "label": "npm: build",
-            "detail": "rollup -c"
+            "label": "ts-web-components"
         },
         {
             "type": "npm",
@@ -25,7 +17,8 @@
             "group": "build",
             "problemMatcher": [],
             "label": "npm: watch",
-            "detail": "rollup -c -w"
+            "detail": "rollup -c -w",
+            "dependsOn":["ts-web-components"]
         }
     ]
 }
