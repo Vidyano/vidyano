@@ -13153,7 +13153,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.0.0-beta.50";
+let version$2 = "3.0.0-beta.51";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -35585,7 +35585,8 @@ class WebComponent extends GestureEventListeners(PolymerElement) {
             info.properties.isAppSensitive = {
                 type: Boolean,
                 reflectToAttribute: true,
-                readOnly: true
+                readOnly: true,
+                value: false
             };
             info.serviceBusObservers = info.serviceBusObservers || {};
             info.serviceBusObservers["vi-app:sensitive-changed"] = "_appSensitiveChangedObserver";
@@ -37529,12 +37530,18 @@ let Dialog = class Dialog extends WebComponent {
     }
     async open() {
         this.dialogCore.open();
-        const header = this.shadowRoot.querySelector("header");
-        if (header)
-            addListener(header, "track", (e) => this._track(e));
-        return new Promise(resolve => {
+        const promise = new Promise(resolve => {
             this._resolve = resolve;
         });
+        const header = this.shadowRoot.querySelector("header");
+        if (header) {
+            const _track = this._track.bind(this);
+            addListener(header, "track", _track);
+            promise.finally(() => {
+                removeListener(header, "track", _track);
+            });
+        }
+        return promise;
     }
     _esc(e) {
         if (!this.noCancelOnEscKey)
@@ -37561,6 +37568,12 @@ let Dialog = class Dialog extends WebComponent {
             });
         }
         else if (e.detail.state === "start") {
+            const path = e.composedPath();
+            if (path[0] instanceof HTMLInputElement) {
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+            }
             if (!(e.currentTarget).tagName.startsWith("H")) {
                 e.stopPropagation();
                 e.preventDefault();
