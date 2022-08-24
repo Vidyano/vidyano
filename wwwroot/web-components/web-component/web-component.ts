@@ -714,7 +714,8 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
             info.properties.isAppSensitive = {
                 type: Boolean,
                 reflectToAttribute: true,
-                readOnly: true
+                readOnly: true,
+                value: false
             };
 
             info.serviceBusObservers = info.serviceBusObservers || {};
