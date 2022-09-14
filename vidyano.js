@@ -58355,6 +58355,11 @@ styleElement.innerHTML = `<template>
 </template>`;
 styleElement.register("vi-persistent-object-attribute-style-module");
 let PersistentObjectAttribute = class PersistentObjectAttribute extends WebComponent {
+    focus() {
+        (this.shadowRoot.querySelector("vi-persistent-object-attribute-edit input") ||
+            this.shadowRoot.querySelector("vi-persistent-object-attribute-edit textarea") ||
+            this.shadowRoot.querySelector("vi-persistent-object-attribute-edit vi-select"))?.focus();
+    }
     _attributeValueChanged() {
         this.value = this.attribute.value !== undefined ? this.attribute.value : null;
     }
@@ -61904,6 +61909,9 @@ let Select = class Select extends WebComponent {
             return;
         this.popup.popup();
     }
+    focus() {
+        this.shadowRoot.querySelector("input").focus();
+    }
     get popup() {
         return this.$.popup;
     }
@@ -62474,6 +62482,9 @@ let MaskedInput = MaskedInput_1 = class MaskedInput extends WebComponent {
     }
     get input() {
         return this.$.input;
+    }
+    focus() {
+        this.$.input.focus();
     }
     _isOther(key) {
         return MaskedInput_1.otherKeys.indexOf(key) >= 0;
@@ -63954,6 +63965,9 @@ let PersistentObjectAttributeDateTime = class PersistentObjectAttributeDateTime 
             this._timeInput = this.shadowRoot.querySelector("vi-masked-input.time");
         }
         return this._timeInput;
+    }
+    focus() {
+        (this._dateInput || this._timeInput)?.focus();
     }
     _editingChanged() {
         super._editingChanged();
@@ -74938,6 +74952,9 @@ let PersistentObjectAttributeMultiStringItem = class PersistentObjectAttributeMu
             this._focusElement(this.input);
         }
     }
+    focus() {
+        this.shadowRoot.querySelector("input")?.focus();
+    }
     queueFocus() {
         this._focusQueued = true;
     }
@@ -75048,6 +75065,9 @@ let Tags = class Tags extends WebComponent {
         <input id="tagsInput" type="text" value="{{input::input}}" on-keyup="_checkKeyPress" on-blur="_onInputBlur" hidden$="[[readonly]]" />
     </div>
 </vi-scroller>`; }
+    focus() {
+        this.$.tagsInput.focus();
+    }
     _passFocus(e) {
         if (this.readonly)
             return;
@@ -75219,6 +75239,12 @@ let PersistentObjectAttributeMultiString = class PersistentObjectAttributeMultiS
         </dom-if>
     </template>
 </dom-if>`; }
+    focus() {
+        if (!this.isTags)
+            this.shadowRoot.querySelector("vi-persistent-object-attribute-multi-string-item")?.focus();
+        else
+            this.shadowRoot.querySelector("vi-tags")?.focus();
+    }
     _computeStrings(value, readOnly, sensitive) {
         const strings = value ? value.split("\n").filter(v => !!v.length).map((v, n) => this.strings && this.strings[n] && this.strings[n].value === v ? this.strings[n] : new PersistentObjectAttributeMultiStringItem(v)) : [];
         strings.forEach(s => {
@@ -77067,6 +77093,10 @@ let PersistentObjectAttributePresenter = class PersistentObjectAttributePresente
         }
         super.disconnectedCallback();
     }
+    _onTap() {
+        if (this.editing && typeof this._renderedAttributeElement?.focus === "function")
+            this._renderedAttributeElement.focus();
+    }
     _devToggle() {
         this.set("developer", !this.attribute.parent.isSystem && developerShortcut.state);
     }
@@ -77300,6 +77330,7 @@ PersistentObjectAttributePresenter = __decorate([
             }
         },
         listeners: {
+            "tap": "_onTap",
             "vi:configure": "_configure"
         },
         observers: [
