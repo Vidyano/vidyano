@@ -196,9 +196,16 @@ export class PersistentObjectAttributePresenter extends ConfigurableWebComponent
         super.disconnectedCallback();
     }
 
-    private _onTap() {
-        if (this.editing && typeof this._renderedAttributeElement?.focus === "function")
+    private _onTap(e: Polymer.Gestures.TapEvent) {
+        if (this.editing && typeof this._renderedAttributeElement?.focus === "function") {
+            const currentActiveElement = this.app.activeElement;
             this._renderedAttributeElement.focus();
+
+            if (currentActiveElement !== this.app.activeElement) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        }
     }
 
     private _devToggle() {
