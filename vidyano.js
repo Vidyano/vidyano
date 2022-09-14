@@ -13153,7 +13153,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.0.0-beta.51";
+let version$2 = "3.0.0-beta.53";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -77093,9 +77093,15 @@ let PersistentObjectAttributePresenter = class PersistentObjectAttributePresente
         }
         super.disconnectedCallback();
     }
-    _onTap() {
-        if (this.editing && typeof this._renderedAttributeElement?.focus === "function")
+    _onTap(e) {
+        if (this.editing && typeof this._renderedAttributeElement?.focus === "function") {
+            const currentActiveElement = this.app.activeElement;
             this._renderedAttributeElement.focus();
+            if (currentActiveElement !== this.app.activeElement) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        }
     }
     _devToggle() {
         this.set("developer", !this.attribute.parent.isSystem && developerShortcut.state);
