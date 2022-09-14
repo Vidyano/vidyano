@@ -136,6 +136,10 @@ export class Select extends WebComponent {
         this.popup.popup();
     }
 
+    focus() {
+        this.shadowRoot.querySelector("input").focus();
+    }
+
     private get popup(): Popup {
         return <Popup>this.$.popup;
     }

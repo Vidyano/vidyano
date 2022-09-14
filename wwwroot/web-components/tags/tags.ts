@@ -25,6 +25,10 @@ export class Tags extends WebComponent {
     tags: string[];
     readonly: boolean;
 
+    focus() {
+        this.$.tagsInput.focus();
+    }
+
     private _passFocus(e: Polymer.Gestures.TapEvent) {
         if (this.readonly)
             return;

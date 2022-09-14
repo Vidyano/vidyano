@@ -51,6 +51,10 @@ export class PersistentObjectAttributeMultiStringItem extends WebComponent {
         }
     }
 
+    focus() {
+        this.shadowRoot.querySelector("input")?.focus();
+    }
+
     queueFocus() {
         this._focusQueued = true;
     }

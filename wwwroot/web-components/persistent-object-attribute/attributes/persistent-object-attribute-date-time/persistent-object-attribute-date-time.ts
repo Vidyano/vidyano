@@ -108,6 +108,10 @@ export class PersistentObjectAttributeDateTime extends PersistentObjectAttribute
         return this._timeInput;
     }
 
+    focus() {
+        (this._dateInput || this._timeInput)?.focus();
+    }
+
     protected _editingChanged() {
         super._editingChanged();
 

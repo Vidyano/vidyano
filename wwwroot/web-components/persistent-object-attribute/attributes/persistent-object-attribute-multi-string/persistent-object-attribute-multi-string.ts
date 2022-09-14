@@ -3,6 +3,7 @@ import * as Vidyano from "../../../../libs/vidyano/vidyano.js"
 import { PersistentObjectAttribute } from "../../persistent-object-attribute.js"
 import { PersistentObjectAttributeMultiStringItem } from "./persistent-object-attribute-multi-string-item.js"
 import { Sortable } from "../../../sortable/sortable.js"
+import type { Tags } from "../../../tags/tags.js"
 import "../../../tags/tags.js"
 import { WebComponent } from "../../../web-component/web-component.js"
 
@@ -65,6 +66,13 @@ export class PersistentObjectAttributeMultiString extends PersistentObjectAttrib
     readonly hasSuggestions: boolean;
     strings: PersistentObjectAttributeMultiStringItem[];
     tags: string[];
+
+    focus() {
+        if (!this.isTags)
+            (this.shadowRoot.querySelector("vi-persistent-object-attribute-multi-string-item") as PersistentObjectAttributeMultiStringItem)?.focus();
+        else
+            (this.shadowRoot.querySelector("vi-tags") as Tags)?.focus();
+    }
 
     private _computeStrings(value: string, readOnly: boolean, sensitive: boolean): PersistentObjectAttributeMultiStringItem[] {
         const strings = value ? value.split("\n").filter(v => !!v.length).map((v: string, n: number) => this.strings && this.strings[n] && this.strings[n].value === v ? this.strings[n] : new PersistentObjectAttributeMultiStringItem(v)) : [];

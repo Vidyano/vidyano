@@ -138,6 +138,7 @@ document.addEventListener("keyup", e => {
         }
     },
     listeners: {
+        "tap": "_onTap",
         "vi:configure": "_configure"
     },
     observers: [
@@ -166,6 +167,7 @@ export class PersistentObjectAttributePresenter extends ConfigurableWebComponent
     private _customTemplate: new (p0?: object) => Polymer.Templatize.TemplateInstanceBase;
     readonly loading: boolean; private _setLoading: (loading: boolean) => void;
     attribute: Vidyano.PersistentObjectAttribute;
+    editing: boolean;
     nonEdit: boolean;
     noLabel: boolean;
     disabled: boolean;
@@ -192,6 +194,11 @@ export class PersistentObjectAttributePresenter extends ConfigurableWebComponent
         }
 
         super.disconnectedCallback();
+    }
+
+    private _onTap() {
+        if (this.editing && typeof this._renderedAttributeElement?.focus === "function")
+            this._renderedAttributeElement.focus();
     }
 
     private _devToggle() {

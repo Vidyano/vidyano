@@ -64,6 +64,10 @@ export class MaskedInput extends WebComponent {
         return this.$.input as HTMLInputElement;
     }
 
+    focus() {
+        this.$.input.focus();
+    }
+
     private static otherKeys = ["Tab", "Enter", "ArrowUp", "ArrowLeft", "ArrowDown", "ArrowRight"];
     private _isOther(key: string) {
         return MaskedInput.otherKeys.indexOf(key) >= 0;

@@ -1,6 +1,7 @@
 import * as Polymer from "../../libs/polymer/polymer.js"
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import "../persistent-object-attribute-edit/persistent-object-attribute-edit.js"
+import type { Select } from "../select/select.js";
 import { WebComponent } from "../web-component/web-component.js"
 
 const styleElement = document.createElement("dom-module");
@@ -103,6 +104,12 @@ export abstract class PersistentObjectAttribute extends WebComponent {
     readOnly: boolean;
     disabled: boolean;
     sensitive: boolean;
+
+    focus() {
+        (this.shadowRoot.querySelector("vi-persistent-object-attribute-edit input") as HTMLInputElement ||
+        this.shadowRoot.querySelector("vi-persistent-object-attribute-edit textarea") as HTMLInputElement ||
+        this.shadowRoot.querySelector("vi-persistent-object-attribute-edit vi-select") as Select)?.focus();
+    }
 
     protected _attributeValueChanged() {
         this.value = this.attribute.value !== undefined ? this.attribute.value : null;
