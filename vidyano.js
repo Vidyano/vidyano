@@ -13153,7 +13153,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.0.0-beta.53";
+let version$2 = "3.0.0-beta.54";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -59216,6 +59216,9 @@ let PersistentObjectAttributeBinaryFile = class PersistentObjectAttributeBinaryF
         </g>
     </svg>
 </vi-icon>`; }
+    focus() {
+        this.querySelector("input[type='file']")?.focus();
+    }
     async _change(e) {
         const targetInput = e.target;
         if (targetInput.files && targetInput.files.length > 0) {

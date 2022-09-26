@@ -12182,6 +12182,7 @@ declare class MaskedInput extends WebComponent {
     value: string;
     connectedCallback(): void;
     get input(): HTMLInputElement;
+    focus(): void;
     private static otherKeys;
     private _isOther;
     private _isGoodOnes;
@@ -12272,6 +12273,7 @@ declare abstract class PersistentObjectAttribute extends WebComponent {
     readOnly: boolean;
     disabled: boolean;
     sensitive: boolean;
+    focus(): void;
     protected _attributeValueChanged(): void;
     protected _optionsChanged(options: string[] | PersistentObjectAttributeOption[]): void;
     protected _attributeChanged(): void;
@@ -12378,6 +12380,7 @@ declare class Select extends WebComponent {
     readonly: boolean;
     groupSeparator: string;
     open(): void;
+    focus(): void;
     private get popup();
     private _keydown;
     private _keyup;
@@ -12463,6 +12466,7 @@ declare class PersistentObjectAttributeDateTime extends PersistentObjectAttribut
     selectedTime: Date;
     get dateInput(): HTMLInputElement;
     get timeInput(): HTMLInputElement;
+    focus(): void;
     protected _editingChanged(): void;
     protected _valueChanged(value: Date, oldValue: any): void;
     private _selectedDateChanged;
@@ -12565,6 +12569,7 @@ declare class PersistentObjectAttributeMultiStringItem extends WebComponent {
     sensitive: boolean;
     constructor(value: string);
     connectedCallback(): void;
+    focus(): void;
     queueFocus(): void;
     private _valueChanged;
     private _onInputBlur;
@@ -12604,6 +12609,7 @@ declare class Tags extends WebComponent {
     input: string;
     tags: string[];
     readonly: boolean;
+    focus(): void;
     private _passFocus;
     private _checkKeyPress;
     private _onInputBlur;
@@ -12621,6 +12627,7 @@ declare class PersistentObjectAttributeMultiString extends PersistentObjectAttri
     readonly hasSuggestions: boolean;
     strings: PersistentObjectAttributeMultiStringItem[];
     tags: string[];
+    focus(): void;
     private _computeStrings;
     private _itemValueNew;
     private _itemsOrderChanged;
@@ -12747,6 +12754,7 @@ declare class PersistentObjectAttributePresenter extends ConfigurableWebComponen
     readonly loading: boolean;
     private _setLoading;
     attribute: PersistentObjectAttribute$1;
+    editing: boolean;
     nonEdit: boolean;
     noLabel: boolean;
     disabled: boolean;
@@ -12755,6 +12763,7 @@ declare class PersistentObjectAttributePresenter extends ConfigurableWebComponen
     readonly type: string;
     connectedCallback(): Promise<void>;
     disconnectedCallback(): void;
+    private _onTap;
     private _devToggle;
     queueFocus(): void;
     private _attributeChanged;
