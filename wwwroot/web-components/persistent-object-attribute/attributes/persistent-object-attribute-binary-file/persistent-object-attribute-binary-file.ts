@@ -22,6 +22,10 @@ import { PersistentObjectAttribute } from "../../persistent-object-attribute.js"
 export class PersistentObjectAttributeBinaryFile extends PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-binary-file.html">`; }
 
+    focus() {
+        (this.querySelector("input[type='file']") as HTMLInputElement)?.focus();
+    }
+
     private _inputContainer: HTMLDivElement;
         private _inputAttribute: Vidyano.PersistentObjectAttribute;
 
