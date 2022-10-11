@@ -12317,11 +12317,13 @@ declare class PersistentObjectAttributeAsDetail extends PersistentObjectAttribut
     private _finalizeAdd;
     private _setActiveObject;
     private _isRowFullEdit;
+    private _frozenChanged;
     private _titleMouseenter;
 }
 
 declare class PersistentObjectAttributeBinaryFile extends PersistentObjectAttribute {
     static get template(): HTMLTemplateElement;
+    focus(): void;
     private _inputContainer;
     private _inputAttribute;
     private _change;
@@ -12395,6 +12397,7 @@ declare class Select extends WebComponent {
     private _computeFilteredItems;
     private _computeSuggestionFeedback;
     private _computeItemDisplayValue;
+    private _disabledChanged;
     private _setSelectedOption;
     private _selectedItemChanged;
     private _selectedOptionChanged;
@@ -12636,6 +12639,7 @@ declare class PersistentObjectAttributeMultiString extends PersistentObjectAttri
     private _computeIsTags;
     protected _valueChanged(newValue: any, oldValue: any): void;
     private _onTagsChanged;
+    private _onFrozenChanged;
     private _computeTagSuggestions;
     private _computeHasTagSuggestions;
     private _computeFilteredSuggestions;
