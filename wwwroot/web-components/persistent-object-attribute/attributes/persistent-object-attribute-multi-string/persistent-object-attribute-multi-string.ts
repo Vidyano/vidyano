@@ -69,6 +69,9 @@ export class PersistentObjectAttributeMultiString extends PersistentObjectAttrib
     tags: string[];
 
     focus() {
+        if (Array.from(this.shadowRoot.querySelectorAll("vi-persistent-object-attribute-multi-string-item")).some(str => str.shadowRoot?.contains(this.app.activeElement)))
+            return;
+
         if (!this.isTags)
             (this.shadowRoot.querySelector("vi-persistent-object-attribute-multi-string-item") as PersistentObjectAttributeMultiStringItem)?.focus();
         else
