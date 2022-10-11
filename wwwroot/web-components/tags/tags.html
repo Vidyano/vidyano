@@ -12,6 +12,6 @@
                 </div>
             </template>
         </dom-repeat>
-        <input id="tagsInput" type="text" value="{{input::input}}" on-keyup="_checkKeyPress" on-blur="_onInputBlur" hidden$="[[readonly]]" />
+        <input id="tagsInput" type="text" value="{{input::input}}" on-keyup="_checkKeyPress" on-blur="_onInputBlur" hidden$="[[op_some(readonly, disabled)]]" />
     </div>
 </vi-scroller>

@@ -47,7 +47,8 @@ import { PersistentObjectDialog } from "../../../persistent-object-dialog/persis
         },
         isAdding: {
             type: Boolean,
-            readOnly: true
+            readOnly: true,
+            value: false
         },
         forceFullEdit: {
             type: Boolean,
@@ -56,7 +57,8 @@ import { PersistentObjectDialog } from "../../../persistent-object-dialog/persis
     },
     observers: [
         "_updateWidths(columns, canDelete, isConnected)",
-        "_updateActions(attribute.details.actions, editing, readOnly, attribute)"
+        "_updateActions(attribute.details.actions, editing, readOnly, attribute)",
+        "_frozenChanged(frozen)"
     ],
     forwardObservers: [
         "attribute.objects.*.isDeleted"
@@ -225,6 +227,11 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
 
     private _isRowFullEdit(forceFullEdit: boolean, activeObject: Vidyano.PersistentObject, obj: Vidyano.PersistentObject) {
         return forceFullEdit || activeObject === obj;
+    }
+
+    private _frozenChanged(frozen: boolean) {
+        if (frozen)
+            this.set("activeObject", null);
     }
 
     private _titleMouseenter(e: MouseEvent) {

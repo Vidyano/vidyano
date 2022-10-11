@@ -9,6 +9,10 @@ import { WebComponent } from "../../../web-component/web-component.js"
         columns: Array,
         editing: Boolean,
         canDelete: Boolean,
+        frozen: {
+            type: Boolean,
+            reflectToAttribute: true
+        },
         fullEdit: {
             type: Boolean,
             value: false,

@@ -7,7 +7,7 @@
             <span id="match"></span><span id="remainder"></span>
         </div>
         <vi-sensitive class="flex layout horizontal" disabled="[[!sensitive]]">
-            <input class="flex" value="{{_inputValue::input}}" on-blur="_blur" on-keydown="_keydown" on-keyup="_keyup" readonly$="[[isReadonlyInput]]" tabindex="[[inputTabindex]]" placeholder="[[placeholder]]" part="input">
+            <input class="flex" value="{{_inputValue::input}}" on-blur="_blur" on-keydown="_keydown" on-keyup="_keyup" readonly$="[[isReadonlyInput]]" tabindex="[[inputTabindex]]" placeholder="[[placeholder]]" part="input" disabled="[[disabled]]">
         </vi-sensitive>
         <vi-icon source="CaretDown" hidden$="[[!hasOptions]]" part="icon"></vi-icon>
         <slot name="right"></slot>

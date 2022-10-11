@@ -39,6 +39,10 @@ styleElement.register("vi-persistent-object-attribute-style-module");
             reflectToAttribute: true,
             computed: "_computeReadOnlyTabIndex(readOnly)"
         },
+        frozen: {
+            type: Boolean,
+            computed: "attribute.parent.isFrozen"
+        },
         required: {
             type: Boolean,
             reflectToAttribute: true,
@@ -140,8 +144,8 @@ export abstract class PersistentObjectAttribute extends WebComponent {
         return !nonEdit && isEditing;
     }
 
-    private _computeReadOnly(isReadOnly: boolean, disabled: boolean, sensitive: boolean): boolean {
-        return isReadOnly || disabled || sensitive;
+    private _computeReadOnly(...flags: boolean[]): boolean {
+        return flags.some(f => f);
     }
 
     private _computeReadOnlyTabIndex(readOnly: boolean): string {

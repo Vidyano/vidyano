@@ -42,6 +42,10 @@
         cursor: -moz-grab;
         cursor: -webkit-grab;
         pointer-events: all;
+
+        &[disabled] {
+            fill: #aaa;
+        }
     }
 
     &[is-new] {

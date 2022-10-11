@@ -15,10 +15,8 @@
         <dom-if if="[[editing]]">
             <template>
                 <vi-scroller no-horizontal class="flex">
-                    <fieldset disabled$="[[attribute.parent.isFrozen]]">
-                        <vi-persistent-object-attribute-multi-string-items id="strings" draggable-items="vi-persistent-object-attribute-multi-string-item" handle=".sort-handle" enabled="[[!attribute.parent.isFrozen]]" sensitive="[[sensitive]]"></vi-persistent-object-attribute-multi-string-items>
-                        <vi-persistent-object-attribute-multi-string-item is-new hidden$="[[readOnly]]" placeholder="[[placeholder]]" sensitive="[[sensitive]]"></vi-persistent-object-attribute-multi-string-item>
-                    </fieldset>
+                    <vi-persistent-object-attribute-multi-string-items id="strings" draggable-items="vi-persistent-object-attribute-multi-string-item" handle=".sort-handle" enabled="[[!attribute.parent.isFrozen]]" sensitive="[[sensitive]]" disabled="[[frozen]]"></vi-persistent-object-attribute-multi-string-items>
+                    <vi-persistent-object-attribute-multi-string-item disabled="[[frozen]]" is-new hidden$="[[readOnly]]" placeholder="[[placeholder]]" sensitive="[[sensitive]]"></vi-persistent-object-attribute-multi-string-item>
                 </vi-scroller>
             </template>
         </dom-if>
@@ -34,7 +32,7 @@
         <dom-if if="[[editing]]">
             <template>
                 <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-                    <vi-tags content tags="{{tags}}" readonly="[[isTagsReadonly]]" sensitive="[[sensitive]]"></vi-tags>
+                    <vi-tags content tags="{{tags}}" readonly="[[isTagsReadonly]]" sensitive="[[sensitive]]" disabled="[[frozen]]"></vi-tags>
                     <dom-if if="[[hasSuggestions]]">
                         <template>
                             <vi-popup id="suggestions" slot="right">

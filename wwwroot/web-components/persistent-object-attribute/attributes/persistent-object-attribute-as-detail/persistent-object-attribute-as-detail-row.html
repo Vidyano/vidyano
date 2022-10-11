@@ -36,7 +36,7 @@
 
 <dom-if if="[[canDelete]]">
     <template>
-        <vi-button class="delete-button" inverse on-tap="_delete" disabled$="[[op_some(attribute.parent.isFrozen, obj.isReadOnly)]]">
+        <vi-button class="delete-button" inverse on-tap="_delete" disabled="[[op_some(frozen, serviceObject.isReadOnly)]]">
             <vi-icon source="Action_Delete"></vi-icon>
         </vi-button>
     </template>

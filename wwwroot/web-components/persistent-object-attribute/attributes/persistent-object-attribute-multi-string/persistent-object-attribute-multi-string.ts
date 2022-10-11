@@ -47,7 +47,8 @@ export class PersistentObjectAttributeMultiStringItems extends Sortable {
     },
     observers: [
         "_render(strings, editing, isConnected)",
-        "_onTagsChanged(isTags, tags.*)"
+        "_onTagsChanged(isTags, tags.*)",
+        "_onFrozenChanged(frozen)"
     ],
     listeners: {
         "multi-string-item-value-new": "_itemValueNew",
@@ -143,6 +144,10 @@ export class PersistentObjectAttributeMultiString extends PersistentObjectAttrib
         const newValue = this.tags.filter(t => !!t).join("\n");
         if (this.value !== newValue)
             this.value = newValue;
+    }
+
+    private _onFrozenChanged(frozen: boolean) {
+        this.strings?.forEach(str => str.toggleAttribute("disabled", frozen));
     }
 
     private _computeTagSuggestions(attribute: Vidyano.PersistentObjectAttribute): string[] {

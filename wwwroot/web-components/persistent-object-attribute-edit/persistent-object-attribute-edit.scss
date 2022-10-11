@@ -43,21 +43,20 @@
         }
     }
 
-    fieldset[disabled] {
-        .box {
+    .box[disabled] {
+        background-color: #eee;
+        cursor: default;
+        pointer-events: none;
+
+        .extras {
             background-color: #eee;
+        }
 
-            .buttons {
-                background-color: #eee;
-                pointer-events: none;
+        ::slotted(*) {
+            opacity: 0.5;
 
-                ::slotted(*) {
-                    opacity: 0.25;
-
-                    &::before {
-                        border-left-color: var(--theme-light-border);
-                    }
-                }
+            &::before {
+                border-left-color: var(--theme-light-border);
             }
         }
     }

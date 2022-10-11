@@ -14,7 +14,7 @@
     <template>
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
             <vi-sensitive disabled="[[!sensitive]]" class="layout horizontal">
-                <textarea class="flex" value="{{value::input}}" maxlength$="[[maxlength]]" style$="[[editInputStyle]]" on-blur="_editTextAreaBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]"></textarea>
+                <textarea class="flex" value="{{value::input}}" maxlength$="[[maxlength]]" style$="[[editInputStyle]]" on-blur="_editTextAreaBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" disabled="[[frozen]]"></textarea>
             </vi-sensitive>
         </vi-persistent-object-attribute-edit>
     </template>

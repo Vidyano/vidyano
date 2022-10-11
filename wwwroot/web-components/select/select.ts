@@ -91,7 +91,8 @@ export interface ISelectItem {
         disabled: {
             type: Boolean,
             reflectToAttribute: true,
-            value: false
+            value: false,
+            observer: "_disabledChanged"
         },
         disableFiltering: {
             type: Boolean,
@@ -380,6 +381,11 @@ export class Select extends WebComponent {
 
         const exp = new RegExp(`(${inputValue})`, "gi");
         return displayValue.replace(exp, "<span class='match'>$1</span>");
+    }
+    
+    private _disabledChanged(newValue: boolean, oldValue: boolean) {
+        if (newValue && (<Popup>this.$.popup).open)
+            (<Popup>this.$.popup).close();
     }
 
     private _setSelectedOption(option: string | SelectOption, force?: boolean) {
