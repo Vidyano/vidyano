@@ -7,6 +7,10 @@ import { PersistentObjectAttribute } from "../../persistent-object-attribute.js"
 
 @WebComponent.register({
     properties: {
+        inputtype: {
+            type: String,
+            readOnly: true
+        },
         unitBefore: {
             type: String,
             reflectToAttribute: true,
@@ -31,6 +35,7 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
     private _isNullable: boolean;
     private _decimalSeparator: string;
     readonly focused: boolean; private _setFocused: (val: boolean) => void;
+    readonly inputtype: string; private _setInputtype: (inputtype: string) => void;
     unitBefore: string;
     unitAfter: string;
 
@@ -51,6 +56,10 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
                 this.unitBefore = groups[1];
                 this.unitAfter = groups[3];
             }
+
+            const inputtype = this.attribute.getTypeHint("inputtype", null, null, true);
+            if (inputtype)
+                this._setInputtype(inputtype);
         }
     }
 
