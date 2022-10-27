@@ -12662,6 +12662,8 @@ declare class PersistentObjectAttributeNumeric extends PersistentObjectAttribute
     private _decimalSeparator;
     readonly focused: boolean;
     private _setFocused;
+    readonly inputtype: string;
+    private _setInputtype;
     unitBefore: string;
     unitAfter: string;
     private static _decimalTypes;
