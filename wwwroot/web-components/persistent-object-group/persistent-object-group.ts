@@ -207,10 +207,8 @@ export class PersistentObjectGroup extends WebComponent {
                     areas[row + y][column + x] = item.area;
             }
 
-            if (!item.presenter) {
-                item.presenter = new PersistentObjectAttributePresenter();
-                item.presenter.attribute = item.attribute;
-            }
+            if (!item.presenter)
+                item.presenter = this.onCreatePersistentObjectAttributePresenter(item.attribute);
 
             const renderItem = item;
             const renderHandle = Polymer.Async.animationFrame.run(() => {
@@ -293,5 +291,12 @@ export class PersistentObjectGroup extends WebComponent {
             return;
 
         this._arrange(this.group.attributes, this.columns, this.isConnected);
+    }
+
+    protected onCreatePersistentObjectAttributePresenter(attribute: Vidyano.PersistentObjectAttribute) {
+        const presenter = new PersistentObjectAttributePresenter();
+        presenter.attribute = attribute;
+        
+        return presenter;
     }
 }
