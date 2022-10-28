@@ -10264,7 +10264,7 @@ declare class WebComponent extends WebComponent_base {
     private static _scanTemplateForLayoutClasses;
     private static _updateTemplateProperty;
     private static _register;
-    private static registrations;
+    private static abstractRegistrations;
     static register(infoOrTarget?: IWebComponentRegistrationInfo, prefix?: string): (obj: any) => void;
     static registerAbstract(info?: IWebComponentRegistrationInfo): (obj: any) => void;
     private static _clone;

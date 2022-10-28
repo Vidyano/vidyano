@@ -13153,7 +13153,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.0.0-rc.1";
+let version$2 = "3.0.0-rc.2";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -35633,7 +35633,7 @@ class WebComponent extends GestureEventListeners(PolymerElement) {
     }
     static register(infoOrTarget, prefix) {
         return (target) => {
-            const info = WebComponent._clone(WebComponent.registrations[Object.getPrototypeOf(target).name] || {});
+            const info = WebComponent._clone(WebComponent.abstractRegistrations[Object.getPrototypeOf(target).name] || {});
             const targetInfo = infoOrTarget;
             if (targetInfo) {
                 if (targetInfo.properties)
@@ -35653,14 +35653,12 @@ class WebComponent extends GestureEventListeners(PolymerElement) {
                 if (targetInfo.serviceBusObservers)
                     info.serviceBusObservers = info.serviceBusObservers ? extend$2(info.serviceBusObservers, targetInfo.serviceBusObservers) : targetInfo.serviceBusObservers;
             }
-            const wc = WebComponent._register(target, WebComponent._clone(info), prefix);
-            WebComponent.registrations[wc.name] = info;
-            return wc;
+            return WebComponent._register(target, WebComponent._clone(info), prefix);
         };
     }
     static registerAbstract(info) {
         return (target) => {
-            WebComponent.registrations[Object(target).name] = info;
+            WebComponent.abstractRegistrations[Object(target).name] = info;
         };
     }
     static _clone(source, depth = 0) {
@@ -35676,7 +35674,7 @@ class WebComponent extends GestureEventListeners(PolymerElement) {
         return output;
     }
 }
-WebComponent.registrations = {};
+WebComponent.abstractRegistrations = {};
 
 let resizeObserver$2;
 resizeObserver$2 = new ResizeObserver(entries => {
@@ -40214,12 +40212,12 @@ MessageDialog = __decorate([
 
 let Sensitive = class Sensitive extends WebComponent {
     static get template() { return html `<style>:host {
-  display: contents;
+  display: block;
   text-overflow: ellipsis;
   overflow: hidden;
 }
 
-:host(:not([disabled])[is-app-sensitive]) ::slotted(*) {
+:host(:not([disabled])[is-app-sensitive]) {
   filter: blur(5px);
 }
 </style>
@@ -58563,13 +58561,18 @@ let PersistentObjectAttributeAsDetailRow = class PersistentObjectAttributeAsDeta
   line-height: calc(var(--theme-h2) - 2px);
 }
 
-:host .column > [pre-edit] .value-box {
+:host .column > [pre-edit] > vi-sensitive {
+  display: block;
   position: relative;
   border: 1px solid var(--theme-light-border);
   box-sizing: border-box;
   overflow: hidden;
   text-overflow: ellipsis;
   padding: 0 var(--theme-h5);
+}
+
+:host .column > [pre-edit] > vi-sensitive > span {
+  padding: 0;
 }
 
 :host .column > [pre-edit] vi-persistent-object-attribute-validation-error:not([hidden]) + div {
@@ -64676,7 +64679,7 @@ let PersistentObjectAttributeImage = class PersistentObjectAttributeImage extend
   cursor: zoom-in;
 }
 
-:host .image-container {
+:host .fit.image-container {
   padding: var(--theme-h5);
 }
 
@@ -77554,10 +77557,8 @@ let PersistentObjectGroup = class PersistentObjectGroup extends WebComponent {
                 for (let y = 0; y < (item.height !== 0 ? itemHeight : areas.length - row); y++)
                     areas[row + y][column + x] = item.area;
             }
-            if (!item.presenter) {
-                item.presenter = new PersistentObjectAttributePresenter();
-                item.presenter.attribute = item.attribute;
-            }
+            if (!item.presenter)
+                item.presenter = this.onCreatePersistentObjectAttributePresenter(item.attribute);
             const renderItem = item;
             const renderHandle = animationFrame.run(() => {
                 if (!renderItem.presenter.isConnected || renderItem.presenter.parentElement !== this)
@@ -77623,6 +77624,11 @@ let PersistentObjectGroup = class PersistentObjectGroup extends WebComponent {
         if (!info)
             return;
         this._arrange(this.group.attributes, this.columns, this.isConnected);
+    }
+    onCreatePersistentObjectAttributePresenter(attribute) {
+        const presenter = new PersistentObjectAttributePresenter();
+        presenter.attribute = attribute;
+        return presenter;
     }
 };
 PersistentObjectGroup = __decorate([
