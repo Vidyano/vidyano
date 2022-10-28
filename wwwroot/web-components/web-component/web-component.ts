@@ -770,10 +770,11 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
         return element;
     }
 
-    private static registrations: { [key: string]: IWebComponentRegistrationInfo; } = {};
+    private static abstractRegistrations: { [key: string]: IWebComponentRegistrationInfo; } = {};
+
     static register(infoOrTarget?: IWebComponentRegistrationInfo, prefix?: string): (obj: any) => void {
         return (target: CustomElementConstructor) => {
-            const info: IWebComponentRegistrationInfo = WebComponent._clone(WebComponent.registrations[Object.getPrototypeOf(target).name] || {});
+            const info: IWebComponentRegistrationInfo = WebComponent._clone(WebComponent.abstractRegistrations[Object.getPrototypeOf(target).name] || {});
 
             const targetInfo = <IWebComponentRegistrationInfo>infoOrTarget;
             if (targetInfo) {
@@ -801,17 +802,14 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
                 if (targetInfo.serviceBusObservers)
                     info.serviceBusObservers = info.serviceBusObservers ? Vidyano.extend(info.serviceBusObservers, targetInfo.serviceBusObservers) : targetInfo.serviceBusObservers;
             }
-            const wc = WebComponent._register(target, WebComponent._clone(info), prefix);
-
-            WebComponent.registrations[wc.name] = info;
-
-            return wc;
+            
+            return WebComponent._register(target, WebComponent._clone(info), prefix);
         };
     }
 
     static registerAbstract(info?: IWebComponentRegistrationInfo): (obj: any) => void {
         return (target: Function) => {
-            WebComponent.registrations[Object(target).name] = info;
+            WebComponent.abstractRegistrations[Object(target).name] = info;
         };
     }
 
