@@ -22,7 +22,10 @@ interface IPersistentObjectGroupRow {
 @WebComponent.register({
     properties: {
         group: Object,
-        groupIndex: Number,
+        groupIndex: {
+            type: Number,
+            value: 0
+        },
         columns: {
             type: Number,
             value: 1
