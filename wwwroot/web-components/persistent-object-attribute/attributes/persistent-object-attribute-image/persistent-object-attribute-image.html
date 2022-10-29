@@ -10,8 +10,8 @@
 <dom-if if="[[editing]]" restamp>
     <template>
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-            <div class="flex relative">
-                <vi-sensitive class="fit image-container" disabled="[[!sensitive]]">
+            <div class="flex image-container">
+                <vi-sensitive disabled="[[!sensitive]]">
                     <img src="[[image]]" on-tap="_showDialog" can-open$="[[canOpen]]" />
                 </vi-sensitive>
             </div>

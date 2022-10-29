@@ -11,7 +11,7 @@
 <dom-if if="[[editing]]">
     <template>
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-            <vi-sensitive class="flex layout horizontal" disabled="[[!sensitive]]">
+            <vi-sensitive disabled="[[!sensitive]]">
                 <input class="flex" value="{{fileName}}" type="text" readonly placeholder="[[placeholder]]">
             </vi-sensitive>
             <dom-if if="[[!readOnly]]">

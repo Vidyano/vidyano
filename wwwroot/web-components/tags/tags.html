@@ -5,7 +5,7 @@
         <dom-repeat items="[[tags]]" as="tag">
             <template>
                 <div class="layout horizontal tag">
-                    <vi-sensitive disabled="[[!sensitive]]" class="tagValue">[[tag]]</vi-sensitive>
+                    <vi-sensitive disabled="[[!sensitive]]"><span class="tagValue">[[tag]]</span></vi-sensitive>
                     <div on-tap="_onDeleteTap" class="delete" hidden$="[[readonly]]">
                         <vi-icon source="Remove"></vi-icon>
                     </div>

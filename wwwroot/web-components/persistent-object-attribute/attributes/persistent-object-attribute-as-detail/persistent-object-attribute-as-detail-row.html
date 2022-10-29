@@ -15,8 +15,10 @@
                         <template>
                             <div pre-edit on-tap="_setFullEdit" class="flex layout horizontal-reverse">
                                 <vi-persistent-object-attribute-validation-error attribute="[[_attributeForColumn(serviceObject, column)]]"></vi-persistent-object-attribute-validation-error>
-                                <vi-sensitive class="flex layout horizontal" disabled="[[!sensitive]]">
-                                    <span class="value flex">[[_displayValue(serviceObject, column, fullEdit, serviceObject.lastUpdated)]]</span>
+                                <vi-sensitive disabled="[[!sensitive]]">
+                                    <div class="value-box flex">
+                                        <span class="value">[[_displayValue(serviceObject, column, fullEdit, serviceObject.lastUpdated)]]</span>
+                                    </div>
                                 </vi-sensitive>
                             </div>
                         </template>
@@ -25,7 +27,7 @@
             </dom-if>
             <dom-if if="[[!editing]]">
                 <template>
-                    <vi-sensitive class="flex layout horizontal" disabled="[[!sensitive]]">
+                    <vi-sensitive disabled="[[!sensitive]]">
                         <span class="flex">[[_displayValue(serviceObject, column, serviceObject.lastUpdated)]]</span>
                     </vi-sensitive>
                 </template>

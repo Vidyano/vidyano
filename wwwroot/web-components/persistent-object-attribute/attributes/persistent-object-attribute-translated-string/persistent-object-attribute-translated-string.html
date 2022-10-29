@@ -26,7 +26,7 @@
         <vi-persistent-object-attribute-edit attribute="[[attribute]]" reverse-content$="[[multiline]]">
             <dom-if if="[[!multiline]]">
                 <template>
-                    <vi-sensitive class="flex layout horizontal" disabled="[[!sensitive]]">
+                    <vi-sensitive disabled="[[!sensitive]]">
                         <input class="flex" value="{{value::input}}" type="text" on-blur="_editInputBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder="[[placeholder]]">
                     </vi-sensitive>
                 </template>

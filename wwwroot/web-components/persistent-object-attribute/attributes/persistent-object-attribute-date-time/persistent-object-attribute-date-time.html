@@ -11,7 +11,7 @@
 <dom-if if="[[editing]]">
     <template>
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-            <vi-sensitive disabled="[[!sensitive]]" class="layout horizontal">
+            <vi-sensitive disabled="[[!sensitive]]">
                 <dom-if if="[[!monthMode]]">
                     <template>
                         <vi-masked-input class="date"

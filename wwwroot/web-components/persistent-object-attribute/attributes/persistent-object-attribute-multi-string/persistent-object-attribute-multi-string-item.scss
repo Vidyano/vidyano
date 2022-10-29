@@ -4,28 +4,24 @@
     @include layout-horizontal();
     margin-bottom: 2px;
 
-    .inputhost {
+    input {
         border: 1px solid var(--theme-light-border);
         box-sizing: border-box;
+        height: calc(var(--theme-h2) - 2px);
+        line-height: calc(var(--theme-h2) - 2px);
+        -moz-transition: border-color 0.2s ease-in-out;
+        -o-transition: border-color 0.2s ease-in-out;
+        -webkit-transition: border-color 0.2s ease-in-out;
+        transition: border-color 0.2s ease-in-out;
+        padding: 0 6px;
+        outline: none;
 
-        input {
-            height: calc(var(--theme-h2) - 2px);
-            line-height: calc(var(--theme-h2) - 2px);
-            -moz-transition: border-color 0.2s ease-in-out;
-            -o-transition: border-color 0.2s ease-in-out;
-            -webkit-transition: border-color 0.2s ease-in-out;
-            transition: border-color 0.2s ease-in-out;
-            padding: 0 6px;
-            border: none;
-            outline: none;
+        &:focus {
+            border-color: var(--theme-color-lighter);
+        }
 
-            &:focus {
-                border-color: var(--theme-color-lighter);
-            }
-
-            &:disabled {
-                background-color: #eee;
-            }
+        &:disabled {
+            background-color: #eee;
         }
     }
 
@@ -53,7 +49,7 @@
             visibility: hidden;
         }
 
-        .inputhost {
+        input {
             border-style: dashed;
         }
 

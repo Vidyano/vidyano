@@ -65,7 +65,7 @@
         <dom-if if="[[!attribute.selectInPlace]]">
             <template>
                 <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-                    <vi-sensitive disabled="[[!sensitive]]" class="layout horizontal">
+                    <vi-sensitive disabled="[[!sensitive]]">
                         <input class="flex" value="{{filter::input}}" on-blur="_filterBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder="[[placeholder]]" disabled="[[frozen]]">
                     </vi-sensitive>
                     <a slot="right" href$="[[href]]" title$="[[title]]" disabled$="[[!href]]" tabindex="-1" on-tap="_open" target$="[[target]]">

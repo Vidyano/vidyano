@@ -16,7 +16,7 @@
     <vi-persistent-object-details-header class="flex detail" tabs="[[detailTabs]]" tab="{{selectedDetailTab}}"></vi-persistent-object-details-header>
 </div>
 <header class="layout horizontal">
-    <vi-sensitive class="layout horizontal flex" disabled="[[!persistentObject.isBreadcrumbSensitive]]">
+    <vi-sensitive disabled="[[!persistentObject.isBreadcrumbSensitive]]">
         <span class="flex">[[persistentObject.breadcrumb]]</span>
     </vi-sensitive>
     <vi-spinner block color="white" hidden$="[[!isBusy]]"></vi-spinner>
