@@ -68,12 +68,6 @@ export class PersistentObjectGroup extends WebComponent {
     group: Vidyano.PersistentObjectAttributeGroup;
     columns: number;
 
-    disconnectedCallback() {
-        super.disconnectedCallback();
-
-        this._clearAsyncTasks();
-    }
-
     private _computeLabel(group: Vidyano.PersistentObjectAttributeGroup, groupIndex: number, translations: any): string {
         if (group.label && groupIndex === 0) {
             const firstAttribute = group.attributes[0];
@@ -109,8 +103,6 @@ export class PersistentObjectGroup extends WebComponent {
 
                 return item;
             });
-
-            this._clearAsyncTasks();
         }
 
         let itemsChecksum: string = `${this.group.parent.type};${this.group.parent.objectId};${columns}`;
@@ -120,7 +112,6 @@ export class PersistentObjectGroup extends WebComponent {
         if (this._itemsChecksum === itemsChecksum)
             return;
 
-        this._clearAsyncTasks();
         oldItems.filter(item => item.presenter.isConnected).forEach(item => this.removeChild(item.presenter));
 
         const areas: string[][] = [];
@@ -215,6 +206,9 @@ export class PersistentObjectGroup extends WebComponent {
 
             const renderItem = item;
             const renderHandle = Polymer.Async.animationFrame.run(() => {
+                if (this._itemsChecksum !== itemsChecksum)
+                    return;
+
                 if (!renderItem.presenter.isConnected || renderItem.presenter.parentElement !== this)
                     this.appendChild(renderItem.presenter);
 
@@ -242,16 +236,6 @@ export class PersistentObjectGroup extends WebComponent {
         });
 
         this._itemsChecksum = itemsChecksum;
-    }
-
-    private _clearAsyncTasks() {
-        while (true) {
-            const handle = this._asyncHandles.shift();
-            if (!handle)
-                break;
-
-            Polymer.Async.animationFrame.cancel(handle);
-        }
     }
 
     private _itemFromAttribute(attribute: Vidyano.PersistentObjectAttribute): IPersistentObjectGroupItem {
