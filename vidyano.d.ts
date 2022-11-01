@@ -12892,14 +12892,13 @@ declare class PersistentObjectGroup extends WebComponent {
     private _setLoading;
     group: PersistentObjectAttributeGroup;
     columns: number;
-    disconnectedCallback(): void;
     private _computeLabel;
     private _arrange;
-    private _clearAsyncTasks;
     private _itemFromAttribute;
     private _onAttributeLoading;
     private _onAttributeLoaded;
     private _onAttributeVisibilityChanged;
+    protected onCreatePersistentObjectAttributePresenter(attribute: PersistentObjectAttribute$1): PersistentObjectAttributePresenter;
 }
 
 declare class PersistentObjectPresenter extends ConfigurableWebComponent {

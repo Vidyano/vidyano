@@ -13153,7 +13153,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.0.0-rc.2";
+let version$2 = "3.0.0-rc.3";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -35687,6 +35687,7 @@ resizeObserver$2 = new ResizeObserver(entries => {
 let SizeTracker = class SizeTracker extends WebComponent {
     connectedCallback() {
         super.connectedCallback();
+        this.style.display = "none";
         if (this.deferred)
             return;
         this.measure();
@@ -40212,12 +40213,12 @@ MessageDialog = __decorate([
 
 let Sensitive = class Sensitive extends WebComponent {
     static get template() { return html `<style>:host {
-  display: block;
+  display: contents;
   text-overflow: ellipsis;
   overflow: hidden;
 }
 
-:host(:not([disabled])[is-app-sensitive]) {
+:host(:not([disabled])[is-app-sensitive]) ::slotted(*) {
   filter: blur(5px);
 }
 </style>
@@ -58561,18 +58562,13 @@ let PersistentObjectAttributeAsDetailRow = class PersistentObjectAttributeAsDeta
   line-height: calc(var(--theme-h2) - 2px);
 }
 
-:host .column > [pre-edit] > vi-sensitive {
-  display: block;
+:host .column > [pre-edit] .value-box {
   position: relative;
   border: 1px solid var(--theme-light-border);
   box-sizing: border-box;
   overflow: hidden;
   text-overflow: ellipsis;
   padding: 0 var(--theme-h5);
-}
-
-:host .column > [pre-edit] > vi-sensitive > span {
-  padding: 0;
 }
 
 :host .column > [pre-edit] vi-persistent-object-attribute-validation-error:not([hidden]) + div {
@@ -58651,8 +58647,10 @@ let PersistentObjectAttributeAsDetailRow = class PersistentObjectAttributeAsDeta
                         <template>
                             <div pre-edit on-tap="_setFullEdit" class="flex layout horizontal-reverse">
                                 <vi-persistent-object-attribute-validation-error attribute="[[_attributeForColumn(serviceObject, column)]]"></vi-persistent-object-attribute-validation-error>
-                                <vi-sensitive class="flex layout horizontal" disabled="[[!sensitive]]">
-                                    <span class="value flex">[[_displayValue(serviceObject, column, fullEdit, serviceObject.lastUpdated)]]</span>
+                                <vi-sensitive disabled="[[!sensitive]]">
+                                    <div class="value-box flex">
+                                        <span class="value">[[_displayValue(serviceObject, column, fullEdit, serviceObject.lastUpdated)]]</span>
+                                    </div>
                                 </vi-sensitive>
                             </div>
                         </template>
@@ -58661,7 +58659,7 @@ let PersistentObjectAttributeAsDetailRow = class PersistentObjectAttributeAsDeta
             </dom-if>
             <dom-if if="[[!editing]]">
                 <template>
-                    <vi-sensitive class="flex layout horizontal" disabled="[[!sensitive]]">
+                    <vi-sensitive disabled="[[!sensitive]]">
                         <span class="flex">[[_displayValue(serviceObject, column, serviceObject.lastUpdated)]]</span>
                     </vi-sensitive>
                 </template>
@@ -59200,7 +59198,7 @@ let PersistentObjectAttributeBinaryFile = class PersistentObjectAttributeBinaryF
 <dom-if if="[[editing]]">
     <template>
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-            <vi-sensitive class="flex layout horizontal" disabled="[[!sensitive]]">
+            <vi-sensitive disabled="[[!sensitive]]">
                 <input class="flex" value="{{fileName}}" type="text" readonly placeholder="[[placeholder]]">
             </vi-sensitive>
             <dom-if if="[[!readOnly]]">
@@ -61885,7 +61883,7 @@ let Select = class Select extends WebComponent {
         <div class="suggestions">
             <span id="match"></span><span id="remainder"></span>
         </div>
-        <vi-sensitive class="flex layout horizontal" disabled="[[!sensitive]]">
+        <vi-sensitive disabled="[[!sensitive]]">
             <input class="flex" value="{{_inputValue::input}}" on-blur="_blur" on-keydown="_keydown" on-keyup="_keyup" readonly$="[[isReadonlyInput]]" tabindex="[[inputTabindex]]" placeholder="[[placeholder]]" part="input" disabled="[[disabled]]">
         </vi-sensitive>
         <vi-icon source="CaretDown" hidden$="[[!hasOptions]]" part="icon"></vi-icon>
@@ -62466,7 +62464,7 @@ let PersistentObjectAttributeCommonMark = class PersistentObjectAttributeCommonM
 <dom-if if="[[editing]]">
     <template>
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-            <vi-sensitive disabled="[[!sensitive]]" class="layout horizontal">
+            <vi-sensitive disabled="[[!sensitive]]">
                 <textarea class="flex" value="{{value::input}}" maxlength$="[[maxlength]]" style$="[[editInputStyle]]" on-blur="_editTextAreaBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" disabled="[[frozen]]"></textarea>
             </vi-sensitive>
         </vi-persistent-object-attribute-edit>
@@ -63909,7 +63907,7 @@ let PersistentObjectAttributeDateTime = class PersistentObjectAttributeDateTime 
 <dom-if if="[[editing]]">
     <template>
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-            <vi-sensitive disabled="[[!sensitive]]" class="layout horizontal">
+            <vi-sensitive disabled="[[!sensitive]]">
                 <dom-if if="[[!monthMode]]">
                     <template>
                         <vi-masked-input class="date"
@@ -64549,7 +64547,7 @@ let PersistentObjectAttributeFlagsEnum = class PersistentObjectAttributeFlagsEnu
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
             <vi-popup sticky disabled$="[[op_some(readOnly, attribute.parent.isFrozen, sensitive)]]" auto-width>
                 <div slot="header" class="layout horizontal flex">
-                    <vi-sensitive disabled="[[!sensitive]]" class="flex layout horizontal">
+                    <vi-sensitive disabled="[[!sensitive]]">
                         <input class="flex" header value="[[attribute.displayValue]]" readonly placeholder="[[placeholder]]">
                     </vi-sensitive>
                     <vi-icon source="CaretDown" hidden$="[[readOnly]]"></vi-icon>
@@ -64679,7 +64677,7 @@ let PersistentObjectAttributeImage = class PersistentObjectAttributeImage extend
   cursor: zoom-in;
 }
 
-:host .fit.image-container {
+:host .image-container {
   padding: var(--theme-h5);
 }
 
@@ -64706,8 +64704,8 @@ let PersistentObjectAttributeImage = class PersistentObjectAttributeImage extend
 <dom-if if="[[editing]]" restamp>
     <template>
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-            <div class="flex relative">
-                <vi-sensitive class="fit image-container" disabled="[[!sensitive]]">
+            <div class="flex image-container">
+                <vi-sensitive disabled="[[!sensitive]]">
                     <img src="[[image]]" on-tap="_showDialog" can-open$="[[canOpen]]" />
                 </vi-sensitive>
             </div>
@@ -74833,7 +74831,7 @@ let PersistentObjectAttributeMultiLineString = class PersistentObjectAttributeMu
         <dom-if if="[[editing]]">
             <template>
                 <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-                    <vi-sensitive disabled="[[!sensitive]]" class="layout horizontal">
+                    <vi-sensitive disabled="[[!sensitive]]">
                         <textarea class="flex" value="{{value::input}}" maxlength$="[[maxlength]]" style$="[[editInputStyle]]" on-blur="_editTextAreaBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder$="[[placeholder]]" disabled="[[frozen]]"></textarea>
                     </vi-sensitive>
                 </vi-persistent-object-attribute-edit>
@@ -74900,12 +74898,9 @@ let PersistentObjectAttributeMultiStringItem = class PersistentObjectAttributeMu
   margin-bottom: 2px;
 }
 
-:host .inputhost {
+:host input {
   border: 1px solid var(--theme-light-border);
   box-sizing: border-box;
-}
-
-:host .inputhost input {
   height: calc(var(--theme-h2) - 2px);
   line-height: calc(var(--theme-h2) - 2px);
   -moz-transition: border-color 0.2s ease-in-out;
@@ -74913,15 +74908,14 @@ let PersistentObjectAttributeMultiStringItem = class PersistentObjectAttributeMu
   -webkit-transition: border-color 0.2s ease-in-out;
   transition: border-color 0.2s ease-in-out;
   padding: 0 6px;
-  border: none;
   outline: none;
 }
 
-:host .inputhost input:focus {
+:host input:focus {
   border-color: var(--theme-color-lighter);
 }
 
-:host .inputhost input:disabled {
+:host input:disabled {
   background-color: #eee;
 }
 
@@ -74948,7 +74942,7 @@ let PersistentObjectAttributeMultiStringItem = class PersistentObjectAttributeMu
   visibility: hidden;
 }
 
-:host([is-new]) .inputhost {
+:host([is-new]) input {
   border-style: dashed;
 }
 
@@ -74966,7 +74960,7 @@ let PersistentObjectAttributeMultiStringItem = class PersistentObjectAttributeMu
 </style>
 
 <vi-icon source="Hamburger" class="sort-handle" part="icon" hidden$="[[sensitive]]" disabled$="[[disabled]]"></vi-icon>
-<vi-sensitive disabled="[[!sensitive]]" class="layout horizontal flex inputhost">
+<vi-sensitive disabled="[[!sensitive]]">
     <input content class="flex" value="{{value::input}}" on-blur="_onInputBlur" type="text" readonly$="[[isReadOnly]]" tabindex$="[[readOnlyTabIndex]]" disabled$="[[disabled]]" placeholder="[[placeholder]]">
 </vi-sensitive>`; }
     connectedCallback() {
@@ -75080,7 +75074,7 @@ let Tags = class Tags extends WebComponent {
         <dom-repeat items="[[tags]]" as="tag">
             <template>
                 <div class="layout horizontal tag">
-                    <vi-sensitive disabled="[[!sensitive]]" class="tagValue">[[tag]]</vi-sensitive>
+                    <vi-sensitive disabled="[[!sensitive]]"><span class="tagValue">[[tag]]</span></vi-sensitive>
                     <div on-tap="_onDeleteTap" class="delete" hidden$="[[readonly]]">
                         <vi-icon source="Remove"></vi-icon>
                     </div>
@@ -75554,7 +75548,7 @@ let PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = clas
             <slot name="left" slot="left"></slot>
             <div class="layout horizontal">
                 <span class="before" hidden$="[[!unitBefore]]">[[unitBefore]]</span>
-                <vi-sensitive class="flex layout horizontal" disabled="[[!sensitive]]">
+                <vi-sensitive disabled="[[!sensitive]]">
                     <input class="flex" value="{{value::input}}" type$="[[inputtype]]" on-keypress="_keypress" on-focus="_editInputFocus" on-blur="_editInputBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder="[[placeholder]]" disabled="[[frozen]]">
                 </vi-sensitive>
                 <span class="after" hidden$="[[!unitAfter]]">[[unitAfter]]</span>
@@ -75802,7 +75796,7 @@ let PersistentObjectAttributePassword = class PersistentObjectAttributePassword 
 <dom-if if="[[editing]]">
     <template>
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-            <vi-sensitive class="layout horizontal" disabled="[[!sensitive]]">
+            <vi-sensitive disabled="[[!sensitive]]">
                 <input class="flex" value="{{value::input}}" type="password" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" on-blur="_editInputBlur" placeholder="[[placeholder]]">
             </vi-sensitive>
         </vi-persistent-object-attribute-edit>
@@ -75970,7 +75964,7 @@ let PersistentObjectAttributeReference = class PersistentObjectAttributeReferenc
         <dom-if if="[[!attribute.selectInPlace]]">
             <template>
                 <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-                    <vi-sensitive disabled="[[!sensitive]]" class="layout horizontal">
+                    <vi-sensitive disabled="[[!sensitive]]">
                         <input class="flex" value="{{filter::input}}" on-blur="_filterBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder="[[placeholder]]" disabled="[[frozen]]">
                     </vi-sensitive>
                     <a slot="right" href$="[[href]]" title$="[[title]]" disabled$="[[!href]]" tabindex="-1" on-tap="_open" target$="[[target]]">
@@ -76636,7 +76630,7 @@ let PersistentObjectAttributeTranslatedString = class PersistentObjectAttributeT
         <vi-persistent-object-attribute-edit attribute="[[attribute]]" reverse-content$="[[multiline]]">
             <dom-if if="[[!multiline]]">
                 <template>
-                    <vi-sensitive class="flex layout horizontal" disabled="[[!sensitive]]">
+                    <vi-sensitive disabled="[[!sensitive]]">
                         <input class="flex" value="{{value::input}}" type="text" on-blur="_editInputBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder="[[placeholder]]">
                     </vi-sensitive>
                 </template>
@@ -77042,7 +77036,7 @@ let PersistentObjectAttributePresenter = class PersistentObjectAttributePresente
 }
 
 :host #content {
-  min-height: var(--vi-persistent-object-attribute-presenter--attribute-height);
+  height: var(--vi-persistent-object-attribute-presenter--attribute-height);
 }
 
 :host ::slotted(*) {
@@ -77431,10 +77425,10 @@ let PersistentObjectGroup = class PersistentObjectGroup extends WebComponent {
   display: grid;
   grid-template-areas: var(--vi-persistent-object-group--grid-areas, none);
   grid-auto-columns: 1fr;
-  grid-gap: var(--vi-persistent-object-group--attribute-gap, 0 var(--theme-h4));
+  gap: var(--vi-persistent-object-group--attribute-gap, 0 var(--theme-h4));
 }
 
-:host #grid ::slotted(vi-persistent-object-attribute-presenter) {
+:host #grid ::slotted(*) {
   grid-area: var(--vi-persistent-object-group--attribute-area);
   overflow: hidden;
 }
@@ -77444,10 +77438,6 @@ let PersistentObjectGroup = class PersistentObjectGroup extends WebComponent {
 <div id="grid">
     <slot></slot>
 </div>`; }
-    disconnectedCallback() {
-        super.disconnectedCallback();
-        this._clearAsyncTasks();
-    }
     _computeLabel(group, groupIndex, translations) {
         if (group.label && groupIndex === 0) {
             const firstAttribute = group.attributes[0];
@@ -77478,14 +77468,12 @@ let PersistentObjectGroup = class PersistentObjectGroup extends WebComponent {
                     item = this._itemFromAttribute(attr);
                 return item;
             });
-            this._clearAsyncTasks();
         }
         let itemsChecksum = `${this.group.parent.type};${this.group.parent.objectId};${columns}`;
         const items = this._items.slice().orderBy(item => item.attribute.offset);
         items.forEach(item => itemsChecksum = `${itemsChecksum}${item.attribute.offset};${item.attribute.name};${item.height};${item.width};`);
         if (this._itemsChecksum === itemsChecksum)
             return;
-        this._clearAsyncTasks();
         oldItems.filter(item => item.presenter.isConnected).forEach(item => this.removeChild(item.presenter));
         const areas = [];
         let item = items.shift();
@@ -77561,6 +77549,8 @@ let PersistentObjectGroup = class PersistentObjectGroup extends WebComponent {
                 item.presenter = this.onCreatePersistentObjectAttributePresenter(item.attribute);
             const renderItem = item;
             const renderHandle = animationFrame.run(() => {
+                if (this._itemsChecksum !== itemsChecksum)
+                    return;
                 if (!renderItem.presenter.isConnected || renderItem.presenter.parentElement !== this)
                     this.appendChild(renderItem.presenter);
                 renderItem.presenter.updateStyles({
@@ -77582,14 +77572,6 @@ let PersistentObjectGroup = class PersistentObjectGroup extends WebComponent {
             "--vi-persistent-object-group--grid-areas": areas.map(r => `"${r.map(a => a || ".").join(" ")}"`).join(" ")
         });
         this._itemsChecksum = itemsChecksum;
-    }
-    _clearAsyncTasks() {
-        while (true) {
-            const handle = this._asyncHandles.shift();
-            if (!handle)
-                break;
-            animationFrame.cancel(handle);
-        }
     }
     _itemFromAttribute(attribute) {
         const config = this.app.configuration.getAttributeConfig(attribute);
@@ -77635,7 +77617,10 @@ PersistentObjectGroup = __decorate([
     WebComponent.register({
         properties: {
             group: Object,
-            groupIndex: Number,
+            groupIndex: {
+                type: Number,
+                value: 0
+            },
             columns: {
                 type: Number,
                 value: 1
@@ -80172,7 +80157,7 @@ let PersistentObject = class PersistentObject extends WebComponent {
     <vi-persistent-object-details-header class="flex detail" tabs="[[detailTabs]]" tab="{{selectedDetailTab}}"></vi-persistent-object-details-header>
 </div>
 <header class="layout horizontal">
-    <vi-sensitive class="layout horizontal flex" disabled="[[!persistentObject.isBreadcrumbSensitive]]">
+    <vi-sensitive disabled="[[!persistentObject.isBreadcrumbSensitive]]">
         <span class="flex">[[persistentObject.breadcrumb]]</span>
     </vi-sensitive>
     <vi-spinner block color="white" hidden$="[[!isBusy]]"></vi-spinner>
