@@ -29,9 +29,9 @@
         display: grid;
         grid-template-areas: var(--vi-persistent-object-group--grid-areas, none);
         grid-auto-columns: 1fr;
-        grid-gap: var(--vi-persistent-object-group--attribute-gap, 0 var(--theme-h4));
+        gap: var(--vi-persistent-object-group--attribute-gap, 0 var(--theme-h4));
 
-        ::slotted(vi-persistent-object-attribute-presenter) {
+        ::slotted(*) {
             grid-area: var(--vi-persistent-object-group--attribute-area);
             overflow: hidden;
         }
