@@ -65,6 +65,8 @@ export class SizeTracker extends WebComponent {
     connectedCallback() {
         super.connectedCallback();
 
+        this.style.display = "none";
+
         if (this.deferred)
             return;
 
