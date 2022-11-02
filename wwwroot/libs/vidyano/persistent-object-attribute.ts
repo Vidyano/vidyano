@@ -255,6 +255,8 @@ export class PersistentObjectAttribute extends ServiceObject {
         if (!this.parent.isEditing || this.parent.isFrozen || this.isReadOnly)
             return this.value;
 
+        this.validationError = null;
+
         if (val && typeof val === "string") {
             const charactercasing = this.getTypeHint("charactercasing", "", undefined, true);
             if (charactercasing) {
