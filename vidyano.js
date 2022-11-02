@@ -10112,6 +10112,7 @@ class PersistentObjectAttribute$1 extends ServiceObject {
     async setValue(val, allowRefresh = true) {
         if (!this.parent.isEditing || this.parent.isFrozen || this.isReadOnly)
             return this.value;
+        this.validationError = null;
         if (val && typeof val === "string") {
             const charactercasing = this.getTypeHint("charactercasing", "", undefined, true);
             if (charactercasing) {
@@ -13153,7 +13154,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.0.0-rc.3";
+let version$2 = "3.0.0-rc.4";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -37330,7 +37331,7 @@ let AppRoutePresenter = class AppRoutePresenter extends WebComponent {
 }
 </style>
 
-<slot id="routes"></slot>
+<slot id="routes" on-slotchange="_routesChanged"></slot>
 <dom-if if="[[notFound]]">
     <template>
         <vi-error class="flex" message="[[translateMessage('NotFound', app.service.isSignedIn)]]"></vi-error>
@@ -37339,18 +37340,18 @@ let AppRoutePresenter = class AppRoutePresenter extends WebComponent {
     connectedCallback() {
         super.connectedCallback();
         this.fire("app-route-presenter:connected");
-        this._routesObserver = new FlattenedNodesObserver(this.$.routes, this._routesChanged.bind(this));
     }
     disconnectedCallback() {
         super.disconnectedCallback();
-        this._routesObserver.disconnect();
         if (this._pathListener) {
             this._pathListener();
             this._pathListener = null;
         }
     }
-    _routesChanged(info) {
-        info.addedNodes.filter(node => node instanceof AppRoute).forEach((appRoute) => {
+    _routesChanged() {
+        const slot = this.$.routes;
+        const routes = Array.from(slot.assignedElements().filter(node => node instanceof AppRoute));
+        routes.forEach(appRoute => {
             this._addRoute(appRoute, appRoute.route);
             if (appRoute.routeAlt)
                 this._addRoute(appRoute, appRoute.routeAlt);

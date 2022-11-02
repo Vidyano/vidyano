@@ -9559,7 +9559,6 @@ declare class Error extends WebComponent {
 
 declare class AppRoutePresenter extends WebComponent {
     static get template(): HTMLTemplateElement;
-    private _routesObserver;
     private _path;
     private _pathListener;
     private _routeMap;
