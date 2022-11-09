@@ -13154,7 +13154,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.0.0-rc.4";
+let version$2 = "3.0.0-rc.5";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -37086,6 +37086,7 @@ let AppRoute = class AppRoute extends WebComponent {
 
 :host ::slotted(*) {
   flex: 1;
+  min-width: 0;
 }
 
 :host(:not(.active)) {
@@ -48886,7 +48887,9 @@ let Profiler = class Profiler extends WebComponent {
 
 :host vi-popup [slot="header"] {
   color: white;
+  height: var(--theme-h1);
   line-height: var(--theme-h1);
+  padding-left: var(--theme-h4);
 }
 
 :host vi-popup [slot="header"] #lastRequest {
@@ -49163,7 +49166,7 @@ let Profiler = class Profiler extends WebComponent {
             </div>
             <div>
                 <label>Transport</label>
-                <h1>[[lastRequest.transport]]ms</h1>
+                <h1>+[[lastRequest.transport]]ms</h1>
             </div>
         </div>
         <vi-button icon="Remove" type="light-monochrome" inverse on-tap="_close"></vi-button>
@@ -49188,7 +49191,7 @@ let Profiler = class Profiler extends WebComponent {
                                 </div>
                                 <div>
                                     <label>Transport:</label>
-                                    <span>[[_ms(request.transport)]]</span>
+                                    <span>+[[_ms(request.transport)]]</span>
                                 </div>
                                 <div>
                                     <label>DB:</label>
@@ -53044,13 +53047,13 @@ let QueryGridRow = class QueryGridRow extends WebComponent {
   cursor: grabbing;
 }
 
-:host .selector vi-icon, :host .actions vi-icon, :host vi-icon.reorder {
-  width: var(--vi-query-grid-row-height);
-  height: var(--vi-query-grid-row-height);
+:host .selector:hover > vi-icon, :host .actions:hover > vi-icon, :host .reorder:hover > vi-icon {
+  background-color: rgba(0, 0, 0, 0.05) !important;
 }
 
-:host .selector:hover, :host .actions:hover, :host .reorder:hover {
-  background-color: rgba(0, 0, 0, 0.05) !important;
+:host .selector > vi-icon, :host .actions > vi-icon, :host .reorder > vi-icon {
+  width: var(--vi-query-grid-row-height);
+  height: var(--vi-query-grid-row-height);
 }
 
 :host(.loading) .selector, :host(.loading) .actions, :host(.loading) ::slotted(.column) {
@@ -53108,7 +53111,9 @@ let QueryGridRow = class QueryGridRow extends WebComponent {
 
         <dom-if if="[[canReorder]]">
             <template>
-                <vi-icon class="reorder pinned" source="Hamburger" class="sort-handle" part="reorder"></vi-icon>
+                <div class="reorder pinned sort-handle" on-tap="_catchTap" part="reorder">
+                    <vi-icon source="Hamburger"></vi-icon>
+                </div>
             </template>
         </dom-if>
 
@@ -53313,6 +53318,9 @@ let QueryGridRow = class QueryGridRow extends WebComponent {
         const actions = e.target;
         Array.from(actions.children).filter(c => !c.hasAttribute("slot")).forEach(c => actions.removeChild(c));
         this.style.zIndex = "auto";
+        e.stopPropagation();
+    }
+    _catchTap(e) {
         e.stopPropagation();
     }
     refresh() {
@@ -78422,10 +78430,12 @@ let App = App_1 = class App extends AppBase {
 :host vi-app-route-presenter {
   display: flex;
   flex: 1;
+  min-width: 0;
 }
 
 :host vi-app-route-presenter > vi-app-route, :host vi-app-route-presenter > ::slotted(*) {
   flex: 1;
+  min-width: 0;
 }
 </style>
 
