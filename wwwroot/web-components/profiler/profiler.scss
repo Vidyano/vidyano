@@ -22,7 +22,9 @@
 
         [slot="header"] {
             color: white;
+            height: var(--theme-h1);
             line-height: var(--theme-h1);
+            padding-left: var(--theme-h4);
 
             #lastRequest {
                 line-height: normal;
