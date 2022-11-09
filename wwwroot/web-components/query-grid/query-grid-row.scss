@@ -44,14 +44,16 @@
         cursor: grabbing;
     }
 
-    .selector vi-icon, .actions vi-icon, vi-icon.reorder {
-        width: var(--vi-query-grid-row-height);
-        height: var(--vi-query-grid-row-height);
-    }
-
     .selector, .actions, .reorder {
         &:hover {
-            background-color: rgba(0, 0, 0, .05) !important;
+            > vi-icon {
+                background-color: rgba(0, 0, 0, 0.05) !important;
+            }
+        }
+
+        > vi-icon {
+            width: var(--vi-query-grid-row-height);
+            height: var(--vi-query-grid-row-height);
         }
     }
 

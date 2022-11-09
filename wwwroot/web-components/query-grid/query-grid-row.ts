@@ -308,6 +308,10 @@ export class QueryGridRow extends WebComponent {
         e.stopPropagation();
     }
 
+    private _catchTap(e: Polymer.Gestures.TapEvent) {
+        e.stopPropagation();
+    }
+
     refresh() {
         this._itemChanged(this.item, this.item);
     }

@@ -8,7 +8,9 @@
 
         <dom-if if="[[canReorder]]">
             <template>
-                <vi-icon class="reorder pinned" source="Hamburger" class="sort-handle" part="reorder"></vi-icon>
+                <div class="reorder pinned sort-handle" on-tap="_catchTap" part="reorder">
+                    <vi-icon source="Hamburger"></vi-icon>
+                </div>
             </template>
         </dom-if>
 
