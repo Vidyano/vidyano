@@ -8,9 +8,11 @@
     vi-app-route-presenter {
         display: flex;
         flex: 1;
+        min-width: 0;
 
         > vi-app-route, > ::slotted(*) {
             flex: 1;
+            min-width: 0;
         }
     }
 }

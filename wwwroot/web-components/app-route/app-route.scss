@@ -6,6 +6,7 @@
 
     ::slotted(*) {
         flex: 1;
+        min-width: 0;
     }
 
     &:not(.active) {
