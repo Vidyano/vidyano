@@ -75,8 +75,8 @@ export class App extends AppBase {
     label: string;
     cacheSize: number;
 
-    private constructor() {
-        super(document.querySelector("vi-app").getAttribute("hooks") || new AppServiceHooks());
+    constructor(hooks: AppServiceHooks = new AppServiceHooks()) {
+        super(hooks);
 
         if (!this.label)
             this.label = this.title;

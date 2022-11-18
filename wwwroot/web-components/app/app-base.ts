@@ -178,7 +178,6 @@ export abstract class AppBase extends WebComponent {
     private _initialize: Promise<Vidyano.Application> = new Promise(resolve => { this._initializeResolve = resolve; });
     private _setInitializing: (initializing: boolean) => void;
     private _setService: (service: Vidyano.Service) => void;
-    private _hooks: AppServiceHooksBase;
     readonly appRoutePresenter: AppRoutePresenter; private _setAppRoutePresenter: (appRoutePresenter: AppRoutePresenter) => void;
     readonly keys: string; private _setKeys: (keys: string) => void;
     readonly updateAvailable: boolean; private _setUpdateAvailable: (updateAvailable: boolean) => void;
@@ -189,7 +188,7 @@ export abstract class AppBase extends WebComponent {
     sensitive: boolean;
     path: string;
 
-    constructor(private __hooks: AppServiceHooksBase | string) {
+    constructor(private _hooks?: AppServiceHooksBase) {
         super();
         
         window["app"] = this;
@@ -259,15 +258,6 @@ export abstract class AppBase extends WebComponent {
         if (this.service) {
             console.warn("Service uri cannot be altered.");
             return this.service;
-        }
-
-        if (this.__hooks instanceof AppServiceHooksBase)
-            this._hooks = this.__hooks;
-        else if (typeof this.__hooks === "string") {
-            const currentModule = await import(import.meta.url);
-            const appServiceHooksClass = currentModule[this.__hooks] as new () => AppServiceHooksBase;
-            if (appServiceHooksClass)
-                this._hooks = new appServiceHooksClass();
         }
 
         if (!this._hooks)
