@@ -4012,7 +4012,7 @@ declare class Service extends Observable<Service> {
     signInUsingDefaultCredentials(): Promise<Application>;
     signOut(skipAcs?: boolean): Promise<boolean>;
     private _getApplication;
-    getQuery(id: string, asLookup?: boolean): Promise<Query$1>;
+    getQuery(id: string, asLookup?: boolean, parent?: PersistentObject$1): Promise<Query$1>;
     getPersistentObject(parent: PersistentObject$1, id: string, objectId?: string, isNew?: boolean): Promise<PersistentObject$1>;
     executeQuery(parent: PersistentObject$1, query: Query$1, asLookup?: boolean, throwExceptions?: boolean): Promise<QueryResult>;
     executeAction(action: string, parent: PersistentObject$1, query: Query$1, selectedItems: Array<QueryResultItem>, parameters?: any, skipHooks?: boolean): Promise<PersistentObject$1>;
@@ -10123,7 +10123,7 @@ declare global {
 }
 
 declare abstract class AppBase extends WebComponent {
-    private __hooks;
+    private _hooks?;
     static get template(): HTMLTemplateElement;
     private _keybindingRegistrations;
     private _activeDialogs;
@@ -10132,7 +10132,6 @@ declare abstract class AppBase extends WebComponent {
     private _initialize;
     private _setInitializing;
     private _setService;
-    private _hooks;
     readonly appRoutePresenter: AppRoutePresenter;
     private _setAppRoutePresenter;
     readonly keys: string;
@@ -10146,7 +10145,7 @@ declare abstract class AppBase extends WebComponent {
     isTracking: boolean;
     sensitive: boolean;
     path: string;
-    constructor(__hooks: AppServiceHooksBase | string);
+    constructor(_hooks?: AppServiceHooksBase);
     connectedCallback(): Promise<void>;
     get initialize(): Promise<any>;
     get hooks(): AppServiceHooksBase;
@@ -10748,6 +10747,17 @@ declare class Profiler extends WebComponent {
     private _close;
 }
 
+declare class AppServiceHooks extends AppServiceHooksBase {
+    onSessionExpired(): Promise<boolean>;
+    onAction(args: ExecuteActionArgs): Promise<PersistentObject$1>;
+    onOpen(obj: ServiceObject, replaceCurrent?: boolean, forceFromAction?: boolean): Promise<void>;
+    onClose(parent: ServiceObject): void;
+    onClientOperation(operation: IClientOperation): void;
+    onQueryFileDrop(query: Query$1, name: string, contents: string): Promise<boolean>;
+    onRedirectToSignIn(keepUrl: boolean): void;
+    onRedirectToSignOut(keepUrl: boolean): void;
+}
+
 declare class App extends AppBase {
     static get template(): HTMLTemplateElement;
     private _cache;
@@ -10756,7 +10766,7 @@ declare class App extends AppBase {
     noMenu: boolean;
     label: string;
     cacheSize: number;
-    private constructor();
+    constructor(hooks?: AppServiceHooks);
     protected _initPathRescue(): void;
     protected _pathChanged(path: string): Promise<void>;
     private _pathExtendedChanged;
@@ -10776,17 +10786,6 @@ declare class App extends AppBase {
     getUrlForFromAction(id: string, pu?: ProgramUnit): string;
     private _importConfigs;
     private _convertPath;
-}
-
-declare class AppServiceHooks extends AppServiceHooksBase {
-    onSessionExpired(): Promise<boolean>;
-    onAction(args: ExecuteActionArgs): Promise<PersistentObject$1>;
-    onOpen(obj: ServiceObject, replaceCurrent?: boolean, forceFromAction?: boolean): Promise<void>;
-    onClose(parent: ServiceObject): void;
-    onClientOperation(operation: IClientOperation): void;
-    onQueryFileDrop(query: Query$1, name: string, contents: string): Promise<boolean>;
-    onRedirectToSignIn(keepUrl: boolean): void;
-    onRedirectToSignOut(keepUrl: boolean): void;
 }
 
 declare class ActionButton extends ConfigurableWebComponent {
@@ -13411,6 +13410,7 @@ declare class QueryGridRow extends WebComponent {
     private _onSelect;
     private _onActionsOpening;
     private _onActionsClosed;
+    private _catchTap;
     refresh(): void;
 }
 

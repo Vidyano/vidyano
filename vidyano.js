@@ -13154,7 +13154,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.0.0-rc.5";
+let version$2 = "3.0.0";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -13616,9 +13616,11 @@ class Service extends Observable {
             this._setIsSignedIn(false);
         return this.application;
     }
-    async getQuery(id, asLookup) {
+    async getQuery(id, asLookup, parent) {
         const data = this._createData("getQuery");
         data.id = id;
+        if (parent != null)
+            data.parent = parent.toServiceObject();
         const result = await this._postJSON(this._createUri("GetQuery"), data);
         if (result.exception)
             throw result.exception;
@@ -41189,9 +41191,9 @@ if (hashBangRe.test(document.location.href)) {
 window["Vidyano"] = Vidyano;
 const missing_base_tag_error = new Error("Document is missing base tag");
 let AppBase = AppBase_1 = class AppBase extends WebComponent {
-    constructor(__hooks) {
+    constructor(_hooks) {
         super();
-        this.__hooks = __hooks;
+        this._hooks = _hooks;
         this._keybindingRegistrations = {};
         this._activeDialogs = [];
         this._initialize = new Promise(resolve => { this._initializeResolve = resolve; });
@@ -41770,14 +41772,6 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
         if (this.service) {
             console.warn("Service uri cannot be altered.");
             return this.service;
-        }
-        if (this.__hooks instanceof AppServiceHooksBase)
-            this._hooks = this.__hooks;
-        else if (typeof this.__hooks === "string") {
-            const currentModule = await import(import.meta.url);
-            const appServiceHooksClass = currentModule[this.__hooks];
-            if (appServiceHooksClass)
-                this._hooks = new appServiceHooksClass();
         }
         if (!this._hooks)
             this._hooks = new AppServiceHooksBase();
@@ -76795,7 +76789,7 @@ let PersistentObjectAttributeUser = class PersistentObjectAttributeUser extends 
     </template>
 </dom-if>`; }
     async _browseReference() {
-        const query = await this.attribute.parent.queueWork(() => this.attribute.service.getQuery(this.attribute.getTypeHint("IncludeGroups") === "True" ? "98b12f32-3f2d-4f54-b963-cb9206f74355" : "273a8302-ddc8-43db-a7f6-c3c28fc8f593"));
+        const query = await this.attribute.parent.queueWork(() => this.attribute.service.getQuery(this.attribute.getTypeHint("IncludeGroups") === "True" ? "98b12f32-3f2d-4f54-b963-cb9206f74355" : "273a8302-ddc8-43db-a7f6-c3c28fc8f593", undefined, this.attribute.parent));
         query.maxSelectedItems = 1;
         const result = await this.app.showDialog(new SelectReferenceDialog(query));
         if (!result)
@@ -78411,8 +78405,8 @@ class AppServiceHooks extends AppServiceHooksBase {
 
 var App_1;
 let App = App_1 = class App extends AppBase {
-    constructor() {
-        super(document.querySelector("vi-app").getAttribute("hooks") || new AppServiceHooks());
+    constructor(hooks = new AppServiceHooks()) {
+        super(hooks);
         this._cache = [];
         if (!this.label)
             this.label = this.title;
@@ -78449,7 +78443,9 @@ let App = App_1 = class App extends AppBase {
     </template>
 </dom-if>
 <vi-app-route-presenter path="{{pathExtended}}">
-    <vi-app-route route=""></vi-app-route>
+    <vi-app-route route="">
+        <template></template>
+    </vi-app-route>
     <vi-app-route route="query.:id" route-alt="Query.:id">
         <template>
             <vi-query-presenter></vi-query-presenter>
