@@ -25,7 +25,7 @@ export class PersistentObjectAttributeUser extends PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-user.html">`; }
 
     private async _browseReference() {
-        const query = await this.attribute.parent.queueWork(() => this.attribute.service.getQuery(this.attribute.getTypeHint("IncludeGroups") === "True" ? "98b12f32-3f2d-4f54-b963-cb9206f74355" : "273a8302-ddc8-43db-a7f6-c3c28fc8f593"));
+        const query = await this.attribute.parent.queueWork(() => this.attribute.service.getQuery(this.attribute.getTypeHint("IncludeGroups") === "True" ? "98b12f32-3f2d-4f54-b963-cb9206f74355" : "273a8302-ddc8-43db-a7f6-c3c28fc8f593", undefined, this.attribute.parent));
         query.maxSelectedItems = 1;
 
         const result = <Vidyano.QueryResultItem[]>await this.app.showDialog(new SelectReferenceDialog(query));
