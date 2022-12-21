@@ -10,7 +10,9 @@
     </template>
 </dom-if>
 <vi-app-route-presenter path="{{pathExtended}}">
-    <vi-app-route route=""></vi-app-route>
+    <vi-app-route route="">
+        <template></template>
+    </vi-app-route>
     <vi-app-route route="query.:id" route-alt="Query.:id">
         <template>
             <vi-query-presenter></vi-query-presenter>
