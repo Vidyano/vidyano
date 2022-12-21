@@ -636,9 +636,11 @@ export class Service extends Observable<Service> {
         return this.application;
     }
 
-    async getQuery(id: string, asLookup?: boolean): Promise<Query> {
+    async getQuery(id: string, asLookup?: boolean, parent?: PersistentObject): Promise<Query> {
         const data = this._createData("getQuery");
         data.id = id;
+        if (parent != null)
+            data.parent = parent.toServiceObject();
 
         const result = await this._postJSON(this._createUri("GetQuery"), data);
         if (result.exception)
