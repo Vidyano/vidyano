@@ -57,7 +57,7 @@ type HasMore = { left: QueryGridColumnHeader[], right: QueryGridColumnHeader[] }
         },
         items: {
             type: Array,
-            computed: "_computeItems(query.items.*)"
+            computed: "_computeItems(query.lastUpdated)"
         },
         columns: {
             type: Array,
