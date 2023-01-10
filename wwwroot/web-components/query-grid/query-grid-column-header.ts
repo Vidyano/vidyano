@@ -179,6 +179,10 @@ export class QueryGridColumnHeader extends WebComponent {
         this._sort("DESC");
     }
 
+    private _group() {
+        this.column.query.group(this.column.column);
+    }
+
     private _togglePin() {
         this.column.isPinned = !this.column.isPinned;
         this._setIsPinned(this.column.isPinned);
