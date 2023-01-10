@@ -13154,7 +13154,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.0.1";
+let version$2 = "3.0.2";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -57690,7 +57690,7 @@ QueryGrid = __decorate([
             },
             items: {
                 type: Array,
-                computed: "_computeItems(query.items.*)"
+                computed: "_computeItems(query.lastUpdated)"
             },
             columns: {
                 type: Array,
