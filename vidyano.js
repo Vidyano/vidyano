@@ -13154,7 +13154,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.0.0";
+let version$2 = "3.0.1";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -51041,6 +51041,9 @@ let QueryGridColumnHeader = class QueryGridColumnHeader extends WebComponent {
     _sortDesc(e) {
         e.stopPropagation();
         this._sort("DESC");
+    }
+    _group() {
+        this.column.query.group(this.column.column);
     }
     _togglePin() {
         this.column.isPinned = !this.column.isPinned;

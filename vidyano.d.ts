@@ -13255,6 +13255,7 @@ declare class QueryGridColumnHeader extends WebComponent {
     private _onContextmenu;
     private _sortAsc;
     private _sortDesc;
+    private _group;
     private _togglePin;
     private _hide;
     private _configure;
