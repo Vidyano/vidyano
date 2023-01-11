@@ -1,0 +1,201 @@
+{
+  "PersistentObject": {
+    "$id": "PersistentObject:923f2b39-4cb3-358e-b0f5-359191ea9ad8",
+    "Id": "923f2b39-4cb3-358e-b0f5-359191ea9ad8",
+    "SchemaName": "VidyanoWeb3",
+    "Type": "VOrder",
+    "Salt": "pvH2PqZI2y4dkQa7db6E5wRMbF3ts1QYjCaF_sp1cQEY-H1NklS4KQ",
+    "Breadcrumb": "{CompanyName}",
+    "ContextProperty": "VOrders",
+    "Label": {
+      "en": "V order",
+      "nl": "V order"
+    },
+    "Groups": [
+      {
+        "$id": "PersistentObjectAttributeGroup:882bdb46-131d-48c5-b143-c8bdefaad238",
+        "Id": "882bdb46-131d-48c5-b143-c8bdefaad238"
+      }
+    ],
+    "Tabs": [
+      {
+        "$id": "PersistentObjectAttributeTab:34bc8494-9037-4a95-a15c-05cc9f453862",
+        "Id": "34bc8494-9037-4a95-a15c-05cc9f453862"
+      }
+    ],
+    "Attributes": [
+      {
+        "$id": "PersistentObjectAttribute:9258b80f-d041-3ead-b022-d8cd18cdc884",
+        "Id": "9258b80f-d041-3ead-b022-d8cd18cdc884",
+        "Offset": 10,
+        "Name": "CompanyName",
+        "Label": {
+          "en": "Company name",
+          "nl": "Company name"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:882bdb46-131d-48c5-b143-c8bdefaad238"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:34bc8494-9037-4a95-a15c-05cc9f453862"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:2603f0bc-2f1a-3201-975d-8a69911cece4",
+        "Id": "2603f0bc-2f1a-3201-975d-8a69911cece4",
+        "Offset": 50,
+        "Rules": "Required",
+        "Name": "Discount",
+        "Label": {
+          "en": "Discount",
+          "nl": "Discount"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Decimal"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:882bdb46-131d-48c5-b143-c8bdefaad238"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:34bc8494-9037-4a95-a15c-05cc9f453862"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:413ad330-f312-3803-93a6-41e753900090",
+        "Id": "413ad330-f312-3803-93a6-41e753900090",
+        "Offset": 30,
+        "Rules": "Required",
+        "Name": "MonthOrderedAt",
+        "Label": {
+          "en": "Month ordered at",
+          "nl": "Month ordered at"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:DateTime"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:882bdb46-131d-48c5-b143-c8bdefaad238"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:34bc8494-9037-4a95-a15c-05cc9f453862"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:716f18ba-e834-3b06-96ad-c857a8524d30",
+        "Id": "716f18ba-e834-3b06-96ad-c857a8524d30",
+        "Offset": 20,
+        "Rules": "Required",
+        "Name": "OrderedAt",
+        "Label": {
+          "en": "Ordered at",
+          "nl": "Ordered at"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:DateTime"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:882bdb46-131d-48c5-b143-c8bdefaad238"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:34bc8494-9037-4a95-a15c-05cc9f453862"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:53a4762c-448e-3982-b5d0-68b50d89d441",
+        "Id": "53a4762c-448e-3982-b5d0-68b50d89d441",
+        "Offset": 70,
+        "Name": "ShipVia",
+        "CanGroupBy": true,
+        "Label": {
+          "en": "Ship via",
+          "nl": "Ship via"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:882bdb46-131d-48c5-b143-c8bdefaad238"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:34bc8494-9037-4a95-a15c-05cc9f453862"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:e061021f-d4d4-3f59-8e99-6e073e3ddcd2",
+        "Id": "e061021f-d4d4-3f59-8e99-6e073e3ddcd2",
+        "Offset": 40,
+        "Rules": "Required",
+        "Name": "SubTotal",
+        "Label": {
+          "en": "Sub total",
+          "nl": "Sub total"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Decimal"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:882bdb46-131d-48c5-b143-c8bdefaad238"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:34bc8494-9037-4a95-a15c-05cc9f453862"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:df18bffe-18d3-314e-a701-e3c36d70d64f",
+        "Id": "df18bffe-18d3-314e-a701-e3c36d70d64f",
+        "Offset": 60,
+        "Rules": "Required",
+        "Name": "Total",
+        "Label": {
+          "en": "Total",
+          "nl": "Total"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Double"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:882bdb46-131d-48c5-b143-c8bdefaad238"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:34bc8494-9037-4a95-a15c-05cc9f453862"
+        }
+      }
+    ],
+    "Queries": []
+  },
+  "Queries": [
+    {
+      "$id": "Query:f7a56a67-45a2-4259-9f32-1bd59adcb73e",
+      "Id": "f7a56a67-45a2-4259-9f32-1bd59adcb73e",
+      "Source": "Database.VOrders",
+      "AutoQuery": true,
+      "Name": "VOrders",
+      "Label": {
+        "en": "V orders",
+        "nl": "V orders"
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:923f2b39-4cb3-358e-b0f5-359191ea9ad8"
+      },
+      "Columns": []
+    }
+  ],
+  "Reports": []
+}

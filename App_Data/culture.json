@@ -483,8 +483,8 @@
     },
     "ImpersonateMessage": {
       "Value": {
-        "en": "Open the following link in a new private browser window",
-        "nl": "De volgende koppeling in een nieuw privé browservenster openen"
+        "en": "Open in incognito window",
+        "nl": "Open in incognito venster"
       },
       "IsSystem": true
     },

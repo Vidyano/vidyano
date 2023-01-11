@@ -188,6 +188,7 @@
         "LookupId": "026c4ca7-53f4-42ac-b196-158f0cb871a1",
         "Id": "917fbac2-4a01-3f4a-8806-216116a0de70",
         "Offset": 100,
+        "Rules": "Required",
         "Name": "ReportsTo",
         "Label": {
           "en": "Reports to",

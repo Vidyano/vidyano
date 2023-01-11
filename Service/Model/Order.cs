@@ -10,15 +10,25 @@ namespace VidyanoWeb3.Service.Model
 {
     public class Order
     {
-        public string Id { get; set; }
+        public string Id { get; set; } = null!;
 
         [Reference(typeof(Company))]
-        public string Company { get; set; }
+        public string Company { get; set; } = null!;
 
         [Reference(typeof(Employee))]
-        public string Employee { get; set; }
+        public string Employee { get; set; } = null!;
 
-        [Required]
+        public DateTime OrderedAt { get; set; }
+
+        public DateTime RequireAt { get; set; }
+
+        public DateTime? ShippedAt { get; set; }
+
+        [Reference(typeof(Shipper))]
+        public string ShipVia { get; set; } = null!;
+
         public decimal Freight { get; set; }
+
+        public List<OrderLine> Lines { get; set; } = new();
     }
 }

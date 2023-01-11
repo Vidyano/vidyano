@@ -108,10 +108,21 @@
     },
     "Merge": {
       "ShowedOn": 2,
+      "GroupActionName": "MergeGroup",
       "SelectionRule": ">1",
       "DisplayName": {
         "en": "Merge",
         "nl": "Merge"
+      },
+      "Options": {
+        "en": "Aa;Bb;Cc",
+        "nl": ""
+      }
+    },
+    "MergeGroup": {
+      "DisplayName": {
+        "en": "Merge group",
+        "nl": "Merge group"
       }
     },
     "New": {
@@ -193,6 +204,18 @@
       },
       "IsPinned": true,
       "IconName": "Filter"
+    },
+    "WithActions": {
+      "ShowedOn": 2,
+      "Intent": 1,
+      "DisplayName": {
+        "en": "With actions",
+        "nl": "With actions"
+      },
+      "Options": {
+        "en": "A;B;C;D;E;F;G;H",
+        "nl": ""
+      }
     }
   },
   "DataTypes": {
@@ -508,7 +531,7 @@
       "$id": "DataType:Single",
       "IsSystem": true,
       "CanSort": true,
-      "CanFilter": false,
+      "CanFilter": true,
       "CanListDistincts": true
     },
     "String": {
@@ -569,7 +592,7 @@
     }
   },
   "Verbose": true,
-  "ServiceVersion": "6.0.20210822.3278-rc1+6cae5a9",
-  "ModelHash": "AbnVzg8VJjPwKvPdt/O/iVicyYHXLauwJ9AjgIy2Sfg=",
-  "SeederHash": "yob+BuFRqrhY/0LUMpgC4NEWgJ3rsvJWMuAw+eLqK8w="
+  "ServiceVersion": "6.0.20220708.4177+d851650",
+  "ModelHash": "ajhR3eySWrK8+RiDqFoYfQqxIPHf/5EmNusiAYGcgKY=",
+  "SeederHash": "Hdixmn9ytY1rgB4xgK2tq73U/isUrvGV6s7vwwXJF9w="
 }
