@@ -157,7 +157,7 @@ type HasMore = { left: QueryGridColumnHeader[], right: QueryGridColumnHeader[] }
         "drag-end": "_onReorderEnd"
     },
     observers: [
-        "_updateScrollOffsetForItems(query.items)",
+        "_scrollToTop(query.items)", // Scroll to top when the query items reference changes, for example after search.
         "_update(verticalScrollOffset, virtualRowCount, rowHeight, items)",
         "_updateVerticalSpacer(viewportHeight, rowHeight, items)",
         "_updateUserSettings(query, query.columns)",
@@ -307,10 +307,7 @@ export class QueryGrid extends WebComponent {
             this.userSettings.save(false);
     }
 
-    /**
-     * Is called when the items property is set, for example after a search.
-     */
-    private _updateScrollOffsetForItems() {
+    private _scrollToTop() {
         this.verticalScrollOffset = 0;
     }
 

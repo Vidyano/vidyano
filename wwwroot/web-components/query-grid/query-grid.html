@@ -9,7 +9,7 @@
         </dom-if>
         <dom-if if="[[hasGrouping]]">
             <template>
-                <vi-query-grid-grouping query="[[query]]"></vi-query-grid-grouping>
+                <vi-query-grid-grouping query="[[query]]" on-scroll-top="_scrollToTop"></vi-query-grid-grouping>
             </template>
         </dom-if>
         <dom-if if="[[canSelect]]">
