@@ -253,7 +253,7 @@ export class PersistentObject extends WebComponent {
     }
 
     private _computeShowNavigation(persistentObject: Vidyano.PersistentObject) {
-        return !persistentObject.isNew && !!persistentObject.ownerQuery;
+        return !persistentObject.isNew && !!persistentObject.ownerQuery && !persistentObject.isBulkEdit;
     }
 
     private _tabselect(e: CustomEvent) {
