@@ -13474,7 +13474,7 @@ declare class QueryGrid extends WebComponent {
     private _queryChanged;
     private _controlsSizeChanged;
     private _columnWidthChanged;
-    private _updateScrollOffsetForItems;
+    private _scrollToTop;
     private _update;
     private _computeItems;
     private _getItem;

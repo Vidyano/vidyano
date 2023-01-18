@@ -13154,7 +13154,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.0.3";
+let version$2 = "3.0.4";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -51677,6 +51677,7 @@ let QueryGridGrouping = class QueryGridGrouping extends WebComponent {
     _toggleCollapse(e) {
         const collapse = e.currentTarget.icon === "QueryGrid_Group_Collapse";
         this.query.groupingInfo.groups.forEach(g => g.isCollapsed = collapse);
+        this.fire("scroll-top");
     }
     _remove() {
         this.query.group("");
@@ -57257,7 +57258,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
         </dom-if>
         <dom-if if="[[hasGrouping]]">
             <template>
-                <vi-query-grid-grouping query="[[query]]"></vi-query-grid-grouping>
+                <vi-query-grid-grouping query="[[query]]" on-scroll-top="_scrollToTop"></vi-query-grid-grouping>
             </template>
         </dom-if>
         <dom-if if="[[canSelect]]">
@@ -57389,7 +57390,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
         if (detail.save)
             this.userSettings.save(false);
     }
-    _updateScrollOffsetForItems() {
+    _scrollToTop() {
         this.verticalScrollOffset = 0;
     }
     _update(verticalScrollOffset, virtualRowCount, rowHeight, items) {
@@ -57790,7 +57791,7 @@ QueryGrid = __decorate([
             "drag-end": "_onReorderEnd"
         },
         observers: [
-            "_updateScrollOffsetForItems(query.items)",
+            "_scrollToTop(query.items)",
             "_update(verticalScrollOffset, virtualRowCount, rowHeight, items)",
             "_updateVerticalSpacer(viewportHeight, rowHeight, items)",
             "_updateUserSettings(query, query.columns)",
