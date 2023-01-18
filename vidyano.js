@@ -13154,7 +13154,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.0.4";
+let version$2 = "3.0.5";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -80280,7 +80280,7 @@ let PersistentObject = class PersistentObject extends WebComponent {
         return tabs && tabs.length > 0;
     }
     _computeShowNavigation(persistentObject) {
-        return !persistentObject.isNew && !!persistentObject.ownerQuery;
+        return !persistentObject.isNew && !!persistentObject.ownerQuery && !persistentObject.isBulkEdit;
     }
     _tabselect(e) {
         let { name, tab } = e.detail;
