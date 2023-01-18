@@ -383,7 +383,7 @@ export class QueryGrid extends WebComponent {
                 if (this._virtualGridStartIndex !== newVirtualGridStartIndex)
                     return;
 
-                queuedItemIndexes.forEach(index => this._getItem(index));
+                queuedItemIndexes.forEach(index => this.query.items[index]);
             }
         );
 
