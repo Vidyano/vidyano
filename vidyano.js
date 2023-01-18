@@ -13154,7 +13154,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.0.2";
+let version$2 = "3.0.3";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -57442,7 +57442,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
         this._getItemsDebouncer = Debouncer.debounce(this._getItemsDebouncer, timeOut.after(20), () => {
             if (this._virtualGridStartIndex !== newVirtualGridStartIndex)
                 return;
-            queuedItemIndexes.forEach(index => this._getItem(index));
+            queuedItemIndexes.forEach(index => this.query.items[index]);
         });
         if (this.initializing && this.query.isBusy) {
             this.query.queueWork(async () => {
