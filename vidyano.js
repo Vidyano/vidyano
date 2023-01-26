@@ -11019,6 +11019,33 @@ class ActionDefinition {
 }
 
 const ClientOperations = {
+    enableDatadog: function (hooks, applicationId, clientToken, site, service, version, environment) {
+        const _enableDatadog = (h, o, u, n, d) => {
+            h = h[d] = h[d] || { q: [], onReady: function (c) { h.q.push(c); } };
+            d = o.createElement(u);
+            d.async = 1;
+            d.src = n;
+            n = o.getElementsByTagName(u)[0];
+            n.parentNode.insertBefore(d, n);
+        };
+        _enableDatadog(window, document, 'script', 'https://www.datadoghq-browser-agent.com/datadog-rum.js', 'DD_RUM');
+        window["DD_RUM"].onReady(function () {
+            window["DD_RUM"].init({
+                applicationId: applicationId,
+                clientToken: clientToken,
+                site: site,
+                service: service,
+                sampleRate: 100,
+                trackInteractions: true,
+                version: version,
+                env: environment
+            });
+            window["DD_RUM"].setUser({
+                id: hooks.service.application.userId,
+                name: hooks.service.userName
+            });
+        });
+    },
     navigate: function (hooks, path, replaceCurrent) {
         hooks.onNavigate(path, replaceCurrent);
     },
@@ -13154,7 +13181,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.0.6";
+let version$2 = "3.1.0";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();

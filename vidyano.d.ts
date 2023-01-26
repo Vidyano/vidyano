@@ -3934,6 +3934,7 @@ interface IOpenOperation extends IClientOperation {
     replace?: boolean;
 }
 declare const ClientOperations: {
+    enableDatadog: (hooks: ServiceHooks, applicationId: string, clientToken: string, site: string, service: string, version?: string, environment?: string) => void;
     navigate: (hooks: ServiceHooks, path: string, replaceCurrent?: boolean) => void;
     openUrl: (hooks: ServiceHooks, url: string) => void;
     refreshForUpdate: (hooks: ServiceHooks, path: string, replaceCurrent?: boolean) => void;
