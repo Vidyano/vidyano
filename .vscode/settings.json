@@ -198,5 +198,17 @@
         "wwwroot/web-components/**/*.css": true,
         "wwwroot/web-components/**/*.css.map": true,
         "**/data": true
-    }
+    },
+    "liveSassCompile.settings.formats": [
+    
+        {
+            "format": "expanded",
+            "extensionName": ".css",
+            "savePath": null,
+            "savePathReplacementPairs": null
+        }
+    ],
+    "liveSassCompile.settings.generateMap": false,
+    "liveSassCompile.settings.autoprefix": false,
+    "liveSassCompile.settings.watchOnLaunch": true
 }
