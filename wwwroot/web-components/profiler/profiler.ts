@@ -155,13 +155,18 @@ export class Profiler extends WebComponent {
 
                 switch (request.method) {
                     case "GetPersistentObject": {
-                        request.parameters.push({ key: "Type", value: request.response.result.type});
-                        request.parameters.push({ key: "Id", value: request.response.result.objectId});
+                        if (request.response.result != null) {
+                            request.parameters.push({ key: "Type", value: request.response.result.type});
+                            request.parameters.push({ key: "Id", value: request.response.result.objectId});
+                        }
+
                         break;
                     }
 
                     case "GetQuery": {
-                        request.parameters.push({ key: "Name", value: request.response.query.name});
+                        if (request.response.result != null)
+                            request.parameters.push({ key: "Name", value: request.response.query.name});
+
                         break;
                     }
 
