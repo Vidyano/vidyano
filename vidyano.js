@@ -13154,7 +13154,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.0.5";
+let version$2 = "3.0.6";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -35873,7 +35873,6 @@ let Popup = Popup_1 = class Popup extends WebComponent {
   flex-direction: row;
   position: relative;
 }
-
 :host #fit {
   visibility: hidden;
   background-color: white;
@@ -35883,19 +35882,16 @@ let Popup = Popup_1 = class Popup extends WebComponent {
   padding: 1px;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 }
-
 :host([open]) #fit {
   visibility: visible;
   opacity: 1;
   z-index: 11;
 }
-
 :host [toggle] {
   width: 100%;
   box-sizing: border-box;
   cursor: pointer;
-}
-</style>
+}</style>
 
 <vi-size-tracker on-sizechanged="_toggleSizeChanged"></vi-size-tracker>
 <div toggle class="horizontal layout">
@@ -36162,7 +36158,6 @@ let PopupMenuItemSplit = class PopupMenuItemSplit extends WebComponent {
   color: var(--theme-color);
   fill: var(--theme-color);
 }
-
 :host vi-button {
   position: relative;
   flex: 1 0 auto;
@@ -36172,25 +36167,21 @@ let PopupMenuItemSplit = class PopupMenuItemSplit extends WebComponent {
   text-align: left;
   white-space: nowrap;
 }
-
 :host vi-button > * {
   display: inline-block;
   vertical-align: top;
 }
-
 :host vi-button span {
   padding: 0 var(--theme-h5) !important;
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
   line-height: var(--vi-popup-menu-item-height, var(--theme-h1));
 }
-
 :host vi-icon {
   position: relative;
   display: inline-block;
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
   width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
 }
-
 :host vi-icon#icon:before {
   content: " ";
   position: absolute;
@@ -36200,7 +36191,6 @@ let PopupMenuItemSplit = class PopupMenuItemSplit extends WebComponent {
   width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
   background-color: rgba(0, 0, 0, 0.04);
 }
-
 :host(:not([icon-space])) .icon-space {
   display: none !important;
 }
@@ -36215,13 +36205,11 @@ let PopupMenuItemSplit = class PopupMenuItemSplit extends WebComponent {
   display: flex;
   flex-direction: row;
 }
-
 :host #split {
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
   width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
   border-left: 1px solid var(--theme-light-border);
 }
-
 :host(:not([icon-space])) .icon-space {
   display: none !important;
 }
@@ -36230,8 +36218,7 @@ let PopupMenuItemSplit = class PopupMenuItemSplit extends WebComponent {
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
   width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
   background-color: rgba(0, 0, 0, 0.04);
-}
-</style>
+}</style>
 
 <vi-button inverse$="[[!checked]]">
     <vi-icon id="icon" source="[[icon]]"></vi-icon>
@@ -36315,7 +36302,6 @@ let PopupMenuItem = class PopupMenuItem extends WebComponent {
   color: var(--theme-color);
   fill: var(--theme-color);
 }
-
 :host vi-button {
   position: relative;
   flex: 1 0 auto;
@@ -36325,25 +36311,21 @@ let PopupMenuItem = class PopupMenuItem extends WebComponent {
   text-align: left;
   white-space: nowrap;
 }
-
 :host vi-button > * {
   display: inline-block;
   vertical-align: top;
 }
-
 :host vi-button span {
   padding: 0 var(--theme-h5) !important;
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
   line-height: var(--vi-popup-menu-item-height, var(--theme-h1));
 }
-
 :host vi-icon {
   position: relative;
   display: inline-block;
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
   width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
 }
-
 :host vi-icon#icon:before {
   content: " ";
   position: absolute;
@@ -36353,7 +36335,6 @@ let PopupMenuItem = class PopupMenuItem extends WebComponent {
   width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
   background-color: rgba(0, 0, 0, 0.04);
 }
-
 :host(:not([icon-space])) .icon-space {
   display: none !important;
 }
@@ -36362,8 +36343,7 @@ let PopupMenuItem = class PopupMenuItem extends WebComponent {
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
   width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
   background-color: rgba(0, 0, 0, 0.04);
-}
-</style>
+}</style>
 
 <vi-popup open-on-hover class="flex" id="popup" vertical-align="top" horizontal-align="right">
     <vi-button slot="header" inverse$="[[!checked]]" class="layout horizontal" on-tap="_catchTap">
@@ -37085,16 +37065,13 @@ let AppRoute = class AppRoute extends WebComponent {
   display: flex;
   position: relative;
 }
-
 :host ::slotted(*) {
   flex: 1;
   min-width: 0;
 }
-
 :host(:not(.active)) {
   display: none !important;
-}
-</style>
+}</style>
 
 <slot></slot>`; }
     matchesParameters(parameters = {}) {
@@ -37211,7 +37188,6 @@ let Alert = class Alert extends WebComponent {
   right: 10px;
   width: 300px;
 }
-
 :host article {
   display: block;
   margin-top: 10px;
@@ -37222,23 +37198,18 @@ let Alert = class Alert extends WebComponent {
   color: white;
   box-shadow: 0 0 6px 1px rgba(0, 0, 0, 0.25);
 }
-
 :host article.log-error {
   background-color: var(--theme-color-error, #a80511);
 }
-
 :host article.log-warning {
   background-color: var(--theme-color-warning, #e5a300);
 }
-
 :host article.log-notice {
   background-color: var(--theme-color-notice, #48545e);
 }
-
 :host article.log-ok {
   background-color: var(--theme-color-ok, #339f7b);
-}
-</style>`; }
+}</style>`; }
     async log(message, type, wait) {
         const log = document.createElement("article");
         log.className = `log-${type.toLowerCase()}`;
@@ -37277,32 +37248,26 @@ let Error$1 = class Error extends WebComponent {
   color: var(--theme-color-error);
   fill: var(--theme-color-error);
 }
-
 :host h1, :host h2 {
   font-weight: normal;
   text-align: center;
   padding: var(--theme-h5) var(--theme-h3);
   margin: 0;
 }
-
 :host h1 {
   font-size: 20px;
 }
-
 :host h1:empty {
   display: none;
 }
-
 :host h2 {
   font-size: 14px;
 }
-
 :host vi-icon {
   --vi-icon-width: var(--theme-h1);
   --vi-icon-height: var(--theme-h1);
   margin-bottom: var(--theme-h4);
-}
-</style>
+}</style>
 
 <div>
     <vi-icon source="[[icon]]"></vi-icon>
@@ -37331,8 +37296,7 @@ let AppRoutePresenter = class AppRoutePresenter extends WebComponent {
     }
     static get template() { return html `<style>:host vi-error {
   margin: calc(var(--theme-h1) * 2) 0;
-}
-</style>
+}</style>
 
 <slot id="routes" on-slotchange="_routesChanged"></slot>
 <dom-if if="[[notFound]]">
@@ -37432,8 +37396,7 @@ class DialogCore extends mixinBehaviors(IronOverlayBehavior, PolymerElement) {
     static get template() { return html `<style>:host {
   background: white;
   box-shadow: rgba(0, 0, 0, 0.24) -2px 5px 12px 0px, rgba(0, 0, 0, 0.12) 0px 0px 12px 0px;
-}
-</style>
+}</style>
 
 <slot></slot>`; }
 }
@@ -37443,7 +37406,6 @@ let Dialog = class Dialog extends WebComponent {
         const template = html `<style>:host vi-dialog-core > header, :host vi-dialog-core > footer {
   background-color: #FAFAFA;
 }
-
 :host vi-dialog-core > header {
   position: relative;
   flex: 0 0 auto;
@@ -37453,7 +37415,6 @@ let Dialog = class Dialog extends WebComponent {
   border-bottom: 1px solid #EEE;
   box-sizing: border-box;
 }
-
 :host vi-dialog-core > header h4 {
   margin: 0;
   font-weight: 500;
@@ -37462,7 +37423,6 @@ let Dialog = class Dialog extends WebComponent {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-
 :host vi-dialog-core > header vi-button.close {
   margin: 0;
   padding: 0 var(--theme-h5);
@@ -37471,39 +37431,31 @@ let Dialog = class Dialog extends WebComponent {
   border: none;
   cursor: pointer;
 }
-
 :host vi-dialog-core > header vi-button.close:hover {
   fill: #555;
 }
-
 :host vi-dialog-core > header vi-button.close:active {
   fill: #333;
 }
-
 :host vi-dialog-core > header vi-button.close:focus {
   outline: none;
 }
-
 :host vi-dialog-core > footer {
   padding: var(--theme-h4);
   border-top: 1px solid #EEE;
   flex: 0 0 auto;
 }
-
 :host vi-dialog-core > footer vi-button {
   line-height: var(--theme-h2);
   padding: 0 var(--theme-h4);
 }
-
 :host vi-dialog-core > footer vi-button:not(:first-of-type) {
   margin-left: var(--theme-h5);
 }
-
 :host vi-dialog-core > main {
   position: relative;
   z-index: 1;
-}
-</style>
+}</style>
 
 <vi-dialog-core with-backdrop>
     <vi-size-tracker on-sizechanged="_sizechanged"></vi-size-tracker>
@@ -37626,17 +37578,14 @@ let RetryActionDialog = class RetryActionDialog extends Dialog {
     static get template() { return Dialog.dialogTemplate(html `<style>:host {
   --vi-persistent-object-dialog-base-width-base: 400px;
 }
-
 :host header {
   padding: var(--theme-h5);
 }
-
 :host main {
   display: flex;
   flex-direction: column;
   padding: 0;
 }
-
 :host main > h4 {
   display: block;
   padding: var(--theme-h4) var(--theme-h5);
@@ -37644,7 +37593,6 @@ let RetryActionDialog = class RetryActionDialog extends Dialog {
   border-bottom: 1px solid var(--theme-light-border);
   margin: 0;
 }
-
 :host main > vi-persistent-object-tab-presenter {
   flex: 1;
   min-height: 0;
@@ -37653,20 +37601,16 @@ let RetryActionDialog = class RetryActionDialog extends Dialog {
   flex-direction: column;
   min-height: calc(var(--theme-h2) * 3);
 }
-
 :host main > vi-persistent-object-tab-presenter > vi-persistent-object-tab {
   position: static;
 }
-
 :host([is-phone]) main {
   width: 85vw;
 }
-
 :host([is-tablet]) main, :host([is-desktop]) main {
   min-width: 400px;
   max-width: var(--vi-persistent-object-dialog-computed-width);
-}
-</style>
+}</style>
 
 <header class="horizontal layout">
     <h4 class="flex">[[retry.title]]</h4>
@@ -37735,19 +37679,16 @@ let Notification = class Notification extends WebComponent {
   border-bottom-width: 2px;
   border-bottom-style: solid;
 }
-
 :host #icon {
   width: var(--theme-h1);
   line-height: var(--theme-h1);
 }
-
 :host #icon vi-icon {
   fill: white;
   height: calc(var(--theme-h1) - 2px);
   --vi-icon-width: var(--theme-h3);
   --vi-icon-height: var(--theme-h3);
 }
-
 :host #close {
   cursor: pointer;
   background-color: transparent;
@@ -37756,16 +37697,13 @@ let Notification = class Notification extends WebComponent {
   line-height: var(--theme-h1);
   fill: white;
 }
-
 :host #close:hover {
   background-color: rgba(255, 255, 255, 0.3);
 }
-
 :host #textHost {
   color: white;
   overflow: hidden;
 }
-
 :host #textHost span {
   display: block;
   line-height: var(--theme-h1);
@@ -37775,35 +37713,29 @@ let Notification = class Notification extends WebComponent {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
 :host #textHost span a {
   color: inherit;
 }
-
-:host([type="Error"]) {
+:host([type=Error]) {
   border-bottom-color: rgba(0, 0, 0, 0.1);
   background-color: var(--theme-color-error);
   fill: var(--theme-color-error);
 }
-
-:host([type="Notice"]) {
+:host([type=Notice]) {
   border-bottom-color: rgba(0, 0, 0, 0.1);
   background-color: var(--theme-color-notice);
   fill: var(--theme-color-notice);
 }
-
-:host([type="OK"]) {
+:host([type=OK]) {
   border-bottom-color: rgba(0, 0, 0, 0.1);
   background-color: var(--theme-color-ok);
   fill: var(--theme-color-ok);
 }
-
-:host([type="Warning"]) {
+:host([type=Warning]) {
   border-bottom-color: rgba(0, 0, 0, 0.1);
   background-color: var(--theme-color-warning);
   fill: var(--theme-color-warning);
-}
-</style>
+}</style>
 
 <div id="icon">
     <vi-icon source="[[icon]]"></vi-icon>
@@ -37940,11 +37872,9 @@ let SelectReferenceDialog = class SelectReferenceDialog extends Dialog {
   border: 1px solid #EAEAEA;
   box-sizing: border-box;
 }
-
 vi-input-search::part(input) {
   color: #333;
 }
-
 vi-input-search::part(input):focus {
   background-color: white;
 }
@@ -37963,8 +37893,7 @@ main vi-query-grid {
 
 :host([is-desktop]) main vi-query-grid {
   width: 75vw;
-}
-</style>
+}</style>
 
 <header class="horizontal layout center">
     <h4 class="flex">[[query.label]]</h4>
@@ -40062,54 +39991,43 @@ let MessageDialog = class MessageDialog extends Dialog {
   display: flex;
   flex-direction: row;
 }
-
 :host main:not([rich]) {
   padding: var(--theme-h4);
 }
-
 :host main:not([rich]) pre {
   flex: 1;
   min-height: 0;
   min-width: 0;
   white-space: pre-wrap;
 }
-
 :host main:not([rich]) pre a {
   color: inherit;
 }
-
 :host main[rich] marked-element {
   overflow: auto;
   padding: var(--theme-h4);
 }
-
 :host main[rich] marked-element ::content p {
   margin: 0.5em 0;
 }
-
 :host header > vi-icon {
   padding-right: var(--theme-h4);
   height: var(--theme-h1);
   --vi-icon-width: var(--theme-h3);
   --vi-icon-height: var(--theme-h3);
 }
-
-:host header > vi-icon[source$="Error"] {
+:host header > vi-icon[source$=Error] {
   fill: var(--theme-color-error);
 }
-
-:host header > vi-icon[source$="Warning"] {
+:host header > vi-icon[source$=Warning] {
   fill: var(--theme-color-warning);
 }
-
-:host header > vi-icon[source$="Notice"] {
+:host header > vi-icon[source$=Notice] {
   fill: var(--theme-color-notice);
 }
-
-:host header > vi-icon[source$="OK"] {
+:host header > vi-icon[source$=OK] {
   fill: var(--theme-color-ok);
-}
-</style>
+}</style>
 
 <header class="horizontal layout">
     <vi-icon source="[[options.titleIcon]]" hidden$="[[!hasHeaderIcon]]"></vi-icon>
@@ -40221,11 +40139,9 @@ let Sensitive = class Sensitive extends WebComponent {
   text-overflow: ellipsis;
   overflow: hidden;
 }
-
 :host(:not([disabled])[is-app-sensitive]) ::slotted(*) {
   filter: blur(5px);
-}
-</style>
+}</style>
 
 <slot></slot>`; }
 };
@@ -41219,7 +41135,7 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
   --theme-box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.5);
   position: relative;
   overflow-x: hidden;
-  font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+  font-family: "Open Sans", Arial, Helvetica, sans-serif;
   font-size: 13px;
   color: var(--theme-foreground);
   fill: var(--theme-foreground);
@@ -41445,44 +41361,35 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
   --colors-blue-grey-800: #37474f;
   --colors-blue-grey-900: #263238;
 }
-
 :host([initializing]) vi-app-route, :host([initializing]) #dialogs {
   display: none !important;
 }
-
 :host(:not([is-profiling])) vi-profiler {
   display: none !important;
 }
-
 :host([is-profiling]) {
   padding-top: var(--theme-h1);
 }
-
 :host([is-profiling]) vi-profiler {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
 }
-
 :host([session-lost]) {
   padding-top: var(--theme-h1);
 }
-
 :host([session-lost][is-profiling]) {
   padding-top: calc(var(--theme-h1) * 2);
 }
-
 :host([session-lost][is-profiling]) vi-profiler {
   top: var(--theme-h1);
 }
-
 :host([is-tracking]) {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
 }
-
 :host [dialog] {
   display: flex;
   flex-direction: column;
@@ -41491,27 +41398,22 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
   max-width: 90vw;
   box-shadow: var(--theme-box-shadow);
 }
-
 :host [dialog][dragging] {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
   cursor: move !important;
 }
-
 :host [dialog][no-header] ::content > header {
   display: none;
 }
-
 :host [dialog][no-header] ::content > main {
   padding-top: var(--theme-h4);
   margin-top: 0;
 }
-
 :host [dialog] ::content > header, :host [dialog] ::content > footer {
   background-color: #FAFAFA;
 }
-
 :host [dialog] ::content > header {
   flex: 0 0 auto;
   line-height: var(--theme-h1);
@@ -41520,7 +41422,6 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
   border-bottom: 1px solid #EEE;
   box-sizing: border-box;
 }
-
 :host [dialog] ::content > header h4 {
   margin: 0;
   font-weight: 500;
@@ -41529,7 +41430,6 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-
 :host [dialog] ::content > header vi-button.close {
   margin: 0;
   padding: 0 var(--theme-h5);
@@ -41538,19 +41438,15 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
   border: none;
   cursor: pointer;
 }
-
 :host [dialog] ::content > header vi-button.close:hover {
   fill: #555;
 }
-
 :host [dialog] ::content > header vi-button.close:active {
   fill: #333;
 }
-
 :host [dialog] ::content > header vi-button.close:focus {
   outline: none;
 }
-
 :host [dialog] ::content > footer {
   padding: var(--theme-h4);
   border-top: 1px solid #EEE;
@@ -41559,21 +41455,17 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
   -ms-flex: 0 0 auto;
   flex: 0 0 auto;
 }
-
 :host [dialog] ::content > footer vi-button {
   line-height: var(--theme-h2);
   padding: 0 var(--theme-h4);
 }
-
 :host [dialog] ::content > footer vi-button:not(:first-of-type) {
   margin-left: var(--theme-h5);
 }
-
 :host [dialog] ::content > main {
   position: relative;
   z-index: 1;
 }
-
 :host #sessionLost {
   position: absolute;
   top: 0;
@@ -41587,29 +41479,24 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
   box-sizing: border-box;
   padding: 0 calc((var(--theme-h1) - var(--theme-h2)) / 2) 0 var(--theme-h5);
 }
-
 :host #sessionLost vi-icon {
   --vi-icon-width: 22px;
   --vi-icon-height: 22px;
   fill: #6a541f;
 }
-
 :host #sessionLost p {
   margin: 0 var(--theme-h4) 0 var(--theme-h5);
 }
-
 :host #sessionLost vi-button {
   height: var(--theme-h2);
   line-height: var(--theme-h2);
   background-color: #6a541f;
   padding: 0 var(--theme-h4);
 }
-
 :host #update {
   position: relative;
   z-index: 100000;
 }
-
 :host #update .overlay {
   position: fixed;
   content: "";
@@ -41622,7 +41509,6 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
   transition: all 500ms ease-out;
   will-change: opacity;
 }
-
 :host #update .message {
   position: fixed;
   top: calc(var(--theme-h1) + var(--theme-h5));
@@ -41636,21 +41522,17 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
   transition: all 500ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
   will-change: transform;
 }
-
 :host #update .message > .highlight {
   margin-left: var(--theme-h4);
   color: var(--colors-yellow);
   font-weight: bold;
 }
-
 :host #update.show .overlay {
   opacity: 0.25;
 }
-
 :host #update.show .message {
   transform: translate(-50%, 0px);
-}
-</style>
+}</style>
 <style include="vi-responsive-style-module"></style>
 
 <iron-a11y-keys keys="[[keys]]" on-keys-pressed="_keysPressed"></iron-a11y-keys>
@@ -42125,7 +42007,6 @@ let Button = class Button extends WebComponent {
   --vi-spinner-size: 1.5em;
   /* elevation values from http://codepen.io/shyndman/pen/c5394ddf2e8b2a5c9185904b57421cdb */
 }
-
 :host .highlight {
   display: none !important;
   position: absolute;
@@ -42136,188 +42017,152 @@ let Button = class Button extends WebComponent {
   background-color: var(--theme-color);
   opacity: 0.1;
 }
-
 :host([elevation]) {
   transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transition;
 }
-
 :host([elevation]:active) {
   box-shadow: none;
 }
-
 :host([elevation="1"]) {
   box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
 }
-
 :host([elevation="2"]) {
   box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
 }
-
 :host([elevation="3"]) {
   box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12), 0 3px 5px -1px rgba(0, 0, 0, 0.4);
 }
-
 :host([elevation="4"]) {
   box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12), 0 5px 5px -3px rgba(0, 0, 0, 0.4);
 }
-
 :host([elevation="5"]) {
   box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14), 0 6px 30px 5px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.4);
 }
-
 :host([disabled]) {
   cursor: default;
   pointer-events: none;
 }
-
 :host(:not([custom-layout])) {
   padding: 1px var(--theme-h5);
   text-align: center;
   white-space: nowrap;
   gap: 2px;
 }
-
 :host(:not([custom-layout])) > *:not(style) {
   display: inline-block;
 }
-
 :host(:not([custom-layout])[busy]) > span, :host(:not([custom-layout])[busy]) > vi-icon {
   visibility: hidden;
 }
-
 :host([type=""]:not([inverse])), :host(:not([type]):not([inverse])) {
   background-color: var(--theme-color);
   color: white;
   fill: white;
   --vi-spinner-color: white;
 }
-
 :host([type=""]:not([inverse]):not([disabled]):hover), :host(:not([type]):not([inverse]):not([disabled]):hover) {
   background-color: var(--theme-color-light);
 }
-
 :host([type=""]:not([inverse]):not([busy])[disabled]), :host(:not([type]):not([inverse]):not([busy])[disabled]) {
   opacity: 0.5;
 }
-
 :host([type=""][inverse]), :host(:not([type])[inverse]) {
   background-color: transparent;
   color: var(--theme-color);
   fill: var(--theme-color);
   --vi-spinner-color: var(--theme-color);
 }
-
 :host([type=""][inverse]:not([disabled]):hover), :host(:not([type])[inverse]:not([disabled]):hover) {
   background-color: rgba(var(--theme-color-rgb), 0.1);
 }
-
 :host([type=""][inverse]:not([busy])[disabled]), :host(:not([type])[inverse]:not([busy])[disabled]) {
   opacity: 0.5;
 }
-
-:host([type="light-monochrome"]:not([inverse])) {
+:host([type=light-monochrome]:not([inverse])) {
   background-color: #f0f0f0;
   color: white;
   fill: white;
   --vi-spinner-color: white;
 }
-
-:host([type="light-monochrome"]:not([inverse]):not([disabled]):hover) {
+:host([type=light-monochrome]:not([inverse]):not([disabled]):hover) {
   background-color: white;
 }
-
-:host([type="light-monochrome"]:not([inverse])[disabled]) {
+:host([type=light-monochrome]:not([inverse])[disabled]) {
   background-color: fadeout(#f0f0f0, 50%) !important;
   fill: fadeout(white, 50%) !important;
   color: fadeout(white, 50%) !important;
 }
-
-:host([type="light-monochrome"][inverse]) {
+:host([type=light-monochrome][inverse]) {
   background-color: transparent;
   color: #f0f0f0;
   fill: #f0f0f0;
   --vi-spinner-color: #f0f0f0;
 }
-
-:host([type="light-monochrome"][inverse]:not([disabled]):hover) {
+:host([type=light-monochrome][inverse]:not([disabled]):hover) {
   background-color: fadeout(#f0f0f0, 90%);
 }
-
-:host([type="light-monochrome"][inverse][disabled]) {
+:host([type=light-monochrome][inverse][disabled]) {
   background-color: fadeout(transparent, 50%) !important;
   fill: fadeout(#f0f0f0, 50%) !important;
   color: fadeout(#f0f0f0, 50%) !important;
 }
-
-:host([type="danger"]:not([inverse])) {
+:host([type=danger]:not([inverse])) {
   background-color: #FF4136;
   color: white;
   fill: white;
   --vi-spinner-color: white;
 }
-
-:host([type="danger"]:not([inverse]):not([disabled]):hover) {
+:host([type=danger]:not([inverse]):not([disabled]):hover) {
   background-color: #ff7169;
 }
-
-:host([type="danger"]:not([inverse])[disabled]) {
+:host([type=danger]:not([inverse])[disabled]) {
   background-color: fadeout(#FF4136, 50%) !important;
   fill: fadeout(white, 50%) !important;
   color: fadeout(white, 50%) !important;
 }
-
-:host([type="danger"][inverse]) {
+:host([type=danger][inverse]) {
   background-color: transparent;
   color: #FF4136;
   fill: #FF4136;
   --vi-spinner-color: #FF4136;
 }
-
-:host([type="danger"][inverse]:not([disabled]):hover) {
+:host([type=danger][inverse]:not([disabled]):hover) {
   background-color: fadeout(#FF4136, 90%);
 }
-
-:host([type="danger"][inverse][disabled]) {
+:host([type=danger][inverse][disabled]) {
   background-color: fadeout(transparent, 50%) !important;
   fill: fadeout(#FF4136, 50%) !important;
   color: fadeout(#FF4136, 50%) !important;
 }
-
-:host([type="safe"]:not([inverse])) {
+:host([type=safe]:not([inverse])) {
   background-color: #3D9970;
   color: white;
   fill: white;
   --vi-spinner-color: white;
 }
-
-:host([type="safe"]:not([inverse]):not([disabled]):hover) {
+:host([type=safe]:not([inverse]):not([disabled]):hover) {
   background-color: #50b98a;
 }
-
-:host([type="safe"]:not([inverse])[disabled]) {
+:host([type=safe]:not([inverse])[disabled]) {
   background-color: fadeout(#3D9970, 50%) !important;
   fill: fadeout(white, 50%) !important;
   color: fadeout(white, 50%) !important;
 }
-
-:host([type="safe"][inverse]) {
+:host([type=safe][inverse]) {
   background-color: transparent;
   color: #3D9970;
   fill: #3D9970;
   --vi-spinner-color: #3D9970;
 }
-
-:host([type="safe"][inverse]:not([disabled]):hover) {
+:host([type=safe][inverse]:not([disabled]):hover) {
   background-color: fadeout(#3D9970, 90%);
 }
-
-:host([type="safe"][inverse][disabled]) {
+:host([type=safe][inverse][disabled]) {
   background-color: fadeout(transparent, 50%) !important;
   fill: fadeout(#3D9970, 50%) !important;
   color: fadeout(#3D9970, 50%) !important;
 }
-
 :host([accent]) {
   --theme-color: var(--theme-accent-color);
   --theme-color-light: var(--theme-accent-color-light);
@@ -42328,43 +42173,34 @@ let Button = class Button extends WebComponent {
   --theme-color-semi-faint: var(--theme-accent-color-semi-faint);
   --theme-color-rgb: var(--theme-accent-color-rgb);
 }
-
 :host([accent]) paper-ripple {
   color: var(--theme-accent-color);
 }
 
-vi-popup[open] > [toggle] vi-button[slot="header"][type=""]:not([inverse]), vi-popup[open] > [toggle] vi-button[slot="header"]:not([type]):not([inverse]) {
+vi-popup[open] > [toggle] vi-button[slot=header][type=""]:not([inverse]), vi-popup[open] > [toggle] vi-button[slot=header]:not([type]):not([inverse]) {
   background-color: var(--theme-color-light);
 }
-
-vi-popup[open] > [toggle] vi-button[slot="header"][type=""][inverse], vi-popup[open] > [toggle] vi-button[slot="header"]:not([type])[inverse] {
+vi-popup[open] > [toggle] vi-button[slot=header][type=""][inverse], vi-popup[open] > [toggle] vi-button[slot=header]:not([type])[inverse] {
   background-color: var(--theme-color-faint);
 }
-
-vi-popup[open] > [toggle] vi-button[slot="header"][type="light-monochrome"]:not([inverse]) {
+vi-popup[open] > [toggle] vi-button[slot=header][type=light-monochrome]:not([inverse]) {
   background-color: white;
 }
-
-vi-popup[open] > [toggle] vi-button[slot="header"][type="light-monochrome"][inverse] {
+vi-popup[open] > [toggle] vi-button[slot=header][type=light-monochrome][inverse] {
   background-color: fadeout(#f0f0f0, 90%);
 }
-
-vi-popup[open] > [toggle] vi-button[slot="header"][type="danger"]:not([inverse]) {
+vi-popup[open] > [toggle] vi-button[slot=header][type=danger]:not([inverse]) {
   background-color: #ff7169;
 }
-
-vi-popup[open] > [toggle] vi-button[slot="header"][type="danger"][inverse] {
+vi-popup[open] > [toggle] vi-button[slot=header][type=danger][inverse] {
   background-color: fadeout(#FF4136, 90%);
 }
-
-vi-popup[open] > [toggle] vi-button[slot="header"][type="safe"]:not([inverse]) {
+vi-popup[open] > [toggle] vi-button[slot=header][type=safe]:not([inverse]) {
   background-color: #50b98a;
 }
-
-vi-popup[open] > [toggle] vi-button[slot="header"][type="safe"][inverse] {
+vi-popup[open] > [toggle] vi-button[slot=header][type=safe][inverse] {
   background-color: fadeout(#3D9970, 90%);
-}
-</style>
+}</style>
 
 <paper-ripple></paper-ripple>
 <div class="highlight"></div>
@@ -42449,12 +42285,10 @@ let InputSearch = class InputSearch extends WebComponent {
   line-height: var(--theme-h2);
   position: relative;
 }
-
 :host form {
   margin: 0;
   flex: 1;
 }
-
 :host input {
   border: none;
   outline: none;
@@ -42465,11 +42299,9 @@ let InputSearch = class InputSearch extends WebComponent {
   color: white;
   width: 100%;
 }
-
 :host input::placeholder {
   color: var(--vi-input-search-placeholder-color, #aaa);
 }
-
 :host button {
   position: absolute;
   top: 1px;
@@ -42482,8 +42314,7 @@ let InputSearch = class InputSearch extends WebComponent {
   width: var(--theme-h2);
   background-color: transparent;
   margin: 1px 1px 1px 0;
-}
-</style>
+}</style>
 
 <form autocomplete="off" class="flex layout horizontal" on-submit="_catchOnSumbit">
     <input class="flex" placeholder="[[translateMessage('FilterSearchHint', isConnected)]]" value="{{value::input}}" on-keypress="_searchKeypressed" on-focus="_input_focused" on-blur="_input_blurred" autofocus$="[[autofocus]]" role="search" part="input">
@@ -42840,14 +42671,12 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
   --vi-scroller-thumb-capture-size: calc(var(--theme-h4) + 2px);
   --vi-scroller-thumb-parent-hover-size: calc(var(--theme-h5) + 6px);
 }
-
 :host .scroll-host {
   overflow: hidden;
   display: flex;
   flex-direction: row;
   position: relative;
 }
-
 :host .wrapper {
   flex: 1;
   min-height: 0;
@@ -42859,34 +42688,28 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
 }
-
 :host .wrapper::-webkit-scrollbar {
   display: none;
 }
-
 :host([no-horizontal]:not([no-vertical])) .wrapper {
   display: flex;
   flex-direction: column;
 }
-
 :host([no-horizontal]:not([no-vertical])) .wrapper .content {
   min-height: auto;
 }
-
 :host([no-vertical]:not([no-horizontal])) .wrapper {
   display: flex;
   flex-direction: row;
   margin-right: 0;
   overflow-y: hidden;
 }
-
 :host([no-vertical][no-horizontal]) .wrapper {
   display: flex;
   flex-direction: row;
   overflow: hidden;
   margin: 0 !important;
 }
-
 :host([no-vertical][no-horizontal]) .wrapper .content {
   flex: 1;
   min-height: 0;
@@ -42896,69 +42719,58 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
   min-height: initial;
   min-width: initial;
 }
-
 :host([no-vertical][no-horizontal]) .wrapper .content > :not(vi-size-tracker) {
   flex: 1;
   min-height: 0;
   min-width: 0;
 }
-
 :host(:not([no-vertical]):not([no-horizontal])) .wrapper > .content {
   display: inline-block;
   min-width: 100%;
 }
-
 :host(:not([force-scrollbars]):not([hovering]):not([scrolling])) .scrollbar-parent .scrollbar {
   opacity: 0;
 }
-
 :host .scrollbar-parent {
   position: absolute;
   background-color: transparent;
   display: none;
   z-index: 1;
 }
-
 :host .scrollbar-parent:before {
   position: absolute;
   content: " ";
   background-color: transparent;
   transition: all 0.2s ease-in-out;
 }
-
 :host .scrollbar-parent.vertical:before {
   top: 0;
   right: 0;
   bottom: 0;
   width: var(--vi-scroller-thumb-parent-hover-size);
 }
-
 :host .scrollbar-parent.horizontal:before {
   left: 0;
   right: 0;
   bottom: 0;
   height: var(--vi-scroller-thumb-parent-hover-size);
 }
-
 :host .scrollbar-parent .scrollbar {
   position: absolute;
   opacity: 1;
   transition: opacity 0.2s ease-in-out;
 }
-
 :host .scrollbar-parent .scrollbar:after {
   content: " ";
   position: absolute;
   background-color: var(--vi-scroller-thumb-color);
   border-radius: var(--theme-h5);
 }
-
 :host .scrollbar-parent .scrollbar#vertical {
   top: 0;
   right: 0;
   width: var(--vi-scroller-thumb-capture-size);
 }
-
 :host .scrollbar-parent .scrollbar#vertical:after {
   right: 2px;
   top: 0;
@@ -42966,13 +42778,11 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
   width: var(--vi-scroller-thumb-size);
   transition: width 0.2s ease-in-out;
 }
-
 :host .scrollbar-parent .scrollbar#horizontal {
   left: 0;
   bottom: 0;
   height: var(--vi-scroller-thumb-capture-size);
 }
-
 :host .scrollbar-parent .scrollbar#horizontal:after {
   bottom: 2px;
   left: 0;
@@ -42980,14 +42790,12 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
   height: var(--vi-scroller-thumb-size);
   transition: height 0.2s ease-in-out;
 }
-
 :host .scrollbar-parent.horizontal {
   height: var(--vi-scroller-thumb-capture-size);
   left: 0;
   right: 0;
   bottom: 0;
 }
-
 :host .scrollbar-parent.vertical {
   width: var(--vi-scroller-thumb-capture-size);
   top: 0;
@@ -42995,44 +42803,31 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
   right: var(--vi-scroller-vertical-scrollbar-right, 0);
   left: var(--vi-scroller-vertical-scrollbar-left, initial);
 }
-
 :host([horizontal]) .scrollbar-parent.horizontal, :host([vertical]) .scrollbar-parent.vertical {
   display: block;
 }
-
-:host([align-vertical-scrollbar="left"]) .vertical {
+:host([align-vertical-scrollbar=left]) .vertical {
   right: auto;
   left: 0;
 }
-
 :host([scrolling]) .wrapper {
   pointer-events: none;
 }
-
-:host([vertical][scrolling="vertical"]) .scrollbar-parent.vertical:before, :host .scrollbar-parent.vertical:hover:before,
-:host([horizontal][scrolling="horizontal"]) .scrollbar-parent.horizontal:before, :host .scrollbar-parent.horizontal:hover:before {
+:host([vertical][scrolling=vertical]) .scrollbar-parent.vertical:before, :host .scrollbar-parent.vertical:hover:before, :host([horizontal][scrolling=horizontal]) .scrollbar-parent.horizontal:before, :host .scrollbar-parent.horizontal:hover:before {
   background-color: rgba(0, 0, 0, 0.1);
 }
-
-:host([vertical][scrolling="vertical"]) .scrollbar-parent.vertical .scrollbar:after, :host .scrollbar-parent.vertical:hover .scrollbar:after,
-:host([horizontal][scrolling="horizontal"]) .scrollbar-parent.horizontal .scrollbar:after, :host .scrollbar-parent.horizontal:hover .scrollbar:after {
+:host([vertical][scrolling=vertical]) .scrollbar-parent.vertical .scrollbar:after, :host .scrollbar-parent.vertical:hover .scrollbar:after, :host([horizontal][scrolling=horizontal]) .scrollbar-parent.horizontal .scrollbar:after, :host .scrollbar-parent.horizontal:hover .scrollbar:after {
   background-color: var(--vi-scroller-thumb-hover-color);
 }
-
-:host([vertical][scrolling="vertical"]) .scrollbar-parent.vertical .scrollbar#vertical:after, :host .scrollbar-parent.vertical:hover .scrollbar#vertical:after,
-:host([horizontal][scrolling="horizontal"]) .scrollbar-parent.horizontal .scrollbar#vertical:after, :host .scrollbar-parent.horizontal:hover .scrollbar#vertical:after {
+:host([vertical][scrolling=vertical]) .scrollbar-parent.vertical .scrollbar#vertical:after, :host .scrollbar-parent.vertical:hover .scrollbar#vertical:after, :host([horizontal][scrolling=horizontal]) .scrollbar-parent.horizontal .scrollbar#vertical:after, :host .scrollbar-parent.horizontal:hover .scrollbar#vertical:after {
   width: var(--vi-scroller-thumb-hover-size);
 }
-
-:host([vertical][scrolling="vertical"]) .scrollbar-parent.vertical .scrollbar#horizontal:after, :host .scrollbar-parent.vertical:hover .scrollbar#horizontal:after,
-:host([horizontal][scrolling="horizontal"]) .scrollbar-parent.horizontal .scrollbar#horizontal:after, :host .scrollbar-parent.horizontal:hover .scrollbar#horizontal:after {
+:host([vertical][scrolling=vertical]) .scrollbar-parent.vertical .scrollbar#horizontal:after, :host .scrollbar-parent.vertical:hover .scrollbar#horizontal:after, :host([horizontal][scrolling=horizontal]) .scrollbar-parent.horizontal .scrollbar#horizontal:after, :host .scrollbar-parent.horizontal:hover .scrollbar#horizontal:after {
   height: var(--vi-scroller-thumb-hover-size);
 }
-
 :host([horizontal]) .wrapper .content > div {
   padding-bottom: var(--vi-scroller-thumb-capture-size);
 }
-
 :host .scroll-shadow-parent {
   position: absolute;
   left: 0;
@@ -43042,7 +42837,6 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
   pointer-events: none;
   z-index: 0;
 }
-
 :host .scroll-shadow-parent > .scroll-shadow {
   position: absolute;
   top: 0;
@@ -43059,47 +42853,36 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
   transition: transform 0.3s ease-out;
   z-index: 1;
 }
-
 :host .scroll-shadow-parent > .scroll-shadow.top {
   transform: translateY(calc(var(--vi-scroller--scroll-shadow-top-offset, var(--theme-h2)) * -1.5));
 }
-
 :host .scroll-shadow-parent > .scroll-shadow.bottom {
   transform: translateY(calc(var(--vi-scroller--scroll-shadow-top-offset, var(--theme-h2)) * 1.5));
 }
-
 :host .scroll-shadow-parent.top {
   top: var(--vi-scroller--scroll-shadow-top-offset, 0);
 }
-
 :host .scroll-shadow-parent.bottom {
   bottom: var(--vi-scroller--scroll-shadow-bottom-offset, 0);
 }
-
 :host([scroll-top-shadow]) .scroll-shadow-parent > .scroll-shadow.top {
   transform: translateY(calc(var(--theme-h2) * -1));
 }
-
 :host([scroll-bottom-shadow]) .scroll-shadow-parent > .scroll-shadow.bottom {
   transform: translateY(var(--theme-h2));
 }
-
 :host([hide-scrollbars]) .scrollbar-parent {
   visibility: hidden;
 }
-
 :host([hide-native-scrollbar]:not([allow-native])[vertical]) .wrapper {
   margin-right: calc(var(--theme-scrollbar-width) * -1);
 }
-
 :host([hide-native-scrollbar]:not([allow-native])[horizontal]) .wrapper {
   margin-bottom: calc(var(--theme-scrollbar-width) * -1);
 }
-
 :host([hide-native-scrollbar][allow-native]) .scrollbar-parent {
   display: none !important;
-}
-</style>
+}</style>
 
 <div id="wrapper" class="wrapper" tabindex="-1">
     <vi-size-tracker class="fit" on-sizechanged="_outerSizeChanged"></vi-size-tracker>
@@ -43414,13 +43197,11 @@ let MenuItem = MenuItem_1 = class MenuItem extends ConfigurableWebComponent {
   cursor: pointer;
   --iron-collapse-transition-duration: 150ms;
 }
-
 :host span.match {
   color: #FFDD00;
   font-weight: bold;
   pointer-events: none;
 }
-
 :host > .title {
   display: flex;
   flex-direction: row;
@@ -43433,11 +43214,9 @@ let MenuItem = MenuItem_1 = class MenuItem extends ConfigurableWebComponent {
   overflow: hidden;
   outline: none;
 }
-
 :host > .title:hover {
   background-color: rgba(0, 0, 0, 0.1);
 }
-
 :host > .title > vi-icon {
   height: var(--theme-h2);
   width: var(--theme-h3);
@@ -43448,45 +43227,36 @@ let MenuItem = MenuItem_1 = class MenuItem extends ConfigurableWebComponent {
   transition: transform 0.2s ease;
   transform: rotate(0deg);
 }
-
 :host > .title > vi-icon[unresolved] {
   display: none;
 }
-
 :host > .title > vi-icon[unresolved] + span {
   margin-left: calc(var(--theme-h3) + var(--theme-h3) * var(--vi-menu-item-indent-level, 0));
 }
-
 :host([hidden]) {
   display: none !important;
 }
-
-:host([expand]) > .title > vi-icon[source="ProgramUnitGroup"], :host([filtering]) > .title > vi-icon[source="ProgramUnitGroup"] {
+:host([expand]) > .title > vi-icon[source=ProgramUnitGroup], :host([filtering]) > .title > vi-icon[source=ProgramUnitGroup] {
   -moz-transform: rotate(90deg);
   -ms-transform: rotate(90deg);
   -o-transform: rotate(90deg);
   -webkit-transform: rotate(90deg);
   transform: rotate(90deg);
 }
-
 :host(.program-unit) {
   background-color: transparent;
 }
-
 :host(.program-unit) > .title {
   font-weight: 600;
   color: var(--vi-menu-color, #FAFAFA);
   text-transform: uppercase;
 }
-
 :host(.program-unit) > .title > vi-icon {
   display: none;
 }
-
 :host(.program-unit) > .title > vi-icon + span {
   margin-left: var(--theme-h4);
-}
-</style>
+}</style>
 
 <a class="title" href$="[[href]]" target$="[[target]]" rel$="[[rel]]">
     <paper-ripple></paper-ripple>
@@ -43744,27 +43514,23 @@ let User = class User extends WebComponent {
   display: block;
   border-top: 1px solid #3b484e;
 }
-
 :host .username {
   line-height: calc(var(--theme-h2) - 2px);
   background-color: var(--vi-user--background-color, #2b3940);
   margin-bottom: 1px;
   white-space: nowrap;
 }
-
 :host .username span {
   padding: 0 2px;
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 12px;
 }
-
 :host .actions {
   display: flex;
   justify-content: space-around;
   background-color: var(--vi-user--background-color, #2b3940);
 }
-
 :host .actions vi-button {
   height: var(--theme-h2) !important;
   line-height: var(--theme-h2) !important;
@@ -43773,24 +43539,20 @@ let User = class User extends WebComponent {
   --vi-icon-height: var(--theme-h4);
   --vi-icon-width: var(--theme-h4);
 }
-
 :host .actions vi-button#signIn {
   border-left: 1px solid #3b484e;
   color: white;
 }
-
 :host .actions vi-button#signIn > vi-icon {
   height: var(--theme-h1) !important;
   margin-left: var(--theme-h5);
 }
-
 :host vi-button {
   width: var(--theme-h1);
   height: var(--theme-h1) !important;
   line-height: var(--theme-h1) !important;
   cursor: pointer;
 }
-
 :host vi-button#settings {
   width: var(--theme-h1);
   box-sizing: border-box;
@@ -43810,27 +43572,22 @@ let User = class User extends WebComponent {
   -webkit-transition-timing-function: ease-out;
   transition-timing-function: ease-out;
 }
-
 :host vi-button#settings:hover {
   background-color: rgba(255, 255, 255, 0.05);
 }
-
 :host vi-button#settings:active {
   background-color: rgba(230, 230, 230, 0.05);
 }
-
 :host vi-button#settings[disabled] {
   fill: fadeout(white, 50%);
   color: fadeout(white, 50%);
 }
-
 :host vi-button > span {
   display: inline-block;
   vertical-align: top;
   line-height: var(--theme-h1);
   height: var(--theme-h1);
 }
-
 :host vi-button > vi-icon {
   display: inline-block;
   fill: white;
@@ -43838,8 +43595,7 @@ let User = class User extends WebComponent {
 
 :host-context([is-signed-in]) vi-button {
   cursor: pointer;
-}
-</style>
+}</style>
 
 <div class="username horizontal layout center-justified" hidden$="[[!isSignedIn]]">
     <span>[[userName]]</span>
@@ -43974,15 +43730,12 @@ let Menu = Menu_1 = class Menu extends WebComponent {
   min-width: var(--vi-menu--expand-width, 17em);
   will-change: width;
 }
-
 :host([hide-search]) vi-input-search {
   display: none !important;
 }
-
 :host([hide-search]) vi-menu-item:first-of-type {
   margin-top: var(--theme-h5);
 }
-
 :host([is-resizing]) #resizer, :host #resizer:hover {
   background-color: #333;
 }
@@ -43996,7 +43749,6 @@ let Menu = Menu_1 = class Menu extends WebComponent {
   width: var(--theme-h1);
   fill: rgba(255, 255, 255, 0.5);
 }
-
 #toggleCollapse::part(icon) {
   transition: transform 0.3s ease-out;
   --vi-icon-width: var(--theme-h4);
@@ -44014,7 +43766,6 @@ vi-scroller[vertical][hovering] + #resizer {
   cursor: pointer;
   font-style: italic;
 }
-
 #add:hover {
   background-color: rgba(0, 0, 0, 0.1);
 }
@@ -44026,7 +43777,6 @@ vi-scroller[vertical][hovering] + #resizer {
   background-color: rgba(0, 0, 0, 0.2);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
-
 .instantSearch a {
   cursor: pointer;
   color: var(--vi-menu-color, #FAFAFA);
@@ -44036,20 +43786,17 @@ vi-scroller[vertical][hovering] + #resizer {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 .instantSearch a div {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   padding-right: var(--theme-h5);
 }
-
 .instantSearch a span.match {
   color: #FFDD00;
   font-weight: bold;
   pointer-events: none;
 }
-
 .instantSearch a span.label {
   font-size: 11px;
   font-weight: 100;
@@ -44057,11 +43804,9 @@ vi-scroller[vertical][hovering] + #resizer {
   line-height: var(--theme-h2);
   transform: translateY(1px);
 }
-
 .instantSearch a:hover {
   background-color: rgba(0, 0, 0, 0.1);
 }
-
 .instantSearch + vi-menu-item {
   margin-top: var(--theme-h5);
 }
@@ -44077,11 +43822,9 @@ header {
   text-align: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
-
 header .background {
   background-color: var(--theme-color-dark);
 }
-
 header .label {
   display: block;
   font-size: var(--theme-h3);
@@ -44101,12 +43844,10 @@ vi-input-search {
   margin-bottom: calc(var(--theme-h4) / 2);
   margin-left: calc(var(--theme-h4) - var(--theme-h4) / 2);
 }
-
 vi-input-search::part(input) {
   line-height: var(--theme-h2);
   padding-left: var(--theme-h5);
 }
-
 vi-input-search::part(input):focus {
   background-color: white;
   color: #333;
@@ -44136,7 +43877,6 @@ vi-input-search::part(input):focus {
   width: var(--theme-h1);
   min-width: var(--theme-h1);
 }
-
 :host([collapsed]) .container {
   transform: translateX(calc(var(--vi-menu--expand-width, 17em) * -1 + var(--theme-h1)));
   transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
@@ -44146,32 +43886,26 @@ vi-input-search::part(input):focus {
   will-change: transform;
   z-index: 100;
 }
-
 :host([collapsed]) .container > main, :host([collapsed]) .container footer, :host([collapsed]) .container header .label {
   opacity: 0;
   transition: opacity 0.22s ease-out;
   transition-delay: 200ms;
   will-change: opacity;
 }
-
 :host([collapsed]) #toggleCollapse {
   z-index: 1000;
   background-color: var(--theme-color-dark);
 }
-
 :host([collapsed]) #toggleCollapse::part(icon) {
   transform: rotate(180deg);
 }
-
 :host([collapsed]:hover) .container, :host([collapsed][search-focused]) .container {
   transform: translateX(0);
   box-shadow: 4px 0px 10px 0px rgba(0, 0, 0, 0.5);
 }
-
 :host([collapsed]:hover) .container > main, :host([collapsed]:hover) .container footer, :host([collapsed]:hover) .container header .label, :host([collapsed][search-focused]) .container > main, :host([collapsed][search-focused]) .container footer, :host([collapsed][search-focused]) .container header .label {
   opacity: 1;
-}
-</style>
+}</style>
 
 <div class="container layout vertical fit">
     <header>
@@ -44444,7 +44178,6 @@ let SignIn = class SignIn extends WebComponent {
   font-family: "viBrands";
   src: url(data:font/truetype;charset=utf-8;base64,AAEAAAALAIAAAwAwT1MvMg8SB4gAAAC8AAAAYGNtYXDVZ9RhAAABHAAAAGxnYXNwAAAAEAAAAYgAAAAIZ2x5ZsRSMBQAAAGQAAAD1GhlYWQRp15dAAAFZAAAADZoaGVhCHQEfAAABZwAAAAkaG10eBqyAQ0AAAXAAAAAJGxvY2ECjAOOAAAF5AAAABRtYXhwAA4AcgAABfgAAAAgbmFtZZlKCfsAAAYYAAABhnBvc3QAAwAAAAAHoAAAACAAAwPIAZAABQAAApkCzAAAAI8CmQLMAAAB6wAzAQkAAAAAAAAAAAAAAAAAAAABEAAAAAAAAAAAAAAAAAAAAABAAADqlgPA/8AAQAPAAEAAAAABAAAAAAAAAAAAAAAgAAAAAAADAAAAAwAAABwAAQADAAAAHAADAAEAAAAcAAQAUAAAABAAEAADAAAAAQAg6QHqiOqQ6pb//f//AAAAAAAg6QDqiOqQ6pb//f//AAH/4xcEFX4VdxVyAAMAAQAAAAAAAAAAAAAAAAAAAAAAAQAB//8ADwABAAAAAAAAAAAAAgAANzkBAAAAAAEAAAAAAAAAAAACAAA3OQEAAAAAAQAAAAAAAAAAAAIAADc5AQAAAAAEAAD/wAQAA8AAAwAHAAsADwAAASERIQEhESEBIREhASERIQHn/hkB5wIZ/hkB5/3n/hkB5wIZ/hkB5wHZAef+GQHn/AAB5/4ZAecABAAD/8QEsgO8ABsAMwBLAG8AAAEqASM4ASMxIgcOAQcGFxYXHgEXFjM+AScuAScDJicuAScmBwYXHgEXFhceARcWNjc2JicRPgEnLgEHIgYHBgcOAQcGFxY3PgE3NjcBDgEjIiYjJgYHBhYXHgEzMjY3ATYmJyYGBwMjAy4BBw4BFwEEggEEAgERPT2CMTIGByUmaz4+NxcdAgEbFHAwODhkJSYLDCUlaTIzDwIEARMnCw0IEhIIDQsnEwEEAg8zMmklJQwLJiVkODgw/QAcQT0GHQITIQUGFxYQIA9wYyUBIwgYGBksCc0D1wswGBkXCAEPAfQGBhQNDA0NCQkNAwMEJRgVHgT+oRobGykKCggIIyNQIyMIAQIBBQ0SFC4PAkEOLxQRDgYCAQkjIlEiIwgICgooGxsb/f5RTQIBFxQWKQYDAnVeAtYZLggIFxf94wIhFxQJCjAZ/WsAAQAK/8AD9gPAADoAAAEVIQYHDgEHBiMiJy4BJyY1NDc+ATc2MzIWFzcmJy4BJyYjIgcOAQcGFRQXHgEXFjMyNz4BNzY1NCYnAgoBIwUREkQ2NUxBOjpWGRkZGVY6OkFLZRyLIScmVi8wNGpdXYspKCgpi11dam9bWoEkIwUDAgmvHSYmRBgYGRpXOztDQzs7VxoZMxyGHxkZIwkJKCiLXl1qal1eiygoJSWFXFxtGSkTAAAAAQEA/8ADAAPAABcAAAEzNSMiBw4BBwYdASMVMxEzETM3IzU0NgJgoKAuKSk9ERKAgMCgIMATAwDAEhE9KSkuYMD+AAIAwGANEwAAAAEAAAAABAADQABPAAABDgEHPgE3DgEHLgEjIgcOAQcGFRQWFyYnLgEnJicOARUUFhcuASccARUUFhcOASMiJiceARcOASMiJicWFx4BFxYzMjc+ATc2NTQmNT4BNwQAHD0gITAMH0MkHFAtKycmORARAwJBPT5uMDAnDQ8zKhkxFWFIDRwPChMKFGtFNoVKDRkMIyYmUSsrLJFvcJgnJwEfNRUC3g0RAxM8JRIaBx4kEBE5JiYsDBgMAxEROScnMBc2HTZcHQEODAEBAUx0DgQDAgE+UgIqMAIBFhIRGAcGNjesamtoBw0HFjcgAAAAAAEAAAAAAABLNQeLXw889QALBAAAAAAA1uuM8AAAAADW64zwAAD/wASyA8AAAAAIAAIAAAAAAAAAAQAAA8D/wAAABLIAAAAABLIAAQAAAAAAAAAAAAAAAAAAAAkEAAAAAAAAAAAAAAACAAAABAAAAASyAAMEAAAKBAABAAQAAAAAAAAAAAoAFAAeAEQA8gFMAXIB6gABAAAACQBwAAQAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAADgCuAAEAAAAAAAEABwAAAAEAAAAAAAIABwBgAAEAAAAAAAMABwA2AAEAAAAAAAQABwB1AAEAAAAAAAUACwAVAAEAAAAAAAYABwBLAAEAAAAAAAoAGgCKAAMAAQQJAAEADgAHAAMAAQQJAAIADgBnAAMAAQQJAAMADgA9AAMAAQQJAAQADgB8AAMAAQQJAAUAFgAgAAMAAQQJAAYADgBSAAMAAQQJAAoANACkaWNvbW9vbgBpAGMAbwBtAG8AbwBuVmVyc2lvbiAxLjAAVgBlAHIAcwBpAG8AbgAgADEALgAwaWNvbW9vbgBpAGMAbwBtAG8AbwBuaWNvbW9vbgBpAGMAbwBtAG8AbwBuUmVndWxhcgBSAGUAZwB1AGwAYQByaWNvbW9vbgBpAGMAbwBtAG8AbwBuRm9udCBnZW5lcmF0ZWQgYnkgSWNvTW9vbi4ARgBvAG4AdAAgAGcAZQBuAGUAcgBhAHQAZQBkACAAYgB5ACAASQBjAG8ATQBvAG8AbgAuAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==) format("truetype");
 }
-
 :host {
   display: flex;
   flex-direction: row;
@@ -44456,7 +44189,6 @@ let SignIn = class SignIn extends WebComponent {
   position: relative;
   --vi-sign-in-persistent-object-width-base: 400px;
 }
-
 :host #background {
   position: absolute;
   top: 0;
@@ -44468,38 +44200,30 @@ let SignIn = class SignIn extends WebComponent {
   background-position: center center;
   overflow: hidden;
 }
-
 :host #background .default {
   background: linear-gradient(45deg, var(--theme-color-dark) 0%, var(--theme-color) 100%);
 }
-
 :host #background .default svg {
   height: 100%;
   width: 100%;
 }
-
 :host #background .default:not(:nth-child(2)) {
   display: none;
 }
-
 :host header {
   padding: var(--theme-h2) var(--theme-h2) var(--theme-h4) var(--theme-h2);
 }
-
 :host header h1 {
   margin: 0;
   color: var(--theme-color);
   text-shadow: 2px 2px #eee;
 }
-
 :host header h1:empty {
   display: none;
 }
-
 :host header #logo:not([src]) {
   display: none;
 }
-
 :host .dialog {
   display: flex;
   flex-direction: column;
@@ -44507,7 +44231,6 @@ let SignIn = class SignIn extends WebComponent {
   background-color: white;
   box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.12), 0 1px 5px 0 rgba(0, 0, 0, 0);
 }
-
 :host .dialog .loader {
   height: 4px;
   width: 100%;
@@ -44518,7 +44241,6 @@ let SignIn = class SignIn extends WebComponent {
   overflow: hidden;
   background-color: #ddd;
 }
-
 :host .dialog .loader:before {
   display: block;
   position: absolute;
@@ -44529,47 +44251,37 @@ let SignIn = class SignIn extends WebComponent {
   background-color: var(--theme-color-dark);
   animation: loading 2s linear infinite;
 }
-
 :host .dialog main {
   flex: 1;
   min-height: 0;
   min-width: 0;
 }
-
 :host .dialog main section {
   padding: 0 var(--theme-h2) var(--theme-h2) var(--theme-h2);
 }
-
 :host .dialog main section:not(.active) {
   display: none !important;
 }
-
 :host .dialog main section.username input {
   margin: var(--theme-h3) 0 0 0;
 }
-
 :host .dialog main section.password input, :host .dialog main section.password h1, :host .dialog main section.twofactor input, :host .dialog main section.twofactor h1 {
   margin: var(--theme-h3) 0 0 0;
 }
-
 :host .dialog main section.password vi-checkbox, :host .dialog main section.twofactor vi-checkbox {
   margin-top: var(--theme-h5);
   line-height: var(--theme-h2);
 }
-
 :host .dialog main section.register vi-persistent-object-tab-presenter, :host .dialog main section.initial vi-persistent-object-tab-presenter {
   max-height: 50vh;
 }
-
 :host .dialog main h1, :host .dialog main h2, :host .dialog main h3 {
   margin: 0;
 }
-
 :host .dialog main h1, :host .dialog main h2 {
   font-weight: 300;
   font-size: 1.5rem;
 }
-
 :host .dialog main input {
   box-sizing: border-box;
   padding: var(--theme-h5);
@@ -44577,16 +44289,13 @@ let SignIn = class SignIn extends WebComponent {
   outline: none;
   width: 100%;
 }
-
 :host .dialog main input:focus {
   border-color: var(--theme-color-light);
 }
-
 :host .dialog main input[error] {
   border-color: var(--colors-red-700);
   background-color: var(--colors-red-50);
 }
-
 :host .dialog main .description {
   display: block;
   margin-top: var(--theme-h5);
@@ -44594,49 +44303,40 @@ let SignIn = class SignIn extends WebComponent {
   font-size: 12px;
   line-height: 1.3333;
 }
-
 :host .dialog main .description:empty {
   display: none;
 }
-
 :host .dialog main .actions {
   padding-top: var(--theme-h3);
 }
-
 :host .dialog main .actions vi-button {
   padding: 0 var(--theme-h3);
   line-height: var(--theme-h2);
 }
-
 :host .dialog main .actions vi-button[inverse] {
   padding: 0 var(--theme-h5);
   margin-left: calc(var(--theme-h5) * -1);
 }
-
 :host .dialog main .user {
   margin: var(--theme-h5) calc(var(--theme-h2) * -1) 0 calc(var(--theme-h2) * -1);
   padding: 0 var(--theme-h2);
   background-color: #eee;
   gap: var(--theme-h5);
 }
-
 :host .dialog main .user h3, :host .dialog main .user vi-button {
   font-weight: 300;
   font-size: 13px;
   line-height: var(--theme-h3);
 }
-
 :host .dialog main .user vi-icon {
   fill: #555;
   --vi-icon-height: 12px;
 }
-
 :host .dialog main .splitter {
   position: relative;
   text-align: center;
   padding: var(--theme-h3) 0;
 }
-
 :host .dialog main .splitter::before {
   position: absolute;
   top: 50%;
@@ -44646,19 +44346,16 @@ let SignIn = class SignIn extends WebComponent {
   background-color: var(--theme-light-border);
   content: " ";
 }
-
 :host .dialog main .splitter span {
   position: relative;
   background-color: white;
   padding: 0 var(--theme-h4);
 }
-
 :host .dialog main .brands {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-
 :host .dialog main .brands .brand {
   display: flex;
   flex-direction: row;
@@ -44666,11 +44363,9 @@ let SignIn = class SignIn extends WebComponent {
   width: 300px;
   padding: 0;
 }
-
 :host .dialog main .brands .brand:not(:first-of-type) {
   margin-top: var(--theme-h4);
 }
-
 :host .dialog main .brands .brand span {
   flex: 1;
   min-height: 0;
@@ -44678,7 +44373,6 @@ let SignIn = class SignIn extends WebComponent {
   border-left: 1px solid rgba(255, 255, 255, 0.1);
   padding: 0 var(--theme-h5);
 }
-
 :host .dialog main .brands .brand .logo {
   font-family: "viBrands";
   text-align: center;
@@ -44687,102 +44381,81 @@ let SignIn = class SignIn extends WebComponent {
   color: white;
   font-size: 16px;
 }
-
-:host .dialog main .brands .brand[brand="facebook"] {
+:host .dialog main .brands .brand[brand=facebook] {
   background-color: #3c66c4;
 }
-
-:host .dialog main .brands .brand[brand="facebook"] .logo:before {
+:host .dialog main .brands .brand[brand=facebook] .logo:before {
   content: "\ea90";
 }
-
-:host .dialog main .brands .brand[brand="google"] {
+:host .dialog main .brands .brand[brand=google] {
   background-color: #cf4332;
 }
-
-:host .dialog main .brands .brand[brand="google"] .logo:before {
+:host .dialog main .brands .brand[brand=google] .logo:before {
   content: "\ea88";
 }
-
-:host .dialog main .brands .brand[brand="microsoft"] {
+:host .dialog main .brands .brand[brand=microsoft] {
   background-color: #525252;
 }
-
-:host .dialog main .brands .brand[brand="microsoft"] .logo:before {
+:host .dialog main .brands .brand[brand=microsoft] .logo:before {
   content: "\e900";
 }
-
-:host .dialog main .brands .brand[brand="twitter"] {
+:host .dialog main .brands .brand[brand=twitter] {
   background-color: #33ccff;
 }
-
-:host .dialog main .brands .brand[brand="twitter"] .logo:before {
+:host .dialog main .brands .brand[brand=twitter] .logo:before {
   content: "\ea96";
 }
-
-:host .dialog main .brands .brand[brand="yammer"] {
+:host .dialog main .brands .brand[brand=yammer] {
   background-color: #0193be;
 }
-
-:host .dialog main .brands .brand[brand="yammer"] .logo:before {
+:host .dialog main .brands .brand[brand=yammer] .logo:before {
   content: "\e901";
 }
-
 :host .dialog main vi-persistent-object-tab-presenter {
   margin: var(--theme-h3) calc(var(--theme-h4) * -1) 0 calc(var(--theme-h4) * -1);
   min-height: calc(var(--theme-h2) * 3);
   max-height: 80vh;
 }
-
 :host .dialog main vi-persistent-object-tab-presenter > vi-persistent-object-tab {
   position: static;
   width: 100%;
 }
-
 :host .dialog footer {
   position: relative;
   color: white;
   padding: var(--theme-h4);
   box-shadow: inset 0px 6px 4px 0px rgba(0, 0, 0, 0.15);
 }
-
-:host .dialog footer[type="error"], :host .dialog footer[type="Error"], :host .dialog footer[type="0"] {
+:host .dialog footer[type=error], :host .dialog footer[type=Error], :host .dialog footer[type="0"] {
   border-bottom-color: rgba(0, 0, 0, 0.1);
   background-color: var(--theme-color-error);
   fill: var(--theme-color-error);
 }
-
-:host .dialog footer[type="notice"], :host .dialog footer[type="Notice"], :host .dialog footer[type="1"] {
+:host .dialog footer[type=notice], :host .dialog footer[type=Notice], :host .dialog footer[type="1"] {
   border-bottom-color: rgba(0, 0, 0, 0.1);
   background-color: var(--theme-color-notice);
   fill: var(--theme-color-notice);
 }
-
-:host .dialog footer[type="ok"], :host .dialog footer[type="OK"], :host .dialog footer[type="2"] {
+:host .dialog footer[type=ok], :host .dialog footer[type=OK], :host .dialog footer[type="2"] {
   border-bottom-color: rgba(0, 0, 0, 0.1);
   background-color: var(--theme-color-ok);
   fill: var(--theme-color-ok);
 }
-
-:host .dialog footer[type="warning"], :host .dialog footer[type="Warning"], :host .dialog footer[type="3"] {
+:host .dialog footer[type=warning], :host .dialog footer[type=Warning], :host .dialog footer[type="3"] {
   border-bottom-color: rgba(0, 0, 0, 0.1);
   background-color: var(--theme-color-warning);
   fill: var(--theme-color-warning);
 }
-
 :host([initialization-error]) vi-scroller {
   display: none;
 }
-
 :host #sideHost {
   box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
   overflow: hidden;
 }
-
 :host vi-scroller #side {
   padding: var(--theme-h3);
 }
-
 :host vi-scroller #side h1 {
   font-size: 36px;
   text-transform: lowercase;
@@ -44791,28 +44464,23 @@ let SignIn = class SignIn extends WebComponent {
   margin: var(--theme-h3) 0 var(--theme-h1) 0;
   color: var(--theme-color);
 }
-
 :host vi-scroller #side h1:not(:first-child) {
   display: none;
 }
-
 :host vi-scroller #side h2 {
   margin: var(--theme-h1) 0;
   font-size: 14px;
   font-weight: normal;
   color: #888;
 }
-
 :host vi-scroller #side main {
   list-style: none;
   padding: 0;
 }
-
-:host ::slotted([slot="sign-in-footer"]) {
+:host ::slotted([slot=sign-in-footer]) {
   max-width: 100vw;
   width: 400px;
 }
-
 :host([is-desktop]) .dialog, :host([is-tablet]) .dialog {
   width: var(--vi-sign-in-persistent-object-width, var(--vi-sign-in-persistent-object-width-base));
   max-width: 90vw;
@@ -44831,11 +44499,10 @@ let SignIn = class SignIn extends WebComponent {
     bottom: 0;
     left: 0;
   }
-  ::slotted([slot="sign-in-footer"]) {
+  ::slotted([slot=sign-in-footer]) {
     width: auto !important;
   }
 }
-
 @keyframes loading {
   from {
     left: -200px;
@@ -44856,8 +44523,7 @@ let SignIn = class SignIn extends WebComponent {
   to {
     left: 100%;
   }
-}
-</style>
+}</style>
 
 <div id="background">
     <slot name="sign-in-background"></slot>
@@ -45415,49 +45081,42 @@ let Spinner = class Spinner extends WebComponent {
   width: var(--vi-spinner-size, var(--theme-h2));
   height: var(--vi-spinner-size, var(--theme-h2));
 }
-
 :host(:not([block])) {
   position: absolute;
   left: 50%;
   top: 50%;
   transform: translate(calc(var(--vi-spinner-size, var(--theme-h2)) / -2), calc(var(--vi-spinner-size, var(--theme-h2)) / -2));
 }
-
 :host .box {
   width: 45%;
   height: 45%;
-  background: var(--vi-spinner-color, #7f7f7f);
+  background: var(--vi-spinner-color, rgb(127, 127, 127));
   opacity: 0.1;
   animation: loadAnimation 1s linear infinite;
 }
-
 :host .box:nth-of-type(1) {
   position: absolute;
   top: 2.5%;
   left: 2.5%;
   animation-delay: -0.75s;
 }
-
 :host .box:nth-of-type(2) {
   position: absolute;
   top: 2.5%;
   right: 2.5%;
   animation-delay: -0.5s;
 }
-
 :host .box:nth-of-type(3) {
   position: absolute;
   bottom: 2.5%;
   right: 2.5%;
   animation-delay: -0.25s;
 }
-
 :host .box:nth-of-type(4) {
   position: absolute;
   bottom: 2.5%;
   left: 2.5%;
 }
-
 :host([hidden]) {
   display: none !important;
 }
@@ -45475,8 +45134,7 @@ let Spinner = class Spinner extends WebComponent {
   100% {
     opacity: 0.1;
   }
-}
-</style>
+}</style>
 
 <div class="box"></div>
 <div class="box"></div>
@@ -48861,8 +48519,8 @@ let Profiler = class Profiler extends WebComponent {
   --vi-profiler-entry-height: var(--theme-h2);
   --vi-profiler-entry-level-gap: var(--theme-h5);
   --vi-profiler-header-height: var(--theme-h3);
+  z-index: 100;
 }
-
 :host vi-icon {
   fill: white;
   margin-left: var(--theme-h5);
@@ -48872,48 +48530,40 @@ let Profiler = class Profiler extends WebComponent {
   --vi-icon-height: var(--theme-h3);
   --vi-icon-width: var(--theme-h3);
 }
-
 :host vi-popup {
   flex: 1;
   min-height: 0;
   min-width: 0;
 }
-
-:host vi-popup [slot="header"] {
+:host vi-popup [slot=header] {
   color: white;
   height: var(--theme-h1);
   line-height: var(--theme-h1);
   padding-left: var(--theme-h4);
 }
-
-:host vi-popup [slot="header"] #lastRequest {
+:host vi-popup [slot=header] #lastRequest {
   line-height: normal;
 }
-
-:host vi-popup [slot="header"] #lastRequest > div {
+:host vi-popup [slot=header] #lastRequest > div {
   display: flex;
   flex-direction: column;
   justify-content: center;
   margin-right: var(--theme-h3);
 }
-
-:host vi-popup [slot="header"] #lastRequest > div label {
+:host vi-popup [slot=header] #lastRequest > div label {
   font-size: 9px;
   line-height: 9px;
   text-transform: uppercase;
 }
-
-:host vi-popup [slot="header"] #lastRequest > div h1 {
+:host vi-popup [slot=header] #lastRequest > div h1 {
   font-size: 15px;
   line-height: 15px;
   font-weight: bolder;
   margin: 0;
 }
-
-:host vi-popup:not([disabled]) [slot="header"], :host vi-popup:not([disabled]) label {
+:host vi-popup:not([disabled]) [slot=header], :host vi-popup:not([disabled]) label {
   cursor: pointer !important;
 }
-
 :host vi-popup main {
   height: calc(15 * var(--theme-h1));
   max-height: 40vh;
@@ -48921,18 +48571,15 @@ let Profiler = class Profiler extends WebComponent {
   box-shadow: var(--theme-box-shadow);
   padding: 6px;
 }
-
 :host vi-popup main > * {
   overflow: hidden;
   background-color: white;
 }
-
 :host vi-popup main > *:first-child {
   width: 40%;
   z-index: 1;
   box-shadow: var(--theme-box-shadow);
 }
-
 :host vi-popup main > *:first-child .request {
   background-color: #FAFAFA;
   color: #333;
@@ -48943,7 +48590,6 @@ let Profiler = class Profiler extends WebComponent {
   border: 1px solid #EAEAEA;
   transition: all 0.2s ease;
 }
-
 :host vi-popup main > *:first-child .request[selected] {
   background-color: var(--theme-color);
   color: white;
@@ -48951,114 +48597,89 @@ let Profiler = class Profiler extends WebComponent {
   border-radius: var(--theme-h5) 0 0 var(--theme-h5);
   border-right-width: 0;
 }
-
 :host vi-popup main > *:first-child .request[selected] h3 {
   margin-right: calc(var(--theme-h4) + 2px);
 }
-
 :host vi-popup main > *:first-child .request[has-warnings] {
   background-color: #a00;
   color: white;
 }
-
 :host vi-popup main > *:first-child .request[has-warnings][selected] {
   background-color: #800;
 }
-
 :host vi-popup main > *:first-child .request h1, :host vi-popup main > *:first-child .request h2, :host vi-popup main > *:first-child .request h3 {
   margin: 0;
 }
-
 :host vi-popup main > *:first-child .request h1 {
   font-size: 16px;
   margin-right: var(--theme-h5);
 }
-
 :host vi-popup main > *:first-child .request h2 {
   font-size: 13px;
 }
-
 :host vi-popup main > *:first-child .request h3 {
   font-size: 10px;
   font-weight: 300;
   transition: margin-right 0.2s ease;
 }
-
 :host vi-popup main > *:first-child .request .method > div {
   line-height: 20px;
 }
-
 :host vi-popup main > *:first-child .request .extra {
   font-size: 12px;
   padding-top: var(--theme-h5);
   letter-spacing: 0.5px;
 }
-
 :host vi-popup main > *:first-child .request .extra > div {
   margin-right: var(--theme-h4);
 }
-
 :host vi-popup main > *:first-child .request .extra > div label {
   font-weight: 400;
 }
-
 :host vi-popup main > *:first-child .request .extra > div span {
   font-weight: bold;
 }
-
 :host vi-popup main > div {
   border: 1px solid #C7C7C7;
   border-left-width: 0;
   margin-top: 1px;
   margin-bottom: 1px;
 }
-
 :host vi-popup main > div:nth-child(2) vi-scroller svg g.xaxis {
   font-size: 10px;
 }
-
 :host vi-popup main > div:nth-child(2) vi-scroller svg g.xaxis line {
   stroke: #eee;
 }
-
 :host vi-popup main > div:nth-child(2) vi-scroller svg g.xaxis g.tick:first-child {
   display: none;
 }
-
 :host vi-popup main > div:nth-child(2) vi-scroller svg g.entries .entry {
   cursor: default;
 }
-
 :host vi-popup main > div:nth-child(2) vi-scroller svg g.entries .entry rect {
   fill: #63b08a;
   stroke: white;
   stroke-width: 1px;
 }
-
 :host vi-popup main > div:nth-child(2) vi-scroller svg g.entries .entry.has-details {
   cursor: pointer;
 }
-
 :host vi-popup main > div:nth-child(2) vi-scroller svg g.entries .entry.has-details rect {
   fill: #008042;
 }
-
 :host vi-popup main > div:nth-child(2) vi-scroller svg g.entries .entry.has-details .text {
   cursor: pointer !important;
 }
-
 :host vi-popup main > div:nth-child(2) vi-scroller svg g.entries .entry.has-sql rect {
   fill: #7e007e;
 }
-
 :host vi-popup main > div:nth-child(2) vi-scroller svg g.entries .entry.has-sql.has-n-plus-one rect {
   fill: #a00;
 }
-
 :host vi-popup main > div:nth-child(2) vi-scroller svg g.entries .entry.has-exception rect {
   fill: #a00;
 }
-
 :host vi-popup main > div:nth-child(2) vi-scroller svg g.entries .entry .text {
   color: white;
   white-space: nowrap;
@@ -49069,7 +48690,6 @@ let Profiler = class Profiler extends WebComponent {
   line-height: var(--vi-profiler-entry-height);
   box-sizing: border-box;
 }
-
 :host vi-popup main #hoveredEntry {
   position: absolute;
   left: var(--theme-h5);
@@ -49078,26 +48698,21 @@ let Profiler = class Profiler extends WebComponent {
   font-size: 13px;
   padding: var(--theme-h4);
 }
-
 :host vi-popup main #hoveredEntry table td {
   font-size: 13px;
 }
-
 :host vi-popup main #hoveredEntry table td:first-child {
   font-weight: bold;
 }
-
 :host vi-popup main #hoveredEntry table tr:first-child td:last-child {
   font-weight: bold;
 }
-
 :host vi-popup main #selectedEntry header {
   height: var(--theme-h2);
   line-height: var(--theme-h2);
   border-bottom: 1px solid var(--theme-light-border);
   box-sizing: border-box;
 }
-
 :host vi-popup main #selectedEntry header h1 {
   margin: 0;
   font-size: 13px;
@@ -49105,37 +48720,30 @@ let Profiler = class Profiler extends WebComponent {
   padding: 0 var(--theme-h5);
   color: var(--theme-color);
 }
-
 :host vi-popup main #selectedEntry vi-scroller {
   top: var(--theme-h2);
 }
-
 :host vi-popup main #selectedEntry #selectedEntryInfo {
   padding-left: var(--theme-h5);
 }
-
 :host vi-popup main #selectedEntry #selectedEntryInfo table tr td {
   line-height: 1.2em;
   padding: 0 var(--theme-h3) var(--theme-h5) 0;
   vertical-align: top;
   font-size: 13px;
 }
-
 :host vi-popup main #selectedEntry #selectedEntryInfo table tr td:first-of-type {
   font-weight: bold;
 }
-
 :host vi-popup main #selectedEntry #selectedEntryInfo pre {
   font-family: monospace !important;
 }
-
 :host vi-popup main #selectedEntry #selectedEntryInfo h2 {
   font-size: var(--theme-h3);
   margin: var(--theme-h4) 0;
   font-weight: 400;
   color: var(--theme-color);
-}
-</style>
+}</style>
 
 <vi-popup sticky disabled$="[[!lastRequest]]" auto-width>
     <div slot="header" class="flex layout horizontal">
@@ -49292,12 +48900,15 @@ let Profiler = class Profiler extends WebComponent {
                 request.parameters = [];
                 switch (request.method) {
                     case "GetPersistentObject": {
-                        request.parameters.push({ key: "Type", value: request.response.result.type });
-                        request.parameters.push({ key: "Id", value: request.response.result.objectId });
+                        if (request.response.result != null) {
+                            request.parameters.push({ key: "Type", value: request.response.result.type });
+                            request.parameters.push({ key: "Id", value: request.response.result.objectId });
+                        }
                         break;
                     }
                     case "GetQuery": {
-                        request.parameters.push({ key: "Name", value: request.response.query.name });
+                        if (request.response.result != null)
+                            request.parameters.push({ key: "Name", value: request.response.query.name });
                         break;
                     }
                     case "ExecuteAction": {
@@ -49663,11 +49274,9 @@ let QueryGridCellDefault = class QueryGridCellDefault extends QueryGridCell {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-
 :host([is-app-sensitive][sensitive]) {
   filter: blur(5px);
-}
-</style>`; }
+}</style>`; }
     _valueChanged(itemValue) {
         this._setSensitive(itemValue?.column.isSensitive);
         if (!itemValue) {
@@ -49790,8 +49399,7 @@ let PopupMenuItemSeparator = class PopupMenuItemSeparator extends WebComponent {
     static get template() { return html `<style>:host {
   display: block;
   border-top: 1px solid #ddd;
-}
-</style>
+}</style>
 
 <slot></slot>`; }
 };
@@ -49814,7 +49422,6 @@ let PopupMenuItemWithActions = class PopupMenuItemWithActions extends WebCompone
   color: var(--theme-color);
   fill: var(--theme-color);
 }
-
 :host > div {
   position: relative;
   z-index: 0;
@@ -49825,19 +49432,16 @@ let PopupMenuItemWithActions = class PopupMenuItemWithActions extends WebCompone
   text-align: left;
   white-space: nowrap;
 }
-
 :host > div > * {
   display: inline-block;
   vertical-align: top;
 }
-
 :host > div span {
   flex: 1 0 auto;
   padding: 0 var(--theme-h5) !important;
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
   line-height: var(--vi-popup-menu-item-height, var(--theme-h1));
 }
-
 :host(:not([disabled]):hover) > div::before {
   position: absolute;
   top: 0;
@@ -49848,26 +49452,22 @@ let PopupMenuItemWithActions = class PopupMenuItemWithActions extends WebCompone
   background-color: var(--theme-color);
   opacity: 0.1;
 }
-
 :host .actions {
   display: flex;
   flex-direction: row;
   padding-left: var(--theme-h5);
 }
-
 :host .actions ::slotted(*) {
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
   width: var(--vi-popup-menu-item-height, var(--theme-h1));
   line-height: var(--vi-popup-menu-item-height, var(--theme-h1));
 }
-
 :host vi-icon {
   position: relative;
   display: inline-block;
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
   width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
 }
-
 :host vi-icon#icon::before {
   content: " ";
   position: absolute;
@@ -49877,7 +49477,6 @@ let PopupMenuItemWithActions = class PopupMenuItemWithActions extends WebCompone
   width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
   background-color: rgba(0, 0, 0, 0.04);
 }
-
 :host(:not([icon-space])) .icon-space {
   display: none !important;
 }
@@ -49886,8 +49485,7 @@ let PopupMenuItemWithActions = class PopupMenuItemWithActions extends WebCompone
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
   width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
   background-color: rgba(0, 0, 0, 0.04);
-}
-</style>
+}</style>
 
 <div inverse class="layout horizontal">
     <paper-ripple></paper-ripple>
@@ -49940,21 +49538,17 @@ let PopupMenu = class PopupMenu extends WebComponent {
     static get template() { return html `<style>:host #popup {
   line-height: var(--theme-h1);
 }
-
 :host #popup #items {
   background-color: white;
   padding: 1px;
 }
-
 :host([context-menu-only]) #popup {
   position: fixed;
   z-index: 1000000;
 }
-
 :host([context-menu-only]) #popup #contextHeader {
   visibility: hidden;
-}
-</style>
+}</style>
 
 <vi-popup open-on-hover="{{openOnHover}}" id="popup" disabled="[[disabled]]" open="{{open}}" horizontal-align="[[horizontalAlign]]" vertical-align="[[verticalAlign]]" auto-width="[[autoWidth]]">
     <dom-if if="[[!contextMenuOnly]]">
@@ -50070,35 +49664,28 @@ let Checkbox = class Checkbox extends WebComponent {
   display: block;
   box-sizing: border-box;
 }
-
 :host(:not([disabled])) {
   cursor: pointer;
 }
-
 :host div > span:not([empty]) {
   padding: 0 1px 0 3px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
 :host div > vi-icon:not([hidden]) + span:not([empty]) {
   margin-left: calc(var(--theme-h5) - 1px);
 }
-
 :host(:focus) {
   outline: 0;
 }
-
-:host(:focus:not([disabled])) vi-icon[source="SelectedRadio"] ::content #box {
+:host(:focus:not([disabled])) vi-icon[source=SelectedRadio] ::content #box {
   fill: var(--theme-color-light);
   opacity: 0.75;
 }
-
-:host(:focus:not([disabled])) vi-icon[source="Selected"] + span {
+:host(:focus:not([disabled])) vi-icon[source=Selected] + span {
   outline: 1px dotted var(--theme-color-light);
-}
-</style>
+}</style>
 
 <div class="layout horizontal center">
     <vi-icon disabled$="[[disabled]]" source="[[icon]]" is-selected$="[[checked]]" part="icon"></vi-icon>
@@ -50177,7 +49764,6 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   line-height: var(--theme-h2);
   cursor: pointer;
 }
-
 :host vi-input-search {
   height: var(--theme-h2);
   border-top: 1px solid var(--theme-light-border);
@@ -50190,12 +49776,10 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   margin-bottom: var(--theme-h5);
   margin-left: calc(var(--theme-h2) + var(--theme-h5));
 }
-
 :host vi-input-search::part(input) {
   padding-left: 8px;
   color: #333;
 }
-
 :host vi-input-search::part(search) {
   width: var(--theme-h2);
   padding-top: 0;
@@ -50204,29 +49788,23 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   padding-left: 0;
   fill: var(--theme-light-border);
 }
-
 :host([disabled]) {
   cursor: default;
   background-color: #F9F9F9;
 }
-
 :host([disabled]) #filter button {
   display: none;
 }
-
 :host([disabled]) #filter [toggle] {
   cursor: default;
 }
-
 :host(:not([disabled])[query-filtering]) {
   background-color: var(--theme-color-faint);
 }
-
 :host #preRender {
   display: block;
 }
-
-:host vi-button[slot="header"], :host #preRender {
+:host vi-button[slot=header], :host #preRender {
   justify-content: start;
   box-sizing: border-box;
   overflow: hidden;
@@ -50236,11 +49814,9 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   height: var(--theme-h2);
   padding: 0;
 }
-
-:host vi-button[slot="header"] span, :host #preRender span {
+:host vi-button[slot=header] span, :host #preRender span {
   overflow: hidden;
 }
-
 :host #label {
   display: none;
   padding: 0 var(--vi-query-grid-cell-padding, var(--theme-h5));
@@ -50250,29 +49826,24 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   overflow: hidden;
   pointer-events: none;
 }
-
-:host vi-icon[source="Filter"] {
+:host vi-icon[source=Filter] {
   display: inline-block;
   fill: #eee;
   line-height: var(--theme-h2);
   height: var(--theme-h2);
   padding: 0 0 0 var(--vi-query-grid-cell-padding, var(--theme-h5));
 }
-
 :host([filtered]) #label {
   display: block;
 }
-
-:host([filtered]) vi-icon[source="Filter"] {
+:host([filtered]) vi-icon[source=Filter] {
   display: none;
 }
-
 :host #filterContentHost {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
 }
-
 :host #filterContentHost #filterContent {
   position: relative;
   height: 25em;
@@ -50280,7 +49851,6 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   min-width: 20em;
   max-width: 100%;
 }
-
 :host #filterContentHost #filterContent .left {
   position: absolute;
   left: 0;
@@ -50289,7 +49859,6 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   width: var(--theme-h2);
   background-color: #F7F7F7;
 }
-
 :host #filterContentHost .menuItem {
   position: relative;
   cursor: pointer;
@@ -50299,39 +49868,32 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   overflow: hidden;
   padding-right: var(--theme-h5);
 }
-
 :host #filterContentHost .menuItem vi-icon {
   text-align: center;
   min-width: var(--theme-h2);
   height: var(--theme-h2);
 }
-
 :host #filterContentHost .menuItem[disabled] {
   opacity: 0.25;
   cursor: default;
 }
-
 :host #filterContentHost .menuItem span {
   margin-left: var(--theme-h5);
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
 }
-
 :host #filterContentHost .split {
   border-top: 1px solid var(--theme-light-border);
   margin: 0 0 var(--theme-h5) calc(var(--theme-h2) + var(--theme-h5));
 }
-
 :host #filterContentHost .advanced {
   padding: 0 var(--vi-query-grid-cell-padding, var(--theme-h5)) var(--vi-query-grid-cell-padding, var(--theme-h5)) 0;
   position: relative;
 }
-
 :host #filterContentHost .advanced > div {
   padding-left: var(--theme-h2);
 }
-
 :host #filterContentHost .advanced > div button#inverse {
   display: flex;
   flex-direction: row;
@@ -50359,35 +49921,28 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   -webkit-transition-timing-function: ease-out;
   transition-timing-function: ease-out;
 }
-
 :host #filterContentHost .advanced > div button#inverse:hover {
   background-color: var(--theme-color-faint);
 }
-
 :host #filterContentHost .advanced > div button#inverse:active {
   background-color: var(--theme-color-dark);
   fill: white !important;
   color: white !important;
 }
-
 :host #filterContentHost .advanced > div button#inverse[disabled] {
   fill: var(--theme-color-faint);
   color: fadeout(black, 50%);
 }
-
 :host #filterContentHost .advanced > div button#inverse[inversed]:not(:active) {
   fill: darkred !important;
 }
-
 :host #filterContentHost .advanced > div button#inverse:not(:active) {
   fill: #aaa !important;
 }
-
 :host #filterContentHost .advanced > div button#inverse vi-icon svg {
   width: var(--theme-h4);
   height: var(--theme-h4);
 }
-
 :host #filterContentHost #distincts {
   border: 1px solid var(--theme-light-border);
   margin-left: var(--theme-h5);
@@ -50395,15 +49950,12 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   cursor: default;
   font-weight: normal;
 }
-
 :host #filterContentHost #distincts .item {
   cursor: pointer;
 }
-
 :host #filterContentHost #distincts .item:hover {
   background-color: var(--vi-query-grid-column-filter-distinct-hover-color, var(--theme-color-faint));
 }
-
 :host #filterContentHost #distincts .item vi-checkbox {
   display: flex;
   flex-direction: row;
@@ -50412,15 +49964,12 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   padding: 0 var(--theme-h5);
   pointer-events: none;
 }
-
 :host #filterContentHost #distincts .item vi-checkbox[checked] {
   --vi-checkbox-checked-color: green;
 }
-
 :host #filterContentHost #distincts .item[inversed] vi-checkbox[checked] {
   --vi-checkbox-checked-color: darkred;
 }
-
 :host #filterContentHost #distincts .item > span {
   display: -webkit-box;
   overflow: hidden;
@@ -50431,22 +49980,18 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
 }
-
-:host #filterContentHost #distincts .item > span[distinct-type="remaining"] {
+:host #filterContentHost #distincts .item > span[distinct-type=remaining] {
   color: var(--vi-query-grid-column-filter-distinct-remaining-color, #aaa);
 }
-
 :host #filterContentHost #distincts .item > span .match {
   color: var(--theme-color);
   font-weight: 600;
 }
-
 :host #filterContentHost #distincts div.hasMore {
   text-align: left;
   cursor: default;
   opacity: 0.25;
 }
-
 :host #filterContentHost #distincts div.hasMore vi-icon {
   display: inline-block;
   line-height: var(--theme-h3);
@@ -50454,15 +49999,12 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   padding: 0 var(--theme-h5);
   box-sizing: border-box;
 }
-
 :host #filterContentHost #distincts div.hasMore vi-icon:first-of-type ::content svg #check {
   display: none;
 }
-
 :host #filterContentHost #distincts div.hasMore vi-icon:last-of-type {
   padding-left: 0;
 }
-
 :host #filterContentHost #resizehandle {
   position: absolute;
   bottom: 0;
@@ -50474,15 +50016,12 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   height: var(--theme-h4);
   cursor: nwse-resize;
 }
-
 :host([loading]) #distincts {
   opacity: 0.5;
 }
-
-:host([sensitive]) vi-checkbox[distinct-type="matching"], :host([sensitive]) vi-checkbox[distinct-type="remaining"] {
+:host([sensitive]) vi-checkbox[distinct-type=matching], :host([sensitive]) vi-checkbox[distinct-type=remaining] {
   --at-apply: --vi-app--sensitive;
-}
-</style>
+}</style>
 
 <dom-if if="[[!render]]">
     <template>
@@ -50876,7 +50415,6 @@ let QueryGridColumnHeader = class QueryGridColumnHeader extends WebComponent {
   border-right: 1px solid var(--theme-light-border);
   background-color: white;
 }
-
 :host .label {
   display: flex;
   position: relative;
@@ -50887,7 +50425,6 @@ let QueryGridColumnHeader = class QueryGridColumnHeader extends WebComponent {
   white-space: nowrap;
   overflow: hidden;
 }
-
 :host .label > label {
   display: block;
   line-height: var(--vi-query-grid-header-height, var(--vi-query-grid-row-height));
@@ -50899,19 +50436,16 @@ let QueryGridColumnHeader = class QueryGridColumnHeader extends WebComponent {
   padding-right: var(--theme-h5);
   color: var(--theme-color);
 }
-
 :host .label > vi-icon {
   fill: var(--theme-color);
   line-height: var(--theme-h2);
   height: var(--theme-h2);
   --vi-icon-height: 12px;
 }
-
 :host vi-popup-menu vi-button {
   height: var(--vi-query-grid-header-height, var(--vi-query-grid-row-height));
 }
-
-:host vi-button[icon="CaretDown"]::after {
+:host vi-button[icon=CaretDown]::after {
   position: absolute;
   left: 0;
   top: 2px;
@@ -50920,7 +50454,6 @@ let QueryGridColumnHeader = class QueryGridColumnHeader extends WebComponent {
   content: " ";
   background-color: var(--theme-light-border);
 }
-
 :host .resizer {
   width: 0.5em;
   position: absolute;
@@ -50933,7 +50466,6 @@ let QueryGridColumnHeader = class QueryGridColumnHeader extends WebComponent {
   -webkit-transform: translate3d(0.25em, 0, 0);
   transform: translate3d(0.25em, 0, 0);
 }
-
 :host(.resizing) .resizer::after, :host .resizer:hover::after {
   position: absolute;
   left: calc(var(--theme-h5) / 2);
@@ -50942,8 +50474,7 @@ let QueryGridColumnHeader = class QueryGridColumnHeader extends WebComponent {
   width: 2px;
   background-color: #888;
   content: " ";
-}
-</style>
+}</style>
 
 <div class="relative">
     <div class="layout horizontal relative">
@@ -51157,25 +50688,20 @@ let QueryGridFilterDialogName = class QueryGridFilterDialogName extends WebCompo
   display: flex;
   flex-direction: row;
 }
-
 :host vi-icon {
   width: var(--theme-h2);
   height: var(--theme-h2);
 }
-
 :host input {
   padding: 0 var(--theme-h5);
 }
-
 :host #group:not([grouping]) > vi-persistent-object-attribute-edit, :host #group:not([grouping]) > vi-icon {
   display: none !important;
 }
-
 :host #group > vi-icon {
   width: var(--theme-h2);
   height: var(--theme-h2);
-}
-</style>
+}</style>
 
 <vi-persistent-object-attribute-edit attribute="[[attribute]]" class="flex" reverse>
     <vi-button slot="left" icon="Folder" on-tap="_toggleGrouping" inverse tabindex="-1"></vi-button>
@@ -51261,11 +50787,9 @@ let QueryGridFilterDialog = class QueryGridFilterDialog extends Dialog {
     static get template() { return Dialog.dialogTemplate(html `<style>:host vi-dialog-core {
   min-width: 400px;
 }
-
 :host main {
   padding: var(--theme-h4) var(--theme-h4) 0 var(--theme-h4);
-}
-</style>
+}</style>
 
 <vi-notification service-object="[[persistentObject]]"></vi-notification>
 <main id="main">
@@ -51315,8 +50839,7 @@ let QueryGridFilters = class QueryGridFilters extends WebComponent {
   line-height: var(--vi-query-grid-row-height);
   align-self: flex-end;
 }
-
-:host > vi-popup-menu vi-button[slot="header"] {
+:host > vi-popup-menu vi-button[slot=header] {
   position: relative;
   flex: 1;
   min-height: 0;
@@ -51328,15 +50851,12 @@ let QueryGridFilters = class QueryGridFilters extends WebComponent {
   width: var(--vi-query-grid-row-height);
   padding: 0;
 }
-
 :host([hidden]) {
   display: block !important;
 }
-
 :host([hidden]) > vi-popup-menu {
   visibility: hidden;
-}
-</style>
+}</style>
 
 <vi-popup-menu disabled="[[disabled]]">
     <vi-button slot="header" inverse$="[[!isFiltering]]" icon="Filter_Menu" disabled$="[[disabled]]"></vi-button>
@@ -51598,17 +51118,14 @@ let QueryGridFooter = class QueryGridFooter extends WebComponent {
   display: grid;
   grid-template-columns: var(--vi-query-grid-columns);
 }
-
 :host .column {
   padding: 0 var(--theme-h5);
   line-height: var(--vi-query-grid-row-height);
   font-weight: bold;
 }
-
 :host .column[is-numeric] {
   text-align: right;
-}
-</style>
+}</style>
 
 <dom-repeat items="[[columns]]" as="column">
     <template>
@@ -51637,13 +51154,11 @@ let QueryGridGrouping = class QueryGridGrouping extends WebComponent {
     static get template() { return html `<style>:host {
   display: block;
 }
-
 :host vi-button {
   width: var(--vi-query-grid-row-height);
   height: var(--vi-query-grid-row-height);
   line-height: var(--vi-query-grid-row-height);
-}
-</style>
+}</style>
 
 <vi-popup-menu disabled$="[[isBusy]]">
     <vi-button slot="header" icon="QueryGrid_Group" inverse disabled$="[[isBusy]]"></vi-button>
@@ -51704,7 +51219,6 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
   display: flex;
   box-sizing: border-box;
 }
-
 :host vi-button {
   justify-content: start;
   padding: 0 var(--theme-h5);
@@ -51715,107 +51229,83 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
   white-space: nowrap;
   overflow: hidden;
 }
-
 :host vi-button vi-icon {
   height: var(--theme-h1);
 }
-
 :host vi-button vi-icon.action-icon, :host vi-button vi-icon.down-icon {
   width: var(--theme-h3);
 }
-
 :host vi-button .icon-space {
   height: var(--theme-h1);
   width: var(--theme-h2);
 }
-
 :host vi-button span {
   flex: 1;
   padding: 0 var(--theme-h5);
 }
-
 :host vi-popup-menu {
   min-width: 100%;
 }
-
 :host vi-popup[open] vi-button.groupActions {
   background-color: var(--theme-color-faint);
 }
-
 :host([disabled]) vi-button[disabled] {
   opacity: 1;
 }
-
 :host([disabled]) vi-button span {
   opacity: 0.5;
 }
-
 :host([disabled]) vi-button vi-icon {
   opacity: 0.4;
 }
-
 :host([grouped]) vi-icon.down-icon {
   transform: rotate(-90deg);
 }
-
 :host([overflow]) vi-button, :host([grouped]) vi-button {
   padding: 0 !important;
 }
-
 :host([overflow]) vi-button vi-icon.action-icon, :host([grouped]) vi-button vi-icon.action-icon {
   width: var(--theme-h2);
 }
-
 :host([overflow]) vi-button span, :host([grouped]) vi-button span {
   padding: 0 var(--theme-h4);
 }
-
 :host([overflow]) vi-icon, :host([grouped]) vi-icon {
   vertical-align: top;
   width: var(--theme-h2);
 }
-
 :host([overflow]) vi-icon.down-icon, :host([grouped]) vi-icon.down-icon {
   transform: rotate(-90deg);
 }
-
 :host([overflow]) vi-icon.action-icon, :host([overflow]) .icon-space, :host([grouped]) vi-icon.action-icon, :host([grouped]) .icon-space {
   background-color: rgba(0, 0, 0, 0.04);
 }
-
 :host([no-label]:not([force-label])) vi-button span, :host([pinned]:not([force-label])) vi-button span {
   display: none;
 }
-
 :host(:focus) {
   outline: none;
 }
-
 :host ul {
   padding: 0;
   margin: 0;
   list-style-type: none;
   line-height: var(--theme-h1);
 }
-
 :host ul li {
   cursor: pointer;
   padding: 0 var(--theme-h4);
   color: var(--theme-color);
 }
-
 :host ul li:hover {
   background-color: var(--theme-color-faint);
 }
-
 :host vi-popup-menu[open] vi-button:not(:hover) {
   background-color: var(--theme-color-faint);
 }
-
 :host([hidden]) {
   display: none !important;
-}
-</style>
+}</style>
 
 <dom-if if="[[!isGroup]]">
     <template>
@@ -52110,48 +51600,39 @@ let Icon = class Icon extends WebComponent {
   display: block;
   pointer-events: none;
 }
-
 :host([unresolved]) {
   display: none !important;
 }
-
 :host > div {
   display: grid;
   place-items: center;
   height: 100%;
 }
-
 :host svg {
   width: var(--vi-icon-width, 16px);
   height: var(--vi-icon-height, 16px);
   fill: var(--vi-icon-fill, inherit);
 }
-
 :host(.size-h1) svg {
   width: var(--theme-h1);
   height: var(--theme-h1);
 }
-
 :host(.size-h2) svg {
   width: var(--theme-h2);
   height: var(--theme-h2);
 }
-
 :host(.size-h3) svg {
   width: var(--theme-h3);
   height: var(--theme-h3);
 }
-
 :host(.size-h4) svg {
   width: var(--theme-h4);
   height: var(--theme-h4);
 }
-
 :host(.size-h5) svg {
   width: var(--theme-h5);
   height: var(--theme-h5);
-}
-</style>
+}</style>
 
 <div id="svgHost"></div>`; }
     get aliases() {
@@ -52779,16 +52260,13 @@ let QueryGridCellBoolean = class QueryGridCellBoolean extends QueryGridCell {
   --vi-icon-selected-checked-color: var(--vi-query-grid-cell-boolean-checked-color, #555);
   display: block;
 }
-
 :host > * {
   height: var(--vi-query-grid-row-height);
   line-height: var(--vi-query-grid-row-height);
 }
-
 :host([is-app-sensitive][sensitive]) {
   filter: blur(5px);
-}
-</style>`; }
+}</style>`; }
     _valueChanged(value, oldValue) {
         this._setOldValue(oldValue == null ? null : oldValue);
     }
@@ -52876,18 +52354,15 @@ let QueryGridCellImage = class QueryGridCellImage extends QueryGridCell {
   padding: 0 1px;
   overflow: hidden;
 }
-
 :host .image {
   height: var(--vi-query-grid-row-height);
   background-position: center center;
   background-size: contain;
   background-repeat: no-repeat;
 }
-
 :host([is-app-sensitive][sensitive]) {
   filter: blur(5px);
-}
-</style>`; }
+}</style>`; }
     _valueChanged(value) {
         this._setSensitive(value?.column.isSensitive);
         if (!value || !value.value) {
@@ -52931,29 +52406,23 @@ let QueryGridRowGroup = class QueryGridRowGroup extends WebComponent {
   background-color: #f5f5f5;
   min-width: 100%;
 }
-
 :host(:not([first])) {
   border-top: 1px solid var(--theme-light-border);
 }
-
 :host([collapsed]) vi-icon {
   transform: rotate(-45deg);
 }
-
 :host vi-icon {
   height: var(--vi-query-grid--row-height, var(--theme-h2));
   width: var(--theme-h2);
   transition: transform 0.2s ease;
 }
-
 :host label {
   line-height: var(--vi-query-grid--row-height, var(--theme-h2));
 }
-
 :host > div {
   transform: translateX(var(--vi-query-grid-horizontal));
-}
-</style>
+}</style>
 
 <div class="layout horizontal">
     <vi-icon source="QueryGrid_Group_Row"></vi-icon>
@@ -53013,93 +52482,72 @@ let QueryGridRow = class QueryGridRow extends WebComponent {
   white-space: nowrap;
   background-color: white;
 }
-
-:host(:nth-of-type(even)) > ::slotted(.column),
-:host(:nth-of-type(even)) > .pinned {
+:host(:nth-of-type(even)) > ::slotted(.column), :host(:nth-of-type(even)) > .pinned {
   background-color: var(--vi-query-grid-row-even-color, white);
 }
-
 :host(:nth-of-type(odd)), :host(:nth-of-type(odd)) ::slotted(.column), :host(:nth-of-type(odd)) .pinned {
   background-color: var(--vi-query-grid-row-odd-color, #FAFAFA);
 }
-
 :host(:nth-of-type(odd).loading), :host(:nth-of-type(odd).loading) ::slotted(.column), :host(:nth-of-type(odd).loading) .pinned {
   background-color: var(--vi-query-grid-row-odd-color, #FCFCFC);
 }
-
 :host(:not(.loading):hover) {
   cursor: pointer;
 }
-
 :host(:not(.loading):hover), :host(:not(.loading):hover) ::slotted(.column), :host(:not(.loading):hover) .pinned {
   background-color: var(--theme-color-semi-faint);
 }
-
 :host .pinned {
   transform: translateX(var(--vi-query-grid-horizontal));
   z-index: 0;
 }
-
 :host .reorder {
   pointer-events: all;
   cursor: grabbing;
 }
-
 :host .selector:hover > vi-icon, :host .actions:hover > vi-icon, :host .reorder:hover > vi-icon {
   background-color: rgba(0, 0, 0, 0.05) !important;
 }
-
 :host .selector > vi-icon, :host .actions > vi-icon, :host .reorder > vi-icon {
   width: var(--vi-query-grid-row-height);
   height: var(--vi-query-grid-row-height);
 }
-
 :host(.loading) .selector, :host(.loading) .actions, :host(.loading) ::slotted(.column) {
   visibility: hidden;
 }
-
 :host(.hidden) {
   display: none !important;
 }
-
 :host(.disabled) .selector, :host(.disabled) .actions, :host(.readonly) .selector, :host(.readonly) .actions {
   visibility: hidden;
   pointer-events: none;
 }
-
 :host(.disabled) {
   cursor: default;
 }
-
 :host([initializing][is-group]), :host([initializing]) .pinned {
   display: none !important;
 }
-
 :host([is-group]) {
   grid-template-columns: 1fr !important;
 }
-
 :host([is-group]) ::slotted(.column), :host([is-group]) .pinned {
   display: none;
 }
-
-:host(:not([is-group])) ::slotted([slot="group"]) {
+:host(:not([is-group])) ::slotted([slot=group]) {
   display: none;
 }
-
-:host [part="groupspacer"], :host [part="filter"] {
+:host [part=groupspacer], :host [part=filter] {
   display: none;
   width: var(--vi-query-grid-row-height);
 }
-
 :host vi-popup[open] {
   z-index: 10;
 }
 
-:host-context([has-grouping]) [part="groupspacer"] {
+:host-context([has-grouping]) [part=groupspacer] {
   display: block;
-}
-</style>
+}</style>
 
 <dom-if if="[[!initializing]]">
     <template>
@@ -53372,25 +52820,20 @@ let QueryGridSelectAll = class QueryGridSelectAll extends WebComponent {
   align-self: flex-end;
   cursor: pointer;
 }
-
 :host > vi-icon {
   height: var(--vi-query-grid-row-height);
   width: var(--vi-query-grid-row-height);
   line-height: var(--vi-query-grid-row-height);
 }
-
 :host([partial]) > * {
   opacity: 0.5;
 }
-
 :host(:not([partial]):not([can-select-all])) {
   cursor: default;
 }
-
 :host(:not([partial]):not([can-select-all])) > * {
   visibility: hidden;
-}
-</style>
+}</style>
 
 <paper-ripple></paper-ripple>
 <vi-icon source="Selected" is-selected$="[[selected]]"></vi-icon>`; }
@@ -53465,14 +52908,12 @@ let QueryGridConfigureDialogColumn = class QueryGridConfigureDialogColumn extend
   cursor: -moz-grab;
   cursor: -webkit-grab;
 }
-
 :host > vi-icon {
   width: var(--theme-h2);
   height: var(--theme-h2);
   fill: #888;
   pointer-events: none;
 }
-
 :host label {
   flex: 1;
   min-height: 0;
@@ -53485,23 +52926,18 @@ let QueryGridConfigureDialogColumn = class QueryGridConfigureDialogColumn extend
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 :host .buttons {
   background-color: #f9f9f9;
 }
-
 :host .buttons vi-button {
   fill: var(--theme-color);
 }
-
 :host(:not([is-pinned])) .buttons vi-button:nth-child(1) {
   opacity: 0.5;
 }
-
 :host([is-hidden]) .buttons vi-button:nth-child(2) {
   opacity: 0.5;
-}
-</style>
+}</style>
 
 <vi-icon source="Hamburger"></vi-icon>
 <label>[[column.column.label]]</label>
@@ -56673,31 +56109,25 @@ let QueryGridConfigureDialog = class QueryGridConfigureDialog extends Dialog {
   padding: var(--theme-h4) 0 var(--theme-h4) var(--theme-h5);
   max-height: calc(80vh - (var(--theme-h1) + var(--theme-h5) * 2) - (var(--theme-h2) + var(--theme-h4) * 2));
 }
-
 :host main > vi-scroller {
   flex: 1;
   min-height: 0;
   min-width: 0;
   margin-top: var(--theme-h4);
 }
-
 :host main vi-query-grid-configure-dialog-column-list {
   display: block;
   padding: 0 var(--theme-h4) 0 0;
 }
-
 :host main vi-query-grid-configure-dialog-column-list:empty {
   display: none;
 }
-
 :host footer > vi-button {
   margin: 0;
 }
-
 :host footer > div vi-button:first-child {
   margin-right: var(--theme-h5);
-}
-</style>
+}</style>
 
 <header>[[query.label]]</header>
 <main>
@@ -56911,30 +56341,24 @@ let QueryGrid = class QueryGrid extends WebComponent {
   -webkit-user-select: none;
   user-select: none;
 }
-
 :host([initializing]) header, :host([initializing]) vi-scroller {
   visibility: hidden;
 }
-
 :host([initializing]) vi-query-grid-row {
   display: contents;
 }
-
 :host([initializing]) .filler {
   display: none;
 }
-
 :host vi-scroller {
   flex: 1;
   min-height: 0;
   min-width: 0;
 }
-
 :host [grid] {
   display: grid;
   grid-template-columns: var(--vi-query-grid-columns);
 }
-
 :host header {
   display: flex;
   flex-direction: row;
@@ -56942,45 +56366,36 @@ let QueryGrid = class QueryGrid extends WebComponent {
   z-index: 1;
   border-bottom: 1px solid var(--theme-light-border);
 }
-
 :host header [grid] {
   margin-left: calc(var(--vi-query-grid-horizontal, 0) * -1);
 }
-
 :host header .controls {
   display: grid;
   background-color: white;
   position: relative;
   z-index: 1;
 }
-
 :host header .controls .reorder, :host header .controls .spacer {
   display: none;
   min-width: var(--vi-query-grid-row-height);
   height: var(--vi-query-grid-row-height);
 }
-
 :host header .controls .reorder {
   grid-area: reorder;
 }
-
 :host header .controls .spacer {
   grid-area: spacer;
 }
-
 :host header .controls vi-query-grid-grouping {
   grid-area: grouping;
 }
-
 :host header .controls vi-query-grid-select-all {
   grid-area: select;
 }
-
 :host header .controls vi-query-grid-filters {
   grid-area: filter;
   line-height: var(--vi-query-grid-row-height);
 }
-
 :host header .more {
   position: absolute;
   width: var(--theme-h2);
@@ -56988,266 +56403,201 @@ let QueryGrid = class QueryGrid extends WebComponent {
   background-color: white;
   z-index: 1;
 }
-
 :host header .more.left {
   left: 0;
 }
-
 :host header .more.right {
   right: 0;
 }
-
 :host footer {
   padding-left: var(--vi-query-grid-controls-width, 0);
 }
-
 :host footer vi-query-grid-footer {
   margin-left: calc(var(--vi-query-grid-horizontal, 0) * -1);
 }
-
 :host vi-spinner[hidden] {
   display: none !important;
 }
-
 :host(:not([can-filter])) vi-query-grid-column-header::part(filter) {
   display: none;
 }
-
 :host(:not([can-select])) vi-query-grid-row::part(selector) {
   display: none;
 }
-
 :host(:not([inline-actions])) vi-query-grid-row::part(actions) {
   display: none;
 }
-
 :host(:not([can-select]):not([can-filter]):not([inline-actions])) .controls {
   grid-template-areas: none;
 }
-
 :host(:not([can-select]):not([can-filter]):not([inline-actions])) vi-query-grid-row {
   grid-template-columns: var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
-
 :host(:not([can-select]):not([can-filter]):not([inline-actions])[has-grouping]) vi-query-grid-row {
   grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
-
 :host(:not([can-select]):not([can-filter]):not([inline-actions])[can-reorder]) .controls {
   grid-template-areas: "reorder";
 }
-
 :host(:not([can-select]):not([can-filter]):not([inline-actions])[can-reorder]) .controls .reorder {
   display: block;
 }
-
 :host(:not([can-select]):not([can-filter]):not([inline-actions])[can-reorder]) vi-query-grid-row {
   grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
-
 :host([can-select]:not([can-filter]):not([inline-actions])) .controls {
   grid-template-areas: "select";
 }
-
 :host([can-select]:not([can-filter]):not([inline-actions])) vi-query-grid-row {
   grid-template-columns: auto var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
-
 :host([can-select]:not([can-filter]):not([inline-actions])[has-grouping]) .controls {
   grid-template-areas: "grouping select";
 }
-
 :host([can-select]:not([can-filter]):not([inline-actions])[has-grouping]) vi-query-grid-row {
   grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
-
 :host([can-select]:not([can-filter]):not([inline-actions])[can-reorder]) .controls {
   grid-template-areas: "reorder select";
 }
-
 :host([can-select]:not([can-filter]):not([inline-actions])[can-reorder]) .controls .reorder {
   display: block;
 }
-
 :host([can-select]:not([can-filter]):not([inline-actions])[can-reorder]) vi-query-grid-row {
   grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) auto var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
-
 :host(:not([can-select])[can-filter]:not([inline-actions])) .controls {
   grid-template-areas: "spacer" "filter";
 }
-
 :host(:not([can-select])[can-filter]:not([inline-actions])) .controls .spacer {
   display: block;
   border-bottom: 1px solid var(--theme-light-border);
 }
-
 :host(:not([can-select])[can-filter]:not([inline-actions])) vi-query-grid-row {
   grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
-
 :host(:not([can-select])[can-filter]:not([inline-actions])) vi-query-grid-row::part(actions) {
   display: none;
 }
-
 :host(:not([can-select])[can-filter]:not([inline-actions])) vi-query-grid-row::part(filter) {
   display: block;
 }
-
 :host(:not([can-select])[can-filter]:not([inline-actions])[has-grouping]) .controls {
   grid-template-areas: "spacer spacer" "grouping filter";
 }
-
 :host(:not([can-select])[can-filter]:not([inline-actions])[has-grouping]) vi-query-grid-row {
   grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
-
 :host(:not([can-select])[can-filter]:not([inline-actions])[can-reorder]) vi-query-grid-row {
   grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
-
 :host(:not([can-select])[can-filter]:not([inline-actions])[can-reorder]) vi-query-grid-row::part(filter) {
   display: none;
 }
-
 :host(:not([can-select]):not([can-filter])[inline-actions]) .controls {
   grid-template-areas: "spacer";
 }
-
 :host(:not([can-select]):not([can-filter])[inline-actions]) .controls .spacer {
   display: block;
 }
-
 :host(:not([can-select]):not([can-filter])[inline-actions]) vi-query-grid-row {
   grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
-
 :host(:not([can-select]):not([can-filter])[inline-actions][has-grouping]) vi-query-grid-row {
   grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
-
 :host(:not([can-select]):not([can-filter])[inline-actions][has-grouping]) .controls {
   grid-template-areas: "grouping spacer";
 }
-
 :host(:not([can-select]):not([can-filter])[inline-actions][can-reorder]) .controls {
   grid-template-areas: "reorder spacer";
 }
-
 :host(:not([can-select]):not([can-filter])[inline-actions][can-reorder]) .controls .reorder {
   display: block;
 }
-
 :host(:not([can-select]):not([can-filter])[inline-actions][can-reorder]) vi-query-grid-row {
   grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
-
 :host([can-select][can-filter]:not([inline-actions])) .controls {
   grid-template-areas: "spacer spacer" "select filter";
 }
-
 :host([can-select][can-filter]:not([inline-actions])) .controls .spacer {
   display: block;
   border-bottom: 1px solid var(--theme-light-border);
 }
-
 :host([can-select][can-filter]:not([inline-actions])) vi-query-grid-row {
   grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
-
 :host([can-select][can-filter]:not([inline-actions])) vi-query-grid-row::part(filter) {
   display: block;
 }
-
 :host([can-select][can-filter]:not([inline-actions])[has-grouping]) vi-query-grid-row {
   grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
-
 :host([can-select][can-filter]:not([inline-actions])[has-grouping]) .controls {
   grid-template-areas: "spacer spacer spacer" "grouping select filter";
 }
-
 :host([can-select][can-filter]:not([inline-actions])[can-reorder]) .controls {
   grid-template-areas: "spacer spacer spacer" "reorder select filter";
 }
-
 :host([can-select][can-filter]:not([inline-actions])[can-reorder]) .controls .reorder {
   display: block;
 }
-
 :host([can-select][can-filter]:not([inline-actions])[can-reorder]) vi-query-grid-row {
   grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
-
 :host([can-select][can-filter]:not([inline-actions])[can-reorder]) vi-query-grid-row::part(filter) {
   display: none;
 }
-
 :host([can-select]:not([can-filter])[inline-actions]) .controls {
   grid-template-areas: "select spacer";
 }
-
 :host([can-select]:not([can-filter])[inline-actions]) .controls .spacer {
   display: block;
 }
-
 :host([can-select]:not([can-filter])[inline-actions]) vi-query-grid-row {
   grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
-
 :host([can-select]:not([can-filter])[inline-actions][has-grouping]) .controls {
   grid-template-areas: "grouping select spacer";
 }
-
 :host([can-select]:not([can-filter])[inline-actions][has-grouping]) vi-query-grid-row {
   grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
-
 :host([can-select]:not([can-filter])[inline-actions][can-reorder]) .controls {
   grid-template-areas: "reorder select spacer";
 }
-
 :host([can-select]:not([can-filter])[inline-actions][can-reorder]) .controls .reorder {
   display: block;
 }
-
 :host([can-select]:not([can-filter])[inline-actions][can-reorder]) vi-query-grid-row {
   grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
-
 :host([can-select][can-filter][inline-actions]) .controls {
   grid-template-areas: "spacer spacer" "select filter";
 }
-
 :host([can-select][can-filter][inline-actions]) .controls .spacer {
   display: block;
   border-bottom: 1px solid var(--theme-light-border);
 }
-
 :host([can-select][can-filter][inline-actions]) vi-query-grid-row {
   grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
-
 :host([can-select][can-filter][inline-actions][has-grouping]) .controls {
   grid-template-areas: "spacer spacer spacer" "grouping select filter";
 }
-
 :host([can-select][can-filter][inline-actions][has-grouping]) vi-query-grid-row {
   grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
 }
-
 :host([can-select][can-filter][inline-actions][can-reorder]) .controls {
   grid-template-areas: "spacer spacer spacer" "reorder select filter";
 }
-
 :host([can-select][can-filter][inline-actions][can-reorder]) .controls .reorder {
   display: block;
 }
-
 :host([can-select][can-filter][inline-actions][can-reorder]) vi-query-grid-row {
   grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
-}
-</style>
+}</style>
 
 <header>
     <div class="controls">
@@ -57815,23 +57165,19 @@ let QueryItemsPresenter = class QueryItemsPresenter extends ConfigurableWebCompo
   flex-direction: row;
   position: relative;
 }
-
 :host > * {
   flex: 1;
   min-height: 0;
   min-width: 0;
 }
-
 :host(:focus) {
   outline: none !important;
 }
-
 :host ::slotted(*) {
   flex: 1;
   min-height: 0;
   min-width: 0;
-}
-</style>
+}</style>
 
 <dom-if if="[[fileDrop]]">
     <template>
@@ -57989,7 +57335,6 @@ let PersistentObjectAttributeValidationError = class PersistentObjectAttributeVa
   background-color: transparent;
   cursor: pointer;
 }
-
 :host vi-icon {
   width: var(--theme-h2);
   height: var(--theme-h2);
@@ -57997,20 +57342,16 @@ let PersistentObjectAttributeValidationError = class PersistentObjectAttributeVa
   --vi-icon-height: var(--theme-h3);
   fill: var(--theme-color-error);
 }
-
 :host pre {
   padding: var(--theme-h5);
   border: 1px solid var(--theme-color-error);
 }
-
 :host #content.top {
   transform: translateY(var(--theme-h4));
 }
-
 :host #content.bottom {
   transform: translateY(calc(var(--theme-h4) * -1));
-}
-</style>
+}</style>
 
 <vi-popup open-on-hover horizontal-align="center">
     <vi-icon slot="header" source="Notification_Error"></vi-icon>
@@ -58059,7 +57400,6 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
   min-width: 0;
   line-height: var(--theme-h2);
 }
-
 :host .box {
   display: flex;
   flex-direction: row;
@@ -58073,20 +57413,16 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
   border: 1px solid var(--theme-light-border);
   box-sizing: border-box;
 }
-
 :host([read-only]) .box {
   background-color: var(--theme-read-only);
 }
-
 :host([read-only]) .box .buttons {
   background-color: transparent;
 }
-
 :host([has-error]) .box {
   border-color: var(--theme-color-error) !important;
   overflow: hidden;
 }
-
 :host([has-error]) .box::before {
   position: absolute;
   top: 0;
@@ -58098,36 +57434,29 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
   background-color: var(--theme-color-error);
   pointer-events: none;
 }
-
 :host .box[disabled] {
   background-color: #eee;
   cursor: default;
   pointer-events: none;
 }
-
 :host .box[disabled] .extras {
   background-color: #eee;
 }
-
 :host .box[disabled] ::slotted(*) {
   opacity: 0.5;
 }
-
 :host .box[disabled] ::slotted(*)::before {
   border-left-color: var(--theme-light-border);
 }
-
 :host .box > ::slotted(*) {
   flex: 1;
   min-height: 0;
   min-width: 0;
 }
-
 :host .box .extras {
   position: relative;
   background-color: white;
 }
-
 :host .box .extras ::slotted(*) {
   position: relative;
   outline: none;
@@ -58155,22 +57484,18 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
   transition-timing-function: ease-out;
   transition: background-color 0.1s ease-out;
 }
-
 :host .box .extras ::slotted(*):hover {
   background-color: var(--theme-color-faint);
 }
-
 :host .box .extras ::slotted(*):active {
   background-color: var(--theme-color-dark);
   fill: white !important;
   color: white !important;
 }
-
 :host .box .extras ::slotted(*)[disabled] {
   fill: var(--theme-color-faint);
   color: fadeout(black, 50%);
 }
-
 :host .box .extras ::slotted(*)::after {
   position: absolute;
   bottom: -1px;
@@ -58180,7 +57505,6 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
   border-bottom: 1px solid var(--theme-light-border);
   transition: all 0.1s ease-in-out;
 }
-
 :host .box .extras ::slotted(*)::before {
   position: absolute;
   top: 4px;
@@ -58188,71 +57512,56 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
   content: " ";
   transition: all 0.1s ease-in-out;
 }
-
 :host .box .extras ::slotted(*) vi-icon {
   width: calc(var(--theme-h2) - 2px);
   height: calc(var(--theme-h2) - 2px);
 }
-
 :host .box .extras ::slotted(*:hover) {
   background-color: var(--theme-color-faint);
   --vi-icon-fill: var(--theme-color);
 }
-
 :host .box .extras ::slotted(*:active) {
   background-color: var(--theme-color-dark) !important;
 }
-
 :host .box .extras:hover ::slotted(*)::after {
   left: 0;
   right: 0;
 }
-
 :host .box .extras:hover ::slotted(*)::before {
   top: 0;
   bottom: 0;
 }
-
 :host .box .extras.left ::slotted(*)::before {
   right: 0;
   border-right: 1px solid var(--theme-light-border);
 }
-
 :host .box .extras.right ::slotted(*)::before {
   left: 0;
   border-left: 1px solid var(--theme-light-border);
 }
-
 :host .box .extras.left, :host .box .extras.right {
   display: flex;
   flex-direction: row;
 }
-
 :host .box .extras ::slotted(*::part(popup)) {
   background-color: yellowgreen;
 }
-
 :host .box .extras ::slotted(*)::part(icon) {
   background-color: yellow;
 }
-
 :host(:focus-within) .box {
   border-color: var(--theme-color-lighter);
 }
-
 :host(:focus-within) .box .extras ::slotted(*) {
   --vi-icon-fill: var(--theme-color);
 }
-
 :host(:focus-within) .box .extras ::slotted(*:hover) {
   background-color: var(--theme-color);
   --vi-icon-fill: white !important;
 }
-
 :host(:focus-within) .box .extras ::slotted(*)::after, :host(:focus-within) .box .extras ::slotted(*)::before {
   border-color: var(--theme-color-lighter);
-}
-</style>
+}</style>
 
 <div class="box" disabled$="[[attribute.parent.isFrozen]]">
     <div class="left extras">
@@ -58342,12 +57651,10 @@ styleElement.innerHTML = `<template>
   padding: var(--theme-h5);
   line-height: var(--theme-h3);
 }
-
 :host input, :host *::part(input) {
   padding: 0 var(--theme-h5);
   line-height: calc(var(--theme-h2) - 2px);
 }
-
 :host input, :host textarea, :host *::part(input) {
   background-color: transparent;
   box-sizing: border-box;
@@ -58357,8 +57664,7 @@ styleElement.innerHTML = `<template>
   color: #333;
   width: 100%;
   font-family: inherit;
-}
-</style>
+}</style>
 </template>`;
 styleElement.register("vi-persistent-object-attribute-style-module");
 let PersistentObjectAttribute = class PersistentObjectAttribute extends WebComponent {
@@ -58542,7 +57848,6 @@ let PersistentObjectAttributeAsDetailRow = class PersistentObjectAttributeAsDeta
   height: var(--theme-h2);
   line-height: var(--theme-h2);
 }
-
 :host .column {
   padding: 0 1px 1px 0;
   height: var(--theme-h2);
@@ -58550,25 +57855,20 @@ let PersistentObjectAttributeAsDetailRow = class PersistentObjectAttributeAsDeta
   box-sizing: border-box;
   min-width: 0;
 }
-
 :host .column:last-of-type {
   padding-right: 0;
 }
-
 :host .column > vi-persistent-object-attribute-presenter {
   height: var(--theme-h2);
   line-height: var(--theme-h2);
 }
-
 :host .column > vi-persistent-object-attribute-presenter[soft-edit-only] {
   display: none !important;
 }
-
 :host .column > [pre-edit] {
   height: var(--theme-h2);
   line-height: calc(var(--theme-h2) - 2px);
 }
-
 :host .column > [pre-edit] .value-box {
   position: relative;
   border: 1px solid var(--theme-light-border);
@@ -58577,11 +57877,9 @@ let PersistentObjectAttributeAsDetailRow = class PersistentObjectAttributeAsDeta
   text-overflow: ellipsis;
   padding: 0 var(--theme-h5);
 }
-
 :host .column > [pre-edit] vi-persistent-object-attribute-validation-error:not([hidden]) + div {
   border-color: var(--theme-color-error) !important;
 }
-
 :host .column > [pre-edit] vi-persistent-object-attribute-validation-error:not([hidden]) + div::before {
   position: absolute;
   top: 0;
@@ -58593,25 +57891,20 @@ let PersistentObjectAttributeAsDetailRow = class PersistentObjectAttributeAsDeta
   background-color: var(--theme-color-error);
   pointer-events: none;
 }
-
 :host .column span {
   padding: 0 var(--theme-h5);
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 :host(:not([full-edit]):not([read-only]):not([frozen])) {
   cursor: pointer;
 }
-
 :host([frozen]) [pre-edit] {
   background-color: #eee;
 }
-
 :host(:not([full-edit])[read-only]) .column {
   background-color: var(--theme-read-only);
 }
-
 :host .delete-button {
   width: var(--persistent-object-attribute-as-detail--delete-width);
   height: var(--theme-h2);
@@ -58621,24 +57914,20 @@ let PersistentObjectAttributeAsDetailRow = class PersistentObjectAttributeAsDeta
   fill: var(--theme-color-light);
   margin-left: 1px;
 }
-
 :host .delete-button:not(:hover):not(:active) {
   background-color: transparent;
 }
-
 :host .delete-button vi-icon {
   line-height: var(--theme-h2);
   height: var(--theme-h2);
 }
-
 :host .delete-button[disabled] {
   background-color: #eee !important;
 }
 
 :host-context(vi-persistent-object-attribute-as-detail:not([editing])) .column:not(:last-of-type) {
   border-right: 1px solid var(--theme-light-border);
-}
-</style>
+}</style>
 
 <dom-repeat items="[[columns]]" as="column" filter="_isColumnVisible">
     <template>
@@ -58776,11 +58065,9 @@ let PersistentObjectAttributeAsDetail = class PersistentObjectAttributeAsDetail 
   overflow: hidden;
   --persistent-object-attribute-as-detail--delete-width: var(--theme-h2);
 }
-
 :host([initializing]) #table {
   opacity: 0;
 }
-
 :host #table {
   display: flex;
   flex-direction: column;
@@ -58790,7 +58077,6 @@ let PersistentObjectAttributeAsDetail = class PersistentObjectAttributeAsDetail 
   line-height: var(--theme-h2);
   overflow: hidden;
 }
-
 :host #table #head {
   display: grid;
   grid-template-columns: var(--column-widths);
@@ -58799,14 +58085,12 @@ let PersistentObjectAttributeAsDetail = class PersistentObjectAttributeAsDetail 
   border-color: var(--theme-light-border);
   border-width: 0 0 1px 0;
 }
-
 :host #table #head .column {
   box-sizing: border-box;
   border-style: solid;
   border-color: var(--theme-light-border);
   border-width: 0;
 }
-
 :host #table #head .column label {
   display: block;
   padding: 0 4px;
@@ -58817,34 +58101,28 @@ let PersistentObjectAttributeAsDetail = class PersistentObjectAttributeAsDetail 
   font-size: 11px;
   letter-spacing: 0.5px;
 }
-
 :host #table #body {
   position: relative;
   flex: 1;
   min-height: 0;
   min-width: 0;
 }
-
 :host #table #body #data {
   display: block;
   overflow: hidden;
 }
-
 :host #table button.action {
   height: var(--theme-h2);
   line-height: var(--theme-h2);
 }
-
 :host([editing]) #table {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
 }
-
 :host([editing]) #table #head {
   background-color: #F9F9F9;
 }
-
 :host([editing]) #table #head .column {
   border-width: 1px 0 0 1px;
   padding: 0 1px 1px 0;
@@ -58854,73 +58132,58 @@ let PersistentObjectAttributeAsDetail = class PersistentObjectAttributeAsDetail 
   width: auto;
   min-width: 0;
 }
-
 :host([editing]) #table #head .delete-spacer {
   width: var(--persistent-object-attribute-as-detail--delete-width);
   border-width: 1px 1px 0 0;
   border-color: var(--theme-light-border);
   border-style: solid;
 }
-
 :host([editing]) #table #body {
   margin-top: 1px !important;
 }
-
 :host([editing]) #table #body .row {
   height: calc(var(--theme-h2) + 2px);
   line-height: calc(var(--theme-h2) + 2px);
   overflow: hidden;
 }
-
 :host([editing]) #table #body .row:last-of-type {
   height: var(--theme-h2);
 }
-
 :host([editing]) #table #body .row:last-of-type .column, :host([editing]) #table #body .row:last-of-type div.delete-button {
   padding-bottom: 0;
 }
-
 :host([editing]) #table #body[vertical] .row div.delete-button {
   margin-right: var(--theme-h4);
 }
-
 :host([editing]) #table .row.add.foot {
   height: var(--theme-h2);
   background-color: #F9F9F9;
   border: 1px solid var(--theme-light-border);
 }
-
 :host([editing]) #table .row.add ::content > button {
   height: var(--theme-h2);
   line-height: var(--theme-h2);
 }
-
 :host([editing]:not([can-delete])) #head .column:last-of-type {
   border-right: 0;
 }
-
 :host(:not([editing])) #table {
   border: none;
 }
-
 :host(:not([editing])) #table #body .row:nth-child(odd) {
   background-color: #FCFCFC;
 }
-
 :host(:not([editing])) #table #body .row:nth-child(even) {
   background-color: #F7F7F7;
 }
-
 :host(:not([editing])) #table #body .row .column {
   padding: 1px 4px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 :host(:not([editing])) #foot {
   display: none;
-}
-</style>
+}</style>
 
 <div id="table">
     <div id="head" class="horizontal layout" part="head">
@@ -59170,14 +58433,12 @@ let PersistentObjectAttributeBinaryFile = class PersistentObjectAttributeBinaryF
   position: relative;
   outline: none;
 }
-
 :host input[readonly] {
   flex: 1;
   min-height: 0;
   min-width: 0;
   z-index: 1;
 }
-
 :host .browse ::slotted(div) {
   position: absolute;
   top: 0;
@@ -59189,11 +58450,9 @@ let PersistentObjectAttributeBinaryFile = class PersistentObjectAttributeBinaryF
   border: 0;
   cursor: pointer;
 }
-
 :host span, :host input {
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
-}
-</style>
+}</style>
 
 <dom-if if="[[!editing]]">
     <template>
@@ -59303,17 +58562,14 @@ let Toggle = class Toggle extends WebComponent {
   padding-right: var(--theme-h5);
   box-sizing: border-box;
 }
-
 :host(:not([disabled])) {
   cursor: pointer;
 }
-
 :host #box {
   padding: 2px;
   border: 1px solid var(--theme-light-border);
   width: var(--theme-h2);
 }
-
 :host #box #switch {
   background-color: #333;
   width: calc(var(--theme-h4) - 2px);
@@ -59322,22 +58578,18 @@ let Toggle = class Toggle extends WebComponent {
   -webkit-transition: transform 0.25s cubic-bezier(0, 1, 0.6, 1);
   transition: transform 0.25s cubic-bezier(0, 1, 0.6, 1);
 }
-
 :host span {
   padding: 0 1px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
 :host span:not(:empty) {
   margin-left: calc(var(--theme-h5) - 1px);
 }
-
 :host(:focus) {
   outline: 0;
 }
-
 :host(:focus:not([disabled])) span {
   outline: 1px dotted var(--theme-color-light);
 }
@@ -59346,7 +58598,6 @@ let Toggle = class Toggle extends WebComponent {
   background-color: var(--theme-color);
   border-color: var(--theme-color);
 }
-
 :host([toggled]) #box #switch {
   background-color: white;
   transform: translateX(calc(var(--theme-h2) - var(--theme-h4) + 2px));
@@ -59360,11 +58611,9 @@ let Toggle = class Toggle extends WebComponent {
 :host([disabled]:not([toggled])) #box {
   border-color: var(--theme-light-border);
 }
-
 :host([disabled]:not([toggled])) #box #switch {
   background-color: #a5a5a5;
-}
-</style>
+}</style>
 
 <div class="layout horizontal center">
     <div id="box" class="relative">
@@ -59430,7 +58679,6 @@ let PersistentObjectAttributeBoolean = class PersistentObjectAttributeBoolean ex
   flex-direction: row;
   line-height: normal;
 }
-
 :host vi-checkbox {
   display: inline-block;
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
@@ -59441,8 +58689,7 @@ let PersistentObjectAttributeBoolean = class PersistentObjectAttributeBoolean ex
   margin: 0 1px;
   padding: 0 var(--theme-h5);
   line-height: var(--theme-h2);
-}
-</style>
+}</style>
 <dom-if if="[[editing]]">
     <template>
         <dom-if if="[[!sensitive]]" restamp>
@@ -61762,18 +61009,15 @@ let Select = class Select extends WebComponent {
   border: 1px solid #ddd;
   outline: none !important;
 }
-
 :host vi-popup {
   flex: 1;
   min-height: 0;
   min-width: 0;
 }
-
 :host vi-popup #content {
   transform: translate(0, 1px);
 }
-
-:host vi-popup [slot="header"] {
+:host vi-popup [slot=header] {
   flex: 1;
   min-height: 0;
   min-width: 0;
@@ -61781,8 +61025,7 @@ let Select = class Select extends WebComponent {
   flex-direction: row;
   position: relative;
 }
-
-:host vi-popup [slot="header"] .suggestions {
+:host vi-popup [slot=header] .suggestions {
   z-index: 1;
   padding-left: var(--theme-h5);
   position: absolute;
@@ -61790,20 +61033,16 @@ let Select = class Select extends WebComponent {
   height: calc(var(--theme-h2) - 2px);
   line-height: calc(var(--theme-h2) - 2px);
 }
-
-:host vi-popup [slot="header"] .suggestions span {
+:host vi-popup [slot=header] .suggestions span {
   float: left;
 }
-
-:host vi-popup [slot="header"] .suggestions span:first-child {
+:host vi-popup [slot=header] .suggestions span:first-child {
   color: transparent;
 }
-
-:host vi-popup [slot="header"] .suggestions span:nth-child(2) {
+:host vi-popup [slot=header] .suggestions span:nth-child(2) {
   color: #CCC;
 }
-
-:host vi-popup [slot="header"] input {
+:host vi-popup [slot=header] input {
   border: none;
   height: calc(var(--theme-h2) - 2px);
   line-height: calc(var(--theme-h2) - 2px);
@@ -61811,21 +61050,17 @@ let Select = class Select extends WebComponent {
   background-color: transparent;
   outline: none;
 }
-
-:host vi-popup [slot="header"] input[disabled] {
+:host vi-popup [slot=header] input[disabled] {
   color: inherit !important;
 }
-
-:host vi-popup [slot="header"] vi-icon {
+:host vi-popup [slot=header] vi-icon {
   height: calc(var(--theme-h2) - 2px);
   width: calc(var(--theme-h2) - 2px);
   fill: var(--vi-select-icon-color, var(--theme-foreground));
 }
-
 :host vi-popup iron-list {
   min-height: calc(var(--theme-h2) - 2px);
 }
-
 :host vi-popup [content] {
   max-height: calc(var(--theme-h2) * 10);
   overflow-y: auto;
@@ -61833,56 +61068,45 @@ let Select = class Select extends WebComponent {
   margin: 0;
   list-style: none;
 }
-
 :host vi-popup [content] .group, :host vi-popup [content] vi-select-option-item {
   display: block;
   line-height: calc(var(--theme-h2) - 2px);
   height: calc(var(--theme-h2) - 2px);
   white-space: nowrap;
 }
-
 :host vi-popup [content] .group {
   padding-left: var(--theme-h5);
   color: #888;
 }
-
 :host vi-popup [content] vi-select-option-item {
   padding-left: var(--theme-h3);
   cursor: pointer;
 }
-
 :host vi-popup [content] vi-select-option-item:hover {
   background-color: var(--theme-color-faint);
 }
-
 :host vi-popup [content] vi-select-option-item[suggested], :host vi-popup [content]:not([filtering]) vi-select-option-item[selected] {
   color: white;
   background-color: var(--theme-color);
 }
-
 :host vi-popup [content] vi-select-option-item[suggested]:hover, :host vi-popup [content]:not([filtering]) vi-select-option-item[selected]:hover {
   background-color: var(--theme-color-light);
 }
-
 :host vi-popup [content][filtering] vi-select-option-item span.match {
   background-color: rgba(255, 255, 0, 0.5);
   font-weight: bold;
   pointer-events: none;
 }
-
-:host vi-popup[disabled] [slot="header"] vi-icon {
+:host vi-popup[disabled] [slot=header] vi-icon {
   opacity: 0.25;
   cursor: default;
 }
-
 :host([sensitive]) input, :host([sensitive]) vi-select-option-item {
   filter: blur(5px);
 }
-
 :host([sensitive]) input + vi-icon {
   opacity: 0.5;
-}
-</style>
+}</style>
 
 <vi-popup id="popup" on-tap="_openPopup" on-tap="_openPopup" on-popup-closed="_popupClosed" sticky auto-width disabled$="[[op_some(readonly, disabled, sensitive)]]">
     <div slot="header" >
@@ -62333,27 +61557,21 @@ let PersistentObjectAttributeComboBox = class PersistentObjectAttributeComboBox 
   display: flex;
   flex-direction: row;
 }
-
 :host vi-select {
   border: none;
 }
-
 :host span, :host vi-select::part(input) {
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
 }
-
 :host #add {
   background-color: var(--theme-color);
 }
-
 :host #add vi-icon {
   fill: white !important;
 }
-
 :host #add:before {
   border-left-color: var(--theme-color);
-}
-</style>
+}</style>
 
 <dom-if if="[[!editing]]">
     <template>
@@ -62441,23 +61659,19 @@ let PersistentObjectAttributeCommonMark = class PersistentObjectAttributeCommonM
   flex-direction: row;
   overflow: hidden;
 }
-
 :host marked-element {
   flex: 1;
   min-height: 0;
   min-width: 0;
   resize: none;
 }
-
 :host marked-element, :host textarea {
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
 }
-
 :host textarea {
   white-space: pre-wrap;
   -ms-overflow-style: -ms-autohiding-scrollbar;
-}
-</style>
+}</style>
 
 <dom-if if="[[!editing]]">
     <template>
@@ -62707,26 +61921,21 @@ let TimePicker = class TimePicker extends WebComponent {
   -webkit-user-select: none;
   user-select: none;
 }
-
-:host(:hover) vi-popup[open] [slot="header"], :host vi-popup[hover] [slot="header"] {
+:host(:hover) vi-popup[open] [slot=header], :host vi-popup[hover] [slot=header] {
   background-color: var(--theme-color) !important;
   --vi-icon-fill: white !important;
 }
-
 :host .clock {
   padding: calc(var(--theme-h4) * 2);
 }
-
 :host(:active) .clock {
   color: var(--theme-color) !important;
 }
-
 :host #clockHost {
   position: relative;
   width: 200px;
   height: 200px;
 }
-
 :host #clockHost::before {
   position: absolute;
   z-index: -1;
@@ -62740,7 +61949,6 @@ let TimePicker = class TimePicker extends WebComponent {
   border-radius: 50%;
   content: "";
 }
-
 :host #clockHost .list {
   -moz-transition: all 0.3s ease-in-out;
   -o-transition: all 0.3s ease-in-out;
@@ -62753,7 +61961,6 @@ let TimePicker = class TimePicker extends WebComponent {
   padding: 0;
   margin: 0;
 }
-
 :host #clockHost .list .item {
   position: absolute;
   text-align: center;
@@ -62761,222 +61968,183 @@ let TimePicker = class TimePicker extends WebComponent {
   width: 20px;
   height: 20px;
 }
-
 :host #clockHost .list .item:nth-child(12) {
   transform: rotate(330deg) translate(0, -90px);
 }
-
 :host #clockHost .list .item:nth-child(12) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
   transform: rotate(-330deg);
 }
-
 :host #clockHost .list .item:nth-child(12) span::before {
   width: 25px;
   height: 25px;
   border-radius: 12.5px;
 }
-
 :host #clockHost .list .item:nth-child(11) {
   transform: rotate(300deg) translate(0, -90px);
 }
-
 :host #clockHost .list .item:nth-child(11) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
   transform: rotate(-300deg);
 }
-
 :host #clockHost .list .item:nth-child(11) span::before {
   width: 25px;
   height: 25px;
   border-radius: 12.5px;
 }
-
 :host #clockHost .list .item:nth-child(10) {
   transform: rotate(270deg) translate(0, -90px);
 }
-
 :host #clockHost .list .item:nth-child(10) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
   transform: rotate(-270deg);
 }
-
 :host #clockHost .list .item:nth-child(10) span::before {
   width: 25px;
   height: 25px;
   border-radius: 12.5px;
 }
-
 :host #clockHost .list .item:nth-child(9) {
   transform: rotate(240deg) translate(0, -90px);
 }
-
 :host #clockHost .list .item:nth-child(9) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
   transform: rotate(-240deg);
 }
-
 :host #clockHost .list .item:nth-child(9) span::before {
   width: 25px;
   height: 25px;
   border-radius: 12.5px;
 }
-
 :host #clockHost .list .item:nth-child(8) {
   transform: rotate(210deg) translate(0, -90px);
 }
-
 :host #clockHost .list .item:nth-child(8) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
   transform: rotate(-210deg);
 }
-
 :host #clockHost .list .item:nth-child(8) span::before {
   width: 25px;
   height: 25px;
   border-radius: 12.5px;
 }
-
 :host #clockHost .list .item:nth-child(7) {
   transform: rotate(180deg) translate(0, -90px);
 }
-
 :host #clockHost .list .item:nth-child(7) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
   transform: rotate(-180deg);
 }
-
 :host #clockHost .list .item:nth-child(7) span::before {
   width: 25px;
   height: 25px;
   border-radius: 12.5px;
 }
-
 :host #clockHost .list .item:nth-child(6) {
   transform: rotate(150deg) translate(0, -90px);
 }
-
 :host #clockHost .list .item:nth-child(6) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
   transform: rotate(-150deg);
 }
-
 :host #clockHost .list .item:nth-child(6) span::before {
   width: 25px;
   height: 25px;
   border-radius: 12.5px;
 }
-
 :host #clockHost .list .item:nth-child(5) {
   transform: rotate(120deg) translate(0, -90px);
 }
-
 :host #clockHost .list .item:nth-child(5) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
   transform: rotate(-120deg);
 }
-
 :host #clockHost .list .item:nth-child(5) span::before {
   width: 25px;
   height: 25px;
   border-radius: 12.5px;
 }
-
 :host #clockHost .list .item:nth-child(4) {
   transform: rotate(90deg) translate(0, -90px);
 }
-
 :host #clockHost .list .item:nth-child(4) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
   transform: rotate(-90deg);
 }
-
 :host #clockHost .list .item:nth-child(4) span::before {
   width: 25px;
   height: 25px;
   border-radius: 12.5px;
 }
-
 :host #clockHost .list .item:nth-child(3) {
   transform: rotate(60deg) translate(0, -90px);
 }
-
 :host #clockHost .list .item:nth-child(3) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
   transform: rotate(-60deg);
 }
-
 :host #clockHost .list .item:nth-child(3) span::before {
   width: 25px;
   height: 25px;
   border-radius: 12.5px;
 }
-
 :host #clockHost .list .item:nth-child(2) {
   transform: rotate(30deg) translate(0, -90px);
 }
-
 :host #clockHost .list .item:nth-child(2) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
   transform: rotate(-30deg);
 }
-
 :host #clockHost .list .item:nth-child(2) span::before {
   width: 25px;
   height: 25px;
   border-radius: 12.5px;
 }
-
 :host #clockHost .list .item:nth-child(1) {
   transform: rotate(0deg) translate(0, -90px);
 }
-
 :host #clockHost .list .item:nth-child(1) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
   transform: rotate(0deg);
 }
-
 :host #clockHost .list .item:nth-child(1) span::before {
   width: 25px;
   height: 25px;
   border-radius: 12.5px;
 }
-
 :host #clockHost .list:nth-child(1) {
   font-size: 90%;
 }
-
 :host #clockHost .list:nth-child(2) {
   position: absolute;
   list-style-type: none;
   padding: 0;
   margin: 0;
 }
-
 :host #clockHost .list:nth-child(2) .item {
   position: absolute;
   text-align: center;
@@ -62984,211 +62152,174 @@ let TimePicker = class TimePicker extends WebComponent {
   width: 20px;
   height: 20px;
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(12) {
   transform: rotate(330deg) translate(0, -57px);
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(12) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
   transform: rotate(-330deg);
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(12) span::before {
   width: 25px;
   height: 25px;
   border-radius: 12.5px;
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(11) {
   transform: rotate(300deg) translate(0, -57px);
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(11) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
   transform: rotate(-300deg);
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(11) span::before {
   width: 25px;
   height: 25px;
   border-radius: 12.5px;
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(10) {
   transform: rotate(270deg) translate(0, -57px);
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(10) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
   transform: rotate(-270deg);
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(10) span::before {
   width: 25px;
   height: 25px;
   border-radius: 12.5px;
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(9) {
   transform: rotate(240deg) translate(0, -57px);
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(9) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
   transform: rotate(-240deg);
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(9) span::before {
   width: 25px;
   height: 25px;
   border-radius: 12.5px;
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(8) {
   transform: rotate(210deg) translate(0, -57px);
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(8) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
   transform: rotate(-210deg);
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(8) span::before {
   width: 25px;
   height: 25px;
   border-radius: 12.5px;
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(7) {
   transform: rotate(180deg) translate(0, -57px);
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(7) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
   transform: rotate(-180deg);
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(7) span::before {
   width: 25px;
   height: 25px;
   border-radius: 12.5px;
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(6) {
   transform: rotate(150deg) translate(0, -57px);
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(6) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
   transform: rotate(-150deg);
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(6) span::before {
   width: 25px;
   height: 25px;
   border-radius: 12.5px;
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(5) {
   transform: rotate(120deg) translate(0, -57px);
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(5) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
   transform: rotate(-120deg);
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(5) span::before {
   width: 25px;
   height: 25px;
   border-radius: 12.5px;
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(4) {
   transform: rotate(90deg) translate(0, -57px);
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(4) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
   transform: rotate(-90deg);
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(4) span::before {
   width: 25px;
   height: 25px;
   border-radius: 12.5px;
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(3) {
   transform: rotate(60deg) translate(0, -57px);
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(3) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
   transform: rotate(-60deg);
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(3) span::before {
   width: 25px;
   height: 25px;
   border-radius: 12.5px;
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(2) {
   transform: rotate(30deg) translate(0, -57px);
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(2) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
   transform: rotate(-30deg);
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(2) span::before {
   width: 25px;
   height: 25px;
   border-radius: 12.5px;
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(1) {
   transform: rotate(0deg) translate(0, -57px);
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(1) span {
   width: 20px;
   height: 20px;
   line-height: 20px;
   transform: rotate(0deg);
 }
-
 :host #clockHost .list:nth-child(2) .item:nth-child(1) span::before {
   width: 25px;
   height: 25px;
   border-radius: 12.5px;
 }
-
 :host #clockHost .list .item span {
   position: absolute;
   text-align: center;
@@ -63197,15 +62328,12 @@ let TimePicker = class TimePicker extends WebComponent {
   top: 0;
   cursor: pointer;
 }
-
 :host #clockHost .list .item span:hover {
   color: white;
 }
-
 :host #clockHost .list .item span:hover::before {
   background-color: var(--theme-color-light);
 }
-
 :host #clockHost .list .item span::before {
   position: absolute;
   z-index: -1;
@@ -63213,19 +62341,15 @@ let TimePicker = class TimePicker extends WebComponent {
   top: -12.5%;
   content: "";
 }
-
 :host #clockHost .list .item.active span {
   color: white;
 }
-
 :host #clockHost .list .item.active span::before {
   background-color: var(--theme-color);
 }
-
 :host #clockHost .list .item.active span:hover::before {
   background-color: var(--theme-color-dark);
 }
-
 :host #clockHost > .face {
   position: absolute;
   width: 220px;
@@ -63236,51 +62360,42 @@ let TimePicker = class TimePicker extends WebComponent {
   -webkit-transform-origin: 50% 50%;
   transform-origin: 50% 50%;
 }
-
 :host #current {
   display: block;
   text-align: center;
   margin-bottom: 20px;
   font-size: var(--theme-h3);
 }
-
 :host #current span.minutes, :host #current span.hours {
   cursor: pointer;
   font-weight: bold;
 }
-
-:host([state="minutes"]) .list:nth-child(3) {
+:host([state=minutes]) .list:nth-child(3) {
   transform: scale(1);
   opacity: 1;
   z-index: 2;
 }
-
-:host([state="minutes"]) .list:nth-child(1), :host([state="minutes"]) .list:nth-child(2) {
+:host([state=minutes]) .list:nth-child(1), :host([state=minutes]) .list:nth-child(2) {
   transform: scale(1.3);
   opacity: 0;
   z-index: -2;
 }
-
-:host([state="minutes"]) #current .minutes {
+:host([state=minutes]) #current .minutes {
   color: var(--theme-color);
 }
-
-:host([state="hours"]) .list:nth-child(3) {
+:host([state=hours]) .list:nth-child(3) {
   transform: scale(0.7);
   opacity: 0;
   z-index: 1;
 }
-
-:host([state="hours"]) .list:nth-child(1), :host([state="hours"]) .list:nth-child(2) {
+:host([state=hours]) .list:nth-child(1), :host([state=hours]) .list:nth-child(2) {
   transform: scale(1);
   opacity: 1;
   z-index: 2;
 }
-
-:host([state="hours"]) #current .hours {
+:host([state=hours]) #current .hours {
   color: var(--theme-color);
-}
-</style>
+}</style>
 
 <vi-popup id="popup" vertical-align="bottom" horizontal-align="right" part="popup">
     <vi-icon slot="header" part="icon" source="Clock"></vi-icon>
@@ -63444,18 +62559,15 @@ let DatePicker = class DatePicker extends WebComponent {
   -webkit-user-select: none;
   user-select: none;
 }
-
-:host(:hover) vi-popup[open] [slot="header"], :host vi-popup[hover] [slot="header"] {
+:host(:hover) vi-popup[open] [slot=header], :host vi-popup[hover] [slot=header] {
   background-color: var(--theme-color) !important;
   --vi-icon-fill: white !important;
 }
-
 :host header {
   color: white;
   fill: white;
   background-color: var(--theme-color);
 }
-
 :host header vi-button {
   text-align: center;
   height: var(--theme-h2);
@@ -63463,21 +62575,17 @@ let DatePicker = class DatePicker extends WebComponent {
   line-height: var(--theme-h2);
   cursor: pointer;
 }
-
 :host header vi-button > vi-icon {
   height: var(--theme-h2);
   --vi-icon-fill: white;
 }
-
 :host header vi-button:hover {
   background-color: var(--theme-color-light);
 }
-
 :host main {
   width: calc(var(--theme-h1) * 7);
   height: calc(var(--theme-h1) * 7);
 }
-
 :host main .cell {
   border-style: solid;
   border-width: 0 0 1px 1px;
@@ -63486,80 +62594,64 @@ let DatePicker = class DatePicker extends WebComponent {
   cursor: pointer;
   position: relative;
 }
-
-:host main .cell[type$="day"] {
+:host main .cell[type$=day] {
   min-width: var(--theme-h1);
   min-height: var(--theme-h1);
   line-height: var(--theme-h2);
   width: var(--theme-h1);
 }
-
-:host main .cell[type="day"][is-other] {
+:host main .cell[type=day][is-other] {
   color: #AAA;
 }
-
-:host main .cell[type="day"][is-other]:hover {
+:host main .cell[type=day][is-other]:hover {
   background-color: #eee;
 }
-
-:host main .cell[type="day"][is-other][is-today] {
+:host main .cell[type=day][is-other][is-today] {
   color: white !important;
   background-color: #bbb;
 }
-
-:host main .cell[type="day"][is-other][is-today]:hover {
+:host main .cell[type=day][is-other][is-today]:hover {
   background-color: #aaa;
 }
-
-:host main .cell[type="weekday"] {
+:host main .cell[type=weekday] {
   font-weight: bold;
   color: #333 !important;
   cursor: default;
 }
-
-:host main .cell[type="weekday"]:hover {
+:host main .cell[type=weekday]:hover {
   background-color: transparent !important;
 }
-
 :host main .cell:not([is-other]):not([is-other]) {
   color: var(--theme-color);
 }
-
 :host main .cell:not([is-other]):not([is-other]):hover {
   background-color: var(--theme-color-faint);
 }
-
 :host main .cell:not([is-other]):not([is-other])[is-today] {
   color: white !important;
   background-color: var(--theme-color-light);
 }
-
 :host main .cell:not([is-other]):not([is-other])[is-today]:hover {
   background-color: var(--theme-color-lighter);
 }
-
 :host main .cell[is-selected]:not([unselectable])::before, :host main .cell[is-selected]:not([unselectable])::after {
   position: absolute;
   right: 0;
   top: 0;
   content: "";
 }
-
 :host main .cell[is-selected]:not([unselectable])::before {
   z-index: 2;
   bottom: 0;
   left: 0;
   border: 1px solid var(--theme-color);
 }
-
 :host main .cell[is-selected]:not([unselectable])[is-other]::before {
   border-color: #777 !important;
 }
-
 :host main .cell[is-selected]:not([unselectable])[is-other]::after {
   border-top-color: #777 !important;
 }
-
 :host main .cell[is-selected]:not([unselectable])::after {
   z-index: 1;
   border-left: var(--theme-h4) solid transparent;
@@ -63567,24 +62659,19 @@ let DatePicker = class DatePicker extends WebComponent {
   border-top-width: var(--theme-h4);
   border-top-style: solid;
 }
-
 :host main .cell[is-selected]:not([unselectable])[is-today]::after {
   border-top-color: white !important;
 }
-
-:host main .cell[type$="month"], :host main .cell[type$="year"] {
-  width: calc(100% / 3);
+:host main .cell[type$=month], :host main .cell[type$=year] {
+  width: 33.3333333333%;
 }
-
 :host main .cell[unselectable] {
   color: #dedede !important;
   cursor: default !important;
 }
-
 :host main .cell[unselectable]:hover {
   background-color: transparent !important;
-}
-</style>
+}</style>
 
 <vi-popup id="popup" horizontal-align="right" on-popup-opening="_opening">
     <vi-icon slot="header" part="icon" source="Calendar"></vi-icon>
@@ -63861,12 +62948,10 @@ let PersistentObjectAttributeDateTime = class PersistentObjectAttributeDateTime 
   display: flex;
   flex-direction: row;
 }
-
-:host([editing]) [slot="content"] {
+:host([editing]) [slot=content] {
   display: flex;
   flex-direction: row;
 }
-
 :host([editing]) vi-masked-input {
   display: inline-block;
   border: none;
@@ -63874,35 +62959,28 @@ let PersistentObjectAttributeDateTime = class PersistentObjectAttributeDateTime 
   line-height: calc(var(--theme-h2) - 2px);
   width: auto;
 }
-
 :host([editing]) vi-masked-input:not([hidden]) + input {
   padding-left: 0;
 }
-
 :host([editing]) vi-masked-input:last-of-type:not([hidden]), :host([editing]) vi-masked-input[flex] {
   flex: 1;
   min-height: 0;
   min-width: 0;
 }
-
 :host([editing][is-invalid]) vi-masked-input::part(input), :host([editing][is-invalid]) span#monthMode {
   color: red;
 }
-
 :host span, :host vi-masked-input {
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
 }
-
 :host span#monthMode {
   padding: 0 var(--theme-h5);
   cursor: default;
 }
-
 :host :is(vi-time-picker, vi-date-picker)::part(icon) {
   width: calc(var(--theme-h2) - 2px);
   height: calc(var(--theme-h2) - 2px);
-}
-</style>
+}</style>
 
 <dom-if if="[[!editing]]">
     <template>
@@ -64310,25 +63388,20 @@ let PersistentObjectAttributeDropDown = class PersistentObjectAttributeDropDown 
   display: flex;
   flex-direction: row;
 }
-
 :host vi-select {
   border: none;
 }
-
 :host vi-sensitive, :host vi-select::part(input) {
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
 }
-
 :host #radiobuttons {
   line-height: var(--theme-h2);
 }
-
-:host #radiobuttons[orientation="horizontal"] {
+:host #radiobuttons[orientation=horizontal] {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-}
-</style>
+}</style>
 
 <dom-if if="[[!editing]]">
     <template>
@@ -64500,13 +63573,11 @@ let PersistentObjectAttributeFlagsEnum = class PersistentObjectAttributeFlagsEnu
   display: flex;
   flex-direction: row;
 }
-
 :host ul {
   list-style-type: none;
   padding: 0;
   margin: 0;
 }
-
 :host ul li {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -64517,30 +63588,24 @@ let PersistentObjectAttributeFlagsEnum = class PersistentObjectAttributeFlagsEnu
   cursor: pointer;
   overflow: hidden;
 }
-
 :host ul li:hover {
   background-color: var(--theme-color-faint);
 }
-
 :host ul li vi-checkbox:not([checked]) {
   fill: #aaa;
 }
-
 :host input, :host span {
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
 }
-
 :host vi-icon {
   height: calc(var(--theme-h2) - 2px);
   width: calc(var(--theme-h2) - 2px);
   fill: var(--vi-select-icon-color, var(--theme-foreground));
 }
-
 :host vi-popup[disabled] vi-icon {
   opacity: 0.25;
   cursor: default;
-}
-</style>
+}</style>
 
 <dom-if if="[[!editing]]">
     <template>
@@ -64591,20 +63656,17 @@ let PersistentObjectAttributeImageDialog = class PersistentObjectAttributeImageD
   min-width: var(--theme-h1);
   min-height: var(--theme-h1);
 }
-
 :host main img {
   margin: var(--theme-h4);
   max-width: calc(90vw - var(--theme-h1) * 2);
   max-height: calc(90vh - var(--vi-persistent-object-attribute-image-dialog--max-height) - var(--theme-h4) * 2);
 }
-
 :host main button {
   width: var(--theme-h1);
   height: var(--theme-h1);
   --vi-icon--width: 22px;
   --vi-icon--height: 22px;
-}
-</style>
+}</style>
 
 <header class="relative">
     <vi-size-tracker size="{{headerSize}}"></vi-size-tracker>
@@ -64673,21 +63735,17 @@ let PersistentObjectAttributeImage = class PersistentObjectAttributeImage extend
   position: relative;
   outline: none;
 }
-
 :host img {
   position: absolute;
   max-height: 100%;
   max-width: 100%;
 }
-
 :host img[can-open] {
   cursor: zoom-in;
 }
-
 :host .image-container {
   padding: var(--theme-h5);
 }
-
 :host .browse input {
   position: absolute;
   top: 0;
@@ -64698,8 +63756,7 @@ let PersistentObjectAttributeImage = class PersistentObjectAttributeImage extend
   margin: 0;
   border: 0;
   cursor: pointer;
-}
-</style>
+}</style>
 
 <dom-if if="[[!editing]]" restamp>
     <template>
@@ -64851,25 +63908,20 @@ let PersistentObjectAttributeKeyValueList = class PersistentObjectAttributeKeyVa
   display: flex;
   flex-direction: row;
 }
-
 :host vi-select {
   border: none;
 }
-
 :host span, :host vi-select::part(input) {
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
 }
-
 :host #radiobuttons {
   line-height: var(--theme-h2);
 }
-
-:host #radiobuttons[orientation="horizontal"] {
+:host #radiobuttons[orientation=horizontal] {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-}
-</style>
+}</style>
 
 <dom-if if="[[!editing]]">
     <template>
@@ -74808,21 +73860,17 @@ let PersistentObjectAttributeMultiLineString = class PersistentObjectAttributeMu
   display: flex;
   flex-direction: row;
 }
-
 :host textarea {
   resize: none;
   white-space: pre-wrap;
   -ms-overflow-style: -ms-autohiding-scrollbar;
 }
-
 :host pre, :host textarea {
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
 }
-
 :host pre {
   white-space: pre-line;
-}
-</style>
+}</style>
 
 <dom-if if="[[!useCodeMirror]]">
     <template>
@@ -74904,7 +73952,6 @@ let PersistentObjectAttributeMultiStringItem = class PersistentObjectAttributeMu
   flex-direction: row;
   margin-bottom: 2px;
 }
-
 :host input {
   border: 1px solid var(--theme-light-border);
   box-sizing: border-box;
@@ -74917,20 +73964,16 @@ let PersistentObjectAttributeMultiStringItem = class PersistentObjectAttributeMu
   padding: 0 6px;
   outline: none;
 }
-
 :host input:focus {
   border-color: var(--theme-color-lighter);
 }
-
 :host input:disabled {
   background-color: #eee;
 }
-
 :host vi-persistent-object-attribute-edit {
   height: var(--theme-h2);
   line-height: var(--theme-h2);
 }
-
 :host vi-icon {
   align-self: center;
   margin-right: var(--theme-h5);
@@ -74940,31 +73983,24 @@ let PersistentObjectAttributeMultiStringItem = class PersistentObjectAttributeMu
   cursor: -webkit-grab;
   pointer-events: all;
 }
-
 :host vi-icon[disabled] {
   fill: #aaa;
 }
-
 :host([is-new]) vi-icon {
   visibility: hidden;
 }
-
 :host([is-new]) input {
   border-style: dashed;
 }
-
 :host([is-new]) vi-persistent-object-attribute-edit {
   border: none !important;
 }
-
 :host([is-read-only]) vi-icon {
   display: none;
 }
-
 :host([is-read-only]) input {
   background-color: var(--theme-read-only);
-}
-</style>
+}</style>
 
 <vi-icon source="Hamburger" class="sort-handle" part="icon" hidden$="[[sensitive]]" disabled$="[[disabled]]"></vi-icon>
 <vi-sensitive disabled="[[!sensitive]]">
@@ -75035,15 +74071,12 @@ let Tags = class Tags extends WebComponent {
   display: flex;
   flex-direction: row;
 }
-
 :host .wrapContainer {
   flex-wrap: wrap;
 }
-
 :host(:not([readonly])) {
   cursor: text;
 }
-
 :host input {
   border: none;
   outline: none;
@@ -75051,7 +74084,6 @@ let Tags = class Tags extends WebComponent {
   width: var(--tags-input--width, 30px);
   min-width: 8px;
 }
-
 :host .tag {
   margin: 0 4px 4px 0;
   background-color: var(--theme-color);
@@ -75060,7 +74092,6 @@ let Tags = class Tags extends WebComponent {
   text-align: center;
   justify-content: center;
 }
-
 :host .tag .tagValue {
   margin-left: 8px;
   margin-right: 8px;
@@ -75068,13 +74099,11 @@ let Tags = class Tags extends WebComponent {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 :host .tag .delete {
   padding: 5px 5px 3px 0;
   cursor: pointer;
   fill: white;
-}
-</style>
+}</style>
 
 <vi-scroller id="scroller" class="flex" editing$="[[editing]]" no-horizontal on-tap="_passFocus">
     <div class="layout horizontal wrapContainer">
@@ -75166,49 +74195,39 @@ let PersistentObjectAttributeMultiString = class PersistentObjectAttributeMultiS
   display: flex;
   flex-direction: row;
 }
-
 :host #strings:empty {
   background-color: red;
 }
-
 :host #strings:empty + vi-persistent-object-attribute-multi-string-item::part(icon) {
   display: none;
 }
-
-:host #strings:not([enabled]) > vi-persistent-object-attribute-multi-string-item ::content vi-icon[source="Hamburger"] {
+:host #strings:not([enabled]) > vi-persistent-object-attribute-multi-string-item ::content vi-icon[source=Hamburger] {
   opacity: 0.25;
   cursor: default;
 }
-
 :host fieldset {
   padding: 0;
   margin: 0;
   border: none;
 }
-
 :host vi-persistent-object-attribute-edit vi-tags {
   margin: 4px 0 0 4px;
 }
-
 :host vi-tags {
   line-height: calc(var(--theme-h2) - 4px);
 }
-
 :host #suggestions ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
-
 :host #suggestions ul li {
   padding: 0 var(--theme-h4);
   text-align: left;
 }
-
 :host #suggestions ul li:hover {
   background-color: var(--theme-color-faint);
-}
-</style>
+}</style>
 
 <dom-if if="[[!isTags]]">
     <template>
@@ -75406,7 +74425,6 @@ let PersistentObjectAttributeNullableBoolean = class PersistentObjectAttributeNu
   flex-direction: row;
   line-height: normal;
 }
-
 :host vi-checkbox {
   display: inline-block;
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
@@ -75423,15 +74441,12 @@ let PersistentObjectAttributeNullableBoolean = class PersistentObjectAttributeNu
   display: flex;
   flex-direction: row;
 }
-
 :host vi-select {
   border: none;
 }
-
 :host vi-select::part(input) {
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
-}
-</style>
+}</style>
 
 <dom-if if="[[!editing]]" restamp>
     <template>
@@ -75495,11 +74510,9 @@ let PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = clas
   display: flex;
   flex-direction: row;
 }
-
 :host span, :host input {
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
 }
-
 :host vi-persistent-object-attribute-edit span {
   position: relative;
   width: calc(var(--theme-h2) - 2px);
@@ -75509,7 +74522,6 @@ let PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = clas
   -webkit-user-select: none;
   user-select: none;
 }
-
 :host vi-persistent-object-attribute-edit span:before, :host vi-persistent-object-attribute-edit span:after {
   position: absolute;
   top: 4px;
@@ -75517,30 +74529,24 @@ let PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = clas
   content: " ";
   transition: all 0.1s ease-in-out;
 }
-
 :host vi-persistent-object-attribute-edit span.before:before {
   right: 0;
   border-right: 1px solid var(--theme-light-border);
 }
-
 :host vi-persistent-object-attribute-edit span.after:after {
   left: 0;
   border-left: 1px solid var(--theme-light-border);
 }
-
 :host vi-persistent-object-attribute-edit span:hover:before, :host vi-persistent-object-attribute-edit span:hover:after {
   top: 0;
   bottom: 0;
 }
-
 :host vi-persistent-object-attribute-edit span:empty {
   display: none;
 }
-
 :host([focused]) vi-persistent-object-attribute-edit span:before, :host([focused]) vi-persistent-object-attribute-edit span:after {
   border-color: var(--theme-color-lighter);
-}
-</style>
+}</style>
 
 <dom-if if="[[!editing]]">
     <template>
@@ -75787,11 +74793,9 @@ let PersistentObjectAttributePassword = class PersistentObjectAttributePassword 
   display: flex;
   flex-direction: row;
 }
-
 :host span, :host input {
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
-}
-</style>
+}</style>
 
 <dom-if if="[[!editing]]">
     <template>
@@ -75826,19 +74830,15 @@ let PersistentObjectAttributeReference = class PersistentObjectAttributeReferenc
   flex-direction: row;
   position: relative;
 }
-
 :host input, :host vi-select::part(input) {
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
 }
-
 :host vi-select::part(icon) {
   display: none;
 }
-
 :host(:not([editing])) {
   overflow: hidden;
 }
-
 :host(:not([editing])) a {
   display: flex;
   flex-direction: row;
@@ -75848,30 +74848,24 @@ let PersistentObjectAttributeReference = class PersistentObjectAttributeReferenc
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 :host(:not([editing])) a:focus {
   outline: 0;
 }
-
 :host(:not([editing])) a:visited {
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
   fill: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
 }
-
 :host(:not([editing])) a:hover {
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-color-light));
   fill: var(--vi-persistent-object-attribute-foreground, var(--theme-color-light));
 }
-
 :host(:not([editing])) a[disabled] {
   color: var(--vi-persistent-object-attribute-foreground, #333) !important;
 }
-
 :host(:not([editing])) a span {
   text-overflow: ellipsis;
   overflow: hidden;
 }
-
 :host(:not([editing])) a vi-icon {
   margin: 0 var(--theme-h5);
   min-width: var(--theme-h4);
@@ -75879,33 +74873,26 @@ let PersistentObjectAttributeReference = class PersistentObjectAttributeReferenc
   fill: var(--theme-color);
   transform: translateY(2px);
 }
-
 :host([editing]) vi-select {
   border: none;
 }
-
 :host([editing]) vi-select vi-popup > #content {
   transform: translateY(1px);
 }
-
 :host([editing]) a[disabled] {
   display: none;
 }
-
 :host([editing]) a vi-icon {
   height: 100%;
 }
-
 :host #radiobuttons {
   line-height: var(--theme-h2);
 }
-
-:host #radiobuttons[orientation="horizontal"] {
+:host #radiobuttons[orientation=horizontal] {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-}
-</style>
+}</style>
 
 <dom-if if="[[!editing]]">
     <template>
@@ -76194,47 +75181,38 @@ let PersistentObjectAttributeString = class PersistentObjectAttributeString exte
   flex-direction: row;
   overflow: hidden;
 }
-
 :host span {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 :host span, :host input {
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
 }
-
 :host #suggestions[open] vi-icon {
   fill: white !important;
   background-color: var(--theme-color);
 }
-
 :host #suggestions vi-icon {
   width: calc(var(--theme-h2) - 2px);
   height: calc(var(--theme-h2) - 2px);
 }
-
 :host #suggestions vi-icon:hover {
   fill: var(--theme-color);
 }
-
 :host #suggestions ul {
   margin: 0;
   padding: 0;
   list-style-type: none;
 }
-
 :host #suggestions ul li {
   padding: 0 var(--theme-h5);
   height: var(--theme-h2);
   cursor: pointer;
   text-align: left;
 }
-
 :host #suggestions ul li:hover {
   background-color: var(--theme-color-faint);
 }
-
 :host a {
   display: flex;
   flex-direction: row;
@@ -76243,29 +75221,23 @@ let PersistentObjectAttributeString = class PersistentObjectAttributeString exte
   text-overflow: ellipsis;
   fill: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
 }
-
 :host a:focus {
   outline: 0;
 }
-
 :host a:visited {
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
   fill: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
 }
-
 :host a:hover {
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-color-light));
   fill: var(--vi-persistent-object-attribute-foreground, var(--theme-color-light));
 }
-
 :host a[disabled] {
   color: var(--vi-persistent-object-attribute-foreground, #333) !important;
 }
-
 :host a[href] {
   cursor: pointer;
 }
-
 :host a span {
   -ms-text-overflow: ellipsis;
   -o-text-overflow: ellipsis;
@@ -76273,14 +75245,12 @@ let PersistentObjectAttributeString = class PersistentObjectAttributeString exte
   overflow: hidden;
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
 }
-
 :host a vi-icon {
   margin: 0 var(--theme-h5);
   min-width: var(--theme-h4);
   height: 1em;
   transform: translateY(2px);
-}
-</style>
+}</style>
 
 <dom-if if="[[!editing]]" restamp>
     <template>
@@ -76474,15 +75444,12 @@ let PersistentObjectAttributeTranslatedStringDialog = class PersistentObjectAttr
   padding: var(--theme-h4);
   list-style: none;
 }
-
 :host ul li {
   min-width: 50vw;
 }
-
 :host ul li:not(:last-of-type) {
   margin-bottom: var(--theme-h4);
 }
-
 :host ul li label {
   display: block;
   font-size: 11px;
@@ -76494,7 +75461,6 @@ let PersistentObjectAttributeTranslatedStringDialog = class PersistentObjectAttr
   text-overflow: ellipsis;
   text-transform: uppercase;
 }
-
 :host ul li input, :host ul li textarea {
   width: 100%;
   resize: none;
@@ -76504,15 +75470,12 @@ let PersistentObjectAttributeTranslatedStringDialog = class PersistentObjectAttr
   border: 1px solid #ddd;
   outline: none;
 }
-
 :host ul li input:focus, :host ul li textarea:focus {
   border-color: var(--theme-color-light);
 }
-
 :host([read-only]) input, :host([read-only]) textarea {
   background-color: var(--theme-read-only-color);
-}
-</style>
+}</style>
 
 <header class="horizontal layout">
     <h4 class="flex">[[label]]</h4>
@@ -76587,30 +75550,24 @@ let PersistentObjectAttributeTranslatedString = class PersistentObjectAttributeT
   flex-direction: row;
   overflow: hidden;
 }
-
 :host span {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 :host pre {
   padding-top: var(--theme-h5);
   line-height: normal !important;
 }
-
 :host span, :host pre, :host input, :host textarea {
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
 }
-
 :host([multiline]) #multiline {
   overflow: hidden;
   padding: var(--theme-h5) var(--theme-h5) 0 var(--theme-h5);
 }
-
 :host([multiline]) button {
   background-color: white;
-}
-</style>
+}</style>
 
 <dom-if if="[[!editing]]" restamp>
     <template>
@@ -76748,7 +75705,6 @@ let PersistentObjectAttributeUser = class PersistentObjectAttributeUser extends 
   display: flex;
   flex-direction: row;
 }
-
 :host span {
   flex: 1;
   min-height: 0;
@@ -76756,11 +75712,9 @@ let PersistentObjectAttributeUser = class PersistentObjectAttributeUser extends 
   overflow: hidden;
   white-space: nowrap;
 }
-
 :host span, :host input {
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
-}
-</style>
+}</style>
 
 <dom-if if="[[!editing]]">
     <template>
@@ -76848,7 +75802,7 @@ let PersistentObjectAttributeLabel = class PersistentObjectAttributeLabel extend
 }
 
 label {
-  font-size: .9em;
+  font-size: 0.9em;
   font-weight: 400;
   color: var(--vi-persistent-object-attribute-label-color, #888);
   letter-spacing: 0.5px;
@@ -76860,7 +75814,7 @@ label {
 .required {
   display: none;
   position: relative;
-  font-size: .8em;
+  font-size: 0.8em;
   color: white;
   line-height: 1.5em;
   height: 14px;
@@ -76868,7 +75822,6 @@ label {
   padding: 0 var(--theme-h5) 2px calc(var(--theme-h5) / 2);
   background-color: var(--theme-color);
 }
-
 .required::before {
   content: "";
   position: absolute;
@@ -76887,7 +75840,6 @@ label {
   display: none;
   margin: 0 0 2px var(--theme-h5);
 }
-
 .locked > vi-icon {
   height: var(--theme-h3);
   --vi-icon-width: 10px;
@@ -76901,7 +75853,6 @@ label {
   margin-bottom: 2px;
   margin-left: 2px;
 }
-
 .info::part(icon) {
   --vi-icon-width: 12px;
   --vi-icon-height: 12px;
@@ -76911,7 +75862,6 @@ label {
 :host([has-error]) .label .required {
   background-color: var(--theme-color-error) !important;
 }
-
 :host([has-error]) .label .required::before {
   border-right-color: var(--theme-color-error) !important;
 }
@@ -76922,8 +75872,7 @@ label {
 
 :host([editing][read-only]) .locked {
   display: inline-block;
-}
-</style>
+}</style>
 
 <label>[[attribute.label]]</label>
 <span class="required">[[translateMessage('Required', isConnected)]]</span>
@@ -77041,33 +75990,26 @@ let PersistentObjectAttributePresenter = class PersistentObjectAttributePresente
   position: relative;
   --vi-persistent-object-attribute-presenter--attribute-height: calc(var(--vi-persistent-object-attribute-presenter--row-height, var(--theme-h2)) * 2 * (var(--vi-persistent-object-attribute-presenter--row-span) - .5));
 }
-
 :host #content {
   height: var(--vi-persistent-object-attribute-presenter--attribute-height);
 }
-
 :host ::slotted(*) {
   flex: 1;
   min-height: 0;
   min-width: 0;
 }
-
 :host vi-checkbox {
   margin-right: var(--theme-h5);
 }
-
 :host vi-checkbox[disabled]::part(icon) {
   background-color: #eee;
 }
-
 :host(:focus) {
   outline: 0;
 }
-
 :host([developer]) #content, :host([developer]) vi-persistent-object-attribute-label {
   opacity: 0.2;
 }
-
 :host([developer]) #developer {
   position: absolute;
   top: 0;
@@ -77082,17 +76024,14 @@ let PersistentObjectAttributePresenter = class PersistentObjectAttributePresente
   border: 1px dashed var(--theme-color-faint);
   cursor: pointer;
 }
-
 :host([developer]) #developer:hover {
   background-color: var(--theme-color-faint);
 }
-
 :host([developer]) #developer label {
   font-weight: bold;
   color: var(--theme-color-darker);
   pointer-events: none;
-}
-</style>
+}</style>
 
 <dom-if if="[[!noLabel]]">
     <template>
@@ -77404,11 +76343,9 @@ let PersistentObjectGroup = class PersistentObjectGroup extends WebComponent {
   display: block;
   padding: var(--vi-persistent-object-group--attribute-padding, 0 var(--theme-h4));
 }
-
 :host([loading]) {
   visibility: hidden;
 }
-
 :host label {
   flex: 1;
   min-height: 0;
@@ -77423,23 +76360,19 @@ let PersistentObjectGroup = class PersistentObjectGroup extends WebComponent {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-
 :host([no-label]) label, :host label:empty {
   display: none;
 }
-
 :host #grid {
   display: grid;
   grid-template-areas: var(--vi-persistent-object-group--grid-areas, none);
   grid-auto-columns: 1fr;
   gap: var(--vi-persistent-object-group--attribute-gap, 0 var(--theme-h4));
 }
-
 :host #grid ::slotted(*) {
   grid-area: var(--vi-persistent-object-group--attribute-area);
   overflow: hidden;
-}
-</style>
+}</style>
 
 <label>[[label]]</label>
 <div id="grid">
@@ -77666,18 +76599,15 @@ let PersistentObjectTab = class PersistentObjectTab extends ConfigurableWebCompo
   display: flex;
   flex-direction: row;
 }
-
 :host > vi-scroller {
   flex: 1;
   min-height: 0;
   min-width: 0;
 }
-
 :host .groups {
   display: block;
   padding-bottom: var(--theme-h4);
-}
-</style>
+}</style>
 
 <vi-size-tracker size="{{size}}"></vi-size-tracker>
 <dom-if if="[[!noScroll]]" restamp>
@@ -77811,15 +76741,13 @@ let PersistentObjectTabPresenter = class PersistentObjectTabPresenter extends We
   flex-direction: row;
   position: relative;
 }
-
 :host ::slotted(*) {
   position: absolute;
   top: 0;
   right: 0;
   bottom: 0;
   left: 0;
-}
-</style>
+}</style>
 
 <slot></slot>
 <vi-spinner hidden="[[!loading]]"></vi-spinner>`; }
@@ -77904,7 +76832,6 @@ let PersistentObjectDialog = class PersistentObjectDialog extends Dialog {
     static get template() { return Dialog.dialogTemplate(html `<style>:host {
   --vi-persistent-object-dialog-base-width-base: 400px;
 }
-
 :host main {
   display: flex;
   flex-direction: column;
@@ -77912,33 +76839,27 @@ let PersistentObjectDialog = class PersistentObjectDialog extends Dialog {
   max-height: calc(80vh - (var(--theme-h1) + var(--theme-h5) * 2) - (var(--theme-h2) + var(--theme-h4) * 2));
   min-height: calc(var(--theme-h2) * 3);
 }
-
 :host main > vi-persistent-object-tab-presenter {
   flex: 1;
   min-height: 0;
   min-width: 0;
   min-height: calc(var(--theme-h2) * 3);
 }
-
 :host main > vi-persistent-object-tab-presenter > vi-persistent-object-tab {
   position: static;
   width: var(--vi-persistent-object-dialog-computed-width, var(--vi-persistent-object-dialog-base-width-base));
   max-width: 90vw;
 }
-
 :host footer .extra-actions {
   padding-right: var(--theme-h5);
 }
-
 :host([is-phone]) main {
   width: 85vw;
 }
-
 :host([is-tablet]) main, :host([is-tablet]) vi-notification, :host([is-desktop]) main, :host([is-desktop]) vi-notification {
   min-width: 400px;
   max-width: var(--vi-persistent-object-dialog-computed-width);
-}
-</style>
+}</style>
 
 <header class="horizontal layout">
     <h4 class="flex">[[persistentObject.breadcrumb]]</h4>
@@ -78111,23 +77032,18 @@ let PersistentObjectWizardDialog = class PersistentObjectWizardDialog extends Di
     static get template() { return Dialog.dialogTemplate(html `<style>:host {
   --vi-persistent-object-dialog-base-width-base: 400px;
 }
-
 :host header {
   padding-right: var(--theme-h5) !important;
 }
-
 :host header h4 {
   color: var(--vi-persistent-object-dialog-header-color, #333);
 }
-
 :host header h4 + vi-button {
   margin-left: var(--theme-h5);
 }
-
 :host header h4 + vi-button::part(icon) {
   fill: var(--vi-persistent-object-dialog-header-color, #333);
 }
-
 :host main {
   display: flex;
   flex-direction: column;
@@ -78135,28 +77051,23 @@ let PersistentObjectWizardDialog = class PersistentObjectWizardDialog extends Di
   max-height: calc(80vh - (var(--theme-h1) + var(--theme-h5) * 2) - (var(--theme-h2) + var(--theme-h4) * 2));
   min-height: calc(var(--theme-h2) * 3);
 }
-
 :host main > vi-persistent-object-tab-presenter {
   flex: 1;
   min-height: 0;
   min-width: 0;
   min-height: calc(var(--theme-h2) * 3);
 }
-
 :host main > vi-persistent-object-tab-presenter > vi-persistent-object-tab {
   position: static;
   width: 100%;
 }
-
 :host([is-phone]) main {
   width: 85vw;
 }
-
 :host([is-tablet]) main, :host([is-desktop]) main {
   min-width: 400px;
   max-width: var(--vi-persistent-object-dialog-computed-width);
-}
-</style>
+}</style>
 
 <header class="horizontal layout">
     <h4 class="flex">[[currentTab.label]]</h4>
@@ -78422,20 +77333,17 @@ let App = App_1 = class App extends AppBase {
   width: 100vw;
   height: 100vh;
   box-sizing: border-box;
-  font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+  font-family: "Open Sans", Arial, Helvetica, sans-serif;
 }
-
 :host vi-app-route-presenter {
   display: flex;
   flex: 1;
   min-width: 0;
 }
-
 :host vi-app-route-presenter > vi-app-route, :host vi-app-route-presenter > ::slotted(*) {
   flex: 1;
   min-width: 0;
-}
-</style>
+}</style>
 
 <vi-profiler service="[[service]]" hidden$="[[!sProfiling]]"></vi-profiler>
 <dom-if if="[[showMenu]]" restamp>
@@ -78720,39 +77628,31 @@ let Overflow = class Overflow extends WebComponent {
   flex-direction: row;
   position: relative;
 }
-
 :host .visibleContainer {
   overflow: hidden;
 }
-
 :host .visible {
   display: inline-flex;
   position: relative;
 }
-
 :host .visible > div#first {
   width: 0;
   opacity: 0;
 }
-
 :host #overflowPopup {
   position: relative;
 }
-
-:host #overflowPopup button[slot="header"] {
+:host #overflowPopup button[slot=header] {
   display: block;
   width: var(--theme-h1);
   font-weight: bold;
 }
-
 :host(:not([has-overflow])) #overflowPopup {
   display: none;
 }
-
-:host vi-popup[open] button[slot="header"] {
+:host vi-popup[open] button[slot=header] {
   background-color: var(--theme-color-faint);
-}
-</style>
+}</style>
 
 <div class="flex relative visibleContainer">
     <div class="visible horizontal layout wrap relative">
@@ -78840,38 +77740,30 @@ let ActionBar = class ActionBar extends WebComponent {
   height: var(--theme-h1);
   background-color: var(--vi-action-bar-background-color, #F9F9F9);
 }
-
 :host([isEmpty]) {
   display: none !important;
 }
-
 :host .actions {
   overflow: hidden;
 }
-
 :host .action vi-icon[hasResource] {
   padding-right: 2px;
 }
-
 :host vi-action-button {
   text-align: left;
 }
-
 :host vi-overflow::part(button) {
   width: var(--theme-h1);
 }
-
 :host .search {
   border-left: 1px solid #EAEAEA;
   padding: 0 var(--theme-h5);
 }
-
 :host .search vi-input-search {
   min-width: 16em;
   height: var(--theme-h2);
   box-sizing: border-box;
 }
-
 :host .search vi-input-search::part(input) {
   box-sizing: border-box;
   border-width: 1px;
@@ -78882,20 +77774,16 @@ let ActionBar = class ActionBar extends WebComponent {
   padding-left: calc(var(--theme-h1) - var(--theme-h2));
   color: #333;
 }
-
 :host .search vi-input-search::part(input):focus {
   background-color: white;
   border-color: #EAEAEA;
 }
-
 :host .search vi-input-search::part(input)::placeholder {
   color: #B3B3B3;
 }
-
 :host .search vi-input-search::part(search), :host .search vi-input-search::part(reset) {
   fill: #B3B3B3;
-}
-</style>
+}</style>
 
 <vi-overflow class="flex">
     <dom-repeat items="[[unpinnedActions]]" as="action">
@@ -79000,7 +77888,6 @@ let Audit = class Audit extends WebComponent {
   flex-direction: column;
   --vi-audit-spacing: var(--theme-h2);
 }
-
 :host header {
   background-color: var(--theme-color);
   color: white;
@@ -79016,7 +77903,6 @@ let Audit = class Audit extends WebComponent {
   z-index: 2;
   padding-right: 4px;
 }
-
 :host nav {
   display: flex;
   flex-direction: column-reverse;
@@ -79025,18 +77911,15 @@ let Audit = class Audit extends WebComponent {
   margin-bottom: 3px;
   height: var(--theme-h1);
 }
-
 :host nav .search {
   border-left: 1px solid #EAEAEA;
   padding: 0 var(--theme-h5);
 }
-
 :host nav vi-input-search {
   min-width: 16em;
   height: var(--theme-h2);
   box-sizing: border-box;
 }
-
 :host nav vi-input-search::part(input) {
   box-sizing: border-box;
   border-width: 1px;
@@ -79047,20 +77930,16 @@ let Audit = class Audit extends WebComponent {
   padding-left: calc(var(--theme-h1) - var(--theme-h2));
   color: #333;
 }
-
 :host nav vi-input-search::part(input)::placeholder {
   color: #B3B3B3;
 }
-
 :host nav vi-input-search::part(input):focus {
   background-color: white;
   border-color: #EAEAEA;
 }
-
 :host nav vi-input-search::part(search) {
   fill: #B3B3B3;
 }
-
 :host main {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -79069,74 +77948,60 @@ let Audit = class Audit extends WebComponent {
   color: #333;
   fill: #333;
 }
-
 :host main a.today > h1 {
   padding: 0;
   font-size: 26px;
   margin: var(--theme-h4) 0;
   font-weight: 600;
 }
-
 :host main .date {
   padding: var(--theme-h4) 0;
 }
-
 :host main .date .day {
   font-size: 28px;
   line-height: var(--theme-h1);
   font-weight: bold;
   margin-right: 3px;
 }
-
 :host main .date .dayOfWeek {
   font-weight: bold;
   font-size: 10px;
   line-height: calc(var(--theme-h1) / 2);
   transform: translateY(4px);
 }
-
 :host main .date .monthYear {
   color: #777;
   font-size: 11px;
   line-height: calc(var(--theme-h1) / 2);
   transform: translateY(-4px);
 }
-
 :host main .date:last-of-type {
   display: none !important;
 }
-
 :host main vi-spinner {
   margin-left: var(--theme-h4);
 }
-
 :host main .entry {
   color: #333 !important;
 }
-
 :host main .entry:hover {
   background-color: var(--theme-color-faint);
   cursor: pointer;
 }
-
 :host main .entry:hover label {
   cursor: pointer;
 }
-
 :host main .entry:hover .expand {
   display: flex;
 }
-
 :host main .entry:not(:last-of-type) .line {
   bottom: -16px !important;
 }
-
 :host main .entry a {
   padding: var(--theme-h4) var(--theme-h4) var(--theme-h4) 0;
   text-decoration: none;
   color: #333 !important;
 }
-
 :host main .entry .timeline {
   margin: var(--theme-h4) 0 0 var(--theme-h4);
   position: absolute;
@@ -79145,7 +78010,6 @@ let Audit = class Audit extends WebComponent {
   bottom: 0;
   width: var(--theme-h4);
 }
-
 :host main .entry .timeline .dot {
   position: relative;
   background-color: white;
@@ -79158,7 +78022,6 @@ let Audit = class Audit extends WebComponent {
   margin-right: var(--theme-h4);
   z-index: 2;
 }
-
 :host main .entry .timeline .line {
   position: absolute;
   top: var(--theme-h4);
@@ -79169,94 +78032,75 @@ let Audit = class Audit extends WebComponent {
   width: 1px;
   z-index: 1;
 }
-
 :host main .entry .time {
   padding-left: var(--theme-h2);
   width: 100px;
   box-sizing: border-box;
 }
-
 :host main .entry .time span {
   font-weight: 600;
 }
-
 :host main .entry .time + div {
   flex: 1;
 }
-
 :host main .entry .content vi-icon.icon {
   align-self: flex-start;
   width: var(--theme-h2);
 }
-
 :host main .entry .content .action {
   transform: translateY(-2px);
   font-weight: 600;
 }
-
 :host main .entry .content .grid {
   display: grid;
   grid-template-columns: var(--theme-h2) max-content auto;
   line-height: var(--theme-h3);
   transform: translateY(-2px);
 }
-
 :host main .entry .content .grid > * {
   align-self: center;
 }
-
 :host main .entry .content .grid > vi-icon {
   min-width: var(--theme-h2);
 }
-
 :host main .entry .content .grid > label {
   font-weight: 600;
   padding-right: var(--theme-h5);
   white-space: nowrap;
 }
-
 :host main .entry .content .grid > label.user {
-  grid-column: 2 / -1;
+  grid-column: 2/-1;
 }
-
 :host main .entry .content .grid > label.change {
   grid-column: 2;
 }
-
 :host main .entry .content .grid > pre {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 :host main .entry .content .grid:not(:first-of-type) {
   line-height: var(--theme-h2);
 }
-
 :host main .entry .content .notification {
   font-weight: bold;
   padding-left: var(--theme-h2);
 }
-
 :host main .entry .content .notification[type="0"] {
   fill: var(--theme-color-error);
   color: var(--theme-color-error);
 }
-
 :host main .entry .content .notification[type="1"] {
   fill: var(--theme-color-notice);
   color: var(--theme-color-notice);
 }
-
 :host main .entry .content .notification[type="2"] {
   fill: var(--theme-color-ok);
   color: var(--theme-color-ok);
 }
-
 :host main .entry .content .notification[type="3"] {
   fill: var(--theme-color-warning);
   color: var(--theme-color-warning);
 }
-
 :host main .entry .expand {
   position: absolute;
   right: 0;
@@ -79268,7 +78112,6 @@ let Audit = class Audit extends WebComponent {
   width: var(--theme-h1);
   background: var(--theme-color-lighter);
 }
-
 :host main .entry .expand vi-icon {
   --vi-icon-width: 24px;
   --vi-icon-height: 24px;
@@ -79276,38 +78119,31 @@ let Audit = class Audit extends WebComponent {
   transform: none;
   transition: transform 0.3s ease-out;
 }
-
 :host main .entry .expand vi-icon[expanded] {
   transform: rotate(180deg);
 }
-
 :host main .entry .info {
   padding: var(--theme-h4) var(--theme-h4) var(--theme-h4) 0;
   margin: var(--theme-h4) 0 0 var(--theme-h2);
   border-top: 1px solid #f0f0f0;
 }
-
 :host main .entry .info .infoItem {
   padding: var(--theme-h5) var(--theme-h5) 0 0;
 }
-
 :host main .entry .info label {
   display: block;
   color: #aaa;
   font-size: 12px;
 }
-
 :host main .entry .info label + span {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
 :host main .entry .info:not([expanded]) {
   display: none !important;
-}
-</style>
+}</style>
 
 <header>
     <span>[[persistentObject.breadcrumb]]</span>
@@ -79637,16 +78473,13 @@ let FileDrop = class FileDrop extends WebComponent {
   display: block;
   position: relative;
 }
-
 :host(:not([drag-over])) #dragOver {
   display: none;
 }
-
 :host([drag-over]) ::content > *:first-child {
   z-index: 0;
   pointer-events: none;
 }
-
 :host #dragOver {
   display: flex;
   flex-direction: row;
@@ -79659,7 +78492,6 @@ let FileDrop = class FileDrop extends WebComponent {
   left: 0;
   z-index: 1;
 }
-
 :host #dragOver #overlay {
   position: absolute;
   top: 0;
@@ -79669,15 +78501,13 @@ let FileDrop = class FileDrop extends WebComponent {
   background-color: rgba(255, 255, 255, 0.6);
   transform: translate3d(0, 0, 0);
 }
-
 :host #dragOver vi-icon {
   --vi-icon-width: calc(var(--theme-h1) * 2);
   --vi-icon-height: calc(var(--theme-h1) * 2);
   z-index: 2;
   fill: var(--theme-color);
   pointer-events: none;
-}
-</style>
+}</style>
         <slot></slot>
         <div id="dragOver">
             <div id="overlay"></div>
@@ -79760,8 +78590,7 @@ let List = class List extends WebComponent {
   position: relative;
   display: flex;
   flex-direction: row;
-}
-</style>
+}</style>
 
 <vi-size-tracker on-sizechanged="_sizeChanged"></vi-size-tracker>
 <dom-if if="[[!parentScroller]]" restamp>
@@ -79834,15 +78663,12 @@ let PersistentObjectTabBarItem = class PersistentObjectTabBarItem extends WebCom
   color: var(--theme-color);
   fill: var(--theme-color);
 }
-
 :host(:hover) {
   background-color: var(--theme-color-faint);
 }
-
 :host span {
   line-height: calc(var(--theme-h1) - 3px);
 }
-
 :host span.badge {
   background-color: var(--theme-color-lighter);
   color: white;
@@ -79851,19 +78677,15 @@ let PersistentObjectTabBarItem = class PersistentObjectTabBarItem extends WebCom
   border-radius: 50%;
   font-size: 10px;
 }
-
 :host([is-selected]) {
   border-bottom-color: var(--theme-color);
 }
-
 :host([is-selected]) span.badge {
   background-color: var(--theme-color);
 }
-
 :host([is-selected]) span:not(.badge) {
   font-weight: 600;
-}
-</style>
+}</style>
 
 <span>[[label]]</span>
 <dom-if if="[[hasBadge]]">
@@ -79948,15 +78770,12 @@ let PersistentObjectTabBar = class PersistentObjectTabBar extends WebComponent {
   -webkit-user-select: none;
   user-select: none;
 }
-
 :host vi-overflow::part(button) {
   width: var(--theme-h1);
 }
-
 :host vi-overflow::part(button):hover {
   background-color: var(--theme-color-faint);
-}
-</style>
+}</style>
 
 <vi-overflow class="fit">
     <dom-repeat items="[[tabs]]" filter="_isVisible" observe="isVisible" as="tab">
@@ -80019,12 +78838,10 @@ let PersistentObject = class PersistentObject extends WebComponent {
   flex-direction: column-reverse;
   --vi-persistent-object-master-width: 40%;
 }
-
 :host vi-action-bar {
   padding-top: 3px;
   border-bottom: 1px solid var(--theme-light-border);
 }
-
 :host header {
   background-color: var(--theme-color);
   color: white;
@@ -80040,24 +78857,19 @@ let PersistentObject = class PersistentObject extends WebComponent {
   z-index: 2;
   gap: 4px;
 }
-
 :host header vi-spinner {
   align-self: center;
 }
-
 :host header nav span {
   margin-right: var(--theme-h5);
 }
-
 :host header nav vi-button {
   width: var(--theme-h1);
 }
-
 :host .tabs {
   background-color: #f1f1f1;
   box-shadow: var(--theme-box-shadow);
 }
-
 :host vi-persistent-object-tab-presenter > vi-query-items-presenter {
   position: absolute;
   top: 0;
@@ -80065,19 +78877,15 @@ let PersistentObject = class PersistentObject extends WebComponent {
   bottom: 0;
   left: 0;
 }
-
 :host .content .detail vi-persistent-object-tab-presenter {
   margin: 1px 1px 1px 0;
 }
-
 :host .tabs {
   height: var(--theme-h1);
 }
-
 :host([layout-master-detail]) .tabs > .detail {
   margin-left: 4px;
 }
-
 :host([layout-master-detail]) #splitter {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -80087,7 +78895,6 @@ let PersistentObject = class PersistentObject extends WebComponent {
   background-color: #f1f1f1;
   cursor: col-resize;
 }
-
 :host([layout-master-detail]) #splitter::after {
   position: absolute;
   content: " ";
@@ -80100,57 +78907,45 @@ let PersistentObject = class PersistentObject extends WebComponent {
   z-index: 3;
   transform: translateX(-3px);
 }
-
 :host([layout-master-detail]) .master {
   width: var(--vi-persistent-object-master-width);
 }
-
 :host([layout-details-only]) .master {
   display: none;
 }
-
 :host([layout-details-only]) .detail vi-persistent-object-tab-presenter {
   margin-left: 1px;
 }
-
 :host([layout-full-page]) .master {
   flex: 1;
   min-height: 0;
   min-width: 0;
 }
-
 :host([layout-full-page]) .detail {
   display: none;
 }
-
 :host(:not([layout-master-tabs]):not([layout-detail-tabs])) .tabs {
   display: none;
 }
-
 :host(:not([layout-master-tabs]):not([layout-detail-tabs])) .content vi-action-bar {
   padding-top: 0;
   z-index: 1;
   box-shadow: var(--theme-box-shadow);
   margin-bottom: 3px;
 }
-
 :host(:not([layout-master-tabs]):not([layout-detail-tabs])) .content vi-persistent-object-tab-presenter {
   z-index: 0;
   margin-left: 1px;
 }
-
 :host(:not([layout-master-actions]):not([layout-detail-actions])) .master vi-action-bar, :host(:not([layout-master-actions]):not([layout-detail-actions])) .detail vi-action-bar {
   display: none;
 }
-
 :host(:not([layout-master-detail]):not([layout-details-only]):not([layout-full-page])) header, :host(:not([layout-master-detail]):not([layout-details-only]):not([layout-full-page])) .tabs, :host(:not([layout-master-detail]):not([layout-details-only]):not([layout-full-page])) .content {
   display: none;
 }
-
 :host([loading]) > header, :host([loading]) > div {
   visibility: hidden;
-}
-</style>
+}</style>
 
 <div class="horizontal layout flex content">
     <div class="vertical layout master">
@@ -80540,31 +79335,26 @@ let PersistentObjectPresenter = class PersistentObjectPresenter extends Configur
   display: flex;
   flex-direction: row;
 }
-
 :host([has-error]) {
   align-items: center;
   justify-content: center;
   color: var(--theme-color-error);
   fill: var(--theme-color-error);
 }
-
 :host([has-error]) span {
   display: block;
   text-align: center;
   padding: var(--theme-h5) var(--theme-h3);
 }
-
 :host([has-error]) vi-icon {
   --vi-icon-width: var(--theme-h1);
   --vi-icon-height: var(--theme-h1);
 }
-
 :host ::slotted(*) {
   flex: 1;
   min-height: 0;
   min-width: 0;
-}
-</style>
+}</style>
 
 <dom-if if="[[error]]" restamp>
     <template>
@@ -80779,8 +79569,7 @@ let ProgramUnitPresenter = class ProgramUnitPresenter extends WebComponent {
     static get template() { return html `<style>:host {
   display: block;
   position: relative;
-}
-</style>
+}</style>
 
 <dom-if if="[[error]]" restamp>
     <template>
@@ -80835,11 +79624,9 @@ let QueryChartSelector = class QueryChartSelector extends WebComponent {
   margin-left: var(--theme-h5);
   padding-left: var(--theme-h5);
 }
-
-:host > button, :host button[slot="header"] {
+:host > button, :host button[slot=header] {
   height: var(--theme-h1);
-}
-</style>
+}</style>
 
 <vi-button on-tap="_showGrid" inverse icon="Grid"></vi-button>
 <dom-repeat items="[[types]]" as="type">
@@ -80914,12 +79701,10 @@ let Query = class Query extends WebComponent {
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto auto auto minmax(0, 1fr);
 }
-
 :host vi-action-bar {
   box-shadow: var(--theme-box-shadow);
   z-index: 1;
 }
-
 :host header {
   background-color: var(--theme-color);
   color: white;
@@ -80934,28 +79719,22 @@ let Query = class Query extends WebComponent {
   padding-left: var(--theme-h4);
   z-index: 2;
 }
-
 :host vi-query-items-presenter {
   margin: 3px 0 0 0;
   z-index: 0;
 }
-
 :host([no-actions]) > header {
   box-shadow: var(--theme-box-shadow);
 }
-
 :host([no-actions]) vi-action-bar {
   display: none !important;
 }
-
 :host([hide-header]) vi-query-items-presenter {
   margin: 0;
 }
-
 :host vi-query-items-presenter {
   grid-row: 4;
-}
-</style>
+}</style>
 
 <dom-if if="[[!hideHeader]]">
     <template>
@@ -81033,31 +79812,26 @@ let QueryPresenter = class QueryPresenter extends WebComponent {
   flex-direction: row;
   position: relative;
 }
-
 :host([has-error]) {
   align-items: center;
   justify-content: center;
   color: var(--theme-color-error);
   fill: var(--theme-color-error);
 }
-
 :host([has-error]) span {
   display: block;
   text-align: center;
   padding: var(--theme-h5) var(--theme-h3);
 }
-
 :host([has-error]) vi-icon {
   --vi-icon-width: var(--theme-h1);
   --vi-icon-height: var(--theme-h1);
 }
-
 :host ::slotted(vi-query-items-presenter), :host ::slotted(vi-query) {
   flex: 1;
   min-height: 0;
   min-width: 0;
-}
-</style>
+}</style>
 
 <dom-if if="[[loading]]">
     <template>
