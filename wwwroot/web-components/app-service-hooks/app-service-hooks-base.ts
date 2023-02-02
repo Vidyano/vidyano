@@ -208,13 +208,13 @@ export class AppServiceHooksBase extends Vidyano.ServiceHooks {
         return this.app.showMessageDialog({ title: title, message: message, rich: rich, actions: actions });
     }
 
-    onShowNotification(notification: string, type: Vidyano.NotificationType, duration: number) {
-        if (!duration || !notification)
+    onShowNotification(notification: string, type: Vidyano.NotificationType, duration: number);
+    onShowNotification(notification: Error, type: Vidyano.NotificationType, duration: number);
+    onShowNotification(notificationOrError: string | Error, type: Vidyano.NotificationType, duration: number) {
+        if (!duration || !notificationOrError)
             return;
 
-        if (typeof notification === "object")
-            notification = notification["message"];
-
+        const notification = typeof notificationOrError === "string" ? notificationOrError : notificationOrError?.["message"];
         this.app.showAlert(notification, type, duration);
     }
 
