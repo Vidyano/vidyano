@@ -32,7 +32,7 @@
             <h1>[[translateMessage("SignInTo", label, translations)]]</h1>
             <dom-if if="[[hasVidyano]]">
                 <template>
-                    <input id="username" type="text" placeholder="[[translations.UserName]]" value="{{userName::input}}" on-keydown="_keydown" disabled$="[[isBusy]]" />
+                    <input id="username" autocomplete="username" type="text" placeholder="[[translations.UserName]]" value="{{userName::input}}" on-keydown="_keydown" disabled$="[[isBusy]]" />
                     <label class="description">[[description]]</label>
                     <div class="actions layout horizontal-reverse justified">
                         <vi-button label="[[translations.Next]]" on-tap="_authenticate" disabled$="[[!canAuthenticate]]"></vi-button>
@@ -73,7 +73,7 @@
                 <vi-button label="([[translations.NotYou]])" inverse on-tap="_back" disabled$="[[isBusy]]"></vi-button>
             </div>
             <h1>[[translations.EnterPassword]]</h1>
-            <input id="password" type="password" placeholder="[[translations.Password]]" value="{{password::input}}" on-keydown="_keydown" disabled$="[[isBusy]]" />
+            <input id="password" autocomplete="current-password" type="password" placeholder="[[translations.Password]]" value="{{password::input}}" on-keydown="_keydown" disabled$="[[isBusy]]" />
             <vi-checkbox label="[[translations.StaySignedIn]]" disabled$="[[isBusy]]" checked="{{staySignedIn}}"></vi-checkbox>
             <div class="actions layout horizontal-reverse justified">
                 <vi-button label="[[translations.Next]]" on-tap="_authenticate" disabled$="[[!canAuthenticate]]"></vi-button>
@@ -91,7 +91,7 @@
                 <vi-button label="([[translations.NotYou]])" inverse on-tap="_back" disabled$="[[isBusy]]"></vi-button>
             </div>
             <h1>[[translations.EnterTwoFactorCode]]</h1>
-            <input id="twofactor" type="text" placeholder="[[translations.TwoFactorCode]]" value="{{twoFactorCode::input}}" on-keydown="_keydown" disabled$="[[isBusy]]" />
+            <input id="twofactor" autocomplete="one-time-code" type="text" placeholder="[[translations.TwoFactorCode]]" value="{{twoFactorCode::input}}" on-keydown="_keydown" disabled$="[[isBusy]]" />
             <vi-checkbox label="[[translations.StaySignedIn]]" disabled$="[[isBusy]]" checked="{{staySignedIn}}"></vi-checkbox>
             <div class="actions layout horizontal-reverse justified">
                 <vi-button label="[[translations.SignIn]]" on-tap="_authenticate" disabled$="[[!canAuthenticate]]"></vi-button>
