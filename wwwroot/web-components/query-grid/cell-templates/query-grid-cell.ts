@@ -51,6 +51,7 @@ resizeObserver = new ResizeObserver(allEntries => {
     ]
 })
 export abstract class QueryGridCell extends WebComponent {
+    #_observeOnConnected: boolean;
     #_lastMeasuredColumn: Vidyano.QueryColumn;
     #_isObserved: boolean;
 
@@ -60,12 +61,26 @@ export abstract class QueryGridCell extends WebComponent {
     value: Vidyano.QueryResultItemValue;
     valueQueued: Vidyano.QueryResultItemValue;
 
+    connectedCallback() {
+        super.connectedCallback();
+
+        // The element was disconnected and re-connected to the DOM, attach the observer
+        if (this.#_observeOnConnected) {
+            this.#_observeOnConnected = false;
+
+            this._observe();
+        }
+    }
+
     disconnectedCallback() {
         super.disconnectedCallback();
 
+        // The element is disconnected from the DOM, un-attach the observer
         if (this.#_isObserved) {
-            resizeObserver.unobserve(this);
-            this.#_isObserved = false;
+            this._unobserve();
+
+            // Make sure that the element is observed when it is re-connected to the DOM
+            this.#_observeOnConnected = true;
         }
     }
 
@@ -74,15 +89,25 @@ export abstract class QueryGridCell extends WebComponent {
     }
 
     private _queueMeasure(value: Vidyano.QueryResultItemValue, isConnected: boolean) {
-        if (!isConnected || this.#_lastMeasuredColumn === this.column)
+        // Don't try to measure if the cell is disconnected
+        if (!isConnected)
+            return;
+
+        // Don't try to measure if the column that needs to be measured hasn't changed
+        if (this.#_lastMeasuredColumn && this.#_lastMeasuredColumn.query === this.column?.query && this.#_lastMeasuredColumn.name === this.column.name)
             return;
 
         const row = this.parentElement as QueryGridRow;
-        if (!row.item || row.item.query.items[0] !== row.item)
+        // Only measure the cell when it has a value and is a cell in the first row of the virtualized row set
+        if (!row.item || row.index)
             return;
 
+        // Update the last measured column and queue the measure
         this.#_lastMeasuredColumn = this.column;
-        
+        this._observe();
+    }
+
+    private _observe() {
         this.#_isObserved = true;
         resizeObserver.observe(this, { box: "border-box" });
     }

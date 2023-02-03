@@ -22,6 +22,7 @@ export interface IItemTapEventArgs {
             type: Object,
             observer: "_itemChanged"
         },
+        index: Number,
         columns: {
             type: Array,
             observer: "_columnsChanged"
@@ -55,6 +56,7 @@ export class QueryGridRow extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-row.html">` }
 
     item: Vidyano.QueryResultItem | Vidyano.QueryResultItemGroup;
+    index: number;
 
     private _groupElement: QueryGridRowGroup;
     private _visibleCells: QueryGridCell[];
