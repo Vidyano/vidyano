@@ -9889,9 +9889,8 @@ class ServiceObjectWithActions extends ServiceObject {
     getAction(name) {
         return this.actions[name];
     }
-    setNotification(notification = null, type = "Error", duration = null, skipShowNotification) {
-        if (notification != null && typeof notification === "object")
-            notification = notification["message"];
+    setNotification(notificationOrError, type = "Error", duration = null, skipShowNotification) {
+        const notification = typeof notificationOrError === "string" ? notificationOrError : notificationOrError?.["message"];
         const oldNotificationDuration = this.notificationDuration;
         if (oldNotificationDuration !== duration)
             this.notifyPropertyChanged("notificationDuration", this._notificationDuration = duration, oldNotificationDuration);
@@ -13181,7 +13180,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.1.0";
+let version$2 = "3.1.1";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -38143,11 +38142,10 @@ class AppServiceHooksBase extends ServiceHooks {
     onMessageDialog(title, message, rich, ...actions) {
         return this.app.showMessageDialog({ title: title, message: message, rich: rich, actions: actions });
     }
-    onShowNotification(notification, type, duration) {
-        if (!duration || !notification)
+    onShowNotification(notificationOrError, type, duration) {
+        if (!duration || !notificationOrError)
             return;
-        if (typeof notification === "object")
-            notification = notification["message"];
+        const notification = typeof notificationOrError === "string" ? notificationOrError : notificationOrError?.["message"];
         this.app.showAlert(notification, type, duration);
     }
     async onSelectReference(query) {
@@ -49200,7 +49198,7 @@ function guid() {
     return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
 }
 
-var _QueryGridCell__lastMeasuredColumn, _QueryGridCell__isObserved;
+var _QueryGridCell__observeOnConnected, _QueryGridCell__lastMeasuredColumn, _QueryGridCell__isObserved;
 let resizeObserver$1;
 resizeObserver$1 = new ResizeObserver(allEntries => {
     window.requestAnimationFrame(() => {
@@ -49233,26 +49231,39 @@ resizeObserver$1 = new ResizeObserver(allEntries => {
 let QueryGridCell = class QueryGridCell extends WebComponent {
     constructor() {
         super(...arguments);
+        _QueryGridCell__observeOnConnected.set(this, void 0);
         _QueryGridCell__lastMeasuredColumn.set(this, void 0);
         _QueryGridCell__isObserved.set(this, void 0);
+    }
+    connectedCallback() {
+        super.connectedCallback();
+        if (__classPrivateFieldGet(this, _QueryGridCell__observeOnConnected, "f")) {
+            __classPrivateFieldSet(this, _QueryGridCell__observeOnConnected, false, "f");
+            this._observe();
+        }
     }
     disconnectedCallback() {
         super.disconnectedCallback();
         if (__classPrivateFieldGet(this, _QueryGridCell__isObserved, "f")) {
-            resizeObserver$1.unobserve(this);
-            __classPrivateFieldSet(this, _QueryGridCell__isObserved, false, "f");
+            this._unobserve();
+            __classPrivateFieldSet(this, _QueryGridCell__observeOnConnected, true, "f");
         }
     }
     get isObserved() {
         return __classPrivateFieldGet(this, _QueryGridCell__isObserved, "f");
     }
     _queueMeasure(value, isConnected) {
-        if (!isConnected || __classPrivateFieldGet(this, _QueryGridCell__lastMeasuredColumn, "f") === this.column)
+        if (!isConnected)
+            return;
+        if (__classPrivateFieldGet(this, _QueryGridCell__lastMeasuredColumn, "f") && __classPrivateFieldGet(this, _QueryGridCell__lastMeasuredColumn, "f").query === this.column?.query && __classPrivateFieldGet(this, _QueryGridCell__lastMeasuredColumn, "f").name === this.column.name)
             return;
         const row = this.parentElement;
-        if (!row.item || row.item.query.items[0] !== row.item)
+        if (!row.item || row.index)
             return;
         __classPrivateFieldSet(this, _QueryGridCell__lastMeasuredColumn, this.column, "f");
+        this._observe();
+    }
+    _observe() {
         __classPrivateFieldSet(this, _QueryGridCell__isObserved, true, "f");
         resizeObserver$1.observe(this, { box: "border-box" });
     }
@@ -49267,7 +49278,7 @@ let QueryGridCell = class QueryGridCell extends WebComponent {
         return registeredQueyGridCellTypes[type];
     }
 };
-_QueryGridCell__lastMeasuredColumn = new WeakMap(), _QueryGridCell__isObserved = new WeakMap();
+_QueryGridCell__observeOnConnected = new WeakMap(), _QueryGridCell__lastMeasuredColumn = new WeakMap(), _QueryGridCell__isObserved = new WeakMap();
 QueryGridCell = __decorate([
     WebComponent.register({
         properties: {
@@ -50446,17 +50457,18 @@ let QueryGridColumnHeader = class QueryGridColumnHeader extends WebComponent {
   display: flex;
   position: relative;
   padding: 0 var(--vi-query-grid-cell-padding, var(--theme-h5));
-  cursor: pointer;
   position: relative;
   color: #808080;
   white-space: nowrap;
   overflow: hidden;
 }
+:host .label[can-sort] > * {
+  cursor: pointer;
+}
 :host .label > label {
   display: block;
   line-height: var(--vi-query-grid-header-height, var(--vi-query-grid-row-height));
   white-space: nowrap;
-  cursor: pointer;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -50505,7 +50517,7 @@ let QueryGridColumnHeader = class QueryGridColumnHeader extends WebComponent {
 
 <div class="relative">
     <div class="layout horizontal relative">
-        <div class="label flex relative">
+        <div class="label flex relative" on-tap="_sort" can-sort$="[[canSort]]">
             <label class="flex">[[column.label]]</label>
             <vi-icon id="sortingIcon" source="[[sortingIcon]]" hidden$="[[!sorting]]"></vi-icon>
         </div>
@@ -50567,6 +50579,8 @@ let QueryGridColumnHeader = class QueryGridColumnHeader extends WebComponent {
     _sort(eventOrDirection) {
         let newSortingDirection;
         let multiSort = false;
+        if (!this.canSort)
+            return;
         if (typeof eventOrDirection === "string")
             newSortingDirection = eventOrDirection;
         else {
@@ -50700,7 +50714,6 @@ QueryGridColumnHeader = __decorate([
             "column.column.sortDirection"
         ],
         listeners: {
-            "tap": "_sort",
             "contextmenu": "_onContextmenu"
         },
         observers: [
@@ -52807,6 +52820,7 @@ QueryGridRow = __decorate([
                 type: Object,
                 observer: "_itemChanged"
             },
+            index: Number,
             columns: {
                 type: Array,
                 observer: "_columnsChanged"
@@ -56683,7 +56697,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
         <vi-query-grid-sortable id="grid" grid$="[[initializing]]" enabled="[[canReorder]]" handle=".reorder">
             <dom-repeat items="[[virtualItems]]" id="itemsDomRepeat">
                 <template>
-                    <vi-query-grid-row item="[[item]]" columns="[[columns]]" offsets="[[_computeOffsets(columnWidths)]]" visible-range="{{_computeVisibleRange(viewportWidth, horizontalScrollOffset)}}" initializing$="[[initializing]]" can-reorder="[[canReorder]]"></vi-query-grid-row>
+                    <vi-query-grid-row item="[[item]]" index="[[index]]" columns="[[columns]]" offsets="[[_computeOffsets(columnWidths)]]" visible-range="{{_computeVisibleRange(viewportWidth, horizontalScrollOffset)}}" initializing$="[[initializing]]" can-reorder="[[canReorder]]"></vi-query-grid-row>
                 </template>
             </dom-repeat>
         </vi-query-grid-sortable>
