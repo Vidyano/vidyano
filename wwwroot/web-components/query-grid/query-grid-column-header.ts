@@ -83,7 +83,6 @@ resizeObserver = new ResizeObserver(allEntries => {
         "column.column.sortDirection"
     ],
     listeners: {
-        "tap": "_sort",
         "contextmenu": "_onContextmenu"
     },
     observers: [
@@ -140,6 +139,9 @@ export class QueryGridColumnHeader extends WebComponent {
     private _sort(eventOrDirection: Vidyano.SortDirection | Polymer.Gestures.TapEvent) {
         let newSortingDirection: Vidyano.SortDirection;
         let multiSort = false;
+
+        if (!this.canSort)
+            return;
 
         if (typeof eventOrDirection === "string")
             newSortingDirection = eventOrDirection;

@@ -2,7 +2,7 @@
 
 <div class="relative">
     <div class="layout horizontal relative">
-        <div class="label flex relative">
+        <div class="label flex relative" on-tap="_sort" can-sort$="[[canSort]]">
             <label class="flex">[[column.label]]</label>
             <vi-icon id="sortingIcon" source="[[sortingIcon]]" hidden$="[[!sorting]]"></vi-icon>
         </div>
