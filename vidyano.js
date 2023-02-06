@@ -9890,7 +9890,7 @@ class ServiceObjectWithActions extends ServiceObject {
         return this.actions[name];
     }
     setNotification(notificationOrError, type = "Error", duration = null, skipShowNotification) {
-        const notification = typeof notificationOrError === "string" ? notificationOrError : notificationOrError?.["message"];
+        const notification = typeof notificationOrError === "string" || !notificationOrError ? notificationOrError : notificationOrError?.["message"];
         const oldNotificationDuration = this.notificationDuration;
         if (oldNotificationDuration !== duration)
             this.notifyPropertyChanged("notificationDuration", this._notificationDuration = duration, oldNotificationDuration);
@@ -13180,7 +13180,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.2.0";
+let version$2 = "3.2.1";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
