@@ -13180,7 +13180,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.1.1";
+let version$2 = "3.2.0";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -15965,7 +15965,13 @@ const PropertiesChanged = dedupingMixin(
       if (str === undefined) {
         node.removeAttribute(attribute);
       } else {
-        node.setAttribute(attribute, str);
+        node.setAttribute(
+            attribute,
+            // Closure's type for `setAttribute`'s second parameter incorrectly
+            // excludes `TrustedScript`.
+            (str === '' && window.trustedTypes) ?
+                /** @type {?} */ (window.trustedTypes.emptyScript) :
+                str);
       }
     }
 
@@ -16427,6 +16433,52 @@ function fixPlaceholder(node) {
   }
 }
 
+/**
+ * Copies an attribute from one element to another, converting the value to a
+ * `TrustedScript` if it is named like a Polymer template event listener.
+ *
+ * @param {!Element} dest The element to set the attribute on
+ * @param {!Element} src The element to read the attribute from
+ * @param {string} name The name of the attribute
+ */
+const copyAttributeWithTemplateEventPolicy = (() => {
+  /**
+   * This `TrustedTypePolicy` is used to work around a Chrome bug in the Trusted
+   * Types API where any attribute that starts with `on` may only be set to a
+   * `TrustedScript` value, even if that attribute would not cause an event
+   * listener to be created. (See https://crbug.com/993268 for details.)
+   *
+   * Polymer's template system allows `<dom-if>` and `<dom-repeat>` to be
+   * written using the `<template is="...">` syntax, even if there is no UA
+   * support for custom element extensions of built-in elements. In doing so, it
+   * copies attributes from the original `<template>` to a newly created
+   * `<dom-if>` or `<dom-repeat>`, which can trigger the bug mentioned above if
+   * any of those attributes uses Polymer's `on-` syntax for event listeners.
+   * (Note, the value of these `on-` listeners is not evaluated as script: it is
+   * the name of a member function of a component that will be used as the event
+   * listener.)
+   *
+   * @type {!TrustedTypePolicy|undefined}
+   */
+  const polymerTemplateEventAttributePolicy = window.trustedTypes &&
+      window.trustedTypes.createPolicy(
+          'polymer-template-event-attribute-policy', {
+            createScript: x => x,
+          });
+
+  return (dest, src, name) => {
+    const value = src.getAttribute(name);
+
+    if (polymerTemplateEventAttributePolicy && name.startsWith('on-')) {
+      dest.setAttribute(
+          name, polymerTemplateEventAttributePolicy.createScript(value, name));
+      return;
+    }
+
+    dest.setAttribute(name, value);
+  };
+})();
+
 function wrapTemplateExtension(node) {
   let is = node.getAttribute('is');
   if (is && templateExtensions[is]) {
@@ -16436,8 +16488,9 @@ function wrapTemplateExtension(node) {
     t.parentNode.replaceChild(node, t);
     node.appendChild(t);
     while(t.attributes.length) {
-      node.setAttribute(t.attributes[0].name, t.attributes[0].value);
-      t.removeAttribute(t.attributes[0].name);
+      const {name} = t.attributes[0];
+      copyAttributeWithTemplateEventPolicy(node, t, name);
+      t.removeAttribute(name);
     }
   }
   return node;
@@ -16612,7 +16665,7 @@ const TemplateStamp = dedupingMixin(
         templateInfo.nestedTemplate = Boolean(outerTemplateInfo);
         templateInfo.stripWhiteSpace =
           (outerTemplateInfo && outerTemplateInfo.stripWhiteSpace) ||
-          template.hasAttribute('strip-whitespace');
+          (template.hasAttribute && template.hasAttribute('strip-whitespace'));
          // TODO(rictic): fix typing
          this._parseTemplateContent(
              template, templateInfo, /** @type {?} */ ({parent: null}));
@@ -18053,7 +18106,7 @@ function parseArg(rawArg) {
     // repair extra escape sequences; note only commas strictly need
     // escaping, but we allow any other char to be escaped since its
     // likely users will do this
-    .replace(/\\(.)/g, '\$1')
+    .replace(/\\(.)/g, '$1')
     ;
   // basic argument descriptor
   let a = {
@@ -20379,7 +20432,7 @@ const PropertiesMixin = dedupingMixin(superClass => {
  * Current Polymer version in Semver notation.
  * @type {string} Semver notation of the current version of Polymer.
  */
-const version$1 = '3.4.1';
+const version$1 = '3.5.1';
 
 const builtCSS = window.ShadyCSS && window.ShadyCSS['cssBuild'];
 
@@ -21300,15 +21353,13 @@ function literalValue(value) {
  */
 function htmlValue(value) {
   if (value instanceof HTMLTemplateElement) {
-    // Use the XML serializer to avoid xMSS attacks from browsers' sometimes
-    // unexpected formatting / cleanup of innerHTML.
-    const serializedNewTree = new XMLSerializer().serializeToString(
-        /** @type {!HTMLTemplateElement } */ (value));
-    // The XMLSerializer is similar to .outerHTML, so slice off the leading
-    // and trailing parts of the <template> wrapper tag.
-    return serializedNewTree.slice(
-        serializedNewTree.indexOf('>') + 1,
-        serializedNewTree.lastIndexOf('</'));
+    // This might be an mXSS risk – mainly in the case where this template
+    // contains untrusted content that was believed to be sanitized.
+    // However we can't just use the XMLSerializer here because it misencodes
+    // `>` characters inside style tags.
+    // For an example of an actual case that hit this encoding issue,
+    // see b/198592167
+    return /** @type {!HTMLTemplateElement } */(value).innerHTML;
   } else if (value instanceof LiteralString) {
     return literalValue(value);
   } else {
@@ -25265,13 +25316,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 const nativeShadow = !(
   window['ShadyDOM'] && window['ShadyDOM']['inUse']
 );
+/** @type {boolean} */
 let nativeCssVariables_;
 
 /**
  * @param {(ShadyCSSOptions | ShadyCSSInterface)=} settings
  */
 function calcCssVariables(settings) {
-  if (settings && settings['shimcssproperties']) {
+  if (settings && settings.shimcssproperties) {
     nativeCssVariables_ = false;
   } else {
     // chrome 49 has semi-working css vars, check if box-shadow works
@@ -34874,7 +34926,7 @@ var polymer = /*#__PURE__*/Object.freeze({
 	IronFocusablesHelper: IronFocusablesHelper
 });
 
-/*! *****************************************************************************
+/******************************************************************************
 Copyright (c) Microsoft Corporation.
 
 Permission to use, copy, modify, and/or distribute this software for any
@@ -36171,12 +36223,6 @@ Popup = Popup_1 = __decorate([
 ], Popup);
 
 let PopupMenuItemSplit = class PopupMenuItemSplit extends WebComponent {
-    constructor(label, icon, _action) {
-        super();
-        this.label = label;
-        this.icon = icon;
-        this._action = _action;
-    }
     static get template() { return html `<style>:host {
   display: block;
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
@@ -36259,6 +36305,12 @@ let PopupMenuItemSplit = class PopupMenuItemSplit extends WebComponent {
         <slot id="subItems" on-slotchange="_popupMenuIconSpaceHandler"></slot>
     </div>
 </vi-popup>`; }
+    constructor(label, icon, _action) {
+        super();
+        this.label = label;
+        this.icon = icon;
+        this._action = _action;
+    }
     connectedCallback() {
         super.connectedCallback();
         const subItems = this.$.subItems;
@@ -36315,12 +36367,6 @@ PopupMenuItemSplit = __decorate([
 ], PopupMenuItemSplit);
 
 let PopupMenuItem = class PopupMenuItem extends WebComponent {
-    constructor(label, icon, _action) {
-        super();
-        this.label = label;
-        this.icon = icon;
-        this._action = _action;
-    }
     static get template() { return html `<style>:host {
   display: block;
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
@@ -36382,6 +36428,12 @@ let PopupMenuItem = class PopupMenuItem extends WebComponent {
         <slot id="subItems" on-slotchange="_popupMenuIconSpaceHandler"></slot>
     </div>
 </vi-popup>`; }
+    constructor(label, icon, _action) {
+        super();
+        this.label = label;
+        this.icon = icon;
+        this._action = _action;
+    }
     connectedCallback() {
         super.connectedCallback();
         const subItems = this.$.subItems;
@@ -37082,11 +37134,6 @@ QueryConfig = __decorate([
 ], QueryConfig);
 
 let AppRoute = class AppRoute extends WebComponent {
-    constructor(route) {
-        super();
-        this.route = route;
-        this._parameters = {};
-    }
     static get template() { return html `<style>:host {
   display: flex;
   position: relative;
@@ -37100,6 +37147,11 @@ let AppRoute = class AppRoute extends WebComponent {
 }</style>
 
 <slot></slot>`; }
+    constructor(route) {
+        super();
+        this.route = route;
+        this._parameters = {};
+    }
     matchesParameters(parameters = {}) {
         return this._parameters && JSON.stringify(this._parameters) === JSON.stringify(parameters);
     }
@@ -37595,12 +37647,6 @@ Dialog = __decorate([
 ], Dialog);
 
 let RetryActionDialog = class RetryActionDialog extends Dialog {
-    constructor(retry) {
-        super();
-        this.retry = retry;
-        if (typeof retry.message === "undefined")
-            retry.message = null;
-    }
     static get template() { return Dialog.dialogTemplate(html `<style>:host {
   --vi-persistent-object-dialog-base-width-base: 400px;
 }
@@ -37653,6 +37699,12 @@ let RetryActionDialog = class RetryActionDialog extends Dialog {
         </template>
     </dom-repeat>
 </footer>`); }
+    constructor(retry) {
+        super();
+        this.retry = retry;
+        if (typeof retry.message === "undefined")
+            retry.message = null;
+    }
     connectedCallback() {
         super.connectedCallback();
         this.noCancelOnOutsideClick = this.noCancelOnEscKey = this.retry.cancelOption == null;
@@ -37880,18 +37932,6 @@ Notification = __decorate([
 ], Notification);
 
 let SelectReferenceDialog = class SelectReferenceDialog extends Dialog {
-    constructor(query, forceSearch, canAddNewReference = false, keepFilter) {
-        super();
-        this.query = query;
-        this.canAddNewReference = canAddNewReference;
-        query["_query-grid-vertical-scroll-offset"] = undefined;
-        if (keepFilter)
-            return;
-        if (!query.filters)
-            query.resetFilters();
-        if (forceSearch || !!query.textSearch || !query.hasSearched)
-            query.search();
-    }
     static get template() { return Dialog.dialogTemplate(html `<style>vi-input-search {
   line-height: var(--theme-h2);
   height: var(--theme-h2);
@@ -37936,6 +37976,18 @@ main vi-query-grid {
     </div>
     <vi-button on-tap="_addNew" hidden$="[[!canAddNewReference]]" label="[[translateMessage('NewReference', isConnected)]]"></vi-button>
 </footer>`); }
+    constructor(query, forceSearch, canAddNewReference = false, keepFilter) {
+        super();
+        this.query = query;
+        this.canAddNewReference = canAddNewReference;
+        query["_query-grid-vertical-scroll-offset"] = undefined;
+        if (keepFilter)
+            return;
+        if (!query.filters)
+            query.resetFilters();
+        if (forceSearch || !!query.textSearch || !query.hasSearched)
+            query.search();
+    }
     _initializingChanged(value) {
         if (!value)
             this._focusElement(this.$.search);
@@ -40004,12 +40056,6 @@ Polymer({
 });
 
 let MessageDialog = class MessageDialog extends Dialog {
-    constructor(options) {
-        super();
-        this._setOptions(options);
-        if (options.defaultAction)
-            this._setActiveAction(options.defaultAction);
-    }
     static get template() { return Dialog.dialogTemplate(html `<style>:host main {
   min-width: 17em;
   max-width: 70vw;
@@ -40082,6 +40128,12 @@ let MessageDialog = class MessageDialog extends Dialog {
         </template>
     </dom-repeat>
 </footer>`); }
+    constructor(options) {
+        super();
+        this._setOptions(options);
+        if (options.defaultAction)
+            this._setActiveAction(options.defaultAction);
+    }
     connectedCallback() {
         super.connectedCallback();
         this.noCancelOnEscKey = this.noCancelOnOutsideClick = this.options.noClose || this.options.cancelAction == null;
@@ -41132,17 +41184,6 @@ if (hashBangRe.test(document.location.href)) {
 window["Vidyano"] = Vidyano;
 const missing_base_tag_error = new Error("Document is missing base tag");
 let AppBase = AppBase_1 = class AppBase extends WebComponent {
-    constructor(_hooks) {
-        super();
-        this._hooks = _hooks;
-        this._keybindingRegistrations = {};
-        this._activeDialogs = [];
-        this._initialize = new Promise(resolve => { this._initializeResolve = resolve; });
-        window["app"] = this;
-        window.dispatchEvent(new CustomEvent("app-changed", { detail: { value: this } }));
-        if (!this.uri && document.location.hash)
-            this.uri = document.location.hash.trimStart("#");
-    }
     static get template() { return html `<style>:host {
   --theme-color-error: #a80511;
   --theme-color-warning: #e5a300;
@@ -41635,6 +41676,17 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
 </dom-module>
 
 <vi-alert id="alert"></vi-alert>`; }
+    constructor(_hooks) {
+        super();
+        this._hooks = _hooks;
+        this._keybindingRegistrations = {};
+        this._activeDialogs = [];
+        this._initialize = new Promise(resolve => { this._initializeResolve = resolve; });
+        window["app"] = this;
+        window.dispatchEvent(new CustomEvent("app-changed", { detail: { value: this } }));
+        if (!this.uri && document.location.hash)
+            this.uri = document.location.hash.trimStart("#");
+    }
     async connectedCallback() {
         window.addEventListener("storage", this._onSessionStorage.bind(this), false);
         ServiceBus.subscribe("path-changed", (sender, message, details) => {
@@ -45189,15 +45241,30 @@ function ascending$1(a, b) {
   return a == null || b == null ? NaN : a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
 }
 
-function bisector(f) {
-  let delta = f;
-  let compare1 = f;
-  let compare2 = f;
+function descending(a, b) {
+  return a == null || b == null ? NaN
+    : b < a ? -1
+    : b > a ? 1
+    : b >= a ? 0
+    : NaN;
+}
 
+function bisector(f) {
+  let compare1, compare2, delta;
+
+  // If an accessor is specified, promote it to a comparator. In this case we
+  // can test whether the search value is (self-) comparable. We can’t do this
+  // for a comparator (except for specific, known comparators) because we can’t
+  // tell if the comparator is symmetric, and an asymmetric comparator can’t be
+  // used to test whether a single value is comparable.
   if (f.length !== 2) {
-    delta = (d, x) => f(d) - x;
     compare1 = ascending$1;
     compare2 = (d, x) => ascending$1(f(d), x);
+    delta = (d, x) => f(d) - x;
+  } else {
+    compare1 = f === ascending$1 || f === descending ? f : zero$1;
+    compare2 = f;
+    delta = f;
   }
 
   function left(a, x, lo = 0, hi = a.length) {
@@ -45232,6 +45299,10 @@ function bisector(f) {
   return {left, center, right};
 }
 
+function zero$1() {
+  return 0;
+}
+
 function number$1(x) {
   return x === null ? NaN : +x;
 }
@@ -45241,59 +45312,60 @@ const bisectRight = ascendingBisect.right;
 bisector(number$1).center;
 var bisect = bisectRight;
 
-var e10 = Math.sqrt(50),
+const e10 = Math.sqrt(50),
     e5 = Math.sqrt(10),
     e2 = Math.sqrt(2);
 
-function ticks(start, stop, count) {
-  var reverse,
-      i = -1,
-      n,
-      ticks,
-      step;
-
-  stop = +stop, start = +start, count = +count;
-  if (start === stop && count > 0) return [start];
-  if (reverse = stop < start) n = start, start = stop, stop = n;
-  if ((step = tickIncrement(start, stop, count)) === 0 || !isFinite(step)) return [];
-
-  if (step > 0) {
-    let r0 = Math.round(start / step), r1 = Math.round(stop / step);
-    if (r0 * step < start) ++r0;
-    if (r1 * step > stop) --r1;
-    ticks = new Array(n = r1 - r0 + 1);
-    while (++i < n) ticks[i] = (r0 + i) * step;
+function tickSpec(start, stop, count) {
+  const step = (stop - start) / Math.max(0, count),
+      power = Math.floor(Math.log10(step)),
+      error = step / Math.pow(10, power),
+      factor = error >= e10 ? 10 : error >= e5 ? 5 : error >= e2 ? 2 : 1;
+  let i1, i2, inc;
+  if (power < 0) {
+    inc = Math.pow(10, -power) / factor;
+    i1 = Math.round(start * inc);
+    i2 = Math.round(stop * inc);
+    if (i1 / inc < start) ++i1;
+    if (i2 / inc > stop) --i2;
+    inc = -inc;
   } else {
-    step = -step;
-    let r0 = Math.round(start * step), r1 = Math.round(stop * step);
-    if (r0 / step < start) ++r0;
-    if (r1 / step > stop) --r1;
-    ticks = new Array(n = r1 - r0 + 1);
-    while (++i < n) ticks[i] = (r0 + i) / step;
+    inc = Math.pow(10, power) * factor;
+    i1 = Math.round(start / inc);
+    i2 = Math.round(stop / inc);
+    if (i1 * inc < start) ++i1;
+    if (i2 * inc > stop) --i2;
   }
+  if (i2 < i1 && 0.5 <= count && count < 2) return tickSpec(start, stop, count * 2);
+  return [i1, i2, inc];
+}
 
-  if (reverse) ticks.reverse();
-
+function ticks(start, stop, count) {
+  stop = +stop, start = +start, count = +count;
+  if (!(count > 0)) return [];
+  if (start === stop) return [start];
+  const reverse = stop < start, [i1, i2, inc] = reverse ? tickSpec(stop, start, count) : tickSpec(start, stop, count);
+  if (!(i2 >= i1)) return [];
+  const n = i2 - i1 + 1, ticks = new Array(n);
+  if (reverse) {
+    if (inc < 0) for (let i = 0; i < n; ++i) ticks[i] = (i2 - i) / -inc;
+    else for (let i = 0; i < n; ++i) ticks[i] = (i2 - i) * inc;
+  } else {
+    if (inc < 0) for (let i = 0; i < n; ++i) ticks[i] = (i1 + i) / -inc;
+    else for (let i = 0; i < n; ++i) ticks[i] = (i1 + i) * inc;
+  }
   return ticks;
 }
 
 function tickIncrement(start, stop, count) {
-  var step = (stop - start) / Math.max(0, count),
-      power = Math.floor(Math.log(step) / Math.LN10),
-      error = step / Math.pow(10, power);
-  return power >= 0
-      ? (error >= e10 ? 10 : error >= e5 ? 5 : error >= e2 ? 2 : 1) * Math.pow(10, power)
-      : -Math.pow(10, -power) / (error >= e10 ? 10 : error >= e5 ? 5 : error >= e2 ? 2 : 1);
+  stop = +stop, start = +start, count = +count;
+  return tickSpec(start, stop, count)[2];
 }
 
 function tickStep(start, stop, count) {
-  var step0 = Math.abs(stop - start) / Math.max(0, count),
-      step1 = Math.pow(10, Math.floor(Math.log(step0) / Math.LN10)),
-      error = step0 / step1;
-  if (error >= e10) step1 *= 10;
-  else if (error >= e5) step1 *= 5;
-  else if (error >= e2) step1 *= 2;
-  return stop < start ? -step1 : step1;
+  stop = +stop, start = +start, count = +count;
+  const reverse = stop < start, inc = reverse ? tickIncrement(stop, start, count) : tickIncrement(start, stop, count);
+  return (reverse ? -1 : 1) * (inc < 0 ? 1 / -inc : inc);
 }
 
 var noop = {value: () => {}};
@@ -46320,15 +46392,15 @@ var darker = 0.7;
 var brighter = 1 / darker;
 
 var reI = "\\s*([+-]?\\d+)\\s*",
-    reN = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)\\s*",
-    reP = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)%\\s*",
+    reN = "\\s*([+-]?(?:\\d*\\.)?\\d+(?:[eE][+-]?\\d+)?)\\s*",
+    reP = "\\s*([+-]?(?:\\d*\\.)?\\d+(?:[eE][+-]?\\d+)?)%\\s*",
     reHex = /^#([0-9a-f]{3,8})$/,
-    reRgbInteger = new RegExp("^rgb\\(" + [reI, reI, reI] + "\\)$"),
-    reRgbPercent = new RegExp("^rgb\\(" + [reP, reP, reP] + "\\)$"),
-    reRgbaInteger = new RegExp("^rgba\\(" + [reI, reI, reI, reN] + "\\)$"),
-    reRgbaPercent = new RegExp("^rgba\\(" + [reP, reP, reP, reN] + "\\)$"),
-    reHslPercent = new RegExp("^hsl\\(" + [reN, reP, reP] + "\\)$"),
-    reHslaPercent = new RegExp("^hsla\\(" + [reN, reP, reP, reN] + "\\)$");
+    reRgbInteger = new RegExp(`^rgb\\(${reI},${reI},${reI}\\)$`),
+    reRgbPercent = new RegExp(`^rgb\\(${reP},${reP},${reP}\\)$`),
+    reRgbaInteger = new RegExp(`^rgba\\(${reI},${reI},${reI},${reN}\\)$`),
+    reRgbaPercent = new RegExp(`^rgba\\(${reP},${reP},${reP},${reN}\\)$`),
+    reHslPercent = new RegExp(`^hsl\\(${reN},${reP},${reP}\\)$`),
+    reHslaPercent = new RegExp(`^hsla\\(${reN},${reP},${reP},${reN}\\)$`);
 
 var named = {
   aliceblue: 0xf0f8ff,
@@ -46482,14 +46554,15 @@ var named = {
 };
 
 define(Color, color, {
-  copy: function(channels) {
+  copy(channels) {
     return Object.assign(new this.constructor, this, channels);
   },
-  displayable: function() {
+  displayable() {
     return this.rgb().displayable();
   },
   hex: color_formatHex, // Deprecated! Use color.formatHex.
   formatHex: color_formatHex,
+  formatHex8: color_formatHex8,
   formatHsl: color_formatHsl,
   formatRgb: color_formatRgb,
   toString: color_formatRgb
@@ -46497,6 +46570,10 @@ define(Color, color, {
 
 function color_formatHex() {
   return this.rgb().formatHex();
+}
+
+function color_formatHex8() {
+  return this.rgb().formatHex8();
 }
 
 function color_formatHsl() {
@@ -46554,18 +46631,21 @@ function Rgb(r, g, b, opacity) {
 }
 
 define(Rgb, rgb, extend$1(Color, {
-  brighter: function(k) {
+  brighter(k) {
     k = k == null ? brighter : Math.pow(brighter, k);
     return new Rgb(this.r * k, this.g * k, this.b * k, this.opacity);
   },
-  darker: function(k) {
+  darker(k) {
     k = k == null ? darker : Math.pow(darker, k);
     return new Rgb(this.r * k, this.g * k, this.b * k, this.opacity);
   },
-  rgb: function() {
+  rgb() {
     return this;
   },
-  displayable: function() {
+  clamp() {
+    return new Rgb(clampi(this.r), clampi(this.g), clampi(this.b), clampa(this.opacity));
+  },
+  displayable() {
     return (-0.5 <= this.r && this.r < 255.5)
         && (-0.5 <= this.g && this.g < 255.5)
         && (-0.5 <= this.b && this.b < 255.5)
@@ -46573,25 +46653,34 @@ define(Rgb, rgb, extend$1(Color, {
   },
   hex: rgb_formatHex, // Deprecated! Use color.formatHex.
   formatHex: rgb_formatHex,
+  formatHex8: rgb_formatHex8,
   formatRgb: rgb_formatRgb,
   toString: rgb_formatRgb
 }));
 
 function rgb_formatHex() {
-  return "#" + hex(this.r) + hex(this.g) + hex(this.b);
+  return `#${hex(this.r)}${hex(this.g)}${hex(this.b)}`;
+}
+
+function rgb_formatHex8() {
+  return `#${hex(this.r)}${hex(this.g)}${hex(this.b)}${hex((isNaN(this.opacity) ? 1 : this.opacity) * 255)}`;
 }
 
 function rgb_formatRgb() {
-  var a = this.opacity; a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
-  return (a === 1 ? "rgb(" : "rgba(")
-      + Math.max(0, Math.min(255, Math.round(this.r) || 0)) + ", "
-      + Math.max(0, Math.min(255, Math.round(this.g) || 0)) + ", "
-      + Math.max(0, Math.min(255, Math.round(this.b) || 0))
-      + (a === 1 ? ")" : ", " + a + ")");
+  const a = clampa(this.opacity);
+  return `${a === 1 ? "rgb(" : "rgba("}${clampi(this.r)}, ${clampi(this.g)}, ${clampi(this.b)}${a === 1 ? ")" : `, ${a})`}`;
+}
+
+function clampa(opacity) {
+  return isNaN(opacity) ? 1 : Math.max(0, Math.min(1, opacity));
+}
+
+function clampi(value) {
+  return Math.max(0, Math.min(255, Math.round(value) || 0));
 }
 
 function hex(value) {
-  value = Math.max(0, Math.min(255, Math.round(value) || 0));
+  value = clampi(value);
   return (value < 16 ? "0" : "") + value.toString(16);
 }
 
@@ -46640,15 +46729,15 @@ function Hsl(h, s, l, opacity) {
 }
 
 define(Hsl, hsl, extend$1(Color, {
-  brighter: function(k) {
+  brighter(k) {
     k = k == null ? brighter : Math.pow(brighter, k);
     return new Hsl(this.h, this.s, this.l * k, this.opacity);
   },
-  darker: function(k) {
+  darker(k) {
     k = k == null ? darker : Math.pow(darker, k);
     return new Hsl(this.h, this.s, this.l * k, this.opacity);
   },
-  rgb: function() {
+  rgb() {
     var h = this.h % 360 + (this.h < 0) * 360,
         s = isNaN(h) || isNaN(this.s) ? 0 : this.s,
         l = this.l,
@@ -46661,20 +46750,28 @@ define(Hsl, hsl, extend$1(Color, {
       this.opacity
     );
   },
-  displayable: function() {
+  clamp() {
+    return new Hsl(clamph(this.h), clampt(this.s), clampt(this.l), clampa(this.opacity));
+  },
+  displayable() {
     return (0 <= this.s && this.s <= 1 || isNaN(this.s))
         && (0 <= this.l && this.l <= 1)
         && (0 <= this.opacity && this.opacity <= 1);
   },
-  formatHsl: function() {
-    var a = this.opacity; a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
-    return (a === 1 ? "hsl(" : "hsla(")
-        + (this.h || 0) + ", "
-        + (this.s || 0) * 100 + "%, "
-        + (this.l || 0) * 100 + "%"
-        + (a === 1 ? ")" : ", " + a + ")");
+  formatHsl() {
+    const a = clampa(this.opacity);
+    return `${a === 1 ? "hsl(" : "hsla("}${clamph(this.h)}, ${clampt(this.s) * 100}%, ${clampt(this.l) * 100}%${a === 1 ? ")" : `, ${a})`}`;
   }
 }));
+
+function clamph(value) {
+  value = (value || 0) % 360;
+  return value < 0 ? value + 360 : value;
+}
+
+function clampt(value) {
+  return Math.max(0, Math.min(1, value || 0));
+}
 
 /* From FvD 13.37, CSS Color Module Level 3 */
 function hsl2rgb(h, m1, m2) {
@@ -48532,6 +48629,53 @@ function linear() {
   return linearish(scale);
 }
 
+function Transform(k, x, y) {
+  this.k = k;
+  this.x = x;
+  this.y = y;
+}
+
+Transform.prototype = {
+  constructor: Transform,
+  scale: function(k) {
+    return k === 1 ? this : new Transform(this.k * k, this.x, this.y);
+  },
+  translate: function(x, y) {
+    return x === 0 & y === 0 ? this : new Transform(this.k, this.x + this.k * x, this.y + this.k * y);
+  },
+  apply: function(point) {
+    return [point[0] * this.k + this.x, point[1] * this.k + this.y];
+  },
+  applyX: function(x) {
+    return x * this.k + this.x;
+  },
+  applyY: function(y) {
+    return y * this.k + this.y;
+  },
+  invert: function(location) {
+    return [(location[0] - this.x) / this.k, (location[1] - this.y) / this.k];
+  },
+  invertX: function(x) {
+    return (x - this.x) / this.k;
+  },
+  invertY: function(y) {
+    return (y - this.y) / this.k;
+  },
+  rescaleX: function(x) {
+    return x.copy().domain(x.range().map(this.invertX, this).map(x.invert, x));
+  },
+  rescaleY: function(y) {
+    return y.copy().domain(y.range().map(this.invertY, this).map(y.invert, y));
+  },
+  toString: function() {
+    return "translate(" + this.x + "," + this.y + ") scale(" + this.k + ")";
+  }
+};
+
+new Transform(1, 0, 0);
+
+Transform.prototype;
+
 let Profiler = class Profiler extends WebComponent {
     constructor() {
         super(...arguments);
@@ -49301,6 +49445,7 @@ let QueryGridCellDefault = class QueryGridCellDefault extends QueryGridCell {
     constructor() {
         super(...arguments);
         this._foreground = { currentValue: null };
+        this._tag = { currentValue: null };
         this._textAlign = { currentValue: null };
     }
     static get template() { return html `<style>:host {
@@ -49308,13 +49453,30 @@ let QueryGridCellDefault = class QueryGridCellDefault extends QueryGridCell {
   height: var(--vi-query-grid-row-height);
   line-height: var(--vi-query-grid-row-height);
   min-width: var(--theme-h2);
+}
+:host #text {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-:host([is-app-sensitive][sensitive]) {
+:host([is-app-sensitive][sensitive]) #text {
   filter: blur(5px);
-}</style>`; }
+}
+:host([tag]) {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+}
+:host([tag]) #text {
+  border-radius: var(--theme-h5);
+  background-color: var(--tag-background);
+  color: var(--foreground, white);
+  line-height: var(--theme-h3);
+  padding: 0 var(--theme-h5);
+}</style>
+<div id="text"></div>`; }
     _valueChanged(itemValue) {
         this._setSensitive(itemValue?.column.isSensitive);
         if (!itemValue) {
@@ -49369,6 +49531,11 @@ let QueryGridCellDefault = class QueryGridCellDefault extends QueryGridCell {
         const textAlign = this._getTypeHint(itemValue.column, "horizontalcontentalignment", DataType.isNumericType(itemValue.column.type) ? "right" : null);
         if (textAlign !== this._textAlign.currentValue)
             this.style.textAlign = this._textAlign.currentValue = textAlign || this._textAlign.originalValue || null;
+        const tag = this._getTypeHint(itemValue.column, "tag", null);
+        if (tag !== this._tag.currentValue) {
+            this.style.setProperty("--tag-background", this._tag.currentValue = tag || this._tag.originalValue || null);
+            this.tag = !!tag;
+        }
         const extraClass = itemValue.column.getTypeHint("extraclass", undefined, value && itemValue.typeHints, true);
         if (extraClass !== this._extraClass) {
             if (!String.isNullOrEmpty(this._extraClass))
@@ -49382,7 +49549,7 @@ let QueryGridCellDefault = class QueryGridCellDefault extends QueryGridCell {
                 this._textNode.nodeValue = this._textNodeValue = value;
         }
         else
-            this.shadowRoot.appendChild(this._textNode = document.createTextNode(this._textNodeValue = value));
+            this.$.text.appendChild(this._textNode = document.createTextNode(this._textNodeValue = value));
     }
     _getTypeHint(column, name, defaultValue) {
         return column.getTypeHint(name, defaultValue, this._typeHints, true);
@@ -49397,6 +49564,10 @@ QueryGridCellDefault = __decorate([
             },
             column: Object,
             right: {
+                type: Boolean,
+                reflectToAttribute: true
+            },
+            tag: {
                 type: Boolean,
                 reflectToAttribute: true
             }
@@ -49446,12 +49617,6 @@ PopupMenuItemSeparator = __decorate([
 ], PopupMenuItemSeparator);
 
 let PopupMenuItemWithActions = class PopupMenuItemWithActions extends WebComponent {
-    constructor(label, icon, _action) {
-        super();
-        this.label = label;
-        this.icon = icon;
-        this._action = _action;
-    }
     static get template() { return html `<style>:host {
   display: flex;
   flex-direction: row;
@@ -49534,6 +49699,12 @@ let PopupMenuItemWithActions = class PopupMenuItemWithActions extends WebCompone
         <slot name="button" on-slotchange="_popupMenuIconSpaceHandler"></slot>
     </div>
 </div>`; }
+    constructor(label, icon, _action) {
+        super();
+        this.label = label;
+        this.icon = icon;
+        this._action = _action;
+    }
     _popupMenuIconSpaceHandler(e) {
         const elements = e.target.assignedElements();
         const iconSpace = elements.some(e => e.icon && exists(e.icon));
@@ -50817,13 +50988,6 @@ QueryGridFilterDialogName = __decorate([
 ], QueryGridFilterDialogName);
 
 let QueryGridFilterDialog = class QueryGridFilterDialog extends Dialog {
-    constructor(_filters, _filter) {
-        super();
-        this._filters = _filters;
-        this._filter = _filter;
-        this._setPersistentObject(_filter.persistentObject);
-        this.persistentObject.beginEdit();
-    }
     static get template() { return Dialog.dialogTemplate(html `<style>:host vi-dialog-core {
   min-width: 400px;
 }
@@ -50844,6 +51008,13 @@ let QueryGridFilterDialog = class QueryGridFilterDialog extends Dialog {
     <vi-button inverse on-tap="cancel" label="[[translations.Cancel]]" disabled$="[[persistentObject.isBusy]]"></vi-button>
     <vi-button on-tap="_save" action-type="Default" label="[[translations.Save]]" disabled$="[[persistentObject.isBusy]]"></vi-button>
 </footer>`); }
+    constructor(_filters, _filter) {
+        super();
+        this._filters = _filters;
+        this._filter = _filter;
+        this._setPersistentObject(_filter.persistentObject);
+        this.persistentObject.beginEdit();
+    }
     async _save() {
         this.persistentObject.isNew;
         if (await this._filters.save(this._filter)) {
@@ -51248,13 +51419,6 @@ QueryGridGrouping = __decorate([
 
 var ActionButton_1;
 let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebComponent {
-    constructor(item, action) {
-        super();
-        this.item = item;
-        this.action = action;
-        if (item && action)
-            this._applyItemSelection(item, action);
-    }
     static get template() { return html `<style>:host {
   display: flex;
   box-sizing: border-box;
@@ -51402,6 +51566,13 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
         </vi-popup>
     </template>
 </dom-if>`; }
+    constructor(item, action) {
+        super();
+        this.item = item;
+        this.action = action;
+        if (item && action)
+            this._applyItemSelection(item, action);
+    }
     async connectedCallback() {
         super.connectedCallback();
         if (this.grouped) {
@@ -52929,15 +53100,6 @@ QueryGridSelectAll = __decorate([
 ], QueryGridSelectAll);
 
 let QueryGridConfigureDialogColumn = class QueryGridConfigureDialogColumn extends WebComponent {
-    constructor(column) {
-        super();
-        this.column = column;
-        if (!column)
-            return;
-        this.offset = this.column.offset;
-        this.isPinned = this.column.isPinned;
-        this.isHidden = this.column.isHidden;
-    }
     static get template() { return html `<style>:host {
   display: flex;
   flex-direction: row;
@@ -52986,6 +53148,15 @@ let QueryGridConfigureDialogColumn = class QueryGridConfigureDialogColumn extend
     <vi-button inverse icon="Pin" on-tap="_togglePin"></vi-button>
     <vi-button inverse icon="Eye" on-tap="_toggleVisible"></vi-button>
 </div>`; }
+    constructor(column) {
+        super();
+        this.column = column;
+        if (!column)
+            return;
+        this.offset = this.column.offset;
+        this.isPinned = this.column.isPinned;
+        this.isHidden = this.column.isHidden;
+    }
     _togglePin() {
         this.isPinned = !this.isPinned;
         this.fire("distribute-columns", {}, { bubbles: true });
@@ -56136,11 +56307,6 @@ Sortable = __decorate([
 ], Sortable);
 
 let QueryGridConfigureDialog = class QueryGridConfigureDialog extends Dialog {
-    constructor(query, _settings) {
-        super();
-        this.query = query;
-        this._settings = _settings;
-    }
     static get template() { return Dialog.dialogTemplate(html `<style>:host main {
   display: flex;
   flex-direction: column;
@@ -56184,6 +56350,11 @@ let QueryGridConfigureDialog = class QueryGridConfigureDialog extends Dialog {
         <vi-button inverse on-tap="cancel" label="[[translateMessage('Cancel', isConnected)]]"></vi-button>
     </div>
 </footer>`); }
+    constructor(query, _settings) {
+        super();
+        this.query = query;
+        this._settings = _settings;
+    }
     connectedCallback() {
         this._elements = this._settings.columns.filter(c => c.width !== "0").map(c => new QueryGridConfigureDialogColumn(c));
         this._distributeColumns();
@@ -56381,6 +56552,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
+  --vi-query-grid-row-height: var(--theme-h2);
 }
 :host([initializing]) header, :host([initializing]) vi-scroller {
   visibility: hidden;
@@ -56724,7 +56896,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
     }
     ready() {
         super.ready();
-        requestAnimationFrame(() => this.rowHeight = parseInt(window.getComputedStyle(this).getPropertyValue("--vi-query-grid-row-height")) || 32);
+        requestAnimationFrame(() => this.rowHeight = parseInt(window.getComputedStyle(this).getPropertyValue("--vi-query-grid-row-height")));
     }
     _onAppRouteDeactivate(sender, message, detail) {
         if (!this.findParent(e => e === sender))
@@ -59917,9 +60089,11 @@ Polymer({
 
     if (fromTop) {
       ith = this._physicalStart;
+      this._physicalEnd;
       offsetContent = scrollTop - top;
     } else {
       ith = this._physicalEnd;
+      this._physicalStart;
       offsetContent = bottom - scrollBottom;
     }
     while (true) {
@@ -63685,12 +63859,6 @@ PersistentObjectAttributeFlagsEnum = __decorate([
 PersistentObjectAttribute.registerAttributeType("FlagsEnum", PersistentObjectAttributeFlagsEnum);
 
 let PersistentObjectAttributeImageDialog = class PersistentObjectAttributeImageDialog extends Dialog {
-    constructor(label, ...sources) {
-        super();
-        this.label = label;
-        this.sources = sources;
-        this.source = this.sources[0];
-    }
     static get template() { return Dialog.dialogTemplate(html `<style>:host main {
   position: relative;
   overflow: hidden;
@@ -63723,6 +63891,12 @@ let PersistentObjectAttributeImageDialog = class PersistentObjectAttributeImageD
     <vi-size-tracker size="{{footerSize}}"></vi-size-tracker>
     <vi-button on-tap="_close" action-type="Default" label="[[translateMessage('Close', isConnected)]]"></vi-button>
 </footer>`); }
+    constructor(label, ...sources) {
+        super();
+        this.label = label;
+        this.sources = sources;
+        this.source = this.sources[0];
+    }
     _showImage(headerSize, footerSize) {
         this.updateStyles({
             "--vi-persistent-object-attribute-image-dialog--max-height": `${headerSize.height + footerSize.height}px`
@@ -73984,10 +74158,6 @@ PersistentObjectAttributeMultiLineString = __decorate([
 PersistentObjectAttribute.registerAttributeType("MultiLineString", PersistentObjectAttributeMultiLineString);
 
 let PersistentObjectAttributeMultiStringItem = class PersistentObjectAttributeMultiStringItem extends WebComponent {
-    constructor(value) {
-        super();
-        this.value = value;
-    }
     static get template() { return html `<style>:host {
   display: flex;
   flex-direction: row;
@@ -74047,6 +74217,10 @@ let PersistentObjectAttributeMultiStringItem = class PersistentObjectAttributeMu
 <vi-sensitive disabled="[[!sensitive]]">
     <input content class="flex" value="{{value::input}}" on-blur="_onInputBlur" type="text" readonly$="[[isReadOnly]]" tabindex$="[[readOnlyTabIndex]]" disabled$="[[disabled]]" placeholder="[[placeholder]]">
 </vi-sensitive>`; }
+    constructor(value) {
+        super();
+        this.value = value;
+    }
     connectedCallback() {
         super.connectedCallback();
         this._setInput(this.shadowRoot.querySelector("input"));
@@ -75473,13 +75647,6 @@ PersistentObjectAttributeString = __decorate([
 PersistentObjectAttribute.registerAttributeType("String", PersistentObjectAttributeString);
 
 let PersistentObjectAttributeTranslatedStringDialog = class PersistentObjectAttributeTranslatedStringDialog extends Dialog {
-    constructor(label, strings, multiline, readonly) {
-        super();
-        this.label = label;
-        this.strings = strings;
-        this.multiline = multiline;
-        this.readonly = readonly;
-    }
     static get template() { return Dialog.dialogTemplate(html `<style>:host ul {
   margin: 0;
   padding: var(--theme-h4);
@@ -75555,6 +75722,13 @@ let PersistentObjectAttributeTranslatedStringDialog = class PersistentObjectAttr
         </template>
     </dom-if>
 </footer>`); }
+    constructor(label, strings, multiline, readonly) {
+        super();
+        this.label = label;
+        this.strings = strings;
+        this.multiline = multiline;
+        this.readonly = readonly;
+    }
     _keyboardOk(e) {
         if (document.activeElement && document.activeElement instanceof HTMLInputElement)
             document.activeElement.blur();
@@ -76864,12 +77038,6 @@ PersistentObjectTabPresenter = __decorate([
 ], PersistentObjectTabPresenter);
 
 let PersistentObjectDialog = class PersistentObjectDialog extends Dialog {
-    constructor(persistentObject, _options = {}) {
-        super();
-        this.persistentObject = persistentObject;
-        this._setOptions(_options || null);
-        persistentObject.beginEdit();
-    }
     static get template() { return Dialog.dialogTemplate(html `<style>:host {
   --vi-persistent-object-dialog-base-width-base: 400px;
 }
@@ -76931,6 +77099,12 @@ let PersistentObjectDialog = class PersistentObjectDialog extends Dialog {
         </dom-if>
     </div>
 </footer>`); }
+    constructor(persistentObject, _options = {}) {
+        super();
+        this.persistentObject = persistentObject;
+        this._setOptions(_options || null);
+        persistentObject.beginEdit();
+    }
     _keyboardSave(e) {
         if (document.activeElement && document.activeElement instanceof HTMLInputElement)
             document.activeElement.blur();
@@ -77064,12 +77238,6 @@ PersistentObjectDialog = __decorate([
 ], PersistentObjectDialog);
 
 let PersistentObjectWizardDialog = class PersistentObjectWizardDialog extends Dialog {
-    constructor(persistentObject) {
-        super();
-        this.persistentObject = persistentObject;
-        persistentObject.beginEdit();
-        this._setCurrentTab(persistentObject.tabs[0]);
-    }
     static get template() { return Dialog.dialogTemplate(html `<style>:host {
   --vi-persistent-object-dialog-base-width-base: 400px;
 }
@@ -77127,6 +77295,12 @@ let PersistentObjectWizardDialog = class PersistentObjectWizardDialog extends Di
         <vi-button on-tap="_finish" action-type="Default" label="[[translateMessage('Finish', isConnected)]]" disabled$="[[persistentObject.isBusy]]" hidden$="[[!canFinish]]"></vi-button>
     </div>
 </footer>`); }
+    constructor(persistentObject) {
+        super();
+        this.persistentObject = persistentObject;
+        persistentObject.beginEdit();
+        this._setCurrentTab(persistentObject.tabs[0]);
+    }
     connectedCallback() {
         super.connectedCallback();
         const width = parseInt(getComputedStyle(this).getPropertyValue("--vi-persistent-object-dialog-base-width-base")) * (this.currentTab.columnCount || 1);
@@ -77361,12 +77535,6 @@ class AppServiceHooks extends AppServiceHooksBase {
 
 var App_1;
 let App = App_1 = class App extends AppBase {
-    constructor(hooks = new AppServiceHooks()) {
-        super(hooks);
-        this._cache = [];
-        if (!this.label)
-            this.label = this.title;
-    }
     static get template() {
         const baseTemplate = AppBase.template;
         baseTemplate.content.appendChild(html `<style>:host {
@@ -77450,6 +77618,12 @@ let App = App_1 = class App extends AppBase {
     </template>
 </dom-if>`.content);
         return baseTemplate;
+    }
+    constructor(hooks = new AppServiceHooks()) {
+        super(hooks);
+        this._cache = [];
+        if (!this.label)
+            this.label = this.title;
     }
     _initPathRescue() {
         Path.rescue(() => {

@@ -2706,7 +2706,7 @@ declare class Queue {
     get queueLength(): number;
 }
 
-declare type ServiceBusCallback = (sender: any, message: string, detail: any) => void;
+type ServiceBusCallback = (sender: any, message: string, detail: any) => void;
 interface ServiceBusSubscriptionDisposer extends ISubjectDisposer {
 }
 interface IServiceBus {
@@ -3145,7 +3145,7 @@ interface IQueryColumnDistincts {
     isDirty: boolean;
     hasMore: boolean;
 }
-declare type SortDirection = SortDirection$1;
+type SortDirection = SortDirection$1;
 declare class QueryColumn extends ServiceObject {
     query: Query$1;
     private _id;
@@ -3242,7 +3242,7 @@ declare class PersistentObjectQueryTab extends PersistentObjectTab$1 {
     constructor(service: Service, query: Query$1);
 }
 
-declare type PersistentObjectAttributeOption = KeyValuePair<string, string>;
+type PersistentObjectAttributeOption = KeyValuePair<string, string>;
 declare class PersistentObjectAttribute$1 extends ServiceObject {
     parent: PersistentObject$1;
     private _isSystem;
@@ -3599,8 +3599,8 @@ interface ISelectedItemsActionArgs {
     canExecute: boolean;
     options: string[];
 }
-declare type ActionExecutionHandler = (action: Action, worker: Promise<PersistentObject$1>, args: IActionExecuteOptions) => boolean | void | Promise<void>;
-declare type ActionExecutionHandlerDispose = () => void;
+type ActionExecutionHandler = (action: Action, worker: Promise<PersistentObject$1>, args: IActionExecuteOptions) => boolean | void | Promise<void>;
+type ActionExecutionHandlerDispose = () => void;
 declare class Action extends ServiceObject {
     service: Service;
     definition: ActionDefinition;
@@ -8499,6 +8499,12 @@ declare function setLegacyNoObservedAttributes(noObservedAttributes: boolean): v
  */
 declare function setUseAdoptedStyleSheetsWithBuiltCSS(value: boolean): void;
 
+declare const useShadow: boolean;
+declare const useNativeCSSProperties: boolean;
+declare const useNativeCustomElements: boolean;
+declare const supportsAdoptingStyleSheets: boolean;
+declare let legacyOptimizations: boolean;
+
 declare const settings_d_setRootPath: typeof setRootPath;
 declare const settings_d_setSanitizeDOMValue: typeof setSanitizeDOMValue;
 declare const settings_d_getSanitizeDOMValue: typeof getSanitizeDOMValue;
@@ -8517,6 +8523,11 @@ declare const settings_d_setSuppressTemplateNotifications: typeof setSuppressTem
 declare const settings_d_setLegacyNoObservedAttributes: typeof setLegacyNoObservedAttributes;
 declare const settings_d_setUseAdoptedStyleSheetsWithBuiltCSS: typeof setUseAdoptedStyleSheetsWithBuiltCSS;
 type settings_d_SanitizeDOMValueFunction = SanitizeDOMValueFunction;
+declare const settings_d_useShadow: typeof useShadow;
+declare const settings_d_useNativeCSSProperties: typeof useNativeCSSProperties;
+declare const settings_d_useNativeCustomElements: typeof useNativeCustomElements;
+declare const settings_d_supportsAdoptingStyleSheets: typeof supportsAdoptingStyleSheets;
+declare const settings_d_legacyOptimizations: typeof legacyOptimizations;
 declare namespace settings_d {
   export {
     settings_d_setRootPath as setRootPath,
@@ -8537,6 +8548,11 @@ declare namespace settings_d {
     settings_d_setLegacyNoObservedAttributes as setLegacyNoObservedAttributes,
     settings_d_setUseAdoptedStyleSheetsWithBuiltCSS as setUseAdoptedStyleSheetsWithBuiltCSS,
     settings_d_SanitizeDOMValueFunction as SanitizeDOMValueFunction,
+    settings_d_useShadow as useShadow,
+    settings_d_useNativeCSSProperties as useNativeCSSProperties,
+    settings_d_useNativeCustomElements as useNativeCustomElements,
+    settings_d_supportsAdoptingStyleSheets as supportsAdoptingStyleSheets,
+    settings_d_legacyOptimizations as legacyOptimizations,
   };
 }
 
@@ -10702,7 +10718,7 @@ declare class Spinner extends WebComponent {
     private _updateColor;
 }
 
-declare type ProfilerRequest = ProfilerRequest$1 & {
+type ProfilerRequest = ProfilerRequest$1 & {
     hasNPlusOne: boolean;
     parameters: {
         key: string;
@@ -10710,7 +10726,7 @@ declare type ProfilerRequest = ProfilerRequest$1 & {
     }[];
     flattenedEntries: FlattenedProfilerRequestEntry[];
 };
-declare type FlattenedProfilerRequestEntry = {
+type FlattenedProfilerRequestEntry = {
     entry: ProfilerEntry;
     level: number;
 };
@@ -10830,8 +10846,8 @@ declare class ActionButton extends ConfigurableWebComponent {
     _configure(e: CustomEvent): void;
 }
 
-declare type VerticalAlign = "top" | "middle" | "bottom" | "auto";
-declare type HorizontalAlign = "left" | "center" | "right" | "auto";
+type VerticalAlign = "top" | "middle" | "bottom" | "auto";
+type HorizontalAlign = "left" | "center" | "right" | "auto";
 declare class Popup extends WebComponent {
     static get template(): HTMLTemplateElement;
     private _tapHandler;
@@ -12293,7 +12309,7 @@ declare abstract class PersistentObjectAttribute extends WebComponent {
     static registerAttributeType(attributeType: string, constructor: PersistentObjectAttributeConstructor): void;
     static getAttributeConstructor(attributeType: string): PersistentObjectAttributeConstructor;
 }
-declare type PersistentObjectAttributeConstructor = new (...args: any[]) => PersistentObjectAttribute;
+type PersistentObjectAttributeConstructor = new (...args: any[]) => PersistentObjectAttribute;
 
 declare class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute {
     static get template(): HTMLTemplateElement;
@@ -12357,7 +12373,7 @@ declare class PersistentObjectAttributeBoolean extends PersistentObjectAttribute
     private _computeIsCheckbox;
 }
 
-declare type SelectOption = KeyValuePair<any, string>;
+type SelectOption = KeyValuePair<any, string>;
 interface ISelectItem {
     displayValue: string;
     group: string;
@@ -13136,7 +13152,7 @@ declare abstract class QueryGridCell extends WebComponent {
     static registerCellType(type: string, constructor: QueryGridCellConstructor): void;
     static getCellTypeConstructor(type: string): QueryGridCellConstructor;
 }
-declare type QueryGridCellConstructor = new (...args: any[]) => QueryGridCell;
+type QueryGridCellConstructor = new (...args: any[]) => QueryGridCell;
 
 declare class QueryGridCellBoolean extends QueryGridCell {
     static get template(): HTMLTemplateElement;
@@ -13156,8 +13172,10 @@ declare class QueryGridCellDefault extends QueryGridCell {
     private _textNode;
     private _textNodeValue;
     private _foreground;
+    private _tag;
     private _textAlign;
     right: boolean;
+    tag: boolean;
     private _valueChanged;
     private _getTypeHint;
 }
@@ -13430,8 +13448,8 @@ declare class QueryGridSelectAll extends WebComponent {
     private _computeSelected;
 }
 
-declare type QueryGridItem = QueryResultItem | QueryResultItemGroup;
-declare type HasMore = {
+type QueryGridItem = QueryResultItem | QueryResultItemGroup;
+type HasMore = {
     left: QueryGridColumnHeader[];
     right: QueryGridColumnHeader[];
 };
@@ -13446,8 +13464,6 @@ declare class QueryGrid extends WebComponent {
     private _pinnedStyle;
     private _lastSelectedItemIndex;
     private _controlsSizeObserver;
-    private _headerSize;
-    private _headerOffsets;
     private _updateMoreDebouncer;
     query: Query$1;
     asLookup: boolean;
