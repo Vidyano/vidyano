@@ -179,8 +179,6 @@ export class QueryGrid extends WebComponent {
     private _pinnedStyle: HTMLStyleElement;
     private _lastSelectedItemIndex: number;
     private _controlsSizeObserver: ResizeObserver;
-    private _headerSize: ISize;
-    private _headerOffsets: { left: number, width: number }[];
     private _updateMoreDebouncer: Polymer.Debounce.Debouncer;
 
     query: Vidyano.Query;
@@ -217,7 +215,7 @@ export class QueryGrid extends WebComponent {
     ready() {
         super.ready();
 
-        requestAnimationFrame(() => this.rowHeight = parseInt(window.getComputedStyle(this).getPropertyValue("--vi-query-grid-row-height")) || 32);
+        requestAnimationFrame(() => this.rowHeight = parseInt(window.getComputedStyle(this).getPropertyValue("--vi-query-grid-row-height")));
     }
 
     /**

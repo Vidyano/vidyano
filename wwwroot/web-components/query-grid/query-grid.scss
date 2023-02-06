@@ -6,6 +6,7 @@
     position: relative;
     overflow: hidden;
     @include noSelection();
+    --vi-query-grid-row-height: var(--theme-h2);
 
     &[initializing] {
         header, vi-scroller {
