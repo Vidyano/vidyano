@@ -5,11 +5,30 @@
     height: var(--vi-query-grid-row-height);
     line-height: var(--vi-query-grid-row-height);
     min-width: var(--theme-h2);
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
 
-    &[is-app-sensitive][sensitive] {
+    #text {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    &[is-app-sensitive][sensitive] #text {
         filter: blur(5px);
+    }
+
+    &[tag] {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        overflow: hidden;
+        white-space: nowrap;
+
+        #text {
+            border-radius: var(--theme-h5);
+            background-color: var(--tag-background);
+            color: var(--foreground, white);
+            line-height: var(--theme-h3);
+            padding: 0 var(--theme-h5);
+        }
     }
 }

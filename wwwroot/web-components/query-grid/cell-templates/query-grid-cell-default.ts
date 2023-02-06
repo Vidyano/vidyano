@@ -13,6 +13,10 @@ import { WebComponent } from "../../web-component/web-component.js"
         right: {
             type: Boolean,
             reflectToAttribute: true
+        },
+        tag: {
+            type: Boolean,
+            reflectToAttribute: true
         }
     },
     sensitive: true
@@ -25,8 +29,10 @@ export class QueryGridCellDefault extends QueryGridCell {
     private _textNode: Text;
     private _textNodeValue: string;
     private _foreground: { currentValue?: any; originalValue?: any } = { currentValue: null };
+    private _tag: { currentValue?: any; originalValue?: any } = { currentValue: null };
     private _textAlign: { currentValue?: any; originalValue?: any } = { currentValue: null };
     right: boolean;
+    tag: boolean;
 
     private _valueChanged(itemValue: Vidyano.QueryResultItemValue) {
         this._setSensitive(itemValue?.column.isSensitive);
@@ -92,6 +98,12 @@ export class QueryGridCellDefault extends QueryGridCell {
         if (textAlign !== this._textAlign.currentValue)
             this.style.textAlign = this._textAlign.currentValue = textAlign || this._textAlign.originalValue || null;
 
+        const tag = this._getTypeHint(itemValue.column, "tag", null);
+        if (tag !== this._tag.currentValue) {
+            this.style.setProperty("--tag-background", this._tag.currentValue = tag || this._tag.originalValue || null);
+            this.tag = !!tag;
+        }
+
         const extraClass = itemValue.column.getTypeHint("extraclass", undefined, value && itemValue.typeHints, true);
         if (extraClass !== this._extraClass) {
             if (!String.isNullOrEmpty(this._extraClass))
@@ -107,7 +119,7 @@ export class QueryGridCellDefault extends QueryGridCell {
                 this._textNode.nodeValue = this._textNodeValue = <string>value;
         }
         else
-            this.shadowRoot.appendChild(this._textNode = document.createTextNode(this._textNodeValue = <string>value));
+            this.$.text.appendChild(this._textNode = document.createTextNode(this._textNodeValue = <string>value));
     }
 
     private _getTypeHint(column: Vidyano.QueryColumn, name: string, defaultValue?: string): string {
