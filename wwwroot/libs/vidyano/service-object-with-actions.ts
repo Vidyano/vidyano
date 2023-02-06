@@ -47,7 +47,7 @@ export class ServiceObjectWithActions extends ServiceObject {
 
     setNotification(notification?: string, type?: NotificationType, duration?: number, skipShowNotification?: boolean);
     setNotification(notification?: Error, type?: NotificationType, duration?: number, skipShowNotification?: boolean);
-    setNotification(notificationOrError: string | Error, type: NotificationType = "Error", duration: number = null, skipShowNotification?: boolean) {
+    setNotification(notificationOrError: string | Error = null, type: NotificationType = "Error", duration: number = null, skipShowNotification?: boolean) {
         const notification = typeof notificationOrError === "string" || !notificationOrError ? notificationOrError as string : notificationOrError?.["message"];
 
         const oldNotificationDuration = this.notificationDuration;
