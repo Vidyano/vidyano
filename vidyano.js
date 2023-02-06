@@ -9889,7 +9889,7 @@ class ServiceObjectWithActions extends ServiceObject {
     getAction(name) {
         return this.actions[name];
     }
-    setNotification(notificationOrError, type = "Error", duration = null, skipShowNotification) {
+    setNotification(notificationOrError = null, type = "Error", duration = null, skipShowNotification) {
         const notification = typeof notificationOrError === "string" || !notificationOrError ? notificationOrError : notificationOrError?.["message"];
         const oldNotificationDuration = this.notificationDuration;
         if (oldNotificationDuration !== duration)
