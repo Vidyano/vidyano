@@ -13180,7 +13180,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.2.1";
+let version$2 = "3.2.3";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
