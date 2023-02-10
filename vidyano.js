@@ -13180,7 +13180,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.2.3";
+let version$2 = "3.2.4";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -36223,6 +36223,12 @@ Popup = Popup_1 = __decorate([
 ], Popup);
 
 let PopupMenuItemSplit = class PopupMenuItemSplit extends WebComponent {
+    constructor(label, icon, _action) {
+        super();
+        this.label = label;
+        this.icon = icon;
+        this._action = _action;
+    }
     static get template() { return html `<style>:host {
   display: block;
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
@@ -36305,12 +36311,6 @@ let PopupMenuItemSplit = class PopupMenuItemSplit extends WebComponent {
         <slot id="subItems" on-slotchange="_popupMenuIconSpaceHandler"></slot>
     </div>
 </vi-popup>`; }
-    constructor(label, icon, _action) {
-        super();
-        this.label = label;
-        this.icon = icon;
-        this._action = _action;
-    }
     connectedCallback() {
         super.connectedCallback();
         const subItems = this.$.subItems;
@@ -36367,6 +36367,12 @@ PopupMenuItemSplit = __decorate([
 ], PopupMenuItemSplit);
 
 let PopupMenuItem = class PopupMenuItem extends WebComponent {
+    constructor(label, icon, _action) {
+        super();
+        this.label = label;
+        this.icon = icon;
+        this._action = _action;
+    }
     static get template() { return html `<style>:host {
   display: block;
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
@@ -36428,12 +36434,6 @@ let PopupMenuItem = class PopupMenuItem extends WebComponent {
         <slot id="subItems" on-slotchange="_popupMenuIconSpaceHandler"></slot>
     </div>
 </vi-popup>`; }
-    constructor(label, icon, _action) {
-        super();
-        this.label = label;
-        this.icon = icon;
-        this._action = _action;
-    }
     connectedCallback() {
         super.connectedCallback();
         const subItems = this.$.subItems;
@@ -37134,6 +37134,11 @@ QueryConfig = __decorate([
 ], QueryConfig);
 
 let AppRoute = class AppRoute extends WebComponent {
+    constructor(route) {
+        super();
+        this.route = route;
+        this._parameters = {};
+    }
     static get template() { return html `<style>:host {
   display: flex;
   position: relative;
@@ -37147,11 +37152,6 @@ let AppRoute = class AppRoute extends WebComponent {
 }</style>
 
 <slot></slot>`; }
-    constructor(route) {
-        super();
-        this.route = route;
-        this._parameters = {};
-    }
     matchesParameters(parameters = {}) {
         return this._parameters && JSON.stringify(this._parameters) === JSON.stringify(parameters);
     }
@@ -37647,6 +37647,12 @@ Dialog = __decorate([
 ], Dialog);
 
 let RetryActionDialog = class RetryActionDialog extends Dialog {
+    constructor(retry) {
+        super();
+        this.retry = retry;
+        if (typeof retry.message === "undefined")
+            retry.message = null;
+    }
     static get template() { return Dialog.dialogTemplate(html `<style>:host {
   --vi-persistent-object-dialog-base-width-base: 400px;
 }
@@ -37699,12 +37705,6 @@ let RetryActionDialog = class RetryActionDialog extends Dialog {
         </template>
     </dom-repeat>
 </footer>`); }
-    constructor(retry) {
-        super();
-        this.retry = retry;
-        if (typeof retry.message === "undefined")
-            retry.message = null;
-    }
     connectedCallback() {
         super.connectedCallback();
         this.noCancelOnOutsideClick = this.noCancelOnEscKey = this.retry.cancelOption == null;
@@ -37932,6 +37932,18 @@ Notification = __decorate([
 ], Notification);
 
 let SelectReferenceDialog = class SelectReferenceDialog extends Dialog {
+    constructor(query, forceSearch, canAddNewReference = false, keepFilter) {
+        super();
+        this.query = query;
+        this.canAddNewReference = canAddNewReference;
+        query["_query-grid-vertical-scroll-offset"] = undefined;
+        if (keepFilter)
+            return;
+        if (!query.filters)
+            query.resetFilters();
+        if (forceSearch || !!query.textSearch || !query.hasSearched)
+            query.search();
+    }
     static get template() { return Dialog.dialogTemplate(html `<style>vi-input-search {
   line-height: var(--theme-h2);
   height: var(--theme-h2);
@@ -37976,18 +37988,6 @@ main vi-query-grid {
     </div>
     <vi-button on-tap="_addNew" hidden$="[[!canAddNewReference]]" label="[[translateMessage('NewReference', isConnected)]]"></vi-button>
 </footer>`); }
-    constructor(query, forceSearch, canAddNewReference = false, keepFilter) {
-        super();
-        this.query = query;
-        this.canAddNewReference = canAddNewReference;
-        query["_query-grid-vertical-scroll-offset"] = undefined;
-        if (keepFilter)
-            return;
-        if (!query.filters)
-            query.resetFilters();
-        if (forceSearch || !!query.textSearch || !query.hasSearched)
-            query.search();
-    }
     _initializingChanged(value) {
         if (!value)
             this._focusElement(this.$.search);
@@ -40056,6 +40056,12 @@ Polymer({
 });
 
 let MessageDialog = class MessageDialog extends Dialog {
+    constructor(options) {
+        super();
+        this._setOptions(options);
+        if (options.defaultAction)
+            this._setActiveAction(options.defaultAction);
+    }
     static get template() { return Dialog.dialogTemplate(html `<style>:host main {
   min-width: 17em;
   max-width: 70vw;
@@ -40128,12 +40134,6 @@ let MessageDialog = class MessageDialog extends Dialog {
         </template>
     </dom-repeat>
 </footer>`); }
-    constructor(options) {
-        super();
-        this._setOptions(options);
-        if (options.defaultAction)
-            this._setActiveAction(options.defaultAction);
-    }
     connectedCallback() {
         super.connectedCallback();
         this.noCancelOnEscKey = this.noCancelOnOutsideClick = this.options.noClose || this.options.cancelAction == null;
@@ -41184,6 +41184,17 @@ if (hashBangRe.test(document.location.href)) {
 window["Vidyano"] = Vidyano;
 const missing_base_tag_error = new Error("Document is missing base tag");
 let AppBase = AppBase_1 = class AppBase extends WebComponent {
+    constructor(_hooks) {
+        super();
+        this._hooks = _hooks;
+        this._keybindingRegistrations = {};
+        this._activeDialogs = [];
+        this._initialize = new Promise(resolve => { this._initializeResolve = resolve; });
+        window["app"] = this;
+        window.dispatchEvent(new CustomEvent("app-changed", { detail: { value: this } }));
+        if (!this.uri && document.location.hash)
+            this.uri = document.location.hash.trimStart("#");
+    }
     static get template() { return html `<style>:host {
   --theme-color-error: #a80511;
   --theme-color-warning: #e5a300;
@@ -41676,17 +41687,6 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
 </dom-module>
 
 <vi-alert id="alert"></vi-alert>`; }
-    constructor(_hooks) {
-        super();
-        this._hooks = _hooks;
-        this._keybindingRegistrations = {};
-        this._activeDialogs = [];
-        this._initialize = new Promise(resolve => { this._initializeResolve = resolve; });
-        window["app"] = this;
-        window.dispatchEvent(new CustomEvent("app-changed", { detail: { value: this } }));
-        if (!this.uri && document.location.hash)
-            this.uri = document.location.hash.trimStart("#");
-    }
     async connectedCallback() {
         window.addEventListener("storage", this._onSessionStorage.bind(this), false);
         ServiceBus.subscribe("path-changed", (sender, message, details) => {
@@ -49617,6 +49617,12 @@ PopupMenuItemSeparator = __decorate([
 ], PopupMenuItemSeparator);
 
 let PopupMenuItemWithActions = class PopupMenuItemWithActions extends WebComponent {
+    constructor(label, icon, _action) {
+        super();
+        this.label = label;
+        this.icon = icon;
+        this._action = _action;
+    }
     static get template() { return html `<style>:host {
   display: flex;
   flex-direction: row;
@@ -49699,12 +49705,6 @@ let PopupMenuItemWithActions = class PopupMenuItemWithActions extends WebCompone
         <slot name="button" on-slotchange="_popupMenuIconSpaceHandler"></slot>
     </div>
 </div>`; }
-    constructor(label, icon, _action) {
-        super();
-        this.label = label;
-        this.icon = icon;
-        this._action = _action;
-    }
     _popupMenuIconSpaceHandler(e) {
         const elements = e.target.assignedElements();
         const iconSpace = elements.some(e => e.icon && exists(e.icon));
@@ -50988,6 +50988,13 @@ QueryGridFilterDialogName = __decorate([
 ], QueryGridFilterDialogName);
 
 let QueryGridFilterDialog = class QueryGridFilterDialog extends Dialog {
+    constructor(_filters, _filter) {
+        super();
+        this._filters = _filters;
+        this._filter = _filter;
+        this._setPersistentObject(_filter.persistentObject);
+        this.persistentObject.beginEdit();
+    }
     static get template() { return Dialog.dialogTemplate(html `<style>:host vi-dialog-core {
   min-width: 400px;
 }
@@ -51008,13 +51015,6 @@ let QueryGridFilterDialog = class QueryGridFilterDialog extends Dialog {
     <vi-button inverse on-tap="cancel" label="[[translations.Cancel]]" disabled$="[[persistentObject.isBusy]]"></vi-button>
     <vi-button on-tap="_save" action-type="Default" label="[[translations.Save]]" disabled$="[[persistentObject.isBusy]]"></vi-button>
 </footer>`); }
-    constructor(_filters, _filter) {
-        super();
-        this._filters = _filters;
-        this._filter = _filter;
-        this._setPersistentObject(_filter.persistentObject);
-        this.persistentObject.beginEdit();
-    }
     async _save() {
         this.persistentObject.isNew;
         if (await this._filters.save(this._filter)) {
@@ -51419,6 +51419,13 @@ QueryGridGrouping = __decorate([
 
 var ActionButton_1;
 let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebComponent {
+    constructor(item, action) {
+        super();
+        this.item = item;
+        this.action = action;
+        if (item && action)
+            this._applyItemSelection(item, action);
+    }
     static get template() { return html `<style>:host {
   display: flex;
   box-sizing: border-box;
@@ -51566,13 +51573,6 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
         </vi-popup>
     </template>
 </dom-if>`; }
-    constructor(item, action) {
-        super();
-        this.item = item;
-        this.action = action;
-        if (item && action)
-            this._applyItemSelection(item, action);
-    }
     async connectedCallback() {
         super.connectedCallback();
         if (this.grouped) {
@@ -53100,6 +53100,15 @@ QueryGridSelectAll = __decorate([
 ], QueryGridSelectAll);
 
 let QueryGridConfigureDialogColumn = class QueryGridConfigureDialogColumn extends WebComponent {
+    constructor(column) {
+        super();
+        this.column = column;
+        if (!column)
+            return;
+        this.offset = this.column.offset;
+        this.isPinned = this.column.isPinned;
+        this.isHidden = this.column.isHidden;
+    }
     static get template() { return html `<style>:host {
   display: flex;
   flex-direction: row;
@@ -53148,15 +53157,6 @@ let QueryGridConfigureDialogColumn = class QueryGridConfigureDialogColumn extend
     <vi-button inverse icon="Pin" on-tap="_togglePin"></vi-button>
     <vi-button inverse icon="Eye" on-tap="_toggleVisible"></vi-button>
 </div>`; }
-    constructor(column) {
-        super();
-        this.column = column;
-        if (!column)
-            return;
-        this.offset = this.column.offset;
-        this.isPinned = this.column.isPinned;
-        this.isHidden = this.column.isHidden;
-    }
     _togglePin() {
         this.isPinned = !this.isPinned;
         this.fire("distribute-columns", {}, { bubbles: true });
@@ -56307,6 +56307,11 @@ Sortable = __decorate([
 ], Sortable);
 
 let QueryGridConfigureDialog = class QueryGridConfigureDialog extends Dialog {
+    constructor(query, _settings) {
+        super();
+        this.query = query;
+        this._settings = _settings;
+    }
     static get template() { return Dialog.dialogTemplate(html `<style>:host main {
   display: flex;
   flex-direction: column;
@@ -56350,11 +56355,6 @@ let QueryGridConfigureDialog = class QueryGridConfigureDialog extends Dialog {
         <vi-button inverse on-tap="cancel" label="[[translateMessage('Cancel', isConnected)]]"></vi-button>
     </div>
 </footer>`); }
-    constructor(query, _settings) {
-        super();
-        this.query = query;
-        this._settings = _settings;
-    }
     connectedCallback() {
         this._elements = this._settings.columns.filter(c => c.width !== "0").map(c => new QueryGridConfigureDialogColumn(c));
         this._distributeColumns();
@@ -58623,6 +58623,7 @@ PersistentObjectAttributeAsDetail = __decorate([
             },
             forceFullEdit: {
                 type: Boolean,
+                reflectToAttribute: true,
                 value: false
             }
         },
@@ -63859,6 +63860,12 @@ PersistentObjectAttributeFlagsEnum = __decorate([
 PersistentObjectAttribute.registerAttributeType("FlagsEnum", PersistentObjectAttributeFlagsEnum);
 
 let PersistentObjectAttributeImageDialog = class PersistentObjectAttributeImageDialog extends Dialog {
+    constructor(label, ...sources) {
+        super();
+        this.label = label;
+        this.sources = sources;
+        this.source = this.sources[0];
+    }
     static get template() { return Dialog.dialogTemplate(html `<style>:host main {
   position: relative;
   overflow: hidden;
@@ -63891,12 +63898,6 @@ let PersistentObjectAttributeImageDialog = class PersistentObjectAttributeImageD
     <vi-size-tracker size="{{footerSize}}"></vi-size-tracker>
     <vi-button on-tap="_close" action-type="Default" label="[[translateMessage('Close', isConnected)]]"></vi-button>
 </footer>`); }
-    constructor(label, ...sources) {
-        super();
-        this.label = label;
-        this.sources = sources;
-        this.source = this.sources[0];
-    }
     _showImage(headerSize, footerSize) {
         this.updateStyles({
             "--vi-persistent-object-attribute-image-dialog--max-height": `${headerSize.height + footerSize.height}px`
@@ -74158,6 +74159,10 @@ PersistentObjectAttributeMultiLineString = __decorate([
 PersistentObjectAttribute.registerAttributeType("MultiLineString", PersistentObjectAttributeMultiLineString);
 
 let PersistentObjectAttributeMultiStringItem = class PersistentObjectAttributeMultiStringItem extends WebComponent {
+    constructor(value) {
+        super();
+        this.value = value;
+    }
     static get template() { return html `<style>:host {
   display: flex;
   flex-direction: row;
@@ -74217,10 +74222,6 @@ let PersistentObjectAttributeMultiStringItem = class PersistentObjectAttributeMu
 <vi-sensitive disabled="[[!sensitive]]">
     <input content class="flex" value="{{value::input}}" on-blur="_onInputBlur" type="text" readonly$="[[isReadOnly]]" tabindex$="[[readOnlyTabIndex]]" disabled$="[[disabled]]" placeholder="[[placeholder]]">
 </vi-sensitive>`; }
-    constructor(value) {
-        super();
-        this.value = value;
-    }
     connectedCallback() {
         super.connectedCallback();
         this._setInput(this.shadowRoot.querySelector("input"));
@@ -75647,6 +75648,13 @@ PersistentObjectAttributeString = __decorate([
 PersistentObjectAttribute.registerAttributeType("String", PersistentObjectAttributeString);
 
 let PersistentObjectAttributeTranslatedStringDialog = class PersistentObjectAttributeTranslatedStringDialog extends Dialog {
+    constructor(label, strings, multiline, readonly) {
+        super();
+        this.label = label;
+        this.strings = strings;
+        this.multiline = multiline;
+        this.readonly = readonly;
+    }
     static get template() { return Dialog.dialogTemplate(html `<style>:host ul {
   margin: 0;
   padding: var(--theme-h4);
@@ -75722,13 +75730,6 @@ let PersistentObjectAttributeTranslatedStringDialog = class PersistentObjectAttr
         </template>
     </dom-if>
 </footer>`); }
-    constructor(label, strings, multiline, readonly) {
-        super();
-        this.label = label;
-        this.strings = strings;
-        this.multiline = multiline;
-        this.readonly = readonly;
-    }
     _keyboardOk(e) {
         if (document.activeElement && document.activeElement instanceof HTMLInputElement)
             document.activeElement.blur();
@@ -76415,12 +76416,7 @@ let PersistentObjectAttributePresenter = class PersistentObjectAttributePresente
         return value != null && value !== "";
     }
     _loadingChanged(loading) {
-        if (loading)
-            this.fire("attribute-loading", { attribute: this.attribute }, { bubbles: true });
-        else {
-            flush$1();
-            this.fire("attribute-loaded", { attribute: this.attribute }, { bubbles: true });
-        }
+        this.fire(loading ? "attribute-loading" : "attribute-loaded", { attribute: this.attribute }, { bubbles: true });
     }
     _openAttributeManagement() {
         this.app.changePath(`Management/PersistentObject.1456569d-e02b-44b3-9d1a-a1e417061c77/${this.attribute.id}`);
@@ -77038,6 +77034,12 @@ PersistentObjectTabPresenter = __decorate([
 ], PersistentObjectTabPresenter);
 
 let PersistentObjectDialog = class PersistentObjectDialog extends Dialog {
+    constructor(persistentObject, _options = {}) {
+        super();
+        this.persistentObject = persistentObject;
+        this._setOptions(_options || null);
+        persistentObject.beginEdit();
+    }
     static get template() { return Dialog.dialogTemplate(html `<style>:host {
   --vi-persistent-object-dialog-base-width-base: 400px;
 }
@@ -77099,12 +77101,6 @@ let PersistentObjectDialog = class PersistentObjectDialog extends Dialog {
         </dom-if>
     </div>
 </footer>`); }
-    constructor(persistentObject, _options = {}) {
-        super();
-        this.persistentObject = persistentObject;
-        this._setOptions(_options || null);
-        persistentObject.beginEdit();
-    }
     _keyboardSave(e) {
         if (document.activeElement && document.activeElement instanceof HTMLInputElement)
             document.activeElement.blur();
@@ -77238,6 +77234,12 @@ PersistentObjectDialog = __decorate([
 ], PersistentObjectDialog);
 
 let PersistentObjectWizardDialog = class PersistentObjectWizardDialog extends Dialog {
+    constructor(persistentObject) {
+        super();
+        this.persistentObject = persistentObject;
+        persistentObject.beginEdit();
+        this._setCurrentTab(persistentObject.tabs[0]);
+    }
     static get template() { return Dialog.dialogTemplate(html `<style>:host {
   --vi-persistent-object-dialog-base-width-base: 400px;
 }
@@ -77295,12 +77297,6 @@ let PersistentObjectWizardDialog = class PersistentObjectWizardDialog extends Di
         <vi-button on-tap="_finish" action-type="Default" label="[[translateMessage('Finish', isConnected)]]" disabled$="[[persistentObject.isBusy]]" hidden$="[[!canFinish]]"></vi-button>
     </div>
 </footer>`); }
-    constructor(persistentObject) {
-        super();
-        this.persistentObject = persistentObject;
-        persistentObject.beginEdit();
-        this._setCurrentTab(persistentObject.tabs[0]);
-    }
     connectedCallback() {
         super.connectedCallback();
         const width = parseInt(getComputedStyle(this).getPropertyValue("--vi-persistent-object-dialog-base-width-base")) * (this.currentTab.columnCount || 1);
@@ -77535,6 +77531,12 @@ class AppServiceHooks extends AppServiceHooksBase {
 
 var App_1;
 let App = App_1 = class App extends AppBase {
+    constructor(hooks = new AppServiceHooks()) {
+        super(hooks);
+        this._cache = [];
+        if (!this.label)
+            this.label = this.title;
+    }
     static get template() {
         const baseTemplate = AppBase.template;
         baseTemplate.content.appendChild(html `<style>:host {
@@ -77618,12 +77620,6 @@ let App = App_1 = class App extends AppBase {
     </template>
 </dom-if>`.content);
         return baseTemplate;
-    }
-    constructor(hooks = new AppServiceHooks()) {
-        super(hooks);
-        this._cache = [];
-        if (!this.label)
-            this.label = this.title;
     }
     _initPathRescue() {
         Path.rescue(() => {
