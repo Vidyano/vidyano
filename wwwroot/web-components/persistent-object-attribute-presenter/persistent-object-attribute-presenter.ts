@@ -361,12 +361,7 @@ export class PersistentObjectAttributePresenter extends ConfigurableWebComponent
     }
 
     private _loadingChanged(loading: boolean) {
-        if (loading)
-            this.fire("attribute-loading", { attribute: this.attribute }, { bubbles: true });
-        else {
-            Polymer.flush();
-            this.fire("attribute-loaded", { attribute: this.attribute }, { bubbles: true });
-        }
+        this.fire(loading ? "attribute-loading" : "attribute-loaded", { attribute: this.attribute }, { bubbles: true });
     }
 
     private _openAttributeManagement() {
