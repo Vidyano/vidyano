@@ -52,6 +52,7 @@ import { PersistentObjectDialog } from "../../../persistent-object-dialog/persis
         },
         forceFullEdit: {
             type: Boolean,
+            reflectToAttribute: true,
             value: false
         }
     },
