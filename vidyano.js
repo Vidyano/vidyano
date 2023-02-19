@@ -13180,7 +13180,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.2.4";
+let version$2 = "3.3.0";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -35832,6 +35832,1716 @@ SizeTracker = __decorate([
     })
 ], SizeTracker);
 
+function getAlignment(placement) {
+  return placement.split('-')[1];
+}
+
+function getLengthFromAxis(axis) {
+  return axis === 'y' ? 'height' : 'width';
+}
+
+function getSide(placement) {
+  return placement.split('-')[0];
+}
+
+function getMainAxisFromPlacement(placement) {
+  return ['top', 'bottom'].includes(getSide(placement)) ? 'x' : 'y';
+}
+
+function computeCoordsFromPlacement(_ref, placement, rtl) {
+  let {
+    reference,
+    floating
+  } = _ref;
+  const commonX = reference.x + reference.width / 2 - floating.width / 2;
+  const commonY = reference.y + reference.height / 2 - floating.height / 2;
+  const mainAxis = getMainAxisFromPlacement(placement);
+  const length = getLengthFromAxis(mainAxis);
+  const commonAlign = reference[length] / 2 - floating[length] / 2;
+  const side = getSide(placement);
+  const isVertical = mainAxis === 'x';
+  let coords;
+  switch (side) {
+    case 'top':
+      coords = {
+        x: commonX,
+        y: reference.y - floating.height
+      };
+      break;
+    case 'bottom':
+      coords = {
+        x: commonX,
+        y: reference.y + reference.height
+      };
+      break;
+    case 'right':
+      coords = {
+        x: reference.x + reference.width,
+        y: commonY
+      };
+      break;
+    case 'left':
+      coords = {
+        x: reference.x - floating.width,
+        y: commonY
+      };
+      break;
+    default:
+      coords = {
+        x: reference.x,
+        y: reference.y
+      };
+  }
+  switch (getAlignment(placement)) {
+    case 'start':
+      coords[mainAxis] -= commonAlign * (rtl && isVertical ? -1 : 1);
+      break;
+    case 'end':
+      coords[mainAxis] += commonAlign * (rtl && isVertical ? -1 : 1);
+      break;
+  }
+  return coords;
+}
+
+/**
+ * Computes the `x` and `y` coordinates that will place the floating element
+ * next to a reference element when it is given a certain positioning strategy.
+ *
+ * This export does not have any `platform` interface logic. You will need to
+ * write one for the platform you are using Floating UI with.
+ */
+const computePosition$1 = async (reference, floating, config) => {
+  const {
+    placement = 'bottom',
+    strategy = 'absolute',
+    middleware = [],
+    platform
+  } = config;
+  const validMiddleware = middleware.filter(Boolean);
+  const rtl = await (platform.isRTL == null ? void 0 : platform.isRTL(floating));
+  let rects = await platform.getElementRects({
+    reference,
+    floating,
+    strategy
+  });
+  let {
+    x,
+    y
+  } = computeCoordsFromPlacement(rects, placement, rtl);
+  let statefulPlacement = placement;
+  let middlewareData = {};
+  let resetCount = 0;
+  for (let i = 0; i < validMiddleware.length; i++) {
+    const {
+      name,
+      fn
+    } = validMiddleware[i];
+    const {
+      x: nextX,
+      y: nextY,
+      data,
+      reset
+    } = await fn({
+      x,
+      y,
+      initialPlacement: placement,
+      placement: statefulPlacement,
+      strategy,
+      middlewareData,
+      rects,
+      platform,
+      elements: {
+        reference,
+        floating
+      }
+    });
+    x = nextX != null ? nextX : x;
+    y = nextY != null ? nextY : y;
+    middlewareData = {
+      ...middlewareData,
+      [name]: {
+        ...middlewareData[name],
+        ...data
+      }
+    };
+    if (reset && resetCount <= 50) {
+      resetCount++;
+      if (typeof reset === 'object') {
+        if (reset.placement) {
+          statefulPlacement = reset.placement;
+        }
+        if (reset.rects) {
+          rects = reset.rects === true ? await platform.getElementRects({
+            reference,
+            floating,
+            strategy
+          }) : reset.rects;
+        }
+        ({
+          x,
+          y
+        } = computeCoordsFromPlacement(rects, statefulPlacement, rtl));
+      }
+      i = -1;
+      continue;
+    }
+  }
+  return {
+    x,
+    y,
+    placement: statefulPlacement,
+    strategy,
+    middlewareData
+  };
+};
+
+function expandPaddingObject(padding) {
+  return {
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    ...padding
+  };
+}
+
+function getSideObjectFromPadding(padding) {
+  return typeof padding !== 'number' ? expandPaddingObject(padding) : {
+    top: padding,
+    right: padding,
+    bottom: padding,
+    left: padding
+  };
+}
+
+function rectToClientRect(rect) {
+  return {
+    ...rect,
+    top: rect.y,
+    left: rect.x,
+    right: rect.x + rect.width,
+    bottom: rect.y + rect.height
+  };
+}
+
+/**
+ * Resolves with an object of overflow side offsets that determine how much the
+ * element is overflowing a given clipping boundary on each side.
+ * - positive = overflowing the boundary by that number of pixels
+ * - negative = how many pixels left before it will overflow
+ * - 0 = lies flush with the boundary
+ * @see https://floating-ui.com/docs/detectOverflow
+ */
+async function detectOverflow(state, options) {
+  var _await$platform$isEle;
+  if (options === void 0) {
+    options = {};
+  }
+  const {
+    x,
+    y,
+    platform,
+    rects,
+    elements,
+    strategy
+  } = state;
+  const {
+    boundary = 'clippingAncestors',
+    rootBoundary = 'viewport',
+    elementContext = 'floating',
+    altBoundary = false,
+    padding = 0
+  } = options;
+  const paddingObject = getSideObjectFromPadding(padding);
+  const altContext = elementContext === 'floating' ? 'reference' : 'floating';
+  const element = elements[altBoundary ? altContext : elementContext];
+  const clippingClientRect = rectToClientRect(await platform.getClippingRect({
+    element: ((_await$platform$isEle = await (platform.isElement == null ? void 0 : platform.isElement(element))) != null ? _await$platform$isEle : true) ? element : element.contextElement || (await (platform.getDocumentElement == null ? void 0 : platform.getDocumentElement(elements.floating))),
+    boundary,
+    rootBoundary,
+    strategy
+  }));
+  const rect = elementContext === 'floating' ? {
+    ...rects.floating,
+    x,
+    y
+  } : rects.reference;
+  const offsetParent = await (platform.getOffsetParent == null ? void 0 : platform.getOffsetParent(elements.floating));
+  const offsetScale = (await (platform.isElement == null ? void 0 : platform.isElement(offsetParent))) ? (await (platform.getScale == null ? void 0 : platform.getScale(offsetParent))) || {
+    x: 1,
+    y: 1
+  } : {
+    x: 1,
+    y: 1
+  };
+  const elementClientRect = rectToClientRect(platform.convertOffsetParentRelativeRectToViewportRelativeRect ? await platform.convertOffsetParentRelativeRectToViewportRelativeRect({
+    rect,
+    offsetParent,
+    strategy
+  }) : rect);
+  return {
+    top: (clippingClientRect.top - elementClientRect.top + paddingObject.top) / offsetScale.y,
+    bottom: (elementClientRect.bottom - clippingClientRect.bottom + paddingObject.bottom) / offsetScale.y,
+    left: (clippingClientRect.left - elementClientRect.left + paddingObject.left) / offsetScale.x,
+    right: (elementClientRect.right - clippingClientRect.right + paddingObject.right) / offsetScale.x
+  };
+}
+
+const min$1 = Math.min;
+const max$1 = Math.max;
+
+function within(min$1$1, value, max$1$1) {
+  return max$1(min$1$1, min$1(value, max$1$1));
+}
+
+const oppositeSideMap = {
+  left: 'right',
+  right: 'left',
+  bottom: 'top',
+  top: 'bottom'
+};
+function getOppositePlacement(placement) {
+  return placement.replace(/left|right|bottom|top/g, side => oppositeSideMap[side]);
+}
+
+function getAlignmentSides(placement, rects, rtl) {
+  if (rtl === void 0) {
+    rtl = false;
+  }
+  const alignment = getAlignment(placement);
+  const mainAxis = getMainAxisFromPlacement(placement);
+  const length = getLengthFromAxis(mainAxis);
+  let mainAlignmentSide = mainAxis === 'x' ? alignment === (rtl ? 'end' : 'start') ? 'right' : 'left' : alignment === 'start' ? 'bottom' : 'top';
+  if (rects.reference[length] > rects.floating[length]) {
+    mainAlignmentSide = getOppositePlacement(mainAlignmentSide);
+  }
+  return {
+    main: mainAlignmentSide,
+    cross: getOppositePlacement(mainAlignmentSide)
+  };
+}
+
+const oppositeAlignmentMap = {
+  start: 'end',
+  end: 'start'
+};
+function getOppositeAlignmentPlacement(placement) {
+  return placement.replace(/start|end/g, alignment => oppositeAlignmentMap[alignment]);
+}
+
+function getExpandedPlacements(placement) {
+  const oppositePlacement = getOppositePlacement(placement);
+  return [getOppositeAlignmentPlacement(placement), oppositePlacement, getOppositeAlignmentPlacement(oppositePlacement)];
+}
+
+function getSideList(side, isStart, rtl) {
+  const lr = ['left', 'right'];
+  const rl = ['right', 'left'];
+  const tb = ['top', 'bottom'];
+  const bt = ['bottom', 'top'];
+  switch (side) {
+    case 'top':
+    case 'bottom':
+      if (rtl) return isStart ? rl : lr;
+      return isStart ? lr : rl;
+    case 'left':
+    case 'right':
+      return isStart ? tb : bt;
+    default:
+      return [];
+  }
+}
+function getOppositeAxisPlacements(placement, flipAlignment, direction, rtl) {
+  const alignment = getAlignment(placement);
+  let list = getSideList(getSide(placement), direction === 'start', rtl);
+  if (alignment) {
+    list = list.map(side => side + "-" + alignment);
+    if (flipAlignment) {
+      list = list.concat(list.map(getOppositeAlignmentPlacement));
+    }
+  }
+  return list;
+}
+
+/**
+ * Optimizes the visibility of the floating element by flipping the `placement`
+ * in order to keep it in view when the preferred placement(s) will overflow the
+ * clipping boundary. Alternative to `autoPlacement`.
+ * @see https://floating-ui.com/docs/flip
+ */
+const flip = function (options) {
+  if (options === void 0) {
+    options = {};
+  }
+  return {
+    name: 'flip',
+    options,
+    async fn(state) {
+      var _middlewareData$flip;
+      const {
+        placement,
+        middlewareData,
+        rects,
+        initialPlacement,
+        platform,
+        elements
+      } = state;
+      const {
+        mainAxis: checkMainAxis = true,
+        crossAxis: checkCrossAxis = true,
+        fallbackPlacements: specifiedFallbackPlacements,
+        fallbackStrategy = 'bestFit',
+        fallbackAxisSideDirection = 'none',
+        flipAlignment = true,
+        ...detectOverflowOptions
+      } = options;
+      const side = getSide(placement);
+      const isBasePlacement = getSide(initialPlacement) === initialPlacement;
+      const rtl = await (platform.isRTL == null ? void 0 : platform.isRTL(elements.floating));
+      const fallbackPlacements = specifiedFallbackPlacements || (isBasePlacement || !flipAlignment ? [getOppositePlacement(initialPlacement)] : getExpandedPlacements(initialPlacement));
+      if (!specifiedFallbackPlacements && fallbackAxisSideDirection !== 'none') {
+        fallbackPlacements.push(...getOppositeAxisPlacements(initialPlacement, flipAlignment, fallbackAxisSideDirection, rtl));
+      }
+      const placements = [initialPlacement, ...fallbackPlacements];
+      const overflow = await detectOverflow(state, detectOverflowOptions);
+      const overflows = [];
+      let overflowsData = ((_middlewareData$flip = middlewareData.flip) == null ? void 0 : _middlewareData$flip.overflows) || [];
+      if (checkMainAxis) {
+        overflows.push(overflow[side]);
+      }
+      if (checkCrossAxis) {
+        const {
+          main,
+          cross
+        } = getAlignmentSides(placement, rects, rtl);
+        overflows.push(overflow[main], overflow[cross]);
+      }
+      overflowsData = [...overflowsData, {
+        placement,
+        overflows
+      }];
+
+      // One or more sides is overflowing.
+      if (!overflows.every(side => side <= 0)) {
+        var _middlewareData$flip2, _overflowsData$filter;
+        const nextIndex = (((_middlewareData$flip2 = middlewareData.flip) == null ? void 0 : _middlewareData$flip2.index) || 0) + 1;
+        const nextPlacement = placements[nextIndex];
+        if (nextPlacement) {
+          // Try next placement and re-run the lifecycle.
+          return {
+            data: {
+              index: nextIndex,
+              overflows: overflowsData
+            },
+            reset: {
+              placement: nextPlacement
+            }
+          };
+        }
+
+        // First, find the candidates that fit on the mainAxis side of overflow,
+        // then find the placement that fits the best on the main crossAxis side.
+        let resetPlacement = (_overflowsData$filter = overflowsData.filter(d => d.overflows[0] <= 0).sort((a, b) => a.overflows[1] - b.overflows[1])[0]) == null ? void 0 : _overflowsData$filter.placement;
+
+        // Otherwise fallback.
+        if (!resetPlacement) {
+          switch (fallbackStrategy) {
+            case 'bestFit':
+              {
+                var _overflowsData$map$so;
+                const placement = (_overflowsData$map$so = overflowsData.map(d => [d.placement, d.overflows.filter(overflow => overflow > 0).reduce((acc, overflow) => acc + overflow, 0)]).sort((a, b) => a[1] - b[1])[0]) == null ? void 0 : _overflowsData$map$so[0];
+                if (placement) {
+                  resetPlacement = placement;
+                }
+                break;
+              }
+            case 'initialPlacement':
+              resetPlacement = initialPlacement;
+              break;
+          }
+        }
+        if (placement !== resetPlacement) {
+          return {
+            reset: {
+              placement: resetPlacement
+            }
+          };
+        }
+      }
+      return {};
+    }
+  };
+};
+
+function getCrossAxis(axis) {
+  return axis === 'x' ? 'y' : 'x';
+}
+
+/**
+ * Optimizes the visibility of the floating element by shifting it in order to
+ * keep it in view when it will overflow the clipping boundary.
+ * @see https://floating-ui.com/docs/shift
+ */
+const shift = function (options) {
+  if (options === void 0) {
+    options = {};
+  }
+  return {
+    name: 'shift',
+    options,
+    async fn(state) {
+      const {
+        x,
+        y,
+        placement
+      } = state;
+      const {
+        mainAxis: checkMainAxis = true,
+        crossAxis: checkCrossAxis = false,
+        limiter = {
+          fn: _ref => {
+            let {
+              x,
+              y
+            } = _ref;
+            return {
+              x,
+              y
+            };
+          }
+        },
+        ...detectOverflowOptions
+      } = options;
+      const coords = {
+        x,
+        y
+      };
+      const overflow = await detectOverflow(state, detectOverflowOptions);
+      const mainAxis = getMainAxisFromPlacement(getSide(placement));
+      const crossAxis = getCrossAxis(mainAxis);
+      let mainAxisCoord = coords[mainAxis];
+      let crossAxisCoord = coords[crossAxis];
+      if (checkMainAxis) {
+        const minSide = mainAxis === 'y' ? 'top' : 'left';
+        const maxSide = mainAxis === 'y' ? 'bottom' : 'right';
+        const min = mainAxisCoord + overflow[minSide];
+        const max = mainAxisCoord - overflow[maxSide];
+        mainAxisCoord = within(min, mainAxisCoord, max);
+      }
+      if (checkCrossAxis) {
+        const minSide = crossAxis === 'y' ? 'top' : 'left';
+        const maxSide = crossAxis === 'y' ? 'bottom' : 'right';
+        const min = crossAxisCoord + overflow[minSide];
+        const max = crossAxisCoord - overflow[maxSide];
+        crossAxisCoord = within(min, crossAxisCoord, max);
+      }
+      const limitedCoords = limiter.fn({
+        ...state,
+        [mainAxis]: mainAxisCoord,
+        [crossAxis]: crossAxisCoord
+      });
+      return {
+        ...limitedCoords,
+        data: {
+          x: limitedCoords.x - x,
+          y: limitedCoords.y - y
+        }
+      };
+    }
+  };
+};
+
+function getWindow(node) {
+  var _node$ownerDocument;
+  return ((_node$ownerDocument = node.ownerDocument) == null ? void 0 : _node$ownerDocument.defaultView) || window;
+}
+
+function getComputedStyle$1(element) {
+  return getWindow(element).getComputedStyle(element);
+}
+
+const min = Math.min;
+const max = Math.max;
+const round = Math.round;
+
+function getCssDimensions(element) {
+  const css = getComputedStyle$1(element);
+  let width = parseFloat(css.width);
+  let height = parseFloat(css.height);
+  const offsetWidth = element.offsetWidth;
+  const offsetHeight = element.offsetHeight;
+  const shouldFallback = round(width) !== offsetWidth || round(height) !== offsetHeight;
+  if (shouldFallback) {
+    width = offsetWidth;
+    height = offsetHeight;
+  }
+  return {
+    width,
+    height,
+    fallback: shouldFallback
+  };
+}
+
+function getNodeName(node) {
+  return isNode(node) ? (node.nodeName || '').toLowerCase() : '';
+}
+
+let uaString;
+function getUAString() {
+  if (uaString) {
+    return uaString;
+  }
+  const uaData = navigator.userAgentData;
+  if (uaData && Array.isArray(uaData.brands)) {
+    uaString = uaData.brands.map(item => item.brand + "/" + item.version).join(' ');
+    return uaString;
+  }
+  return navigator.userAgent;
+}
+
+function isHTMLElement(value) {
+  return value instanceof getWindow(value).HTMLElement;
+}
+function isElement(value) {
+  return value instanceof getWindow(value).Element;
+}
+function isNode(value) {
+  return value instanceof getWindow(value).Node;
+}
+function isShadowRoot(node) {
+  // Browsers without `ShadowRoot` support.
+  if (typeof ShadowRoot === 'undefined') {
+    return false;
+  }
+  const OwnElement = getWindow(node).ShadowRoot;
+  return node instanceof OwnElement || node instanceof ShadowRoot;
+}
+function isOverflowElement(element) {
+  const {
+    overflow,
+    overflowX,
+    overflowY,
+    display
+  } = getComputedStyle$1(element);
+  return /auto|scroll|overlay|hidden|clip/.test(overflow + overflowY + overflowX) && !['inline', 'contents'].includes(display);
+}
+function isTableElement(element) {
+  return ['table', 'td', 'th'].includes(getNodeName(element));
+}
+function isContainingBlock(element) {
+  // TODO: Try to use feature detection here instead.
+  const isFirefox = /firefox/i.test(getUAString());
+  const css = getComputedStyle$1(element);
+  const backdropFilter = css.backdropFilter || css.WebkitBackdropFilter;
+
+  // This is non-exhaustive but covers the most common CSS properties that
+  // create a containing block.
+  // https://developer.mozilla.org/en-US/docs/Web/CSS/Containing_block#identifying_the_containing_block
+  return css.transform !== 'none' || css.perspective !== 'none' || (backdropFilter ? backdropFilter !== 'none' : false) || isFirefox && css.willChange === 'filter' || isFirefox && (css.filter ? css.filter !== 'none' : false) || ['transform', 'perspective'].some(value => css.willChange.includes(value)) || ['paint', 'layout', 'strict', 'content'].some(value => {
+    // Add type check for old browsers.
+    const contain = css.contain;
+    return contain != null ? contain.includes(value) : false;
+  });
+}
+
+/**
+ * Determines whether or not `.getBoundingClientRect()` is affected by visual
+ * viewport offsets. In Safari, the `x`/`y` offsets are values relative to the
+ * visual viewport, while in other engines, they are values relative to the
+ * layout viewport.
+ */
+function isClientRectVisualViewportBased() {
+  // TODO: Try to use feature detection here instead. Feature detection for
+  // this can fail in various ways, making the userAgent check the most
+  // reliable:
+  // • Always-visible scrollbar or not
+  // • Width of <html>
+
+  // Is Safari.
+  return /^((?!chrome|android).)*safari/i.test(getUAString());
+}
+function isLastTraversableNode(node) {
+  return ['html', 'body', '#document'].includes(getNodeName(node));
+}
+
+function unwrapElement(element) {
+  return !isElement(element) ? element.contextElement : element;
+}
+
+const FALLBACK_SCALE = {
+  x: 1,
+  y: 1
+};
+function getScale(element) {
+  const domElement = unwrapElement(element);
+  if (!isHTMLElement(domElement)) {
+    return FALLBACK_SCALE;
+  }
+  const rect = domElement.getBoundingClientRect();
+  const {
+    width,
+    height,
+    fallback
+  } = getCssDimensions(domElement);
+  let x = (fallback ? round(rect.width) : rect.width) / width;
+  let y = (fallback ? round(rect.height) : rect.height) / height;
+
+  // 0, NaN, or Infinity should always fallback to 1.
+
+  if (!x || !Number.isFinite(x)) {
+    x = 1;
+  }
+  if (!y || !Number.isFinite(y)) {
+    y = 1;
+  }
+  return {
+    x,
+    y
+  };
+}
+
+function getBoundingClientRect(element, includeScale, isFixedStrategy, offsetParent) {
+  var _win$visualViewport, _win$visualViewport2;
+  if (includeScale === void 0) {
+    includeScale = false;
+  }
+  if (isFixedStrategy === void 0) {
+    isFixedStrategy = false;
+  }
+  const clientRect = element.getBoundingClientRect();
+  const domElement = unwrapElement(element);
+  let scale = FALLBACK_SCALE;
+  if (includeScale) {
+    if (offsetParent) {
+      if (isElement(offsetParent)) {
+        scale = getScale(offsetParent);
+      }
+    } else {
+      scale = getScale(element);
+    }
+  }
+  const win = domElement ? getWindow(domElement) : window;
+  const addVisualOffsets = isClientRectVisualViewportBased() && isFixedStrategy;
+  let x = (clientRect.left + (addVisualOffsets ? ((_win$visualViewport = win.visualViewport) == null ? void 0 : _win$visualViewport.offsetLeft) || 0 : 0)) / scale.x;
+  let y = (clientRect.top + (addVisualOffsets ? ((_win$visualViewport2 = win.visualViewport) == null ? void 0 : _win$visualViewport2.offsetTop) || 0 : 0)) / scale.y;
+  let width = clientRect.width / scale.x;
+  let height = clientRect.height / scale.y;
+  if (domElement) {
+    const win = getWindow(domElement);
+    const offsetWin = offsetParent && isElement(offsetParent) ? getWindow(offsetParent) : offsetParent;
+    let currentIFrame = win.frameElement;
+    while (currentIFrame && offsetParent && offsetWin !== win) {
+      const iframeScale = getScale(currentIFrame);
+      const iframeRect = currentIFrame.getBoundingClientRect();
+      const css = getComputedStyle(currentIFrame);
+      iframeRect.x += (currentIFrame.clientLeft + parseFloat(css.paddingLeft)) * iframeScale.x;
+      iframeRect.y += (currentIFrame.clientTop + parseFloat(css.paddingTop)) * iframeScale.y;
+      x *= iframeScale.x;
+      y *= iframeScale.y;
+      width *= iframeScale.x;
+      height *= iframeScale.y;
+      x += iframeRect.x;
+      y += iframeRect.y;
+      currentIFrame = getWindow(currentIFrame).frameElement;
+    }
+  }
+  return {
+    width,
+    height,
+    top: y,
+    right: x + width,
+    bottom: y + height,
+    left: x,
+    x,
+    y
+  };
+}
+
+function getDocumentElement(node) {
+  return ((isNode(node) ? node.ownerDocument : node.document) || window.document).documentElement;
+}
+
+function getNodeScroll(element) {
+  if (isElement(element)) {
+    return {
+      scrollLeft: element.scrollLeft,
+      scrollTop: element.scrollTop
+    };
+  }
+  return {
+    scrollLeft: element.pageXOffset,
+    scrollTop: element.pageYOffset
+  };
+}
+
+function convertOffsetParentRelativeRectToViewportRelativeRect(_ref) {
+  let {
+    rect,
+    offsetParent,
+    strategy
+  } = _ref;
+  const isOffsetParentAnElement = isHTMLElement(offsetParent);
+  const documentElement = getDocumentElement(offsetParent);
+  if (offsetParent === documentElement) {
+    return rect;
+  }
+  let scroll = {
+    scrollLeft: 0,
+    scrollTop: 0
+  };
+  let scale = {
+    x: 1,
+    y: 1
+  };
+  const offsets = {
+    x: 0,
+    y: 0
+  };
+  if (isOffsetParentAnElement || !isOffsetParentAnElement && strategy !== 'fixed') {
+    if (getNodeName(offsetParent) !== 'body' || isOverflowElement(documentElement)) {
+      scroll = getNodeScroll(offsetParent);
+    }
+    if (isHTMLElement(offsetParent)) {
+      const offsetRect = getBoundingClientRect(offsetParent);
+      scale = getScale(offsetParent);
+      offsets.x = offsetRect.x + offsetParent.clientLeft;
+      offsets.y = offsetRect.y + offsetParent.clientTop;
+    }
+  }
+  return {
+    width: rect.width * scale.x,
+    height: rect.height * scale.y,
+    x: rect.x * scale.x - scroll.scrollLeft * scale.x + offsets.x,
+    y: rect.y * scale.y - scroll.scrollTop * scale.y + offsets.y
+  };
+}
+
+function getWindowScrollBarX(element) {
+  // If <html> has a CSS width greater than the viewport, then this will be
+  // incorrect for RTL.
+  return getBoundingClientRect(getDocumentElement(element)).left + getNodeScroll(element).scrollLeft;
+}
+
+// Gets the entire size of the scrollable document area, even extending outside
+// of the `<html>` and `<body>` rect bounds if horizontally scrollable.
+function getDocumentRect(element) {
+  const html = getDocumentElement(element);
+  const scroll = getNodeScroll(element);
+  const body = element.ownerDocument.body;
+  const width = max(html.scrollWidth, html.clientWidth, body.scrollWidth, body.clientWidth);
+  const height = max(html.scrollHeight, html.clientHeight, body.scrollHeight, body.clientHeight);
+  let x = -scroll.scrollLeft + getWindowScrollBarX(element);
+  const y = -scroll.scrollTop;
+  if (getComputedStyle$1(body).direction === 'rtl') {
+    x += max(html.clientWidth, body.clientWidth) - width;
+  }
+  return {
+    width,
+    height,
+    x,
+    y
+  };
+}
+
+function getParentNode(node) {
+  if (getNodeName(node) === 'html') {
+    return node;
+  }
+  const result =
+  // Step into the shadow DOM of the parent of a slotted node.
+  node.assignedSlot ||
+  // DOM Element detected.
+  node.parentNode ||
+  // ShadowRoot detected.
+  isShadowRoot(node) && node.host ||
+  // Fallback.
+  getDocumentElement(node);
+  return isShadowRoot(result) ? result.host : result;
+}
+
+function getNearestOverflowAncestor(node) {
+  const parentNode = getParentNode(node);
+  if (isLastTraversableNode(parentNode)) {
+    // `getParentNode` will never return a `Document` due to the fallback
+    // check, so it's either the <html> or <body> element.
+    return parentNode.ownerDocument.body;
+  }
+  if (isHTMLElement(parentNode) && isOverflowElement(parentNode)) {
+    return parentNode;
+  }
+  return getNearestOverflowAncestor(parentNode);
+}
+
+function getOverflowAncestors(node, list) {
+  var _node$ownerDocument;
+  if (list === void 0) {
+    list = [];
+  }
+  const scrollableAncestor = getNearestOverflowAncestor(node);
+  const isBody = scrollableAncestor === ((_node$ownerDocument = node.ownerDocument) == null ? void 0 : _node$ownerDocument.body);
+  const win = getWindow(scrollableAncestor);
+  if (isBody) {
+    return list.concat(win, win.visualViewport || [], isOverflowElement(scrollableAncestor) ? scrollableAncestor : []);
+  }
+  return list.concat(scrollableAncestor, getOverflowAncestors(scrollableAncestor));
+}
+
+function getViewportRect(element, strategy) {
+  const win = getWindow(element);
+  const html = getDocumentElement(element);
+  const visualViewport = win.visualViewport;
+  let width = html.clientWidth;
+  let height = html.clientHeight;
+  let x = 0;
+  let y = 0;
+  if (visualViewport) {
+    width = visualViewport.width;
+    height = visualViewport.height;
+    const visualViewportBased = isClientRectVisualViewportBased();
+    if (!visualViewportBased || visualViewportBased && strategy === 'fixed') {
+      x = visualViewport.offsetLeft;
+      y = visualViewport.offsetTop;
+    }
+  }
+  return {
+    width,
+    height,
+    x,
+    y
+  };
+}
+
+// Returns the inner client rect, subtracting scrollbars if present.
+function getInnerBoundingClientRect(element, strategy) {
+  const clientRect = getBoundingClientRect(element, true, strategy === 'fixed');
+  const top = clientRect.top + element.clientTop;
+  const left = clientRect.left + element.clientLeft;
+  const scale = isHTMLElement(element) ? getScale(element) : {
+    x: 1,
+    y: 1
+  };
+  const width = element.clientWidth * scale.x;
+  const height = element.clientHeight * scale.y;
+  const x = left * scale.x;
+  const y = top * scale.y;
+  return {
+    width,
+    height,
+    x,
+    y
+  };
+}
+function getClientRectFromClippingAncestor(element, clippingAncestor, strategy) {
+  let rect;
+  if (clippingAncestor === 'viewport') {
+    rect = getViewportRect(element, strategy);
+  } else if (clippingAncestor === 'document') {
+    rect = getDocumentRect(getDocumentElement(element));
+  } else if (isElement(clippingAncestor)) {
+    rect = getInnerBoundingClientRect(clippingAncestor, strategy);
+  } else {
+    const mutableRect = {
+      ...clippingAncestor
+    };
+    if (isClientRectVisualViewportBased()) {
+      var _win$visualViewport, _win$visualViewport2;
+      const win = getWindow(element);
+      mutableRect.x -= ((_win$visualViewport = win.visualViewport) == null ? void 0 : _win$visualViewport.offsetLeft) || 0;
+      mutableRect.y -= ((_win$visualViewport2 = win.visualViewport) == null ? void 0 : _win$visualViewport2.offsetTop) || 0;
+    }
+    rect = mutableRect;
+  }
+  return rectToClientRect(rect);
+}
+
+// A "clipping ancestor" is an `overflow` element with the characteristic of
+// clipping (or hiding) child elements. This returns all clipping ancestors
+// of the given element up the tree.
+function getClippingElementAncestors(element, cache) {
+  const cachedResult = cache.get(element);
+  if (cachedResult) {
+    return cachedResult;
+  }
+  let result = getOverflowAncestors(element).filter(el => isElement(el) && getNodeName(el) !== 'body');
+  let currentContainingBlockComputedStyle = null;
+  const elementIsFixed = getComputedStyle$1(element).position === 'fixed';
+  let currentNode = elementIsFixed ? getParentNode(element) : element;
+
+  // https://developer.mozilla.org/en-US/docs/Web/CSS/Containing_block#identifying_the_containing_block
+  while (isElement(currentNode) && !isLastTraversableNode(currentNode)) {
+    const computedStyle = getComputedStyle$1(currentNode);
+    const containingBlock = isContainingBlock(currentNode);
+    const shouldIgnoreCurrentNode = computedStyle.position === 'fixed';
+    if (shouldIgnoreCurrentNode) {
+      currentContainingBlockComputedStyle = null;
+    } else {
+      const shouldDropCurrentNode = elementIsFixed ? !containingBlock && !currentContainingBlockComputedStyle : !containingBlock && computedStyle.position === 'static' && !!currentContainingBlockComputedStyle && ['absolute', 'fixed'].includes(currentContainingBlockComputedStyle.position);
+      if (shouldDropCurrentNode) {
+        // Drop non-containing blocks.
+        result = result.filter(ancestor => ancestor !== currentNode);
+      } else {
+        // Record last containing block for next iteration.
+        currentContainingBlockComputedStyle = computedStyle;
+      }
+    }
+    currentNode = getParentNode(currentNode);
+  }
+  cache.set(element, result);
+  return result;
+}
+
+// Gets the maximum area that the element is visible in due to any number of
+// clipping ancestors.
+function getClippingRect(_ref) {
+  let {
+    element,
+    boundary,
+    rootBoundary,
+    strategy
+  } = _ref;
+  const elementClippingAncestors = boundary === 'clippingAncestors' ? getClippingElementAncestors(element, this._c) : [].concat(boundary);
+  const clippingAncestors = [...elementClippingAncestors, rootBoundary];
+  const firstClippingAncestor = clippingAncestors[0];
+  const clippingRect = clippingAncestors.reduce((accRect, clippingAncestor) => {
+    const rect = getClientRectFromClippingAncestor(element, clippingAncestor, strategy);
+    accRect.top = max(rect.top, accRect.top);
+    accRect.right = min(rect.right, accRect.right);
+    accRect.bottom = min(rect.bottom, accRect.bottom);
+    accRect.left = max(rect.left, accRect.left);
+    return accRect;
+  }, getClientRectFromClippingAncestor(element, firstClippingAncestor, strategy));
+  return {
+    width: clippingRect.right - clippingRect.left,
+    height: clippingRect.bottom - clippingRect.top,
+    x: clippingRect.left,
+    y: clippingRect.top
+  };
+}
+
+function getDimensions(element) {
+  if (isHTMLElement(element)) {
+    return getCssDimensions(element);
+  }
+  return element.getBoundingClientRect();
+}
+
+function getTrueOffsetParent(element, polyfill) {
+  if (!isHTMLElement(element) || getComputedStyle$1(element).position === 'fixed') {
+    return null;
+  }
+  if (polyfill) {
+    return polyfill(element);
+  }
+  return element.offsetParent;
+}
+function getContainingBlock(element) {
+  let currentNode = getParentNode(element);
+  while (isHTMLElement(currentNode) && !isLastTraversableNode(currentNode)) {
+    if (isContainingBlock(currentNode)) {
+      return currentNode;
+    } else {
+      currentNode = getParentNode(currentNode);
+    }
+  }
+  return null;
+}
+
+// Gets the closest ancestor positioned element. Handles some edge cases,
+// such as table ancestors and cross browser bugs.
+function getOffsetParent(element, polyfill) {
+  const window = getWindow(element);
+  let offsetParent = getTrueOffsetParent(element, polyfill);
+  while (offsetParent && isTableElement(offsetParent) && getComputedStyle$1(offsetParent).position === 'static') {
+    offsetParent = getTrueOffsetParent(offsetParent, polyfill);
+  }
+  if (offsetParent && (getNodeName(offsetParent) === 'html' || getNodeName(offsetParent) === 'body' && getComputedStyle$1(offsetParent).position === 'static' && !isContainingBlock(offsetParent))) {
+    return window;
+  }
+  return offsetParent || getContainingBlock(element) || window;
+}
+
+function getRectRelativeToOffsetParent(element, offsetParent, strategy) {
+  const isOffsetParentAnElement = isHTMLElement(offsetParent);
+  const documentElement = getDocumentElement(offsetParent);
+  const rect = getBoundingClientRect(element, true, strategy === 'fixed', offsetParent);
+  let scroll = {
+    scrollLeft: 0,
+    scrollTop: 0
+  };
+  const offsets = {
+    x: 0,
+    y: 0
+  };
+  if (isOffsetParentAnElement || !isOffsetParentAnElement && strategy !== 'fixed') {
+    if (getNodeName(offsetParent) !== 'body' || isOverflowElement(documentElement)) {
+      scroll = getNodeScroll(offsetParent);
+    }
+    if (isHTMLElement(offsetParent)) {
+      const offsetRect = getBoundingClientRect(offsetParent, true);
+      offsets.x = offsetRect.x + offsetParent.clientLeft;
+      offsets.y = offsetRect.y + offsetParent.clientTop;
+    } else if (documentElement) {
+      offsets.x = getWindowScrollBarX(documentElement);
+    }
+  }
+  return {
+    x: rect.left + scroll.scrollLeft - offsets.x,
+    y: rect.top + scroll.scrollTop - offsets.y,
+    width: rect.width,
+    height: rect.height
+  };
+}
+
+const platform = {
+  getClippingRect,
+  convertOffsetParentRelativeRectToViewportRelativeRect,
+  isElement,
+  getDimensions,
+  getOffsetParent,
+  getDocumentElement,
+  getScale,
+  async getElementRects(_ref) {
+    let {
+      reference,
+      floating,
+      strategy
+    } = _ref;
+    const getOffsetParentFn = this.getOffsetParent || getOffsetParent;
+    const getDimensionsFn = this.getDimensions;
+    return {
+      reference: getRectRelativeToOffsetParent(reference, await getOffsetParentFn(floating), strategy),
+      floating: {
+        x: 0,
+        y: 0,
+        ...(await getDimensionsFn(floating))
+      }
+    };
+  },
+  getClientRects: element => Array.from(element.getClientRects()),
+  isRTL: element => getComputedStyle$1(element).direction === 'rtl'
+};
+
+/**
+ * Automatically updates the position of the floating element when necessary.
+ * Should only be called when the floating element is mounted on the DOM or
+ * visible on the screen.
+ * @returns cleanup function that should be invoked when the floating element is
+ * removed from the DOM or hidden from the screen.
+ * @see https://floating-ui.com/docs/autoUpdate
+ */
+function autoUpdate(reference, floating, update, options) {
+  if (options === void 0) {
+    options = {};
+  }
+  const {
+    ancestorScroll: _ancestorScroll = true,
+    ancestorResize = true,
+    elementResize = true,
+    animationFrame = false
+  } = options;
+  const ancestorScroll = _ancestorScroll && !animationFrame;
+  const ancestors = ancestorScroll || ancestorResize ? [...(isElement(reference) ? getOverflowAncestors(reference) : reference.contextElement ? getOverflowAncestors(reference.contextElement) : []), ...getOverflowAncestors(floating)] : [];
+  ancestors.forEach(ancestor => {
+    ancestorScroll && ancestor.addEventListener('scroll', update, {
+      passive: true
+    });
+    ancestorResize && ancestor.addEventListener('resize', update);
+  });
+  let observer = null;
+  if (elementResize) {
+    let initialUpdate = true;
+    observer = new ResizeObserver(() => {
+      if (!initialUpdate) {
+        update();
+      }
+      initialUpdate = false;
+    });
+    isElement(reference) && !animationFrame && observer.observe(reference);
+    if (!isElement(reference) && reference.contextElement && !animationFrame) {
+      observer.observe(reference.contextElement);
+    }
+    observer.observe(floating);
+  }
+  let frameId;
+  let prevRefRect = animationFrame ? getBoundingClientRect(reference) : null;
+  if (animationFrame) {
+    frameLoop();
+  }
+  function frameLoop() {
+    const nextRefRect = getBoundingClientRect(reference);
+    if (prevRefRect && (nextRefRect.x !== prevRefRect.x || nextRefRect.y !== prevRefRect.y || nextRefRect.width !== prevRefRect.width || nextRefRect.height !== prevRefRect.height)) {
+      update();
+    }
+    prevRefRect = nextRefRect;
+    frameId = requestAnimationFrame(frameLoop);
+  }
+  update();
+  return () => {
+    var _observer;
+    ancestors.forEach(ancestor => {
+      ancestorScroll && ancestor.removeEventListener('scroll', update);
+      ancestorResize && ancestor.removeEventListener('resize', update);
+    });
+    (_observer = observer) == null ? void 0 : _observer.disconnect();
+    observer = null;
+    if (animationFrame) {
+      cancelAnimationFrame(frameId);
+    }
+  };
+}
+
+/**
+ * Computes the `x` and `y` coordinates that will place the floating element
+ * next to a reference element when it is given a certain CSS positioning
+ * strategy.
+ */
+const computePosition = (reference, floating, options) => {
+  // This caches the expensive `getClippingElementAncestors` function so that
+  // multiple lifecycle resets re-use the same result. It only lives for a
+  // single call. If other functions become expensive, we can add them as well.
+  const cache = new Map();
+  const mergedOptions = {
+    platform,
+    ...options
+  };
+  const platformWithCache = {
+    ...mergedOptions.platform,
+    _c: cache
+  };
+  return computePosition$1(reference, floating, {
+    ...mergedOptions,
+    platform: platformWithCache
+  });
+};
+
+var Scroller_1;
+let Scroller = Scroller_1 = class Scroller extends WebComponent {
+    static get template() { return html `<style>:host {
+  display: grid;
+  grid-template-rows: 1fr;
+  position: relative;
+  --vi-scroller-thumb-color: #888;
+  --vi-scroller-thumb-hover-color: #777;
+  --vi-scroller-thumb-size: var(--theme-h5);
+  --vi-scroller-thumb-hover-size: calc(var(--theme-h5) + 2px);
+  --vi-scroller-thumb-capture-size: calc(var(--theme-h4) + 2px);
+  --vi-scroller-thumb-parent-hover-size: calc(var(--theme-h5) + 6px);
+}
+:host .scroll-host {
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  position: relative;
+}
+:host .wrapper {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+  overflow: auto;
+  outline: none !important;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+:host .wrapper::-webkit-scrollbar {
+  display: none;
+}
+:host([no-horizontal]:not([no-vertical])) .wrapper {
+  display: flex;
+  flex-direction: column;
+}
+:host([no-horizontal]:not([no-vertical])) .wrapper .content {
+  min-height: auto;
+}
+:host([no-vertical]:not([no-horizontal])) .wrapper {
+  display: flex;
+  flex-direction: row;
+  margin-right: 0;
+  overflow-y: hidden;
+}
+:host([no-vertical][no-horizontal]) .wrapper {
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  margin: 0 !important;
+}
+:host([no-vertical][no-horizontal]) .wrapper .content {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: row;
+  min-height: initial;
+  min-width: initial;
+}
+:host([no-vertical][no-horizontal]) .wrapper .content > :not(vi-size-tracker) {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+:host(:not([no-vertical]):not([no-horizontal])) .wrapper > .content {
+  display: inline-block;
+  min-width: 100%;
+}
+:host(:not([force-scrollbars]):not([hovering]):not([scrolling])) .scrollbar-parent .scrollbar {
+  opacity: 0;
+}
+:host .scrollbar-parent {
+  position: absolute;
+  background-color: transparent;
+  display: none;
+  z-index: 1;
+}
+:host .scrollbar-parent:before {
+  position: absolute;
+  content: " ";
+  background-color: transparent;
+  transition: all 0.2s ease-in-out;
+}
+:host .scrollbar-parent.vertical:before {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: var(--vi-scroller-thumb-parent-hover-size);
+}
+:host .scrollbar-parent.horizontal:before {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--vi-scroller-thumb-parent-hover-size);
+}
+:host .scrollbar-parent .scrollbar {
+  position: absolute;
+  opacity: 1;
+  transition: opacity 0.2s ease-in-out;
+}
+:host .scrollbar-parent .scrollbar:after {
+  content: " ";
+  position: absolute;
+  background-color: var(--vi-scroller-thumb-color);
+  border-radius: var(--theme-h5);
+}
+:host .scrollbar-parent .scrollbar#vertical {
+  top: 0;
+  right: 0;
+  width: var(--vi-scroller-thumb-capture-size);
+}
+:host .scrollbar-parent .scrollbar#vertical:after {
+  right: 2px;
+  top: 0;
+  bottom: 0;
+  width: var(--vi-scroller-thumb-size);
+  transition: width 0.2s ease-in-out;
+}
+:host .scrollbar-parent .scrollbar#horizontal {
+  left: 0;
+  bottom: 0;
+  height: var(--vi-scroller-thumb-capture-size);
+}
+:host .scrollbar-parent .scrollbar#horizontal:after {
+  bottom: 2px;
+  left: 0;
+  right: 0;
+  height: var(--vi-scroller-thumb-size);
+  transition: height 0.2s ease-in-out;
+}
+:host .scrollbar-parent.horizontal {
+  height: var(--vi-scroller-thumb-capture-size);
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+:host .scrollbar-parent.vertical {
+  width: var(--vi-scroller-thumb-capture-size);
+  top: 0;
+  bottom: 0;
+  right: var(--vi-scroller-vertical-scrollbar-right, 0);
+  left: var(--vi-scroller-vertical-scrollbar-left, initial);
+}
+:host([horizontal]) .scrollbar-parent.horizontal, :host([vertical]) .scrollbar-parent.vertical {
+  display: block;
+}
+:host([align-vertical-scrollbar=left]) .vertical {
+  right: auto;
+  left: 0;
+}
+:host([scrolling]) .wrapper {
+  pointer-events: none;
+}
+:host([vertical][scrolling=vertical]) .scrollbar-parent.vertical:before, :host .scrollbar-parent.vertical:hover:before, :host([horizontal][scrolling=horizontal]) .scrollbar-parent.horizontal:before, :host .scrollbar-parent.horizontal:hover:before {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+:host([vertical][scrolling=vertical]) .scrollbar-parent.vertical .scrollbar:after, :host .scrollbar-parent.vertical:hover .scrollbar:after, :host([horizontal][scrolling=horizontal]) .scrollbar-parent.horizontal .scrollbar:after, :host .scrollbar-parent.horizontal:hover .scrollbar:after {
+  background-color: var(--vi-scroller-thumb-hover-color);
+}
+:host([vertical][scrolling=vertical]) .scrollbar-parent.vertical .scrollbar#vertical:after, :host .scrollbar-parent.vertical:hover .scrollbar#vertical:after, :host([horizontal][scrolling=horizontal]) .scrollbar-parent.horizontal .scrollbar#vertical:after, :host .scrollbar-parent.horizontal:hover .scrollbar#vertical:after {
+  width: var(--vi-scroller-thumb-hover-size);
+}
+:host([vertical][scrolling=vertical]) .scrollbar-parent.vertical .scrollbar#horizontal:after, :host .scrollbar-parent.vertical:hover .scrollbar#horizontal:after, :host([horizontal][scrolling=horizontal]) .scrollbar-parent.horizontal .scrollbar#horizontal:after, :host .scrollbar-parent.horizontal:hover .scrollbar#horizontal:after {
+  height: var(--vi-scroller-thumb-hover-size);
+}
+:host([horizontal]) .wrapper .content > div {
+  padding-bottom: var(--vi-scroller-thumb-capture-size);
+}
+:host .scroll-shadow-parent {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--theme-h2);
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+:host .scroll-shadow-parent > .scroll-shadow {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  box-shadow: 0 0 calc(var(--theme-h2) / 2) rgba(0, 0, 0, 0.3);
+  bottom: 0;
+  border-radius: 100%;
+  left: calc(var(--theme-h2) * -1);
+  right: calc(var(--theme-h2) * -1);
+  pointer-events: none;
+  will-change: transform;
+  transition: transform 0.3s ease-out;
+  z-index: 1;
+}
+:host .scroll-shadow-parent > .scroll-shadow.top {
+  transform: translateY(calc(var(--vi-scroller--scroll-shadow-top-offset, var(--theme-h2)) * -1.5));
+}
+:host .scroll-shadow-parent > .scroll-shadow.bottom {
+  transform: translateY(calc(var(--vi-scroller--scroll-shadow-top-offset, var(--theme-h2)) * 1.5));
+}
+:host .scroll-shadow-parent.top {
+  top: var(--vi-scroller--scroll-shadow-top-offset, 0);
+}
+:host .scroll-shadow-parent.bottom {
+  bottom: var(--vi-scroller--scroll-shadow-bottom-offset, 0);
+}
+:host([scroll-top-shadow]) .scroll-shadow-parent > .scroll-shadow.top {
+  transform: translateY(calc(var(--theme-h2) * -1));
+}
+:host([scroll-bottom-shadow]) .scroll-shadow-parent > .scroll-shadow.bottom {
+  transform: translateY(var(--theme-h2));
+}
+:host([hide-scrollbars]) .scrollbar-parent {
+  visibility: hidden;
+}
+:host([hide-native-scrollbar]:not([allow-native])[vertical]) .wrapper {
+  margin-right: calc(var(--theme-scrollbar-width) * -1);
+}
+:host([hide-native-scrollbar]:not([allow-native])[horizontal]) .wrapper {
+  margin-bottom: calc(var(--theme-scrollbar-width) * -1);
+}
+:host([hide-native-scrollbar][allow-native]) .scrollbar-parent {
+  display: none !important;
+}</style>
+
+<div id="wrapper" class="wrapper" tabindex="-1">
+    <vi-size-tracker class="fit" on-sizechanged="_outerSizeChanged"></vi-size-tracker>
+    <div id="content" class="relative content">
+        <vi-size-tracker on-sizechanged="_innerSizeChanged" trigger-zero></vi-size-tracker>
+        <slot></slot>
+    </div>
+</div>
+<div class="top scroll-shadow-parent">
+    <div class="top scroll-shadow"></div>
+</div>
+<div class="bottom scroll-shadow-parent">
+    <div class="bottom scroll-shadow"></div>
+</div>
+<div class="horizontal scrollbar-parent" on-tap="_horizontalScrollbarParentTap">
+    <div id="horizontal" class="scrollbar" on-track="_trackHorizontal" on-mousedown="_trapEvent"></div>
+</div>
+<div class="vertical scrollbar-parent" on-tap="_verticalScrollbarParentTap">
+    <div id="vertical" class="scrollbar" on-track="_trackVertical" on-mousedown="_trapEvent"></div>
+</div>`; }
+    connectedCallback() {
+        super.connectedCallback();
+        this.scroller.addEventListener("scroll", this._scrollEventListener = this._scroll.bind(this), { capture: true, passive: true });
+    }
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        this.scroller.removeEventListener("scroll", this._scrollEventListener);
+    }
+    get scroller() {
+        return this.$.wrapper;
+    }
+    async scrollToTop(offsetTop = 0, animated) {
+        if (animated) {
+            this.scroller.scrollTo({
+                top: offsetTop,
+                behavior: "smooth"
+            });
+        }
+        else
+            this.scroller.scrollTop = offsetTop;
+    }
+    scrollToBottom(animated) {
+        if (animated) {
+            this.scroller.scrollTo({
+                top: this.innerHeight,
+                behavior: "smooth"
+            });
+        }
+        else
+            this.scroller.scrollTop = this.innerHeight;
+    }
+    _outerSizeChanged(e, detail) {
+        this._setOuterWidth(detail.width);
+        this._setOuterHeight(detail.height);
+        this._updateScrollOffsets();
+        e.stopPropagation();
+    }
+    _innerSizeChanged(e, detail) {
+        this._setInnerWidth(detail.width);
+        this._setInnerHeight(detail.height);
+        this._updateScrollOffsets();
+        e.stopPropagation();
+    }
+    _updateVerticalScrollbar(outerHeight, innerHeight, verticalScrollOffset, noVertical) {
+        let height = outerHeight < innerHeight ? outerHeight / innerHeight * outerHeight : 0;
+        if (height !== this._verticalScrollHeight) {
+            if (height > 0 && height < Scroller_1._minBarSize)
+                height = Scroller_1._minBarSize;
+            else
+                height = Math.floor(height);
+            this._verticalScrollSpace = outerHeight - height;
+            if (height !== this._verticalScrollHeight) {
+                this._verticalScrollHeight = height;
+                this.$.vertical.style.height = `${height}px`;
+            }
+        }
+        this._setVertical(!noVertical && height > 0);
+        const verticalScrollTop = verticalScrollOffset === 0 || innerHeight - outerHeight === 0 ? 0 : Math.round((1 / ((innerHeight - outerHeight) / verticalScrollOffset)) * this._verticalScrollSpace);
+        if (verticalScrollTop !== this._verticalScrollTop)
+            this.$.vertical.style.transform = `translateY(${this._verticalScrollTop = verticalScrollTop}px)`;
+        this._setScrollTopShadow(!this.noScrollShadow && verticalScrollTop > 0);
+        this._setScrollBottomShadow(!this.noScrollShadow && Math.floor(innerHeight - verticalScrollOffset - outerHeight) > 0);
+    }
+    _updateHorizontalScrollbar(outerWidth, innerWidth, horizontalScrollOffset, noHorizontal) {
+        let width = outerWidth < innerWidth ? outerWidth / innerWidth * outerWidth : 0;
+        if (width !== this._horizontalScrollWidth) {
+            if (width > 0 && width < Scroller_1._minBarSize)
+                width = Scroller_1._minBarSize;
+            else
+                width = Math.floor(width);
+            this._horizontalScrollSpace = outerWidth - width;
+            if (width !== this._horizontalScrollWidth) {
+                this._horizontalScrollWidth = width;
+                this.$.horizontal.style.width = `${width}px`;
+            }
+        }
+        this._setHorizontal(!noHorizontal && width > 0);
+        const horizontalScrollLeft = horizontalScrollOffset === 0 ? 0 : Math.round((1 / ((innerWidth - outerWidth) / horizontalScrollOffset)) * this._horizontalScrollSpace);
+        if (horizontalScrollLeft !== this._horizontalScrollLeft)
+            this.$.horizontal.style.transform = `translate3d(${this._horizontalScrollLeft = horizontalScrollLeft}px, 0, 0)`;
+    }
+    _trackVertical(e) {
+        if (e.detail.state === "start") {
+            this._setScrolling("vertical");
+            this._trackStart = this._verticalScrollTop;
+        }
+        else if (e.detail.state === "track") {
+            const newVerticalScrollTop = this._trackStart + e.detail.dy;
+            this.scroller.scrollTop = newVerticalScrollTop === 0 ? 0 : (this.innerHeight - this.outerHeight) * ((1 / this._verticalScrollSpace) * newVerticalScrollTop);
+        }
+        else if (e.detail.state === "end") {
+            this._setScrolling(null);
+            this._trackStart = undefined;
+        }
+        e.preventDefault();
+        if (e.sourceEvent)
+            e.sourceEvent.preventDefault();
+    }
+    _trackHorizontal(e) {
+        if (e.detail.state === "start") {
+            this._setScrolling("horizontal");
+            this._trackStart = this._horizontalScrollLeft;
+        }
+        else if (e.detail.state === "track") {
+            const newHorizontalScrollLeft = this._trackStart + e.detail.dx;
+            this.scroller.scrollLeft = newHorizontalScrollLeft === 0 ? 0 : (this.innerWidth - this.outerWidth) * ((1 / this._horizontalScrollSpace) * newHorizontalScrollLeft);
+        }
+        else if (e.detail.state === "end") {
+            this._setScrolling(null);
+            this._trackStart = undefined;
+        }
+        e.preventDefault();
+        if (e.sourceEvent)
+            e.sourceEvent.preventDefault();
+    }
+    _trapEvent(e) {
+        this.scrollTop = this.scrollLeft = 0;
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    _scroll(e) {
+        this._updateScrollOffsets();
+    }
+    _updateScrollOffsets() {
+        if (this.vertical)
+            this._setAtTop((this.verticalScrollOffset = this.scroller.scrollTop) === 0);
+        if (this.horizontal)
+            this.horizontalScrollOffset = this.scroller.scrollLeft;
+    }
+    _verticalScrollOffsetChanged(newVerticalScrollOffset) {
+        if (this.scroller.scrollTop === newVerticalScrollOffset)
+            return;
+        this.scroller.scrollTop = newVerticalScrollOffset;
+    }
+    _horizontalScrollOffsetChanged(newHorizontalScrollOffset) {
+        if (this.scroller.scrollLeft === newHorizontalScrollOffset)
+            return;
+        this.scroller.scrollLeft = newHorizontalScrollOffset;
+    }
+    _mouseenter() {
+        this._setHovering(true);
+    }
+    _mouseleave() {
+        this._setHovering(false);
+    }
+    _verticalScrollbarParentTap(e) {
+        const event = e.detail.sourceEvent;
+        if (event.offsetY) {
+            if (event.offsetY > this._verticalScrollTop + this._verticalScrollHeight)
+                this.scroller.scrollTop += this.scroller.scrollHeight * 0.1;
+            else if (event.offsetY < this._verticalScrollTop)
+                this.scroller.scrollTop -= this.scroller.scrollHeight * 0.1;
+            e.stopPropagation();
+        }
+    }
+    _horizontalScrollbarParentTap(e) {
+        const event = e.detail.sourceEvent;
+        if (event.offsetX) {
+            if (event.offsetX > this._horizontalScrollLeft + this._horizontalScrollLeft)
+                this.scroller.scrollLeft += this.scroller.scrollWidth * 0.1;
+            else if (event.offsetX < this._horizontalScrollLeft)
+                this.scroller.scrollLeft -= this.scroller.scrollWidth * 0.1;
+            e.stopPropagation();
+        }
+    }
+};
+Scroller._minBarSize = 40;
+Scroller = Scroller_1 = __decorate([
+    WebComponent.register({
+        properties: {
+            hovering: {
+                type: Boolean,
+                readOnly: true,
+                reflectToAttribute: true
+            },
+            scrolling: {
+                type: String,
+                readOnly: true,
+                reflectToAttribute: true
+            },
+            atTop: {
+                type: Boolean,
+                readOnly: true,
+                reflectToAttribute: true,
+                value: true
+            },
+            outerWidth: {
+                type: Number,
+                notify: true,
+                readOnly: true
+            },
+            outerHeight: {
+                type: Number,
+                notify: true,
+                readOnly: true
+            },
+            innerWidth: {
+                type: Number,
+                readOnly: true
+            },
+            innerHeight: {
+                type: Number,
+                readOnly: true
+            },
+            horizontal: {
+                type: Boolean,
+                readOnly: true,
+                reflectToAttribute: true
+            },
+            alignVerticalScrollbar: {
+                type: String,
+                reflectToAttribute: true
+            },
+            noHorizontal: {
+                type: Boolean,
+                reflectToAttribute: true,
+                value: false
+            },
+            vertical: {
+                type: Boolean,
+                readOnly: true,
+                reflectToAttribute: true
+            },
+            noVertical: {
+                type: Boolean,
+                reflectToAttribute: true,
+                value: false
+            },
+            scrollbars: {
+                type: String,
+                reflectToAttribute: true
+            },
+            verticalScrollOffset: {
+                type: Number,
+                value: 0,
+                notify: true,
+                observer: "_verticalScrollOffsetChanged"
+            },
+            horizontalScrollOffset: {
+                type: Number,
+                value: 0,
+                notify: true,
+                observer: "_horizontalScrollOffsetChanged"
+            },
+            noScrollShadow: {
+                type: Boolean,
+                reflectToAttribute: true
+            },
+            scrollTopShadow: {
+                type: Boolean,
+                readOnly: true,
+                reflectToAttribute: true,
+            },
+            scrollBottomShadow: {
+                type: Boolean,
+                readOnly: true,
+                reflectToAttribute: true
+            },
+            forceScrollbars: {
+                type: Boolean,
+                reflectToAttribute: true
+            },
+            hideScrollbars: {
+                type: Boolean,
+                reflectToAttribute: true
+            }
+        },
+        forwardObservers: [
+            "attribute.objects"
+        ],
+        observers: [
+            "_updateVerticalScrollbar(outerHeight, innerHeight, verticalScrollOffset, noVertical)",
+            "_updateHorizontalScrollbar(outerWidth, innerWidth, horizontalScrollOffset, noHorizontal)"
+        ],
+        listeners: {
+            "mouseenter": "_mouseenter",
+            "mouseleave": "_mouseleave",
+            "scroll": "_trapEvent"
+        }
+    })
+], Scroller);
+
+var _Popup_cleanup;
 var Popup_1;
 let _documentClosePopupListener;
 document.addEventListener("mousedown", _documentClosePopupListener = e => {
@@ -35850,99 +37560,10 @@ document.addEventListener("mousedown", _documentClosePopupListener = e => {
 });
 document.addEventListener("touchstart", _documentClosePopupListener);
 const openPopups = [];
-class PopupCoreFit extends mixinBehaviors(IronFitBehavior, PolymerElement) {
-    static get template() { return html `<slot></slot>`; }
-    __getPosition(hAlign, vAlign, size, sizeNoMargins, positionRect, fitRect) {
-        const positions = [
-            {
-                verticalAlign: "top",
-                horizontalAlign: "left",
-                top: positionRect.top + this.verticalOffset,
-                left: positionRect.left - size.width + this.horizontalOffset
-            }, {
-                verticalAlign: "top",
-                horizontalAlign: "right",
-                top: positionRect.top + this.verticalOffset,
-                left: positionRect.right - this.horizontalOffset
-            }, {
-                verticalAlign: "bottom",
-                horizontalAlign: "left",
-                top: positionRect.bottom + this.verticalOffset,
-                left: positionRect.left + this.horizontalOffset
-            }, {
-                verticalAlign: "bottom",
-                horizontalAlign: "right",
-                top: positionRect.bottom - this.verticalOffset,
-                left: positionRect.right - size.width - this.horizontalOffset
-            }
-        ];
-        vAlign = vAlign === "auto" ? null : vAlign;
-        hAlign = hAlign === "auto" ? null : hAlign;
-        if (!hAlign || hAlign === "center") {
-            positions.push({
-                verticalAlign: "top",
-                horizontalAlign: "center",
-                top: positionRect.top + this.verticalOffset + (this.noOverlap ? positionRect.height : 0),
-                left: positionRect.left - sizeNoMargins.width / 2 + positionRect.width / 2 + this.horizontalOffset
-            });
-            positions.push({
-                verticalAlign: "bottom",
-                horizontalAlign: "center",
-                top: positionRect.bottom - size.height - this.verticalOffset - (this.noOverlap ? positionRect.height : 0),
-                left: positionRect.left - sizeNoMargins.width / 2 + positionRect.width / 2 + this.horizontalOffset
-            });
-        }
-        if (!vAlign || vAlign === "middle") {
-            positions.push({
-                verticalAlign: "middle",
-                horizontalAlign: "left",
-                top: positionRect.top - sizeNoMargins.height / 2 + positionRect.height / 2 + this.verticalOffset,
-                left: positionRect.left + this.horizontalOffset + (this.noOverlap ? positionRect.width : 0)
-            });
-            positions.push({
-                verticalAlign: "middle",
-                horizontalAlign: "right",
-                top: positionRect.top - sizeNoMargins.height / 2 + positionRect.height / 2 + this.verticalOffset,
-                left: positionRect.right - size.width - this.horizontalOffset - (this.noOverlap ? positionRect.width : 0)
-            });
-        }
-        if (vAlign === "middle" && hAlign === "center") {
-            positions.push({
-                verticalAlign: "middle",
-                horizontalAlign: "center",
-                top: positionRect.top - sizeNoMargins.height / 2 + positionRect.height / 2 + this.verticalOffset,
-                left: positionRect.left - sizeNoMargins.width / 2 + positionRect.width / 2 + this.horizontalOffset
-            });
-        }
-        let position;
-        for (let i = 0; i < positions.length; i++) {
-            const candidate = positions[i];
-            const vAlignOk = candidate.verticalAlign === vAlign;
-            const hAlignOk = candidate.horizontalAlign === hAlign;
-            if (!this.dynamicAlign && !this.noOverlap && vAlignOk && hAlignOk) {
-                position = candidate;
-                break;
-            }
-            const alignOk = (!vAlign || vAlignOk) && (!hAlign || hAlignOk);
-            if (!this.dynamicAlign && !alignOk)
-                continue;
-            candidate.offscreenArea = this.__getOffscreenArea(candidate, size, fitRect);
-            if (candidate.offscreenArea === 0 && alignOk) {
-                position = candidate;
-                break;
-            }
-            position = position || candidate;
-            const diff = candidate.offscreenArea - position.offscreenArea;
-            if (diff < 0 || (diff === 0 && (vAlignOk || hAlignOk)))
-                position = candidate;
-        }
-        return position;
-    }
-}
-customElements.define("vi-popup-core-fit", PopupCoreFit);
 let Popup = Popup_1 = class Popup extends WebComponent {
     constructor() {
         super(...arguments);
+        _Popup_cleanup.set(this, void 0);
         this.__Vidyano_WebComponents_PopupCore__Instance__ = true;
         this._refitAF = null;
     }
@@ -35951,7 +37572,8 @@ let Popup = Popup_1 = class Popup extends WebComponent {
   flex-direction: row;
   position: relative;
 }
-:host #fit {
+:host #popup {
+  position: fixed;
   visibility: hidden;
   background-color: white;
   opacity: 0;
@@ -35960,32 +37582,27 @@ let Popup = Popup_1 = class Popup extends WebComponent {
   padding: 1px;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 }
-:host([open]) #fit {
+:host([open]) #popup {
   visibility: visible;
   opacity: 1;
   z-index: 11;
 }
-:host [toggle] {
+
+#anchor {
   width: 100%;
   box-sizing: border-box;
   cursor: pointer;
 }</style>
 
 <vi-size-tracker on-sizechanged="_toggleSizeChanged"></vi-size-tracker>
-<div toggle class="horizontal layout">
+<div id="anchor" class="layout horizontal">
     <slot name="header"></slot>
 </div>
 
-<dom-if if="[[renderPopupCoreFit]]">
-    <template>
-        <vi-popup-core-fit id="fit" dynamic-align no-overlap horizontal-align="[[horizontalAlign]]" vertical-align="[[verticalAlign]]" auto-fit-on-attach>
-            <div class="relative" id="content" on-tap="_catchContentClick" on-mouseenter="_contentMouseEnter" on-mouseleave="_contentMouseLeave">
-                <vi-size-tracker on-sizechanged="_sizeChanged"></vi-size-tracker>
-                <slot></slot>
-            </div>
-        </vi-popup-core-fit>
-    </template>
-</dom-if>`; }
+<div id="popup" class="relative" on-tap="_catchContentClick" on-mouseenter="_contentMouseEnter" on-mouseleave="_contentMouseLeave">
+    <vi-size-tracker on-sizechanged="refit"></vi-size-tracker>
+    <slot></slot>
+</div>`; }
     connectedCallback() {
         super.connectedCallback();
         this.addEventListener("popupparent", this._onPopupparent);
@@ -35993,16 +37610,17 @@ let Popup = Popup_1 = class Popup extends WebComponent {
     disconnectedCallback() {
         super.disconnectedCallback();
         this.removeEventListener("popupparent", this._onPopupparent);
+        __classPrivateFieldGet(this, _Popup_cleanup, "f")?.call(this);
     }
-    popup(target = this._header) {
+    popup() {
         if (this.open)
             return Promise.resolve();
         return new Promise(resolve => {
             this._resolver = resolve;
-            this._open(target);
+            this._open();
         });
     }
-    _open(target) {
+    _open() {
         if (!this.renderPopupCoreFit) {
             this._setRenderPopupCoreFit(true);
             flush$1();
@@ -36013,9 +37631,7 @@ let Popup = Popup_1 = class Popup extends WebComponent {
         const firstOpenNonParentChild = openPopups[parentPopup == null ? 0 : openPopups.indexOf(parentPopup) + 1];
         if (firstOpenNonParentChild != null)
             firstOpenNonParentChild.close();
-        const fit = this.shadowRoot.getElementById("fit");
-        fit.positionTarget = this._currentTarget = target;
-        this.refit();
+        __classPrivateFieldSet(this, _Popup_cleanup, autoUpdate(this.$.anchor, this.$.popup, this.refit.bind(this)), "f");
         this._setOpen(true);
         openPopups.push(this);
         this.fire("popup-opened", null, { bubbles: false, cancelable: false });
@@ -36023,14 +37639,18 @@ let Popup = Popup_1 = class Popup extends WebComponent {
     _sizeChanged(e) {
         this.refit();
     }
-    refit() {
-        this._refitAF && cancelAnimationFrame(this._refitAF);
-        this._refitAF = requestAnimationFrame(() => {
-            const fit = this.shadowRoot.getElementById("fit");
-            if (this.autoWidth && this._toggleSize?.width)
-                fit.style.minWidth = `${this._toggleSize.width}px`;
-            this._refitAF = null;
-            fit.refit();
+    async refit() {
+        const { x, y } = await computePosition(this.$.anchor, this.$.popup, {
+            placement: this.placement,
+            strategy: "fixed",
+            middleware: [flip(), shift({
+                    boundary: this.findParent(e => e instanceof Scroller)?.scroller
+                })]
+        });
+        Object.assign(this.$.popup.style, {
+            left: `${x}px`,
+            top: `${y}px`,
+            minWidth: this.autoWidth && this._toggleSize?.width ? `${this._toggleSize.width}px` : undefined
         });
     }
     close() {
@@ -36048,11 +37668,12 @@ let Popup = Popup_1 = class Popup extends WebComponent {
         this._setHover(false);
         if (this._resolver)
             this._resolver();
+        __classPrivateFieldGet(this, _Popup_cleanup, "f")?.call(this);
         openPopups.remove(this);
         this.fire("popup-closed", null, { bubbles: false, cancelable: false });
     }
     _hookTapAndHoverEvents() {
-        this._header = this.shadowRoot.querySelector("[toggle]") || this.parentElement;
+        this._header = this.$.anchor || this.parentElement;
         if (this._header === this.parentElement)
             this._header.popup = this;
         if (this.isConnected) {
@@ -36162,6 +37783,7 @@ let Popup = Popup_1 = class Popup extends WebComponent {
         return false;
     }
 };
+_Popup_cleanup = new WeakMap();
 Popup = Popup_1 = __decorate([
     WebComponent.register({
         properties: {
@@ -36190,15 +37812,10 @@ Popup = Popup_1 = __decorate([
                 reflectToAttribute: true,
                 value: false
             },
-            horizontalAlign: {
+            placement: {
                 type: String,
                 reflectToAttribute: true,
-                value: "left"
-            },
-            verticalAlign: {
-                type: String,
-                reflectToAttribute: true,
-                value: "bottom"
+                value: "bottom-start"
             },
             sticky: {
                 type: Boolean,
@@ -36223,12 +37840,6 @@ Popup = Popup_1 = __decorate([
 ], Popup);
 
 let PopupMenuItemSplit = class PopupMenuItemSplit extends WebComponent {
-    constructor(label, icon, _action) {
-        super();
-        this.label = label;
-        this.icon = icon;
-        this._action = _action;
-    }
     static get template() { return html `<style>:host {
   display: block;
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
@@ -36303,7 +37914,7 @@ let PopupMenuItemSplit = class PopupMenuItemSplit extends WebComponent {
     <div class="icon-space"></div>
     <span class="flex">[[label]]</span>
 </vi-button>
-<vi-popup open-on-hover hidden$="[[!hasChildren]]" vertical-align="top" horizontal-align="right">
+<vi-popup open-on-hover hidden$="[[!hasChildren]]" placement="right-start">
     <vi-button id="split" class="flex" slot="header" icon="Forward" on-tap="_splitTap" inverse>
         <vi-icon source="Forward"></vi-icon>
     </vi-button>
@@ -36311,6 +37922,12 @@ let PopupMenuItemSplit = class PopupMenuItemSplit extends WebComponent {
         <slot id="subItems" on-slotchange="_popupMenuIconSpaceHandler"></slot>
     </div>
 </vi-popup>`; }
+    constructor(label, icon, _action) {
+        super();
+        this.label = label;
+        this.icon = icon;
+        this._action = _action;
+    }
     connectedCallback() {
         super.connectedCallback();
         const subItems = this.$.subItems;
@@ -36367,12 +37984,6 @@ PopupMenuItemSplit = __decorate([
 ], PopupMenuItemSplit);
 
 let PopupMenuItem = class PopupMenuItem extends WebComponent {
-    constructor(label, icon, _action) {
-        super();
-        this.label = label;
-        this.icon = icon;
-        this._action = _action;
-    }
     static get template() { return html `<style>:host {
   display: block;
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
@@ -36423,7 +38034,7 @@ let PopupMenuItem = class PopupMenuItem extends WebComponent {
   background-color: rgba(0, 0, 0, 0.04);
 }</style>
 
-<vi-popup open-on-hover class="flex" id="popup" vertical-align="top" horizontal-align="right">
+<vi-popup open-on-hover class="flex" id="popup" placement="right-start">
     <vi-button slot="header" inverse$="[[!checked]]" class="layout horizontal" on-tap="_catchTap">
         <vi-icon id="icon" source="[[icon]]"></vi-icon>
         <div class="icon-space"></div>
@@ -36434,6 +38045,12 @@ let PopupMenuItem = class PopupMenuItem extends WebComponent {
         <slot id="subItems" on-slotchange="_popupMenuIconSpaceHandler"></slot>
     </div>
 </vi-popup>`; }
+    constructor(label, icon, _action) {
+        super();
+        this.label = label;
+        this.icon = icon;
+        this._action = _action;
+    }
     connectedCallback() {
         super.connectedCallback();
         const subItems = this.$.subItems;
@@ -37134,11 +38751,6 @@ QueryConfig = __decorate([
 ], QueryConfig);
 
 let AppRoute = class AppRoute extends WebComponent {
-    constructor(route) {
-        super();
-        this.route = route;
-        this._parameters = {};
-    }
     static get template() { return html `<style>:host {
   display: flex;
   position: relative;
@@ -37152,6 +38764,11 @@ let AppRoute = class AppRoute extends WebComponent {
 }</style>
 
 <slot></slot>`; }
+    constructor(route) {
+        super();
+        this.route = route;
+        this._parameters = {};
+    }
     matchesParameters(parameters = {}) {
         return this._parameters && JSON.stringify(this._parameters) === JSON.stringify(parameters);
     }
@@ -37376,7 +38993,7 @@ let AppRoutePresenter = class AppRoutePresenter extends WebComponent {
   margin: calc(var(--theme-h1) * 2) 0;
 }</style>
 
-<slot id="routes" on-slotchange="_routesChanged"></slot>
+<slot id="routes"></slot>
 <dom-if if="[[notFound]]">
     <template>
         <vi-error class="flex" message="[[translateMessage('NotFound', app.service.isSignedIn)]]"></vi-error>
@@ -37385,18 +39002,18 @@ let AppRoutePresenter = class AppRoutePresenter extends WebComponent {
     connectedCallback() {
         super.connectedCallback();
         this.fire("app-route-presenter:connected");
+        this._routesObserver = new FlattenedNodesObserver(this.$.routes, this._routesChanged.bind(this));
     }
     disconnectedCallback() {
         super.disconnectedCallback();
+        this._routesObserver.disconnect();
         if (this._pathListener) {
             this._pathListener();
             this._pathListener = null;
         }
     }
-    _routesChanged() {
-        const slot = this.$.routes;
-        const routes = Array.from(slot.assignedElements().filter(node => node instanceof AppRoute));
-        routes.forEach(appRoute => {
+    _routesChanged(info) {
+        info.addedNodes.filter(node => node instanceof AppRoute).forEach((appRoute) => {
             this._addRoute(appRoute, appRoute.route);
             if (appRoute.routeAlt)
                 this._addRoute(appRoute, appRoute.routeAlt);
@@ -37647,12 +39264,6 @@ Dialog = __decorate([
 ], Dialog);
 
 let RetryActionDialog = class RetryActionDialog extends Dialog {
-    constructor(retry) {
-        super();
-        this.retry = retry;
-        if (typeof retry.message === "undefined")
-            retry.message = null;
-    }
     static get template() { return Dialog.dialogTemplate(html `<style>:host {
   --vi-persistent-object-dialog-base-width-base: 400px;
 }
@@ -37705,6 +39316,12 @@ let RetryActionDialog = class RetryActionDialog extends Dialog {
         </template>
     </dom-repeat>
 </footer>`); }
+    constructor(retry) {
+        super();
+        this.retry = retry;
+        if (typeof retry.message === "undefined")
+            retry.message = null;
+    }
     connectedCallback() {
         super.connectedCallback();
         this.noCancelOnOutsideClick = this.noCancelOnEscKey = this.retry.cancelOption == null;
@@ -37932,18 +39549,6 @@ Notification = __decorate([
 ], Notification);
 
 let SelectReferenceDialog = class SelectReferenceDialog extends Dialog {
-    constructor(query, forceSearch, canAddNewReference = false, keepFilter) {
-        super();
-        this.query = query;
-        this.canAddNewReference = canAddNewReference;
-        query["_query-grid-vertical-scroll-offset"] = undefined;
-        if (keepFilter)
-            return;
-        if (!query.filters)
-            query.resetFilters();
-        if (forceSearch || !!query.textSearch || !query.hasSearched)
-            query.search();
-    }
     static get template() { return Dialog.dialogTemplate(html `<style>vi-input-search {
   line-height: var(--theme-h2);
   height: var(--theme-h2);
@@ -37988,6 +39593,18 @@ main vi-query-grid {
     </div>
     <vi-button on-tap="_addNew" hidden$="[[!canAddNewReference]]" label="[[translateMessage('NewReference', isConnected)]]"></vi-button>
 </footer>`); }
+    constructor(query, forceSearch, canAddNewReference = false, keepFilter) {
+        super();
+        this.query = query;
+        this.canAddNewReference = canAddNewReference;
+        query["_query-grid-vertical-scroll-offset"] = undefined;
+        if (keepFilter)
+            return;
+        if (!query.filters)
+            query.resetFilters();
+        if (forceSearch || !!query.textSearch || !query.hasSearched)
+            query.search();
+    }
     _initializingChanged(value) {
         if (!value)
             this._focusElement(this.$.search);
@@ -40056,12 +41673,6 @@ Polymer({
 });
 
 let MessageDialog = class MessageDialog extends Dialog {
-    constructor(options) {
-        super();
-        this._setOptions(options);
-        if (options.defaultAction)
-            this._setActiveAction(options.defaultAction);
-    }
     static get template() { return Dialog.dialogTemplate(html `<style>:host main {
   min-width: 17em;
   max-width: 70vw;
@@ -40134,6 +41745,12 @@ let MessageDialog = class MessageDialog extends Dialog {
         </template>
     </dom-repeat>
 </footer>`); }
+    constructor(options) {
+        super();
+        this._setOptions(options);
+        if (options.defaultAction)
+            this._setActiveAction(options.defaultAction);
+    }
     connectedCallback() {
         super.connectedCallback();
         this.noCancelOnEscKey = this.noCancelOnOutsideClick = this.options.noClose || this.options.cancelAction == null;
@@ -41184,17 +42801,6 @@ if (hashBangRe.test(document.location.href)) {
 window["Vidyano"] = Vidyano;
 const missing_base_tag_error = new Error("Document is missing base tag");
 let AppBase = AppBase_1 = class AppBase extends WebComponent {
-    constructor(_hooks) {
-        super();
-        this._hooks = _hooks;
-        this._keybindingRegistrations = {};
-        this._activeDialogs = [];
-        this._initialize = new Promise(resolve => { this._initializeResolve = resolve; });
-        window["app"] = this;
-        window.dispatchEvent(new CustomEvent("app-changed", { detail: { value: this } }));
-        if (!this.uri && document.location.hash)
-            this.uri = document.location.hash.trimStart("#");
-    }
     static get template() { return html `<style>:host {
   --theme-color-error: #a80511;
   --theme-color-warning: #e5a300;
@@ -41687,6 +43293,17 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
 </dom-module>
 
 <vi-alert id="alert"></vi-alert>`; }
+    constructor(_hooks) {
+        super();
+        this._hooks = _hooks;
+        this._keybindingRegistrations = {};
+        this._activeDialogs = [];
+        this._initialize = new Promise(resolve => { this._initializeResolve = resolve; });
+        window["app"] = this;
+        window.dispatchEvent(new CustomEvent("app-changed", { detail: { value: this } }));
+        if (!this.uri && document.location.hash)
+            this.uri = document.location.hash.trimStart("#");
+    }
     async connectedCallback() {
         window.addEventListener("storage", this._onSessionStorage.bind(this), false);
         ServiceBus.subscribe("path-changed", (sender, message, details) => {
@@ -42734,533 +44351,6 @@ Polymer({
     return this.getBoundingClientRect()[this.dimension] + 'px';
   }
 });
-
-var Scroller_1;
-let Scroller = Scroller_1 = class Scroller extends WebComponent {
-    static get template() { return html `<style>:host {
-  display: grid;
-  grid-template-rows: 1fr;
-  position: relative;
-  --vi-scroller-thumb-color: #888;
-  --vi-scroller-thumb-hover-color: #777;
-  --vi-scroller-thumb-size: var(--theme-h5);
-  --vi-scroller-thumb-hover-size: calc(var(--theme-h5) + 2px);
-  --vi-scroller-thumb-capture-size: calc(var(--theme-h4) + 2px);
-  --vi-scroller-thumb-parent-hover-size: calc(var(--theme-h5) + 6px);
-}
-:host .scroll-host {
-  overflow: hidden;
-  display: flex;
-  flex-direction: row;
-  position: relative;
-}
-:host .wrapper {
-  flex: 1;
-  min-height: 0;
-  min-width: 0;
-  position: relative;
-  overflow: auto;
-  outline: none !important;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-}
-:host .wrapper::-webkit-scrollbar {
-  display: none;
-}
-:host([no-horizontal]:not([no-vertical])) .wrapper {
-  display: flex;
-  flex-direction: column;
-}
-:host([no-horizontal]:not([no-vertical])) .wrapper .content {
-  min-height: auto;
-}
-:host([no-vertical]:not([no-horizontal])) .wrapper {
-  display: flex;
-  flex-direction: row;
-  margin-right: 0;
-  overflow-y: hidden;
-}
-:host([no-vertical][no-horizontal]) .wrapper {
-  display: flex;
-  flex-direction: row;
-  overflow: hidden;
-  margin: 0 !important;
-}
-:host([no-vertical][no-horizontal]) .wrapper .content {
-  flex: 1;
-  min-height: 0;
-  min-width: 0;
-  display: flex;
-  flex-direction: row;
-  min-height: initial;
-  min-width: initial;
-}
-:host([no-vertical][no-horizontal]) .wrapper .content > :not(vi-size-tracker) {
-  flex: 1;
-  min-height: 0;
-  min-width: 0;
-}
-:host(:not([no-vertical]):not([no-horizontal])) .wrapper > .content {
-  display: inline-block;
-  min-width: 100%;
-}
-:host(:not([force-scrollbars]):not([hovering]):not([scrolling])) .scrollbar-parent .scrollbar {
-  opacity: 0;
-}
-:host .scrollbar-parent {
-  position: absolute;
-  background-color: transparent;
-  display: none;
-  z-index: 1;
-}
-:host .scrollbar-parent:before {
-  position: absolute;
-  content: " ";
-  background-color: transparent;
-  transition: all 0.2s ease-in-out;
-}
-:host .scrollbar-parent.vertical:before {
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: var(--vi-scroller-thumb-parent-hover-size);
-}
-:host .scrollbar-parent.horizontal:before {
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: var(--vi-scroller-thumb-parent-hover-size);
-}
-:host .scrollbar-parent .scrollbar {
-  position: absolute;
-  opacity: 1;
-  transition: opacity 0.2s ease-in-out;
-}
-:host .scrollbar-parent .scrollbar:after {
-  content: " ";
-  position: absolute;
-  background-color: var(--vi-scroller-thumb-color);
-  border-radius: var(--theme-h5);
-}
-:host .scrollbar-parent .scrollbar#vertical {
-  top: 0;
-  right: 0;
-  width: var(--vi-scroller-thumb-capture-size);
-}
-:host .scrollbar-parent .scrollbar#vertical:after {
-  right: 2px;
-  top: 0;
-  bottom: 0;
-  width: var(--vi-scroller-thumb-size);
-  transition: width 0.2s ease-in-out;
-}
-:host .scrollbar-parent .scrollbar#horizontal {
-  left: 0;
-  bottom: 0;
-  height: var(--vi-scroller-thumb-capture-size);
-}
-:host .scrollbar-parent .scrollbar#horizontal:after {
-  bottom: 2px;
-  left: 0;
-  right: 0;
-  height: var(--vi-scroller-thumb-size);
-  transition: height 0.2s ease-in-out;
-}
-:host .scrollbar-parent.horizontal {
-  height: var(--vi-scroller-thumb-capture-size);
-  left: 0;
-  right: 0;
-  bottom: 0;
-}
-:host .scrollbar-parent.vertical {
-  width: var(--vi-scroller-thumb-capture-size);
-  top: 0;
-  bottom: 0;
-  right: var(--vi-scroller-vertical-scrollbar-right, 0);
-  left: var(--vi-scroller-vertical-scrollbar-left, initial);
-}
-:host([horizontal]) .scrollbar-parent.horizontal, :host([vertical]) .scrollbar-parent.vertical {
-  display: block;
-}
-:host([align-vertical-scrollbar=left]) .vertical {
-  right: auto;
-  left: 0;
-}
-:host([scrolling]) .wrapper {
-  pointer-events: none;
-}
-:host([vertical][scrolling=vertical]) .scrollbar-parent.vertical:before, :host .scrollbar-parent.vertical:hover:before, :host([horizontal][scrolling=horizontal]) .scrollbar-parent.horizontal:before, :host .scrollbar-parent.horizontal:hover:before {
-  background-color: rgba(0, 0, 0, 0.1);
-}
-:host([vertical][scrolling=vertical]) .scrollbar-parent.vertical .scrollbar:after, :host .scrollbar-parent.vertical:hover .scrollbar:after, :host([horizontal][scrolling=horizontal]) .scrollbar-parent.horizontal .scrollbar:after, :host .scrollbar-parent.horizontal:hover .scrollbar:after {
-  background-color: var(--vi-scroller-thumb-hover-color);
-}
-:host([vertical][scrolling=vertical]) .scrollbar-parent.vertical .scrollbar#vertical:after, :host .scrollbar-parent.vertical:hover .scrollbar#vertical:after, :host([horizontal][scrolling=horizontal]) .scrollbar-parent.horizontal .scrollbar#vertical:after, :host .scrollbar-parent.horizontal:hover .scrollbar#vertical:after {
-  width: var(--vi-scroller-thumb-hover-size);
-}
-:host([vertical][scrolling=vertical]) .scrollbar-parent.vertical .scrollbar#horizontal:after, :host .scrollbar-parent.vertical:hover .scrollbar#horizontal:after, :host([horizontal][scrolling=horizontal]) .scrollbar-parent.horizontal .scrollbar#horizontal:after, :host .scrollbar-parent.horizontal:hover .scrollbar#horizontal:after {
-  height: var(--vi-scroller-thumb-hover-size);
-}
-:host([horizontal]) .wrapper .content > div {
-  padding-bottom: var(--vi-scroller-thumb-capture-size);
-}
-:host .scroll-shadow-parent {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: var(--theme-h2);
-  overflow: hidden;
-  pointer-events: none;
-  z-index: 0;
-}
-:host .scroll-shadow-parent > .scroll-shadow {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  box-shadow: 0 0 calc(var(--theme-h2) / 2) rgba(0, 0, 0, 0.3);
-  bottom: 0;
-  border-radius: 100%;
-  left: calc(var(--theme-h2) * -1);
-  right: calc(var(--theme-h2) * -1);
-  pointer-events: none;
-  will-change: transform;
-  transition: transform 0.3s ease-out;
-  z-index: 1;
-}
-:host .scroll-shadow-parent > .scroll-shadow.top {
-  transform: translateY(calc(var(--vi-scroller--scroll-shadow-top-offset, var(--theme-h2)) * -1.5));
-}
-:host .scroll-shadow-parent > .scroll-shadow.bottom {
-  transform: translateY(calc(var(--vi-scroller--scroll-shadow-top-offset, var(--theme-h2)) * 1.5));
-}
-:host .scroll-shadow-parent.top {
-  top: var(--vi-scroller--scroll-shadow-top-offset, 0);
-}
-:host .scroll-shadow-parent.bottom {
-  bottom: var(--vi-scroller--scroll-shadow-bottom-offset, 0);
-}
-:host([scroll-top-shadow]) .scroll-shadow-parent > .scroll-shadow.top {
-  transform: translateY(calc(var(--theme-h2) * -1));
-}
-:host([scroll-bottom-shadow]) .scroll-shadow-parent > .scroll-shadow.bottom {
-  transform: translateY(var(--theme-h2));
-}
-:host([hide-scrollbars]) .scrollbar-parent {
-  visibility: hidden;
-}
-:host([hide-native-scrollbar]:not([allow-native])[vertical]) .wrapper {
-  margin-right: calc(var(--theme-scrollbar-width) * -1);
-}
-:host([hide-native-scrollbar]:not([allow-native])[horizontal]) .wrapper {
-  margin-bottom: calc(var(--theme-scrollbar-width) * -1);
-}
-:host([hide-native-scrollbar][allow-native]) .scrollbar-parent {
-  display: none !important;
-}</style>
-
-<div id="wrapper" class="wrapper" tabindex="-1">
-    <vi-size-tracker class="fit" on-sizechanged="_outerSizeChanged"></vi-size-tracker>
-    <div id="content" class="relative content">
-        <vi-size-tracker on-sizechanged="_innerSizeChanged" trigger-zero></vi-size-tracker>
-        <slot></slot>
-    </div>
-</div>
-<div class="top scroll-shadow-parent">
-    <div class="top scroll-shadow"></div>
-</div>
-<div class="bottom scroll-shadow-parent">
-    <div class="bottom scroll-shadow"></div>
-</div>
-<div class="horizontal scrollbar-parent" on-tap="_horizontalScrollbarParentTap">
-    <div id="horizontal" class="scrollbar" on-track="_trackHorizontal" on-mousedown="_trapEvent"></div>
-</div>
-<div class="vertical scrollbar-parent" on-tap="_verticalScrollbarParentTap">
-    <div id="vertical" class="scrollbar" on-track="_trackVertical" on-mousedown="_trapEvent"></div>
-</div>`; }
-    connectedCallback() {
-        super.connectedCallback();
-        this.scroller.addEventListener("scroll", this._scrollEventListener = this._scroll.bind(this), { capture: true, passive: true });
-    }
-    disconnectedCallback() {
-        super.disconnectedCallback();
-        this.scroller.removeEventListener("scroll", this._scrollEventListener);
-    }
-    get scroller() {
-        return this.$.wrapper;
-    }
-    async scrollToTop(offsetTop = 0, animated) {
-        if (animated) {
-            this.scroller.scrollTo({
-                top: offsetTop,
-                behavior: "smooth"
-            });
-        }
-        else
-            this.scroller.scrollTop = offsetTop;
-    }
-    scrollToBottom(animated) {
-        if (animated) {
-            this.scroller.scrollTo({
-                top: this.innerHeight,
-                behavior: "smooth"
-            });
-        }
-        else
-            this.scroller.scrollTop = this.innerHeight;
-    }
-    _outerSizeChanged(e, detail) {
-        this._setOuterWidth(detail.width);
-        this._setOuterHeight(detail.height);
-        this._updateScrollOffsets();
-        e.stopPropagation();
-    }
-    _innerSizeChanged(e, detail) {
-        this._setInnerWidth(detail.width);
-        this._setInnerHeight(detail.height);
-        this._updateScrollOffsets();
-        e.stopPropagation();
-    }
-    _updateVerticalScrollbar(outerHeight, innerHeight, verticalScrollOffset, noVertical) {
-        let height = outerHeight < innerHeight ? outerHeight / innerHeight * outerHeight : 0;
-        if (height !== this._verticalScrollHeight) {
-            if (height > 0 && height < Scroller_1._minBarSize)
-                height = Scroller_1._minBarSize;
-            else
-                height = Math.floor(height);
-            this._verticalScrollSpace = outerHeight - height;
-            if (height !== this._verticalScrollHeight) {
-                this._verticalScrollHeight = height;
-                this.$.vertical.style.height = `${height}px`;
-            }
-        }
-        this._setVertical(!noVertical && height > 0);
-        const verticalScrollTop = verticalScrollOffset === 0 || innerHeight - outerHeight === 0 ? 0 : Math.round((1 / ((innerHeight - outerHeight) / verticalScrollOffset)) * this._verticalScrollSpace);
-        if (verticalScrollTop !== this._verticalScrollTop)
-            this.$.vertical.style.transform = `translateY(${this._verticalScrollTop = verticalScrollTop}px)`;
-        this._setScrollTopShadow(!this.noScrollShadow && verticalScrollTop > 0);
-        this._setScrollBottomShadow(!this.noScrollShadow && Math.floor(innerHeight - verticalScrollOffset - outerHeight) > 0);
-    }
-    _updateHorizontalScrollbar(outerWidth, innerWidth, horizontalScrollOffset, noHorizontal) {
-        let width = outerWidth < innerWidth ? outerWidth / innerWidth * outerWidth : 0;
-        if (width !== this._horizontalScrollWidth) {
-            if (width > 0 && width < Scroller_1._minBarSize)
-                width = Scroller_1._minBarSize;
-            else
-                width = Math.floor(width);
-            this._horizontalScrollSpace = outerWidth - width;
-            if (width !== this._horizontalScrollWidth) {
-                this._horizontalScrollWidth = width;
-                this.$.horizontal.style.width = `${width}px`;
-            }
-        }
-        this._setHorizontal(!noHorizontal && width > 0);
-        const horizontalScrollLeft = horizontalScrollOffset === 0 ? 0 : Math.round((1 / ((innerWidth - outerWidth) / horizontalScrollOffset)) * this._horizontalScrollSpace);
-        if (horizontalScrollLeft !== this._horizontalScrollLeft)
-            this.$.horizontal.style.transform = `translate3d(${this._horizontalScrollLeft = horizontalScrollLeft}px, 0, 0)`;
-    }
-    _trackVertical(e) {
-        if (e.detail.state === "start") {
-            this._setScrolling("vertical");
-            this._trackStart = this._verticalScrollTop;
-        }
-        else if (e.detail.state === "track") {
-            const newVerticalScrollTop = this._trackStart + e.detail.dy;
-            this.scroller.scrollTop = newVerticalScrollTop === 0 ? 0 : (this.innerHeight - this.outerHeight) * ((1 / this._verticalScrollSpace) * newVerticalScrollTop);
-        }
-        else if (e.detail.state === "end") {
-            this._setScrolling(null);
-            this._trackStart = undefined;
-        }
-        e.preventDefault();
-        if (e.sourceEvent)
-            e.sourceEvent.preventDefault();
-    }
-    _trackHorizontal(e) {
-        if (e.detail.state === "start") {
-            this._setScrolling("horizontal");
-            this._trackStart = this._horizontalScrollLeft;
-        }
-        else if (e.detail.state === "track") {
-            const newHorizontalScrollLeft = this._trackStart + e.detail.dx;
-            this.scroller.scrollLeft = newHorizontalScrollLeft === 0 ? 0 : (this.innerWidth - this.outerWidth) * ((1 / this._horizontalScrollSpace) * newHorizontalScrollLeft);
-        }
-        else if (e.detail.state === "end") {
-            this._setScrolling(null);
-            this._trackStart = undefined;
-        }
-        e.preventDefault();
-        if (e.sourceEvent)
-            e.sourceEvent.preventDefault();
-    }
-    _trapEvent(e) {
-        this.scrollTop = this.scrollLeft = 0;
-        e.preventDefault();
-        e.stopPropagation();
-    }
-    _scroll(e) {
-        this._updateScrollOffsets();
-    }
-    _updateScrollOffsets() {
-        if (this.vertical)
-            this._setAtTop((this.verticalScrollOffset = this.scroller.scrollTop) === 0);
-        if (this.horizontal)
-            this.horizontalScrollOffset = this.scroller.scrollLeft;
-    }
-    _verticalScrollOffsetChanged(newVerticalScrollOffset) {
-        if (this.scroller.scrollTop === newVerticalScrollOffset)
-            return;
-        this.scroller.scrollTop = newVerticalScrollOffset;
-    }
-    _horizontalScrollOffsetChanged(newHorizontalScrollOffset) {
-        if (this.scroller.scrollLeft === newHorizontalScrollOffset)
-            return;
-        this.scroller.scrollLeft = newHorizontalScrollOffset;
-    }
-    _mouseenter() {
-        this._setHovering(true);
-    }
-    _mouseleave() {
-        this._setHovering(false);
-    }
-    _verticalScrollbarParentTap(e) {
-        const event = e.detail.sourceEvent;
-        if (event.offsetY) {
-            if (event.offsetY > this._verticalScrollTop + this._verticalScrollHeight)
-                this.scroller.scrollTop += this.scroller.scrollHeight * 0.1;
-            else if (event.offsetY < this._verticalScrollTop)
-                this.scroller.scrollTop -= this.scroller.scrollHeight * 0.1;
-            e.stopPropagation();
-        }
-    }
-    _horizontalScrollbarParentTap(e) {
-        const event = e.detail.sourceEvent;
-        if (event.offsetX) {
-            if (event.offsetX > this._horizontalScrollLeft + this._horizontalScrollLeft)
-                this.scroller.scrollLeft += this.scroller.scrollWidth * 0.1;
-            else if (event.offsetX < this._horizontalScrollLeft)
-                this.scroller.scrollLeft -= this.scroller.scrollWidth * 0.1;
-            e.stopPropagation();
-        }
-    }
-};
-Scroller._minBarSize = 40;
-Scroller = Scroller_1 = __decorate([
-    WebComponent.register({
-        properties: {
-            hovering: {
-                type: Boolean,
-                readOnly: true,
-                reflectToAttribute: true
-            },
-            scrolling: {
-                type: String,
-                readOnly: true,
-                reflectToAttribute: true
-            },
-            atTop: {
-                type: Boolean,
-                readOnly: true,
-                reflectToAttribute: true,
-                value: true
-            },
-            outerWidth: {
-                type: Number,
-                notify: true,
-                readOnly: true
-            },
-            outerHeight: {
-                type: Number,
-                notify: true,
-                readOnly: true
-            },
-            innerWidth: {
-                type: Number,
-                readOnly: true
-            },
-            innerHeight: {
-                type: Number,
-                readOnly: true
-            },
-            horizontal: {
-                type: Boolean,
-                readOnly: true,
-                reflectToAttribute: true
-            },
-            alignVerticalScrollbar: {
-                type: String,
-                reflectToAttribute: true
-            },
-            noHorizontal: {
-                type: Boolean,
-                reflectToAttribute: true,
-                value: false
-            },
-            vertical: {
-                type: Boolean,
-                readOnly: true,
-                reflectToAttribute: true
-            },
-            noVertical: {
-                type: Boolean,
-                reflectToAttribute: true,
-                value: false
-            },
-            scrollbars: {
-                type: String,
-                reflectToAttribute: true
-            },
-            verticalScrollOffset: {
-                type: Number,
-                value: 0,
-                notify: true,
-                observer: "_verticalScrollOffsetChanged"
-            },
-            horizontalScrollOffset: {
-                type: Number,
-                value: 0,
-                notify: true,
-                observer: "_horizontalScrollOffsetChanged"
-            },
-            noScrollShadow: {
-                type: Boolean,
-                reflectToAttribute: true
-            },
-            scrollTopShadow: {
-                type: Boolean,
-                readOnly: true,
-                reflectToAttribute: true,
-            },
-            scrollBottomShadow: {
-                type: Boolean,
-                readOnly: true,
-                reflectToAttribute: true
-            },
-            forceScrollbars: {
-                type: Boolean,
-                reflectToAttribute: true
-            },
-            hideScrollbars: {
-                type: Boolean,
-                reflectToAttribute: true
-            }
-        },
-        forwardObservers: [
-            "attribute.objects"
-        ],
-        observers: [
-            "_updateVerticalScrollbar(outerHeight, innerHeight, verticalScrollOffset, noVertical)",
-            "_updateHorizontalScrollbar(outerWidth, innerWidth, horizontalScrollOffset, noHorizontal)"
-        ],
-        listeners: {
-            "mouseenter": "_mouseenter",
-            "mouseleave": "_mouseleave",
-            "scroll": "_trapEvent"
-        }
-    })
-], Scroller);
 
 var MenuItem_1;
 let MenuItem = MenuItem_1 = class MenuItem extends ConfigurableWebComponent {
@@ -49617,12 +50707,6 @@ PopupMenuItemSeparator = __decorate([
 ], PopupMenuItemSeparator);
 
 let PopupMenuItemWithActions = class PopupMenuItemWithActions extends WebComponent {
-    constructor(label, icon, _action) {
-        super();
-        this.label = label;
-        this.icon = icon;
-        this._action = _action;
-    }
     static get template() { return html `<style>:host {
   display: flex;
   flex-direction: row;
@@ -49705,6 +50789,12 @@ let PopupMenuItemWithActions = class PopupMenuItemWithActions extends WebCompone
         <slot name="button" on-slotchange="_popupMenuIconSpaceHandler"></slot>
     </div>
 </div>`; }
+    constructor(label, icon, _action) {
+        super();
+        this.label = label;
+        this.icon = icon;
+        this._action = _action;
+    }
     _popupMenuIconSpaceHandler(e) {
         const elements = e.target.assignedElements();
         const iconSpace = elements.some(e => e.icon && exists(e.icon));
@@ -49759,7 +50849,7 @@ let PopupMenu = class PopupMenu extends WebComponent {
   visibility: hidden;
 }</style>
 
-<vi-popup open-on-hover="{{openOnHover}}" id="popup" disabled="[[disabled]]" open="{{open}}" horizontal-align="[[horizontalAlign]]" vertical-align="[[verticalAlign]]" auto-width="[[autoWidth]]">
+<vi-popup open-on-hover="{{openOnHover}}" id="popup" disabled="[[disabled]]" open="{{open}}" placement="[[placement]]" auto-width="[[autoWidth]]">
     <dom-if if="[[!contextMenuOnly]]">
         <template>
             <slot name="header" slot="header"></slot>
@@ -49801,9 +50891,6 @@ let PopupMenu = class PopupMenu extends WebComponent {
         const iconSpace = elements.some(e => e.icon && exists(e.icon));
         elements.forEach(e => e.iconSpace = iconSpace && (!e.icon || !exists(e.icon)));
     }
-    _alignmentChanged() {
-        this.$.popup.horizontalAlign = this.rightAlign ? "right" : "auto";
-    }
     _mouseenter() {
         if (this.openOnHover)
             this.popup();
@@ -49833,11 +50920,6 @@ PopupMenu = __decorate([
             },
             shiftKey: Boolean,
             ctrlKey: Boolean,
-            rightAlign: {
-                type: Boolean,
-                reflectToAttribute: true,
-                observer: "_alignmentChanged"
-            },
             open: {
                 type: Boolean,
                 reflectToAttribute: true
@@ -49846,15 +50928,10 @@ PopupMenu = __decorate([
                 type: Boolean,
                 reflectToAttribute: true
             },
-            horizontalAlign: {
+            placement: {
                 type: String,
                 reflectToAttribute: true,
-                value: "left"
-            },
-            verticalAlign: {
-                type: String,
-                reflectToAttribute: true,
-                value: "bottom"
+                value: "bottom-start"
             }
         },
         observers: [
@@ -50988,13 +52065,6 @@ QueryGridFilterDialogName = __decorate([
 ], QueryGridFilterDialogName);
 
 let QueryGridFilterDialog = class QueryGridFilterDialog extends Dialog {
-    constructor(_filters, _filter) {
-        super();
-        this._filters = _filters;
-        this._filter = _filter;
-        this._setPersistentObject(_filter.persistentObject);
-        this.persistentObject.beginEdit();
-    }
     static get template() { return Dialog.dialogTemplate(html `<style>:host vi-dialog-core {
   min-width: 400px;
 }
@@ -51015,6 +52085,13 @@ let QueryGridFilterDialog = class QueryGridFilterDialog extends Dialog {
     <vi-button inverse on-tap="cancel" label="[[translations.Cancel]]" disabled$="[[persistentObject.isBusy]]"></vi-button>
     <vi-button on-tap="_save" action-type="Default" label="[[translations.Save]]" disabled$="[[persistentObject.isBusy]]"></vi-button>
 </footer>`); }
+    constructor(_filters, _filter) {
+        super();
+        this._filters = _filters;
+        this._filter = _filter;
+        this._setPersistentObject(_filter.persistentObject);
+        this.persistentObject.beginEdit();
+    }
     async _save() {
         this.persistentObject.isNew;
         if (await this._filters.save(this._filter)) {
@@ -51419,13 +52496,6 @@ QueryGridGrouping = __decorate([
 
 var ActionButton_1;
 let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebComponent {
-    constructor(item, action) {
-        super();
-        this.item = item;
-        this.action = action;
-        if (item && action)
-            this._applyItemSelection(item, action);
-    }
     static get template() { return html `<style>:host {
   display: flex;
   box-sizing: border-box;
@@ -51533,7 +52603,7 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
         </dom-if>
         <dom-if if="[[options]]">
             <template>
-                <vi-popup-menu open-on-hover="[[_computeOpenOnHover(overflow, openOnHover)]]" disabled="[[!canExecute]]" horizontal-align="[[_getHorizontalAlign(overflow, grouped)]]" vertical-align="[[_getVerticalAlign(overflow, grouped)]]" auto-width="[[!overflow]]">
+                <vi-popup-menu open-on-hover="[[_computeOpenOnHover(overflow, openOnHover)]]" disabled="[[!canExecute]]" placement="[[_getPlacement(overflow, grouped)]]" auto-width="[[!overflow]]">
                     <vi-button disabled="[[!canExecute]]" slot="header" header inverse class="options">
                         <div class="layout horizontal flex">
                             <vi-icon class="action-icon" source="[[icon]]"></vi-icon>
@@ -51554,7 +52624,7 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
 </dom-if>
 <dom-if if="[[isGroup]]">
     <template>
-        <vi-popup disabled="[[!canExecute]]" open-on-hover="[[_computeOpenOnHover(overflow, openOnHover)]]" horizontal-align="[[_getHorizontalAlign(overflow, grouped)]]" vertical-align="[[_getVerticalAlign(overflow, grouped)]]" auto-width="[[!overflow]]">
+        <vi-popup disabled="[[!canExecute]]" open-on-hover="[[_computeOpenOnHover(overflow, openOnHover)]]" placement="[[_getPlacement(overflow, grouped)]]" auto-width="[[!overflow]]">
             <vi-button disabled="[[!canExecute]]" slot="header" inverse class="groupActions">
                 <div class="layout horizontal flex">
                     <vi-icon class="action-icon" source="[[icon]]"></vi-icon>
@@ -51573,6 +52643,13 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
         </vi-popup>
     </template>
 </dom-if>`; }
+    constructor(item, action) {
+        super();
+        this.item = item;
+        this.action = action;
+        if (item && action)
+            this._applyItemSelection(item, action);
+    }
     async connectedCallback() {
         super.connectedCallback();
         if (this.grouped) {
@@ -51681,11 +52758,8 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
     _computeOpenOnHover(overflow, openOnHover) {
         return overflow || openOnHover;
     }
-    _getHorizontalAlign(overflow, grouped) {
-        return overflow || grouped ? "right" : "left";
-    }
-    _getVerticalAlign(overflow, grouped) {
-        return overflow || grouped ? "top" : "bottom";
+    _getPlacement(overflow, grouped) {
+        return overflow || grouped ? "top-end" : "bottom-start";
     }
     _hiddenChanged() {
         this.fire("sizechanged", null);
@@ -52916,20 +53990,21 @@ let QueryGridRow = class QueryGridRow extends WebComponent {
             x -= r.left;
             y -= r.top;
         });
-        const anchor = document.createElement("div");
-        anchor.style.position = "fixed";
-        anchor.style.left = `${x}px`;
-        anchor.style.top = `${y}px`;
-        anchor.setAttribute("slot", "header");
-        this.shadowRoot.appendChild(anchor);
         const actionsPopup = new Popup();
+        actionsPopup.style.position = "fixed";
+        actionsPopup.style.left = `${x}px`;
+        actionsPopup.style.top = `${y}px`;
+        const anchor = document.createElement("div");
+        anchor.style.width = `1px`;
+        anchor.style.height = `1px`;
+        anchor.setAttribute("slot", "header");
         actionsPopup.appendChild(anchor);
         actionsPopup.addEventListener("popup-opening", this._onActionsOpening.bind(this));
         actionsPopup.addEventListener("popup-closed", this._onActionsClosed.bind(this));
         this.shadowRoot.appendChild(actionsPopup);
         e.preventDefault();
         try {
-            await actionsPopup.popup(anchor);
+            await actionsPopup.popup();
         }
         finally {
             this.shadowRoot.removeChild(actionsPopup);
@@ -53100,15 +54175,6 @@ QueryGridSelectAll = __decorate([
 ], QueryGridSelectAll);
 
 let QueryGridConfigureDialogColumn = class QueryGridConfigureDialogColumn extends WebComponent {
-    constructor(column) {
-        super();
-        this.column = column;
-        if (!column)
-            return;
-        this.offset = this.column.offset;
-        this.isPinned = this.column.isPinned;
-        this.isHidden = this.column.isHidden;
-    }
     static get template() { return html `<style>:host {
   display: flex;
   flex-direction: row;
@@ -53157,6 +54223,15 @@ let QueryGridConfigureDialogColumn = class QueryGridConfigureDialogColumn extend
     <vi-button inverse icon="Pin" on-tap="_togglePin"></vi-button>
     <vi-button inverse icon="Eye" on-tap="_toggleVisible"></vi-button>
 </div>`; }
+    constructor(column) {
+        super();
+        this.column = column;
+        if (!column)
+            return;
+        this.offset = this.column.offset;
+        this.isPinned = this.column.isPinned;
+        this.isHidden = this.column.isHidden;
+    }
     _togglePin() {
         this.isPinned = !this.isPinned;
         this.fire("distribute-columns", {}, { bubbles: true });
@@ -56307,11 +57382,6 @@ Sortable = __decorate([
 ], Sortable);
 
 let QueryGridConfigureDialog = class QueryGridConfigureDialog extends Dialog {
-    constructor(query, _settings) {
-        super();
-        this.query = query;
-        this._settings = _settings;
-    }
     static get template() { return Dialog.dialogTemplate(html `<style>:host main {
   display: flex;
   flex-direction: column;
@@ -56355,6 +57425,11 @@ let QueryGridConfigureDialog = class QueryGridConfigureDialog extends Dialog {
         <vi-button inverse on-tap="cancel" label="[[translateMessage('Cancel', isConnected)]]"></vi-button>
     </div>
 </footer>`); }
+    constructor(query, _settings) {
+        super();
+        this.query = query;
+        this._settings = _settings;
+    }
     connectedCallback() {
         this._elements = this._settings.columns.filter(c => c.width !== "0").map(c => new QueryGridConfigureDialogColumn(c));
         this._distributeColumns();
@@ -56611,10 +57686,12 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 :host header .more {
   position: absolute;
-  width: var(--theme-h2);
-  height: var(--theme-h2);
   background-color: white;
   z-index: 1;
+}
+:host header .more > vi-button {
+  width: var(--theme-h2);
+  height: var(--theme-h2);
 }
 :host header .more.left {
   left: 0;
@@ -56849,16 +57926,16 @@ let QueryGrid = class QueryGrid extends WebComponent {
             <template>
                 <vi-popup class="more left" on-popup-opening="_onMoreOpening" on-popup-closed="_onMoreClosed">
                     <vi-button slot="header" inverse icon="ChevronLeft"></vi-button>
-                    <vi-scroller></vi-scroller>
+                    <vi-scroller no-horizontal></vi-scroller>
                 </vi-popup>
             </template>
         </dom-if>
     </div>
     <dom-if if="[[hasMore.right.length]]">
         <template>
-            <vi-popup class="more right" on-popup-opening="_onMoreOpening" on-popup-closed="_onMoreClosed">
+            <vi-popup class="more right" on-popup-opening="_onMoreOpening" on-popup-closed="_onMoreClosed" placement="bottom-end">
                 <vi-button slot="header" inverse icon="ChevronRight"></vi-button>
-                <vi-scroller></vi-scroller>
+                <vi-scroller no-horizontal></vi-scroller>
             </vi-popup>
         </template>
     </dom-if>
@@ -57566,7 +58643,7 @@ let PersistentObjectAttributeValidationError = class PersistentObjectAttributeVa
   transform: translateY(calc(var(--theme-h4) * -1));
 }</style>
 
-<vi-popup open-on-hover horizontal-align="center">
+<vi-popup open-on-hover placement="bottom">
     <vi-icon slot="header" source="Notification_Error"></vi-icon>
     <pre>[[attribute.validationError]]</pre>
 </vi-popup>`; }
@@ -62613,7 +63690,7 @@ let TimePicker = class TimePicker extends WebComponent {
   color: var(--theme-color);
 }</style>
 
-<vi-popup id="popup" vertical-align="bottom" horizontal-align="right" part="popup">
+<vi-popup id="popup" vertical-align="bottom" placement="bottom-end" part="popup">
     <vi-icon slot="header" part="icon" source="Clock"></vi-icon>
     <div class="clock" on-tap="_catchTap">
         <div id="current">
@@ -62889,7 +63966,7 @@ let DatePicker = class DatePicker extends WebComponent {
   background-color: transparent !important;
 }</style>
 
-<vi-popup id="popup" horizontal-align="right" on-popup-opening="_opening">
+<vi-popup id="popup" placement="bottom-end" on-popup-opening="_opening">
     <vi-icon slot="header" part="icon" source="Calendar"></vi-icon>
     <div class="calendar">
         <header class="horizontal layout">
@@ -63860,12 +64937,6 @@ PersistentObjectAttributeFlagsEnum = __decorate([
 PersistentObjectAttribute.registerAttributeType("FlagsEnum", PersistentObjectAttributeFlagsEnum);
 
 let PersistentObjectAttributeImageDialog = class PersistentObjectAttributeImageDialog extends Dialog {
-    constructor(label, ...sources) {
-        super();
-        this.label = label;
-        this.sources = sources;
-        this.source = this.sources[0];
-    }
     static get template() { return Dialog.dialogTemplate(html `<style>:host main {
   position: relative;
   overflow: hidden;
@@ -63898,6 +64969,12 @@ let PersistentObjectAttributeImageDialog = class PersistentObjectAttributeImageD
     <vi-size-tracker size="{{footerSize}}"></vi-size-tracker>
     <vi-button on-tap="_close" action-type="Default" label="[[translateMessage('Close', isConnected)]]"></vi-button>
 </footer>`); }
+    constructor(label, ...sources) {
+        super();
+        this.label = label;
+        this.sources = sources;
+        this.source = this.sources[0];
+    }
     _showImage(headerSize, footerSize) {
         this.updateStyles({
             "--vi-persistent-object-attribute-image-dialog--max-height": `${headerSize.height + footerSize.height}px`
@@ -74159,10 +75236,6 @@ PersistentObjectAttributeMultiLineString = __decorate([
 PersistentObjectAttribute.registerAttributeType("MultiLineString", PersistentObjectAttributeMultiLineString);
 
 let PersistentObjectAttributeMultiStringItem = class PersistentObjectAttributeMultiStringItem extends WebComponent {
-    constructor(value) {
-        super();
-        this.value = value;
-    }
     static get template() { return html `<style>:host {
   display: flex;
   flex-direction: row;
@@ -74222,6 +75295,10 @@ let PersistentObjectAttributeMultiStringItem = class PersistentObjectAttributeMu
 <vi-sensitive disabled="[[!sensitive]]">
     <input content class="flex" value="{{value::input}}" on-blur="_onInputBlur" type="text" readonly$="[[isReadOnly]]" tabindex$="[[readOnlyTabIndex]]" disabled$="[[disabled]]" placeholder="[[placeholder]]">
 </vi-sensitive>`; }
+    constructor(value) {
+        super();
+        this.value = value;
+    }
     connectedCallback() {
         super.connectedCallback();
         this._setInput(this.shadowRoot.querySelector("input"));
@@ -75508,7 +76585,7 @@ let PersistentObjectAttributeString = class PersistentObjectAttributeString exte
             <slot name="button" slot="right"></slot>
             <dom-if if="[[hasSuggestions]]">
                 <template>
-                    <vi-popup slot="right" id="suggestions" horizontal-align="right">
+                    <vi-popup slot="right" id="suggestions" placement="bottom-end">
                         <vi-icon source="Add" slot="header"></vi-icon>
                         <vi-scroller>
                             <ul>
@@ -75648,13 +76725,6 @@ PersistentObjectAttributeString = __decorate([
 PersistentObjectAttribute.registerAttributeType("String", PersistentObjectAttributeString);
 
 let PersistentObjectAttributeTranslatedStringDialog = class PersistentObjectAttributeTranslatedStringDialog extends Dialog {
-    constructor(label, strings, multiline, readonly) {
-        super();
-        this.label = label;
-        this.strings = strings;
-        this.multiline = multiline;
-        this.readonly = readonly;
-    }
     static get template() { return Dialog.dialogTemplate(html `<style>:host ul {
   margin: 0;
   padding: var(--theme-h4);
@@ -75730,6 +76800,13 @@ let PersistentObjectAttributeTranslatedStringDialog = class PersistentObjectAttr
         </template>
     </dom-if>
 </footer>`); }
+    constructor(label, strings, multiline, readonly) {
+        super();
+        this.label = label;
+        this.strings = strings;
+        this.multiline = multiline;
+        this.readonly = readonly;
+    }
     _keyboardOk(e) {
         if (document.activeElement && document.activeElement instanceof HTMLInputElement)
             document.activeElement.blur();
@@ -77034,12 +78111,6 @@ PersistentObjectTabPresenter = __decorate([
 ], PersistentObjectTabPresenter);
 
 let PersistentObjectDialog = class PersistentObjectDialog extends Dialog {
-    constructor(persistentObject, _options = {}) {
-        super();
-        this.persistentObject = persistentObject;
-        this._setOptions(_options || null);
-        persistentObject.beginEdit();
-    }
     static get template() { return Dialog.dialogTemplate(html `<style>:host {
   --vi-persistent-object-dialog-base-width-base: 400px;
 }
@@ -77101,6 +78172,12 @@ let PersistentObjectDialog = class PersistentObjectDialog extends Dialog {
         </dom-if>
     </div>
 </footer>`); }
+    constructor(persistentObject, _options = {}) {
+        super();
+        this.persistentObject = persistentObject;
+        this._setOptions(_options || null);
+        persistentObject.beginEdit();
+    }
     _keyboardSave(e) {
         if (document.activeElement && document.activeElement instanceof HTMLInputElement)
             document.activeElement.blur();
@@ -77234,12 +78311,6 @@ PersistentObjectDialog = __decorate([
 ], PersistentObjectDialog);
 
 let PersistentObjectWizardDialog = class PersistentObjectWizardDialog extends Dialog {
-    constructor(persistentObject) {
-        super();
-        this.persistentObject = persistentObject;
-        persistentObject.beginEdit();
-        this._setCurrentTab(persistentObject.tabs[0]);
-    }
     static get template() { return Dialog.dialogTemplate(html `<style>:host {
   --vi-persistent-object-dialog-base-width-base: 400px;
 }
@@ -77297,6 +78368,12 @@ let PersistentObjectWizardDialog = class PersistentObjectWizardDialog extends Di
         <vi-button on-tap="_finish" action-type="Default" label="[[translateMessage('Finish', isConnected)]]" disabled$="[[persistentObject.isBusy]]" hidden$="[[!canFinish]]"></vi-button>
     </div>
 </footer>`); }
+    constructor(persistentObject) {
+        super();
+        this.persistentObject = persistentObject;
+        persistentObject.beginEdit();
+        this._setCurrentTab(persistentObject.tabs[0]);
+    }
     connectedCallback() {
         super.connectedCallback();
         const width = parseInt(getComputedStyle(this).getPropertyValue("--vi-persistent-object-dialog-base-width-base")) * (this.currentTab.columnCount || 1);
@@ -77531,12 +78608,6 @@ class AppServiceHooks extends AppServiceHooksBase {
 
 var App_1;
 let App = App_1 = class App extends AppBase {
-    constructor(hooks = new AppServiceHooks()) {
-        super(hooks);
-        this._cache = [];
-        if (!this.label)
-            this.label = this.title;
-    }
     static get template() {
         const baseTemplate = AppBase.template;
         baseTemplate.content.appendChild(html `<style>:host {
@@ -77620,6 +78691,12 @@ let App = App_1 = class App extends AppBase {
     </template>
 </dom-if>`.content);
         return baseTemplate;
+    }
+    constructor(hooks = new AppServiceHooks()) {
+        super(hooks);
+        this._cache = [];
+        if (!this.label)
+            this.label = this.title;
     }
     _initPathRescue() {
         Path.rescue(() => {
