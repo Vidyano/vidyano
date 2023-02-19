@@ -2,6 +2,14 @@
 <html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <script>
+            // Fix for loading floating-ui during development using importmap
+            window["process"] = {
+                "env": {
+                    "NODE_ENV": "development"
+                }
+            }
+        </script>
         <script type="importmap">
             {
                 "imports": {
@@ -27,6 +35,8 @@
                     "marked/lib/marked.js": "./web3/libs/modules/marked/lib/marked.js",
                     "@webcomponents/shadycss/entrypoints/apply-shim.js": "./web3/libs/modules/@webcomponents/shadycss/entrypoints/apply-shim.js",
                     "@webcomponents/shadycss/entrypoints/custom-style-interface.js": "./web3/libs/modules/@webcomponents/shadycss/entrypoints/custom-style-interface.js",
+                    "@floating-ui/core": "./web3/libs/modules/@floating-ui/core/dist/floating-ui.core.esm.js",
+                    "@floating-ui/dom": "./web3/libs/modules/@floating-ui/dom/dist/floating-ui.dom.esm.js",
                     "moment": "./web3/libs/modules/moment/dist/moment.js",
                     "codemirror": "./web3/libs/modules/codemirror/lib/codemirror.js",
                     "sortablejs": "./web3/libs/modules/sortablejs/modular/sortable.esm.js",
@@ -69,13 +79,12 @@
         </script>
         <!-- <script type="module" src="dist/vidyano.js"></script> -->
         <script type="module" src="./web3/web-components/app/app.js"></script>
-        <script type="module" src="./web3/web-components/app/app.js"></script>
         <script type="module" src="./web3/web-components/persistent-object-presenter/persistent-object-presenter.js"></script>
         <script type="module" src="./web3/web-components/query-presenter/query-presenter.js"></script>
         <script type="module" src="./web3/web-components/program-unit-presenter/program-unit-presenter.js"></script>
         
         <!-- Test -->
-        <script type="module" src="./web3/test/dialog-test/dialog-test.js"></script>
+        <script type="module" src="./web3/test/dialog/dialog-test.js"></script>
         <script type="module" src="./web3/test/list-test/list-test.js"></script>
         <script type="module" src="./web3/test/notification-test/notification-test.js"></script>
         <script type="module" src="./web3/test/popup-menu-test/popup-menu-test.js"></script>

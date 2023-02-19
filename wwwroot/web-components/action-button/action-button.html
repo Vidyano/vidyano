@@ -15,7 +15,7 @@
         </dom-if>
         <dom-if if="[[options]]">
             <template>
-                <vi-popup-menu open-on-hover="[[_computeOpenOnHover(overflow, openOnHover)]]" disabled="[[!canExecute]]" horizontal-align="[[_getHorizontalAlign(overflow, grouped)]]" vertical-align="[[_getVerticalAlign(overflow, grouped)]]" auto-width="[[!overflow]]">
+                <vi-popup-menu open-on-hover="[[_computeOpenOnHover(overflow, openOnHover)]]" disabled="[[!canExecute]]" placement="[[_getPlacement(overflow, grouped)]]" auto-width="[[!overflow]]">
                     <vi-button disabled="[[!canExecute]]" slot="header" header inverse class="options">
                         <div class="layout horizontal flex">
                             <vi-icon class="action-icon" source="[[icon]]"></vi-icon>
@@ -36,7 +36,7 @@
 </dom-if>
 <dom-if if="[[isGroup]]">
     <template>
-        <vi-popup disabled="[[!canExecute]]" open-on-hover="[[_computeOpenOnHover(overflow, openOnHover)]]" horizontal-align="[[_getHorizontalAlign(overflow, grouped)]]" vertical-align="[[_getVerticalAlign(overflow, grouped)]]" auto-width="[[!overflow]]">
+        <vi-popup disabled="[[!canExecute]]" open-on-hover="[[_computeOpenOnHover(overflow, openOnHover)]]" placement="[[_getPlacement(overflow, grouped)]]" auto-width="[[!overflow]]">
             <vi-button disabled="[[!canExecute]]" slot="header" inverse class="groupActions">
                 <div class="layout horizontal flex">
                     <vi-icon class="action-icon" source="[[icon]]"></vi-icon>

@@ -37,16 +37,16 @@
             <template>
                 <vi-popup class="more left" on-popup-opening="_onMoreOpening" on-popup-closed="_onMoreClosed">
                     <vi-button slot="header" inverse icon="ChevronLeft"></vi-button>
-                    <vi-scroller></vi-scroller>
+                    <vi-scroller no-horizontal></vi-scroller>
                 </vi-popup>
             </template>
         </dom-if>
     </div>
     <dom-if if="[[hasMore.right.length]]">
         <template>
-            <vi-popup class="more right" on-popup-opening="_onMoreOpening" on-popup-closed="_onMoreClosed">
+            <vi-popup class="more right" on-popup-opening="_onMoreOpening" on-popup-closed="_onMoreClosed" placement="bottom-end">
                 <vi-button slot="header" inverse icon="ChevronRight"></vi-button>
-                <vi-scroller></vi-scroller>
+                <vi-scroller no-horizontal></vi-scroller>
             </vi-popup>
         </template>
     </dom-if>

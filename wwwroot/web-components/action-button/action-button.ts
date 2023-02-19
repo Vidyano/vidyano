@@ -250,12 +250,8 @@ export class ActionButton extends ConfigurableWebComponent {
         return overflow || openOnHover;
     }
 
-    private _getHorizontalAlign(overflow: boolean, grouped: boolean) {
-        return overflow || grouped ? "right" : "left";
-    }
-
-    private _getVerticalAlign(overflow: boolean, grouped: boolean) {
-        return overflow || grouped ? "top" : "bottom";
+    private _getPlacement(overflow: boolean, grouped: boolean) {
+        return overflow || grouped ? "top-end" : "bottom-start";
     }
 
     private _hiddenChanged() {

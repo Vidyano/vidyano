@@ -24,11 +24,6 @@ import { WebComponent } from "../../web-components/web-component/web-component.j
         },
         shiftKey: Boolean,
         ctrlKey: Boolean,
-        rightAlign: {
-            type: Boolean,
-            reflectToAttribute: true,
-            observer: "_alignmentChanged"
-        },
         open: {
             type: Boolean,
             reflectToAttribute: true
@@ -37,15 +32,10 @@ import { WebComponent } from "../../web-components/web-component/web-component.j
             type: Boolean,
             reflectToAttribute: true
         },
-        horizontalAlign: {
+        placement: {
             type: String,
             reflectToAttribute: true,
-            value: "left"
-        },
-        verticalAlign: {
-            type: String,
-            reflectToAttribute: true,
-            value: "bottom"
+            value: "bottom-start"
         }
     },
     observers: [
@@ -64,7 +54,6 @@ export class PopupMenu extends WebComponent {
     contextMenuOnly: boolean;
     shiftKey: boolean;
     ctrlKey: boolean;
-    rightAlign: boolean;
     openOnHover: boolean;
     open: boolean;
 
@@ -108,10 +97,6 @@ export class PopupMenu extends WebComponent {
         const iconSpace = elements.some(e => e.icon && IconRegister.exists(e.icon));
     
         elements.forEach(e => e.iconSpace = iconSpace && (!e.icon || !IconRegister.exists(e.icon)));
-    }
-
-    private _alignmentChanged() {
-        (this.$.popup as Popup).horizontalAlign = this.rightAlign ? "right" : "auto";
     }
 
     private _mouseenter() {

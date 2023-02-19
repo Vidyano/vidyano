@@ -230,16 +230,18 @@ export class QueryGridRow extends WebComponent {
             y -= r.top;
         });
 
-        const anchor = document.createElement("div");
-        anchor.style.position = "fixed";
-        anchor.style.left = `${x}px`;
-        anchor.style.top = `${y}px`;
-        anchor.setAttribute("slot", "header");
-
-        this.shadowRoot.appendChild(anchor);
-
         const actionsPopup = new Popup();
+        actionsPopup.style.position = "fixed";
+        actionsPopup.style.left = `${x}px`;
+        actionsPopup.style.top = `${y}px`;
+
+        const anchor = document.createElement("div");
+        
+        anchor.style.width = `1px`;
+        anchor.style.height = `1px`;
+        anchor.setAttribute("slot", "header");
         actionsPopup.appendChild(anchor);
+
         actionsPopup.addEventListener("popup-opening", this._onActionsOpening.bind(this));
         actionsPopup.addEventListener("popup-closed", this._onActionsClosed.bind(this));
         this.shadowRoot.appendChild(actionsPopup);
@@ -247,7 +249,7 @@ export class QueryGridRow extends WebComponent {
         e.preventDefault();
 
         try {
-            await actionsPopup.popup(anchor);
+            await actionsPopup.popup();
         }
         finally {
             this.shadowRoot.removeChild(actionsPopup);

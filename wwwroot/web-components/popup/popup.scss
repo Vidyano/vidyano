@@ -4,7 +4,8 @@
     @include layout-horizontal();
     @include relative();
 
-    #fit {
+    #popup {
+        position: fixed;
         visibility: hidden;
         background-color: white;
         opacity: 0;
@@ -14,15 +15,15 @@
         @include z-index1();
     }
 
-    &[open] #fit {
+    &[open] #popup {
         visibility: visible;
         opacity: 1;
         z-index: 11;
     }
+}
 
-    [toggle] {
-        width: 100%;
-        box-sizing: border-box;
-        cursor: pointer;
-    }
+#anchor {
+    width: 100%;
+    box-sizing: border-box;
+    cursor: pointer;
 }

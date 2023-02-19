@@ -79,10 +79,13 @@
 
         .more {
             position: absolute;
-            width: var(--theme-h2);
-            height: var(--theme-h2);
             background-color: white;
             z-index: 1;
+
+            > vi-button {
+                width: var(--theme-h2);
+                height: var(--theme-h2);
+            }
 
             &.left {
                 left: 0;
