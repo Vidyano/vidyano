@@ -25,6 +25,7 @@ import { WebComponent } from "../web-component/web-component.js"
 export class AppRoutePresenter extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="app-route-presenter.html">`; }
 
+    private _routesObserver: Polymer.FlattenedNodesObserver;
     private _path: string;
     private _pathListener: Vidyano.ISubjectDisposer;
     private _routeMap: { [key: string]: AppRoute } = {};
@@ -37,9 +38,15 @@ export class AppRoutePresenter extends WebComponent {
         super.connectedCallback();
 
         this.fire("app-route-presenter:connected");
+
+        // FlattenedNodesObserver also flattens slots that have other slots assigned to them.
+        // We need this to make sure additional routes defined in the app are also added.
+        this._routesObserver = new Polymer.FlattenedNodesObserver(this.$.routes, this._routesChanged.bind(this));
     }
     disconnectedCallback() {
         super.disconnectedCallback();
+
+        this._routesObserver.disconnect();
 
         if (this._pathListener) {
             this._pathListener();
@@ -47,10 +54,8 @@ export class AppRoutePresenter extends WebComponent {
         }
     }
 
-    private _routesChanged() {
-        const slot = this.$.routes as HTMLSlotElement;
-        const routes = Array.from(slot.assignedElements().filter(node => node instanceof AppRoute)) as AppRoute[];
-        routes.forEach(appRoute => {
+    private _routesChanged(info: Polymer.FlattenedNodesObserverInfo) {
+        info.addedNodes.filter(node => node instanceof AppRoute).forEach((appRoute: AppRoute) => {
             this._addRoute(appRoute, appRoute.route);
             if (appRoute.routeAlt)
                 this._addRoute(appRoute, appRoute.routeAlt);
