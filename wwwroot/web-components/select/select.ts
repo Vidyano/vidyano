@@ -1,6 +1,6 @@
 import * as Polymer from "../../libs/polymer/polymer.js"
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
-import "@polymer/iron-list"
+import { IronListElement } from "@polymer/iron-list"
 import * as Keyboard from "../utils/keyboard.js"
 import { WebComponent } from "../web-component/web-component.js"
 import { Popup } from '../popup/popup.js';
@@ -241,9 +241,12 @@ export class Select extends WebComponent {
     }
 
     private _scrollItemIntoView() {
-        const focusOption = <HTMLElement>this.shadowRoot.querySelector("vi-select-option-item[selected], vi-select-option-item[suggested]");
-        if (focusOption)
-            (focusOption["scrollIntoViewIfNeeded"] || focusOption["scrollIntoView"]).apply(focusOption);
+        const ironList = this.shadowRoot.querySelector("iron-list") as IronListElement;
+        if (ironList != null) {
+            const index = this.filteredItems?.indexOf(this.suggestion || this.selectedItem);
+            if (index > -1)
+                ironList.focusItem(index);
+        }
     }
 
     private _computeHasOptions(options: string[], readonly: boolean): boolean {
