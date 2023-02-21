@@ -8,6 +8,10 @@
         line-height: var(--vi-query-grid-row-height);
     }
 
+    > vi-icon {
+        position: unset;
+    }
+
     &[is-app-sensitive][sensitive] {
         filter: blur(5px);
     }
