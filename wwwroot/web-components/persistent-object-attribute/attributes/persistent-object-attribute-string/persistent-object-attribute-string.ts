@@ -34,6 +34,10 @@ import { PersistentObjectAttribute } from "../../persistent-object-attribute.js"
             type: Number,
             readOnly: true
         },
+        autocomplete: {
+            type: String,
+            readOnly: true
+        },
         link: {
             type: String,
             computed: "_computeLink(attribute, attribute.value)"
@@ -53,6 +57,7 @@ export class PersistentObjectAttributeString extends PersistentObjectAttribute {
     readonly inputtype: string; private _setInputtype: (inputtype: string) => void;
     readonly characterCasing: string; private _setCharacterCasing: (characterCasing: string) => void;
     readonly maxlength: number; private _setMaxlength: (maxlength: number) => void;
+    readonly autocomplete: string; private _setAutocomplete: (maxlength: string) => void;
 
     protected _attributeChanged() {
         super._attributeChanged();
@@ -62,6 +67,9 @@ export class PersistentObjectAttributeString extends PersistentObjectAttribute {
             this._setInputtype(this.attribute.getTypeHint("InputType", "text"));
             const maxlength = parseInt(this.attribute.getTypeHint("MaxLength", "0"), 10);
             this._setMaxlength(maxlength > 0 ? maxlength : null);
+
+            // Sets the autocomplete attribute on the input (https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete)
+            this._setAutocomplete(this.attribute.getTypeHint("Autocomplete"));
 
             this._suggestionsSeparator = this.attribute.getTypeHint("SuggestionsSeparator");
             if (this._suggestionsSeparator != null && this.attribute.options != null && this.attribute.options.length > 0) {
