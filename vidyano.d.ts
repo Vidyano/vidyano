@@ -12705,6 +12705,9 @@ declare class PersistentObjectAttributeNumeric extends PersistentObjectAttribute
 
 declare class PersistentObjectAttributePassword extends PersistentObjectAttribute {
     static get template(): HTMLTemplateElement;
+    readonly autocomplete: string;
+    private _setAutocomplete;
+    protected _attributeChanged(): void;
     private _editInputBlur;
 }
 
@@ -12836,6 +12839,8 @@ declare class PersistentObjectAttributeString extends PersistentObjectAttribute 
     private _setCharacterCasing;
     readonly maxlength: number;
     private _setMaxlength;
+    readonly autocomplete: string;
+    private _setAutocomplete;
     protected _attributeChanged(): void;
     private _editInputBlur;
     private _editInputFocus;

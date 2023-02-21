@@ -13180,7 +13180,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.3.2";
+let version$2 = "3.4.0";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -45724,7 +45724,7 @@ let SignIn = class SignIn extends WebComponent {
             <h1>[[translateMessage("SignInTo", label, translations)]]</h1>
             <dom-if if="[[hasVidyano]]">
                 <template>
-                    <input id="username" type="text" placeholder="[[translations.UserName]]" value="{{userName::input}}" on-keydown="_keydown" disabled$="[[isBusy]]" />
+                    <input id="username" autocomplete="username" type="text" placeholder="[[translations.UserName]]" value="{{userName::input}}" on-keydown="_keydown" disabled$="[[isBusy]]" />
                     <label class="description">[[description]]</label>
                     <div class="actions layout horizontal-reverse justified">
                         <vi-button label="[[translations.Next]]" on-tap="_authenticate" disabled$="[[!canAuthenticate]]"></vi-button>
@@ -45765,7 +45765,7 @@ let SignIn = class SignIn extends WebComponent {
                 <vi-button label="([[translations.NotYou]])" inverse on-tap="_back" disabled$="[[isBusy]]"></vi-button>
             </div>
             <h1>[[translations.EnterPassword]]</h1>
-            <input id="password" type="password" placeholder="[[translations.Password]]" value="{{password::input}}" on-keydown="_keydown" disabled$="[[isBusy]]" />
+            <input id="password" autocomplete="current-password" type="password" placeholder="[[translations.Password]]" value="{{password::input}}" on-keydown="_keydown" disabled$="[[isBusy]]" />
             <vi-checkbox label="[[translations.StaySignedIn]]" disabled$="[[isBusy]]" checked="{{staySignedIn}}"></vi-checkbox>
             <div class="actions layout horizontal-reverse justified">
                 <vi-button label="[[translations.Next]]" on-tap="_authenticate" disabled$="[[!canAuthenticate]]"></vi-button>
@@ -45783,7 +45783,7 @@ let SignIn = class SignIn extends WebComponent {
                 <vi-button label="([[translations.NotYou]])" inverse on-tap="_back" disabled$="[[isBusy]]"></vi-button>
             </div>
             <h1>[[translations.EnterTwoFactorCode]]</h1>
-            <input id="twofactor" type="text" placeholder="[[translations.TwoFactorCode]]" value="{{twoFactorCode::input}}" on-keydown="_keydown" disabled$="[[isBusy]]" />
+            <input id="twofactor" autocomplete="one-time-code" type="text" placeholder="[[translations.TwoFactorCode]]" value="{{twoFactorCode::input}}" on-keydown="_keydown" disabled$="[[isBusy]]" />
             <vi-checkbox label="[[translations.StaySignedIn]]" disabled$="[[isBusy]]" checked="{{staySignedIn}}"></vi-checkbox>
             <div class="actions layout horizontal-reverse justified">
                 <vi-button label="[[translations.SignIn]]" on-tap="_authenticate" disabled$="[[!canAuthenticate]]"></vi-button>
@@ -73863,18 +73863,31 @@ let PersistentObjectAttributePassword = class PersistentObjectAttributePassword 
     <template>
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
             <vi-sensitive disabled="[[!sensitive]]">
-                <input class="flex" value="{{value::input}}" type="password" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" on-blur="_editInputBlur" placeholder="[[placeholder]]">
+                <input class="flex" value="{{value::input}}" type="password" autocomplete$="[[autocomplete]]" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" on-blur="_editInputBlur" placeholder="[[placeholder]]">
             </vi-sensitive>
         </vi-persistent-object-attribute-edit>
     </template>
 </dom-if>`; }
+    _attributeChanged() {
+        super._attributeChanged();
+        if (this.attribute instanceof PersistentObjectAttribute$1) {
+            this._setAutocomplete(this.attribute.getTypeHint("Autocomplete"));
+        }
+    }
     _editInputBlur() {
         if (this.attribute && this.attribute.isValueChanged && this.attribute.triggersRefresh)
             this.attribute.setValue(this.value = this.attribute.value, true).catch(noop$1);
     }
 };
 PersistentObjectAttributePassword = __decorate([
-    WebComponent.register()
+    WebComponent.register({
+        properties: {
+            autocomplete: {
+                type: String,
+                readOnly: true
+            }
+        }
+    })
 ], PersistentObjectAttributePassword);
 PersistentObjectAttribute.registerAttributeType("Password", PersistentObjectAttributePassword);
 
@@ -74337,7 +74350,7 @@ let PersistentObjectAttributeString = class PersistentObjectAttributeString exte
     <template>
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
             <vi-sensitive disabled="[[!sensitive]]">
-                <input value="{{value::input}}" type$="[[inputtype]]" maxlength$="[[maxlength]]" style$="[[editInputStyle]]" on-focus="_editInputFocus" on-blur="_editInputBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder="[[placeholder]]" disabled="[[frozen]]">
+                <input value="{{value::input}}" type$="[[inputtype]]" maxlength$="[[maxlength]]" autocomplete$="[[autocomplete]]" style$="[[editInputStyle]]" on-focus="_editInputFocus" on-blur="_editInputBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder="[[placeholder]]" disabled="[[frozen]]">
             </vi-sensitive>
             <template if="[[link]]">
                 <a class="button" href$="[[link]]" title$="[[linkTitle]]" tabindex="-1" rel="external noopener" target="_blank">
@@ -74371,6 +74384,7 @@ let PersistentObjectAttributeString = class PersistentObjectAttributeString exte
             this._setInputtype(this.attribute.getTypeHint("InputType", "text"));
             const maxlength = parseInt(this.attribute.getTypeHint("MaxLength", "0"), 10);
             this._setMaxlength(maxlength > 0 ? maxlength : null);
+            this._setAutocomplete(this.attribute.getTypeHint("Autocomplete"));
             this._suggestionsSeparator = this.attribute.getTypeHint("SuggestionsSeparator");
             if (this._suggestionsSeparator != null && this.attribute.options != null && this.attribute.options.length > 0) {
                 const value = this.attribute.value;
@@ -74471,6 +74485,10 @@ PersistentObjectAttributeString = __decorate([
             },
             maxlength: {
                 type: Number,
+                readOnly: true
+            },
+            autocomplete: {
+                type: String,
                 readOnly: true
             },
             link: {
