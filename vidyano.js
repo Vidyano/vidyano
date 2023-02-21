@@ -13180,7 +13180,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.3.1";
+let version$2 = "3.3.2";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -50492,7 +50492,9 @@ let QueryGridCell = class QueryGridCell extends WebComponent {
         if (__classPrivateFieldGet(this, _QueryGridCell__lastMeasuredColumn, "f") && __classPrivateFieldGet(this, _QueryGridCell__lastMeasuredColumn, "f").query === this.column?.query && __classPrivateFieldGet(this, _QueryGridCell__lastMeasuredColumn, "f").name === this.column.name)
             return;
         const row = this.parentElement;
-        if (!row.item || row.index)
+        if (!(row.item instanceof QueryResultItem))
+            return;
+        if (row.index && row.item.query.items.indexOf(row.item) !== 0)
             return;
         __classPrivateFieldSet(this, _QueryGridCell__lastMeasuredColumn, this.column, "f");
         this._observe();
