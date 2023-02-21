@@ -98,8 +98,12 @@ export abstract class QueryGridCell extends WebComponent {
             return;
 
         const row = this.parentElement as QueryGridRow;
-        // Only measure the cell when it has a value and is a cell in the first row of the virtualized row set
-        if (!row.item || row.index)
+        // Don't measure the cell when the row is not a query result item (sanity check)
+        if (!(row.item instanceof Vidyano.QueryResultItem))
+            return;
+
+        // Only measure the cell when it is the first query result item in the query result set
+        if (row.index && row.item.query.items.indexOf(row.item) !== 0)
             return;
 
         // Update the last measured column and queue the measure
