@@ -109,11 +109,11 @@
 
             ::slotted(*:hover) {
                 background-color: var(--theme-color-faint);
-                --vi-icon-fill: var(--theme-color);
             }
 
             ::slotted(*:active) {
                 background-color: var(--theme-color-dark) !important;
+                --vi-icon-fill: white;
             }
 
             &:hover ::slotted(*) {
