@@ -2,7 +2,7 @@ import * as Polymer from "../../libs/polymer/polymer.js"
 import "../size-tracker/size-tracker.js"
 import { ISize } from "../size-tracker/size-tracker.js"
 import { WebComponent } from "../web-component/web-component.js"
-import { autoUpdate, computePosition, flip, Placement, shift} from '@floating-ui/dom'
+import { autoUpdate, computePosition, flip, Placement, shift, size} from '@floating-ui/dom'
 
 import { Scroller } from "../scroller/scroller.js"
 
@@ -149,6 +149,9 @@ export class Popup extends WebComponent {
     }
 
     private _sizeChanged(e: CustomEvent) {
+        if (!this.open)
+            return;
+
         this.refit();
     }
 
@@ -156,9 +159,23 @@ export class Popup extends WebComponent {
         const { x, y } = await computePosition(this.$.anchor, this.$.popup, {
             placement: this.placement,
             strategy: "fixed",
-            middleware: [flip(), shift({
-                boundary: this.findParent<Scroller>(e => e instanceof Scroller)?.scroller
-            })]
+            middleware: [
+                flip(),
+                shift({
+                    boundary: this.findParent<Scroller>(e => e instanceof Scroller)?.scroller
+                }),
+                size({
+                    apply({ availableWidth, availableHeight, elements }) {
+                        const slottedElements = elements.floating.querySelector("slot").assignedElements();
+                        if (slottedElements.length === 1 && slottedElements[0] instanceof Scroller) {
+                            Object.assign(slottedElements[0].style, {
+                                maxWidth: `${availableWidth - 5}px`,
+                                maxHeight: `${availableHeight - 5}px`,
+                            });
+                        }
+                    },
+                })
+            ]
         });
 
         Object.assign(this.$.popup.style, {
