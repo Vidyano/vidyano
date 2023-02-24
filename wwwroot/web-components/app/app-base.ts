@@ -14,6 +14,7 @@ import "../alert/alert.js"
 import "../app-route-presenter/app-route-presenter.js"
 import type { AppRoutePresenter } from "../app-route-presenter/app-route-presenter.js"
 import { AppServiceHooksBase } from "../app-service-hooks/app-service-hooks-base.js"
+import "../connected-notifier/connected-notifier.js";
 import { Dialog } from "../dialog/dialog.js"
 import * as Keyboard from "../utils/keyboard.js"
 import { MessageDialog, IMessageDialogOptions } from "../message-dialog/message-dialog.js"

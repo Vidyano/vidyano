@@ -5,13 +5,13 @@
     <template>
         <vi-scroller class="flex" no-horizontal>
             <iron-list id="list" items="[[items]]" as="[[as]]"><slot></slot></iron-list>
-            <vi-attached-notifier on-attached="_bindIronListDataHost"></vi-attached-notifier>
+            <vi-connected-notifier on-connected="_bindIronListDataHost"></vi-connected-notifier>
         </vi-scroller>
     </template>
 </dom-if>
 <dom-if if="[[parentScroller]]" restamp id="parentScrollerTemplate">
     <template>
         <iron-list id="list" items="[[items]]" as="[[as]]" class="flex"><slot></slot></iron-list>
-        <vi-attached-notifier on-attached="_bindIronListDataHost"></vi-attached-notifier>
+        <vi-connected-notifier on-connected="_bindIronListDataHost"></vi-connected-notifier>
     </template>
 </dom-if>

@@ -1,4 +1,5 @@
 import "@polymer/iron-list"
+import { IronListElement } from "@polymer/iron-list"
 import * as Polymer from "../../libs/polymer/polymer.js"
 import { Scroller } from "../scroller/scroller.js"
 import { WebComponent } from "../web-component/web-component.js"
@@ -33,9 +34,9 @@ export class List extends WebComponent {
             if (parentScroller !== this.parentScroller || !this.isConnected)
                 return;
 
-            const list = this.shadowRoot.querySelector("#list");
-            const scroller = <any>this.findParent(e => e instanceof Scroller, list);
-            (<any>list).scrollTarget = scroller.$.wrapper;
+            const list = this.shadowRoot.querySelector("#list") as IronListElement;
+            const scroller = <any>this.findParent(e => e instanceof Scroller, list) as Scroller;
+            list.scrollTarget = scroller.scroller;
 
             this._sizeChanged();
         });
