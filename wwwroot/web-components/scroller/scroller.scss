@@ -1,8 +1,7 @@
 @import "../_vars.scss";
 
 :host {
-    display: grid;
-    grid-template-rows: 1fr;
+    display: flex;
     position: relative;
     --vi-scroller-thumb-color: #888;
     --vi-scroller-thumb-hover-color: #777;
@@ -25,9 +24,14 @@
         -ms-overflow-style: none;
         scrollbar-width: none;
         -webkit-overflow-scrolling: touch;
+        line-height: 0;
 
         &::-webkit-scrollbar {
             display: none;
+        }
+
+        .content {
+            line-height: normal;
         }
     }
 
