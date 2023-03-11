@@ -42,7 +42,10 @@ if (hashBangRe.test(document.location.href)) {
 
 window["Vidyano"] = Vidyano;
 
-const missing_base_tag_error = new Error("Document is missing base tag");
+const base = document.head.querySelector("base") as HTMLBaseElement;
+if (!base)
+    throw new Error("Document is missing base tag");
+
 @WebComponent.registerAbstract({
     properties: {
         uri: {
@@ -54,10 +57,6 @@ const missing_base_tag_error = new Error("Document is missing base tag");
             type: String,
             readOnly: true,
             value: () => {
-                const base = document.head.querySelector("base") as HTMLBaseElement;
-                if (!base)
-                    throw missing_base_tag_error;
-
                 return base.href;
             }
         },
@@ -66,10 +65,6 @@ const missing_base_tag_error = new Error("Document is missing base tag");
             reflectToAttribute: true,
             observer: "_pathChanged",
             value: () => {
-                const base = document.head.querySelector("base") as HTMLBaseElement;
-                if (!base)
-                    throw missing_base_tag_error;
-
                 const parser = document.createElement("a");
                 parser.href = base.href;
 
