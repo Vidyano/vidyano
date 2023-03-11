@@ -1,9 +1,11 @@
 import * as Polymer from "../../libs/polymer/polymer.js"
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
-import { IronListElement } from "@polymer/iron-list"
+import "@polymer/iron-list";
+import { IronListElement } from "@polymer/iron-list";
 import * as Keyboard from "../utils/keyboard.js"
 import { WebComponent } from "../web-component/web-component.js"
 import { Popup } from '../popup/popup.js';
+import { Scroller } from "../scroller/scroller.js";
 
 export type SelectOption = Vidyano.KeyValuePair<any, string>;
 
@@ -221,9 +223,8 @@ export class Select extends WebComponent {
             this._selectedItemChanged();
     }
 
-    private _openPopup() {
-        if (!this.popup.open)
-            this.popup.popup();
+    private _popupOpened() {
+        this._scrollItemIntoView();
     }
 
     private _popupClosed() {
@@ -235,17 +236,26 @@ export class Select extends WebComponent {
         }
     }
 
-    private _fireResize() {
-        this.shadowRoot.querySelector("iron-list").fire("iron-resize");
+    private _ironListConnected() {
+        const ironList = this.shadowRoot.querySelector("iron-list") as IronListElement;
+        ironList.scrollTarget = (ironList.parentElement as Scroller).scroller;
+    }
+
+    private _fireResize(e: CustomEvent) {
+        const ironList = this.shadowRoot.querySelector("iron-list") as IronListElement;
+        ironList?.fire("iron-resize");
+
         this._scrollItemIntoView();
     }
 
     private _scrollItemIntoView() {
         const ironList = this.shadowRoot.querySelector("iron-list") as IronListElement;
-        if (ironList != null) {
-            const index = this.filteredItems?.indexOf(this.suggestion || this.selectedItem);
-            if (index > -1)
-                ironList.focusItem(index);
+
+        // Make sure there are physical items, otherwise scrollToItem will fail
+        if (ironList?._physicalCount > 0) {
+            Polymer.Async.animationFrame.run(() => {
+                ironList.scrollToItem(this.suggestion || this.selectedItem);
+            });
         }
     }
 
