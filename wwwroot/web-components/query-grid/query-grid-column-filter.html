@@ -35,7 +35,7 @@
                                     <vi-spinner></vi-spinner>
                                 </template>
                             </dom-if>
-                            <vi-list class="flex" id="distincts" items="[[filteredDistincts]]" as="distinct">
+                            <vi-list class="flex" id="distincts" items="[[_getFilteredDistincts(distincts, searchText)]]" as="distinct">
                                 <template>
                                     <div>
                                         <dom-if if="[[distinct.type]]">

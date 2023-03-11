@@ -27,10 +27,6 @@ export interface IQueryGridColumnFilterDistinct {
             reflectToAttribute: true,
             value: false
         },
-        filteredDistincts: {
-            type: Array,
-            computed: "_computeFilteredDistincts(distincts, searchText)"
-        },
         queryFiltering: {
             type: Boolean,
             computed: "queryColumn.query.isFiltering",
@@ -207,7 +203,7 @@ export class QueryGridColumnFilter extends WebComponent {
         }
     }
 
-    private _computeFilteredDistincts(distincts: IQueryGridColumnFilterDistinct[], searchText: string): IQueryGridColumnFilterDistinct[] {
+    private _getFilteredDistincts(distincts: IQueryGridColumnFilterDistinct[], searchText: string): IQueryGridColumnFilterDistinct[] {
         if (!searchText)
             return distincts;
 
@@ -289,8 +285,6 @@ export class QueryGridColumnFilter extends WebComponent {
         }
         else
             this.distincts = distincts;
-
-        this.updateStyles();
     }
 
     private _getHighlightedDistinctDisplayValue(displayValue: string, searchText: string): string {
