@@ -64487,6 +64487,11 @@ let PersistentObjectAttributeDateTime = class PersistentObjectAttributeDateTime 
         return this._timeInput;
     }
     focus() {
+        if (this.app.activeElement instanceof HTMLInputElement) {
+            const input = this.app.activeElement;
+            if (input.getRootNode().host === this._timeInput)
+                return;
+        }
         (this._dateInput || this._timeInput)?.focus();
     }
     _editingChanged() {
