@@ -109,6 +109,13 @@ export class PersistentObjectAttributeDateTime extends PersistentObjectAttribute
     }
 
     focus() {
+        // If the time input is focused, don't focus the date input
+        if (this.app.activeElement instanceof HTMLInputElement) {
+            const input = <HTMLInputElement>this.app.activeElement;
+            if ((input.getRootNode() as ShadowRoot).host === this._timeInput)
+                return;
+        }
+
         (this._dateInput || this._timeInput)?.focus();
     }
 
