@@ -9625,6 +9625,12 @@ declare class AppServiceHooksBase extends ServiceHooks {
     onRetryAction(retry: RetryAction): Promise<string>;
 }
 
+declare class ConnectedNotifier extends WebComponent {
+    private _wasAttached;
+    oneTime: boolean;
+    connectedCallback(): void;
+}
+
 interface ISize {
     width: number;
     height: number;
@@ -10964,12 +10970,6 @@ declare class Checkbox extends WebComponent {
     private _keyToggle;
     private _computeIcon;
     private _computeNoLabel;
-}
-
-declare class ConnectedNotifier extends WebComponent {
-    private _wasAttached;
-    oneTime: boolean;
-    connectedCallback(): void;
 }
 
 interface IDatePickerCell {
@@ -12407,8 +12407,9 @@ declare class Select extends WebComponent {
     private _keydown;
     private _keyup;
     private _blur;
-    private _openPopup;
+    private _popupOpened;
     private _popupClosed;
+    private _ironListConnected;
     private _fireResize;
     private _scrollItemIntoView;
     private _computeHasOptions;
@@ -13250,7 +13251,7 @@ declare class QueryGridColumnFilter extends WebComponent {
     private _getDistinctDisplayValue;
     private _popupOpening;
     private _searchTextChanged;
-    private _computeFilteredDistincts;
+    private _getFilteredDistincts;
     private _distinctClick;
     private _updateFilters;
     private _updateDistincts;
