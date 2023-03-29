@@ -15,7 +15,6 @@ export class ExpressionParser {
     }
 
     static parse(expression: string) {
-        var get = this.get;
         var operands = this._operands;
 
         var parts = expression.split('X');
@@ -25,7 +24,7 @@ export class ExpressionParser {
             for (var i = 0; i < parts.length; i++) {
                 var part = parts[i];
 
-                var newResult = get(part);
+                var newResult = this.get(part);
                 if (result != null) {
                     var previousResult = result;
                     result = function (arg) { return previousResult(arg) && newResult(arg); };
@@ -37,7 +36,7 @@ export class ExpressionParser {
         }
 
         if (expression != parts[0])
-            return get(parts[0]);
+            return this.get(parts[0]);
 
         // Get operand
         for (var idx = 0; idx < operands.length; idx++) {
@@ -49,9 +48,9 @@ export class ExpressionParser {
                 if (index > 0) {
                     // NOTE: Change 5< to >5
                     if (operand.includes("<"))
-                        return get(operand.replace("<", ">") + expression);
+                        return this.get(operand.replace("<", ">") + expression);
                     if (operand.includes(">"))
-                        return get(operand.replace(">", "<") + expression);
+                        return this.get(operand.replace(">", "<") + expression);
                 }
 
                 var number = parseInt(expression, 10);
