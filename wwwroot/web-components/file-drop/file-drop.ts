@@ -41,9 +41,8 @@ export class FileDrop extends WebComponent {
     }
 
     private _dragLeave(e: DragEvent) {
-        debugger;
-        const target = <Node>this.todo_checkEventTarget(e.target);
-        if (target !== this.$.overlay && !!this.findParent(node => node === this, target))
+        const element = e.target as Element;
+        if (element?.assignedSlot?.parentElement === this)
             return;
 
         this._setDragOver(false);
