@@ -13180,7 +13180,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.4.1";
+let version$2 = "3.4.3";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -79878,9 +79878,7 @@ var audit = /*#__PURE__*/Object.freeze({
 });
 
 let FileDrop = class FileDrop extends WebComponent {
-    static get template() { return html `<dom-module id="vi-file-drop">
-    <template>
-        <style>:host {
+    static get template() { return html `<style>:host {
   display: block;
   position: relative;
 }
@@ -79919,24 +79917,21 @@ let FileDrop = class FileDrop extends WebComponent {
   fill: var(--theme-color);
   pointer-events: none;
 }</style>
-        <slot></slot>
-        <div id="dragOver">
-            <div id="overlay"></div>
-            <vi-icon source="FileDrop"></vi-icon>
-        </div>
-    </template>
-</dom-module>
+
+<slot id="default"></slot>
+<div id="dragOver">
+    <div id="overlay"></div>
+    <vi-icon source="FileDrop"></vi-icon>
+</div>
 
 <!-- Copy Document by Andreas Bjurenborg from the Noun Project -->
-<vi-resource type="icon" name="FileDrop">
-    <svg>
-        <svg viewBox="0 0 32 32">
-            <g>
-                <path d="M 12.300781 0 L 2.3925781 9.90625 L 2.3925781 28.445312 L 26.052734 28.445312 L 26.052734 0 L 12.300781 0 z M 13.78125 2.09375 L 23.957031 2.09375 L 23.957031 26.351562 L 4.4882812 26.351562 L 4.4882812 11.388672 L 13.78125 11.388672 L 13.78125 2.09375 z M 11.6875 3.5742188 L 11.6875 9.2929688 L 5.96875 9.2929688 L 11.6875 3.5742188 z M 27.511719 4.0097656 L 27.511719 29.90625 L 6.4023438 29.90625 L 6.4023438 32 L 29.607422 32 L 29.607422 4.0097656 L 27.511719 4.0097656 z " />
-            </g>
-        </svg>
+<vi-icon name="FileDrop">
+    <svg viewBox="0 0 32 32">
+        <g>
+            <path d="M 12.300781 0 L 2.3925781 9.90625 L 2.3925781 28.445312 L 26.052734 28.445312 L 26.052734 0 L 12.300781 0 z M 13.78125 2.09375 L 23.957031 2.09375 L 23.957031 26.351562 L 4.4882812 26.351562 L 4.4882812 11.388672 L 13.78125 11.388672 L 13.78125 2.09375 z M 11.6875 3.5742188 L 11.6875 9.2929688 L 5.96875 9.2929688 L 11.6875 3.5742188 z M 27.511719 4.0097656 L 27.511719 29.90625 L 6.4023438 29.90625 L 6.4023438 32 L 29.607422 32 L 29.607422 4.0097656 L 27.511719 4.0097656 z " />
+        </g>
     </svg>
-</vi-resource>
+</vi-icon>
 
 <script src="file-drop.js"></script>`; }
     _dragEnter(e) {
@@ -79950,9 +79945,8 @@ let FileDrop = class FileDrop extends WebComponent {
         this._setDragOver(true);
     }
     _dragLeave(e) {
-        debugger;
-        const target = this.todo_checkEventTarget(e.target);
-        if (target !== this.$.overlay && !!this.findParent(node => node === this, target))
+        const element = e.target;
+        if (element?.assignedSlot?.parentElement === this)
             return;
         this._setDragOver(false);
     }
