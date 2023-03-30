@@ -9126,14 +9126,13 @@ class ExpressionParser {
         return result;
     }
     static parse(expression) {
-        var get = this.get;
         var operands = this._operands;
         var parts = expression.split('X');
         if (parts.length > 1) {
             var result = null;
             for (var i = 0; i < parts.length; i++) {
                 var part = parts[i];
-                var newResult = get(part);
+                var newResult = this.get(part);
                 if (result != null) {
                     var previousResult = result;
                     result = function (arg) { return previousResult(arg) && newResult(arg); };
@@ -9144,7 +9143,7 @@ class ExpressionParser {
             return result;
         }
         if (expression != parts[0])
-            return get(parts[0]);
+            return this.get(parts[0]);
         for (var idx = 0; idx < operands.length; idx++) {
             var operand = operands[idx];
             var index = expression.indexOf(operand);
@@ -9152,9 +9151,9 @@ class ExpressionParser {
                 expression = expression.replace(operand, "");
                 if (index > 0) {
                     if (operand.includes("<"))
-                        return get(operand.replace("<", ">") + expression);
+                        return this.get(operand.replace("<", ">") + expression);
                     if (operand.includes(">"))
-                        return get(operand.replace(">", "<") + expression);
+                        return this.get(operand.replace(">", "<") + expression);
                 }
                 var number = parseInt(expression, 10);
                 if (!isNaN(number)) {
@@ -12221,12 +12220,12 @@ class Query$1 extends ServiceObjectWithActions {
                     this._setTotalItems(result.totalItems);
                 }
                 let added;
-                for (let n = 0; n < clonedQuery.top && (clonedQuery.skip + n < result.totalItems); n++) {
-                    const currentItem = this.items[clonedQuery.skip + n];
+                for (let n = 0; n < clonedQuery.top && (skip + n < result.totalItems); n++) {
+                    const currentItem = this.items[skip + n];
                     if (currentItem == null) {
-                        const item = this.items[clonedQuery.skip + n] = this.service.hooks.onConstructQueryResultItem(this.service, result.items[n], this);
+                        const item = this.items[skip + n] = this.service.hooks.onConstructQueryResultItem(this.service, result.items[n], this);
                         if (!added)
-                            added = [clonedQuery.skip, [], 0];
+                            added = [skip, [], 0];
                         added[1].push(currentItem);
                         added[2]++;
                         if (this.selectAll.allSelected || (selectedItems && selectedItems[item.id]))
@@ -13180,7 +13179,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.4.3";
+let version$2 = "3.4.4";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -51866,7 +51865,9 @@ let QueryGridColumnHeader = class QueryGridColumnHeader extends WebComponent {
   top: 0;
   bottom: 0;
   background-color: transparent;
+  z-index: 2;
   cursor: ew-resize;
+  -webkit-transform: translate3d(0.25em, 0, 0);
   transform: translate3d(0.25em, 0, 0);
 }
 :host(.resizing) .resizer::after, :host .resizer:hover::after {
