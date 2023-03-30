@@ -709,12 +709,12 @@ export class Query extends ServiceObjectWithActions {
                 }
 
                 let added: [number, any[], number];
-                for (let n = 0; n < clonedQuery.top && (clonedQuery.skip + n < result.totalItems); n++) {
-                    const currentItem = this.items[clonedQuery.skip + n];
+                for (let n = 0; n < clonedQuery.top && (skip + n < result.totalItems); n++) {
+                    const currentItem = this.items[skip + n];
                     if (currentItem == null) {
-                        const item = this.items[clonedQuery.skip + n] = this.service.hooks.onConstructQueryResultItem(this.service, result.items[n], this);
+                        const item = this.items[skip + n] = this.service.hooks.onConstructQueryResultItem(this.service, result.items[n], this);
                         if (!added)
-                            added = [clonedQuery.skip, [], 0];
+                            added = [skip, [], 0];
 
                         added[1].push(currentItem);
                         added[2]++;
