@@ -10964,7 +10964,8 @@ class ActionDefinition {
                 offset: itemOrDefinition.getValue("Offset"),
                 showedOn: (itemOrDefinition.getValue("ShowedOn") || "").split(",").map(v => v.trim()),
                 selectionRule: itemOrDefinition.getValue("SelectionRule"),
-                options: itemOrDefinition.getValue("Options")?.split(";").filter(o => !!o) ?? []
+                options: itemOrDefinition.getValue("Options")?.split(";").filter(o => !!o) ?? [],
+                icon: itemOrDefinition.getValue("Icon") || `Action_${itemOrDefinition.getValue("Name")}`
             };
             const groupAction = itemOrDefinition.getFullValue("GroupAction");
             if (groupAction != null)
@@ -11013,6 +11014,9 @@ class ActionDefinition {
         if (typeof this._groupDefinition === "string")
             this._groupDefinition = this._service.actionDefinitions[this._groupDefinition];
         return this._groupDefinition;
+    }
+    get icon() {
+        return this._definition.icon;
     }
 }
 
@@ -13179,7 +13183,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.4.4";
+let version$2 = "3.5.0";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -34967,21 +34971,30 @@ function load(name) {
 function exists(name) {
     return !!load(name);
 }
-function add(stringOrTemplate) {
-    if (Array.isArray(stringOrTemplate))
-        stringOrTemplate = html(stringOrTemplate);
-    Array.from(stringOrTemplate.content.querySelectorAll("vi-icon")).forEach((icon) => {
+function add(icon_or_string_or_template) {
+    if (icon_or_string_or_template instanceof Element && icon_or_string_or_template.tagName === "VI-ICON") {
+        const icon = icon_or_string_or_template;
+        icons[icon.name] = icon;
+        return;
+    }
+    if (Array.isArray(icon_or_string_or_template))
+        icon_or_string_or_template = html(icon_or_string_or_template);
+    Array.from(icon_or_string_or_template.content.querySelectorAll("vi-icon")).forEach((icon) => {
         document.body.appendChild(icon);
         icons[icon.name] = icon;
         document.body.removeChild(icon);
     });
+}
+function all() {
+    return Object.keys(icons);
 }
 
 var iconRegister = /*#__PURE__*/Object.freeze({
 	__proto__: null,
 	load: load,
 	exists: exists,
-	add: add
+	add: add,
+	all: all
 });
 
 class PathRoutes {
@@ -39864,7 +39877,7 @@ class AppServiceHooksBase extends ServiceHooks {
     async onActionConfirmation(action, option) {
         const result = await this.app.showMessageDialog({
             title: action.displayName,
-            titleIcon: "Action_" + action.name,
+            titleIcon: action.definition.icon,
             message: this.service.getTranslatedMessage(action.definition.confirmation, option >= 0 ? action.options[option] : undefined),
             actions: [action.displayName, this.service.getTranslatedMessage("Cancel")],
             actionTypes: action.name === "Delete" ? ["Danger"] : []
@@ -52853,8 +52866,7 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
     _computeIcon(action) {
         if (!action)
             return "";
-        const actionIcon = `Action_${action.definition.name}`;
-        return action.isPinned && !exists(actionIcon) ? "Action_Default$" : actionIcon;
+        return action.isPinned && !exists(action.definition.icon) ? "Action_Default$" : action.definition.icon;
     }
     _computeHasIcon(icon) {
         return !String.isNullOrEmpty(icon) && exists(icon);
@@ -53037,6 +53049,11 @@ let Icon = class Icon extends WebComponent {
 }</style>
 
 <div id="svgHost"></div>`; }
+    connectedCallback() {
+        super.connectedCallback();
+        if (this.name && !exists(this.name))
+            add(this);
+    }
     get aliases() {
         return this._aliases;
     }
@@ -57806,7 +57823,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
 }
 :host header .more {
   position: absolute;
-  background-color: white;
+  background-color: rgba(255, 255, 255, 0.75);
   z-index: 1;
 }
 :host header .more > vi-button {
@@ -58418,10 +58435,9 @@ let QueryGrid = class QueryGrid extends WebComponent {
         const headers = isLeft ? this.hasMore.left : this.hasMore.right;
         popup.querySelector("vi-scroller").append(...headers.map(h => {
             return new PopupMenuItem(h.column.label, null, () => {
-                if (isLeft)
-                    this.horizontalScrollOffset = h.offsetLeft;
-                else
-                    this.horizontalScrollOffset = h.offsetLeft + h.offsetWidth - this.visibleColumnHeaderSize.width;
+                const pinnedColumns = this.columns.filter(c => c.isPinned);
+                const pinnedOffset = pinnedColumns.length > 0 ? pinnedColumns.sum(c => this._columnWidths.get(c.name)?.current || 0) : 0;
+                this.horizontalScrollOffset = h.offsetLeft - pinnedOffset;
             });
         }));
     }
@@ -62544,7 +62560,7 @@ let Select = class Select extends WebComponent {
     </dom-if>
     <dom-if if="[[groupSeparator]]">
         <template>
-            <div content filtering$="[[filtering]]" on-select-option="_select">
+            <vi-scroller id="groupedScroller" content filtering$="[[filtering]]" on-select-option="_select">
                 <dom-repeat items="[[filteredItems]]" as="item">
                     <template>
                         <dom-if if="[[op_every(item.group, item.groupFirst)]]">
@@ -62555,7 +62571,7 @@ let Select = class Select extends WebComponent {
                         <vi-select-option-item suggested="[[op_areSame(item.option, suggestion.option)]]" selected="[[op_areSame(item.option, selectedItem.option)]]" item="{{item}}" inner-h-t-m-l="[[_computeItemDisplayValue(item.displayValue, inputValue)]]"></vi-select-option-item>
                     </template>
                 </dom-repeat>
-            </div>
+            </vi-scroller>
         </template>
     </dom-if>
 </vi-popup>`; }
@@ -62651,11 +62667,22 @@ let Select = class Select extends WebComponent {
         this._scrollItemIntoView();
     }
     _scrollItemIntoView() {
-        const ironList = this.shadowRoot.querySelector("iron-list");
-        if (ironList?._physicalCount > 0) {
-            animationFrame.run(() => {
-                ironList.scrollToItem(this.suggestion || this.selectedItem);
-            });
+        if (!this.selectedItem)
+            return;
+        if (!this.groupSeparator) {
+            const ironList = this.shadowRoot.querySelector("iron-list");
+            if (ironList?._physicalCount > 0) {
+                animationFrame.run(() => {
+                    ironList.scrollToItem(this.suggestion || this.selectedItem);
+                });
+            }
+        }
+        else {
+            const scroller = this.shadowRoot.getElementById("groupedScroller");
+            if (scroller != null) {
+                const options = Array.from(scroller.querySelectorAll("vi-select-option-item"));
+                options.find(option => option.item === this.selectedItem)?.scrollIntoView();
+            }
         }
     }
     _computeHasOptions(options, readonly) {
@@ -65064,6 +65091,99 @@ PersistentObjectAttributeFlagsEnum = __decorate([
     WebComponent.register()
 ], PersistentObjectAttributeFlagsEnum);
 PersistentObjectAttribute.registerAttributeType("FlagsEnum", PersistentObjectAttributeFlagsEnum);
+
+let PersistentObjectAttributeIcon = class PersistentObjectAttributeIcon extends PersistentObjectAttribute {
+    static get template() { return html `<style include="vi-persistent-object-attribute-style-module"></style>
+<style>:host {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  outline: none;
+}
+
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  --vi-icon-width: var(--theme-h2);
+  --vi-icon-height: auto;
+}
+.icon-grid .icon {
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  cursor: pointer;
+  aspect-ratio: 1/1;
+}
+.icon-grid .icon:hover {
+  background-color: var(--theme-color-faint);
+  fill: var(--theme-color);
+}
+.icon-grid .icon[selected] {
+  background: var(--theme-color-semi-faint);
+  fill: var(--theme-color);
+}
+
+vi-persistent-object-attribute-edit vi-icon {
+  aspect-ratio: 1/1;
+}
+
+.value {
+  gap: var(--theme-h5);
+}
+.value vi-icon:not([unresolved]) + span {
+  line-height: var(--theme-h2);
+}</style>
+
+<dom-if if="[[!editing]]">
+    <template>
+        <div class="layout horizontal value">
+            <vi-icon source="[[attribute.displayValue]]"></vi-icon>
+            <span>[[attribute.displayValue]]</span>
+        </div>
+    </template>
+</dom-if>
+<dom-if if="[[editing]]">
+    <template>
+        <vi-persistent-object-attribute-edit attribute="[[attribute]]">
+            <vi-popup auto-width on-popup-opening="_onOpening">
+                <div class="layout horizontal value" slot="header">
+                    <vi-icon source="[[attribute.value]]"></vi-icon>
+                    <span>[[attribute.value]]</span>
+                </div>
+                <vi-scroller>
+                    <div class="icon-grid">
+                        <dom-repeat items="[[icons]]" as="icon">
+                            <template>
+                                <div class="icon" on-tap="_selectIcon" selected$="[[op_areSame(icon, value)]]">
+                                    <vi-icon source="[[icon]]"></vi-icon>
+                                </div>
+                            </template>
+                        </dom-repeat>
+                    </div>
+                </vi-scroller>
+            </vi-popup>
+        </vi-persistent-object-attribute-edit>
+    </template>
+</dom-if>`; }
+    _onOpening() {
+        const icons = all();
+        this._setIcons(!this.attribute.isRequired ? [null, ...icons] : icons);
+    }
+    _selectIcon(e) {
+        this.attribute.setValue(e.model.icon);
+    }
+};
+PersistentObjectAttributeIcon = __decorate([
+    WebComponent.register({
+        properties: {
+            icons: {
+                type: Array,
+                readOnly: true
+            }
+        }
+    })
+], PersistentObjectAttributeIcon);
+PersistentObjectAttribute.registerAttributeType("Icon", PersistentObjectAttributeIcon);
 
 let PersistentObjectAttributeImageDialog = class PersistentObjectAttributeImageDialog extends Dialog {
     static get template() { return Dialog.dialogTemplate(html `<style>:host main {
@@ -76641,7 +76761,7 @@ let PersistentObjectAttributeString = class PersistentObjectAttributeString exte
 }
 :host #suggestions ul li {
   padding: 0 var(--theme-h5);
-  height: var(--theme-h2);
+  line-height: var(--theme-h2);
   cursor: pointer;
   text-align: left;
 }
@@ -81355,4 +81475,4 @@ QueryPresenter = __decorate([
     })
 ], QueryPresenter);
 
-export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppRoute, AppRoutePresenter, AppServiceHooks, AppServiceHooksBase, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, DialogCore, Error$1 as Error, FileDrop, Icon, iconRegister as IconRegister, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellDefault, QueryGridCellImage, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, SelectOptionItem, SelectReferenceDialog, Sensitive, SessionPresenter, SignIn, SignOut, SizeTracker, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, Vidyano, WebComponent, moment };
+export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppRoute, AppRoutePresenter, AppServiceHooks, AppServiceHooksBase, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, DialogCore, Error$1 as Error, FileDrop, Icon, iconRegister as IconRegister, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeIcon, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellDefault, QueryGridCellImage, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, SelectOptionItem, SelectReferenceDialog, Sensitive, SessionPresenter, SignIn, SignOut, SizeTracker, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, Vidyano, WebComponent, moment };
