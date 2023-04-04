@@ -223,8 +223,7 @@ export class ActionButton extends ConfigurableWebComponent {
         if (!action)
             return "";
 
-        const actionIcon = `Action_${action.definition.name}`;
-        return action.isPinned && !IconRegister.exists(actionIcon) ? "Action_Default$" : actionIcon;
+        return action.isPinned && !IconRegister.exists(action.definition.icon) ? "Action_Default$" : action.definition.icon;
     }
 
     private _computeHasIcon(icon: string): boolean {

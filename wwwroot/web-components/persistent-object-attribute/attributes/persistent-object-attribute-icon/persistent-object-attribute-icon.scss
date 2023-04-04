@@ -1,0 +1,46 @@
+@import "../../../_vars.scss";
+
+:host {
+    @include layout-horizontal();
+    @include relative();
+    outline: none;
+}
+
+.icon-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    --vi-icon-width: var(--theme-h2);
+    --vi-icon-height: auto;
+
+    .icon {
+        display: flex;
+        align-content: center;
+        justify-content: center;
+        cursor: pointer;
+        aspect-ratio: 1/1;
+
+        &:hover {
+            background-color: var(--theme-color-faint);
+            fill: var(--theme-color);
+        }
+
+        &[selected] {
+            background: var(--theme-color-semi-faint);
+            fill: var(--theme-color);
+        }
+    }
+}
+
+vi-persistent-object-attribute-edit {
+    vi-icon {
+        aspect-ratio: 1 / 1;
+    }
+}
+
+.value {
+    gap: var(--theme-h5);
+
+    vi-icon:not([unresolved]) + span {
+        line-height: var(--theme-h2);
+    }
+}

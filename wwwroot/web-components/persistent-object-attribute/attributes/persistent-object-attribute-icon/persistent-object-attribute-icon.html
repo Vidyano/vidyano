@@ -1,0 +1,34 @@
+<style include="vi-persistent-object-attribute-style-module"></style>
+<link rel="stylesheet" href="persistent-object-attribute-icon.css" />
+
+<dom-if if="[[!editing]]">
+    <template>
+        <div class="layout horizontal value">
+            <vi-icon source="[[attribute.displayValue]]"></vi-icon>
+            <span>[[attribute.displayValue]]</span>
+        </div>
+    </template>
+</dom-if>
+<dom-if if="[[editing]]">
+    <template>
+        <vi-persistent-object-attribute-edit attribute="[[attribute]]">
+            <vi-popup auto-width on-popup-opening="_onOpening">
+                <div class="layout horizontal value" slot="header">
+                    <vi-icon source="[[attribute.value]]"></vi-icon>
+                    <span>[[attribute.value]]</span>
+                </div>
+                <vi-scroller>
+                    <div class="icon-grid">
+                        <dom-repeat items="[[icons]]" as="icon">
+                            <template>
+                                <div class="icon" on-tap="_selectIcon" selected$="[[op_areSame(icon, value)]]">
+                                    <vi-icon source="[[icon]]"></vi-icon>
+                                </div>
+                            </template>
+                        </dom-repeat>
+                    </div>
+                </vi-scroller>
+            </vi-popup>
+        </vi-persistent-object-attribute-edit>
+    </template>
+</dom-if>

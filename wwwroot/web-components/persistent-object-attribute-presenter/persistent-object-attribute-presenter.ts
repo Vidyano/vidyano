@@ -10,6 +10,7 @@ import "../persistent-object-attribute/attributes/persistent-object-attribute-co
 import "../persistent-object-attribute/attributes/persistent-object-attribute-date-time/persistent-object-attribute-date-time.js"
 import "../persistent-object-attribute/attributes/persistent-object-attribute-drop-down/persistent-object-attribute-drop-down.js"
 import "../persistent-object-attribute/attributes/persistent-object-attribute-flags-enum/persistent-object-attribute-flags-enum.js"
+import "../persistent-object-attribute/attributes/persistent-object-attribute-icon/persistent-object-attribute-icon.js"
 import "../persistent-object-attribute/attributes/persistent-object-attribute-image/persistent-object-attribute-image.js"
 import "../persistent-object-attribute/attributes/persistent-object-attribute-key-value-list/persistent-object-attribute-key-value-list.js"
 import "../persistent-object-attribute/attributes/persistent-object-attribute-multi-line-string/persistent-object-attribute-multi-line-string.js"

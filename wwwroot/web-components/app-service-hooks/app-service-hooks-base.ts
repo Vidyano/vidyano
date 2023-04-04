@@ -143,7 +143,7 @@ export class AppServiceHooksBase extends Vidyano.ServiceHooks {
     async onActionConfirmation(action: Vidyano.Action, option: number): Promise<boolean> {
         const result = await this.app.showMessageDialog({
             title: action.displayName,
-            titleIcon: "Action_" + action.name,
+            titleIcon: action.definition.icon,
             message: this.service.getTranslatedMessage(action.definition.confirmation, option >= 0 ? action.options[option] : undefined),
             actions: [action.displayName, this.service.getTranslatedMessage("Cancel")],
             actionTypes: action.name === "Delete" ? ["Danger"] : []

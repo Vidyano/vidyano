@@ -1,7 +1,7 @@
 import * as Polymer from "../../libs/polymer/polymer.js"
 import type { Icon } from "./icon.js"
 
-const icons: { [key: string]: Icon } = {};
+const icons: Record<string, Icon> = {};
 
 export function load(name: string): Icon {
     return icons[name] || icons[Object.keys(icons).find(key => !!icons[key].aliases && icons[key].aliases.some(a => a === name))];
@@ -29,4 +29,8 @@ export function add(icon_or_string_or_template: Element | HTMLTemplateElement | 
         icons[icon.name] = icon;
         document.body.removeChild(icon);
     });
+}
+
+export function all() {
+    return Object.keys(icons);
 }

@@ -13,6 +13,7 @@ export interface ActionDefinitionParams {
     offset?: number;
     selectionRule?: string
     options?: ("PersistentObject" | "Query")[];
+    icon?: string;
 }
 export class ActionDefinition {
     private _groupDefinition: string | ActionDefinition;
@@ -33,7 +34,8 @@ export class ActionDefinition {
                 offset: itemOrDefinition.getValue("Offset"),
                 showedOn: (<string>itemOrDefinition.getValue("ShowedOn") || "").split(",").map(v => v.trim()),
                 selectionRule: itemOrDefinition.getValue("SelectionRule"),
-                options: itemOrDefinition.getValue("Options")?.split(";").filter(o => !!o) ?? []
+                options: itemOrDefinition.getValue("Options")?.split(";").filter(o => !!o) ?? [],
+                icon: itemOrDefinition.getValue("Icon") || `Action_${itemOrDefinition.getValue("Name")}`
             };
 
             const groupAction = itemOrDefinition.getFullValue("GroupAction");
@@ -97,5 +99,9 @@ export class ActionDefinition {
             this._groupDefinition = this._service.actionDefinitions[this._groupDefinition];
 
         return <ActionDefinition>this._groupDefinition;
+    }
+
+    get icon(): string {
+        return this._definition.icon;
     }
 }

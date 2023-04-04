@@ -331,6 +331,13 @@
       "CanFilter": false,
       "CanListDistincts": false
     },
+    "Icon": {
+      "$id": "DataType:Icon",
+      "IsSystem": true,
+      "CanSort": true,
+      "CanFilter": true,
+      "CanListDistincts": true
+    },
     "Image": {
       "$id": "DataType:Image",
       "IsSystem": true,
@@ -592,7 +599,7 @@
     }
   },
   "Verbose": true,
-  "ServiceVersion": "6.0.20220708.4177+d851650",
+  "ServiceVersion": "6.0.20230404.4887+6992aab",
   "ModelHash": "ajhR3eySWrK8+RiDqFoYfQqxIPHf/5EmNusiAYGcgKY=",
-  "SeederHash": "Hdixmn9ytY1rgB4xgK2tq73U/isUrvGV6s7vwwXJF9w="
+  "SeederHash": "QK5Kq24AHbvG+Ks8UYabqEeonymMb380El1nmYL2qwE="
 }

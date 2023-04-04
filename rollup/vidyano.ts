@@ -68,6 +68,7 @@ export * from "../wwwroot/web-components/persistent-object-attribute/attributes/
 export * from "../wwwroot/web-components/persistent-object-attribute/attributes/persistent-object-attribute-drop-down/persistent-object-attribute-drop-down.js"
 export * from "../wwwroot/web-components/persistent-object-attribute/attributes/persistent-object-attribute-flags-enum/persistent-object-attribute-flags-enum-flag.js"
 export * from "../wwwroot/web-components/persistent-object-attribute/attributes/persistent-object-attribute-flags-enum/persistent-object-attribute-flags-enum.js"
+export * from "../wwwroot/web-components/persistent-object-attribute/attributes/persistent-object-attribute-icon/persistent-object-attribute-icon.js"
 export * from "../wwwroot/web-components/persistent-object-attribute/attributes/persistent-object-attribute-image/persistent-object-attribute-image-dialog.js"
 export * from "../wwwroot/web-components/persistent-object-attribute/attributes/persistent-object-attribute-image/persistent-object-attribute-image.js"
 export * from "../wwwroot/web-components/persistent-object-attribute/attributes/persistent-object-attribute-key-value-list/persistent-object-attribute-key-value-list.js"
