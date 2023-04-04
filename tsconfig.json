@@ -27,5 +27,8 @@
       "wwwroot/libs/vidyano/**/*.ts",
       "wwwroot/test/**/*.ts",
       "wwwroot/web-components/**/*.ts"
-  ]
+  ],
+  "watchOptions": {
+    "watchFile": "dynamicprioritypolling"
+  }
 }
