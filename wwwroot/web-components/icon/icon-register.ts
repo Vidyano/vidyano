@@ -11,13 +11,20 @@ export function exists(name: string): boolean {
     return !!load(name);
 }
 
+export function add(icon: Element);
 export function add(strings: TemplateStringsArray);
 export function add(template: HTMLTemplateElement);
-export function add(stringOrTemplate: HTMLTemplateElement | TemplateStringsArray) {
-    if (Array.isArray(stringOrTemplate))
-        stringOrTemplate = Polymer.html(<TemplateStringsArray>stringOrTemplate);
+export function add(icon_or_string_or_template: Element | HTMLTemplateElement | TemplateStringsArray) {
+    if (icon_or_string_or_template instanceof Element && icon_or_string_or_template.tagName === "VI-ICON") {
+        const icon = icon_or_string_or_template as Icon;
+        icons[icon.name] = icon;
+        return;
+    }
 
-    Array.from((<HTMLTemplateElement>stringOrTemplate).content.querySelectorAll("vi-icon")).forEach((icon: Icon) => {
+    if (Array.isArray(icon_or_string_or_template))
+        icon_or_string_or_template = Polymer.html(<TemplateStringsArray>icon_or_string_or_template);
+
+    Array.from((<HTMLTemplateElement>icon_or_string_or_template).content.querySelectorAll("vi-icon")).forEach((icon: Icon) => {
         document.body.appendChild(icon);
         icons[icon.name] = icon;
         document.body.removeChild(icon);

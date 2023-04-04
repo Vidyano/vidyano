@@ -33,6 +33,13 @@ export class Icon extends WebComponent {
     source: string;
     readonly unresolved: boolean; private _setUnresolved: (unresolved: boolean) => void;
 
+    connectedCallback() {
+        super.connectedCallback();
+
+        if (this.name && !IconRegister.exists(this.name))
+            IconRegister.add(this);
+    }
+
     get aliases(): string[] {
         return this._aliases;
     }
