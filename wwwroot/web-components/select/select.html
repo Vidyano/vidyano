@@ -27,7 +27,7 @@
     </dom-if>
     <dom-if if="[[groupSeparator]]">
         <template>
-            <div content filtering$="[[filtering]]" on-select-option="_select">
+            <vi-scroller id="groupedScroller" content filtering$="[[filtering]]" on-select-option="_select">
                 <dom-repeat items="[[filteredItems]]" as="item">
                     <template>
                         <dom-if if="[[op_every(item.group, item.groupFirst)]]">
@@ -38,7 +38,7 @@
                         <vi-select-option-item suggested="[[op_areSame(item.option, suggestion.option)]]" selected="[[op_areSame(item.option, selectedItem.option)]]" item="{{item}}" inner-h-t-m-l="[[_computeItemDisplayValue(item.displayValue, inputValue)]]"></vi-select-option-item>
                     </template>
                 </dom-repeat>
-            </div>
+            </vi-scroller>
         </template>
     </dom-if>
 </vi-popup>

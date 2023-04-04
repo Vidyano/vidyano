@@ -249,13 +249,25 @@ export class Select extends WebComponent {
     }
 
     private _scrollItemIntoView() {
-        const ironList = this.shadowRoot.querySelector("iron-list") as IronListElement;
+        if (!this.selectedItem)
+            return;
 
-        // Make sure there are physical items, otherwise scrollToItem will fail
-        if (ironList?._physicalCount > 0) {
-            Polymer.Async.animationFrame.run(() => {
-                ironList.scrollToItem(this.suggestion || this.selectedItem);
-            });
+        if (!this.groupSeparator) {
+            const ironList = this.shadowRoot.querySelector("iron-list") as IronListElement;
+
+            // Make sure there are physical items, otherwise scrollToItem will fail
+            if (ironList?._physicalCount > 0) {
+                Polymer.Async.animationFrame.run(() => {
+                    ironList.scrollToItem(this.suggestion || this.selectedItem);
+                });
+            }
+        }
+        else {
+            const scroller = this.shadowRoot.getElementById("groupedScroller") as Scroller;
+            if (scroller != null) {
+                const options = <SelectOptionItem[]>(Array.from(scroller.querySelectorAll("vi-select-option-item")) as any);
+                options.find(option => option.item === this.selectedItem)?.scrollIntoView();
+            }
         }
     }
 
