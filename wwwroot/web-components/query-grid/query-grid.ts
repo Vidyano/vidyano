@@ -657,10 +657,9 @@ export class QueryGrid extends WebComponent {
         
         popup.querySelector("vi-scroller").append(...headers.map(h => {
             return new PopupMenuItem(h.column.label, null, () => {
-                if (isLeft)
-                    this.horizontalScrollOffset = h.offsetLeft;
-                else
-                    this.horizontalScrollOffset = h.offsetLeft + h.offsetWidth - this.visibleColumnHeaderSize.width;
+                const pinnedColumns = this.columns.filter(c => c.isPinned);
+                const pinnedOffset = pinnedColumns.length > 0 ? pinnedColumns.sum(c => this._columnWidths.get(c.name)?.current || 0) : 0;
+                this.horizontalScrollOffset = h.offsetLeft - pinnedOffset;
             });
         }));
     }
