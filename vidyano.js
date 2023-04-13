@@ -13183,7 +13183,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.5.0";
+let version$2 = "3.5.1";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -79354,7 +79354,7 @@ let ActionBar = class ActionBar extends WebComponent {
 </dom-repeat>
 <dom-if if="[[hasCharts]]">
     <template>
-        <vi-chart-selector query="[[serviceObject]]"></vi-chart-selector>
+        <vi-query-chart-selector query="[[serviceObject]]"></vi-query-chart-selector>
     </template>
 </dom-if>
 <dom-if if="[[canSearch]]">
