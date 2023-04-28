@@ -13183,7 +13183,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.5.1";
+let version$2 = "3.6.0";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -37114,6 +37114,7 @@ var Scroller_1;
 let Scroller = Scroller_1 = class Scroller extends WebComponent {
     static get template() { return html `<style>:host {
   display: flex;
+  flex-direction: column;
   position: relative;
   --vi-scroller-thumb-color: #888;
   --vi-scroller-thumb-hover-color: #777;
@@ -37339,19 +37340,28 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
   display: none !important;
 }</style>
 
-<div id="wrapper" class="wrapper" tabindex="-1">
-    <vi-size-tracker class="fit" on-sizechanged="_outerSizeChanged"></vi-size-tracker>
-    <div id="content" class="relative content">
-        <vi-size-tracker on-sizechanged="_innerSizeChanged" trigger-zero></vi-size-tracker>
-        <slot></slot>
+<slot name="header"></slot>
+<vi-size-tracker class="fit" size="{{hostSize}}"></vi-size-tracker>
+
+<main class="layout horizontal flex relative">
+    <div id="wrapper" class="flex wrapper" tabindex="-1">
+        <vi-size-tracker class="fit" on-sizechanged="_outerSizeChanged"></vi-size-tracker>
+        <div id="content" class="relative content">
+            <vi-size-tracker on-sizechanged="_innerSizeChanged" trigger-zero></vi-size-tracker>
+            <slot></slot>
+        </div>
     </div>
-</div>
-<div class="top scroll-shadow-parent">
-    <div class="top scroll-shadow"></div>
-</div>
-<div class="bottom scroll-shadow-parent">
-    <div class="bottom scroll-shadow"></div>
-</div>
+    
+    <div class="top scroll-shadow-parent">
+        <div class="top scroll-shadow"></div>
+    </div>
+    <div class="bottom scroll-shadow-parent">
+        <div class="bottom scroll-shadow"></div>
+    </div>
+</main>
+
+<slot name="footer"></slot>
+
 <div class="horizontal scrollbar-parent" on-tap="_horizontalScrollbarParentTap">
     <div id="horizontal" class="scrollbar" on-track="_trackHorizontal" on-mousedown="_trapEvent"></div>
 </div>
@@ -37402,13 +37412,13 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
         e.stopPropagation();
     }
     _updateVerticalScrollbar(outerHeight, innerHeight, verticalScrollOffset, noVertical) {
-        let height = outerHeight < innerHeight ? outerHeight / innerHeight * outerHeight : 0;
+        let height = this.hostSize.height < innerHeight ? this.hostSize.height / innerHeight * this.hostSize.height : 0;
         if (height !== this._verticalScrollHeight) {
             if (height > 0 && height < Scroller_1._minBarSize)
                 height = Scroller_1._minBarSize;
             else
                 height = Math.floor(height);
-            this._verticalScrollSpace = outerHeight - height;
+            this._verticalScrollSpace = this.hostSize.height - height;
             if (height !== this._verticalScrollHeight) {
                 this._verticalScrollHeight = height;
                 this.$.vertical.style.height = `${height}px`;
@@ -37562,6 +37572,7 @@ Scroller = Scroller_1 = __decorate([
                 type: Number,
                 readOnly: true
             },
+            hostSize: Object,
             horizontal: {
                 type: Boolean,
                 readOnly: true,

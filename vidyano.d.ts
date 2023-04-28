@@ -10549,6 +10549,7 @@ declare class Scroller extends WebComponent {
     private _setScrollBottomShadow;
     readonly hiddenScrollbars: boolean;
     private _setHiddenScrollbars;
+    hostSize: ISize;
     noHorizontal: boolean;
     noVertical: boolean;
     horizontalScrollOffset: number;
