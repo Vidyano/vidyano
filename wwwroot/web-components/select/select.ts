@@ -1,7 +1,5 @@
 import * as Polymer from "../../libs/polymer/polymer.js"
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
-import "@polymer/iron-list";
-import { IronListElement } from "@polymer/iron-list";
 import * as Keyboard from "../utils/keyboard.js"
 import { WebComponent } from "../web-component/web-component.js"
 import { Popup } from '../popup/popup.js';
@@ -106,7 +104,12 @@ export interface ISelectItem {
             reflectToAttribute: true,
             value: false
         },
-        placeholder: String
+        placeholder: String,
+        lazy: {
+            type: Boolean,
+            readOnly: true,
+            value: true
+        }
     },
     listeners: {
         "keydown": "_keydown"
@@ -126,6 +129,7 @@ export class Select extends WebComponent {
     readonly suggestion: ISelectItem; private _setSuggestion: (suggestion: ISelectItem) => void;
     readonly filtering: boolean; private _setFiltering: (filtering: boolean) => void;
     readonly selectedItem: ISelectItem; private _setSelectedItem: (item: ISelectItem) => void;
+    readonly lazy: boolean; private _setLazy: (lazy: boolean) => void;
     ungroupedOptions: string[] | SelectOption[];
     selectedOption: string;
     keepUnmatched: boolean;
@@ -224,6 +228,11 @@ export class Select extends WebComponent {
     }
 
     private _popupOpened() {
+        if (this.lazy) {
+            this._setLazy(false);
+            Polymer.flush();
+        }
+
         this._scrollItemIntoView();
     }
 
@@ -236,38 +245,14 @@ export class Select extends WebComponent {
         }
     }
 
-    private _ironListConnected() {
-        const ironList = this.shadowRoot.querySelector("iron-list") as IronListElement;
-        ironList.scrollTarget = (ironList.parentElement as Scroller).scroller;
-    }
-
-    private _fireResize(e: CustomEvent) {
-        const ironList = this.shadowRoot.querySelector("iron-list") as IronListElement;
-        ironList?.fire("iron-resize");
-
-        this._scrollItemIntoView();
-    }
-
     private _scrollItemIntoView() {
         if (!this.selectedItem)
             return;
 
-        if (!this.groupSeparator) {
-            const ironList = this.shadowRoot.querySelector("iron-list") as IronListElement;
-
-            // Make sure there are physical items, otherwise scrollToItem will fail
-            if (ironList?._physicalCount > 0) {
-                Polymer.Async.animationFrame.run(() => {
-                    ironList.scrollToItem(this.suggestion || this.selectedItem);
-                });
-            }
-        }
-        else {
-            const scroller = this.shadowRoot.getElementById("groupedScroller") as Scroller;
-            if (scroller != null) {
-                const options = <SelectOptionItem[]>(Array.from(scroller.querySelectorAll("vi-select-option-item")) as any);
-                options.find(option => option.item === this.selectedItem)?.scrollIntoView();
-            }
+        const scroller = this.shadowRoot.getElementById(`${this.groupSeparator ? "grouped-" : ""}scroller`) as Scroller;
+        if (scroller != null) {
+            const options = <SelectOptionItem[]>(Array.from(scroller.querySelectorAll("vi-select-option-item")) as any);
+            options.find(option => option.item === this.selectedItem)?.scrollIntoView();
         }
     }
 
