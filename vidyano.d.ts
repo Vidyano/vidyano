@@ -12404,6 +12404,8 @@ declare class Select extends WebComponent {
     private _setFiltering;
     readonly selectedItem: ISelectItem;
     private _setSelectedItem;
+    readonly lazy: boolean;
+    private _setLazy;
     ungroupedOptions: string[] | SelectOption[];
     selectedOption: string;
     keepUnmatched: boolean;
@@ -12417,8 +12419,6 @@ declare class Select extends WebComponent {
     private _blur;
     private _popupOpened;
     private _popupClosed;
-    private _ironListConnected;
-    private _fireResize;
     private _scrollItemIntoView;
     private _computeHasOptions;
     private _computeUngroupedOptions;
