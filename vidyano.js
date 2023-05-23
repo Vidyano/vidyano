@@ -13183,7 +13183,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.6.1";
+let version$2 = "3.6.2";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -76420,7 +76420,12 @@ let PersistentObjectWizardDialog = class PersistentObjectWizardDialog extends Di
         return !!currentTab && currentTab.parent.tabs.indexOf(currentTab) > 0;
     }
     _previous(e) {
-        this._setCurrentTab(this.currentTab.parent.tabs[this.currentTab.parent.tabs.indexOf(this.currentTab) - 1]);
+        const currentTabIndex = this.currentTab.parent.tabs.indexOf(this.currentTab) || 0;
+        const previousTab = this.currentTab.parent.tabs.slice(0, currentTabIndex)
+            .reverse()
+            .filter(tab => tab instanceof PersistentObjectAttributeTab)
+            .find((tab) => tab.attributes.some(a => a.isVisible));
+        this._setCurrentTab(previousTab);
     }
     _computeCanNext(currentTab, hasPendingAttributes, isBusy) {
         if (isBusy || hasPendingAttributes)
@@ -76433,7 +76438,11 @@ let PersistentObjectWizardDialog = class PersistentObjectWizardDialog extends Di
             this.persistentObject.refreshFromResult(result);
             if (this.currentTab.attributes.some(attr => !!attr.validationError))
                 return;
-            this._setCurrentTab(this.currentTab.parent.tabs[this.currentTab.parent.tabs.indexOf(this.currentTab) + 1]);
+            const currentTabIndex = this.currentTab.parent.tabs.indexOf(this.currentTab) || 0;
+            const nextTab = this.currentTab.parent.tabs.slice(currentTabIndex + 1)
+                .filter(tab => tab instanceof PersistentObjectAttributeTab)
+                .find((tab) => tab.attributes.some(a => a.isVisible));
+            this._setCurrentTab(nextTab);
         });
     }
     _computeCanFinish(currentTab, canNext) {
