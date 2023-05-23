@@ -84,7 +84,13 @@ export class PersistentObjectWizardDialog extends Dialog {
     }
 
     private _previous(e: Polymer.Gestures.TapEvent) {
-        this._setCurrentTab(this.currentTab.parent.tabs[this.currentTab.parent.tabs.indexOf(this.currentTab) - 1]);
+        const currentTabIndex = this.currentTab.parent.tabs.indexOf(this.currentTab) || 0;
+        const previousTab = this.currentTab.parent.tabs.slice(0, currentTabIndex)
+            .reverse()
+            .filter(tab => tab instanceof Vidyano.PersistentObjectAttributeTab)
+            .find((tab: Vidyano.PersistentObjectAttributeTab) => tab.attributes.some(a => a.isVisible));
+
+        this._setCurrentTab(previousTab);
     }
 
     private _computeCanNext(currentTab: Vidyano.PersistentObjectAttributeTab, hasPendingAttributes: boolean, isBusy: boolean): boolean {
@@ -102,7 +108,12 @@ export class PersistentObjectWizardDialog extends Dialog {
             if (this.currentTab.attributes.some(attr => !!attr.validationError))
                 return;
 
-            this._setCurrentTab(this.currentTab.parent.tabs[this.currentTab.parent.tabs.indexOf(this.currentTab) + 1]);
+            const currentTabIndex = this.currentTab.parent.tabs.indexOf(this.currentTab) || 0;
+            const nextTab = this.currentTab.parent.tabs.slice(currentTabIndex + 1)
+                .filter(tab => tab instanceof Vidyano.PersistentObjectAttributeTab)
+                .find((tab: Vidyano.PersistentObjectAttributeTab) => tab.attributes.some(a => a.isVisible));
+
+            this._setCurrentTab(nextTab);
         });
     }
 
