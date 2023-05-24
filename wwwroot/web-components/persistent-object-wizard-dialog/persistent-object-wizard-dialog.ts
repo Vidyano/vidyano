@@ -14,12 +14,12 @@ import { WebComponent } from "../web-component/web-component.js"
         canPrevious: {
             type: Boolean,
             value: false,
-            computed: "_computeCanPrevious(currentTab)"
+            computed: "_computeCanPrevious(currentTab, persistentObject.tabs.*)"
         },
         canNext: {
             type: Boolean,
             value: true,
-            computed: "_computeCanNext(currentTab, hasPendingAttributes, persistentObject.isBusy)"
+            computed: "_computeCanNext(currentTab, hasPendingAttributes, persistentObject.isBusy, persistentObject.tabs.*)"
         },
         canFinish: {
             type: Boolean,
@@ -29,12 +29,17 @@ import { WebComponent } from "../web-component/web-component.js"
         hasPendingAttributes: {
             type: Boolean,
             computed: "_computeHasPendingAttributes(currentTab.attributes, currentTab.attributes.*, persistentObject.lastUpdated)"
+        },
+        visibleTabs: {
+            type: Array,
+            computed: "_computeVisibleTabs(persistentObject.tabs, persistentObject.tabs.*)"
         }
     },
     forwardObservers: [
         "persistentObject.isBusy",
         "currentTab.attributes.*.value",
-        "persistentObject.lastUpdated"
+        "persistentObject.lastUpdated",
+        "persistentObject.tabs.*.isVisible"
     ],
     listeners: {
         "vi-persistent-object-tab-inner-size-changed": "_tabInnerSizeChanged"
@@ -48,13 +53,18 @@ export class PersistentObjectWizardDialog extends Dialog {
     readonly canPrevious: boolean;
     readonly canNext: boolean;
     readonly canFinish: boolean;
+    readonly visibleTabs: Vidyano.PersistentObjectAttributeTab[];
     hasPendingAttributes: boolean;
 
-    constructor(public persistentObject: Vidyano.PersistentObject) {
+    constructor(public readonly persistentObject: Vidyano.PersistentObject) {
         super();
+    }
 
-        persistentObject.beginEdit();
-        this._setCurrentTab(<Vidyano.PersistentObjectAttributeTab>persistentObject.tabs[0]);
+    ready() {
+        super.ready();
+
+        this.persistentObject.beginEdit();
+        this._setCurrentTab(this.visibleTabs.find(tab => tab.isVisible));
     }
 
     connectedCallback() {
@@ -79,25 +89,23 @@ export class PersistentObjectWizardDialog extends Dialog {
         });
     }
 
+    private _computeVisibleTabs(tabs: Vidyano.PersistentObjectAttributeTab[]): Vidyano.PersistentObjectAttributeTab[] {
+        return tabs.filter(tab => tab.isVisible);
+    }
+
     private _computeCanPrevious(currentTab: Vidyano.PersistentObjectAttributeTab): boolean {
-        return !!currentTab && currentTab.parent.tabs.indexOf(currentTab) > 0;
+        return !!currentTab && this.visibleTabs.indexOf(currentTab) > 0;
     }
 
     private _previous(e: Polymer.Gestures.TapEvent) {
-        const currentTabIndex = this.currentTab.parent.tabs.indexOf(this.currentTab) || 0;
-        const previousTab = this.currentTab.parent.tabs.slice(0, currentTabIndex)
-            .reverse()
-            .filter(tab => tab instanceof Vidyano.PersistentObjectAttributeTab)
-            .find((tab: Vidyano.PersistentObjectAttributeTab) => tab.attributes.some(a => a.isVisible));
-
-        this._setCurrentTab(previousTab);
+        this._setCurrentTab(this.visibleTabs[Math.max(this.visibleTabs.indexOf(this.currentTab) - 1, 0)]);
     }
 
     private _computeCanNext(currentTab: Vidyano.PersistentObjectAttributeTab, hasPendingAttributes: boolean, isBusy: boolean): boolean {
         if (isBusy || hasPendingAttributes)
             return false;
 
-        return !!currentTab && currentTab.parent.tabs.indexOf(currentTab) < currentTab.parent.tabs.length - 1;
+        return !!currentTab && this.visibleTabs.indexOf(currentTab) < this.visibleTabs.length - 1;
     }
 
     private _next(e: Polymer.Gestures.TapEvent) {
@@ -108,12 +116,7 @@ export class PersistentObjectWizardDialog extends Dialog {
             if (this.currentTab.attributes.some(attr => !!attr.validationError))
                 return;
 
-            const currentTabIndex = this.currentTab.parent.tabs.indexOf(this.currentTab) || 0;
-            const nextTab = this.currentTab.parent.tabs.slice(currentTabIndex + 1)
-                .filter(tab => tab instanceof Vidyano.PersistentObjectAttributeTab)
-                .find((tab: Vidyano.PersistentObjectAttributeTab) => tab.attributes.some(a => a.isVisible));
-
-            this._setCurrentTab(nextTab);
+            this._setCurrentTab(this.visibleTabs[Math.min(this.visibleTabs.indexOf(this.currentTab) + 1, this.visibleTabs.length - 1)]);
         });
     }
 
@@ -121,7 +124,7 @@ export class PersistentObjectWizardDialog extends Dialog {
         if (canNext)
             return false;
 
-        return !!currentTab && currentTab.parent.tabs.indexOf(currentTab) === currentTab.parent.tabs.length - 1;
+        return !!currentTab && this.visibleTabs.indexOf(currentTab) === this.visibleTabs.length - 1;
     }
 
     private _computeHasPendingAttributes(attributes: Vidyano.PersistentObjectAttribute[]): boolean {

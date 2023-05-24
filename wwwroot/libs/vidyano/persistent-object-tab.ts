@@ -14,7 +14,7 @@ export class PersistentObjectTab extends Observable<PersistentObjectTab> {
     }
 
     get isVisible(): boolean {
-        return this._isVisible;
+        return !this.parent.isHidden && this._isVisible;
     }
 
     set isVisible(val: boolean) {
@@ -71,6 +71,8 @@ export class PersistentObjectAttributeTab extends PersistentObjectTab {
     private _updateAttributes(): PersistentObjectAttribute[] {
         const attributes = [].concat(...this.groups.map(grp => grp.attributes));
         attributes.forEach(attr => attributes[attr.name] = attr);
+
+        this.isVisible = attributes.some(attr => attr.isVisible);
 
         return attributes;
     }

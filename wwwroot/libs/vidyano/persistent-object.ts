@@ -477,14 +477,15 @@ export class PersistentObject extends ServiceObjectWithActions {
             }
         });
 
+        const attributeTabs = <PersistentObjectAttributeTab[]>this.tabs.filter(t => t instanceof PersistentObjectAttributeTab);
+
         if (tabsAdded) {
-            const attrTabs = <PersistentObjectAttributeTab[]>this.tabs.filter(t => t instanceof PersistentObjectAttributeTab);
-            attrTabs.sort((t1, t2) => [].concat(...t1.groups.map(g => g.attributes)).min(a => a.offset) - [].concat(...t2.groups.map(g => g.attributes)).min(a => a.offset));
+            attributeTabs.sort((t1, t2) => [].concat(...t1.groups.map(g => g.attributes)).min(a => a.offset) - [].concat(...t2.groups.map(g => g.attributes)).min(a => a.offset));
 
             const queryTabs = <PersistentObjectQueryTab[]>this.tabs.filter(t => t instanceof PersistentObjectQueryTab);
             queryTabs.sort((q1, q2) => q1.query.offset - q2.query.offset);
 
-            this.tabs = this.service.hooks.onSortPersistentObjectTabs(this, attrTabs, queryTabs);
+            this.tabs = this.service.hooks.onSortPersistentObjectTabs(this, attributeTabs, queryTabs);
         }
         else if (tabsRemoved)
             this.tabs = this.tabs.slice();
@@ -497,6 +498,9 @@ export class PersistentObject extends ServiceObjectWithActions {
                 group.attributes = group.attributes.slice();
             });
         }
+
+        // Flag tabs as visible if they have any visible attributes
+        attributeTabs.forEach(tab => tab.isVisible = tab.attributes.some(a => a.isVisible));
     }
 
     triggerDirty(): boolean {
