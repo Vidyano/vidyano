@@ -13007,17 +13007,20 @@ declare class PersistentObjectTab extends ConfigurableWebComponent {
 }
 
 declare class PersistentObjectWizardDialog extends Dialog {
-    persistentObject: PersistentObject$1;
+    readonly persistentObject: PersistentObject$1;
     static get template(): HTMLTemplateElement;
     readonly currentTab: PersistentObjectAttributeTab;
     private _setCurrentTab;
     readonly canPrevious: boolean;
     readonly canNext: boolean;
     readonly canFinish: boolean;
+    readonly visibleTabs: PersistentObjectAttributeTab[];
     hasPendingAttributes: boolean;
     constructor(persistentObject: PersistentObject$1);
+    ready(): void;
     connectedCallback(): void;
     private _tabInnerSizeChanged;
+    private _computeVisibleTabs;
     private _computeCanPrevious;
     private _previous;
     private _computeCanNext;

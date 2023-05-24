@@ -10251,7 +10251,7 @@ class PersistentObjectTab$1 extends Observable {
         this._isVisible = _isVisible;
     }
     get isVisible() {
-        return this._isVisible;
+        return !this.parent.isHidden && this._isVisible;
     }
     set isVisible(val) {
         const oldIsVisible = this._isVisible;
@@ -10298,6 +10298,7 @@ class PersistentObjectAttributeTab extends PersistentObjectTab$1 {
     _updateAttributes() {
         const attributes = [].concat(...this.groups.map(grp => grp.attributes));
         attributes.forEach(attr => attributes[attr.name] = attr);
+        this.isVisible = attributes.some(attr => attr.isVisible);
         return attributes;
     }
 }
@@ -10714,12 +10715,12 @@ class PersistentObject$1 extends ServiceObjectWithActions {
                     tabGroupAttributesChanged.add(group);
             }
         });
+        const attributeTabs = this.tabs.filter(t => t instanceof PersistentObjectAttributeTab);
         if (tabsAdded) {
-            const attrTabs = this.tabs.filter(t => t instanceof PersistentObjectAttributeTab);
-            attrTabs.sort((t1, t2) => [].concat(...t1.groups.map(g => g.attributes)).min(a => a.offset) - [].concat(...t2.groups.map(g => g.attributes)).min(a => a.offset));
+            attributeTabs.sort((t1, t2) => [].concat(...t1.groups.map(g => g.attributes)).min(a => a.offset) - [].concat(...t2.groups.map(g => g.attributes)).min(a => a.offset));
             const queryTabs = this.tabs.filter(t => t instanceof PersistentObjectQueryTab);
             queryTabs.sort((q1, q2) => q1.query.offset - q2.query.offset);
-            this.tabs = this.service.hooks.onSortPersistentObjectTabs(this, attrTabs, queryTabs);
+            this.tabs = this.service.hooks.onSortPersistentObjectTabs(this, attributeTabs, queryTabs);
         }
         else if (tabsRemoved)
             this.tabs = this.tabs.slice();
@@ -10730,6 +10731,7 @@ class PersistentObject$1 extends ServiceObjectWithActions {
                 group.attributes = group.attributes.slice();
             });
         }
+        attributeTabs.forEach(tab => tab.isVisible = tab.attributes.some(a => a.isVisible));
     }
     triggerDirty() {
         if (this.isEditing)
@@ -13183,7 +13185,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.6.2";
+let version$2 = "3.6.3";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -76396,8 +76398,11 @@ let PersistentObjectWizardDialog = class PersistentObjectWizardDialog extends Di
     constructor(persistentObject) {
         super();
         this.persistentObject = persistentObject;
-        persistentObject.beginEdit();
-        this._setCurrentTab(persistentObject.tabs[0]);
+    }
+    ready() {
+        super.ready();
+        this.persistentObject.beginEdit();
+        this._setCurrentTab(this.visibleTabs.find(tab => tab.isVisible));
     }
     connectedCallback() {
         super.connectedCallback();
@@ -76416,21 +76421,19 @@ let PersistentObjectWizardDialog = class PersistentObjectWizardDialog extends Di
             composed: true
         });
     }
+    _computeVisibleTabs(tabs) {
+        return tabs.filter(tab => tab.isVisible);
+    }
     _computeCanPrevious(currentTab) {
-        return !!currentTab && currentTab.parent.tabs.indexOf(currentTab) > 0;
+        return !!currentTab && this.visibleTabs.indexOf(currentTab) > 0;
     }
     _previous(e) {
-        const currentTabIndex = this.currentTab.parent.tabs.indexOf(this.currentTab) || 0;
-        const previousTab = this.currentTab.parent.tabs.slice(0, currentTabIndex)
-            .reverse()
-            .filter(tab => tab instanceof PersistentObjectAttributeTab)
-            .find((tab) => tab.attributes.some(a => a.isVisible));
-        this._setCurrentTab(previousTab);
+        this._setCurrentTab(this.visibleTabs[Math.max(this.visibleTabs.indexOf(this.currentTab) - 1, 0)]);
     }
     _computeCanNext(currentTab, hasPendingAttributes, isBusy) {
         if (isBusy || hasPendingAttributes)
             return false;
-        return !!currentTab && currentTab.parent.tabs.indexOf(currentTab) < currentTab.parent.tabs.length - 1;
+        return !!currentTab && this.visibleTabs.indexOf(currentTab) < this.visibleTabs.length - 1;
     }
     _next(e) {
         this.persistentObject.queueWork(async () => {
@@ -76438,17 +76441,13 @@ let PersistentObjectWizardDialog = class PersistentObjectWizardDialog extends Di
             this.persistentObject.refreshFromResult(result);
             if (this.currentTab.attributes.some(attr => !!attr.validationError))
                 return;
-            const currentTabIndex = this.currentTab.parent.tabs.indexOf(this.currentTab) || 0;
-            const nextTab = this.currentTab.parent.tabs.slice(currentTabIndex + 1)
-                .filter(tab => tab instanceof PersistentObjectAttributeTab)
-                .find((tab) => tab.attributes.some(a => a.isVisible));
-            this._setCurrentTab(nextTab);
+            this._setCurrentTab(this.visibleTabs[Math.min(this.visibleTabs.indexOf(this.currentTab) + 1, this.visibleTabs.length - 1)]);
         });
     }
     _computeCanFinish(currentTab, canNext) {
         if (canNext)
             return false;
-        return !!currentTab && currentTab.parent.tabs.indexOf(currentTab) === currentTab.parent.tabs.length - 1;
+        return !!currentTab && this.visibleTabs.indexOf(currentTab) === this.visibleTabs.length - 1;
     }
     _computeHasPendingAttributes(attributes) {
         return attributes && attributes.some(attr => attr.isRequired && (attr.value == null || (attr.rules && attr.rules.contains("NotEmpty") && attr.value === "")));
@@ -76471,12 +76470,12 @@ PersistentObjectWizardDialog = __decorate([
             canPrevious: {
                 type: Boolean,
                 value: false,
-                computed: "_computeCanPrevious(currentTab)"
+                computed: "_computeCanPrevious(currentTab, persistentObject.tabs.*)"
             },
             canNext: {
                 type: Boolean,
                 value: true,
-                computed: "_computeCanNext(currentTab, hasPendingAttributes, persistentObject.isBusy)"
+                computed: "_computeCanNext(currentTab, hasPendingAttributes, persistentObject.isBusy, persistentObject.tabs.*)"
             },
             canFinish: {
                 type: Boolean,
@@ -76486,12 +76485,17 @@ PersistentObjectWizardDialog = __decorate([
             hasPendingAttributes: {
                 type: Boolean,
                 computed: "_computeHasPendingAttributes(currentTab.attributes, currentTab.attributes.*, persistentObject.lastUpdated)"
+            },
+            visibleTabs: {
+                type: Array,
+                computed: "_computeVisibleTabs(persistentObject.tabs, persistentObject.tabs.*)"
             }
         },
         forwardObservers: [
             "persistentObject.isBusy",
             "currentTab.attributes.*.value",
-            "persistentObject.lastUpdated"
+            "persistentObject.lastUpdated",
+            "persistentObject.tabs.*.isVisible"
         ],
         listeners: {
             "vi-persistent-object-tab-inner-size-changed": "_tabInnerSizeChanged"
