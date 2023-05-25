@@ -14,7 +14,7 @@ export class PersistentObjectTab extends Observable<PersistentObjectTab> {
     }
 
     get isVisible(): boolean {
-        return !this.parent.isHidden && this._isVisible;
+        return this._isVisible;
     }
 
     set isVisible(val: boolean) {
@@ -36,6 +36,14 @@ export class PersistentObjectAttributeTab extends PersistentObjectTab {
             this.columnCount = parseInt(<any>columnCount);
 
         this._attributes = this._updateAttributes();
+    }
+
+    get isVisible(): boolean {
+        return !this.parent.isHidden && super.isVisible;
+    }
+
+    set isVisible(val: boolean) {
+        super.isVisible = val;
     }
 
     get layout(): any {
@@ -82,5 +90,9 @@ export class PersistentObjectQueryTab extends PersistentObjectTab {
     constructor(service: Service, public query: Query) {
         super(service, query.name, query.label, query, query.parent, !query.isHidden);
         this.tabGroupIndex = 1;
+    }
+
+    get isVisible(): boolean {
+        return !this.query.isHidden;
     }
 }
