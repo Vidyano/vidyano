@@ -10251,7 +10251,7 @@ class PersistentObjectTab$1 extends Observable {
         this._isVisible = _isVisible;
     }
     get isVisible() {
-        return !this.parent.isHidden && this._isVisible;
+        return this._isVisible;
     }
     set isVisible(val) {
         const oldIsVisible = this._isVisible;
@@ -10271,6 +10271,12 @@ class PersistentObjectAttributeTab extends PersistentObjectTab$1 {
         if (typeof columnCount === "string")
             this.columnCount = parseInt(columnCount);
         this._attributes = this._updateAttributes();
+    }
+    get isVisible() {
+        return !this.parent.isHidden && super.isVisible;
+    }
+    set isVisible(val) {
+        super.isVisible = val;
     }
     get layout() {
         return this._layout;
@@ -10307,6 +10313,9 @@ class PersistentObjectQueryTab extends PersistentObjectTab$1 {
         super(service, query.name, query.label, query, query.parent, !query.isHidden);
         this.query = query;
         this.tabGroupIndex = 1;
+    }
+    get isVisible() {
+        return !this.query.isHidden;
     }
 }
 
@@ -13185,7 +13194,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.6.3";
+let version$2 = "3.6.4";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -51891,7 +51900,9 @@ let QueryGridColumnHeader = class QueryGridColumnHeader extends WebComponent {
   top: 0;
   bottom: 0;
   background-color: transparent;
+  z-index: 2;
   cursor: ew-resize;
+  -webkit-transform: translate3d(0.25em, 0, 0);
   transform: translate3d(0.25em, 0, 0);
 }
 :host(.resizing) .resizer::after, :host .resizer:hover::after {

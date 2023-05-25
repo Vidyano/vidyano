@@ -3229,6 +3229,8 @@ declare class PersistentObjectAttributeTab extends PersistentObjectTab$1 {
     columnCount: number;
     private _attributes;
     constructor(service: Service, _groups: PersistentObjectAttributeGroup[], key: string, id: string, name: string, _layout: any, po: PersistentObject$1, columnCount: number, isVisible: boolean);
+    get isVisible(): boolean;
+    set isVisible(val: boolean);
     get layout(): any;
     private _setLayout;
     get attributes(): PersistentObjectAttribute$1[];
@@ -3240,6 +3242,7 @@ declare class PersistentObjectAttributeTab extends PersistentObjectTab$1 {
 declare class PersistentObjectQueryTab extends PersistentObjectTab$1 {
     query: Query$1;
     constructor(service: Service, query: Query$1);
+    get isVisible(): boolean;
 }
 
 type PersistentObjectAttributeOption = KeyValuePair<string, string>;
@@ -13015,7 +13018,7 @@ declare class PersistentObjectWizardDialog extends Dialog {
     readonly canNext: boolean;
     readonly canFinish: boolean;
     readonly visibleTabs: PersistentObjectAttributeTab[];
-    hasPendingAttributes: boolean;
+    readonly hasPendingAttributes: boolean;
     constructor(persistentObject: PersistentObject$1);
     ready(): void;
     connectedCallback(): void;
