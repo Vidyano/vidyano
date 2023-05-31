@@ -402,8 +402,10 @@ export class SignIn extends WebComponent {
                     this.app.changePath(decodeURIComponent(this.returnUrl || ""));
                 }
                 catch (e) {
-                    if (e === "Two-factor authentication enabled for user.")
+                    if (e === "Two-factor authentication enabled for user.") {
                         this.step = "twofactor";
+                        this._setNotification(null);
+                    }
                     else
                         throw e;
                 }
