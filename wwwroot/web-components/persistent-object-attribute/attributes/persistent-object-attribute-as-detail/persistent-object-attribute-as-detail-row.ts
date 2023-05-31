@@ -84,17 +84,9 @@ export class PersistentObjectAttributeAsDetailRow extends WebComponent {
     private _delete() {
         if (this.serviceObject.isReadOnly)
             return;
-        
-        if (!this.serviceObject.isNew)
-            this.serviceObject.isDeleted = true;
-        else
-            this.serviceObject.ownerDetailAttribute.objects.splice(this.serviceObject.ownerDetailAttribute.objects.indexOf(this.serviceObject), 1);
 
-        this.serviceObject.ownerDetailAttribute.isValueChanged = true;
-        this.serviceObject.ownerDetailAttribute.parent.triggerDirty();
-
-        if (this.serviceObject.ownerDetailAttribute.triggersRefresh)
-            this.serviceObject.ownerDetailAttribute._triggerAttributeRefresh(true);
+        // Let the parent handle the delete
+        this.dispatchEvent(new CustomEvent("delete", { detail: this.serviceObject }));
     }
 
     private _onAttributeLoading(e: CustomEvent) {

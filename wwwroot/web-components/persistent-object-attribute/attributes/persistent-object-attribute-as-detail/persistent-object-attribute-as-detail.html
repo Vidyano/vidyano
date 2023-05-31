@@ -15,9 +15,9 @@
             <div id="data" class="flex relative">
                 <vi-size-tracker trigger-zero size="{{size}}"></vi-size-tracker>
                 <div id="rows">
-                    <dom-repeat items="[[attribute.objects]]" as="obj">
+                    <dom-repeat items="[[attribute.objects]]" as="obj" filter="_isNotDeleted" observe="isDeleted">
                         <template>
-                            <vi-persistent-object-attribute-as-detail-row class="row" service-object="[[obj]]" columns="[[attribute.details.columns]]" editing="[[editing]]" can-delete="[[canDelete]]" hidden$="[[obj.isDeleted]]" full-edit="[[_isRowFullEdit(forceFullEdit, activeObject, obj)]]" on-full-edit="_setActiveObject" read-only$="[[readOnly]]" frozen="[[frozen]]"></vi-persistent-object-attribute-as-detail-row>
+                            <vi-persistent-object-attribute-as-detail-row class="row" service-object="[[obj]]" columns="[[attribute.details.columns]]" editing="[[editing]]" can-delete="[[canDelete]]" on-delete="_delete" full-edit="[[_isRowFullEdit(forceFullEdit, activeObject, obj)]]" on-full-edit="_setActiveObject" read-only$="[[readOnly]]" frozen="[[frozen]]"></vi-persistent-object-attribute-as-detail-row>
                         </template>
                     </dom-repeat>
                 </div>

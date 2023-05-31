@@ -105,6 +105,10 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
         return contentHeight + this._inlineAddHeight > this.$.table.offsetHeight - this.$.head.offsetHeight;
     }
 
+    private _isNotDeleted(object: Vidyano.PersistentObject) {
+        return !object.isDeleted;
+    }
+
     private _updateActions(actions: Vidyano.Action[], editing: boolean, readOnly: boolean, attribute: Vidyano.PersistentObjectAttributeAsDetail) {
         this._setNewAction(editing && !readOnly ? actions["New"] || null : null);
         this._setDeleteAction(editing && !readOnly && (attribute.parent.isNew || !!actions["Delete"]));
@@ -217,6 +221,20 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
 
         if (this.attribute.triggersRefresh)
             await this.attribute._triggerAttributeRefresh(true);
+    }
+
+    private _delete(e: CustomEvent) {
+        const object = e.detail;
+
+        object.isDeleted = true;
+        if (object.isNew)
+            this.splice("attribute.objects", this.attribute.objects.indexOf(object), 1);
+
+        this.attribute.isValueChanged = true;
+        this.attribute.parent.triggerDirty();
+
+        if (this.attribute.triggersRefresh)
+            this.attribute._triggerAttributeRefresh(true);
     }
 
     private _setActiveObject(e: Polymer.Gestures.TapEvent) {
