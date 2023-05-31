@@ -12342,10 +12342,12 @@ declare class PersistentObjectAttributeAsDetail extends PersistentObjectAttribut
     private _computeColumns;
     private _computeCanDelete;
     private _computeNewActionPinned;
+    private _isNotDeleted;
     private _updateActions;
     private _updateWidths;
     private _add;
     private _finalizeAdd;
+    private _delete;
     private _setActiveObject;
     private _isRowFullEdit;
     private _frozenChanged;

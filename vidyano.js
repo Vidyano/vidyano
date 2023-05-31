@@ -13194,7 +13194,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.6.4";
+let version$2 = "3.6.6";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -59451,14 +59451,7 @@ let PersistentObjectAttributeAsDetailRow = class PersistentObjectAttributeAsDeta
     _delete() {
         if (this.serviceObject.isReadOnly)
             return;
-        if (!this.serviceObject.isNew)
-            this.serviceObject.isDeleted = true;
-        else
-            this.serviceObject.ownerDetailAttribute.objects.splice(this.serviceObject.ownerDetailAttribute.objects.indexOf(this.serviceObject), 1);
-        this.serviceObject.ownerDetailAttribute.isValueChanged = true;
-        this.serviceObject.ownerDetailAttribute.parent.triggerDirty();
-        if (this.serviceObject.ownerDetailAttribute.triggersRefresh)
-            this.serviceObject.ownerDetailAttribute._triggerAttributeRefresh(true);
+        this.dispatchEvent(new CustomEvent("delete", { detail: this.serviceObject }));
     }
     _onAttributeLoading(e) {
         e.stopPropagation();
@@ -59647,9 +59640,9 @@ let PersistentObjectAttributeAsDetail = class PersistentObjectAttributeAsDetail 
             <div id="data" class="flex relative">
                 <vi-size-tracker trigger-zero size="{{size}}"></vi-size-tracker>
                 <div id="rows">
-                    <dom-repeat items="[[attribute.objects]]" as="obj">
+                    <dom-repeat items="[[attribute.objects]]" as="obj" filter="_isNotDeleted" observe="isDeleted">
                         <template>
-                            <vi-persistent-object-attribute-as-detail-row class="row" service-object="[[obj]]" columns="[[attribute.details.columns]]" editing="[[editing]]" can-delete="[[canDelete]]" hidden$="[[obj.isDeleted]]" full-edit="[[_isRowFullEdit(forceFullEdit, activeObject, obj)]]" on-full-edit="_setActiveObject" read-only$="[[readOnly]]" frozen="[[frozen]]"></vi-persistent-object-attribute-as-detail-row>
+                            <vi-persistent-object-attribute-as-detail-row class="row" service-object="[[obj]]" columns="[[attribute.details.columns]]" editing="[[editing]]" can-delete="[[canDelete]]" on-delete="_delete" full-edit="[[_isRowFullEdit(forceFullEdit, activeObject, obj)]]" on-full-edit="_setActiveObject" read-only$="[[readOnly]]" frozen="[[frozen]]"></vi-persistent-object-attribute-as-detail-row>
                         </template>
                     </dom-repeat>
                 </div>
@@ -59702,6 +59695,9 @@ let PersistentObjectAttributeAsDetail = class PersistentObjectAttributeAsDetail 
         }
         const contentHeight = this.newActionPinned ? height : height - this._inlineAddHeight;
         return contentHeight + this._inlineAddHeight > this.$.table.offsetHeight - this.$.head.offsetHeight;
+    }
+    _isNotDeleted(object) {
+        return !object.isDeleted;
     }
     _updateActions(actions, editing, readOnly, attribute) {
         this._setNewAction(editing && !readOnly ? actions["New"] || null : null);
@@ -59794,6 +59790,16 @@ let PersistentObjectAttributeAsDetail = class PersistentObjectAttributeAsDetail 
         this.attribute.parent.triggerDirty();
         if (this.attribute.triggersRefresh)
             await this.attribute._triggerAttributeRefresh(true);
+    }
+    _delete(e) {
+        const object = e.detail;
+        object.isDeleted = true;
+        if (object.isNew)
+            this.splice("attribute.objects", this.attribute.objects.indexOf(object), 1);
+        this.attribute.isValueChanged = true;
+        this.attribute.parent.triggerDirty();
+        if (this.attribute.triggersRefresh)
+            this.attribute._triggerAttributeRefresh(true);
     }
     _setActiveObject(e) {
         if (!this.readOnly)
