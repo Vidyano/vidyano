@@ -512,7 +512,7 @@ export class QueryGrid extends WebComponent {
 
         if (this.columns) {
             const signature = (columns: QueryGridColumn[]) => columns.orderBy(c => c.name).map(c => c.name).join(";");
-            if (signature(columns) !== signature(this.columns))
+            if (signature(columns) !== signature(this.columns.filter(c => !c.isHidden)))
                 this._setInitializing(true);
         }
 
