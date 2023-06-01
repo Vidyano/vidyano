@@ -250,7 +250,7 @@ export class ActionButton extends ConfigurableWebComponent {
     }
 
     private _getPlacement(overflow: boolean, grouped: boolean) {
-        return overflow || grouped ? "top-end" : "bottom-start";
+        return overflow || grouped ? "right-start" : "bottom-start";
     }
 
     private _hiddenChanged() {
