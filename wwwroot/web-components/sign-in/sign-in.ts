@@ -497,13 +497,13 @@ export class SignIn extends WebComponent {
         this.updateStyles();
     }
 
-    private _tabInnerSizeChanged(e: CustomEvent, detail: { size: ISize; }) {
+    private _tabInnerSizeChanged(e: CustomEvent, detail: ISize) {
         e.stopPropagation();
 
-        if (!detail.size.height)
+        if (!detail.height)
             return;
 
         const tabPresenter = <PersistentObjectTabPresenter>e.currentTarget;
-        tabPresenter.style.height = `${detail.size.height}px`;
+        tabPresenter.style.height = `${detail.height}px`;
     }
 }
