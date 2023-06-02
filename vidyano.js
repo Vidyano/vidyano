@@ -13194,7 +13194,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.6.6";
+let version$2 = "3.6.7";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -46191,8 +46191,10 @@ let SignIn = class SignIn extends WebComponent {
                     this.app.changePath(decodeURIComponent(this.returnUrl || ""));
                 }
                 catch (e) {
-                    if (e === "Two-factor authentication enabled for user.")
+                    if (e === "Two-factor authentication enabled for user.") {
                         this.step = "twofactor";
+                        this._setNotification(null);
+                    }
                     else
                         throw e;
                 }
@@ -46271,10 +46273,10 @@ let SignIn = class SignIn extends WebComponent {
     }
     _tabInnerSizeChanged(e, detail) {
         e.stopPropagation();
-        if (!detail.size.height)
+        if (!detail.height)
             return;
         const tabPresenter = e.currentTarget;
-        tabPresenter.style.height = `${detail.size.height}px`;
+        tabPresenter.style.height = `${detail.height}px`;
     }
 };
 SignIn = __decorate([
@@ -52910,7 +52912,7 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
         return overflow || openOnHover;
     }
     _getPlacement(overflow, grouped) {
-        return overflow || grouped ? "top-end" : "bottom-start";
+        return overflow || grouped ? "right-start" : "bottom-start";
     }
     _hiddenChanged() {
         this.fire("sizechanged", null);
@@ -58349,7 +58351,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
         columns = columns.filter(c => !c.isHidden);
         if (this.columns) {
             const signature = (columns) => columns.orderBy(c => c.name).map(c => c.name).join(";");
-            if (signature(columns) !== signature(this.columns))
+            if (signature(columns) !== signature(this.columns.filter(c => !c.isHidden)))
                 this._setInitializing(true);
         }
         if (this.initializing) {
