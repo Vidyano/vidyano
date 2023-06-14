@@ -13194,7 +13194,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.7.0";
+let version$2 = "3.7.1";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -39202,7 +39202,7 @@ let AppRoutePresenter = class AppRoutePresenter extends WebComponent {
                 return;
             const mappedPathRoute = path != null ? Path.match(Path.routes.rootPath + path, true) : null;
             const newRoute = mappedPathRoute ? this._routeMap[AppBase.removeRootPath(mappedPathRoute.path)] : null;
-            if ((!this.service.isSignedIn || this.service.isUsingDefaultCredentials) && !newRoute?.allowSignedOut) {
+            if (!this.service.isSignedIn && !newRoute?.allowSignedOut) {
                 this.app.redirectToSignIn();
                 return;
             }
