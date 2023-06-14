@@ -98,7 +98,7 @@ export class AppRoutePresenter extends WebComponent {
             const mappedPathRoute = path != null ? Path.match(Path.routes.rootPath + path, true) : null;
             const newRoute = mappedPathRoute ? this._routeMap[AppBase.removeRootPath(mappedPathRoute.path)] : null;
 
-            if (!this.service.isSignedIn && (!newRoute || !newRoute.allowSignedOut)) {
+            if ((!this.service.isSignedIn || this.service.isUsingDefaultCredentials) && !newRoute?.allowSignedOut) {
                 this.app.redirectToSignIn();
                 return;
             }
