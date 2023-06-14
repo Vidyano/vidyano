@@ -21,6 +21,22 @@ import { WebComponent } from "../web-component/web-component.js"
             reflectToAttribute: true,
             value: true
         },
+        atBottom: {
+            type: Boolean,
+            readOnly: true,
+            reflectToAttribute: true
+        },
+        atStart: {
+            type: Boolean,
+            readOnly: true,
+            reflectToAttribute: true,
+            value: true
+        },
+        atEnd: {
+            type: Boolean,
+            readOnly: true,
+            reflectToAttribute: true
+        },
         outerWidth: {
             type: Number,
             notify: true,
@@ -131,6 +147,9 @@ export class Scroller extends WebComponent {
     readonly hovering: boolean; private _setHovering: (hovering: boolean) => void;
     readonly scrolling: string; private _setScrolling: (scrolling: string) => void;
     readonly atTop: boolean; private _setAtTop: (atTop: boolean) => void;
+    readonly atBottom: boolean; private _setAtBottom: (atBottom: boolean) => void;
+    readonly atStart: boolean; private _setAtStart: (atLeft: boolean) => void;
+    readonly atEnd: boolean; private _setAtEnd: (atRight: boolean) => void;
     readonly outerWidth: number; private _setOuterWidth: (width: number) => void;
     readonly outerHeight: number; private _setOuterHeight: (height: number) => void;
     readonly innerWidth: number; private _setInnerWidth: (width: number) => void;
@@ -308,11 +327,15 @@ export class Scroller extends WebComponent {
     }
 
     private _updateScrollOffsets() {
-        if (this.vertical)
+        if (this.vertical) {
             this._setAtTop((this.verticalScrollOffset = this.scroller.scrollTop) === 0);
+            this._setAtBottom(this.scroller.scrollTop + this.scroller.offsetHeight === this.scroller.scrollHeight);
+        }
 
-        if (this.horizontal)
-            this.horizontalScrollOffset = this.scroller.scrollLeft;
+        if (this.horizontal) {
+            this._setAtStart((this.horizontalScrollOffset = this.scroller.scrollLeft) === 0);
+            this._setAtEnd(this.scroller.scrollLeft + this.scroller.offsetWidth === this.scroller.scrollWidth);
+        }
     }
 
     private _verticalScrollOffsetChanged(newVerticalScrollOffset: number) {
