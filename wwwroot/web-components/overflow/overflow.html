@@ -9,7 +9,7 @@
     <vi-size-tracker on-sizechanged="_visibleContainerSizeChanged"></vi-size-tracker>
 </div>
 <vi-popup id="overflowPopup" on-popup-opening="_popupOpening" on-popup-closed="_popupClosed">
-    <vi-button slot="header" inverse label="&hellip;" part="button"></vi-button>
+    <vi-button slot="header" inverse label="[[_getLabel(label, type)]]" icon="[[_getIcon(icon, type)]]" part="button"></vi-button>
     <div id="overflowChildren" class="vertical layout">
         <slot id="overflow" name="overflow"></slot>
     </div>

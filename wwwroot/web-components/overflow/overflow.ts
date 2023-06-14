@@ -3,16 +3,26 @@ import "../popup/popup.js"
 import { Popup } from "../popup/popup.js"
 import { WebComponent} from "../web-component/web-component.js"
 
+export type OverflowType = "label" | "icon" | "icon-label";
+
 @WebComponent.register({
     properties: {
         hasOverflow: {
             type: Boolean,
             reflectToAttribute: true,
             readOnly: true
+        },
+        icon: {
+            type: String,
+        },
+        label: {
+            type: String,
+            value: "…"
+        },
+        type: {
+            type: String,
+            value: "label"
         }
-    },
-    listeners: {
-        "sizechanged": "_childSizechanged"
     }
 })
 export class Overflow extends WebComponent {
@@ -21,19 +31,13 @@ export class Overflow extends WebComponent {
     private _overflownChildren: HTMLElement[];
     private _previousHeight: number;
     readonly hasOverflow: boolean; private _setHasOverflow: (val: boolean) => void;
+    type: OverflowType;
 
     private _visibleContainerSizeChanged(e: Event, detail: { width: number; height: number }) {
-        this.$.visible.style.maxWidth = `${detail.width}px`;
-
-        if (this._previousHeight !== detail.height)
-            this.$.first.style.height = `${this._previousHeight = detail.height}px`;
-    }
-
-    private _childSizechanged() {
-        if ((<Popup>this.$.overflowPopup).open)
+        if (this._previousHeight === detail.height)
             return;
 
-        this._setHasOverflow(false);
+        this.$.first.style.height = `${this._previousHeight = detail.height}px`;
     }
 
     private _visibleSizeChanged(e: Event, detail: { width: number; height: number }) {
@@ -75,5 +79,13 @@ export class Overflow extends WebComponent {
         Polymer.flush();
 
         this._setHasOverflow(this._overflownChildren.some(child => child.offsetTop > 0));
+    }
+
+    private _getIcon(icon: string, type: OverflowType) {
+        return type === "icon" || type === "icon-label" ? icon : null;
+    }
+
+    private _getLabel(label: string, type: OverflowType) {
+        return type === "label" || type === "icon-label" ? label : null;
     }
 }
