@@ -13194,7 +13194,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.6.7";
+let version$2 = "3.7.0";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -37503,10 +37503,14 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
         this._updateScrollOffsets();
     }
     _updateScrollOffsets() {
-        if (this.vertical)
+        if (this.vertical) {
             this._setAtTop((this.verticalScrollOffset = this.scroller.scrollTop) === 0);
-        if (this.horizontal)
-            this.horizontalScrollOffset = this.scroller.scrollLeft;
+            this._setAtBottom(this.scroller.scrollTop + this.scroller.offsetHeight === this.scroller.scrollHeight);
+        }
+        if (this.horizontal) {
+            this._setAtStart((this.horizontalScrollOffset = this.scroller.scrollLeft) === 0);
+            this._setAtEnd(this.scroller.scrollLeft + this.scroller.offsetWidth === this.scroller.scrollWidth);
+        }
     }
     _verticalScrollOffsetChanged(newVerticalScrollOffset) {
         if (this.scroller.scrollTop === newVerticalScrollOffset)
@@ -37564,6 +37568,22 @@ Scroller = Scroller_1 = __decorate([
                 readOnly: true,
                 reflectToAttribute: true,
                 value: true
+            },
+            atBottom: {
+                type: Boolean,
+                readOnly: true,
+                reflectToAttribute: true
+            },
+            atStart: {
+                type: Boolean,
+                readOnly: true,
+                reflectToAttribute: true,
+                value: true
+            },
+            atEnd: {
+                type: Boolean,
+                readOnly: true,
+                reflectToAttribute: true
             },
             outerWidth: {
                 type: Number,
@@ -39182,7 +39202,7 @@ let AppRoutePresenter = class AppRoutePresenter extends WebComponent {
                 return;
             const mappedPathRoute = path != null ? Path.match(Path.routes.rootPath + path, true) : null;
             const newRoute = mappedPathRoute ? this._routeMap[AppBase.removeRootPath(mappedPathRoute.path)] : null;
-            if (!this.service.isSignedIn && (!newRoute || !newRoute.allowSignedOut)) {
+            if ((!this.service.isSignedIn || this.service.isUsingDefaultCredentials) && !newRoute?.allowSignedOut) {
                 this.app.redirectToSignIn();
                 return;
             }
@@ -77008,20 +77028,15 @@ let Overflow = class Overflow extends WebComponent {
     <vi-size-tracker on-sizechanged="_visibleContainerSizeChanged"></vi-size-tracker>
 </div>
 <vi-popup id="overflowPopup" on-popup-opening="_popupOpening" on-popup-closed="_popupClosed">
-    <vi-button slot="header" inverse label="&hellip;" part="button"></vi-button>
+    <vi-button slot="header" inverse label="[[_getLabel(label, type)]]" icon="[[_getIcon(icon, type)]]" part="button"></vi-button>
     <div id="overflowChildren" class="vertical layout">
         <slot id="overflow" name="overflow"></slot>
     </div>
 </vi-popup>`; }
     _visibleContainerSizeChanged(e, detail) {
-        this.$.visible.style.maxWidth = `${detail.width}px`;
-        if (this._previousHeight !== detail.height)
-            this.$.first.style.height = `${this._previousHeight = detail.height}px`;
-    }
-    _childSizechanged() {
-        if (this.$.overflowPopup.open)
+        if (this._previousHeight === detail.height)
             return;
-        this._setHasOverflow(false);
+        this.$.first.style.height = `${this._previousHeight = detail.height}px`;
     }
     _visibleSizeChanged(e, detail) {
         const popup = this.$.overflowPopup;
@@ -77056,6 +77071,12 @@ let Overflow = class Overflow extends WebComponent {
         flush$1();
         this._setHasOverflow(this._overflownChildren.some(child => child.offsetTop > 0));
     }
+    _getIcon(icon, type) {
+        return type === "icon" || type === "icon-label" ? icon : null;
+    }
+    _getLabel(label, type) {
+        return type === "label" || type === "icon-label" ? label : null;
+    }
 };
 Overflow = __decorate([
     WebComponent.register({
@@ -77064,10 +77085,18 @@ Overflow = __decorate([
                 type: Boolean,
                 reflectToAttribute: true,
                 readOnly: true
+            },
+            icon: {
+                type: String,
+            },
+            label: {
+                type: String,
+                value: "…"
+            },
+            type: {
+                type: String,
+                value: "label"
             }
-        },
-        listeners: {
-            "sizechanged": "_childSizechanged"
         }
     })
 ], Overflow);
