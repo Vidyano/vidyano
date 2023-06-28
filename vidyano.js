@@ -11128,6 +11128,11 @@ class ProgramUnitItemUrl extends ProgramUnitItem {
         super(service, unitItem, unitItem.objectId);
     }
 }
+class ProgramUnitItemSeparator extends ProgramUnitItem {
+    constructor(service, unitItem) {
+        super(service, unitItem);
+    }
+}
 
 class ProgramUnit extends ProgramUnitItem {
     constructor(service, routes, unit) {
@@ -11178,6 +11183,8 @@ class ProgramUnit extends ProgramUnitItem {
             return new ProgramUnitItemQuery(this.service, routes, itemData, this);
         if (itemData.persistentObject)
             return new ProgramUnitItemPersistentObject(this.service, routes, itemData, this);
+        if (itemData.isSeparator)
+            return new ProgramUnitItemSeparator(this.service, itemData);
         return new ProgramUnitItemUrl(this.service, itemData);
     }
 }
@@ -13194,7 +13201,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.7.1";
+let version$2 = "3.8.0";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -13933,6 +13940,7 @@ var Vidyano = /*#__PURE__*/Object.freeze({
 	ProgramUnitItemQuery: ProgramUnitItemQuery,
 	ProgramUnitItemPersistentObject: ProgramUnitItemPersistentObject,
 	ProgramUnitItemUrl: ProgramUnitItemUrl,
+	ProgramUnitItemSeparator: ProgramUnitItemSeparator,
 	Query: Query$1,
 	QueryChart: QueryChart,
 	QueryColumn: QueryColumn,
@@ -44598,6 +44606,25 @@ let MenuItem = MenuItem_1 = class MenuItem extends ConfigurableWebComponent {
 }
 :host(.program-unit) > .title > vi-icon + span {
   margin-left: var(--theme-h4);
+}
+:host([is-separator]) {
+  cursor: default;
+  --separator-height: var(--theme-h2);
+}
+:host([is-separator]) a {
+  height: var(--separator-height);
+  pointer-events: none;
+  position: relative;
+}
+:host([is-separator]) a > * {
+  display: none;
+}
+:host([is-separator]) a::after {
+  position: absolute;
+  inset: calc(var(--separator-height) / 2) var(--theme-h3) 0 calc(var(--theme-h3) + var(--theme-h3) * var(--vi-menu-item-indent-level, 0));
+  content: "";
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.2);
 }</style>
 
 <a class="title" href$="[[href]]" target$="[[target]]" rel$="[[rel]]">
@@ -44702,6 +44729,9 @@ let MenuItem = MenuItem_1 = class MenuItem extends ConfigurableWebComponent {
     _computedHasItems(item) {
         return (item instanceof ProgramUnit || item instanceof ProgramUnitItemGroup) && item.items.length > 0;
     }
+    _computedIsSeparator(item) {
+        return item instanceof ProgramUnitItemSeparator;
+    }
     _computedHref(item, app) {
         if (!item || !app)
             return undefined;
@@ -44792,6 +44822,11 @@ MenuItem = MenuItem_1 = __decorate([
                 type: Boolean,
                 reflectToAttribute: true,
                 computed: "_computedHasItems(item)"
+            },
+            isSeparator: {
+                type: Boolean,
+                reflectToAttribute: true,
+                computed: "_computedIsSeparator(item)"
             },
             icon: {
                 type: String,

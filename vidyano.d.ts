@@ -3797,6 +3797,9 @@ declare class ProgramUnitItemPersistentObject extends ProgramUnitItem {
 declare class ProgramUnitItemUrl extends ProgramUnitItem {
     constructor(service: Service, unitItem: any);
 }
+declare class ProgramUnitItemSeparator extends ProgramUnitItem {
+    constructor(service: Service, unitItem: any);
+}
 
 declare class ProgramUnit extends ProgramUnitItem {
     offset: number;
@@ -4220,6 +4223,8 @@ type vidyano_ProgramUnitItemPersistentObject = ProgramUnitItemPersistentObject;
 declare const vidyano_ProgramUnitItemPersistentObject: typeof ProgramUnitItemPersistentObject;
 type vidyano_ProgramUnitItemUrl = ProgramUnitItemUrl;
 declare const vidyano_ProgramUnitItemUrl: typeof ProgramUnitItemUrl;
+type vidyano_ProgramUnitItemSeparator = ProgramUnitItemSeparator;
+declare const vidyano_ProgramUnitItemSeparator: typeof ProgramUnitItemSeparator;
 type vidyano_ISortOption = ISortOption;
 type vidyano_IQuerySelectAll = IQuerySelectAll;
 type vidyano_QueryChart = QueryChart;
@@ -4316,6 +4321,7 @@ declare namespace vidyano {
     vidyano_ProgramUnitItemQuery as ProgramUnitItemQuery,
     vidyano_ProgramUnitItemPersistentObject as ProgramUnitItemPersistentObject,
     vidyano_ProgramUnitItemUrl as ProgramUnitItemUrl,
+    vidyano_ProgramUnitItemSeparator as ProgramUnitItemSeparator,
     vidyano_ISortOption as ISortOption,
     vidyano_IQuerySelectAll as IQuerySelectAll,
     Query$1 as Query,
@@ -10611,6 +10617,7 @@ declare class MenuItem extends ConfigurableWebComponent {
     private _updateItemTitle;
     private _computeIcon;
     private _computedHasItems;
+    private _computedIsSeparator;
     private _computedHref;
     private _computedTarget;
     private _computedRel;
