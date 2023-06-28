@@ -1,5 +1,5 @@
 import type { IRoutes } from "./application.js"
-import { ProgramUnitItem, ProgramUnitItemGroup, ProgramUnitItemPersistentObject, ProgramUnitItemQuery, ProgramUnitItemUrl } from "./program-unit-item.js"
+import { ProgramUnitItem, ProgramUnitItemGroup, ProgramUnitItemPersistentObject, ProgramUnitItemQuery, ProgramUnitItemSeparator, ProgramUnitItemUrl } from "./program-unit-item.js"
 import type { Service } from "./service.js"
 
 export class ProgramUnit extends ProgramUnitItem {
@@ -68,6 +68,9 @@ export class ProgramUnit extends ProgramUnitItem {
 
         if (itemData.persistentObject)
             return new ProgramUnitItemPersistentObject(this.service, routes, itemData, this);
+        
+        if (itemData.isSeparator)
+            return new ProgramUnitItemSeparator(this.service, itemData);
 
         return new ProgramUnitItemUrl(this.service, itemData);
     }

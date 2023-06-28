@@ -68,3 +68,9 @@ export class ProgramUnitItemUrl extends ProgramUnitItem {
         super(service, unitItem, unitItem.objectId);
     }
 }
+
+export class ProgramUnitItemSeparator extends ProgramUnitItem {
+    constructor(service: Service, unitItem: any) {
+        super(service, unitItem);
+    }
+}

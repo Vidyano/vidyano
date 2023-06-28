@@ -37,6 +37,11 @@ import { ConfigurableWebComponent } from "../web-component/web-component-configu
             reflectToAttribute: true,
             computed: "_computedHasItems(item)"
         },
+        isSeparator: {
+            type: Boolean,
+            reflectToAttribute: true,
+            computed: "_computedIsSeparator(item)"
+        },
         icon: {
             type: String,
             computed: "_computeIcon(item)"
@@ -218,6 +223,10 @@ export class MenuItem extends ConfigurableWebComponent {
 
     private _computedHasItems(item: Vidyano.ProgramUnitItem): boolean {
         return (item instanceof Vidyano.ProgramUnit || item instanceof Vidyano.ProgramUnitItemGroup) && item.items.length > 0;
+    }
+
+    private _computedIsSeparator(item: Vidyano.ProgramUnitItem): boolean {
+        return item instanceof Vidyano.ProgramUnitItemSeparator;
     }
 
     private _computedHref(item: Vidyano.ProgramUnitItem, app: App): string {

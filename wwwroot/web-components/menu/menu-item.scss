@@ -87,4 +87,27 @@ $backgroundColor: $blue-grey-900;
             }
         }
 	}
+
+    &[is-separator] {
+        cursor: default;
+        --separator-height: var(--theme-h2);
+
+        a {
+            height: var(--separator-height);
+            pointer-events: none;
+            position: relative;
+
+            > * {
+                display: none;
+            }
+
+            &::after {
+                position: absolute;
+                inset: calc(var(--separator-height) / 2) var(--theme-h3) 0 calc(var(--theme-h3) + var(--theme-h3) * var(--vi-menu-item-indent-level, 0));
+                content: "";
+                height: 1px;
+                background-color: rgba(255, 255, 255, .2);
+            }
+        }
+    }
 }
