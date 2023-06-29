@@ -13201,7 +13201,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.8.0";
+let version$2 = "3.8.1";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -51957,9 +51957,7 @@ let QueryGridColumnHeader = class QueryGridColumnHeader extends WebComponent {
   top: 0;
   bottom: 0;
   background-color: transparent;
-  z-index: 2;
   cursor: ew-resize;
-  -webkit-transform: translate3d(0.25em, 0, 0);
   transform: translate3d(0.25em, 0, 0);
 }
 :host(.resizing) .resizer::after, :host .resizer:hover::after {
@@ -62252,6 +62250,7 @@ let PersistentObjectAttributeDateTime = class PersistentObjectAttributeDateTime 
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
 }
 :host span#monthMode {
+  flex: 1;
   padding: 0 var(--theme-h5);
   cursor: default;
 }
@@ -62294,8 +62293,8 @@ let PersistentObjectAttributeDateTime = class PersistentObjectAttributeDateTime 
                 </dom-if>
                 <dom-if if="[[monthMode]]">
                     <template>
-                        <vi-sensitive id="monthMode" hidden$="[[!hasDateComponent]]" disabled="[[!sensitive]]">
-                            <span>[[attribute.displayValue]]</span>
+                        <vi-sensitive hidden$="[[!hasDateComponent]]" disabled="[[!sensitive]]">
+                            <span id="monthMode">[[attribute.displayValue]]</span>
                         </vi-sensitive>
                     </template>
                 </dom-if>
@@ -62575,13 +62574,11 @@ let PersistentObjectAttributeDateTime = class PersistentObjectAttributeDateTime 
     _computeCanClear(value, required) {
         return value != null && !required;
     }
-    _computeMonthMode(typeHints) {
-        if (!typeHints.displayFormat)
-            return false;
-        return typeHints.displayFormat === "{0:y}";
+    _computeMonthMode(attribute) {
+        return attribute?.getTypeHint("displayformat", "").toLowerCase() === "{0:y}";
     }
-    _computeMinMaxDate(typeHints, hint) {
-        const date = typeHints[hint];
+    _computeMinMaxDate(attribute, hint) {
+        const date = attribute.getTypeHint(hint);
         if (!date)
             return null;
         return moment(date, "YYYY-MM-DD").toDate();
@@ -62641,15 +62638,15 @@ PersistentObjectAttributeDateTime = __decorate([
             },
             monthMode: {
                 type: Boolean,
-                computed: "_computeMonthMode(attribute.typeHints)"
+                computed: "_computeMonthMode(attribute)"
             },
             minDate: {
                 type: Object,
-                computed: "_computeMinMaxDate(attribute.typeHints, 'mindate')"
+                computed: "_computeMinMaxDate(attribute, 'mindate')"
             },
             maxDate: {
                 type: Object,
-                computed: "_computeMinMaxDate(attribute.typeHints, 'maxdate')"
+                computed: "_computeMinMaxDate(attribute, 'maxdate')"
             }
         },
         observers: [
