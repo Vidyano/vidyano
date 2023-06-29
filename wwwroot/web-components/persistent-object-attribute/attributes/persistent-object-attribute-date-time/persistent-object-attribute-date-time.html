@@ -35,8 +35,8 @@
                 </dom-if>
                 <dom-if if="[[monthMode]]">
                     <template>
-                        <vi-sensitive id="monthMode" hidden$="[[!hasDateComponent]]" disabled="[[!sensitive]]">
-                            <span>[[attribute.displayValue]]</span>
+                        <vi-sensitive hidden$="[[!hasDateComponent]]" disabled="[[!sensitive]]">
+                            <span id="monthMode">[[attribute.displayValue]]</span>
                         </vi-sensitive>
                     </template>
                 </dom-if>

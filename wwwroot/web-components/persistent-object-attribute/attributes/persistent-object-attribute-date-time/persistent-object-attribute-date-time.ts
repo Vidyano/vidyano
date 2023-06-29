@@ -49,15 +49,15 @@ import '../../../date-picker/date-picker.js'
         },
         monthMode: {
             type: Boolean,
-            computed: "_computeMonthMode(attribute.typeHints)"
+            computed: "_computeMonthMode(attribute)"
         },
         minDate: {
             type: Object,
-            computed: "_computeMinMaxDate(attribute.typeHints, 'mindate')"
+            computed: "_computeMinMaxDate(attribute, 'mindate')"
         },
         maxDate: {
             type: Object,
-            computed: "_computeMinMaxDate(attribute.typeHints, 'maxdate')"
+            computed: "_computeMinMaxDate(attribute, 'maxdate')"
         }
     },
     observers: [
@@ -395,15 +395,12 @@ export class PersistentObjectAttributeDateTime extends PersistentObjectAttribute
         return value != null && !required;
     }
 
-    private _computeMonthMode(typeHints: any): boolean {
-        if (!typeHints.displayFormat)
-            return false;
-
-        return typeHints.displayFormat === "{0:y}";
+    private _computeMonthMode(attribute: Vidyano.PersistentObjectAttribute): boolean {
+        return attribute?.getTypeHint("displayformat", "").toLowerCase() === "{0:y}";
     }
 
-    private _computeMinMaxDate(typeHints: any, hint: string): Date {
-        const date = typeHints[hint];
+    private _computeMinMaxDate(attribute: Vidyano.PersistentObjectAttribute, hint: string): Date {
+        const date = attribute.getTypeHint(hint);
         if (!date)
             return null;
 
