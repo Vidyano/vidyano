@@ -340,10 +340,10 @@ export class Select extends WebComponent {
         if (filtering) {
             if (!String.isNullOrEmpty(inputValue)) {
                 const lowerInputValue = inputValue.toLowerCase();
-                result = result.filter(r => r != null && r.displayValue && r.displayValue.toLowerCase().startsWith(lowerInputValue));
+                result = result.filter(r => r != null && r.displayValue && r.displayValue.toLowerCase().contains(lowerInputValue));
 
                 if (!this.suggestion || result.indexOf(this.suggestion) < 0)
-                    this._setSuggestion(result[0] !== undefined ? result[0] : null);
+                    this._setSuggestion(result[0] !== undefined && result[0].displayValue.toLowerCase().startsWith(lowerInputValue) ? result[0] : null);
             }
             else {
                 let suggestion: ISelectItem;
