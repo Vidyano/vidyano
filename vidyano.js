@@ -13201,7 +13201,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.8.2";
+let version$2 = "3.9.0-preview1";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -39251,21 +39251,19 @@ AppRoutePresenter = __decorate([
     })
 ], AppRoutePresenter);
 
-class DialogCore extends mixinBehaviors(IronOverlayBehavior, PolymerElement) {
-    static get template() { return html `<style>:host {
+let Dialog = class Dialog extends WebComponent {
+    static dialogTemplate(innerTemplate) {
+        const outerTemplate = html `<style>:host dialog {
+  border: none;
   background: white;
   box-shadow: rgba(0, 0, 0, 0.24) -2px 5px 12px 0px, rgba(0, 0, 0, 0.12) 0px 0px 12px 0px;
-}</style>
-
-<slot></slot>`; }
+  outline: none;
+  padding: 0;
 }
-customElements.define("vi-dialog-core", DialogCore);
-let Dialog = class Dialog extends WebComponent {
-    static dialogTemplate(dialog) {
-        const template = html `<style>:host vi-dialog-core > header, :host vi-dialog-core > footer {
+:host dialog > header, :host dialog > footer {
   background-color: #FAFAFA;
 }
-:host vi-dialog-core > header {
+:host dialog > header {
   position: relative;
   flex: 0 0 auto;
   line-height: var(--theme-h1);
@@ -39274,7 +39272,7 @@ let Dialog = class Dialog extends WebComponent {
   border-bottom: 1px solid #EEE;
   box-sizing: border-box;
 }
-:host vi-dialog-core > header h4 {
+:host dialog > header h4 {
   margin: 0;
   font-weight: 500;
   font-size: 120%;
@@ -39282,7 +39280,7 @@ let Dialog = class Dialog extends WebComponent {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-:host vi-dialog-core > header vi-button.close {
+:host dialog > header vi-button.close {
   margin: 0;
   padding: 0 var(--theme-h5);
   fill: #888;
@@ -39290,135 +39288,85 @@ let Dialog = class Dialog extends WebComponent {
   border: none;
   cursor: pointer;
 }
-:host vi-dialog-core > header vi-button.close:hover {
+:host dialog > header vi-button.close:hover {
   fill: #555;
 }
-:host vi-dialog-core > header vi-button.close:active {
+:host dialog > header vi-button.close:active {
   fill: #333;
 }
-:host vi-dialog-core > header vi-button.close:focus {
+:host dialog > header vi-button.close:focus {
   outline: none;
 }
-:host vi-dialog-core > footer {
+:host dialog > footer {
   padding: var(--theme-h4);
   border-top: 1px solid #EEE;
   flex: 0 0 auto;
 }
-:host vi-dialog-core > footer vi-button {
+:host dialog > footer vi-button {
   line-height: var(--theme-h2);
   padding: 0 var(--theme-h4);
 }
-:host vi-dialog-core > footer vi-button:not(:first-of-type) {
+:host dialog > footer vi-button:not(:first-of-type) {
   margin-left: var(--theme-h5);
 }
-:host vi-dialog-core > main {
+:host dialog > main {
   position: relative;
   z-index: 1;
 }</style>
 
-<vi-dialog-core with-backdrop>
-    <vi-size-tracker on-sizechanged="_sizechanged"></vi-size-tracker>
-</vi-dialog-core>`;
-        const dialogCore = template.content.querySelector("vi-dialog-core");
-        dialogCore.appendChild(dialog.content.cloneNode(true));
-        return template;
+<dialog on-close="_onClose" on-cancel="_onCancel" on-click="_onClick"></dialog>`;
+        const dialog = outerTemplate.content.querySelector("dialog");
+        dialog.appendChild(innerTemplate.content.cloneNode(true));
+        return outerTemplate;
     }
-    connectedCallback() {
-        super.connectedCallback();
-        this.noCancelOnOutsideClick = true;
-    }
-    get noCancelOnOutsideClick() {
-        return this.dialogCore.noCancelOnOutsideClick;
-    }
-    set noCancelOnOutsideClick(noCancelOnOutsideClick) {
-        this.dialogCore.noCancelOnOutsideClick = noCancelOnOutsideClick;
-    }
-    get noCancelOnEscKey() {
-        return this.dialogCore.noCancelOnEscKey;
-    }
-    set noCancelOnEscKey(noCancelOnEscKey) {
-        this.dialogCore.noCancelOnEscKey = noCancelOnEscKey;
-    }
-    get dialogCore() {
-        return this.shadowRoot.querySelector("vi-dialog-core");
+    get dialog() {
+        return this.shadowRoot.querySelector("dialog");
     }
     async open() {
-        this.dialogCore.open();
-        const promise = new Promise(resolve => {
+        this.dialog.showModal();
+        return new Promise(resolve => {
             this._resolve = resolve;
         });
-        const header = this.shadowRoot.querySelector("header");
-        if (header) {
-            const _track = this._track.bind(this);
-            addListener(header, "track", _track);
-            promise.finally(() => {
-                removeListener(header, "track", _track);
-            });
-        }
-        return promise;
     }
     _esc(e) {
         if (!this.noCancelOnEscKey)
             this.cancel();
     }
     close(result) {
-        this._resolve(result);
+        this.dialog.close(result);
     }
     cancel() {
-        this.dialogCore.close();
+        this.dialog.close();
     }
-    _onClosed() {
-        this._resolve();
+    _onClose() {
+        this._resolve(this.dialog.returnValue);
     }
-    _sizechanged(e) {
-        this.dialogCore.notifyResize();
-        e.stopPropagation();
+    _onCancel(e) {
+        if (this.noCancelOnEscKey)
+            e.preventDefault();
     }
-    _track(e) {
-        if (e.detail.state === "track" && this._translatePosition && this.app.isTracking) {
-            this._translate({
-                x: this._translatePosition.x + e.detail.ddx,
-                y: this._translatePosition.y + e.detail.ddy
-            });
-        }
-        else if (e.detail.state === "start") {
-            const path = e.composedPath();
-            if (path[0] instanceof HTMLInputElement) {
-                e.preventDefault();
-                e.stopPropagation();
-                return;
-            }
-            if (!(e.currentTarget).tagName.startsWith("H")) {
-                e.stopPropagation();
-                e.preventDefault();
-                return;
-            }
-            this.app.isTracking = true;
-            if (!this._translatePosition)
-                this._translate({ x: 0, y: 0 });
-            this.setAttribute("dragging", "");
-        }
-        else if (e.detail.state === "end") {
-            this.removeAttribute("dragging");
-            this.app.isTracking = false;
-        }
-    }
-    _translate(position) {
-        this._translatePosition = position;
-        this.dialogCore.style.transform = `translate(${position.x}px, ${position.y}px)`;
+    _onClick(e) {
+        if (this.noCancelOnOutsideClick)
+            return;
+        const rect = this.dialog.getBoundingClientRect();
+        const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
+            rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
+        if (!isInDialog)
+            this.dialog.close();
     }
 };
 Dialog = __decorate([
     WebComponent.register({
         properties: {
+            noCancelOnOutsideClick: {
+                type: Boolean,
+                value: true,
+            },
+            noCancelOnEscKey: Boolean,
             noHeader: {
                 type: Boolean,
                 reflectToAttribute: true
             }
-        },
-        listeners: {
-            "iron-overlay-closed": "_onClosed",
-            "iron-overlay-canceled": "cancel"
         },
         keybindings: {
             "esc": "_esc"
@@ -52272,7 +52220,7 @@ QueryGridFilterDialogName = __decorate([
 ], QueryGridFilterDialogName);
 
 let QueryGridFilterDialog = class QueryGridFilterDialog extends Dialog {
-    static get template() { return Dialog.dialogTemplate(html `<style>:host vi-dialog-core {
+    static get template() { return Dialog.dialogTemplate(html `<style>:host dialog {
   min-width: 400px;
 }
 :host main {
@@ -81569,4 +81517,4 @@ QueryPresenter = __decorate([
     })
 ], QueryPresenter);
 
-export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppRoute, AppRoutePresenter, AppServiceHooks, AppServiceHooksBase, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, DialogCore, Error$1 as Error, FileDrop, Icon, iconRegister as IconRegister, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeIcon, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellDefault, QueryGridCellImage, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, SelectOptionItem, SelectReferenceDialog, Sensitive, SessionPresenter, SignIn, SignOut, SizeTracker, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, Vidyano, WebComponent, moment };
+export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppRoute, AppRoutePresenter, AppServiceHooks, AppServiceHooksBase, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, Error$1 as Error, FileDrop, Icon, iconRegister as IconRegister, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeIcon, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellDefault, QueryGridCellImage, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, SelectOptionItem, SelectReferenceDialog, Sensitive, SessionPresenter, SignIn, SignOut, SizeTracker, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, Vidyano, WebComponent, moment };
