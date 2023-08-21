@@ -13201,7 +13201,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.9.0-preview1";
+let version$2 = "3.9.0-preview2";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -39253,17 +39253,17 @@ AppRoutePresenter = __decorate([
 
 let Dialog = class Dialog extends WebComponent {
     static dialogTemplate(innerTemplate) {
-        const outerTemplate = html `<style>:host dialog {
+        const outerTemplate = html `<style>dialog {
   border: none;
   background: white;
   box-shadow: rgba(0, 0, 0, 0.24) -2px 5px 12px 0px, rgba(0, 0, 0, 0.12) 0px 0px 12px 0px;
   outline: none;
   padding: 0;
 }
-:host dialog > header, :host dialog > footer {
+dialog > header, dialog > footer {
   background-color: #FAFAFA;
 }
-:host dialog > header {
+dialog > header {
   position: relative;
   flex: 0 0 auto;
   line-height: var(--theme-h1);
@@ -39272,7 +39272,7 @@ let Dialog = class Dialog extends WebComponent {
   border-bottom: 1px solid #EEE;
   box-sizing: border-box;
 }
-:host dialog > header h4 {
+dialog > header h4 {
   margin: 0;
   font-weight: 500;
   font-size: 120%;
@@ -39280,7 +39280,7 @@ let Dialog = class Dialog extends WebComponent {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-:host dialog > header vi-button.close {
+dialog > header vi-button.close {
   margin: 0;
   padding: 0 var(--theme-h5);
   fill: #888;
@@ -39288,33 +39288,37 @@ let Dialog = class Dialog extends WebComponent {
   border: none;
   cursor: pointer;
 }
-:host dialog > header vi-button.close:hover {
+dialog > header vi-button.close:hover {
   fill: #555;
 }
-:host dialog > header vi-button.close:active {
+dialog > header vi-button.close:active {
   fill: #333;
 }
-:host dialog > header vi-button.close:focus {
+dialog > header vi-button.close:focus {
   outline: none;
 }
-:host dialog > footer {
+dialog > footer {
   padding: var(--theme-h4);
   border-top: 1px solid #EEE;
   flex: 0 0 auto;
 }
-:host dialog > footer vi-button {
+dialog > footer vi-button {
   line-height: var(--theme-h2);
   padding: 0 var(--theme-h4);
 }
-:host dialog > footer vi-button:not(:first-of-type) {
+dialog > footer vi-button:not(:first-of-type) {
   margin-left: var(--theme-h5);
 }
-:host dialog > main {
+dialog > main {
   position: relative;
   z-index: 1;
+}
+dialog[dragging] {
+  pointer-events: none;
+  user-select: none;
 }</style>
 
-<dialog on-close="_onClose" on-cancel="_onCancel" on-click="_onClick"></dialog>`;
+<dialog on-close="_onClose" on-cancel="_onCancel" on-click="_onClick" dragging$="[[dragging]]"></dialog>`;
         const dialog = outerTemplate.content.querySelector("dialog");
         dialog.appendChild(innerTemplate.content.cloneNode(true));
         return outerTemplate;
@@ -39324,9 +39328,57 @@ let Dialog = class Dialog extends WebComponent {
     }
     async open() {
         this.dialog.showModal();
-        return new Promise(resolve => {
+        const promise = new Promise(resolve => {
             this._resolve = resolve;
         });
+        const header = this.shadowRoot.querySelector("header");
+        if (header) {
+            const _track = this._track.bind(this);
+            addListener(header, "track", _track);
+            promise.finally(() => {
+                removeListener(header, "track", _track);
+            });
+        }
+        return promise;
+    }
+    _track(e) {
+        if (e.detail.state === "track" && this._translatePosition && this.dragging) {
+            const rect = this.dialog.getBoundingClientRect();
+            let x = this._translatePosition.x + e.detail.ddx * 2;
+            let y = this._translatePosition.y + e.detail.ddy * 2;
+            if (x < 0)
+                x = Math.max(x, (window.innerWidth - rect.width) * -1);
+            else if (x > 0)
+                x = Math.min(x, window.innerWidth - rect.width);
+            if (y < 0)
+                y = Math.max(y, (window.innerHeight - rect.height) * -1);
+            else if (y > 0)
+                y = Math.min(y, window.innerHeight - rect.height);
+            this._translate({ x, y });
+        }
+        else if (e.detail.state === "start") {
+            const path = e.composedPath();
+            if (path[0] instanceof HTMLInputElement) {
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+            }
+            if (!(e.currentTarget).tagName.startsWith("H")) {
+                e.stopPropagation();
+                e.preventDefault();
+                return;
+            }
+            this._setDragging(true);
+            if (!this._translatePosition)
+                this._translate({ x: 0, y: 0 });
+        }
+        else if (e.detail.state === "end")
+            this._setDragging(false);
+    }
+    _translate(position) {
+        const { x, y } = this._translatePosition = position;
+        this.dialog.style.left = `${x}px`;
+        this.dialog.style.top = `${y}px`;
     }
     _esc(e) {
         if (!this.noCancelOnEscKey)
@@ -39358,6 +39410,11 @@ let Dialog = class Dialog extends WebComponent {
 Dialog = __decorate([
     WebComponent.register({
         properties: {
+            dragging: {
+                type: Boolean,
+                readOnly: true,
+                reflectToAttribute: true
+            },
             noCancelOnOutsideClick: {
                 type: Boolean,
                 value: true,

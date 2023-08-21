@@ -9667,11 +9667,16 @@ declare class SizeTracker extends WebComponent {
 declare abstract class Dialog extends WebComponent {
     static dialogTemplate(innerTemplate: HTMLTemplateElement): HTMLTemplateElement;
     private _resolve;
+    private _translatePosition;
+    readonly dragging: boolean;
+    private _setDragging;
     noHeader: boolean;
     noCancelOnOutsideClick: boolean;
     noCancelOnEscKey: boolean;
     private get dialog();
     open(): Promise<any>;
+    private _track;
+    private _translate;
     private _esc;
     close(result?: any): void;
     cancel(): void;
