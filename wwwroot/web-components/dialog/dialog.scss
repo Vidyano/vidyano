@@ -1,73 +1,76 @@
-:host {
-    dialog {
-        border: none;
-        background: white;
-        box-shadow: rgba(0, 0, 0, 0.24) -2px 5px 12px 0px, rgba(0, 0, 0, 0.12) 0px 0px 12px 0px;
-        outline: none;
-        padding: 0;
+dialog {
+    border: none;
+    background: white;
+    box-shadow: rgba(0, 0, 0, 0.24) -2px 5px 12px 0px, rgba(0, 0, 0, 0.12) 0px 0px 12px 0px;
+    outline: none;
+    padding: 0;
 
-        > header, > footer {
-            background-color: #FAFAFA;
+    > header, > footer {
+        background-color: #FAFAFA;
+    }
+
+    > header {
+        position: relative;
+        flex: 0 0 auto;
+        line-height: var(--theme-h1);
+        padding: var(--theme-h5) var(--theme-h4);
+        height: calc(var(--theme-h1) + var(--theme-h5) * 2);
+        border-bottom: 1px solid #EEE;
+        box-sizing: border-box;
+
+        h4 {
+            margin: 0;
+            font-weight: 500;
+            font-size: 120%;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
 
-        > header {
-            position: relative;
-            flex: 0 0 auto;
-            line-height: var(--theme-h1);
-            padding: var(--theme-h5) var(--theme-h4);
-            height: calc(var(--theme-h1) + var(--theme-h5) * 2);
-            border-bottom: 1px solid #EEE;
-            box-sizing: border-box;
+        vi-button.close {
+            margin: 0;
+            padding: 0 var(--theme-h5);
+            fill: #888;
+            background: none;
+            border: none;
+            cursor: pointer;
 
-            h4 {
-                margin: 0;
-                font-weight: 500;
-                font-size: 120%;
-                overflow: hidden;
-                white-space: nowrap;
-                text-overflow: ellipsis;
+            &:hover {
+                fill: #555;
             }
 
-            vi-button.close {
-                margin: 0;
-                padding: 0 var(--theme-h5);
-                fill: #888;
-                background: none;
-                border: none;
-                cursor: pointer;
+            &:active {
+                fill: #333;
+            }
 
-                &:hover {
-                    fill: #555;
-                }
-
-                &:active {
-                    fill: #333;
-                }
-
-                &:focus {
-                    outline: none;
-                }
+            &:focus {
+                outline: none;
             }
         }
+    }
 
-        > footer {
-            padding: var(--theme-h4);
-            border-top: 1px solid #EEE;
-            flex: 0 0 auto;
+    > footer {
+        padding: var(--theme-h4);
+        border-top: 1px solid #EEE;
+        flex: 0 0 auto;
 
-            vi-button {
-                line-height: var(--theme-h2);
-                padding: 0 var(--theme-h4);
+        vi-button {
+            line-height: var(--theme-h2);
+            padding: 0 var(--theme-h4);
 
-                &:not(:first-of-type) {
-                    margin-left: var(--theme-h5);
-                }
+            &:not(:first-of-type) {
+                margin-left: var(--theme-h5);
             }
         }
+    }
 
-        > main {
-            position: relative;
-            z-index: 1;
-        }
+    > main {
+        position: relative;
+        z-index: 1;
+    }
+
+    &[dragging] {
+        pointer-events: none;
+        user-select: none;
     }
 }
