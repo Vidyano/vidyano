@@ -10,7 +10,6 @@ let resizeObserver: ResizeObserver;
 resizeObserver = new ResizeObserver(allEntries => {
     window.requestAnimationFrame(() => {
         // Entries may be batched for multiple grids, make sure the event is dispatched to the correct grid
-    
         const parents = new Map<HTMLElement, ResizeObserverEntry[]>();
         allEntries.forEach(e => {
             const parent = parents.get(e.target.parentElement) || parents.set(e.target.parentElement, []).get(e.target.parentElement);
@@ -77,6 +76,11 @@ resizeObserver = new ResizeObserver(allEntries => {
             type: Boolean,
             readOnly: true,
             value: false
+        },
+        name: {
+            type: String,
+            reflectToAttribute: true,
+            computed: "_computeName(column)"
         }
     },
     forwardObservers: [
@@ -108,7 +112,7 @@ export class QueryGridColumnHeader extends WebComponent {
 
         this._setRenderPopupMenu(true);
         Polymer.flush();
-        
+
         const menu = <PopupMenu>this.shadowRoot.querySelector("#menu");
         menu.popup();
     }
@@ -116,7 +120,7 @@ export class QueryGridColumnHeader extends WebComponent {
     private _columnChanged(column: QueryGridColumn, oldColumn: QueryGridColumn) {
         if (!column)
             return;
-        
+
         this._setCanSort(column.canSort);
         this._setCanGroupBy(column.canGroupBy);
         this._setIsPinned(column.isPinned);
@@ -166,7 +170,7 @@ export class QueryGridColumnHeader extends WebComponent {
         this.column.column.sort(newSortingDirection, multiSort);
     }
 
-    private _onContextmenu(e: Event) {        
+    private _onContextmenu(e: Event) {
         this._renderPopupMenu(e);
         e.preventDefault();
     }
@@ -249,5 +253,9 @@ export class QueryGridColumnHeader extends WebComponent {
             cancelable: true,
             composed: true
         }));
+    }
+
+    private _computeName(column: QueryGridColumn) {
+        return column.safeName;
     }
 }

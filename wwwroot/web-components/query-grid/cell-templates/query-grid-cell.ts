@@ -44,6 +44,11 @@ resizeObserver = new ResizeObserver(allEntries => {
             type: Boolean,
             readOnly: true,
             reflectToAttribute: true
+        },
+        name: {
+            type: String,
+            reflectToAttribute: true,
+            computed: "_computeName(column)"
         }
     },
     observers: [
@@ -119,6 +124,10 @@ export abstract class QueryGridCell extends WebComponent {
     _unobserve() {
         resizeObserver.unobserve(this);
         this.#_isObserved = false;
+    }
+
+    private _computeName(column: Vidyano.QueryColumn) {
+        return column.safeName;
     }
 
     static registerCellType(type: string, constructor: QueryGridCellConstructor) {
