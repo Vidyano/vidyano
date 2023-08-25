@@ -33,6 +33,7 @@ export abstract class Dialog extends WebComponent {
         return outerTemplate;
     }
 
+    #result: any;
     private _resolve: Function;
     private _translatePosition: IPosition; 
     readonly dragging: boolean; private _setDragging: (value: boolean) => void;
@@ -121,20 +122,23 @@ export abstract class Dialog extends WebComponent {
     }
 
     close(result?: any) {
-        this.dialog.close(result);
-    }
-
-    cancel() {
+        this.#result = result;
         this.dialog.close();
     }
 
+    cancel() {
+        this.close();
+    }
+
     private _onClose() {
-        this._resolve(this.dialog.returnValue);
+        this._resolve(this.#result);
     }
 
     private _onCancel(e: Event) {
         if (this.noCancelOnEscKey)
             e.preventDefault();
+
+        this.#result = undefined;
     }
 
     private _onClick(e: MouseEvent) {
