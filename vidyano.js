@@ -13201,7 +13201,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.9.0-preview2";
+let version$2 = "3.9.0-preview3";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -39251,7 +39251,12 @@ AppRoutePresenter = __decorate([
     })
 ], AppRoutePresenter);
 
+var _Dialog_result;
 let Dialog = class Dialog extends WebComponent {
+    constructor() {
+        super(...arguments);
+        _Dialog_result.set(this, void 0);
+    }
     static dialogTemplate(innerTemplate) {
         const outerTemplate = html `<style>dialog {
   border: none;
@@ -39385,17 +39390,19 @@ dialog[dragging] {
             this.cancel();
     }
     close(result) {
-        this.dialog.close(result);
-    }
-    cancel() {
+        __classPrivateFieldSet(this, _Dialog_result, result, "f");
         this.dialog.close();
     }
+    cancel() {
+        this.close();
+    }
     _onClose() {
-        this._resolve(this.dialog.returnValue);
+        this._resolve(__classPrivateFieldGet(this, _Dialog_result, "f"));
     }
     _onCancel(e) {
         if (this.noCancelOnEscKey)
             e.preventDefault();
+        __classPrivateFieldSet(this, _Dialog_result, undefined, "f");
     }
     _onClick(e) {
         if (this.noCancelOnOutsideClick)
@@ -39407,6 +39414,7 @@ dialog[dragging] {
             this.dialog.close();
     }
 };
+_Dialog_result = new WeakMap();
 Dialog = __decorate([
     WebComponent.register({
         properties: {

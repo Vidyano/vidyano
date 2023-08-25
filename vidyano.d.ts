@@ -9665,6 +9665,7 @@ declare class SizeTracker extends WebComponent {
 }
 
 declare abstract class Dialog extends WebComponent {
+    #private;
     static dialogTemplate(innerTemplate: HTMLTemplateElement): HTMLTemplateElement;
     private _resolve;
     private _translatePosition;
