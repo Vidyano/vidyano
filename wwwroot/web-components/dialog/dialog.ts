@@ -4,7 +4,11 @@ import { IPosition, WebComponent } from "../web-component/web-component.js"
 
 @WebComponent.register({
     properties: {
-        dragging: {
+        anchorTag: {
+            type: String,
+            value: "header"
+        },
+        isDragging: {
             type: Boolean,
             readOnly: true,
             reflectToAttribute: true
@@ -13,11 +17,7 @@ import { IPosition, WebComponent } from "../web-component/web-component.js"
             type: Boolean,
             value: true,
         },
-        noCancelOnEscKey: Boolean,
-        noHeader: {
-            type: Boolean,
-            reflectToAttribute: true
-        }
+        noCancelOnEscKey: Boolean
     },
     keybindings: {
         "esc": "_esc"
@@ -36,8 +36,8 @@ export abstract class Dialog extends WebComponent {
     #result: any;
     private _resolve: Function;
     private _translatePosition: IPosition; 
-    readonly dragging: boolean; private _setDragging: (value: boolean) => void;
-    noHeader: boolean;
+    readonly isDragging: boolean; private _setIsDragging: (isDragging: boolean) => void;
+    anchorTag: string;
     noCancelOnOutsideClick: boolean;
     noCancelOnEscKey: boolean;
 
@@ -52,13 +52,13 @@ export abstract class Dialog extends WebComponent {
             this._resolve = resolve;
         });
 
-        const header = <HTMLElement>this.shadowRoot.querySelector("header");
-        if (header) {
+        const anchor = !!this.anchorTag ? <HTMLElement>this.shadowRoot.querySelector(this.anchorTag) : null;
+        if (anchor) {
             const _track = this._track.bind(this);
-            Polymer.Gestures.addListener(header, "track", _track);
+            Polymer.Gestures.addListener(anchor, "track", _track);
 
             promise.finally(() => {
-                Polymer.Gestures.removeListener(header, "track", _track);
+                Polymer.Gestures.removeListener(anchor, "track", _track);
             });
         }
 
@@ -66,7 +66,7 @@ export abstract class Dialog extends WebComponent {
     }
 
     private _track(e: Polymer.Gestures.TrackEvent) {
-        if (e.detail.state === "track" && this._translatePosition && this.dragging) {
+        if (e.detail.state === "track" && this._translatePosition && this.isDragging) {
             const rect = this.dialog.getBoundingClientRect();
 
             // Factor 2 is to align the speed of the dialog with the mouse
@@ -101,12 +101,12 @@ export abstract class Dialog extends WebComponent {
                 return;
             }
 
-            this._setDragging(true);
+            this._setIsDragging(true);
             if (!this._translatePosition)
                 this._translate({ x: 0, y: 0 });
         }
         else if (e.detail.state === "end")
-            this._setDragging(false);
+            this._setIsDragging(false);
     } 
 
     private _translate(position: IPosition) { 

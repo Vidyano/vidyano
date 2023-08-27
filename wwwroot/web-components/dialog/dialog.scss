@@ -69,7 +69,7 @@ dialog {
         z-index: 1;
     }
 
-    &[dragging] {
+    &[is-dragging] {
         pointer-events: none;
         user-select: none;
     }
