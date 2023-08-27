@@ -2,6 +2,10 @@ import * as Polymer from "../../libs/polymer/polymer.js"
 import "../size-tracker/size-tracker.js"
 import { IPosition, WebComponent } from "../web-component/web-component.js"
 
+export interface IDialogOptions {
+    omitStyle?: boolean
+}
+
 @WebComponent.register({
     properties: {
         anchorTag: {
@@ -25,8 +29,11 @@ import { IPosition, WebComponent } from "../web-component/web-component.js"
     mediaQueryAttributes: true
 })
 export abstract class Dialog extends WebComponent {
-    static dialogTemplate(innerTemplate: HTMLTemplateElement) {
+    static dialogTemplate(innerTemplate: HTMLTemplateElement, options?: IDialogOptions) {
         const outerTemplate = Polymer.html`<link rel="import" href="dialog.html">`;
+        if (options?.omitStyle)
+            outerTemplate.content.querySelector("style").remove();
+
         const dialog = outerTemplate.content.querySelector("dialog") as HTMLDialogElement;
         dialog.appendChild(innerTemplate.content.cloneNode(true));
 
@@ -34,9 +41,10 @@ export abstract class Dialog extends WebComponent {
     }
 
     #result: any;
-    private _resolve: Function;
-    private _translatePosition: IPosition; 
+    #resolve: Function;
+    #translatePosition: IPosition; 
     readonly isDragging: boolean; private _setIsDragging: (isDragging: boolean) => void;
+
     anchorTag: string;
     noCancelOnOutsideClick: boolean;
     noCancelOnEscKey: boolean;
@@ -49,7 +57,7 @@ export abstract class Dialog extends WebComponent {
         this.dialog.showModal();
 
         const promise = new Promise<any>(resolve => {
-            this._resolve = resolve;
+            this.#resolve = resolve;
         });
 
         const anchor = !!this.anchorTag ? <HTMLElement>this.shadowRoot.querySelector(this.anchorTag) : null;
@@ -66,12 +74,12 @@ export abstract class Dialog extends WebComponent {
     }
 
     private _track(e: Polymer.Gestures.TrackEvent) {
-        if (e.detail.state === "track" && this._translatePosition && this.isDragging) {
+        if (e.detail.state === "track" && this.#translatePosition && this.isDragging) {
             const rect = this.dialog.getBoundingClientRect();
 
             // Factor 2 is to align the speed of the dialog with the mouse
-            let x = this._translatePosition.x + e.detail.ddx * 2;
-            let y = this._translatePosition.y + e.detail.ddy * 2;
+            let x = this.#translatePosition.x + e.detail.ddx * 2;
+            let y = this.#translatePosition.y + e.detail.ddy * 2;
 
              // Prevent dialog from going outside the screen
             if (x < 0)
@@ -102,7 +110,7 @@ export abstract class Dialog extends WebComponent {
             }
 
             this._setIsDragging(true);
-            if (!this._translatePosition)
+            if (!this.#translatePosition)
                 this._translate({ x: 0, y: 0 });
         }
         else if (e.detail.state === "end")
@@ -110,7 +118,7 @@ export abstract class Dialog extends WebComponent {
     } 
 
     private _translate(position: IPosition) { 
-        const { x, y } = this._translatePosition = position;
+        const { x, y } = this.#translatePosition = position;
 
         this.dialog.style.left = `${x}px`;
         this.dialog.style.top = `${y}px`;
@@ -131,7 +139,7 @@ export abstract class Dialog extends WebComponent {
     }
 
     private _onClose() {
-        this._resolve(this.#result);
+        this.#resolve(this.#result);
     }
 
     private _onCancel(e: Event) {
