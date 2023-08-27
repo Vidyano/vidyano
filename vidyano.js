@@ -13201,7 +13201,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.9.0-preview3";
+let version$2 = "3.9.0-preview4";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -37740,6 +37740,16 @@ let Popup = Popup_1 = class Popup extends WebComponent {
   width: 100%;
   box-sizing: border-box;
   cursor: pointer;
+}
+
+dialog {
+  padding: 0;
+  outline: none;
+  border: 0;
+  position: fixed;
+}
+dialog::backdrop {
+  background-color: transparent;
 }</style>
 
 <vi-size-tracker on-sizechanged="_toggleSizeChanged"></vi-size-tracker>
@@ -39251,13 +39261,15 @@ AppRoutePresenter = __decorate([
     })
 ], AppRoutePresenter);
 
-var _Dialog_result;
+var _Dialog_result, _Dialog_resolve, _Dialog_translatePosition;
 let Dialog = class Dialog extends WebComponent {
     constructor() {
         super(...arguments);
         _Dialog_result.set(this, void 0);
+        _Dialog_resolve.set(this, void 0);
+        _Dialog_translatePosition.set(this, void 0);
     }
-    static dialogTemplate(innerTemplate) {
+    static dialogTemplate(innerTemplate, options) {
         const outerTemplate = html `<style>dialog {
   border: none;
   background: white;
@@ -39318,12 +39330,14 @@ dialog > main {
   position: relative;
   z-index: 1;
 }
-dialog[dragging] {
+dialog[is-dragging] {
   pointer-events: none;
   user-select: none;
 }</style>
 
 <dialog on-close="_onClose" on-cancel="_onCancel" on-click="_onClick" dragging$="[[dragging]]"></dialog>`;
+        if (options?.omitStyle)
+            outerTemplate.content.querySelector("style").remove();
         const dialog = outerTemplate.content.querySelector("dialog");
         dialog.appendChild(innerTemplate.content.cloneNode(true));
         return outerTemplate;
@@ -39334,23 +39348,23 @@ dialog[dragging] {
     async open() {
         this.dialog.showModal();
         const promise = new Promise(resolve => {
-            this._resolve = resolve;
+            __classPrivateFieldSet(this, _Dialog_resolve, resolve, "f");
         });
-        const header = this.shadowRoot.querySelector("header");
-        if (header) {
+        const anchor = !!this.anchorTag ? this.shadowRoot.querySelector(this.anchorTag) : null;
+        if (anchor) {
             const _track = this._track.bind(this);
-            addListener(header, "track", _track);
+            addListener(anchor, "track", _track);
             promise.finally(() => {
-                removeListener(header, "track", _track);
+                removeListener(anchor, "track", _track);
             });
         }
         return promise;
     }
     _track(e) {
-        if (e.detail.state === "track" && this._translatePosition && this.dragging) {
+        if (e.detail.state === "track" && __classPrivateFieldGet(this, _Dialog_translatePosition, "f") && this.isDragging) {
             const rect = this.dialog.getBoundingClientRect();
-            let x = this._translatePosition.x + e.detail.ddx * 2;
-            let y = this._translatePosition.y + e.detail.ddy * 2;
+            let x = __classPrivateFieldGet(this, _Dialog_translatePosition, "f").x + e.detail.ddx * 2;
+            let y = __classPrivateFieldGet(this, _Dialog_translatePosition, "f").y + e.detail.ddy * 2;
             if (x < 0)
                 x = Math.max(x, (window.innerWidth - rect.width) * -1);
             else if (x > 0)
@@ -39373,15 +39387,15 @@ dialog[dragging] {
                 e.preventDefault();
                 return;
             }
-            this._setDragging(true);
-            if (!this._translatePosition)
+            this._setIsDragging(true);
+            if (!__classPrivateFieldGet(this, _Dialog_translatePosition, "f"))
                 this._translate({ x: 0, y: 0 });
         }
         else if (e.detail.state === "end")
-            this._setDragging(false);
+            this._setIsDragging(false);
     }
     _translate(position) {
-        const { x, y } = this._translatePosition = position;
+        const { x, y } = __classPrivateFieldSet(this, _Dialog_translatePosition, position, "f");
         this.dialog.style.left = `${x}px`;
         this.dialog.style.top = `${y}px`;
     }
@@ -39397,7 +39411,7 @@ dialog[dragging] {
         this.close();
     }
     _onClose() {
-        this._resolve(__classPrivateFieldGet(this, _Dialog_result, "f"));
+        __classPrivateFieldGet(this, _Dialog_resolve, "f").call(this, __classPrivateFieldGet(this, _Dialog_result, "f"));
     }
     _onCancel(e) {
         if (this.noCancelOnEscKey)
@@ -39414,11 +39428,15 @@ dialog[dragging] {
             this.dialog.close();
     }
 };
-_Dialog_result = new WeakMap();
+_Dialog_result = new WeakMap(), _Dialog_resolve = new WeakMap(), _Dialog_translatePosition = new WeakMap();
 Dialog = __decorate([
     WebComponent.register({
         properties: {
-            dragging: {
+            anchorTag: {
+                type: String,
+                value: "header"
+            },
+            isDragging: {
                 type: Boolean,
                 readOnly: true,
                 reflectToAttribute: true
@@ -39427,11 +39445,7 @@ Dialog = __decorate([
                 type: Boolean,
                 value: true,
             },
-            noCancelOnEscKey: Boolean,
-            noHeader: {
-                type: Boolean,
-                reflectToAttribute: true
-            }
+            noCancelOnEscKey: Boolean
         },
         keybindings: {
             "esc": "_esc"
