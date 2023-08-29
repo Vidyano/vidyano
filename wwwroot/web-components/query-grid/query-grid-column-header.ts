@@ -10,7 +10,7 @@ let resizeObserver: ResizeObserver;
 resizeObserver = new ResizeObserver(allEntries => {
     window.requestAnimationFrame(() => {
         // Entries may be batched for multiple grids, make sure the event is dispatched to the correct grid
-        
+    
         const parents = new Map<HTMLElement, ResizeObserverEntry[]>();
         allEntries.forEach(e => {
             const parent = parents.get(e.target.parentElement) || parents.set(e.target.parentElement, []).get(e.target.parentElement);
@@ -121,7 +121,7 @@ export class QueryGridColumnHeader extends WebComponent {
     private _columnChanged(column: QueryGridColumn, oldColumn: QueryGridColumn) {
         if (!column)
             return;
-        
+
         this._setCanSort(column.canSort);
         this._setCanGroupBy(column.canGroupBy);
         this._setIsPinned(column.isPinned);
@@ -171,7 +171,7 @@ export class QueryGridColumnHeader extends WebComponent {
         this.column.column.sort(newSortingDirection, multiSort);
     }
 
-    private _onContextmenu(e: Event) {      
+    private _onContextmenu(e: Event) {        
         this._renderPopupMenu(e);
         e.preventDefault();
     }
