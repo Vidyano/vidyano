@@ -77,6 +77,11 @@ resizeObserver = new ResizeObserver(allEntries => {
             type: Boolean,
             readOnly: true,
             value: false
+        },
+        name: {
+            type: String,
+            reflectToAttribute: true,
+            computed: "_computeName(column)"
         }
     },
     forwardObservers: [
@@ -249,5 +254,14 @@ export class QueryGridColumnHeader extends WebComponent {
             cancelable: true,
             composed: true
         }));
+    }
+    
+    private _computeName(column: QueryGridColumn) {
+        let safeName = column.name.replace(/[\. ]/g, "_");
+
+        if (/^\d/.test(safeName))
+            safeName = "_" + safeName;
+
+        return safeName;
     }
 }
