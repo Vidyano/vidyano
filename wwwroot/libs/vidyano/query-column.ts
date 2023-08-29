@@ -262,13 +262,4 @@ export class QueryColumn extends ServiceObject {
         } else if (args.propertyName === "totalItem")
             this._setTotal(sender.totalItem ? sender.totalItem.getFullValue(this.name) : null);
     }
-
-    get safeName() {
-        let safeName = this._name.replace(/[\. ]/g, "_");
-
-        if (/^\d/.test(safeName))
-            safeName = "_" + safeName;
-
-        return safeName;
-    }
 }
