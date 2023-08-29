@@ -112,7 +112,7 @@ export class QueryGridColumnHeader extends WebComponent {
         e.stopPropagation();
 
         this._setRenderPopupMenu(true);
-        Polymer.flush(); 
+        Polymer.flush();
 
         const menu = <PopupMenu>this.shadowRoot.querySelector("#menu");
         menu.popup();
@@ -120,7 +120,7 @@ export class QueryGridColumnHeader extends WebComponent {
 
     private _columnChanged(column: QueryGridColumn, oldColumn: QueryGridColumn) {
         if (!column)
-            return; 
+            return;
 
         this._setCanSort(column.canSort);
         this._setCanGroupBy(column.canGroupBy);
@@ -171,7 +171,7 @@ export class QueryGridColumnHeader extends WebComponent {
         this.column.column.sort(newSortingDirection, multiSort);
     }
 
-    private _onContextmenu(e: Event) { 
+    private _onContextmenu(e: Event) {
         this._renderPopupMenu(e);
         e.preventDefault();
     }
