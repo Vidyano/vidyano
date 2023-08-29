@@ -113,7 +113,7 @@ export class QueryGridColumnHeader extends WebComponent {
 
         this._setRenderPopupMenu(true);
         Polymer.flush();
-
+        
         const menu = <PopupMenu>this.shadowRoot.querySelector("#menu");
         menu.popup();
     }
@@ -121,7 +121,7 @@ export class QueryGridColumnHeader extends WebComponent {
     private _columnChanged(column: QueryGridColumn, oldColumn: QueryGridColumn) {
         if (!column)
             return;
-
+        
         this._setCanSort(column.canSort);
         this._setCanGroupBy(column.canGroupBy);
         this._setIsPinned(column.isPinned);
@@ -255,7 +255,7 @@ export class QueryGridColumnHeader extends WebComponent {
             composed: true
         }));
     }
-
+    
     private _computeName(column: QueryGridColumn) {
         let safeName = column.name.replace(/[\. ]/g, "_");
 
