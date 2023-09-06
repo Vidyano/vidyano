@@ -1,26 +1,27 @@
 import * as Polymer from "../../libs/polymer/polymer.js"
-import { mixinBehaviors } from "@polymer/polymer/lib/legacy/class.js"
-import { IronOverlayBehavior } from "@polymer/iron-overlay-behavior"
-import { SizeTrackerEvent } from "../size-tracker/size-tracker.js"
 import "../size-tracker/size-tracker.js"
 import { IPosition, WebComponent } from "../web-component/web-component.js"
 
-export class DialogCore extends mixinBehaviors(IronOverlayBehavior, Polymer.PolymerElement) {
-    static get template() { return Polymer.html`<link rel="import" href="dialog-core.html">`; }
+export interface IDialogOptions {
+    omitStyle?: boolean
 }
-
-customElements.define("vi-dialog-core", <CustomElementConstructor><any>DialogCore);
 
 @WebComponent.register({
     properties: {
-        noHeader: {
+        anchorTag: {
+            type: String,
+            value: "header"
+        },
+        isDragging: {
             type: Boolean,
+            readOnly: true,
             reflectToAttribute: true
-        }
-    },
-    listeners: {
-        "iron-overlay-closed": "_onClosed",
-        "iron-overlay-canceled": "cancel"
+        },
+        noCancelOnOutsideClick: {
+            type: Boolean,
+            value: true,
+        },
+        noCancelOnEscKey: Boolean
     },
     keybindings: {
         "esc": "_esc"
@@ -28,94 +29,70 @@ customElements.define("vi-dialog-core", <CustomElementConstructor><any>DialogCor
     mediaQueryAttributes: true
 })
 export abstract class Dialog extends WebComponent {
-    static dialogTemplate(dialog: HTMLTemplateElement) {
-        const template = Polymer.html`<link rel="import" href="dialog.html">`;
-        const dialogCore = template.content.querySelector("vi-dialog-core") as DialogCore;
-        dialogCore.appendChild(dialog.content.cloneNode(true));
+    static dialogTemplate(innerTemplate: HTMLTemplateElement, options?: IDialogOptions) {
+        const outerTemplate = Polymer.html`<link rel="import" href="dialog.html">`;
+        if (options?.omitStyle)
+            outerTemplate.content.querySelector("style").remove();
 
-        return template;
+        const dialog = outerTemplate.content.querySelector("dialog") as HTMLDialogElement;
+        dialog.appendChild(innerTemplate.content.cloneNode(true));
+
+        return outerTemplate;
     }
 
-    private _translatePosition: IPosition;
-    private _resolve: Function;
-    noHeader: boolean;
+    #result: any;
+    #resolve: Function;
+    #translatePosition: IPosition; 
+    readonly isDragging: boolean; private _setIsDragging: (isDragging: boolean) => void;
 
-    connectedCallback() {
-        super.connectedCallback();
+    anchorTag: string;
+    noCancelOnOutsideClick: boolean;
+    noCancelOnEscKey: boolean;
 
-        // By default, don't cancel dialog on outside click.
-        this.noCancelOnOutsideClick = true;
-    }
-
-    get noCancelOnOutsideClick() {
-        return this.dialogCore.noCancelOnOutsideClick;
-    }
-
-    set noCancelOnOutsideClick(noCancelOnOutsideClick: boolean) {
-        this.dialogCore.noCancelOnOutsideClick = noCancelOnOutsideClick;
-    }
-
-    get noCancelOnEscKey() {
-        return this.dialogCore.noCancelOnEscKey;
-    }
-
-    set noCancelOnEscKey(noCancelOnEscKey: boolean) {
-        this.dialogCore.noCancelOnEscKey = noCancelOnEscKey;
-    }
-
-    private get dialogCore() {
-        return this.shadowRoot.querySelector("vi-dialog-core") as (IronOverlayBehavior & Polymer.PolymerElement);
+    private get dialog(): HTMLDialogElement {
+        return this.shadowRoot.querySelector("dialog") as HTMLDialogElement;
     }
 
     async open(): Promise<any> {
-        this.dialogCore.open();
+        this.dialog.showModal();
 
-        const promise = new Promise(resolve => {
-            this._resolve = resolve;
+        const promise = new Promise<any>(resolve => {
+            this.#resolve = resolve;
         });
 
-        const header = <HTMLElement>this.shadowRoot.querySelector("header");
-        if (header) {
+        const anchor = !!this.anchorTag ? <HTMLElement>this.shadowRoot.querySelector(this.anchorTag) : null;
+        if (anchor) {
             const _track = this._track.bind(this);
-            Polymer.Gestures.addListener(header, "track", _track);
+            Polymer.Gestures.addListener(anchor, "track", _track);
 
             promise.finally(() => {
-                Polymer.Gestures.removeListener(header, "track", _track);
+                Polymer.Gestures.removeListener(anchor, "track", _track);
             });
         }
 
         return promise;
     }
 
-    private _esc(e: KeyboardEvent) {
-        if (!this.noCancelOnEscKey)
-            this.cancel();
-    }
-
-    close(result?: any) {
-        this._resolve(result);
-    }
-
-    cancel() {
-        this.dialogCore.close();
-    }
-
-    private _onClosed() {
-        this._resolve();
-    }
-
-    private _sizechanged(e: SizeTrackerEvent) {
-        this.dialogCore.notifyResize();
-
-        e.stopPropagation();
-    }
-
     private _track(e: Polymer.Gestures.TrackEvent) {
-        if (e.detail.state === "track" && this._translatePosition && this.app.isTracking) {
-            this._translate({
-                x: this._translatePosition.x + e.detail.ddx,
-                y: this._translatePosition.y + e.detail.ddy
-            });
+        if (e.detail.state === "track" && this.#translatePosition && this.isDragging) {
+            const rect = this.dialog.getBoundingClientRect();
+
+            // Factor 2 is to align the speed of the dialog with the mouse
+            let x = this.#translatePosition.x + e.detail.ddx * 2;
+            let y = this.#translatePosition.y + e.detail.ddy * 2;
+
+             // Prevent dialog from going outside the screen
+            if (x < 0)
+                x = Math.max(x, (window.innerWidth - rect.width) * -1);
+            else if (x > 0)
+                x = Math.min(x, window.innerWidth - rect.width);
+
+            if (y < 0)
+                y = Math.max(y, (window.innerHeight - rect.height) * -1);
+            else if (y > 0)
+                y = Math.min(y, window.innerHeight - rect.height);
+
+            this._translate({ x, y });
         }
         else if (e.detail.state === "start") {
             const path = e.composedPath();
@@ -132,20 +109,55 @@ export abstract class Dialog extends WebComponent {
                 return;
             }
 
-            this.app.isTracking = true;
-            if (!this._translatePosition)
+            this._setIsDragging(true);
+            if (!this.#translatePosition)
                 this._translate({ x: 0, y: 0 });
+        }
+        else if (e.detail.state === "end")
+            this._setIsDragging(false);
+    } 
 
-            this.setAttribute("dragging", "");
-        }
-        else if (e.detail.state === "end") {
-            this.removeAttribute("dragging");
-            this.app.isTracking = false;
-        }
+    private _translate(position: IPosition) { 
+        const { x, y } = this.#translatePosition = position;
+
+        this.dialog.style.left = `${x}px`;
+        this.dialog.style.top = `${y}px`;
     }
 
-    private _translate(position: IPosition) {
-        this._translatePosition = position;
-        this.dialogCore.style.transform = `translate(${position.x}px, ${position.y}px)`;
+    private _esc(e: KeyboardEvent) {
+        if (!this.noCancelOnEscKey)
+            this.cancel();
+    }
+
+    close(result?: any) {
+        this.#result = result;
+        this.dialog.close();
+    }
+
+    cancel() {
+        this.close();
+    }
+
+    private _onClose() {
+        this.#resolve(this.#result);
+    }
+
+    private _onCancel(e: Event) {
+        if (this.noCancelOnEscKey)
+            e.preventDefault();
+
+        this.#result = undefined;
+    }
+
+    private _onClick(e: MouseEvent) {
+        if (this.noCancelOnOutsideClick)
+            return;
+
+        const rect = this.dialog.getBoundingClientRect();
+        const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
+            rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
+        
+        if (!isInDialog)
+            this.dialog.close();
     }
 }

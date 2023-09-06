@@ -1,5 +1,3 @@
 <link rel="stylesheet" href="dialog.css" />
 
-<vi-dialog-core with-backdrop>
-    <vi-size-tracker on-sizechanged="_sizechanged"></vi-size-tracker>
-</vi-dialog-core>
+<dialog on-close="_onClose" on-cancel="_onCancel" on-click="_onClick" dragging$="[[dragging]]"></dialog>
