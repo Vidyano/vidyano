@@ -14,7 +14,7 @@ import "../../../select/select.js"
         },
         comboBoxOptions: {
             type: Array,
-            readOnly: true
+            computed: "_computeComboBoxOptions(options, attribute.value, newValue)"
         },
         canAdd: {
             type: Boolean,
@@ -25,7 +25,7 @@ import "../../../select/select.js"
 export class PersistentObjectAttributeComboBox extends PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-combo-box.html">`; }
 
-    readonly comboBoxOptions: string[]; private _setComboBoxOptions: (options: string[]) => void;
+    //readonly comboBoxOptions: string[]; private _setComboBoxOptions: (options: string[]) => void;
     newValue: string;
 
     protected _editingChanged() {
@@ -33,7 +33,8 @@ export class PersistentObjectAttributeComboBox extends PersistentObjectAttribute
 
         if (this.newValue) {
             this.newValue = null;
-            this._optionsChanged();
+            // this._optionsChanged();
+            debugger;
         }
     }
 
@@ -42,23 +43,27 @@ export class PersistentObjectAttributeComboBox extends PersistentObjectAttribute
             this.attribute.setValue(newValue, true).catch(Vidyano.noop);
     }
 
-    protected _optionsChanged() {
-        const options = this.attribute.options ? (<string[]>this.attribute.options).slice() : [];
+    protected _computeComboBoxOptions(options: string[], value: string, newValue: string) {
+        options = this.attribute.options?.slice() as string[] || [];
 
-        let empty = options.indexOf(null);
-        if (empty < 0)
-            empty = options.indexOf("");
+        // Add the current value after the first empty option if it's not in the list
+        if (!!value && options.indexOf(value) < 0) {
+            // Determine if the first option is empty
+            const empty = options[0] === null || options[0] === "";
 
-        if (options.indexOf(this.attribute.value) < 0) {
-            options.splice(empty >= 0 ? empty + 1 : 0, 0, this.attribute.value);
+            // Add the current value after the first empty option
+            options.splice(empty ? 1 : 0, 0, value);
         }
 
-        this._setComboBoxOptions(options);
+        // Add the new value to the beginning of the list if it's not in the list
+        if (!!newValue && options.indexOf(newValue) < 0)
+            options.unshift(newValue);
+
+        return options;
     }
 
     private _add() {
         this.value = this.newValue;
-        this._optionsChanged();
     }
 
     private _computeCanAdd(newValue: string, options: string[]): boolean {
