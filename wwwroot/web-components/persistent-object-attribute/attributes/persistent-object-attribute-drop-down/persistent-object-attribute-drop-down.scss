@@ -17,6 +17,7 @@
         &[orientation="horizontal"] {
             @include layout-horizontal();
             @include layout-wrap();
+            gap: var(--theme-h4);
         }
     }
 }
