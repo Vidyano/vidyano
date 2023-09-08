@@ -1,42 +1,42 @@
 <style include="vi-persistent-object-attribute-style-module"></style>
 <link rel="stylesheet" href="persistent-object-attribute-drop-down.css" />
 
-<dom-if if="[[!editing]]">
+<dom-if if="[[!showEditable]]">
     <template>
         <vi-sensitive disabled="[[!sensitive]]">
             <span>[[attribute.displayValue]]</span>
         </vi-sensitive>
     </template>
 </dom-if>
-<dom-if if="[[editing]]">
+<dom-if if="[[showEditable]]" restamp>
     <template>
-        <dom-if if="[[!radio]]">
+        <dom-if if="[[op_areSame(inputtype, 'select')]]" restamp>
             <template>
                 <vi-persistent-object-attribute-edit attribute="[[attribute]]">
                     <vi-select options="[[options]]" selected-option="{{value}}" readonly="[[readOnly]]" disabled="[[attribute.parent.isFrozen]]" placeholder="[[placeholder]]" group-separator="[[groupSeparator]]" sensitive$="[[sensitive]]"></vi-select>
                 </vi-persistent-object-attribute-edit>
             </template>
         </dom-if>
-        <dom-if if="[[radio]]">
+        <dom-if if="[[op_areSame(inputtype, 'radio')]]" restamp>
             <template>
-                <dom-if if="[[!sensitive]]">
-                    <template>
-                        <div id="radiobuttons" orientation$="[[orientation]]">
-                            <dom-repeat items="[[options]]" as="option">
-                                <template>
-                                    <vi-checkbox label="[[_radioLabel(option)]]" checked="[[_isRadioChecked(option, value)]]" on-changed="_radioChanged" radio></vi-checkbox>
-                                </template>
-                            </dom-repeat>
-                        </div>
-                    </template>
-                </dom-if>
-                <dom-if if="[[sensitive]]">
-                    <template>
-                        <vi-sensitive>
-                            <span>[[attribute.displayValue]]</span>
-                        </vi-sensitive>
-                    </template>
-                </dom-if>
+                <div id="radiobuttons" orientation$="[[orientation]]">
+                    <dom-repeat items="[[options]]" as="option">
+                        <template>
+                            <vi-checkbox label="[[_optionLabel(option)]]" checked="[[_isChecked(option, value)]]" on-changed="_select" radio></vi-checkbox>
+                        </template>
+                    </dom-repeat>
+                </div>
+            </template>
+        </dom-if>
+        <dom-if if="[[op_areSame(inputtype, 'chip')]]" restamp>
+            <template>
+                <div id="chips" orientation$="[[orientation]]">
+                    <dom-repeat items="[[options]]" as="option">
+                        <template>
+                            <vi-button label="[[_optionLabel(option)]]" inverse="[[_isUnchecked(option, value)]]" on-tap="_select" radio></vi-button>
+                        </template>
+                    </dom-repeat>
+                </div>
             </template>
         </dom-if>
     </template>
