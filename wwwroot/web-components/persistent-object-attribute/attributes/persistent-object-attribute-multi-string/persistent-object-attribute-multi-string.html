@@ -32,7 +32,7 @@
         <dom-if if="[[editing]]">
             <template>
                 <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-                    <vi-tags content tags="{{tags}}" readonly="[[isTagsReadonly]]" sensitive="[[sensitive]]" disabled="[[frozen]]"></vi-tags>
+                    <vi-tags content tags="{{tags}}" readonly="[[isTagsReadonly]]" sensitive="[[sensitive]]"></vi-tags>
                     <dom-if if="[[hasSuggestions]]">
                         <template>
                             <vi-popup id="suggestions" slot="right">

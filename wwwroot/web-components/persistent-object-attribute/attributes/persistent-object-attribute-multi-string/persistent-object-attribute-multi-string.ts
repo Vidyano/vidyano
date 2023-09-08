@@ -42,7 +42,7 @@ export class PersistentObjectAttributeMultiStringItems extends Sortable {
         },
         isTagsReadonly: {
             type: Boolean,
-            computed: "_computeIsTagsReadonly(readOnly, editing)"
+            computed: "_computeIsTagsReadonly(readOnly, editing, frozen)"
         }
     },
     observers: [
@@ -172,8 +172,8 @@ export class PersistentObjectAttributeMultiString extends PersistentObjectAttrib
         return suggestions.filter(s => currentStrings.indexOf(s) < 0);
     }
 
-    private _computeIsTagsReadonly(readonly: boolean, editing: boolean) {
-        return this.readOnly || !editing;
+    private _computeIsTagsReadonly(readOnly: boolean, editing: boolean, frozen: boolean) {
+        return readOnly || !editing || frozen;
     }
 
     private _addSuggestionTag(e: Polymer.Gestures.TapEvent) {
