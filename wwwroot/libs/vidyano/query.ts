@@ -600,6 +600,39 @@ export class Query extends ServiceObjectWithActions {
             }
             else if (property === "length")
                 return this.totalItems;
+            else if (property === "forEach") {
+                // Run the forEach on target, which is a sparse array
+                return (callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => void, thisArg?: any) => {
+                    for (var key in target) {
+                        const index = parseInt(key);
+                        if (!isNaN(index)) {
+                            const item = target[index];
+                            if (item != null)
+                                callback.call(thisArg, item, index, target);
+                        }
+                    }
+                }
+            }
+            else if (property === "filter") {
+                // Run the filter on target, which is a sparse array
+                return (callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => boolean, thisArg?: any) => {
+                    const result: QueryResultItem[] = [];
+                    for (var key in target) {
+                        const index = parseInt(key);
+                        if (!isNaN(index)) {
+                            const item = target[index];
+                            if (item != null && callback.call(thisArg, item, index, target))
+                                result.push(item);
+                        }
+                    }
+
+                    return result;
+                }
+            }
+
+            // Don't allow any of the other manipulations
+            if (["push", "pop", "shift", "unshift", "splice", "reverse", "sort"].indexOf(property) >= 0)
+                return undefined;
         }
 
         return Reflect.get(target, property, receiver);
