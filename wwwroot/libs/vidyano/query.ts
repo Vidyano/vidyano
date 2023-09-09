@@ -601,9 +601,9 @@ export class Query extends ServiceObjectWithActions {
             else if (property === "length")
                 return this.totalItems;
             else if (property === "forEach") {
-                // Run the forEach on target, which is a sparse array
+                // Run forEach on target, but skip null items which are queued for lazy loading
                 return (callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => void, thisArg?: any) => {
-                    for (var key in target) {
+                    for (const key in target) {
                         const index = parseInt(key);
                         if (!isNaN(index)) {
                             const item = target[index];
@@ -614,10 +614,10 @@ export class Query extends ServiceObjectWithActions {
                 }
             }
             else if (property === "filter") {
-                // Run the filter on target, which is a sparse array
+                // Run filter on target, but skip null items which are queued for lazy loading
                 return (callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => boolean, thisArg?: any) => {
                     const result: QueryResultItem[] = [];
-                    for (var key in target) {
+                    for (const key in target) {
                         const index = parseInt(key);
                         if (!isNaN(index)) {
                             const item = target[index];
