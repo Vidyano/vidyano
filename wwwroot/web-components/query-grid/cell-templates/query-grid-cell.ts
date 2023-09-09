@@ -103,7 +103,7 @@ export abstract class QueryGridCell extends WebComponent {
             return;
 
         // Only measure the cell when it is the first query result item in the query result set
-        if (row.index && row.item.query.items.indexOf(row.item) !== 0)
+        if (row.index && row.item.query.items[0] !== row.item)
             return;
 
         // Update the last measured column and queue the measure
