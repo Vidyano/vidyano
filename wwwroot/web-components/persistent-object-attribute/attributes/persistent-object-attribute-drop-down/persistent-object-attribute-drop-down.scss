@@ -17,11 +17,10 @@
         line-height: var(--theme-h2);
         gap: var(--theme-h5);
 
-        &[orientation="horizontal"] {
+        &[orientation=horizontal] {
             display: flex;
             flex-direction: row;
             flex-wrap: wrap;
-            gap: var(--theme-h4);
         }
     }
 

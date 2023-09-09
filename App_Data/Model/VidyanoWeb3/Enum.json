@@ -1,0 +1,180 @@
+{
+  "PersistentObject": {
+    "$id": "PersistentObject:10fdd128-72cf-3485-a52b-bfb695fefe9d",
+    "Id": "10fdd128-72cf-3485-a52b-bfb695fefe9d",
+    "SchemaName": "VidyanoWeb3",
+    "Type": "Enum",
+    "Salt": "EXsk1G2H2g_vUAZ2dx7j0NnjX0JlvVIAnNCCGUYtdgiBiDt3F2Pjuw",
+    "Breadcrumb": "Enum",
+    "Label": {
+      "en": "Enum",
+      "nl": ""
+    },
+    "StateBehavior": 2,
+    "Groups": [
+      {
+        "$id": "PersistentObjectAttributeGroup:b2e763a7-5d9a-4382-91b8-58cc084cc34b",
+        "Id": "b2e763a7-5d9a-4382-91b8-58cc084cc34b",
+        "Name": "Radio",
+        "Label": {
+          "en": "Radio",
+          "nl": ""
+        }
+      },
+      {
+        "$id": "PersistentObjectAttributeGroup:c755e555-0a8f-4fda-8f73-7225410e24b8",
+        "Id": "c755e555-0a8f-4fda-8f73-7225410e24b8",
+        "Name": "Chip",
+        "Label": {
+          "en": "Chip",
+          "nl": ""
+        }
+      },
+      {
+        "$id": "PersistentObjectAttributeGroup:ce52e4b1-0153-4dac-b04f-f2f340176850",
+        "Id": "ce52e4b1-0153-4dac-b04f-f2f340176850"
+      }
+    ],
+    "Tabs": [
+      {
+        "$id": "PersistentObjectAttributeTab:20b72a37-4323-45a1-b125-68232d8a75e3",
+        "Id": "20b72a37-4323-45a1-b125-68232d8a75e3"
+      }
+    ],
+    "Attributes": [
+      {
+        "$id": "PersistentObjectAttribute:9d3d2af4-8840-3451-a03c-55522decaf2b",
+        "Id": "9d3d2af4-8840-3451-a03c-55522decaf2b",
+        "Offset": 60,
+        "Name": "ChipHorizontal",
+        "DataTypeHints": "inputtype=chip; orientation=horizontal",
+        "Label": {
+          "en": "Horizontal",
+          "nl": "Chip horizontal"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Enum"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:c755e555-0a8f-4fda-8f73-7225410e24b8"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:20b72a37-4323-45a1-b125-68232d8a75e3"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:d31eff7a-3b2d-3cee-964f-40e5f143f0e8",
+        "Id": "d31eff7a-3b2d-3cee-964f-40e5f143f0e8",
+        "Offset": 50,
+        "Name": "ChipVertical",
+        "DataTypeHints": "inputtype=chip",
+        "Label": {
+          "en": "Vertical",
+          "nl": "Chip vertical"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Enum"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:c755e555-0a8f-4fda-8f73-7225410e24b8"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:20b72a37-4323-45a1-b125-68232d8a75e3"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:ccf613d5-acb9-3121-927d-97c8a118ad9f",
+        "Id": "ccf613d5-acb9-3121-927d-97c8a118ad9f",
+        "Offset": 10,
+        "Name": "Default",
+        "Label": {
+          "en": "Default",
+          "nl": "Default"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Enum"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:ce52e4b1-0153-4dac-b04f-f2f340176850"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:20b72a37-4323-45a1-b125-68232d8a75e3"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:7e389cf1-b03f-3669-9e76-56375a0e3c3d",
+        "Id": "7e389cf1-b03f-3669-9e76-56375a0e3c3d",
+        "Offset": 20,
+        "Name": "Flags",
+        "Label": {
+          "en": "Flags",
+          "nl": "Enum flags"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:FlagsEnum"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:ce52e4b1-0153-4dac-b04f-f2f340176850"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:20b72a37-4323-45a1-b125-68232d8a75e3"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:4105ab1d-04f9-3ef8-8cfa-e41b06567da2",
+        "Id": "4105ab1d-04f9-3ef8-8cfa-e41b06567da2",
+        "Offset": 40,
+        "Name": "RadioHorizontal",
+        "DataTypeHints": "inputtype=radio; orientation=horizontal",
+        "Label": {
+          "en": "Horizontal",
+          "nl": "Radio horizontal"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Enum"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:b2e763a7-5d9a-4382-91b8-58cc084cc34b"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:20b72a37-4323-45a1-b125-68232d8a75e3"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:756360e6-5bbc-3899-8362-f258da21c453",
+        "Id": "756360e6-5bbc-3899-8362-f258da21c453",
+        "Offset": 30,
+        "Name": "RadioVertical",
+        "DataTypeHints": "inputtype=radio",
+        "Label": {
+          "en": "Vertical",
+          "nl": "Radio vertical"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Enum"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:b2e763a7-5d9a-4382-91b8-58cc084cc34b"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:20b72a37-4323-45a1-b125-68232d8a75e3"
+        }
+      }
+    ],
+    "Queries": []
+  },
+  "Queries": [],
+  "Reports": []
+}

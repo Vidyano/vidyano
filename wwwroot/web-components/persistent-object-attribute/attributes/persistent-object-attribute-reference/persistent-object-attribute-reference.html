@@ -20,7 +20,7 @@
     <template>
         <dom-if if="[[attribute.selectInPlace]]">
             <template>
-                <dom-if if="[[!selectInPlaceAsRadio]]">
+                <dom-if if="[[op_areSame(inputtype, 'default')]]">
                     <template>
                         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
                             <vi-select id="selectInPlace" class="fit" options="[[options]]" selected-option="{{objectId}}" readonly$="[[readOnly]]" placeholder="[[placeholder]]" sensitive="[[sensitive]]" disabled="[[frozen]]"></vi-select>
@@ -47,13 +47,26 @@
                         </vi-persistent-object-attribute-edit>
                     </template>
                 </dom-if>
-                <dom-if if="[[selectInPlaceAsRadio]]">
+                <dom-if if="[[op_areSame(inputtype, 'radio')]]">
                     <template>
                         <div content>
                             <div id="radiobuttons" orientation$="[[orientation]]">
                                 <dom-repeat items="[[options]]" as="option">
                                     <template>
-                                        <vi-checkbox label="[[option.value]]" checked="[[op_areSame(option.key, objectId)]]" on-changed="_radioChanged" radio></vi-checkbox>
+                                        <vi-checkbox label="[[option.value]]" checked="[[op_areSame(option.key, objectId)]]" on-changed="_select" radio></vi-checkbox>
+                                    </template>
+                                </dom-repeat>
+                            </div>
+                        </div>
+                    </template>
+                </dom-if>
+                <dom-if if="[[op_areSame(inputtype, 'chip')]]">
+                    <template>
+                        <div content>
+                            <div id="chips" orientation$="[[orientation]]">
+                                <dom-repeat items="[[options]]" as="option">
+                                    <template>
+                                        <vi-button label="[[option.value]]" inverse="[[op_areNotSame(option.key, objectId)]]" on-tap="_select"></vi-button>
                                     </template>
                                 </dom-repeat>
                             </div>

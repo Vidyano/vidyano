@@ -33,7 +33,7 @@
                 <div id="chips" orientation$="[[orientation]]">
                     <dom-repeat items="[[options]]" as="option">
                         <template>
-                            <vi-button label="[[_optionLabel(option)]]" inverse="[[_isUnchecked(option, value)]]" on-tap="_select" radio></vi-button>
+                            <vi-button label="[[_optionLabel(option)]]" inverse="[[_isUnchecked(option, value)]]" on-tap="_select"></vi-button>
                         </template>
                     </dom-repeat>
                 </div>

@@ -1,6 +1,61 @@
 {
   "ProgramUnits": [
     {
+      "Name": "Attributes",
+      "Offset": 20,
+      "Title": {
+        "en": "Attributes",
+        "nl": ""
+      },
+      "OpenFirst": true,
+      "Groups": [],
+      "Items": [
+        {
+          "Title": {
+            "en": "DropDown",
+            "nl": ""
+          },
+          "Name": "DropDown",
+          "PersistentObject": {
+            "$ref": "PersistentObject:216f7e3f-786b-3eec-acc5-72b2ca1e8458"
+          }
+        },
+        {
+          "Offset": 5,
+          "Title": {
+            "en": "KeyValueList",
+            "nl": ""
+          },
+          "Name": "KeyValueList",
+          "PersistentObject": {
+            "$ref": "PersistentObject:deac1ec4-37a8-395b-935c-35b8e87ffbbe"
+          }
+        },
+        {
+          "Offset": 10,
+          "Title": {
+            "en": "Reference",
+            "nl": ""
+          },
+          "Name": "Reference",
+          "PersistentObject": {
+            "$ref": "PersistentObject:f5874a82-992f-3d65-b010-2fc3b7a5583a"
+          }
+        },
+        {
+          "Offset": 2,
+          "Title": {
+            "en": "Enum",
+            "nl": ""
+          },
+          "Name": "Enum",
+          "PersistentObject": {
+            "$ref": "PersistentObject:10fdd128-72cf-3485-a52b-bfb695fefe9d"
+          }
+        }
+      ]
+    },
+    {
       "Name": "Components",
       "Offset": 10,
       "Title": {

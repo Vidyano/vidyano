@@ -1,0 +1,159 @@
+{
+  "PersistentObject": {
+    "$id": "PersistentObject:deac1ec4-37a8-395b-935c-35b8e87ffbbe",
+    "Id": "deac1ec4-37a8-395b-935c-35b8e87ffbbe",
+    "SchemaName": "VidyanoWeb3",
+    "Type": "KeyValueList",
+    "Salt": "A20x-XH81NtPgOiGKwBHwzrGa9U0TaXerVHDhsnlfYV_-mqbLBfyGA",
+    "Breadcrumb": "KeyValueList",
+    "Label": {
+      "en": "KeyValueList",
+      "nl": ""
+    },
+    "StateBehavior": 2,
+    "Groups": [
+      {
+        "$id": "PersistentObjectAttributeGroup:05cd08f3-d251-42de-b5e4-9762c0341168",
+        "Id": "05cd08f3-d251-42de-b5e4-9762c0341168"
+      },
+      {
+        "$id": "PersistentObjectAttributeGroup:772b2065-8062-4a8b-a6db-a53b09ea72b4",
+        "Id": "772b2065-8062-4a8b-a6db-a53b09ea72b4",
+        "Name": "Radio",
+        "Label": {
+          "en": "Radio",
+          "nl": ""
+        }
+      },
+      {
+        "$id": "PersistentObjectAttributeGroup:9d80478f-ce2b-4807-b1d7-9e399509eefc",
+        "Id": "9d80478f-ce2b-4807-b1d7-9e399509eefc",
+        "Name": "Chip",
+        "Label": {
+          "en": "Chip",
+          "nl": ""
+        }
+      }
+    ],
+    "Tabs": [
+      {
+        "$id": "PersistentObjectAttributeTab:b0f5d767-e7dd-41b2-abd3-6529c8fdc191",
+        "Id": "b0f5d767-e7dd-41b2-abd3-6529c8fdc191"
+      }
+    ],
+    "Attributes": [
+      {
+        "$id": "PersistentObjectAttribute:bdfa5288-976d-3419-810a-426a64c2833c",
+        "Id": "bdfa5288-976d-3419-810a-426a64c2833c",
+        "Offset": 60,
+        "Name": "ChipHorizontal",
+        "DataTypeHints": "inputtype=chip; orientation=horizontal",
+        "Label": {
+          "en": "Horizontal",
+          "nl": "Chip horizontal"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:KeyValueList"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:9d80478f-ce2b-4807-b1d7-9e399509eefc"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:b0f5d767-e7dd-41b2-abd3-6529c8fdc191"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:8fbe3b63-a6e2-3200-97ea-56283bf22788",
+        "Id": "8fbe3b63-a6e2-3200-97ea-56283bf22788",
+        "Offset": 50,
+        "Name": "ChipVertical",
+        "DataTypeHints": "inputtype=chip",
+        "Label": {
+          "en": "Vertical",
+          "nl": "Chip vertical"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:KeyValueList"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:9d80478f-ce2b-4807-b1d7-9e399509eefc"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:b0f5d767-e7dd-41b2-abd3-6529c8fdc191"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:c23ad088-d37e-3113-b8e7-c2c5b15fcdce",
+        "Id": "c23ad088-d37e-3113-b8e7-c2c5b15fcdce",
+        "Offset": 10,
+        "Name": "Default",
+        "Label": {
+          "en": "Default",
+          "nl": "Default"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:KeyValueList"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:05cd08f3-d251-42de-b5e4-9762c0341168"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:b0f5d767-e7dd-41b2-abd3-6529c8fdc191"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:06739af5-90a6-30d0-879c-b52f608c2d2d",
+        "Id": "06739af5-90a6-30d0-879c-b52f608c2d2d",
+        "Offset": 40,
+        "Name": "RadioHorizontal",
+        "DataTypeHints": "inputtype=radio; orientation=horizontal",
+        "Label": {
+          "en": "Horizontal",
+          "nl": "Radio horizontal"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:KeyValueList"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:772b2065-8062-4a8b-a6db-a53b09ea72b4"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:b0f5d767-e7dd-41b2-abd3-6529c8fdc191"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:6020d051-55ec-3769-aa39-3c65ddf7dfcb",
+        "Id": "6020d051-55ec-3769-aa39-3c65ddf7dfcb",
+        "Offset": 30,
+        "Name": "RadioVertical",
+        "DataTypeHints": "inputtype=radio",
+        "Label": {
+          "en": "Vertical",
+          "nl": "Radio vertical"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:KeyValueList"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:772b2065-8062-4a8b-a6db-a53b09ea72b4"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:b0f5d767-e7dd-41b2-abd3-6529c8fdc191"
+        }
+      }
+    ],
+    "Queries": []
+  },
+  "Queries": [],
+  "Reports": []
+}

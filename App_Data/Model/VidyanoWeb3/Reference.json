@@ -1,0 +1,347 @@
+{
+  "PersistentObject": {
+    "$id": "PersistentObject:f5874a82-992f-3d65-b010-2fc3b7a5583a",
+    "Id": "f5874a82-992f-3d65-b010-2fc3b7a5583a",
+    "SchemaName": "VidyanoWeb3",
+    "Type": "Reference",
+    "Salt": "vaalFtRyCL0urfV0oVngaMOCv2-jbAHCem9-Gy-jwqSkmZ-1rO5P4Q",
+    "Breadcrumb": "Reference",
+    "Label": {
+      "en": "Reference",
+      "nl": ""
+    },
+    "StateBehavior": 2,
+    "Groups": [
+      {
+        "$id": "PersistentObjectAttributeGroup:04d49156-7623-43e4-9087-f66aa3afb34d",
+        "Id": "04d49156-7623-43e4-9087-f66aa3afb34d",
+        "Name": "Chip",
+        "Label": {
+          "en": "Chip",
+          "nl": ""
+        }
+      },
+      {
+        "$id": "PersistentObjectAttributeGroup:a7dffc5f-e040-45eb-8eaf-b9fa08928509",
+        "Id": "a7dffc5f-e040-45eb-8eaf-b9fa08928509",
+        "Name": "Radio",
+        "Label": {
+          "en": "Radio",
+          "nl": ""
+        }
+      },
+      {
+        "$id": "PersistentObjectAttributeGroup:d2cfd227-b89f-49fb-b973-e52036ea1dfb",
+        "Id": "d2cfd227-b89f-49fb-b973-e52036ea1dfb",
+        "Name": "SelectInPlace",
+        "Label": {
+          "en": "Select in place",
+          "nl": ""
+        }
+      },
+      {
+        "$id": "PersistentObjectAttributeGroup:f30bbfc0-bda7-47f8-b426-1e486a504ead",
+        "Id": "f30bbfc0-bda7-47f8-b426-1e486a504ead",
+        "Name": "Default"
+      }
+    ],
+    "Tabs": [
+      {
+        "$id": "PersistentObjectAttributeTab:23e4320e-4ab5-4900-95e0-be3c5ecebfac",
+        "Id": "23e4320e-4ab5-4900-95e0-be3c5ecebfac"
+      }
+    ],
+    "Attributes": [
+      {
+        "$id": "PersistentObjectAttributeWithReference:3b84911b-8f9d-3cc7-bc95-1eb8a095a8ca",
+        "$type": "Vidyano.Service.Repository.PersistentObjectAttributeWithReference, Vidyano.Service",
+        "DisplayAttribute": "FirstName",
+        "CanAddNewReference": true,
+        "LookupId": "026c4ca7-53f4-42ac-b196-158f0cb871a1",
+        "Id": "3b84911b-8f9d-3cc7-bc95-1eb8a095a8ca",
+        "Offset": 25,
+        "Name": "CanAddNew",
+        "Label": {
+          "en": "Can add new",
+          "nl": "Can add new"
+        },
+        "Visibility": 7,
+        "Column": 0,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Reference"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:f30bbfc0-bda7-47f8-b426-1e486a504ead"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:23e4320e-4ab5-4900-95e0-be3c5ecebfac"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttributeWithReference:abf3bb1d-74e1-3a49-9810-a599ae0bf406",
+        "$type": "Vidyano.Service.Repository.PersistentObjectAttributeWithReference, Vidyano.Service",
+        "DisplayAttribute": "FirstName",
+        "SelectInPlace": true,
+        "LookupId": "026c4ca7-53f4-42ac-b196-158f0cb871a1",
+        "Id": "abf3bb1d-74e1-3a49-9810-a599ae0bf406",
+        "Offset": 80,
+        "Name": "ChipHorizontal",
+        "DataTypeHints": "inputtype=chip; orientation=horizontal",
+        "Label": {
+          "en": "Horizontal",
+          "nl": "Chip horizontal"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Reference"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:04d49156-7623-43e4-9087-f66aa3afb34d"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:23e4320e-4ab5-4900-95e0-be3c5ecebfac"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttributeWithReference:3fadb309-3748-3401-8637-11cb3e8b321d",
+        "$type": "Vidyano.Service.Repository.PersistentObjectAttributeWithReference, Vidyano.Service",
+        "DisplayAttribute": "FirstName",
+        "SelectInPlace": true,
+        "LookupId": "026c4ca7-53f4-42ac-b196-158f0cb871a1",
+        "Id": "3fadb309-3748-3401-8637-11cb3e8b321d",
+        "Offset": 70,
+        "Name": "ChipVertical",
+        "DataTypeHints": "inputtype=chip",
+        "Label": {
+          "en": "Vertical",
+          "nl": "Chip"
+        },
+        "Visibility": 7,
+        "Column": 0,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Reference"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:04d49156-7623-43e4-9087-f66aa3afb34d"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:23e4320e-4ab5-4900-95e0-be3c5ecebfac"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttributeWithReference:8720c16a-3be6-306b-a966-77cbd4d73572",
+        "$type": "Vidyano.Service.Repository.PersistentObjectAttributeWithReference, Vidyano.Service",
+        "DisplayAttribute": "FirstName",
+        "LookupId": "026c4ca7-53f4-42ac-b196-158f0cb871a1",
+        "Id": "8720c16a-3be6-306b-a966-77cbd4d73572",
+        "Offset": 10,
+        "Name": "Default",
+        "Label": {
+          "en": "Default",
+          "nl": "Employees"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Reference"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:f30bbfc0-bda7-47f8-b426-1e486a504ead"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:23e4320e-4ab5-4900-95e0-be3c5ecebfac"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttributeWithReference:c701bbd0-01c3-334b-b0b9-0ccef7355b70",
+        "$type": "Vidyano.Service.Repository.PersistentObjectAttributeWithReference, Vidyano.Service",
+        "DisplayAttribute": "FirstName",
+        "SelectInPlace": true,
+        "LookupId": "026c4ca7-53f4-42ac-b196-158f0cb871a1",
+        "Id": "c701bbd0-01c3-334b-b0b9-0ccef7355b70",
+        "Offset": 65,
+        "Name": "RadioHorizontal",
+        "DataTypeHints": "inputtype=radio; orientation=horizontal",
+        "Label": {
+          "en": "Horizontal",
+          "nl": "Select in place"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Reference"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a7dffc5f-e040-45eb-8eaf-b9fa08928509"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:23e4320e-4ab5-4900-95e0-be3c5ecebfac"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttributeWithReference:d0f8f0f4-256c-3479-8ac7-07ffe7cc3205",
+        "$type": "Vidyano.Service.Repository.PersistentObjectAttributeWithReference, Vidyano.Service",
+        "DisplayAttribute": "FirstName",
+        "SelectInPlace": true,
+        "LookupId": "026c4ca7-53f4-42ac-b196-158f0cb871a1",
+        "Id": "d0f8f0f4-256c-3479-8ac7-07ffe7cc3205",
+        "Offset": 60,
+        "Name": "RadioVertical",
+        "DataTypeHints": "inputtype=radio",
+        "Label": {
+          "en": "Vertical",
+          "nl": "Radio vertical"
+        },
+        "Visibility": 7,
+        "Column": 0,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Reference"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a7dffc5f-e040-45eb-8eaf-b9fa08928509"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:23e4320e-4ab5-4900-95e0-be3c5ecebfac"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttributeWithReference:6d1a8334-6009-3612-a6dd-c4db05e86373",
+        "$type": "Vidyano.Service.Repository.PersistentObjectAttributeWithReference, Vidyano.Service",
+        "DisplayAttribute": "FirstName",
+        "LookupId": "026c4ca7-53f4-42ac-b196-158f0cb871a1",
+        "Id": "6d1a8334-6009-3612-a6dd-c4db05e86373",
+        "Offset": 20,
+        "Rules": "Required",
+        "Name": "Required",
+        "Label": {
+          "en": "Required",
+          "nl": "Required"
+        },
+        "Visibility": 7,
+        "Column": 0,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Reference"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:f30bbfc0-bda7-47f8-b426-1e486a504ead"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:23e4320e-4ab5-4900-95e0-be3c5ecebfac"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttributeWithReference:e1c192c7-9229-3c21-9c90-d5508a7bca42",
+        "$type": "Vidyano.Service.Repository.PersistentObjectAttributeWithReference, Vidyano.Service",
+        "DisplayAttribute": "FirstName",
+        "SelectInPlace": true,
+        "LookupId": "026c4ca7-53f4-42ac-b196-158f0cb871a1",
+        "Id": "e1c192c7-9229-3c21-9c90-d5508a7bca42",
+        "Offset": 30,
+        "Name": "SelectInPlace",
+        "Label": {
+          "en": "Select in place",
+          "nl": "Select in place"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Reference"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:d2cfd227-b89f-49fb-b973-e52036ea1dfb"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:23e4320e-4ab5-4900-95e0-be3c5ecebfac"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttributeWithReference:a7e29605-5b17-3286-b0d7-6e902f6ae361",
+        "$type": "Vidyano.Service.Repository.PersistentObjectAttributeWithReference, Vidyano.Service",
+        "DisplayAttribute": "FirstName",
+        "CanAddNewReference": true,
+        "SelectInPlace": true,
+        "LookupId": "026c4ca7-53f4-42ac-b196-158f0cb871a1",
+        "Id": "a7e29605-5b17-3286-b0d7-6e902f6ae361",
+        "Offset": 37,
+        "Name": "SelectInPlaceCanAddNew",
+        "Label": {
+          "en": "Can add new",
+          "nl": "Select in place can add new"
+        },
+        "Visibility": 7,
+        "Column": 0,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Reference"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:d2cfd227-b89f-49fb-b973-e52036ea1dfb"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:23e4320e-4ab5-4900-95e0-be3c5ecebfac"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttributeWithReference:11842570-bd25-3f15-8374-f463efc32b9e",
+        "$type": "Vidyano.Service.Repository.PersistentObjectAttributeWithReference, Vidyano.Service",
+        "DisplayAttribute": "FirstName",
+        "CanAddNewReference": true,
+        "SelectInPlace": true,
+        "LookupId": "026c4ca7-53f4-42ac-b196-158f0cb871a1",
+        "Id": "11842570-bd25-3f15-8374-f463efc32b9e",
+        "Offset": 48,
+        "Rules": "Required",
+        "Name": "SelectInPlaceCanAddNewRequired",
+        "Label": {
+          "en": "Can add new + Required",
+          "nl": "Select in place can add new required"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Reference"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:d2cfd227-b89f-49fb-b973-e52036ea1dfb"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:23e4320e-4ab5-4900-95e0-be3c5ecebfac"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttributeWithReference:700c72c3-49d2-3354-82ce-a13daab5bcf8",
+        "$type": "Vidyano.Service.Repository.PersistentObjectAttributeWithReference, Vidyano.Service",
+        "DisplayAttribute": "FirstName",
+        "SelectInPlace": true,
+        "LookupId": "026c4ca7-53f4-42ac-b196-158f0cb871a1",
+        "Id": "700c72c3-49d2-3354-82ce-a13daab5bcf8",
+        "Offset": 33,
+        "Rules": "Required",
+        "Name": "SelectInPlaceRequired",
+        "Label": {
+          "en": "Select in place + Required",
+          "nl": "Select in place required"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Reference"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:d2cfd227-b89f-49fb-b973-e52036ea1dfb"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:23e4320e-4ab5-4900-95e0-be3c5ecebfac"
+        }
+      }
+    ],
+    "Queries": []
+  },
+  "Queries": [],
+  "Reports": []
+}

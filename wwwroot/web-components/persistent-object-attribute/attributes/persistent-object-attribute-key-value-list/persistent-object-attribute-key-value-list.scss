@@ -11,12 +11,22 @@
         color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
     }
 
-    #radiobuttons {
+    #radiobuttons, #chips {
+        display: flex;
+        flex-direction: column;
         line-height: var(--theme-h2);
+        gap: var(--theme-h5);
 
-        &[orientation="horizontal"] {
-            @include layout-horizontal();
-            @include layout-wrap();
+        &[orientation=horizontal] {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+    }
+
+    #chips {
+        vi-button[inverse] {
+            background-color: var(--theme-color-faint);
         }
     }
 }

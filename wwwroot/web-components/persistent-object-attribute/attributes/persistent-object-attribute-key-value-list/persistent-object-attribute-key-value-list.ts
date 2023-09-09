@@ -7,9 +7,9 @@ import "../../../checkbox/checkbox.js"
 
 @WebComponent.register({
     properties: {
-        radio: {
-            type: Boolean,
-            computed: "_computeRadio(attribute)"
+        inputtype: {
+            type: String,
+            computed: "_computeInputType(attribute)"
         },
         orientation: {
             type: String,
@@ -23,7 +23,11 @@ import "../../../checkbox/checkbox.js"
             type: Boolean,
             reflectToAttribute: true,
             computed: "_computeDisableFiltering(attribute)"
-        }
+        },
+        showEditable: {
+            type: Boolean,
+            computed: "_computeShowEditable(editing, sensitive)"
+        },
     }    
 })
 export class PersistentObjectAttributeKeyValueList extends PersistentObjectAttribute {
@@ -34,8 +38,12 @@ export class PersistentObjectAttributeKeyValueList extends PersistentObjectAttri
             this.attribute.setValue(newValue, true).catch(Vidyano.noop);
     }
 
-    private _computeRadio(attribute: Vidyano.PersistentObjectAttribute): boolean {
-        return attribute && attribute.getTypeHint("inputtype", undefined, undefined, true) === "radio";
+    private _computeShowEditable(editing: boolean, sensitive: boolean): boolean {
+        return editing && !sensitive;
+    }
+
+    private _computeInputType(attribute: Vidyano.PersistentObjectAttribute): string {
+        return attribute && attribute.getTypeHint("inputtype", "select", undefined, true)?.toLowerCase();
     }
 
     private _computeOrientation(attribute: Vidyano.PersistentObjectAttributeWithReference): string {
@@ -50,15 +58,19 @@ export class PersistentObjectAttributeKeyValueList extends PersistentObjectAttri
         return attribute && attribute.getTypeHint("disablefiltering", null, undefined, true);
     }
 
-    private _isRadioChecked(option: Vidyano.PersistentObjectAttributeOption, value: string): boolean {
+    private _optionLabel(option: Vidyano.PersistentObjectAttributeOption): string {
+        return option?.value || "—";
+    }
+
+    private _isChecked(option: Vidyano.PersistentObjectAttributeOption, value: string): boolean {
         return option == null && value == null || (option && option.key === value);
     }
 
-    private _radioLabel(option: Vidyano.PersistentObjectAttributeOption): string {
-        return !option.value ? "—" : option.value;
+    private _isUnchecked(option: Vidyano.PersistentObjectAttributeOption, value: string): boolean {
+        return !this._isChecked(option, value);
     }
 
-    private _radioChanged(e: CustomEvent) {
+    private _select(e: CustomEvent) {
         e.stopPropagation();
 
         this.attribute.setValue((<any>e).model.option.key, true).catch(Vidyano.noop);

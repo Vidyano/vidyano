@@ -27,6 +27,10 @@ import "../../../select/select.js"
             type: String,
             notify: true
         },
+        inputtype: {
+            type: String,
+            computed: "_computeInputType(attribute)"
+        },
         objectId: {
             type: String,
             observer: "_objectIdChanged"
@@ -35,10 +39,6 @@ import "../../../select/select.js"
             type: Boolean,
             reflectToAttribute: true,
             computed: "attribute.selectInPlace"
-        },
-        selectInPlaceAsRadio: {
-            type: Boolean,
-            computed: "_computeSelectInPlaceAsRadio(attribute, sensitive)"
         },
         canOpenSelect: {
             type: Boolean,
@@ -212,8 +212,8 @@ export class PersistentObjectAttributeReference extends PersistentObjectAttribut
         return attribute && href && attribute.parent.isNew ? "_blank" : "";
     }
 
-    private _computeSelectInPlaceAsRadio(attribute: Vidyano.PersistentObjectAttributeWithReference, sensitive: boolean): boolean {
-        return !sensitive && attribute && attribute.getTypeHint("inputtype", undefined, undefined, true) === "radio";
+    private _computeInputType(attribute: Vidyano.PersistentObjectAttributeWithReference): string {
+        return attribute && attribute.getTypeHint("inputtype", "default", undefined, true);
     }
 
     private _computeOrientation(attribute: Vidyano.PersistentObjectAttributeWithReference): string {
@@ -228,7 +228,7 @@ export class PersistentObjectAttributeReference extends PersistentObjectAttribut
         return !sensitive ? displayValue : "";
     }
 
-    private _radioChanged(e: CustomEvent) {
+    private _select(e: CustomEvent) {
         e.stopPropagation();
 
         this.objectId = (<any>e).model.option.key;
