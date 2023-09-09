@@ -13229,7 +13229,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.10.1";
+let version$2 = "3.10.2";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -50751,7 +50751,7 @@ let QueryGridCell = class QueryGridCell extends WebComponent {
         const row = this.parentElement;
         if (!(row.item instanceof QueryResultItem))
             return;
-        if (row.index && row.item.query.items.indexOf(row.item) !== 0)
+        if (row.index && row.item.query.items[0] !== row.item)
             return;
         __classPrivateFieldSet(this, _QueryGridCell__lastMeasuredColumn, this.column, "f");
         this._observe();

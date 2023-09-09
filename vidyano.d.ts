@@ -12605,7 +12605,6 @@ declare class PersistentObjectAttributeKeyValueList extends PersistentObjectAttr
     private _computeOrientation;
     private _computeGroupSeparator;
     private _computeDisableFiltering;
-    private _isRadioChecked;
     private _optionLabel;
     private _isChecked;
     private _isUnchecked;
@@ -12778,11 +12777,11 @@ declare class PersistentObjectAttributeReference extends PersistentObjectAttribu
     private _openSelect;
     private _open;
     private _computeTarget;
-    private _computeSelectInPlaceAsRadio;
+    private _computeInputType;
     private _computeOrientation;
     private _computeCanOpenSelect;
     private _computeTitle;
-    private _radioChanged;
+    private _select;
 }
 
 interface ITranslatedString {
