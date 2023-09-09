@@ -12600,13 +12600,16 @@ declare class PersistentObjectAttributeImage extends PersistentObjectAttribute {
 declare class PersistentObjectAttributeKeyValueList extends PersistentObjectAttribute {
     static get template(): HTMLTemplateElement;
     protected _valueChanged(newValue: any): void;
-    private _computeRadio;
+    private _computeShowEditable;
+    private _computeInputType;
     private _computeOrientation;
     private _computeGroupSeparator;
     private _computeDisableFiltering;
     private _isRadioChecked;
-    private _radioLabel;
-    private _radioChanged;
+    private _optionLabel;
+    private _isChecked;
+    private _isUnchecked;
+    private _select;
 }
 
 declare class PersistentObjectAttributeMultiLineString extends PersistentObjectAttribute {

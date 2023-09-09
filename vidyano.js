@@ -12159,7 +12159,7 @@ class Query$1 extends ServiceObjectWithActions {
                 return this.totalItems;
             else if (property === "forEach") {
                 return (callback, thisArg) => {
-                    for (var key in target) {
+                    for (const key in target) {
                         const index = parseInt(key);
                         if (!isNaN(index)) {
                             const item = target[index];
@@ -12172,7 +12172,7 @@ class Query$1 extends ServiceObjectWithActions {
             else if (property === "filter") {
                 return (callback, thisArg) => {
                     const result = [];
-                    for (var key in target) {
+                    for (const key in target) {
                         const index = parseInt(key);
                         if (!isNaN(index)) {
                             const item = target[index];
@@ -13229,7 +13229,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.10.0";
+let version$2 = "3.10.1";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -43468,10 +43468,10 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
 </dom-if>
 <vi-app-config>
     <vi-persistent-object-attribute-config type="CommonMark" height="3"></vi-persistent-object-attribute-config>
-    <vi-persistent-object-attribute-config type="Reference" height="attr.selectInPlace && attr.getTypeHint('inputtype', '', undefined, true) === 'radio' ? 0 : 1"></vi-persistent-object-attribute-config>
+    <vi-persistent-object-attribute-config type="Reference" height="attr.selectInPlace && ['radio', 'chip'].indexOf(attr.getTypeHint('inputtype', '', undefined, true)) >= 0 ? 0 : 1"></vi-persistent-object-attribute-config>
     <vi-persistent-object-attribute-config type="DropDown" height="['radio', 'chip'].indexOf(attr.getTypeHint('inputtype', '', undefined, true)) >= 0 ? 0 : 1"></vi-persistent-object-attribute-config>
-    <vi-persistent-object-attribute-config type="KeyValueList" height="attr.getTypeHint('inputtype', '', undefined, true) === 'radio' ? 0 : 1"></vi-persistent-object-attribute-config>
-    <vi-persistent-object-attribute-config type="Enum" height="attr.getTypeHint('inputtype', '', undefined, true) === 'radio' ? 0 : 1"></vi-persistent-object-attribute-config>
+    <vi-persistent-object-attribute-config type="KeyValueList" height="['radio', 'chip'].indexOf(attr.getTypeHint('inputtype', '', undefined, true)) >= 0 ? 0 : 1"></vi-persistent-object-attribute-config>
+    <vi-persistent-object-attribute-config type="Enum" height="['radio', 'chip'].indexOf(attr.getTypeHint('inputtype', '', undefined, true)) >= 0 ? 0 : 1"></vi-persistent-object-attribute-config>
     <vi-persistent-object-attribute-config type="MultiLineString" height="attr.getTypeHint('height', 3, undefined, true)"></vi-persistent-object-attribute-config>
     <vi-persistent-object-attribute-config type="MultiString" height="attr.getTypeHint('height', 3, undefined, true)"></vi-persistent-object-attribute-config>
     <vi-persistent-object-attribute-config type="Image" height="attr.getTypeHint('height', 2, undefined, true)"></vi-persistent-object-attribute-config>
@@ -62740,7 +62740,6 @@ let PersistentObjectAttributeDropDown = class PersistentObjectAttributeDropDown 
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  gap: var(--theme-h4);
 }
 :host #chips vi-button[inverse] {
   background-color: var(--theme-color-faint);
@@ -62778,7 +62777,7 @@ let PersistentObjectAttributeDropDown = class PersistentObjectAttributeDropDown 
                 <div id="chips" orientation$="[[orientation]]">
                     <dom-repeat items="[[options]]" as="option">
                         <template>
-                            <vi-button label="[[_optionLabel(option)]]" inverse="[[_isUnchecked(option, value)]]" on-tap="_select" radio></vi-button>
+                            <vi-button label="[[_optionLabel(option)]]" inverse="[[_isUnchecked(option, value)]]" on-tap="_select"></vi-button>
                         </template>
                     </dom-repeat>
                 </div>
@@ -63360,51 +63359,57 @@ let PersistentObjectAttributeKeyValueList = class PersistentObjectAttributeKeyVa
 :host span, :host vi-select::part(input) {
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
 }
-:host #radiobuttons {
+:host #radiobuttons, :host #chips {
+  display: flex;
+  flex-direction: column;
   line-height: var(--theme-h2);
+  gap: var(--theme-h5);
 }
-:host #radiobuttons[orientation=horizontal] {
+:host #radiobuttons[orientation=horizontal], :host #chips[orientation=horizontal] {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
+}
+:host #chips vi-button[inverse] {
+  background-color: var(--theme-color-faint);
 }</style>
 
-<dom-if if="[[!editing]]">
+<dom-if if="[[!showEditable]]">
     <template>
         <vi-sensitive disabled="[[!sensitive]]">
             <span>[[attribute.displayValue]]</span>
         </vi-sensitive>
     </template>
 </dom-if>
-<dom-if if="[[editing]]">
+<dom-if if="[[showEditable]]">
     <template>
-        <dom-if if="[[!radio]]">
+        <dom-if if="[[op_areSame(inputtype, 'select')]]" restamp>
             <template>
                 <vi-persistent-object-attribute-edit attribute="[[attribute]]">
                     <vi-select options="[[options]]" selected-option="{{value}}" readonly="[[readOnly]]" disabled="[[attribute.parent.isFrozen]]" placeholder="[[placeholder]]" group-separator="[[groupSeparator]]" disable-filtering="[[disableFiltering]]" sensitive$="[[sensitive]]"></vi-select>
                 </vi-persistent-object-attribute-edit>
             </template>
         </dom-if>
-        <dom-if if="[[radio]]">
+        <dom-if if="[[op_areSame(inputtype, 'radio')]]" restamp>
             <template>
-                <dom-if if="[[!sensitive]]">
-                    <template>
-                        <div id="radiobuttons" orientation$="[[orientation]]">
-                            <dom-repeat items="[[options]]" as="option">
-                                <template>
-                                    <vi-checkbox label="[[_radioLabel(option)]]" checked="[[_isRadioChecked(option, value)]]" on-changed="_radioChanged" radio disabled$="[[attribute.parent.isFrozen]]"></vi-checkbox>
-                                </template>
-                            </dom-repeat>
-                        </div>
-                    </template>
-                </dom-if>
-                <dom-if if="[[sensitive]]">
-                    <template>
-                        <vi-sensitive>
-                            <span>[[attribute.displayValue]]</span>
-                        </vi-sensitive>
-                    </template>
-                </dom-if>
+                <div id="radiobuttons" orientation$="[[orientation]]">
+                    <dom-repeat items="[[options]]" as="option">
+                        <template>
+                            <vi-checkbox label="[[_optionLabel(option)]]" checked="[[_isChecked(option, value)]]" on-changed="_select" radio disabled$="[[attribute.parent.isFrozen]]"></vi-checkbox>
+                        </template>
+                    </dom-repeat>
+                </div>
+            </template>
+        </dom-if>
+        <dom-if if="[[op_areSame(inputtype, 'chip')]]" restamp>
+            <template>
+                <div id="chips" orientation$="[[orientation]]">
+                    <dom-repeat items="[[options]]" as="option">
+                        <template>
+                            <vi-button label="[[_optionLabel(option)]]" inverse="[[_isUnchecked(option, value)]]" on-tap="_select"></vi-button>
+                        </template>
+                    </dom-repeat>
+                </div>
             </template>
         </dom-if>
     </template>
@@ -63413,8 +63418,11 @@ let PersistentObjectAttributeKeyValueList = class PersistentObjectAttributeKeyVa
         if (this.attribute && newValue !== this.attribute.value)
             this.attribute.setValue(newValue, true).catch(noop$1);
     }
-    _computeRadio(attribute) {
-        return attribute && attribute.getTypeHint("inputtype", undefined, undefined, true) === "radio";
+    _computeShowEditable(editing, sensitive) {
+        return editing && !sensitive;
+    }
+    _computeInputType(attribute) {
+        return attribute && attribute.getTypeHint("inputtype", "select", undefined, true)?.toLowerCase();
     }
     _computeOrientation(attribute) {
         return attribute && attribute.getTypeHint("orientation", "vertical", undefined, true);
@@ -63425,13 +63433,16 @@ let PersistentObjectAttributeKeyValueList = class PersistentObjectAttributeKeyVa
     _computeDisableFiltering(attribute) {
         return attribute && attribute.getTypeHint("disablefiltering", null, undefined, true);
     }
-    _isRadioChecked(option, value) {
+    _optionLabel(option) {
+        return option?.value || "—";
+    }
+    _isChecked(option, value) {
         return option == null && value == null || (option && option.key === value);
     }
-    _radioLabel(option) {
-        return !option.value ? "—" : option.value;
+    _isUnchecked(option, value) {
+        return !this._isChecked(option, value);
     }
-    _radioChanged(e) {
+    _select(e) {
         e.stopPropagation();
         this.attribute.setValue(e.model.option.key, true).catch(noop$1);
     }
@@ -63439,9 +63450,9 @@ let PersistentObjectAttributeKeyValueList = class PersistentObjectAttributeKeyVa
 PersistentObjectAttributeKeyValueList = __decorate([
     WebComponent.register({
         properties: {
-            radio: {
-                type: Boolean,
-                computed: "_computeRadio(attribute)"
+            inputtype: {
+                type: String,
+                computed: "_computeInputType(attribute)"
             },
             orientation: {
                 type: String,
@@ -63455,7 +63466,11 @@ PersistentObjectAttributeKeyValueList = __decorate([
                 type: Boolean,
                 reflectToAttribute: true,
                 computed: "_computeDisableFiltering(attribute)"
-            }
+            },
+            showEditable: {
+                type: Boolean,
+                computed: "_computeShowEditable(editing, sensitive)"
+            },
         }
     })
 ], PersistentObjectAttributeKeyValueList);
@@ -73563,7 +73578,7 @@ let Tags = class Tags extends WebComponent {
                 </div>
             </template>
         </dom-repeat>
-        <input id="tagsInput" type="text" value="{{input::input}}" on-keyup="_checkKeyPress" on-blur="_onInputBlur" hidden$="[[op_some(readonly, disabled)]]" />
+        <input id="tagsInput" type="text" value="{{input::input}}" on-keyup="_checkKeyPress" on-blur="_onInputBlur" hidden$="[[readonly]]" />
     </div>
 </vi-scroller>`; }
     focus() {
@@ -73706,7 +73721,7 @@ let PersistentObjectAttributeMultiString = class PersistentObjectAttributeMultiS
         <dom-if if="[[editing]]">
             <template>
                 <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-                    <vi-tags content tags="{{tags}}" readonly="[[isTagsReadonly]]" sensitive="[[sensitive]]" disabled="[[frozen]]"></vi-tags>
+                    <vi-tags content tags="{{tags}}" readonly="[[isTagsReadonly]]" sensitive="[[sensitive]]"></vi-tags>
                     <dom-if if="[[hasSuggestions]]">
                         <template>
                             <vi-popup id="suggestions" slot="right">
@@ -73805,8 +73820,8 @@ let PersistentObjectAttributeMultiString = class PersistentObjectAttributeMultiS
         const currentStrings = strings.map(s => s.value);
         return suggestions.filter(s => currentStrings.indexOf(s) < 0);
     }
-    _computeIsTagsReadonly(readonly, editing) {
-        return this.readOnly || !editing;
+    _computeIsTagsReadonly(readOnly, editing, frozen) {
+        return readOnly || !editing || frozen;
     }
     _addSuggestionTag(e) {
         this.value = `${this.value}\n${e.model.suggestion}`;
@@ -73841,7 +73856,7 @@ PersistentObjectAttributeMultiString = __decorate([
             },
             isTagsReadonly: {
                 type: Boolean,
-                computed: "_computeIsTagsReadonly(readOnly, editing)"
+                computed: "_computeIsTagsReadonly(readOnly, editing, frozen)"
             }
         },
         observers: [
@@ -74344,13 +74359,19 @@ let PersistentObjectAttributeReference = class PersistentObjectAttributeReferenc
 :host([editing]) a vi-icon {
   height: 100%;
 }
-:host #radiobuttons {
+:host #radiobuttons, :host #chips {
+  display: flex;
+  flex-direction: column;
   line-height: var(--theme-h2);
+  gap: var(--theme-h5);
 }
-:host #radiobuttons[orientation=horizontal] {
+:host #radiobuttons[orientation=horizontal], :host #chips[orientation=horizontal] {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
+}
+:host #chips vi-button[inverse] {
+  background-color: var(--theme-color-faint);
 }</style>
 
 <dom-if if="[[!editing]]">
@@ -74372,7 +74393,7 @@ let PersistentObjectAttributeReference = class PersistentObjectAttributeReferenc
     <template>
         <dom-if if="[[attribute.selectInPlace]]">
             <template>
-                <dom-if if="[[!selectInPlaceAsRadio]]">
+                <dom-if if="[[op_areSame(inputtype, 'default')]]">
                     <template>
                         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
                             <vi-select id="selectInPlace" class="fit" options="[[options]]" selected-option="{{objectId}}" readonly$="[[readOnly]]" placeholder="[[placeholder]]" sensitive="[[sensitive]]" disabled="[[frozen]]"></vi-select>
@@ -74399,13 +74420,26 @@ let PersistentObjectAttributeReference = class PersistentObjectAttributeReferenc
                         </vi-persistent-object-attribute-edit>
                     </template>
                 </dom-if>
-                <dom-if if="[[selectInPlaceAsRadio]]">
+                <dom-if if="[[op_areSame(inputtype, 'radio')]]">
                     <template>
                         <div content>
                             <div id="radiobuttons" orientation$="[[orientation]]">
                                 <dom-repeat items="[[options]]" as="option">
                                     <template>
-                                        <vi-checkbox label="[[option.value]]" checked="[[op_areSame(option.key, objectId)]]" on-changed="_radioChanged" radio></vi-checkbox>
+                                        <vi-checkbox label="[[option.value]]" checked="[[op_areSame(option.key, objectId)]]" on-changed="_select" radio></vi-checkbox>
+                                    </template>
+                                </dom-repeat>
+                            </div>
+                        </div>
+                    </template>
+                </dom-if>
+                <dom-if if="[[op_areSame(inputtype, 'chip')]]">
+                    <template>
+                        <div content>
+                            <div id="chips" orientation$="[[orientation]]">
+                                <dom-repeat items="[[options]]" as="option">
+                                    <template>
+                                        <vi-button label="[[option.value]]" inverse="[[op_areNotSame(option.key, objectId)]]" on-tap="_select"></vi-button>
                                     </template>
                                 </dom-repeat>
                             </div>
@@ -74559,8 +74593,8 @@ let PersistentObjectAttributeReference = class PersistentObjectAttributeReferenc
     _computeTarget(attribute, href) {
         return attribute && href && attribute.parent.isNew ? "_blank" : "";
     }
-    _computeSelectInPlaceAsRadio(attribute, sensitive) {
-        return !sensitive && attribute && attribute.getTypeHint("inputtype", undefined, undefined, true) === "radio";
+    _computeInputType(attribute) {
+        return attribute && attribute.getTypeHint("inputtype", "default", undefined, true);
     }
     _computeOrientation(attribute) {
         return attribute && attribute.getTypeHint("orientation", "vertical", undefined, true);
@@ -74571,7 +74605,7 @@ let PersistentObjectAttributeReference = class PersistentObjectAttributeReferenc
     _computeTitle(displayValue, sensitive) {
         return !sensitive ? displayValue : "";
     }
-    _radioChanged(e) {
+    _select(e) {
         e.stopPropagation();
         this.objectId = e.model.option.key;
     }
@@ -74596,6 +74630,10 @@ PersistentObjectAttributeReference = __decorate([
                 type: String,
                 notify: true
             },
+            inputtype: {
+                type: String,
+                computed: "_computeInputType(attribute)"
+            },
             objectId: {
                 type: String,
                 observer: "_objectIdChanged"
@@ -74604,10 +74642,6 @@ PersistentObjectAttributeReference = __decorate([
                 type: Boolean,
                 reflectToAttribute: true,
                 computed: "attribute.selectInPlace"
-            },
-            selectInPlaceAsRadio: {
-                type: Boolean,
-                computed: "_computeSelectInPlaceAsRadio(attribute, sensitive)"
             },
             canOpenSelect: {
                 type: Boolean,
