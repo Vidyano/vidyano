@@ -630,9 +630,14 @@ export class Query extends ServiceObjectWithActions {
                 }
             }
 
-            // Don't allow any of the other manipulations
-            if (["push", "pop", "shift", "unshift", "splice", "reverse", "sort"].indexOf(property) >= 0)
-                return undefined;
+            // Don't allow manipulations
+            if (["push", "pop", "shift", "unshift", "splice"].indexOf(property) >= 0)
+                throw "Operation not allowed";
+
+            if (["reverse", "sort"].indexOf(property) >= 0) {
+                console.log(`WARNING: '${property}' works on a copy of the array and not on the original array.`);
+                return Reflect.get(Array.from(target), property, receiver);
+            }
         }
 
         return Reflect.get(target, property, receiver);
