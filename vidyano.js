@@ -12183,8 +12183,12 @@ class Query$1 extends ServiceObjectWithActions {
                     return result;
                 };
             }
-            if (["push", "pop", "shift", "unshift", "splice", "reverse", "sort"].indexOf(property) >= 0)
-                return undefined;
+            if (["push", "pop", "shift", "unshift", "splice"].indexOf(property) >= 0)
+                throw "Operation not allowed";
+            if (["reverse", "sort"].indexOf(property) >= 0) {
+                console.log(`WARNING: '${property}' works on a copy of the array and not on the original array.`);
+                return Reflect.get(Array.from(target), property, receiver);
+            }
         }
         return Reflect.get(target, property, receiver);
     }
@@ -13229,7 +13233,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.10.2";
+let version$2 = "3.10.3";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
