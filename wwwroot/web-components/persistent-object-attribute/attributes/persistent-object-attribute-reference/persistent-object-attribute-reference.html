@@ -53,7 +53,7 @@
                             <div id="radiobuttons" orientation$="[[orientation]]">
                                 <dom-repeat items="[[options]]" as="option">
                                     <template>
-                                        <vi-checkbox label="[[option.value]]" checked="[[op_areSame(option.key, objectId)]]" on-changed="_select" radio></vi-checkbox>
+                                        <vi-checkbox label="[[option.value]]" checked="[[op_areSame(option.key, objectId)]]" on-changed="_select" radio part="radio"></vi-checkbox>
                                     </template>
                                 </dom-repeat>
                             </div>
@@ -66,7 +66,7 @@
                             <div id="chips" orientation$="[[orientation]]">
                                 <dom-repeat items="[[options]]" as="option">
                                     <template>
-                                        <vi-button label="[[option.value]]" inverse="[[op_areNotSame(option.key, objectId)]]" on-tap="_select"></vi-button>
+                                        <vi-button label="[[option.value]]" inverse="[[op_areNotSame(option.key, objectId)]]" on-tap="_select" part="chip"></vi-button>
                                     </template>
                                 </dom-repeat>
                             </div>
