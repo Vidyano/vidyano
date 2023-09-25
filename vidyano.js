@@ -13233,7 +13233,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.10.3";
+let version$2 = "3.11-preview1";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -35120,26 +35120,12 @@ class PathHistory {
         };
     }
     pushState(state, title, path) {
-        if (this.supported) {
-            Path.dispatch(path);
-            history.pushState(state, title, path);
-        }
-        else {
-            if (this.fallback) {
-                window.location.hash = "#" + path;
-            }
-        }
+        Path.dispatch(path);
+        history.pushState(state, title, this.noHistory ? undefined : path);
     }
     replaceState(state, title, path) {
-        if (this.supported) {
-            Path.dispatch(path);
-            history.replaceState(state, title, path);
-        }
-        else {
-            if (Path.history.fallback) {
-                window.location.hash = "#" + path;
-            }
-        }
+        Path.dispatch(path);
+        history.replaceState(state, title, this.noHistory ? undefined : path);
     }
     popState() {
         var initialPop = !Path.history.initial.popped && location.href == Path.history.initial.URL;
@@ -35148,24 +35134,9 @@ class PathHistory {
             return;
         Path.dispatch(Path.routes.rootPath ? document.location.href.substr(Path.routes.root.length).replace(document.location.hash, "") : document.location.hash);
     }
-    listen(fallback) {
-        this.supported = !!(window.history && window.history.pushState);
-        this.fallback = fallback;
-        if (this.supported) {
-            this.initial.popped = ('state' in window.history), this.initial.URL = location.href;
-            window.onpopstate = Path.history.popState;
-        }
-        else {
-            if (this.fallback) {
-                for (let route in Path.routes.defined) {
-                    if (route.charAt(0) != "#") {
-                        Path.routes.defined["#" + route] = Path.routes.defined[route];
-                        Path.routes.defined["#" + route].path = "#" + route;
-                    }
-                }
-                Path.listen();
-            }
-        }
+    listen() {
+        this.initial.popped = ('state' in window.history), this.initial.URL = location.href;
+        window.onpopstate = Path.history.popState;
     }
 }
 class Path {
@@ -35223,14 +35194,6 @@ class Path {
         }
         else if (Path.routes.rescue !== null)
             Path.routes.rescue();
-    }
-    static listen() {
-        if (location.hash === "" && Path.routes.root !== null)
-            location.hash = Path.routes.root;
-        window.onhashchange = () => { this.dispatch(location.hash); };
-        if (location.hash !== "") {
-            this.dispatch(location.hash);
-        }
     }
 }
 Path.routes = new PathRoutes();
@@ -43571,6 +43534,9 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
             path.push(element = element.shadowRoot.activeElement);
         return path.reverse();
     }
+    _noHistoryChanged(noHistory) {
+        Path.history.noHistory = noHistory;
+    }
     _initPathRescue() {
         Path.rescue(() => {
             this.path = AppBase_1.removeRootPath(Path.routes.current);
@@ -43867,6 +43833,12 @@ AppBase = AppBase_1 = __decorate([
                 type: String,
                 reflectToAttribute: true,
                 observer: "_cookiePrefixChanged"
+            },
+            noHistory: {
+                type: Boolean,
+                reflectToAttribute: true,
+                value: false,
+                observer: "_noHistoryChanged"
             },
             themeColor: {
                 type: String,
@@ -62770,7 +62742,7 @@ let PersistentObjectAttributeDropDown = class PersistentObjectAttributeDropDown 
                 <div id="radiobuttons" orientation$="[[orientation]]">
                     <dom-repeat items="[[options]]" as="option">
                         <template>
-                            <vi-checkbox label="[[_optionLabel(option)]]" checked="[[_isChecked(option, value)]]" on-changed="_select" radio></vi-checkbox>
+                            <vi-checkbox label="[[_optionLabel(option)]]" checked="[[_isChecked(option, value)]]" on-changed="_select" radio part="radio"></vi-checkbox>
                         </template>
                     </dom-repeat>
                 </div>
@@ -62781,7 +62753,7 @@ let PersistentObjectAttributeDropDown = class PersistentObjectAttributeDropDown 
                 <div id="chips" orientation$="[[orientation]]">
                     <dom-repeat items="[[options]]" as="option">
                         <template>
-                            <vi-button label="[[_optionLabel(option)]]" inverse="[[_isUnchecked(option, value)]]" on-tap="_select"></vi-button>
+                            <vi-button label="[[_optionLabel(option)]]" inverse="[[_isUnchecked(option, value)]]" on-tap="_select" part="chip"></vi-button>
                         </template>
                     </dom-repeat>
                 </div>
@@ -63399,7 +63371,7 @@ let PersistentObjectAttributeKeyValueList = class PersistentObjectAttributeKeyVa
                 <div id="radiobuttons" orientation$="[[orientation]]">
                     <dom-repeat items="[[options]]" as="option">
                         <template>
-                            <vi-checkbox label="[[_optionLabel(option)]]" checked="[[_isChecked(option, value)]]" on-changed="_select" radio disabled$="[[attribute.parent.isFrozen]]"></vi-checkbox>
+                            <vi-checkbox label="[[_optionLabel(option)]]" checked="[[_isChecked(option, value)]]" on-changed="_select" radio disabled$="[[attribute.parent.isFrozen]]" part="radio"></vi-checkbox>
                         </template>
                     </dom-repeat>
                 </div>
@@ -63410,7 +63382,7 @@ let PersistentObjectAttributeKeyValueList = class PersistentObjectAttributeKeyVa
                 <div id="chips" orientation$="[[orientation]]">
                     <dom-repeat items="[[options]]" as="option">
                         <template>
-                            <vi-button label="[[_optionLabel(option)]]" inverse="[[_isUnchecked(option, value)]]" on-tap="_select"></vi-button>
+                            <vi-button label="[[_optionLabel(option)]]" inverse="[[_isUnchecked(option, value)]]" on-tap="_select" part="chip"></vi-button>
                         </template>
                     </dom-repeat>
                 </div>
@@ -74430,7 +74402,7 @@ let PersistentObjectAttributeReference = class PersistentObjectAttributeReferenc
                             <div id="radiobuttons" orientation$="[[orientation]]">
                                 <dom-repeat items="[[options]]" as="option">
                                     <template>
-                                        <vi-checkbox label="[[option.value]]" checked="[[op_areSame(option.key, objectId)]]" on-changed="_select" radio></vi-checkbox>
+                                        <vi-checkbox label="[[option.value]]" checked="[[op_areSame(option.key, objectId)]]" on-changed="_select" radio part="radio"></vi-checkbox>
                                     </template>
                                 </dom-repeat>
                             </div>
@@ -74443,7 +74415,7 @@ let PersistentObjectAttributeReference = class PersistentObjectAttributeReferenc
                             <div id="chips" orientation$="[[orientation]]">
                                 <dom-repeat items="[[options]]" as="option">
                                     <template>
-                                        <vi-button label="[[option.value]]" inverse="[[op_areNotSame(option.key, objectId)]]" on-tap="_select"></vi-button>
+                                        <vi-button label="[[option.value]]" inverse="[[op_areNotSame(option.key, objectId)]]" on-tap="_select" part="chip"></vi-button>
                                     </template>
                                 </dom-repeat>
                             </div>

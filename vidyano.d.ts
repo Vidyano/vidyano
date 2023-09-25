@@ -10186,6 +10186,7 @@ declare abstract class AppBase extends WebComponent {
     get hooks(): AppServiceHooksBase;
     get activeElement(): Element;
     get activeElementPath(): Element[];
+    private _noHistoryChanged;
     protected _initPathRescue(): void;
     private _appRoutePresenterConnected;
     private _computeInitialService;
