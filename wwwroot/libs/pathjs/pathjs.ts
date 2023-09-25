@@ -82,29 +82,17 @@ export class PathHistory {
         popped: false,
         URL: ""
     };
-    supported: boolean;
-    fallback: boolean;
+
+    noHistory: boolean;
 
     pushState(state, title, path){
-        if(this.supported){
-            Path.dispatch(path);
-            history.pushState(state, title, path);
-        } else {
-            if(this.fallback){
-                window.location.hash = "#" + path;
-            }
-        }
+        Path.dispatch(path);
+        history.pushState(state, title, this.noHistory ? undefined : path);
     }
 
     replaceState(state: any, title: string, path: string) {
-        if (this.supported) {
-            Path.dispatch(path);
-            history.replaceState(state, title, path);
-        } else {
-            if (Path.history.fallback) {
-                window.location.hash = "#" + path;
-            }
-        }
+        Path.dispatch(path);
+        history.replaceState(state, title, this.noHistory ? undefined : path);
     }
 
     popState() {
@@ -116,25 +104,9 @@ export class PathHistory {
         Path.dispatch(Path.routes.rootPath ? document.location.href.substr(Path.routes.root.length).replace(document.location.hash, "") : document.location.hash);
     }
 
-    listen(fallback?: boolean) {
-        this.supported = !!(window.history && window.history.pushState);
-        this.fallback = fallback;
-
-        if(this.supported){
-            this.initial.popped = ('state' in window.history), this.initial.URL = location.href;
-            window.onpopstate = Path.history.popState;
-        } else {
-            if(this.fallback){
-                for(let route in Path.routes.defined){
-                    if(route.charAt(0) != "#"){
-                        Path.routes.defined["#"+route] = Path.routes.defined[route];
-                        Path.routes.defined["#"+route].path = "#"+route;
-                    }
-                }
-
-                Path.listen();
-            }
-        }
+    listen() {
+        this.initial.popped = ('state' in window.history), this.initial.URL = location.href;
+        window.onpopstate = Path.history.popState;
     }
 }
 
@@ -203,18 +175,5 @@ export class Path {
             return true;
         } else if (Path.routes.rescue !== null)
             Path.routes.rescue();
-    }
-
-    static listen() {
-        var fn = function(){ this.dispatch(location.hash); }
-
-        if (location.hash === "" && Path.routes.root !== null)
-            location.hash = Path.routes.root;
-
-        window.onhashchange = () => { this.dispatch(location.hash); };
-
-        if(location.hash !== "") {
-            this.dispatch(location.hash);
-        }
     }
 }

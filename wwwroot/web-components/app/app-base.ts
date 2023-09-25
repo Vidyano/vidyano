@@ -119,6 +119,12 @@ if (!base)
             reflectToAttribute: true,
             observer: "_cookiePrefixChanged"
         },
+        noHistory: {
+            type: Boolean,
+            reflectToAttribute: true,
+            value: false,
+            observer: "_noHistoryChanged"
+        },
         themeColor: {
             type: String,
             reflectToAttribute: true,
@@ -234,6 +240,10 @@ export abstract class AppBase extends WebComponent {
             path.push(element = element.shadowRoot.activeElement);
 
         return path.reverse();
+    }
+
+    private _noHistoryChanged(noHistory: boolean) {
+        Path.history.noHistory = noHistory;
     }
 
     protected _initPathRescue() {
