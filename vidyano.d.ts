@@ -573,7 +573,7 @@ declare namespace moment {
 
     diff(b: MomentInput, unitOfTime?: unitOfTime.Diff, precise?: boolean): number;
 
-    toArray(): number[];
+    toArray(): [number, number, number, number, number, number, number];
     toDate(): Date;
     toISOString(keepOffset?: boolean): string;
     inspect(): string;
@@ -782,12 +782,14 @@ declare namespace moment {
 }
 
 declare namespace moment_d {
-  export {
-    moment as default,
-  };
+  export { moment as default };
 }
 
 // Type definitions for bignumber.js >=8.1.0
+// Project: https://github.com/MikeMcl/bignumber.js
+// Definitions by: Michael Mclaughlin <https://github.com/MikeMcl>
+// Definitions: https://github.com/MikeMcl/bignumber.js
+
 
 
 declare namespace BigNumber {
@@ -1274,7 +1276,7 @@ declare class BigNumber implements BigNumber.Instance {
    * @param [decimalPlaces] Decimal places, integer, 0 to 1e+9.
    * @param [roundingMode] Rounding mode, integer, 0 to 8.
    */
-  decimalPlaces(): number;
+  decimalPlaces(): number | null;
   decimalPlaces(decimalPlaces: number, roundingMode?: BigNumber.RoundingMode): BigNumber;
 
   /**
@@ -1307,7 +1309,7 @@ declare class BigNumber implements BigNumber.Instance {
    * @param [decimalPlaces] Decimal places, integer, 0 to 1e+9.
    * @param [roundingMode] Rounding mode, integer, 0 to 8.
    */
-  dp(): number;
+  dp(): number | null;
   dp(decimalPlaces: number, roundingMode?: BigNumber.RoundingMode): BigNumber;
 
   /**
@@ -2405,7 +2407,7 @@ declare class BigNumber implements BigNumber.Instance {
    *
    * @param object The configuration object.
    */
-  static config(object: BigNumber.Config): BigNumber.Config;
+  static config(object?: BigNumber.Config): BigNumber.Config;
 
   /**
    * Returns `true` if `value` is a BigNumber instance, otherwise returns `false`.
@@ -2582,8 +2584,10 @@ declare class BigNumber implements BigNumber.Instance {
    *
    * @param object The configuration object.
    */
-  static set(object: BigNumber.Config): BigNumber.Config;
+  static set(object?: BigNumber.Config): BigNumber.Config;
 }
+
+declare function BigNumber(n: BigNumber.Value, base?: number): BigNumber;
 
 declare type KeyValue<T> = {
     [key: string]: T;
@@ -3041,78 +3045,34 @@ declare type ProfilerSqlParameter = {
     value: string;
 };
 
-type service_GetApplicationRequest = GetApplicationRequest;
-type service_GetQueryRequest = GetQueryRequest;
-type service_GetQueryResponse = GetQueryResponse;
-type service_GetPersistentObjectRequest = GetPersistentObjectRequest;
-type service_GetPersistentObjectResponse = GetPersistentObjectResponse;
+type service_ApplicationResponse = ApplicationResponse;
+type service_ClientData = ClientData;
 type service_ExecuteActionParameters = ExecuteActionParameters;
-type service_ExecuteActionRequest = ExecuteActionRequest;
 type service_ExecuteActionRefreshParameters = ExecuteActionRefreshParameters;
+type service_ExecuteActionRequest = ExecuteActionRequest;
+type service_ExecuteActionResponse = ExecuteActionResponse;
+type service_ExecutePersistentObjectActionRequest = ExecutePersistentObjectActionRequest;
 type service_ExecuteQueryActionRequest = ExecuteQueryActionRequest;
 type service_ExecuteQueryFilterActionRequest = ExecuteQueryFilterActionRequest;
-type service_ExecutePersistentObjectActionRequest = ExecutePersistentObjectActionRequest;
-type service_ExecuteActionResponse = ExecuteActionResponse;
 type service_ExecuteQueryRequest = ExecuteQueryRequest;
 type service_ExecuteQueryResponse = ExecuteQueryResponse;
-type service_ProviderParameters = ProviderParameters;
-type service_ClientData = ClientData;
+type service_GetApplicationRequest = GetApplicationRequest;
+type service_GetPersistentObjectRequest = GetPersistentObjectRequest;
+type service_GetPersistentObjectResponse = GetPersistentObjectResponse;
+type service_GetQueryRequest = GetQueryRequest;
+type service_GetQueryResponse = GetQueryResponse;
 type service_Languages = Languages;
-type service_ApplicationResponse = ApplicationResponse;
-type service_PersistentObjectStateBehavior = PersistentObjectStateBehavior;
 type service_PersistentObjectAttributeVisibility = PersistentObjectAttributeVisibility;
-type service_QueryResult = QueryResult;
-type service_QueryGroupingInfo = QueryGroupingInfo;
-type service_RetryAction = RetryAction;
+type service_PersistentObjectStateBehavior = PersistentObjectStateBehavior;
 type service_ProfilerEntry = ProfilerEntry;
 type service_ProfilerSql = ProfilerSql;
 type service_ProfilerSqlParameter = ProfilerSqlParameter;
+type service_ProviderParameters = ProviderParameters;
+type service_QueryGroupingInfo = QueryGroupingInfo;
+type service_QueryResult = QueryResult;
+type service_RetryAction = RetryAction;
 declare namespace service {
-  export {
-    NotificationType$1 as NotificationType,
-    SortDirection$1 as SortDirection,
-    Request$1 as Request,
-    Response$1 as Response,
-    service_GetApplicationRequest as GetApplicationRequest,
-    service_GetQueryRequest as GetQueryRequest,
-    service_GetQueryResponse as GetQueryResponse,
-    service_GetPersistentObjectRequest as GetPersistentObjectRequest,
-    service_GetPersistentObjectResponse as GetPersistentObjectResponse,
-    service_ExecuteActionParameters as ExecuteActionParameters,
-    service_ExecuteActionRequest as ExecuteActionRequest,
-    service_ExecuteActionRefreshParameters as ExecuteActionRefreshParameters,
-    service_ExecuteQueryActionRequest as ExecuteQueryActionRequest,
-    service_ExecuteQueryFilterActionRequest as ExecuteQueryFilterActionRequest,
-    service_ExecutePersistentObjectActionRequest as ExecutePersistentObjectActionRequest,
-    service_ExecuteActionResponse as ExecuteActionResponse,
-    service_ExecuteQueryRequest as ExecuteQueryRequest,
-    service_ExecuteQueryResponse as ExecuteQueryResponse,
-    service_ProviderParameters as ProviderParameters,
-    service_ClientData as ClientData,
-    service_Languages as Languages,
-    Language$1 as Language,
-    service_ApplicationResponse as ApplicationResponse,
-    service_PersistentObjectStateBehavior as PersistentObjectStateBehavior,
-    PersistentObject$2 as PersistentObject,
-    service_PersistentObjectAttributeVisibility as PersistentObjectAttributeVisibility,
-    PersistentObjectAttribute$2 as PersistentObjectAttribute,
-    PersistentObjectAttributeWithReference$1 as PersistentObjectAttributeWithReference,
-    PersistentObjectTab$2 as PersistentObjectTab,
-    Query$2 as Query,
-    QueryColumn$1 as QueryColumn,
-    service_QueryResult as QueryResult,
-    QueryResultItem$1 as QueryResultItem,
-    QueryResultItemValue$1 as QueryResultItemValue,
-    service_QueryGroupingInfo as QueryGroupingInfo,
-    QueryResultItemGroup$1 as QueryResultItemGroup,
-    QueryChart$1 as QueryChart,
-    service_RetryAction as RetryAction,
-    ProfilerRequest$1 as ProfilerRequest,
-    Profiler$1 as Profiler,
-    service_ProfilerEntry as ProfilerEntry,
-    service_ProfilerSql as ProfilerSql,
-    service_ProfilerSqlParameter as ProfilerSqlParameter,
-  };
+  export type { service_ApplicationResponse as ApplicationResponse, service_ClientData as ClientData, service_ExecuteActionParameters as ExecuteActionParameters, service_ExecuteActionRefreshParameters as ExecuteActionRefreshParameters, service_ExecuteActionRequest as ExecuteActionRequest, service_ExecuteActionResponse as ExecuteActionResponse, service_ExecutePersistentObjectActionRequest as ExecutePersistentObjectActionRequest, service_ExecuteQueryActionRequest as ExecuteQueryActionRequest, service_ExecuteQueryFilterActionRequest as ExecuteQueryFilterActionRequest, service_ExecuteQueryRequest as ExecuteQueryRequest, service_ExecuteQueryResponse as ExecuteQueryResponse, service_GetApplicationRequest as GetApplicationRequest, service_GetPersistentObjectRequest as GetPersistentObjectRequest, service_GetPersistentObjectResponse as GetPersistentObjectResponse, service_GetQueryRequest as GetQueryRequest, service_GetQueryResponse as GetQueryResponse, Language$1 as Language, service_Languages as Languages, NotificationType$1 as NotificationType, PersistentObject$2 as PersistentObject, PersistentObjectAttribute$2 as PersistentObjectAttribute, service_PersistentObjectAttributeVisibility as PersistentObjectAttributeVisibility, PersistentObjectAttributeWithReference$1 as PersistentObjectAttributeWithReference, service_PersistentObjectStateBehavior as PersistentObjectStateBehavior, PersistentObjectTab$2 as PersistentObjectTab, Profiler$1 as Profiler, service_ProfilerEntry as ProfilerEntry, ProfilerRequest$1 as ProfilerRequest, service_ProfilerSql as ProfilerSql, service_ProfilerSqlParameter as ProfilerSqlParameter, service_ProviderParameters as ProviderParameters, Query$2 as Query, QueryChart$1 as QueryChart, QueryColumn$1 as QueryColumn, service_QueryGroupingInfo as QueryGroupingInfo, service_QueryResult as QueryResult, QueryResultItem$1 as QueryResultItem, QueryResultItemGroup$1 as QueryResultItemGroup, QueryResultItemValue$1 as QueryResultItemValue, Request$1 as Request, Response$1 as Response, service_RetryAction as RetryAction, SortDirection$1 as SortDirection };
 }
 
 declare class ServiceObject extends Observable<ServiceObject> {
@@ -4138,77 +4098,69 @@ declare abstract class DataType {
     static toServiceString(value: any, type: string): string;
 }
 
-type vidyano_ExpressionParser = ExpressionParser;
-declare const vidyano_ExpressionParser: typeof ExpressionParser;
-type vidyano_ISubjectNotifier<TSource, TDetail> = ISubjectNotifier<TSource, TDetail>;
-type vidyano_PropertyChangedArgs = PropertyChangedArgs;
-declare const vidyano_PropertyChangedArgs: typeof PropertyChangedArgs;
-type vidyano_ArrayChangedArgs = ArrayChangedArgs;
-declare const vidyano_ArrayChangedArgs: typeof ArrayChangedArgs;
-type vidyano_ISubjectDisposer = ISubjectDisposer;
-type vidyano_Subject<TSource, TDetail> = Subject<TSource, TDetail>;
-declare const vidyano_Subject: typeof Subject;
-type vidyano_ISubjectObserver<TSource, TDetail> = ISubjectObserver<TSource, TDetail>;
-type vidyano_Observable<T> = Observable<T>;
-declare const vidyano_Observable: typeof Observable;
-type vidyano_IPropertyChangedObserver<T> = IPropertyChangedObserver<T>;
-type vidyano_Queue = Queue;
-declare const vidyano_Queue: typeof Queue;
-type vidyano_ServiceBusCallback = ServiceBusCallback;
-type vidyano_ServiceBusSubscriptionDisposer = ServiceBusSubscriptionDisposer;
-type vidyano_IServiceBus = IServiceBus;
-declare const vidyano_ServiceBus: typeof ServiceBus;
-declare const vidyano_extend: typeof extend;
-declare const vidyano_noop: typeof noop;
-declare const vidyano_sleep: typeof sleep;
-declare const vidyano_version: typeof version;
-type vidyano_NotificationType = NotificationType;
-type vidyano_Service = Service;
-declare const vidyano_Service: typeof Service;
-type vidyano_IForgotPassword = IForgotPassword;
-type vidyano_IReportOptions = IReportOptions;
-type vidyano_IInstantSearchResult = IInstantSearchResult;
-type vidyano_IActionExecuteOptions = IActionExecuteOptions;
-type vidyano_ISelectedItemsActionArgs = ISelectedItemsActionArgs;
-type vidyano_ActionExecutionHandler = ActionExecutionHandler;
-type vidyano_ActionExecutionHandlerDispose = ActionExecutionHandlerDispose;
 type vidyano_Action = Action;
 declare const vidyano_Action: typeof Action;
-declare const vidyano_Actions: typeof Actions;
-type vidyano_ActionDefinitionParams = ActionDefinitionParams;
 type vidyano_ActionDefinition = ActionDefinition;
 declare const vidyano_ActionDefinition: typeof ActionDefinition;
+type vidyano_ActionDefinitionParams = ActionDefinitionParams;
+type vidyano_ActionExecutionHandler = ActionExecutionHandler;
+type vidyano_ActionExecutionHandlerDispose = ActionExecutionHandlerDispose;
 type vidyano_ActionGroup = ActionGroup;
 declare const vidyano_ActionGroup: typeof ActionGroup;
+declare const vidyano_Actions: typeof Actions;
 type vidyano_Application = Application;
 declare const vidyano_Application: typeof Application;
-type vidyano_IRoutes = IRoutes;
-type vidyano_IClientOperation = IClientOperation;
-type vidyano_IRefreshOperation = IRefreshOperation;
-type vidyano_IExecuteMethodOperation = IExecuteMethodOperation;
-type vidyano_IOpenOperation = IOpenOperation;
+type vidyano_ArrayChangedArgs = ArrayChangedArgs;
+declare const vidyano_ArrayChangedArgs: typeof ArrayChangedArgs;
 declare const vidyano_ClientOperations: typeof ClientOperations;
-declare const vidyano_cookiePrefix: typeof cookiePrefix;
-declare const vidyano_cookie: typeof cookie;
 type vidyano_CultureInfo = CultureInfo;
 declare const vidyano_CultureInfo: typeof CultureInfo;
-type vidyano_ICultureInfoNumberFormat = ICultureInfoNumberFormat;
-type vidyano_ICultureInfoDateFormat = ICultureInfoDateFormat;
+type vidyano_DataType = DataType;
+declare const vidyano_DataType: typeof DataType;
 type vidyano_ExecuteActionArgs = ExecuteActionArgs;
 declare const vidyano_ExecuteActionArgs: typeof ExecuteActionArgs;
+type vidyano_ExpressionParser = ExpressionParser;
+declare const vidyano_ExpressionParser: typeof ExpressionParser;
+type vidyano_IActionExecuteOptions = IActionExecuteOptions;
+type vidyano_IClientOperation = IClientOperation;
+type vidyano_ICultureInfoDateFormat = ICultureInfoDateFormat;
+type vidyano_ICultureInfoNumberFormat = ICultureInfoNumberFormat;
+type vidyano_IExecuteMethodOperation = IExecuteMethodOperation;
+type vidyano_IForgotPassword = IForgotPassword;
+type vidyano_IInstantSearchResult = IInstantSearchResult;
+type vidyano_IOpenOperation = IOpenOperation;
+type vidyano_IPropertyChangedObserver<T> = IPropertyChangedObserver<T>;
+type vidyano_IQueryColumnDistincts = IQueryColumnDistincts;
+type vidyano_IQueryGroupingInfo = IQueryGroupingInfo;
+type vidyano_IQuerySelectAll = IQuerySelectAll;
+type vidyano_IRefreshOperation = IRefreshOperation;
+type vidyano_IReportOptions = IReportOptions;
+type vidyano_IRoutes = IRoutes;
+type vidyano_ISelectedItemsActionArgs = ISelectedItemsActionArgs;
+type vidyano_IServiceBus = IServiceBus;
+type vidyano_ISortOption = ISortOption;
+type vidyano_ISubjectDisposer = ISubjectDisposer;
+type vidyano_ISubjectNotifier<TSource, TDetail> = ISubjectNotifier<TSource, TDetail>;
+type vidyano_ISubjectObserver<TSource, TDetail> = ISubjectObserver<TSource, TDetail>;
+type vidyano_KeyValue<T> = KeyValue<T>;
+type vidyano_KeyValuePair<T, U> = KeyValuePair<T, U>;
+type vidyano_KeyValueString = KeyValueString;
 type vidyano_Language = Language;
 declare const vidyano_Language: typeof Language;
 type vidyano_NoInternetMessage = NoInternetMessage;
 declare const vidyano_NoInternetMessage: typeof NoInternetMessage;
-type vidyano_PersistentObjectLayoutMode = PersistentObjectLayoutMode;
-declare const vidyano_PersistentObjectLayoutMode: typeof PersistentObjectLayoutMode;
-type vidyano_PersistentObjectAttributeOption = PersistentObjectAttributeOption;
+type vidyano_NotificationType = NotificationType;
+type vidyano_Observable<T> = Observable<T>;
+declare const vidyano_Observable: typeof Observable;
 type vidyano_PersistentObjectAttributeGroup = PersistentObjectAttributeGroup;
 declare const vidyano_PersistentObjectAttributeGroup: typeof PersistentObjectAttributeGroup;
-type vidyano_PersistentObjectAttributeWithReference = PersistentObjectAttributeWithReference;
-declare const vidyano_PersistentObjectAttributeWithReference: typeof PersistentObjectAttributeWithReference;
+type vidyano_PersistentObjectAttributeOption = PersistentObjectAttributeOption;
 type vidyano_PersistentObjectAttributeTab = PersistentObjectAttributeTab;
 declare const vidyano_PersistentObjectAttributeTab: typeof PersistentObjectAttributeTab;
+type vidyano_PersistentObjectAttributeWithReference = PersistentObjectAttributeWithReference;
+declare const vidyano_PersistentObjectAttributeWithReference: typeof PersistentObjectAttributeWithReference;
+type vidyano_PersistentObjectLayoutMode = PersistentObjectLayoutMode;
+declare const vidyano_PersistentObjectLayoutMode: typeof PersistentObjectLayoutMode;
 type vidyano_PersistentObjectQueryTab = PersistentObjectQueryTab;
 declare const vidyano_PersistentObjectQueryTab: typeof PersistentObjectQueryTab;
 type vidyano_ProgramUnit = ProgramUnit;
@@ -4217,135 +4169,58 @@ type vidyano_ProgramUnitItem = ProgramUnitItem;
 declare const vidyano_ProgramUnitItem: typeof ProgramUnitItem;
 type vidyano_ProgramUnitItemGroup = ProgramUnitItemGroup;
 declare const vidyano_ProgramUnitItemGroup: typeof ProgramUnitItemGroup;
-type vidyano_ProgramUnitItemQuery = ProgramUnitItemQuery;
-declare const vidyano_ProgramUnitItemQuery: typeof ProgramUnitItemQuery;
 type vidyano_ProgramUnitItemPersistentObject = ProgramUnitItemPersistentObject;
 declare const vidyano_ProgramUnitItemPersistentObject: typeof ProgramUnitItemPersistentObject;
-type vidyano_ProgramUnitItemUrl = ProgramUnitItemUrl;
-declare const vidyano_ProgramUnitItemUrl: typeof ProgramUnitItemUrl;
+type vidyano_ProgramUnitItemQuery = ProgramUnitItemQuery;
+declare const vidyano_ProgramUnitItemQuery: typeof ProgramUnitItemQuery;
 type vidyano_ProgramUnitItemSeparator = ProgramUnitItemSeparator;
 declare const vidyano_ProgramUnitItemSeparator: typeof ProgramUnitItemSeparator;
-type vidyano_ISortOption = ISortOption;
-type vidyano_IQuerySelectAll = IQuerySelectAll;
+type vidyano_ProgramUnitItemUrl = ProgramUnitItemUrl;
+declare const vidyano_ProgramUnitItemUrl: typeof ProgramUnitItemUrl;
+type vidyano_PropertyChangedArgs = PropertyChangedArgs;
+declare const vidyano_PropertyChangedArgs: typeof PropertyChangedArgs;
 type vidyano_QueryChart = QueryChart;
 declare const vidyano_QueryChart: typeof QueryChart;
-type vidyano_IQueryColumnDistincts = IQueryColumnDistincts;
-type vidyano_SortDirection = SortDirection;
 type vidyano_QueryColumn = QueryColumn;
 declare const vidyano_QueryColumn: typeof QueryColumn;
-type vidyano_QueryFilters = QueryFilters;
-declare const vidyano_QueryFilters: typeof QueryFilters;
 type vidyano_QueryFilter = QueryFilter;
 declare const vidyano_QueryFilter: typeof QueryFilter;
+type vidyano_QueryFilters = QueryFilters;
+declare const vidyano_QueryFilters: typeof QueryFilters;
 type vidyano_QueryResultItem = QueryResultItem;
 declare const vidyano_QueryResultItem: typeof QueryResultItem;
-type vidyano_IQueryGroupingInfo = IQueryGroupingInfo;
 type vidyano_QueryResultItemGroup = QueryResultItemGroup;
 declare const vidyano_QueryResultItemGroup: typeof QueryResultItemGroup;
 type vidyano_QueryResultItemValue = QueryResultItemValue;
 declare const vidyano_QueryResultItemValue: typeof QueryResultItemValue;
-type vidyano_DataType = DataType;
-declare const vidyano_DataType: typeof DataType;
+type vidyano_Queue = Queue;
+declare const vidyano_Queue: typeof Queue;
+type vidyano_Service = Service;
+declare const vidyano_Service: typeof Service;
+declare const vidyano_ServiceBus: typeof ServiceBus;
+type vidyano_ServiceBusCallback = ServiceBusCallback;
+type vidyano_ServiceBusSubscriptionDisposer = ServiceBusSubscriptionDisposer;
 type vidyano_ServiceHooks = ServiceHooks;
 declare const vidyano_ServiceHooks: typeof ServiceHooks;
 type vidyano_ServiceObject = ServiceObject;
 declare const vidyano_ServiceObject: typeof ServiceObject;
 type vidyano_ServiceObjectWithActions = ServiceObjectWithActions;
 declare const vidyano_ServiceObjectWithActions: typeof ServiceObjectWithActions;
-type vidyano_KeyValue<T> = KeyValue<T>;
-type vidyano_KeyValueString = KeyValueString;
-type vidyano_KeyValuePair<T, U> = KeyValuePair<T, U>;
+type vidyano_SortDirection = SortDirection;
+type vidyano_Subject<TSource, TDetail> = Subject<TSource, TDetail>;
+declare const vidyano_Subject: typeof Subject;
+declare const vidyano_cookie: typeof cookie;
+declare const vidyano_cookiePrefix: typeof cookiePrefix;
+declare const vidyano_extend: typeof extend;
+declare const vidyano_noop: typeof noop;
+declare const vidyano_sleep: typeof sleep;
+declare const vidyano_version: typeof version;
 declare namespace vidyano {
-  export {
-    service as Dto,
-    vidyano_ExpressionParser as ExpressionParser,
-    vidyano_ISubjectNotifier as ISubjectNotifier,
-    vidyano_PropertyChangedArgs as PropertyChangedArgs,
-    vidyano_ArrayChangedArgs as ArrayChangedArgs,
-    vidyano_ISubjectDisposer as ISubjectDisposer,
-    vidyano_Subject as Subject,
-    vidyano_ISubjectObserver as ISubjectObserver,
-    vidyano_Observable as Observable,
-    vidyano_IPropertyChangedObserver as IPropertyChangedObserver,
-    vidyano_Queue as Queue,
-    vidyano_ServiceBusCallback as ServiceBusCallback,
-    vidyano_ServiceBusSubscriptionDisposer as ServiceBusSubscriptionDisposer,
-    vidyano_IServiceBus as IServiceBus,
-    vidyano_ServiceBus as ServiceBus,
-    vidyano_extend as extend,
-    vidyano_noop as noop,
-    vidyano_sleep as sleep,
-    vidyano_version as version,
-    vidyano_NotificationType as NotificationType,
-    vidyano_Service as Service,
-    vidyano_IForgotPassword as IForgotPassword,
-    vidyano_IReportOptions as IReportOptions,
-    vidyano_IInstantSearchResult as IInstantSearchResult,
-    vidyano_IActionExecuteOptions as IActionExecuteOptions,
-    vidyano_ISelectedItemsActionArgs as ISelectedItemsActionArgs,
-    vidyano_ActionExecutionHandler as ActionExecutionHandler,
-    vidyano_ActionExecutionHandlerDispose as ActionExecutionHandlerDispose,
-    vidyano_Action as Action,
-    vidyano_Actions as Actions,
-    vidyano_ActionDefinitionParams as ActionDefinitionParams,
-    vidyano_ActionDefinition as ActionDefinition,
-    vidyano_ActionGroup as ActionGroup,
-    vidyano_Application as Application,
-    vidyano_IRoutes as IRoutes,
-    vidyano_IClientOperation as IClientOperation,
-    vidyano_IRefreshOperation as IRefreshOperation,
-    vidyano_IExecuteMethodOperation as IExecuteMethodOperation,
-    vidyano_IOpenOperation as IOpenOperation,
-    vidyano_ClientOperations as ClientOperations,
-    vidyano_cookiePrefix as cookiePrefix,
-    vidyano_cookie as cookie,
-    vidyano_CultureInfo as CultureInfo,
-    vidyano_ICultureInfoNumberFormat as ICultureInfoNumberFormat,
-    vidyano_ICultureInfoDateFormat as ICultureInfoDateFormat,
-    vidyano_ExecuteActionArgs as ExecuteActionArgs,
-    vidyano_Language as Language,
-    vidyano_NoInternetMessage as NoInternetMessage,
-    vidyano_PersistentObjectLayoutMode as PersistentObjectLayoutMode,
-    PersistentObject$1 as PersistentObject,
-    vidyano_PersistentObjectAttributeOption as PersistentObjectAttributeOption,
-    PersistentObjectAttribute$1 as PersistentObjectAttribute,
-    PersistentObjectAttributeAsDetail$1 as PersistentObjectAttributeAsDetail,
-    vidyano_PersistentObjectAttributeGroup as PersistentObjectAttributeGroup,
-    vidyano_PersistentObjectAttributeWithReference as PersistentObjectAttributeWithReference,
-    PersistentObjectTab$1 as PersistentObjectTab,
-    vidyano_PersistentObjectAttributeTab as PersistentObjectAttributeTab,
-    vidyano_PersistentObjectQueryTab as PersistentObjectQueryTab,
-    vidyano_ProgramUnit as ProgramUnit,
-    vidyano_ProgramUnitItem as ProgramUnitItem,
-    vidyano_ProgramUnitItemGroup as ProgramUnitItemGroup,
-    vidyano_ProgramUnitItemQuery as ProgramUnitItemQuery,
-    vidyano_ProgramUnitItemPersistentObject as ProgramUnitItemPersistentObject,
-    vidyano_ProgramUnitItemUrl as ProgramUnitItemUrl,
-    vidyano_ProgramUnitItemSeparator as ProgramUnitItemSeparator,
-    vidyano_ISortOption as ISortOption,
-    vidyano_IQuerySelectAll as IQuerySelectAll,
-    Query$1 as Query,
-    vidyano_QueryChart as QueryChart,
-    vidyano_IQueryColumnDistincts as IQueryColumnDistincts,
-    vidyano_SortDirection as SortDirection,
-    vidyano_QueryColumn as QueryColumn,
-    vidyano_QueryFilters as QueryFilters,
-    vidyano_QueryFilter as QueryFilter,
-    vidyano_QueryResultItem as QueryResultItem,
-    vidyano_IQueryGroupingInfo as IQueryGroupingInfo,
-    vidyano_QueryResultItemGroup as QueryResultItemGroup,
-    vidyano_QueryResultItemValue as QueryResultItemValue,
-    vidyano_DataType as DataType,
-    vidyano_ServiceHooks as ServiceHooks,
-    vidyano_ServiceObject as ServiceObject,
-    vidyano_ServiceObjectWithActions as ServiceObjectWithActions,
-    vidyano_KeyValue as KeyValue,
-    vidyano_KeyValueString as KeyValueString,
-    vidyano_KeyValuePair as KeyValuePair,
-  };
+  export { vidyano_Action as Action, vidyano_ActionDefinition as ActionDefinition, type vidyano_ActionDefinitionParams as ActionDefinitionParams, type vidyano_ActionExecutionHandler as ActionExecutionHandler, type vidyano_ActionExecutionHandlerDispose as ActionExecutionHandlerDispose, vidyano_ActionGroup as ActionGroup, vidyano_Actions as Actions, vidyano_Application as Application, vidyano_ArrayChangedArgs as ArrayChangedArgs, vidyano_ClientOperations as ClientOperations, vidyano_CultureInfo as CultureInfo, vidyano_DataType as DataType, service as Dto, vidyano_ExecuteActionArgs as ExecuteActionArgs, vidyano_ExpressionParser as ExpressionParser, type vidyano_IActionExecuteOptions as IActionExecuteOptions, type vidyano_IClientOperation as IClientOperation, type vidyano_ICultureInfoDateFormat as ICultureInfoDateFormat, type vidyano_ICultureInfoNumberFormat as ICultureInfoNumberFormat, type vidyano_IExecuteMethodOperation as IExecuteMethodOperation, type vidyano_IForgotPassword as IForgotPassword, type vidyano_IInstantSearchResult as IInstantSearchResult, type vidyano_IOpenOperation as IOpenOperation, type vidyano_IPropertyChangedObserver as IPropertyChangedObserver, type vidyano_IQueryColumnDistincts as IQueryColumnDistincts, type vidyano_IQueryGroupingInfo as IQueryGroupingInfo, type vidyano_IQuerySelectAll as IQuerySelectAll, type vidyano_IRefreshOperation as IRefreshOperation, type vidyano_IReportOptions as IReportOptions, type vidyano_IRoutes as IRoutes, type vidyano_ISelectedItemsActionArgs as ISelectedItemsActionArgs, type vidyano_IServiceBus as IServiceBus, type vidyano_ISortOption as ISortOption, type vidyano_ISubjectDisposer as ISubjectDisposer, type vidyano_ISubjectNotifier as ISubjectNotifier, type vidyano_ISubjectObserver as ISubjectObserver, type vidyano_KeyValue as KeyValue, type vidyano_KeyValuePair as KeyValuePair, type vidyano_KeyValueString as KeyValueString, vidyano_Language as Language, vidyano_NoInternetMessage as NoInternetMessage, type vidyano_NotificationType as NotificationType, vidyano_Observable as Observable, PersistentObject$1 as PersistentObject, PersistentObjectAttribute$1 as PersistentObjectAttribute, PersistentObjectAttributeAsDetail$1 as PersistentObjectAttributeAsDetail, vidyano_PersistentObjectAttributeGroup as PersistentObjectAttributeGroup, type vidyano_PersistentObjectAttributeOption as PersistentObjectAttributeOption, vidyano_PersistentObjectAttributeTab as PersistentObjectAttributeTab, vidyano_PersistentObjectAttributeWithReference as PersistentObjectAttributeWithReference, vidyano_PersistentObjectLayoutMode as PersistentObjectLayoutMode, vidyano_PersistentObjectQueryTab as PersistentObjectQueryTab, PersistentObjectTab$1 as PersistentObjectTab, vidyano_ProgramUnit as ProgramUnit, vidyano_ProgramUnitItem as ProgramUnitItem, vidyano_ProgramUnitItemGroup as ProgramUnitItemGroup, vidyano_ProgramUnitItemPersistentObject as ProgramUnitItemPersistentObject, vidyano_ProgramUnitItemQuery as ProgramUnitItemQuery, vidyano_ProgramUnitItemSeparator as ProgramUnitItemSeparator, vidyano_ProgramUnitItemUrl as ProgramUnitItemUrl, vidyano_PropertyChangedArgs as PropertyChangedArgs, Query$1 as Query, vidyano_QueryChart as QueryChart, vidyano_QueryColumn as QueryColumn, vidyano_QueryFilter as QueryFilter, vidyano_QueryFilters as QueryFilters, vidyano_QueryResultItem as QueryResultItem, vidyano_QueryResultItemGroup as QueryResultItemGroup, vidyano_QueryResultItemValue as QueryResultItemValue, vidyano_Queue as Queue, vidyano_Service as Service, vidyano_ServiceBus as ServiceBus, type vidyano_ServiceBusCallback as ServiceBusCallback, type vidyano_ServiceBusSubscriptionDisposer as ServiceBusSubscriptionDisposer, vidyano_ServiceHooks as ServiceHooks, vidyano_ServiceObject as ServiceObject, vidyano_ServiceObjectWithActions as ServiceObjectWithActions, type vidyano_SortDirection as SortDirection, vidyano_Subject as Subject, vidyano_cookie as cookie, vidyano_cookiePrefix as cookiePrefix, vidyano_extend as extend, vidyano_noop as noop, vidyano_sleep as sleep, vidyano_version as version };
 }
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+
 
 
 
@@ -4357,6 +4232,7 @@ declare namespace vidyano {
 declare function dedupingMixin<T>(mixin: T): T;
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+
 
 
 
@@ -4378,13 +4254,10 @@ declare function dashToCamelCase(dash: string): string;
  */
 declare function camelToDashCase(camel: string): string;
 
-declare const caseMap_d_dashToCamelCase: typeof dashToCamelCase;
 declare const caseMap_d_camelToDashCase: typeof camelToDashCase;
+declare const caseMap_d_dashToCamelCase: typeof dashToCamelCase;
 declare namespace caseMap_d {
-  export {
-    caseMap_d_dashToCamelCase as dashToCamelCase,
-    caseMap_d_camelToDashCase as camelToDashCase,
-  };
+  export { caseMap_d_camelToDashCase as camelToDashCase, caseMap_d_dashToCamelCase as dashToCamelCase };
 }
 
 // Types from "externs/polymer-internal-shared-types.js"
@@ -4582,20 +4455,17 @@ declare namespace microTask {
   function cancel(handle: number): void;
 }
 
-declare const async_d_timeOut: typeof timeOut;
 declare const async_d_animationFrame: typeof animationFrame;
 declare const async_d_idlePeriod: typeof idlePeriod;
 declare const async_d_microTask: typeof microTask;
+declare const async_d_timeOut: typeof timeOut;
 declare namespace async_d {
-  export {
-    async_d_timeOut as timeOut,
-    async_d_animationFrame as animationFrame,
-    async_d_idlePeriod as idlePeriod,
-    async_d_microTask as microTask,
-  };
+  export { async_d_animationFrame as animationFrame, async_d_idlePeriod as idlePeriod, async_d_microTask as microTask, async_d_timeOut as timeOut };
 }
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 
 
 interface PropertiesChangedConstructor {
@@ -4895,6 +4765,8 @@ interface PropertiesChanged {
 }
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 
 
 interface PropertyAccessorsConstructor {
@@ -5037,6 +4909,8 @@ interface PropertyAccessors extends PropertiesChanged {
 }
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 
 
 interface TemplateStampConstructor {
@@ -5297,6 +5171,8 @@ interface TemplateStamp {
 }
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 
 
 interface PropertyEffectsConstructor {
@@ -6142,6 +6018,8 @@ interface PropertyEffects extends TemplateStamp, PropertyAccessors, PropertiesCh
 }
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 
 
 interface PropertiesMixinConstructor {
@@ -6212,6 +6090,7 @@ interface PropertiesMixin extends PropertiesChanged {
 
 
 
+
 /**
  * Resolves the given URL against the provided `baseUri'.
  *
@@ -6243,18 +6122,16 @@ declare function resolveCss(cssText: string, baseURI: string): string;
  */
 declare function pathFromUrl(url: string): string;
 
-declare const resolveUrl_d_resolveUrl: typeof resolveUrl;
-declare const resolveUrl_d_resolveCss: typeof resolveCss;
 declare const resolveUrl_d_pathFromUrl: typeof pathFromUrl;
+declare const resolveUrl_d_resolveCss: typeof resolveCss;
+declare const resolveUrl_d_resolveUrl: typeof resolveUrl;
 declare namespace resolveUrl_d {
-  export {
-    resolveUrl_d_resolveUrl as resolveUrl,
-    resolveUrl_d_resolveCss as resolveCss,
-    resolveUrl_d_pathFromUrl as pathFromUrl,
-  };
+  export { resolveUrl_d_pathFromUrl as pathFromUrl, resolveUrl_d_resolveCss as resolveCss, resolveUrl_d_resolveUrl as resolveUrl };
 }
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 
 
 /**
@@ -6329,6 +6206,8 @@ declare global {
 }
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 
 
 interface ElementMixinConstructor {
@@ -6601,6 +6480,7 @@ declare function html(strings: TemplateStringsArray, ...values: any[]): HTMLTemp
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
 
 
+
 declare const PolymerElement_Base: typeof HTMLElement & ElementMixinConstructor & PropertyEffectsConstructor & TemplateStampConstructor & PropertyAccessorsConstructor & PropertiesChangedConstructor & PropertiesMixinConstructor
 
 /**
@@ -6612,6 +6492,8 @@ declare class PolymerElement extends PolymerElement_Base {
 }
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 
 
 interface OptionalMutableDataConstructor {
@@ -6687,6 +6569,8 @@ interface OptionalMutableData {
 }
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 
 
 declare class Debouncer {
@@ -6782,14 +6666,11 @@ declare const debounce_d_Debouncer: typeof Debouncer;
 declare const debounce_d_enqueueDebouncer: typeof enqueueDebouncer;
 declare const debounce_d_flushDebouncers: typeof flushDebouncers;
 declare namespace debounce_d {
-  export {
-    debounce_d_Debouncer as Debouncer,
-    debounce_d_enqueueDebouncer as enqueueDebouncer,
-    debounce_d_flushDebouncers as flushDebouncers,
-  };
+  export { debounce_d_Debouncer as Debouncer, debounce_d_enqueueDebouncer as enqueueDebouncer, debounce_d_flushDebouncers as flushDebouncers };
 }
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+
 
 
 
@@ -6904,38 +6785,26 @@ interface TrackEventDetail {
     hover(): Element;
 }
 
-declare const gestures_d_deepTargetFind: typeof deepTargetFind;
-declare const gestures_d_addListener: typeof addListener;
-declare const gestures_d_removeListener: typeof removeListener;
-declare const gestures_d_register: typeof register;
-declare const gestures_d_setTouchAction: typeof setTouchAction;
-declare const gestures_d_prevent: typeof prevent;
-declare const gestures_d_resetMouseCanceller: typeof resetMouseCanceller;
-type gestures_d_GestureEvent = GestureEvent;
 type gestures_d_DownEvent = DownEvent;
-type gestures_d_UpEvent = UpEvent;
+type gestures_d_GestureEvent = GestureEvent;
 type gestures_d_TapEvent = TapEvent;
 type gestures_d_TrackEvent = TrackEvent;
 type gestures_d_TrackEventDetail = TrackEventDetail;
+type gestures_d_UpEvent = UpEvent;
+declare const gestures_d_addListener: typeof addListener;
+declare const gestures_d_deepTargetFind: typeof deepTargetFind;
+declare const gestures_d_prevent: typeof prevent;
+declare const gestures_d_register: typeof register;
+declare const gestures_d_removeListener: typeof removeListener;
+declare const gestures_d_resetMouseCanceller: typeof resetMouseCanceller;
+declare const gestures_d_setTouchAction: typeof setTouchAction;
 declare namespace gestures_d {
-  export {
-    gestures_d_deepTargetFind as deepTargetFind,
-    gestures_d_addListener as addListener,
-    gestures_d_removeListener as removeListener,
-    gestures_d_register as register,
-    gestures_d_setTouchAction as setTouchAction,
-    gestures_d_prevent as prevent,
-    gestures_d_resetMouseCanceller as resetMouseCanceller,
-    gestures_d_GestureEvent as GestureEvent,
-    gestures_d_DownEvent as DownEvent,
-    gestures_d_UpEvent as UpEvent,
-    gestures_d_TapEvent as TapEvent,
-    gestures_d_TrackEvent as TrackEvent,
-    gestures_d_TrackEventDetail as TrackEventDetail,
-  };
+  export { type gestures_d_DownEvent as DownEvent, type gestures_d_GestureEvent as GestureEvent, type gestures_d_TapEvent as TapEvent, type gestures_d_TrackEvent as TrackEvent, type gestures_d_TrackEventDetail as TrackEventDetail, type gestures_d_UpEvent as UpEvent, gestures_d_addListener as addListener, gestures_d_deepTargetFind as deepTargetFind, gestures_d_prevent as prevent, gestures_d_register as register, gestures_d_removeListener as removeListener, gestures_d_resetMouseCanceller as resetMouseCanceller, gestures_d_setTouchAction as setTouchAction };
 }
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 
 
 interface GestureEventListenersConstructor {
@@ -6977,6 +6846,7 @@ interface GestureEventListeners {
 }
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+
 
 
 declare const DomBind_Base: typeof HTMLElement & GestureEventListenersConstructor & OptionalMutableDataConstructor & PropertyEffectsConstructor & TemplateStampConstructor & PropertyAccessorsConstructor & PropertiesChangedConstructor;
@@ -7021,6 +6891,7 @@ declare global {
 
 
 
+
 /**
  * Forces several classes of asynchronously queued tasks to flush:
  * - Debouncers added via `enqueueDebouncer`
@@ -7029,6 +6900,8 @@ declare global {
 declare function flush$1(): void;
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 
 
 declare function showHideChildren(): void;
@@ -7195,21 +7068,17 @@ declare function templatize(template: HTMLTemplateElement, owner?: PropertyEffec
  */
 declare function modelForElement(template: HTMLElement|null, node?: Node|null): TemplateInstanceBase|null;
 
-declare const templatize_d_showHideChildren: typeof showHideChildren;
-declare const templatize_d_templatize: typeof templatize;
-declare const templatize_d_modelForElement: typeof modelForElement;
 type templatize_d_TemplateInstanceBase = TemplateInstanceBase;
 declare const templatize_d_TemplateInstanceBase: typeof TemplateInstanceBase;
+declare const templatize_d_modelForElement: typeof modelForElement;
+declare const templatize_d_showHideChildren: typeof showHideChildren;
+declare const templatize_d_templatize: typeof templatize;
 declare namespace templatize_d {
-  export {
-    templatize_d_showHideChildren as showHideChildren,
-    templatize_d_templatize as templatize,
-    templatize_d_modelForElement as modelForElement,
-    templatize_d_TemplateInstanceBase as TemplateInstanceBase,
-  };
+  export { templatize_d_TemplateInstanceBase as TemplateInstanceBase, templatize_d_modelForElement as modelForElement, templatize_d_showHideChildren as showHideChildren, templatize_d_templatize as templatize };
 }
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+
 
 
 declare class DomIfBase extends PolymerElement {
@@ -7312,6 +7181,8 @@ declare class DomIf extends DomIfBase {
 }
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 
 
 declare const DomRepeat_Base: typeof PolymerElement & OptionalMutableDataConstructor;
@@ -7607,6 +7478,8 @@ declare global {
 }
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 
 
 interface DirMixinConstructor {
@@ -7658,6 +7531,8 @@ interface DirMixin extends PropertyAccessors, PropertiesChanged {
 }
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 
 
 /**
@@ -7737,6 +7612,8 @@ declare class FlattenedNodesObserver {
 }
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 
 
 interface LegacyElementMixinConstructor {
@@ -8359,6 +8236,8 @@ interface LegacyElementMixin extends ElementMixin, PropertyEffects, TemplateStam
 }
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 
 
 
@@ -8375,6 +8254,8 @@ interface LegacyElementMixin extends ElementMixin, PropertyEffects, TemplateStam
 declare function mixinBehaviors<T>(behaviors: object|object[], klass: {new(): T}): {new(): T};
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 
 
 
@@ -8516,58 +8397,36 @@ declare const useNativeCustomElements: boolean;
 declare const supportsAdoptingStyleSheets: boolean;
 declare let legacyOptimizations: boolean;
 
+type settings_d_SanitizeDOMValueFunction = SanitizeDOMValueFunction;
+declare const settings_d_getSanitizeDOMValue: typeof getSanitizeDOMValue;
+declare const settings_d_legacyOptimizations: typeof legacyOptimizations;
+declare const settings_d_setAllowTemplateFromDomModule: typeof setAllowTemplateFromDomModule;
+declare const settings_d_setCancelSyntheticClickEvents: typeof setCancelSyntheticClickEvents;
+declare const settings_d_setFastDomIf: typeof setFastDomIf;
+declare const settings_d_setLegacyNoObservedAttributes: typeof setLegacyNoObservedAttributes;
+declare const settings_d_setLegacyOptimizations: typeof setLegacyOptimizations;
+declare const settings_d_setLegacyUndefined: typeof setLegacyUndefined;
+declare const settings_d_setLegacyWarnings: typeof setLegacyWarnings;
+declare const settings_d_setOrderedComputed: typeof setOrderedComputed;
+declare const settings_d_setPassiveTouchGestures: typeof setPassiveTouchGestures;
+declare const settings_d_setRemoveNestedTemplates: typeof setRemoveNestedTemplates;
 declare const settings_d_setRootPath: typeof setRootPath;
 declare const settings_d_setSanitizeDOMValue: typeof setSanitizeDOMValue;
-declare const settings_d_getSanitizeDOMValue: typeof getSanitizeDOMValue;
-declare const settings_d_setPassiveTouchGestures: typeof setPassiveTouchGestures;
 declare const settings_d_setStrictTemplatePolicy: typeof setStrictTemplatePolicy;
-declare const settings_d_setAllowTemplateFromDomModule: typeof setAllowTemplateFromDomModule;
-declare const settings_d_setLegacyOptimizations: typeof setLegacyOptimizations;
-declare const settings_d_setLegacyWarnings: typeof setLegacyWarnings;
-declare const settings_d_setSyncInitialRender: typeof setSyncInitialRender;
-declare const settings_d_setLegacyUndefined: typeof setLegacyUndefined;
-declare const settings_d_setOrderedComputed: typeof setOrderedComputed;
-declare const settings_d_setCancelSyntheticClickEvents: typeof setCancelSyntheticClickEvents;
-declare const settings_d_setRemoveNestedTemplates: typeof setRemoveNestedTemplates;
-declare const settings_d_setFastDomIf: typeof setFastDomIf;
 declare const settings_d_setSuppressTemplateNotifications: typeof setSuppressTemplateNotifications;
-declare const settings_d_setLegacyNoObservedAttributes: typeof setLegacyNoObservedAttributes;
+declare const settings_d_setSyncInitialRender: typeof setSyncInitialRender;
 declare const settings_d_setUseAdoptedStyleSheetsWithBuiltCSS: typeof setUseAdoptedStyleSheetsWithBuiltCSS;
-type settings_d_SanitizeDOMValueFunction = SanitizeDOMValueFunction;
-declare const settings_d_useShadow: typeof useShadow;
+declare const settings_d_supportsAdoptingStyleSheets: typeof supportsAdoptingStyleSheets;
 declare const settings_d_useNativeCSSProperties: typeof useNativeCSSProperties;
 declare const settings_d_useNativeCustomElements: typeof useNativeCustomElements;
-declare const settings_d_supportsAdoptingStyleSheets: typeof supportsAdoptingStyleSheets;
-declare const settings_d_legacyOptimizations: typeof legacyOptimizations;
+declare const settings_d_useShadow: typeof useShadow;
 declare namespace settings_d {
-  export {
-    settings_d_setRootPath as setRootPath,
-    settings_d_setSanitizeDOMValue as setSanitizeDOMValue,
-    settings_d_getSanitizeDOMValue as getSanitizeDOMValue,
-    settings_d_setPassiveTouchGestures as setPassiveTouchGestures,
-    settings_d_setStrictTemplatePolicy as setStrictTemplatePolicy,
-    settings_d_setAllowTemplateFromDomModule as setAllowTemplateFromDomModule,
-    settings_d_setLegacyOptimizations as setLegacyOptimizations,
-    settings_d_setLegacyWarnings as setLegacyWarnings,
-    settings_d_setSyncInitialRender as setSyncInitialRender,
-    settings_d_setLegacyUndefined as setLegacyUndefined,
-    settings_d_setOrderedComputed as setOrderedComputed,
-    settings_d_setCancelSyntheticClickEvents as setCancelSyntheticClickEvents,
-    settings_d_setRemoveNestedTemplates as setRemoveNestedTemplates,
-    settings_d_setFastDomIf as setFastDomIf,
-    settings_d_setSuppressTemplateNotifications as setSuppressTemplateNotifications,
-    settings_d_setLegacyNoObservedAttributes as setLegacyNoObservedAttributes,
-    settings_d_setUseAdoptedStyleSheetsWithBuiltCSS as setUseAdoptedStyleSheetsWithBuiltCSS,
-    settings_d_SanitizeDOMValueFunction as SanitizeDOMValueFunction,
-    settings_d_useShadow as useShadow,
-    settings_d_useNativeCSSProperties as useNativeCSSProperties,
-    settings_d_useNativeCustomElements as useNativeCustomElements,
-    settings_d_supportsAdoptingStyleSheets as supportsAdoptingStyleSheets,
-    settings_d_legacyOptimizations as legacyOptimizations,
-  };
+  export { type settings_d_SanitizeDOMValueFunction as SanitizeDOMValueFunction, settings_d_getSanitizeDOMValue as getSanitizeDOMValue, settings_d_legacyOptimizations as legacyOptimizations, settings_d_setAllowTemplateFromDomModule as setAllowTemplateFromDomModule, settings_d_setCancelSyntheticClickEvents as setCancelSyntheticClickEvents, settings_d_setFastDomIf as setFastDomIf, settings_d_setLegacyNoObservedAttributes as setLegacyNoObservedAttributes, settings_d_setLegacyOptimizations as setLegacyOptimizations, settings_d_setLegacyUndefined as setLegacyUndefined, settings_d_setLegacyWarnings as setLegacyWarnings, settings_d_setOrderedComputed as setOrderedComputed, settings_d_setPassiveTouchGestures as setPassiveTouchGestures, settings_d_setRemoveNestedTemplates as setRemoveNestedTemplates, settings_d_setRootPath as setRootPath, settings_d_setSanitizeDOMValue as setSanitizeDOMValue, settings_d_setStrictTemplatePolicy as setStrictTemplatePolicy, settings_d_setSuppressTemplateNotifications as setSuppressTemplateNotifications, settings_d_setSyncInitialRender as setSyncInitialRender, settings_d_setUseAdoptedStyleSheetsWithBuiltCSS as setUseAdoptedStyleSheetsWithBuiltCSS, settings_d_supportsAdoptingStyleSheets as supportsAdoptingStyleSheets, settings_d_useNativeCSSProperties as useNativeCSSProperties, settings_d_useNativeCustomElements as useNativeCustomElements, settings_d_useShadow as useShadow };
 }
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 
 
 
@@ -8604,15 +8463,11 @@ declare function beforeNextRender(context: any, callback: (...p0: any[]) => void
  */
 declare function afterNextRender(context: any, callback: (...p0: any[]) => void, args?: any[]): void;
 
-declare const renderStatus_d_flush: typeof flush;
-declare const renderStatus_d_beforeNextRender: typeof beforeNextRender;
 declare const renderStatus_d_afterNextRender: typeof afterNextRender;
+declare const renderStatus_d_beforeNextRender: typeof beforeNextRender;
+declare const renderStatus_d_flush: typeof flush;
 declare namespace renderStatus_d {
-  export {
-    renderStatus_d_flush as flush,
-    renderStatus_d_beforeNextRender as beforeNextRender,
-    renderStatus_d_afterNextRender as afterNextRender,
-  };
+  export { renderStatus_d_afterNextRender as afterNextRender, renderStatus_d_beforeNextRender as beforeNextRender, renderStatus_d_flush as flush };
 }
 
 /**
@@ -8624,6 +8479,7 @@ declare namespace renderStatus_d {
  * To modify these typings, edit the source file(s):
  *   iron-fit-behavior.js
  */
+
 
 
 /**
@@ -8838,6 +8694,7 @@ declare const IronFitBehavior: object;
  */
 
 
+
 /**
  * `IronResizableBehavior` is a behavior that can be used in Polymer elements to
  * coordinate the flow of resize events between "resizers" (elements that
@@ -8938,6 +8795,7 @@ declare const IronResizableBehavior: object;
  * To modify these typings, edit the source file(s):
  *   iron-a11y-keys-behavior.js
  */
+
 
 
 /**
@@ -9042,6 +8900,7 @@ declare const IronA11yKeysBehavior: object;
  * To modify these typings, edit the source file(s):
  *   iron-overlay-behavior.js
  */
+
 
 
 interface IronOverlayBehaviorImpl {
@@ -9314,6 +9173,7 @@ declare const IronOverlayBehavior: object;
  */
 
 
+
 /**
  * `iron-media-query` can be used to data bind to a CSS media query.
  * The `query` property is a bare CSS media query.
@@ -9392,7 +9252,7 @@ declare module "@polymer/polymer/lib/utils/gestures" {
         hover(): Element;
     }
 }
-declare module IronFocusablesHelper {
+declare namespace IronFocusablesHelper {
     function getTabbableNodes(node: Node): HTMLElement[];
     function isFocusable(element: HTMLElement): boolean;
     function isTabbable(element: HTMLElement): boolean;
@@ -9403,56 +9263,30 @@ interface FlattenedNodesObserverInfo {
     removedNodes: Element[];
 }
 
-declare const polymer_IronFocusablesHelper: typeof IronFocusablesHelper;
-type polymer_FlattenedNodesObserverInfo = FlattenedNodesObserverInfo;
 type polymer_DomBind = DomBind;
 declare const polymer_DomBind: typeof DomBind;
 type polymer_DomIf = DomIf;
 declare const polymer_DomIf: typeof DomIf;
-type polymer_DomRepeat = DomRepeat;
-declare const polymer_DomRepeat: typeof DomRepeat;
-declare const polymer_mixinBehaviors: typeof mixinBehaviors;
-declare const polymer_html: typeof html;
-type polymer_PolymerElement = PolymerElement;
-declare const polymer_PolymerElement: typeof PolymerElement;
 type polymer_DomModule = DomModule;
 declare const polymer_DomModule: typeof DomModule;
+type polymer_DomRepeat = DomRepeat;
+declare const polymer_DomRepeat: typeof DomRepeat;
 type polymer_FlattenedNodesObserver = FlattenedNodesObserver;
 declare const polymer_FlattenedNodesObserver: typeof FlattenedNodesObserver;
-declare const polymer_enqueueDebouncer: typeof enqueueDebouncer;
+type polymer_FlattenedNodesObserverInfo = FlattenedNodesObserverInfo;
 type polymer_GestureEventListeners = GestureEventListeners;
 type polymer_GestureEventListenersConstructor = GestureEventListenersConstructor;
-declare const polymer_dedupingMixin: typeof dedupingMixin;
-declare const polymer_IronOverlayBehaviorImpl: typeof IronOverlayBehaviorImpl;
+declare const polymer_IronFocusablesHelper: typeof IronFocusablesHelper;
 declare const polymer_IronOverlayBehavior: typeof IronOverlayBehavior;
+declare const polymer_IronOverlayBehaviorImpl: typeof IronOverlayBehaviorImpl;
+type polymer_PolymerElement = PolymerElement;
+declare const polymer_PolymerElement: typeof PolymerElement;
+declare const polymer_dedupingMixin: typeof dedupingMixin;
+declare const polymer_enqueueDebouncer: typeof enqueueDebouncer;
+declare const polymer_html: typeof html;
+declare const polymer_mixinBehaviors: typeof mixinBehaviors;
 declare namespace polymer {
-  export {
-    polymer_IronFocusablesHelper as IronFocusablesHelper,
-    polymer_FlattenedNodesObserverInfo as FlattenedNodesObserverInfo,
-    polymer_DomBind as DomBind,
-    polymer_DomIf as DomIf,
-    polymer_DomRepeat as DomRepeat,
-    polymer_mixinBehaviors as mixinBehaviors,
-    settings_d as Settings,
-    async_d as Async,
-    caseMap_d as CaseMap,
-    debounce_d as Debounce,
-    gestures_d as Gestures,
-    renderStatus_d as Render,
-    resolveUrl_d as Url,
-    templatize_d as Templatize,
-    polymer_html as html,
-    polymer_PolymerElement as PolymerElement,
-    polymer_DomModule as DomModule,
-    polymer_FlattenedNodesObserver as FlattenedNodesObserver,
-    polymer_enqueueDebouncer as enqueueDebouncer,
-    flush$1 as flush,
-    polymer_GestureEventListeners as GestureEventListeners,
-    polymer_GestureEventListenersConstructor as GestureEventListenersConstructor,
-    polymer_dedupingMixin as dedupingMixin,
-    polymer_IronOverlayBehaviorImpl as IronOverlayBehaviorImpl,
-    polymer_IronOverlayBehavior as IronOverlayBehavior,
-  };
+  export { async_d as Async, caseMap_d as CaseMap, debounce_d as Debounce, polymer_DomBind as DomBind, polymer_DomIf as DomIf, polymer_DomModule as DomModule, polymer_DomRepeat as DomRepeat, polymer_FlattenedNodesObserver as FlattenedNodesObserver, type polymer_FlattenedNodesObserverInfo as FlattenedNodesObserverInfo, type polymer_GestureEventListeners as GestureEventListeners, type polymer_GestureEventListenersConstructor as GestureEventListenersConstructor, gestures_d as Gestures, polymer_IronFocusablesHelper as IronFocusablesHelper, polymer_IronOverlayBehavior as IronOverlayBehavior, polymer_IronOverlayBehaviorImpl as IronOverlayBehaviorImpl, polymer_PolymerElement as PolymerElement, renderStatus_d as Render, settings_d as Settings, templatize_d as Templatize, resolveUrl_d as Url, polymer_dedupingMixin as dedupingMixin, polymer_enqueueDebouncer as enqueueDebouncer, flush$1 as flush, polymer_html as html, polymer_mixinBehaviors as mixinBehaviors };
 }
 
 declare abstract class TemplateConfig<T> extends WebComponent {
@@ -9696,6 +9530,7 @@ declare abstract class Dialog extends WebComponent {
  * To modify these typings, edit the source file(s):
  *   marked-element.js
  */
+
 
 
 /**
@@ -9957,6 +9792,7 @@ declare class SessionPresenter extends WebComponent {
  */
 
 
+
 interface IronA11yKeysElement extends IronA11yKeysBehavior, LegacyElementMixin, HTMLElement {
   target: Node|null;
 
@@ -9990,6 +9826,7 @@ declare global {
  * To modify these typings, edit the source file(s):
  *   paper-ripple.js
  */
+
 
 
 /**
@@ -10418,6 +10255,7 @@ declare class InputSearch extends WebComponent {
  * To modify these typings, edit the source file(s):
  *   iron-collapse.js
  */
+
 
 
 /**
@@ -11071,17 +10909,12 @@ declare function add(strings: TemplateStringsArray): any;
 declare function add(template: HTMLTemplateElement): any;
 declare function all(): string[];
 
-declare const iconRegister_load: typeof load;
-declare const iconRegister_exists: typeof exists;
 declare const iconRegister_add: typeof add;
 declare const iconRegister_all: typeof all;
+declare const iconRegister_exists: typeof exists;
+declare const iconRegister_load: typeof load;
 declare namespace iconRegister {
-  export {
-    iconRegister_load as load,
-    iconRegister_exists as exists,
-    iconRegister_add as add,
-    iconRegister_all as all,
-  };
+  export { iconRegister_add as add, iconRegister_all as all, iconRegister_exists as exists, iconRegister_load as load };
 }
 
 /**
@@ -11093,6 +10926,7 @@ declare namespace iconRegister {
  * To modify these typings, edit the source file(s):
  *   iron-scroll-target-behavior.js
  */
+
 
 
 /**
@@ -11201,6 +11035,8 @@ interface IronScrollTargetBehavior {
 declare const IronScrollTargetBehavior: object;
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 
 
 /**
@@ -11269,6 +11105,7 @@ interface OptionalMutableDataBehavior {
 declare const OptionalMutableDataBehavior: object;
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+
 
 
 /**
@@ -11383,6 +11220,7 @@ declare const Templatizer: object;
  * To modify these typings, edit the source file(s):
  *   iron-list.js
  */
+
 
 
 /**
@@ -13711,4 +13549,4 @@ interface IKeybindingRegistration {
     scope?: AppRoute | Dialog;
 }
 
-export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppRoute, AppRoutePresenter, AppServiceHooks, AppServiceHooksBase, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, Error$1 as Error, FileDrop, IAppRouteActivatedArgs, IAppRouteDeactivateArgs, IConfigurableAction, IDatePickerCell, IDialogOptions, IEvent, IFileDropDetails, IItemTapEventArgs, IKeybindingRegistration, IKeysEvent, IMessageDialogOptions, IObserveChainDisposer, IPersistentObjectDialogOptions, IPosition, IQueryGridColumnFilterDistinct, IQueryGridUserSettingsColumnData, IRGB, ISelectItem, ISize, ISortableDragEndDetails, ITranslatedString, IWebComponentKeybindingInfo, IWebComponentProperties, IWebComponentProperty, IWebComponentRegistrationInfo, Icon, iconRegister as IconRegister, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, OverflowType, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeConstructor, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeIcon, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellConstructor, QueryGridCellDefault, QueryGridCellImage, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, SelectOption, SelectOptionItem, SelectReferenceDialog, Sensitive, SessionPresenter, SignIn, SignOut, SizeTracker, SizeTrackerEvent, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, vidyano as Vidyano, WebComponent, moment };
+export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppRoute, AppRoutePresenter, AppServiceHooks, AppServiceHooksBase, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, Error$1 as Error, FileDrop, type IAppRouteActivatedArgs, type IAppRouteDeactivateArgs, type IConfigurableAction, type IDatePickerCell, type IDialogOptions, type IEvent, type IFileDropDetails, type IItemTapEventArgs, type IKeybindingRegistration, type IKeysEvent, type IMessageDialogOptions, type IObserveChainDisposer, type IPersistentObjectDialogOptions, type IPosition, type IQueryGridColumnFilterDistinct, type IQueryGridUserSettingsColumnData, type IRGB, type ISelectItem, type ISize, type ISortableDragEndDetails, type ITranslatedString, type IWebComponentKeybindingInfo, type IWebComponentProperties, type IWebComponentProperty, type IWebComponentRegistrationInfo, Icon, iconRegister as IconRegister, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, type OverflowType, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, type PersistentObjectAttributeConstructor, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeIcon, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, type QueryGridCellConstructor, QueryGridCellDefault, QueryGridCellImage, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, type SelectOption, SelectOptionItem, SelectReferenceDialog, Sensitive, SessionPresenter, SignIn, SignOut, SizeTracker, type SizeTrackerEvent, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, vidyano as Vidyano, WebComponent, moment };
