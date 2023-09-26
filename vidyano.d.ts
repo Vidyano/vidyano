@@ -13539,6 +13539,8 @@ declare class QueryGrid extends WebComponent {
     visibleColumnHeaderSize: ISize;
     readonly hasMore: HasMore;
     private _setHasMore;
+    max: number;
+    readonly maxExceeded: boolean;
     connectedCallback(): void;
     disconnectedCallback(): void;
     ready(): void;
@@ -13561,6 +13563,7 @@ declare class QueryGrid extends WebComponent {
     private _computeCanSelect;
     private _computeInlineActions;
     private _computeCanReorder;
+    private _computeMaxExceeded;
     private _rowHeightChanged;
     private _updateHorizontalScrollOffset;
     private _onVerticalScrollOffsetChanged;

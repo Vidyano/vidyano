@@ -13233,7 +13233,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.11-preview1";
+let version$2 = "3.11-preview2";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -57945,6 +57945,12 @@ let QueryGrid = class QueryGrid extends WebComponent {
 :host header .more.right {
   right: 0;
 }
+:host .max-exceeded {
+  display: flex;
+  height: var(--vi-query-grid-row-height);
+  line-height: var(--vi-query-grid-row-height);
+  padding-left: calc(var(--vi-query-grid-controls-width, 0) + var(--theme-h5));
+}
 :host footer {
   padding-left: var(--vi-query-grid-controls-width, 0);
 }
@@ -58195,6 +58201,13 @@ let QueryGrid = class QueryGrid extends WebComponent {
                     <vi-query-grid-row item="[[item]]" index="[[index]]" columns="[[columns]]" offsets="[[_computeOffsets(columnWidths)]]" visible-range="{{_computeVisibleRange(viewportWidth, horizontalScrollOffset)}}" initializing$="[[initializing]]" can-reorder="[[canReorder]]"></vi-query-grid-row>
                 </template>
             </dom-repeat>
+            <dom-if if="[[maxExceeded]]">
+                <template>
+                    <div class="max-exceeded">
+                        <vi-icon source="Ellipsis"></vi-icon>
+                    </div>
+                </template>
+            </dom-if>
         </vi-query-grid-sortable>
     </div>
 </vi-scroller>
@@ -58369,10 +58382,10 @@ let QueryGrid = class QueryGrid extends WebComponent {
         const queryLazyLoading = this.query.disableLazyLoading;
         try {
             this.query.disableLazyLoading = disableLazyLoading;
+            if (index >= Math.min(this.items.length, this.max))
+                return [null, -1];
             if (!this.hasGrouping)
                 return [this.query.items[index], index];
-            if (index >= this.items.length)
-                return [null, -1];
             let diff = 0;
             let result;
             this.items.groups.some((g, nn) => {
@@ -58396,9 +58409,9 @@ let QueryGrid = class QueryGrid extends WebComponent {
             this.query.disableLazyLoading = queryLazyLoading;
         }
     }
-    _updateVerticalSpacer(viewportHeight, rowHeight, items) {
+    _updateVerticalSpacer(viewportHeight, rowHeight, items, max) {
         beforeNextRender(this, () => {
-            const newHeight = items.length * rowHeight;
+            const newHeight = Math.min(items.length, max) * rowHeight;
             this.$.gridWrapper.style.height = `${newHeight}px`;
             this._verticalSpacerCorrection = (newHeight - this.viewportHeight) / (this.$.gridWrapper.clientHeight - viewportHeight);
         });
@@ -58470,6 +58483,9 @@ let QueryGrid = class QueryGrid extends WebComponent {
     }
     _computeCanReorder(canReorder, hasGrouping) {
         return canReorder && !hasGrouping;
+    }
+    _computeMaxExceeded(totalItems, max) {
+        return totalItems > max;
     }
     _rowHeightChanged(rowHeight) {
         this.style.setProperty("--vi-query-grid-row-height", `${rowHeight}px`);
@@ -58655,6 +58671,14 @@ QueryGrid = __decorate([
             hasMore: {
                 type: Object,
                 readOnly: true
+            },
+            max: {
+                type: Number,
+                value: 100000
+            },
+            maxExceeded: {
+                type: Boolean,
+                computed: "_computeMaxExceeded(query.items.length, max)"
             }
         },
         forwardObservers: [
@@ -58678,7 +58702,7 @@ QueryGrid = __decorate([
         observers: [
             "_scrollToTop(query.items)",
             "_update(verticalScrollOffset, virtualRowCount, rowHeight, items)",
-            "_updateVerticalSpacer(viewportHeight, rowHeight, items)",
+            "_updateVerticalSpacer(viewportHeight, rowHeight, items, max)",
             "_updateUserSettings(query, query.columns)",
             "_updateMore(visibleColumnHeaderSize, horizontalScrollOffset)"
         ],
