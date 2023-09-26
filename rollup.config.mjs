@@ -1,7 +1,7 @@
 import commonjs from 'rollup-plugin-commonjs';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import vulcanize from './rollup/vulcanize.js';
-import dts from "rollup-plugin-dts";
+import { dts } from "rollup-plugin-dts";
 import replace from "@rollup/plugin-replace";
 const pjson = require('./package.json');
 
