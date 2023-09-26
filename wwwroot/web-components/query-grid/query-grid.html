@@ -60,6 +60,13 @@
                     <vi-query-grid-row item="[[item]]" index="[[index]]" columns="[[columns]]" offsets="[[_computeOffsets(columnWidths)]]" visible-range="{{_computeVisibleRange(viewportWidth, horizontalScrollOffset)}}" initializing$="[[initializing]]" can-reorder="[[canReorder]]"></vi-query-grid-row>
                 </template>
             </dom-repeat>
+            <dom-if if="[[maxExceeded]]">
+                <template>
+                    <div class="max-exceeded">
+                        <vi-icon source="Ellipsis"></vi-icon>
+                    </div>
+                </template>
+            </dom-if>
         </vi-query-grid-sortable>
     </div>
 </vi-scroller>

@@ -97,6 +97,13 @@
         }
     }
 
+    .max-exceeded {
+        display: flex;
+        height: var(--vi-query-grid-row-height);
+        line-height: var(--vi-query-grid-row-height);
+        padding-left: calc(var(--vi-query-grid-controls-width, 0) + var(--theme-h5));
+    }
+
     footer {
         padding-left: var(--vi-query-grid-controls-width, 0);
 

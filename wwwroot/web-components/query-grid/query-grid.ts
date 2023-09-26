@@ -136,6 +136,14 @@ type HasMore = { left: QueryGridColumnHeader[], right: QueryGridColumnHeader[] }
         hasMore: {
             type: Object,
             readOnly: true
+        },
+        max: {
+            type: Number,
+            value: 100000
+        },
+        maxExceeded: {
+            type: Boolean,
+            computed: "_computeMaxExceeded(query.items.length, max)"
         }
     },
     forwardObservers: [
@@ -159,7 +167,7 @@ type HasMore = { left: QueryGridColumnHeader[], right: QueryGridColumnHeader[] }
     observers: [
         "_scrollToTop(query.items)", // Scroll to top when the query items reference changes, for example after search.
         "_update(verticalScrollOffset, virtualRowCount, rowHeight, items)",
-        "_updateVerticalSpacer(viewportHeight, rowHeight, items)",
+        "_updateVerticalSpacer(viewportHeight, rowHeight, items, max)",
         "_updateUserSettings(query, query.columns)",
         "_updateMore(visibleColumnHeaderSize, horizontalScrollOffset)"
     ],
@@ -198,6 +206,8 @@ export class QueryGrid extends WebComponent {
     verticalScrollOffset: number;
     visibleColumnHeaderSize: ISize;
     readonly hasMore: HasMore; private _setHasMore: (hasMore: HasMore) => void;
+    max: number;
+    readonly maxExceeded: boolean;
 
     connectedCallback() {
         super.connectedCallback();
@@ -430,11 +440,11 @@ export class QueryGrid extends WebComponent {
         try {
             this.query.disableLazyLoading = disableLazyLoading;
 
+            if (index >= Math.min(this.items.length, this.max))
+                return [null, -1];
+
             if (!this.hasGrouping)
                 return [this.query.items[index], index];
-
-            if (index >= this.items.length)
-                return [null, -1];
 
             let diff = 0;
             let result: QueryGridItem;
@@ -463,9 +473,9 @@ export class QueryGrid extends WebComponent {
         }
     }
 
-    private _updateVerticalSpacer(viewportHeight: number, rowHeight: number, items: QueryGridItem[]) {
+    private _updateVerticalSpacer(viewportHeight: number, rowHeight: number, items: QueryGridItem[], max: number) {
         Polymer.Render.beforeNextRender(this, () => {
-            const newHeight = items.length * rowHeight;
+            const newHeight = Math.min(items.length, max) * rowHeight;
             this.$.gridWrapper.style.height = `${newHeight}px`;
 
             this._verticalSpacerCorrection = (newHeight - this.viewportHeight) / (this.$.gridWrapper.clientHeight - viewportHeight);
@@ -556,6 +566,10 @@ export class QueryGrid extends WebComponent {
 
     private _computeCanReorder(canReorder: boolean, hasGrouping: boolean) {
         return canReorder && !hasGrouping;
+    }
+
+    private _computeMaxExceeded(totalItems: number, max: number) {
+        return totalItems > max;
     }
 
     private _rowHeightChanged(rowHeight: number) {
