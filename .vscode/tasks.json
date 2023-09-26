@@ -19,6 +19,20 @@
             "label": "npm: watch",
             "detail": "rollup -c -w",
             "dependsOn":["ts-web-components"]
+        },
+        {
+            "type": "npm",
+            "script": "dev",
+            "group": "build",
+            "problemMatcher": [],
+            "label": "npm: release",
+            "detail": "rollup -c",
+            "dependsOn":["ts-web-components"],
+            "options": {
+                "env": {
+                    "NODE_ENV": "production"
+                }
+            }
         }
     ]
 }
