@@ -22,7 +22,7 @@
         },
         {
             "type": "npm",
-            "script": "dev",
+            "script": "build",
             "group": "build",
             "problemMatcher": [],
             "label": "npm: release",
