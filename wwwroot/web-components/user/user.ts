@@ -73,7 +73,7 @@ export class User extends WebComponent {
     }
 
     signOut() {
-        Vidyano.cookie("userName", null);
+        this.service.clearSiteData = true;
         this.app.redirectToSignOut(false);
     }
 

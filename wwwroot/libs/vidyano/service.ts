@@ -47,6 +47,7 @@ export class Service extends Observable<Service> {
     actionDefinitions: KeyValue<ActionDefinition>;
     environment: string = "Web";
     environmentVersion: string = "3";
+    clearSiteData: boolean;
 
     constructor(public serviceUri: string, public hooks: ServiceHooks = new ServiceHooks(), public readonly isTransient: boolean = false) {
         super();
@@ -547,7 +548,10 @@ export class Service extends Observable<Service> {
     }
 
     signOut(skipAcs?: boolean): Promise<boolean> {
-        if (this.userName === this.defaultUserName || this.userName === this.registerUserName)
+        if (this.clearSiteData)
+            this.executeAction("viSignOut", this.application, null, null, null, true);
+
+        if (this.userName === this.defaultUserName || this.userName === this.registerUserName || this.clearSiteData)
             this.userName = null;
 
         this.authToken = null;
@@ -575,6 +579,7 @@ export class Service extends Observable<Service> {
             });
         }
 
+        this.clearSiteData = false;
         this._setIsSignedIn(false);
         return Promise.resolve(true);
     }
