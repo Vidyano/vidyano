@@ -3938,6 +3938,7 @@ declare class Service extends Observable<Service> {
     actionDefinitions: KeyValue<ActionDefinition>;
     environment: string;
     environmentVersion: string;
+    clearSiteData: boolean;
     constructor(serviceUri: string, hooks?: ServiceHooks, isTransient?: boolean);
     static set token(token: string);
     private _createUri;

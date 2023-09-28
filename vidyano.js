@@ -10732,7 +10732,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.11.0-preview4";
+let version$2 = "3.11.0-preview5";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -11130,7 +11130,9 @@ class Service extends Observable {
         return this._getApplication();
     }
     signOut(skipAcs) {
-        if (this.userName === this.defaultUserName || this.userName === this.registerUserName)
+        if (this.clearSiteData)
+            this.executeAction("viSignOut", this.application, null, null, null, true);
+        if (this.userName === this.defaultUserName || this.userName === this.registerUserName || this.clearSiteData)
             this.userName = null;
         this.authToken = null;
         this._setApplication(null);
@@ -11153,6 +11155,7 @@ class Service extends Observable {
                 document.body.appendChild(iframe);
             });
         }
+        this.clearSiteData = false;
         this._setIsSignedIn(false);
         return Promise.resolve(true);
     }
@@ -29792,7 +29795,7 @@ let User = class User extends WebComponent {
         this.app.redirectToSignIn();
     }
     signOut() {
-        cookie("userName", null);
+        this.service.clearSiteData = true;
         this.app.redirectToSignOut(false);
     }
     async feedback() {
