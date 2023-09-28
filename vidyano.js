@@ -10732,7 +10732,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.11.0-preview6";
+let version$2 = "3.11.0-preview7";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -11131,7 +11131,7 @@ class Service extends Observable {
     }
     signOut(skipAcs) {
         if (this.clearSiteData && !!this.authToken)
-            this.executeAction("viSignOut", this.application, null, null, null, true);
+            this.executeAction("PersistentObject.viSignOut", this.application, null, null, null, true);
         if (this.userName === this.defaultUserName || this.userName === this.registerUserName || this.clearSiteData)
             this.userName = null;
         this.authToken = null;
