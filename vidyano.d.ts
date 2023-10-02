@@ -12456,9 +12456,6 @@ declare class PersistentObjectAttributeMultiLineString extends PersistentObjectA
     maxlength: number;
     protected _attributeChanged(): void;
     private _editTextAreaBlur;
-    private _computeCodeMirror;
-    private _computeIsCodeMirrorReadOnly;
-    private _computeUseCodeMirror;
 }
 
 declare class PersistentObjectAttributeMultiStringItem extends WebComponent {

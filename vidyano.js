@@ -10732,7 +10732,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.11.0-preview7";
+let version$2 = "3.11.0-preview8";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -28385,6 +28385,11 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
             <vi-audit class="flex" persistent-object="[[persistentObject]]"></vi-audit>
         </template>
     </vi-persistent-object-config>
+    <vi-persistent-object-tab-config type="LogVerboseData" name="LogVerboseData">
+        <template is="dom-template">
+            <textarea readonly style="outline: none; border: none; resize: none;">[[tab.attributes.Data.value]]</textarea>
+        </template>
+    </vi-persistent-object-tab-config>
     <slot name="vi-app-config" slot="vi-app-config"></slot>
 </vi-app-config>
 <dom-if if="[[updateAvailable]]">
@@ -41967,7 +41972,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
         const queryLazyLoading = this.query.disableLazyLoading;
         try {
             this.query.disableLazyLoading = disableLazyLoading;
-            if (index >= Math.min(this.items.length, this.max))
+            if (!this.query.hasMore && index >= Math.min(this.items.length, this.max))
                 return [null, -1];
             if (!this.hasGrouping)
                 return [this.query.items[index], index];
@@ -47079,31 +47084,22 @@ let PersistentObjectAttributeMultiLineString = class PersistentObjectAttributeMu
   white-space: pre-line;
 }</style>
 
-<dom-if if="[[!useCodeMirror]]">
+<dom-if if="[[!editing]]">
     <template>
-        <dom-if if="[[!editing]]">
-            <template>
-                <vi-scroller no-horizontal class="flex" allow-native>
-                    <vi-sensitive disabled="[[!sensitive]]">
-                        <pre>[[attribute.displayValue]]</pre>
-                    </vi-sensitive>
-                </vi-scroller>
-            </template>
-        </dom-if>
-        <dom-if if="[[editing]]">
-            <template>
-                <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-                    <vi-sensitive disabled="[[!sensitive]]">
-                        <textarea class="flex" value="{{value::input}}" maxlength$="[[maxlength]]" style$="[[editInputStyle]]" on-blur="_editTextAreaBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder$="[[placeholder]]" disabled="[[frozen]]"></textarea>
-                    </vi-sensitive>
-                </vi-persistent-object-attribute-edit>
-            </template>
-        </dom-if>
+        <vi-scroller no-horizontal class="flex" allow-native>
+            <vi-sensitive disabled="[[!sensitive]]">
+                <pre>[[attribute.displayValue]]</pre>
+            </vi-sensitive>
+        </vi-scroller>
     </template>
 </dom-if>
-<dom-if if="[[useCodeMirror]]">
+<dom-if if="[[editing]]">
     <template>
-        <vi-code-mirror class="flex" value="{{value}}" mode="[[codeMirror]]" line-numbers="[[!isCodeMirrorReadOnly]]" read-only="[[isCodeMirrorReadOnly]]"></vi-code-mirror>
+        <vi-persistent-object-attribute-edit attribute="[[attribute]]">
+            <vi-sensitive disabled="[[!sensitive]]">
+                <textarea class="flex" value="{{value::input}}" maxlength$="[[maxlength]]" style$="[[editInputStyle]]" on-blur="_editTextAreaBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder$="[[placeholder]]" disabled="[[frozen]]"></textarea>
+            </vi-sensitive>
+        </vi-persistent-object-attribute-edit>
     </template>
 </dom-if>`; }
     _attributeChanged() {
@@ -47117,33 +47113,11 @@ let PersistentObjectAttributeMultiLineString = class PersistentObjectAttributeMu
         if (this.attribute && this.attribute.isValueChanged && this.attribute.triggersRefresh)
             this.attribute.setValue(this.value = this.attribute.value, true).catch(noop$1);
     }
-    _computeCodeMirror(attribute) {
-        return attribute ? attribute.getTypeHint("language", null) : null;
-    }
-    _computeIsCodeMirrorReadOnly(readOnly, editing) {
-        return readOnly || !editing;
-    }
-    _computeUseCodeMirror(codeMirror, sensitive) {
-        return codeMirror && !sensitive;
-    }
 };
 PersistentObjectAttributeMultiLineString = __decorate([
     WebComponent.register({
         properties: {
-            maxlength: Number,
-            useCodeMirror: {
-                type: Boolean,
-                computed: "_computeUseCodeMirror(codeMirror, sensitive)"
-            },
-            codeMirror: {
-                type: String,
-                computed: "_computeCodeMirror(attribute)",
-                value: ""
-            },
-            isCodeMirrorReadOnly: {
-                type: Boolean,
-                computed: "_computeIsCodeMirrorReadOnly(readOnly, editing)"
-            }
+            maxlength: Number
         }
     })
 ], PersistentObjectAttributeMultiLineString);
