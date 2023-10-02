@@ -440,7 +440,7 @@ export class QueryGrid extends WebComponent {
         try {
             this.query.disableLazyLoading = disableLazyLoading;
 
-            if (index >= Math.min(this.items.length, this.max))
+            if (!this.query.hasMore && index >= Math.min(this.items.length, this.max))
                 return [null, -1];
 
             if (!this.hasGrouping)
