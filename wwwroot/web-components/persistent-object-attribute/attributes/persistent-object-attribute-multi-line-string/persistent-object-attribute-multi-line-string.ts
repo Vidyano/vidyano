@@ -2,24 +2,10 @@ import * as Polymer from "../../../../libs/polymer/polymer.js"
 import * as Vidyano from "../../../../libs/vidyano/vidyano.js"
 import { WebComponent } from "../../../web-component/web-component.js"
 import { PersistentObjectAttribute } from "../../persistent-object-attribute.js"
-import "codemirror"
 
 @WebComponent.register({
     properties: {
-        maxlength: Number,
-        useCodeMirror: {
-            type: Boolean,
-            computed: "_computeUseCodeMirror(codeMirror, sensitive)"
-        },
-        codeMirror: {
-            type: String,
-            computed: "_computeCodeMirror(attribute)",
-            value: ""
-        },
-        isCodeMirrorReadOnly: {
-            type: Boolean,
-            computed: "_computeIsCodeMirrorReadOnly(readOnly, editing)"
-        }
+        maxlength: Number
     }
 })
 export class PersistentObjectAttributeMultiLineString extends PersistentObjectAttribute {
@@ -39,18 +25,6 @@ export class PersistentObjectAttributeMultiLineString extends PersistentObjectAt
     private _editTextAreaBlur() {
         if (this.attribute && this.attribute.isValueChanged && this.attribute.triggersRefresh)
             this.attribute.setValue(this.value = this.attribute.value, true).catch(Vidyano.noop);
-    }
-
-    private _computeCodeMirror(attribute: Vidyano.PersistentObjectAttribute): string {
-        return attribute ? attribute.getTypeHint("language", null) : null;
-    }
-
-    private _computeIsCodeMirrorReadOnly(readOnly: boolean, editing: boolean): boolean {
-        return readOnly || !editing;
-    }
-
-    private _computeUseCodeMirror(codeMirror: boolean, sensitive: boolean): boolean {
-        return codeMirror && !sensitive;
     }
 }
 

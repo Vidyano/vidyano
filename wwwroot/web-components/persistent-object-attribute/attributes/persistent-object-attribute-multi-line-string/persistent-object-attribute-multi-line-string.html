@@ -1,30 +1,21 @@
 <style include="vi-persistent-object-attribute-style-module"></style>
 <link rel="stylesheet" href="persistent-object-attribute-multi-line-string.css" />
 
-<dom-if if="[[!useCodeMirror]]">
+<dom-if if="[[!editing]]">
     <template>
-        <dom-if if="[[!editing]]">
-            <template>
-                <vi-scroller no-horizontal class="flex" allow-native>
-                    <vi-sensitive disabled="[[!sensitive]]">
-                        <pre>[[attribute.displayValue]]</pre>
-                    </vi-sensitive>
-                </vi-scroller>
-            </template>
-        </dom-if>
-        <dom-if if="[[editing]]">
-            <template>
-                <vi-persistent-object-attribute-edit attribute="[[attribute]]">
-                    <vi-sensitive disabled="[[!sensitive]]">
-                        <textarea class="flex" value="{{value::input}}" maxlength$="[[maxlength]]" style$="[[editInputStyle]]" on-blur="_editTextAreaBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder$="[[placeholder]]" disabled="[[frozen]]"></textarea>
-                    </vi-sensitive>
-                </vi-persistent-object-attribute-edit>
-            </template>
-        </dom-if>
+        <vi-scroller no-horizontal class="flex" allow-native>
+            <vi-sensitive disabled="[[!sensitive]]">
+                <pre>[[attribute.displayValue]]</pre>
+            </vi-sensitive>
+        </vi-scroller>
     </template>
 </dom-if>
-<dom-if if="[[useCodeMirror]]">
+<dom-if if="[[editing]]">
     <template>
-        <vi-code-mirror class="flex" value="{{value}}" mode="[[codeMirror]]" line-numbers="[[!isCodeMirrorReadOnly]]" read-only="[[isCodeMirrorReadOnly]]"></vi-code-mirror>
+        <vi-persistent-object-attribute-edit attribute="[[attribute]]">
+            <vi-sensitive disabled="[[!sensitive]]">
+                <textarea class="flex" value="{{value::input}}" maxlength$="[[maxlength]]" style$="[[editInputStyle]]" on-blur="_editTextAreaBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder$="[[placeholder]]" disabled="[[frozen]]"></textarea>
+            </vi-sensitive>
+        </vi-persistent-object-attribute-edit>
     </template>
 </dom-if>

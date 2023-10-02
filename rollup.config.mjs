@@ -36,7 +36,7 @@ export default [
 	},
 	{
 		input: 'rollup/vidyano.ts',
-		external: ["codemirror", "tslib"],
+		external: ["tslib"],
 		plugins: [
 			dts({
 				respectExternal: true

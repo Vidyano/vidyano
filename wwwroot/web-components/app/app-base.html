@@ -54,6 +54,11 @@
             <vi-audit class="flex" persistent-object="[[persistentObject]]"></vi-audit>
         </template>
     </vi-persistent-object-config>
+    <vi-persistent-object-tab-config type="LogVerboseData" name="LogVerboseData">
+        <template is="dom-template">
+            <textarea readonly style="outline: none; border: none; resize: none;">[[tab.attributes.Data.value]]</textarea>
+        </template>
+    </vi-persistent-object-tab-config>
     <slot name="vi-app-config" slot="vi-app-config"></slot>
 </vi-app-config>
 <dom-if if="[[updateAvailable]]">
