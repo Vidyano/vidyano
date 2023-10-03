@@ -36,6 +36,10 @@ if (hashBangRe.test(document.location.href)) {
         history.replaceState(null, null, hashBangParts[1]);
         Vidyano.Service.token = `JWT:${hashBangParts[2].substr(30)}`;
     }
+    else if (hashBangParts[2].startsWith("login_hint=")) {
+        history.replaceState(null, null, hashBangParts[1]);
+        Vidyano.cookie("userName", hashBangParts[2].split("=")[1], { expires: 30 });
+    }
     else
         history.replaceState(null, null, `${hashBangParts[1]}${hashBangParts[2]}`);
 }
