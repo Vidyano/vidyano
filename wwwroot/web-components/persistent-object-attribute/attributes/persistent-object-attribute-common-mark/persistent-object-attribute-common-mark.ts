@@ -2,7 +2,7 @@ import * as Polymer from "../../../../libs/polymer/polymer.js"
 import * as Vidyano from "../../../../libs/vidyano/vidyano.js"
 import { WebComponent } from "../../../web-component/web-component.js"
 import  { PersistentObjectAttribute } from "../../persistent-object-attribute.js"
-import "@polymer/marked-element"
+import "../../../marked/marked.js"
 
 @WebComponent.register()
 export class PersistentObjectAttributeCommonMark extends PersistentObjectAttribute {

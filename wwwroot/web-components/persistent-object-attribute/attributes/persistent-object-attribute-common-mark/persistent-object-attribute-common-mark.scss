@@ -4,12 +4,12 @@
     @include layout-horizontal();
     overflow: hidden;
 
-    marked-element {
+    vi-marked {
         @include flex();
         resize: none;
     }
 
-    marked-element, textarea {
+    vi-marked, textarea {
         color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
     }
 

@@ -1,7 +1,7 @@
 import * as Polymer from "../../libs/polymer/polymer.js"
 import { WebComponent } from "../web-component/web-component.js"
 import { Dialog } from "../dialog/dialog.js"
-import "@polymer/marked-element"
+import "../marked/marked.js"
 
 export interface IMessageDialogOptions {
     noClose?: boolean;

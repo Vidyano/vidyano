@@ -37,7 +37,7 @@ QUnit.module("Dialog tests", hooks => {
             rich: true
         });
 
-        assert.equal((await waitFor(() => app.shadowRoot.querySelector("vi-message-dialog")?.shadowRoot.querySelector("dialog > main > marked-element")?.shadowRoot.querySelector("#content"))).innerHTML, "<p>Hello <strong>Test</strong></p>\n");
+        assert.equal((await waitFor(() => app.shadowRoot.querySelector("vi-message-dialog")?.shadowRoot.querySelector("dialog > main > vi-marked")?.shadowRoot.querySelector("#content"))).innerHTML, "<p>Hello <strong>Test</strong></p>\n");
         (app.shadowRoot.querySelector("vi-message-dialog").shadowRoot.querySelector("#actions > vi-button:nth-child(2)") as Button).click();
     });
 

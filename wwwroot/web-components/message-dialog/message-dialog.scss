@@ -20,14 +20,12 @@
         }
 
         &[rich] {
-            marked-element {
+            vi-marked {
                 overflow: auto;
                 padding: var(--theme-h4);
 
-                ::content {
-                    p {
-                        margin: 0.5em 0;
-                    }
+                p {
+                    margin: 0.5em 0;
                 }
             }
         }

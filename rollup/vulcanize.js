@@ -45,11 +45,6 @@ export default function vulcanize() {
             return null;
         },
         async transform(code, id) {
-            if (id.endsWith("marked-element.js")) {
-                code = code.replace("marked.Renderer", "marked.default.Renderer");
-                code = code.replace("marked(this.markdown", "marked.default(this.markdown");
-            }
-
             const index = id.indexOf("web-components");
             if (index >= 0) {
                 const componentDir = path.dirname(id);
