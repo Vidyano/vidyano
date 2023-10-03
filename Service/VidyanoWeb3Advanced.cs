@@ -15,5 +15,10 @@ namespace VidyanoWeb3.Service
 
             return base.OnLogin(args);
         }
+
+        public override bool IsValidImage(byte[] image)
+        {
+            return true;
+        }
     }
 }
