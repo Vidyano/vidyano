@@ -2,8 +2,6 @@ import * as Polymer from "../../libs/polymer/polymer.js"
 import { WebComponent } from "../web-component/web-component.js"
 import { marked } from "marked"
 import DOMPurify from "dompurify"
-export { DOMPurify } from "dompurify"
-export { marked } from "marked"
 
 @WebComponent.register({
     properties: {
