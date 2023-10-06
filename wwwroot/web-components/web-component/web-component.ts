@@ -26,7 +26,7 @@ class Operations {
         return value1 == value2;
     }
 
-    areNotEqual(value1: any, value2, any): boolean {
+    areNotEqual(value1: any, value2: any): boolean {
         return value1 != value2;
     }
 
