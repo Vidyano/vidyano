@@ -94,6 +94,9 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
         if (!this.attribute)
             return;
 
+        if (newValue === undefined)
+            return;
+
         if (newValue != null && this._decimalSeparator !== ".")
             newValue = newValue.replace(this._decimalSeparator, ".");
 
