@@ -1,4 +1,5 @@
 import * as Polymer from "../../libs/polymer/polymer.js"
+import { PopupMenu } from "../popup-menu/popup-menu.js";
 import "../size-tracker/size-tracker.js"
 import { IPosition, WebComponent } from "../web-component/web-component.js"
 
@@ -159,5 +160,37 @@ export abstract class Dialog extends WebComponent {
         
         if (!isInDialog)
             this.dialog.close();
+    }
+
+    private async _configureContextMenu(e: MouseEvent) {
+        if (!this.service || !this.service.application)
+            return;
+
+        const configureItems: WebComponent[] = e["vi:configure"];
+        if (!this.service.application.hasManagement || !configureItems?.length || window.getSelection().toString()) {
+            e.stopImmediatePropagation();
+            return;
+        }
+
+        e.stopPropagation();
+        e.preventDefault();
+
+        const popupMenu = new PopupMenu();
+        popupMenu.contextMenuOnly = true;
+
+        Array.from(popupMenu.children).forEach(item => popupMenu.removeChild(item));
+        configureItems.forEach(item => popupMenu.appendChild(item));
+
+        this.dialog.appendChild(popupMenu);
+
+        try {
+            popupMenu.$.popup.style.left = e.pageX + "px";
+            popupMenu.$.popup.style.top = e.pageY + "px";
+
+            await popupMenu.popup();
+        }
+        finally {
+            this.dialog.removeChild(popupMenu);
+        }
     }
 }

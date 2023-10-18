@@ -50,7 +50,8 @@ import { WebComponent } from "../../web-components/web-component/web-component.j
 export class PopupMenu extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="popup-menu.html">`; }
 
-    private _openContextEventListener: EventListener;
+    #contextHost: Element;
+    #openContextEventListener: EventListener;
     contextMenuOnly: boolean;
     shiftKey: boolean;
     ctrlKey: boolean;
@@ -62,11 +63,13 @@ export class PopupMenu extends WebComponent {
     }
 
     private _hookContextMenu(isConnected: boolean, contextMenu: boolean) {
-        if (isConnected && contextMenu)
-            (this.getRootNode() as ShadowRoot).host.addEventListener("contextmenu", this._openContextEventListener = this._openContext.bind(this));
-        else if (this._openContextEventListener) {
-            (this.getRootNode() as ShadowRoot).host.removeEventListener("contextmenu", this._openContextEventListener);
-            this._openContextEventListener = undefined;
+        if (isConnected && contextMenu) {
+            this.#contextHost = (this.getRootNode() as ShadowRoot).host;
+            this.#contextHost.addEventListener("contextmenu", () => this.#openContextEventListener = this._openContext.bind(this));
+        }
+        else if (this.#contextHost) {
+            this.#contextHost.removeEventListener("contextmenu", this.#openContextEventListener);
+            this.#contextHost = this.#openContextEventListener = undefined;
         }
     }
 
