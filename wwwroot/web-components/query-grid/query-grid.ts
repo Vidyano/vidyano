@@ -35,7 +35,9 @@ type ColumnWidthDetail = { cell?: number; column?: number; current?: number };
 type QueryScrollOffset = { vertical: number, horizontal: number };
 const queryScrollOffsets: WeakMap<Vidyano.Query, QueryScrollOffset> = new WeakMap();
 
-type HasMore = { left: QueryGridColumnHeader[], right: QueryGridColumnHeader[] };
+type MoreColumns = { left: QueryGridColumnHeader[], right: QueryGridColumnHeader[] };
+
+const PHYSICAL_UPPER_LIMIT = 100000;
 
 @WebComponent.register({
     properties: {
@@ -133,18 +135,29 @@ type HasMore = { left: QueryGridColumnHeader[], right: QueryGridColumnHeader[] }
             computed: "_computeCanReorder(query.canReorder, hasGrouping)"
         },
         visibleColumnHeaderSize: Object,
-        hasMore: {
+        moreColumns: {
             type: Object,
             readOnly: true
         },
-        max: {
-            type: Number,
-            value: 100000
-        },
-        maxExceeded: {
+        physicalUpperLimitExceeded: {
             type: Boolean,
-            computed: "_computeMaxExceeded(query.items.length, max)"
-        }
+            computed: "_computePhysicalUpperLimitExceeded(query.items.length)"
+        },
+        maxRows : {
+            type: Number,
+            reflectToAttribute: true,
+            value: null
+        },
+        hasMoreRows: {
+            type: Boolean,
+            reflectToAttribute: true,
+            computed: "_computeHasMoreRows(query.items.length, maxRows)"
+        },
+        skip: {
+            type: Number,
+            reflectToAttribute: true,
+            value: 0
+        },
     },
     forwardObservers: [
         "query.canReorder",
@@ -166,8 +179,8 @@ type HasMore = { left: QueryGridColumnHeader[], right: QueryGridColumnHeader[] }
     },
     observers: [
         "_scrollToTop(query.items)", // Scroll to top when the query items reference changes, for example after search.
-        "_update(verticalScrollOffset, virtualRowCount, rowHeight, items)",
-        "_updateVerticalSpacer(viewportHeight, rowHeight, items, max)",
+        "_update(verticalScrollOffset, virtualRowCount, rowHeight, items, skip, maxRows)",
+        "_updateVerticalSpacer(viewportHeight, rowHeight, items, maxRows)",
         "_updateUserSettings(query, query.columns)",
         "_updateMore(visibleColumnHeaderSize, horizontalScrollOffset)"
     ],
@@ -191,6 +204,7 @@ export class QueryGrid extends WebComponent {
 
     query: Vidyano.Query;
     asLookup: boolean;
+    maxRows: number;
     noSelection: boolean;
     noInlineActions: boolean;
     readonly initializing: boolean; private _setInitializing: (initializing: boolean) => void;
@@ -202,12 +216,12 @@ export class QueryGrid extends WebComponent {
     readonly hasGrouping: boolean; private _setHasGrouping: (hasGrouping: boolean) => void;
     readonly userSettings: QueryGridUserSettings; private _setUserSettings: (userSettings: QueryGridUserSettings) => void;
     rowHeight: number;
+    skip: number;
     horizontalScrollOffset: number;
     verticalScrollOffset: number;
     visibleColumnHeaderSize: ISize;
-    readonly hasMore: HasMore; private _setHasMore: (hasMore: HasMore) => void;
-    max: number;
-    readonly maxExceeded: boolean;
+    readonly moreColumns: MoreColumns; private _setMoreColumns: (moreColumns: MoreColumns) => void;
+    readonly physicalUpperLimitExceeded: boolean;
 
     connectedCallback() {
         super.connectedCallback();
@@ -319,16 +333,19 @@ export class QueryGrid extends WebComponent {
         this.verticalScrollOffset = 0;
     }
 
-    private _update(verticalScrollOffset: number, virtualRowCount: number, rowHeight: number, items: QueryGridItems) {
+    private _update(verticalScrollOffset: number, virtualRowCount: number, rowHeight: number, items: QueryGridItems, skip: number, maxRows?: number) {
         if (!virtualRowCount)
             return;
+
+        if (!maxRows)
+            maxRows = Number.MAX_SAFE_INTEGER;
 
         verticalScrollOffset *= this._verticalSpacerCorrection;
         const viewportStartRowIndex = Math.floor(verticalScrollOffset / rowHeight);
         const viewportEndRowIndex = Math.ceil((verticalScrollOffset + this.viewportHeight) / rowHeight);
 
         if (!this.virtualItems || this.virtualItems.length !== virtualRowCount) {
-            this._setVirtualItems(new Array(virtualRowCount));
+            this._setVirtualItems(new Array(Math.min(virtualRowCount, maxRows)));
             items.forceUpdate = true;
         }
         
@@ -353,8 +370,8 @@ export class QueryGrid extends WebComponent {
             newVirtualGridStartIndex = 0;
 
         const queuedItemIndexes: number[] = [];
-        for (let virtualIndex=0; virtualIndex < this.virtualRowCount; virtualIndex++) {
-            const index = newVirtualGridStartIndex + virtualIndex;
+        for (let virtualIndex=0; virtualIndex < this.virtualRowCount && virtualIndex < maxRows; virtualIndex++) {
+            const index = newVirtualGridStartIndex + virtualIndex + skip;
 
             const [item, realIndex] = this._getItem(index, true);
             this.virtualItems[virtualIndex] = item;
@@ -440,7 +457,7 @@ export class QueryGrid extends WebComponent {
         try {
             this.query.disableLazyLoading = disableLazyLoading;
 
-            if (!this.query.hasMore && index >= Math.min(this.items.length, this.max))
+            if (!this.query.hasMore && index >= Math.min(this.items.length, PHYSICAL_UPPER_LIMIT))
                 return [null, -1];
 
             if (!this.hasGrouping)
@@ -473,10 +490,13 @@ export class QueryGrid extends WebComponent {
         }
     }
 
-    private _updateVerticalSpacer(viewportHeight: number, rowHeight: number, items: QueryGridItem[], max: number) {
+    private _updateVerticalSpacer(viewportHeight: number, rowHeight: number, items: QueryGridItem[], maxRows?: number) {
         Polymer.Render.beforeNextRender(this, () => {
-            const newHeight = Math.min(items.length, max) * rowHeight;
-            this.$.gridWrapper.style.height = `${newHeight}px`;
+            const newHeight = Math.min(Math.min(items.length, PHYSICAL_UPPER_LIMIT), maxRows || Number.MAX_SAFE_INTEGER) * rowHeight;
+            if (maxRows === Number.MAX_SAFE_INTEGER)
+                this.$.gridWrapper.style.height = `${newHeight}px`;
+            else
+                this.$.gridWrapper.style.maxHeight = `${newHeight}px`;
 
             this._verticalSpacerCorrection = (newHeight - this.viewportHeight) / (this.$.gridWrapper.clientHeight - viewportHeight);
         });
@@ -568,8 +588,12 @@ export class QueryGrid extends WebComponent {
         return canReorder && !hasGrouping;
     }
 
-    private _computeMaxExceeded(totalItems: number, max: number) {
-        return totalItems > max;
+    private _computePhysicalUpperLimitExceeded(totalItems: number) {
+        return totalItems > PHYSICAL_UPPER_LIMIT;
+    }
+
+    private _computeHasMoreRows(totalItems: number, maxRows: number = Number.MAX_SAFE_INTEGER) {
+        return totalItems > maxRows;
     }
 
     private _rowHeightChanged(rowHeight: number) {
@@ -643,7 +667,7 @@ export class QueryGrid extends WebComponent {
 
     private _reset() {
         this._updateUserSettings(this.query);
-        this._update(this.verticalScrollOffset, this.virtualRowCount, this.rowHeight, this.items);
+        this._update(this.verticalScrollOffset, this.virtualRowCount, this.rowHeight, this.items, this.skip);
     }
 
     private _updateMore(visibleColumnHeaderSize: ISize, horizontalScrollOffset: number) {
@@ -657,7 +681,7 @@ export class QueryGrid extends WebComponent {
                 const sizeTracker = this.$.columnHeadersDomRepeat as SizeTracker;
                 const headers = Array.from(sizeTracker.parentElement.querySelectorAll("vi-query-grid-column-header")) as QueryGridColumnHeader[];
 
-                this._setHasMore({
+                this._setMoreColumns({
                     left: headers.filter(h => h.offsetLeft - horizontalScrollOffset < 0),
                     right: headers.filter(h => (h.offsetLeft + h.offsetWidth / 2) > visibleColumnHeaderSize.width)
                 });
@@ -667,7 +691,7 @@ export class QueryGrid extends WebComponent {
     private _onMoreOpening(e: CustomEvent) {
         const popup = e.target as Popup;
         const isLeft = popup.classList.contains("left");
-        const headers = isLeft ? this.hasMore.left : this.hasMore.right;
+        const headers = isLeft ? this.moreColumns.left : this.moreColumns.right;
         
         popup.querySelector("vi-scroller").append(...headers.map(h => {
             return new PopupMenuItem(h.column.label, null, () => {

@@ -193,6 +193,18 @@
           "Group": {
             "$ref": "ProgramUnitItemGroup:55c401f9-5703-4daf-909f-135715c68c80"
           }
+        },
+        {
+          "ObjectId": "components/query-grid/MaxRows",
+          "Offset": 110,
+          "Title": {
+            "en": "Max Rows",
+            "nl": ""
+          },
+          "Name": "QueryGridTest_MaxRows",
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:55c401f9-5703-4daf-909f-135715c68c80"
+          }
         }
       ]
     },
@@ -215,6 +227,17 @@
       ],
       "Items": [
         {
+          "Offset": 5,
+          "Title": {
+            "en": "Companies",
+            "nl": "Companies"
+          },
+          "Name": "Companies",
+          "Query": {
+            "$ref": "Query:f94e7b97-c09c-4082-bde0-5ab426b1e289"
+          }
+        },
+        {
           "Offset": 10,
           "Title": {
             "en": "Employees",
@@ -224,6 +247,26 @@
           "Query": {
             "$ref": "Query:026c4ca7-53f4-42ac-b196-158f0cb871a1"
           }
+        },
+        {
+          "Offset": 15,
+          "Title": {
+            "en": "Orders",
+            "nl": "Orders"
+          },
+          "Name": "Orders",
+          "Query": {
+            "$ref": "Query:f7a56a67-45a2-4259-9f32-1bd59adcb73e"
+          }
+        },
+        {
+          "Offset": 17,
+          "Title": {
+            "en": "—",
+            "nl": "—"
+          },
+          "Name": "Separator1",
+          "IsSeparator": true
         },
         {
           "Offset": 20,
@@ -255,25 +298,25 @@
           }
         },
         {
-          "Offset": 5,
+          "Offset": 40,
           "Title": {
-            "en": "Companies",
-            "nl": "Companies"
+            "en": "Dynamic employees",
+            "nl": ""
           },
-          "Name": "Companies",
+          "Name": "DynamicEmployees",
           "Query": {
-            "$ref": "Query:f94e7b97-c09c-4082-bde0-5ab426b1e289"
+            "$ref": "Query:9e683c56-e3df-48b2-9a2e-3d3a0378018e"
           }
         },
         {
-          "Offset": 15,
+          "Offset": 50,
           "Title": {
-            "en": "Orders",
-            "nl": "Orders"
+            "en": "Large employees",
+            "nl": "Large employees"
           },
-          "Name": "Orders",
+          "Name": "LargeEmployees",
           "Query": {
-            "$ref": "Query:04491772-b93c-4837-8ca6-b34b54d25234"
+            "$ref": "Query:9a9626bc-bc95-403c-984a-231a5bddf853"
           }
         }
       ]

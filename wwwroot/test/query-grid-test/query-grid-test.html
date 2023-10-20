@@ -6,7 +6,8 @@
     </div>
 
     <div>
-        <label>[[query.label]]</label>
-        <vi-query-grid query="[[query]]"></vi-query-grid>
+        <label>[[queryName]]</label>
+        <vi-query-grid query="[[query]]" max-rows="[[maxRows]]" skip="[[skip]]"></vi-query-grid>
+        <vi-button class="more-data" label="Show more data" on-tap="_showMoreData"></vi-button>
     </div>
 </div>

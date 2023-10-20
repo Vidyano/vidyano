@@ -34,3 +34,24 @@
         }
     }
 }
+
+.more-data {
+    display: none;
+    align-self: center;
+    margin: var(--theme-h4);
+    line-height: var(--theme-h1);
+    padding: 0 var(--theme-h2);
+}
+
+:host([query-name=MaxRows]) {
+    display: block;
+    overflow-y: auto;
+
+    vi-query-grid {
+        flex: auto !important;
+
+        &[has-more-rows] + .more-data {
+            display: inherit;
+        }
+    }
+}
