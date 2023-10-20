@@ -18,6 +18,7 @@ import { QueryResultItemValue } from "./query-result-item-value.js"
 import { QueryColumn } from "./query-column.js"
 import type { Language } from "./language.js"
 import { cookiePrefix } from "./cookie.js"
+import messages from "./client-messages.js"
 
 export class ServiceHooks {
     private _service: Service;
@@ -181,41 +182,8 @@ export class ServiceHooks {
     }
 
     setDefaultTranslations(languages: Language[]) {
-        const messages = {
-            "ForgotPassword": "Forgot password?",
-            "Or": "Or",
-            "Password": "Password",
-            "Register": "New here? Create an account",
-            "RegisterSave": "Register",
-            "SignIn": "Sign in",
-            "SignInUsing": "Sign in using",
-            "StaySignedIn": "Stay signed in",
-            "EnterTwoFactorCode": "Enter two-factor code",
-            "TwoFactorCode": "Two-factor code",
-            "UserName": "User name",
-            "SignInTo": "Sign in to {0}",
-            "Next": "Next",
-            "Previous": "Previous",
-            "EnterPassword": "Enter password",
-            "NotYou": "Not you?",
-            "SessionLost": ["You signed out in another tab or window. Reload to refresh your session.", false],
-            "Reload": ["Reload", false]
-        };
-        const messagesKeys = Object.keys(messages);
-        let warned = false;
-
         languages.forEach(lang => {
-            messagesKeys.forEach(key => {
-                const [value, warn] = !Array.isArray(messages[key]) ? [messages[key], true] : messages[key];
-                if (!(key in lang.messages)) {
-                    lang.messages[key] = value;
-
-                    if (!warned && warn) {
-                        console.warn("It seems like you are connected to an older backend version of Vidyano. You must upgrade your backend before all messages will be fully translated.");
-                        warned = true;
-                    }
-                }
-            });
+            lang.messages = Object.assign({}, messages);
         });
     }
 }
