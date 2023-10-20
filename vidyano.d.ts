@@ -9520,6 +9520,7 @@ declare abstract class Dialog extends WebComponent {
     private _onClose;
     private _onCancel;
     private _onClick;
+    private _configureContextMenu;
 }
 
 interface IMessageDialogOptions {
@@ -10183,7 +10184,6 @@ declare class Scroller extends WebComponent {
     private _setScrollBottomShadow;
     readonly hiddenScrollbars: boolean;
     private _setHiddenScrollbars;
-    hostSize: ISize;
     noHorizontal: boolean;
     noVertical: boolean;
     horizontalScrollOffset: number;
@@ -12769,8 +12769,8 @@ declare class PopupMenuItem extends WebComponent {
 }
 
 declare class PopupMenu extends WebComponent {
+    #private;
     static get template(): HTMLTemplateElement;
-    private _openContextEventListener;
     contextMenuOnly: boolean;
     shiftKey: boolean;
     ctrlKey: boolean;
@@ -13117,7 +13117,7 @@ declare class QueryGridSelectAll extends WebComponent {
 }
 
 type QueryGridItem = QueryResultItem | QueryResultItemGroup;
-type HasMore = {
+type MoreColumns = {
     left: QueryGridColumnHeader[];
     right: QueryGridColumnHeader[];
 };
@@ -13135,6 +13135,7 @@ declare class QueryGrid extends WebComponent {
     private _updateMoreDebouncer;
     query: Query$1;
     asLookup: boolean;
+    maxRows: number;
     noSelection: boolean;
     noInlineActions: boolean;
     readonly initializing: boolean;
@@ -13151,13 +13152,13 @@ declare class QueryGrid extends WebComponent {
     readonly userSettings: QueryGridUserSettings;
     private _setUserSettings;
     rowHeight: number;
+    skip: number;
     horizontalScrollOffset: number;
     verticalScrollOffset: number;
     visibleColumnHeaderSize: ISize;
-    readonly hasMore: HasMore;
-    private _setHasMore;
-    max: number;
-    readonly maxExceeded: boolean;
+    readonly moreColumns: MoreColumns;
+    private _setMoreColumns;
+    readonly physicalUpperLimitExceeded: boolean;
     connectedCallback(): void;
     disconnectedCallback(): void;
     ready(): void;
@@ -13180,7 +13181,8 @@ declare class QueryGrid extends WebComponent {
     private _computeCanSelect;
     private _computeInlineActions;
     private _computeCanReorder;
-    private _computeMaxExceeded;
+    private _computePhysicalUpperLimitExceeded;
+    private _computeHasMoreRows;
     private _rowHeightChanged;
     private _updateHorizontalScrollOffset;
     private _onVerticalScrollOffsetChanged;

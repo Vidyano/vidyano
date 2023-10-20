@@ -10070,6 +10070,27 @@ function cookie(key, value, options) {
     return null;
 }
 
+var messages = {
+    "EnterPassword": "Enter password",
+    "EnterTwoFactorCode": "Enter two-factor code",
+    "ForgotPassword": "Forgot password?",
+    "Next": "Next",
+    "NotYou": "Not you?",
+    "Or": "Or",
+    "Password": "Password",
+    "Previous": "Previous",
+    "Register": "New here? Create an account",
+    "RegisterSave": "Register",
+    "Reload": "Reload",
+    "SessionLost": "You signed out in another tab or window. Reload to refresh your session.",
+    "SignIn": "Sign in",
+    "SignInTo": "Sign in to {0}",
+    "SignInUsing": "Sign in using",
+    "StaySignedIn": "Stay signed in",
+    "TwoFactorCode": "Two-factor code",
+    "UserName": "User name",
+};
+
 class ServiceHooks {
     get service() {
         return this._service;
@@ -10185,39 +10206,8 @@ class ServiceHooks {
         return undefined;
     }
     setDefaultTranslations(languages) {
-        const messages = {
-            "ForgotPassword": "Forgot password?",
-            "Or": "Or",
-            "Password": "Password",
-            "Register": "New here? Create an account",
-            "RegisterSave": "Register",
-            "SignIn": "Sign in",
-            "SignInUsing": "Sign in using",
-            "StaySignedIn": "Stay signed in",
-            "EnterTwoFactorCode": "Enter two-factor code",
-            "TwoFactorCode": "Two-factor code",
-            "UserName": "User name",
-            "SignInTo": "Sign in to {0}",
-            "Next": "Next",
-            "Previous": "Previous",
-            "EnterPassword": "Enter password",
-            "NotYou": "Not you?",
-            "SessionLost": ["You signed out in another tab or window. Reload to refresh your session.", false],
-            "Reload": ["Reload", false]
-        };
-        const messagesKeys = Object.keys(messages);
-        let warned = false;
         languages.forEach(lang => {
-            messagesKeys.forEach(key => {
-                const [value, warn] = !Array.isArray(messages[key]) ? [messages[key], true] : messages[key];
-                if (!(key in lang.messages)) {
-                    lang.messages[key] = value;
-                    if (!warned && warn) {
-                        console.warn("It seems like you are connected to an older backend version of Vidyano. You must upgrade your backend before all messages will be fully translated.");
-                        warned = true;
-                    }
-                }
-            });
+            lang.messages = Object.assign({}, messages);
         });
     }
 }
@@ -10732,7 +10722,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.12.0-preview1";
+let version$2 = "3.12.0-preview2";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -21258,7 +21248,7 @@ class Operations {
     areEqual(value1, value2) {
         return value1 == value2;
     }
-    areNotEqual(value1, value2, any) {
+    areNotEqual(value1, value2) {
         return value1 != value2;
     }
     some(...args) {
@@ -23104,7 +23094,6 @@ var Scroller_1;
 let Scroller = Scroller_1 = class Scroller extends WebComponent {
     static get template() { return html$2 `<style>:host {
   display: flex;
-  flex-direction: column;
   position: relative;
   --vi-scroller-thumb-color: #888;
   --vi-scroller-thumb-hover-color: #777;
@@ -23330,9 +23319,6 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
   display: none !important;
 }</style>
 
-<slot name="header"></slot>
-<vi-size-tracker class="fit" size="{{hostSize}}"></vi-size-tracker>
-
 <main class="layout horizontal flex relative">
     <div id="wrapper" class="flex wrapper" tabindex="-1">
         <vi-size-tracker class="fit" on-sizechanged="_outerSizeChanged"></vi-size-tracker>
@@ -23349,8 +23335,6 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
         <div class="bottom scroll-shadow"></div>
     </div>
 </main>
-
-<slot name="footer"></slot>
 
 <div class="horizontal scrollbar-parent" on-tap="_horizontalScrollbarParentTap">
     <div id="horizontal" class="scrollbar" on-track="_trackHorizontal" on-mousedown="_trapEvent"></div>
@@ -23402,13 +23386,13 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
         e.stopPropagation();
     }
     _updateVerticalScrollbar(outerHeight, innerHeight, verticalScrollOffset, noVertical) {
-        let height = this.hostSize.height < innerHeight ? this.hostSize.height / innerHeight * this.hostSize.height : 0;
+        let height = outerHeight < innerHeight ? outerHeight / innerHeight * outerHeight : 0;
         if (height !== this._verticalScrollHeight) {
             if (height > 0 && height < Scroller_1._minBarSize)
                 height = Scroller_1._minBarSize;
             else
                 height = Math.floor(height);
-            this._verticalScrollSpace = this.hostSize.height - height;
+            this._verticalScrollSpace = outerHeight - height;
             if (height !== this._verticalScrollHeight) {
                 this._verticalScrollHeight = height;
                 this.$.vertical.style.height = `${height}px`;
@@ -23582,7 +23566,6 @@ Scroller = Scroller_1 = __decorate([
                 type: Number,
                 readOnly: true
             },
-            hostSize: Object,
             horizontal: {
                 type: Boolean,
                 readOnly: true,
@@ -24256,6 +24239,8 @@ class ConfigurableWebComponent extends WebComponent {
     async connectedCallback() {
         super.connectedCallback();
         this._addEventListenerToNode(this, "contextmenu", __classPrivateFieldSet(this, _ConfigurableWebComponent__onContextmenu, (e) => {
+            if (!e.ctrlKey || e.defaultPrevented)
+                return;
             if (e["vi:configure"])
                 return;
             const actions = [];
@@ -25222,6 +25207,267 @@ AppRoutePresenter = __decorate([
     })
 ], AppRoutePresenter);
 
+let PopupMenuItemSeparator = class PopupMenuItemSeparator extends WebComponent {
+    static get template() { return html$2 `<style>:host {
+  display: block;
+  border-top: 1px solid #ddd;
+}</style>
+
+<slot></slot>`; }
+};
+PopupMenuItemSeparator = __decorate([
+    WebComponent.register()
+], PopupMenuItemSeparator);
+
+let PopupMenuItemWithActions = class PopupMenuItemWithActions extends WebComponent {
+    static get template() { return html$2 `<style>:host {
+  display: flex;
+  flex-direction: row;
+  height: var(--vi-popup-menu-item-height, var(--theme-h1));
+  cursor: pointer;
+  color: var(--theme-color);
+  fill: var(--theme-color);
+}
+:host > div {
+  position: relative;
+  z-index: 0;
+  flex: 1 0 auto;
+  height: var(--vi-popup-menu-item-height, var(--theme-h1));
+  line-height: var(--vi-popup-menu-item-height, var(--theme-h1));
+  padding: 0;
+  text-align: left;
+  white-space: nowrap;
+}
+:host > div > * {
+  display: inline-block;
+  vertical-align: top;
+}
+:host > div span {
+  flex: 1 0 auto;
+  padding: 0 var(--theme-h5) !important;
+  height: var(--vi-popup-menu-item-height, var(--theme-h1));
+  line-height: var(--vi-popup-menu-item-height, var(--theme-h1));
+}
+:host(:not([disabled]):hover) > div::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  content: " ";
+  background-color: var(--theme-color);
+  opacity: 0.1;
+}
+:host .actions {
+  display: flex;
+  flex-direction: row;
+  padding-left: var(--theme-h5);
+}
+:host .actions ::slotted(*) {
+  height: var(--vi-popup-menu-item-height, var(--theme-h1));
+  width: var(--vi-popup-menu-item-height, var(--theme-h1));
+  line-height: var(--vi-popup-menu-item-height, var(--theme-h1));
+}
+:host vi-icon {
+  position: relative;
+  display: inline-block;
+  height: var(--vi-popup-menu-item-height, var(--theme-h1));
+  width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
+}
+:host vi-icon#icon::before {
+  content: " ";
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
+  background-color: rgba(0, 0, 0, 0.04);
+}
+:host(:not([icon-space])) .icon-space {
+  display: none !important;
+}
+
+.icon-space {
+  height: var(--vi-popup-menu-item-height, var(--theme-h1));
+  width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
+  background-color: rgba(0, 0, 0, 0.04);
+}</style>
+
+<div inverse class="layout horizontal">
+    <paper-ripple></paper-ripple>
+    <vi-icon id="icon" source="[[icon]]"></vi-icon>
+    <div class="icon-space"></div>
+    <span class="flex">[[label]]</span>
+    <div class="actions" on-tap="_actionsTap" on-down="_catch">
+        <slot name="button" on-slotchange="_popupMenuIconSpaceHandler"></slot>
+    </div>
+</div>`; }
+    constructor(label, icon, _action) {
+        super();
+        this.label = label;
+        this.icon = icon;
+        this._action = _action;
+    }
+    _popupMenuIconSpaceHandler(e) {
+        const elements = e.target.assignedElements();
+        const iconSpace = elements.some(e => e.icon && exists(e.icon));
+        elements.forEach(e => e.iconSpace = iconSpace && (!e.icon || !exists(e.icon)));
+    }
+    _onTap(e) {
+        if (this._action) {
+            this._action();
+            Popup.closeAll();
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }
+    _actionsTap(e) {
+        Popup.closeAll();
+        e.stopPropagation();
+    }
+    _catch(e) {
+        e.stopPropagation();
+        e.preventDefault();
+    }
+};
+PopupMenuItemWithActions = __decorate([
+    WebComponent.register({
+        properties: {
+            label: String,
+            icon: String,
+            iconSpace: {
+                type: Boolean,
+                reflectToAttribute: true
+            },
+        },
+        listeners: {
+            "tap": "_onTap"
+        }
+    })
+], PopupMenuItemWithActions);
+
+var _PopupMenu_contextHost, _PopupMenu_openContextEventListener;
+let PopupMenu = class PopupMenu extends WebComponent {
+    constructor() {
+        super(...arguments);
+        _PopupMenu_contextHost.set(this, void 0);
+        _PopupMenu_openContextEventListener.set(this, void 0);
+    }
+    static get template() { return html$2 `<style>:host #popup {
+  line-height: var(--theme-h1);
+}
+:host #popup #items {
+  background-color: white;
+  padding: 1px;
+}
+:host([context-menu-only]) #popup {
+  position: fixed;
+  z-index: 1000000;
+}
+:host([context-menu-only]) #popup #contextHeader {
+  visibility: hidden;
+}</style>
+
+<vi-popup open-on-hover="{{openOnHover}}" id="popup" disabled="[[disabled]]" open="{{open}}" placement="[[placement]]" auto-width="[[autoWidth]]">
+    <dom-if if="[[!contextMenuOnly]]">
+        <template>
+            <slot name="header" slot="header"></slot>
+        </template>
+    </dom-if>
+    <div>
+        <slot id="items" on-slotchange="_popupMenuIconSpaceHandler"></slot>
+    </div>
+</vi-popup>`; }
+    popup() {
+        return this.$.popup.popup();
+    }
+    _hookContextMenu(isConnected, contextMenu) {
+        if (isConnected && contextMenu) {
+            __classPrivateFieldSet(this, _PopupMenu_contextHost, this.getRootNode().host, "f");
+            __classPrivateFieldGet(this, _PopupMenu_contextHost, "f").addEventListener("contextmenu", () => __classPrivateFieldSet(this, _PopupMenu_openContextEventListener, this._openContext.bind(this), "f"));
+        }
+        else if (__classPrivateFieldGet(this, _PopupMenu_contextHost, "f")) {
+            __classPrivateFieldGet(this, _PopupMenu_contextHost, "f").removeEventListener("contextmenu", __classPrivateFieldGet(this, _PopupMenu_openContextEventListener, "f"));
+            __classPrivateFieldSet(this, _PopupMenu_contextHost, __classPrivateFieldSet(this, _PopupMenu_openContextEventListener, undefined, "f"), "f");
+        }
+    }
+    _openContext(e) {
+        if (!this.contextMenuOnly)
+            return true;
+        if (e.button === 2 && !!this.shiftKey === !!e.shiftKey && !!this.ctrlKey === !!e.ctrlKey) {
+            const popup = this.$.popup;
+            popup.style.left = e.pageX + "px";
+            popup.style.top = e.pageY + "px";
+            if (!popup.open)
+                popup.popup();
+            else
+                popup.close();
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+    }
+    _popupMenuIconSpaceHandler(e) {
+        const elements = e.target.assignedElements();
+        const iconSpace = elements.some(e => e.icon && exists(e.icon));
+        elements.forEach(e => e.iconSpace = iconSpace && (!e.icon || !exists(e.icon)));
+    }
+    _mouseenter() {
+        if (this.openOnHover)
+            this.popup();
+    }
+    _mousemove(e) {
+        e.stopPropagation();
+    }
+    _stopTap(e) {
+        e.stopPropagation();
+    }
+};
+_PopupMenu_contextHost = new WeakMap();
+_PopupMenu_openContextEventListener = new WeakMap();
+PopupMenu = __decorate([
+    WebComponent.register({
+        properties: {
+            disabled: {
+                type: Boolean,
+                reflectToAttribute: true
+            },
+            openOnHover: {
+                type: Boolean,
+                reflectToAttribute: true
+            },
+            contextMenuOnly: {
+                type: Boolean,
+                reflectToAttribute: true,
+                value: false
+            },
+            shiftKey: Boolean,
+            ctrlKey: Boolean,
+            open: {
+                type: Boolean,
+                reflectToAttribute: true
+            },
+            autoWidth: {
+                type: Boolean,
+                reflectToAttribute: true
+            },
+            placement: {
+                type: String,
+                reflectToAttribute: true,
+                value: "bottom-start"
+            }
+        },
+        observers: [
+            "_hookContextMenu(isConnected, contextMenuOnly)"
+        ],
+        listeners: {
+            "mouseenter": "_mouseenter",
+            "mousemove": "_mousemove",
+            "tap": "_stopTap"
+        }
+    })
+], PopupMenu);
+
 var _Dialog_result, _Dialog_resolve, _Dialog_translatePosition;
 let Dialog = class Dialog extends WebComponent {
     constructor() {
@@ -25296,7 +25542,7 @@ dialog[is-dragging] {
   user-select: none;
 }</style>
 
-<dialog on-close="_onClose" on-cancel="_onCancel" on-click="_onClick" dragging$="[[dragging]]"></dialog>`;
+<dialog on-close="_onClose" on-cancel="_onCancel" on-click="_onClick" dragging$="[[dragging]]" on-contextmenu="_configureContextMenu"></dialog>`;
         if (options?.omitStyle)
             outerTemplate.content.querySelector("style").remove();
         const dialog = outerTemplate.content.querySelector("dialog");
@@ -25387,6 +25633,30 @@ dialog[is-dragging] {
             rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
         if (!isInDialog)
             this.dialog.close();
+    }
+    async _configureContextMenu(e) {
+        if (!this.service || !this.service.application)
+            return;
+        const configureItems = e["vi:configure"];
+        if (!this.service.application.hasManagement || !configureItems?.length || window.getSelection().toString()) {
+            e.stopImmediatePropagation();
+            return;
+        }
+        e.stopPropagation();
+        e.preventDefault();
+        const popupMenu = new PopupMenu();
+        popupMenu.contextMenuOnly = true;
+        Array.from(popupMenu.children).forEach(item => popupMenu.removeChild(item));
+        configureItems.forEach(item => popupMenu.appendChild(item));
+        this.dialog.appendChild(popupMenu);
+        try {
+            popupMenu.$.popup.style.left = e.pageX + "px";
+            popupMenu.$.popup.style.top = e.pageY + "px";
+            await popupMenu.popup();
+        }
+        finally {
+            this.dialog.removeChild(popupMenu);
+        }
     }
 };
 _Dialog_result = new WeakMap();
@@ -37139,257 +37409,6 @@ QueryGridColumnMeasure = __decorate([
     })
 ], QueryGridColumnMeasure);
 
-let PopupMenuItemSeparator = class PopupMenuItemSeparator extends WebComponent {
-    static get template() { return html$2 `<style>:host {
-  display: block;
-  border-top: 1px solid #ddd;
-}</style>
-
-<slot></slot>`; }
-};
-PopupMenuItemSeparator = __decorate([
-    WebComponent.register()
-], PopupMenuItemSeparator);
-
-let PopupMenuItemWithActions = class PopupMenuItemWithActions extends WebComponent {
-    static get template() { return html$2 `<style>:host {
-  display: flex;
-  flex-direction: row;
-  height: var(--vi-popup-menu-item-height, var(--theme-h1));
-  cursor: pointer;
-  color: var(--theme-color);
-  fill: var(--theme-color);
-}
-:host > div {
-  position: relative;
-  z-index: 0;
-  flex: 1 0 auto;
-  height: var(--vi-popup-menu-item-height, var(--theme-h1));
-  line-height: var(--vi-popup-menu-item-height, var(--theme-h1));
-  padding: 0;
-  text-align: left;
-  white-space: nowrap;
-}
-:host > div > * {
-  display: inline-block;
-  vertical-align: top;
-}
-:host > div span {
-  flex: 1 0 auto;
-  padding: 0 var(--theme-h5) !important;
-  height: var(--vi-popup-menu-item-height, var(--theme-h1));
-  line-height: var(--vi-popup-menu-item-height, var(--theme-h1));
-}
-:host(:not([disabled]):hover) > div::before {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  content: " ";
-  background-color: var(--theme-color);
-  opacity: 0.1;
-}
-:host .actions {
-  display: flex;
-  flex-direction: row;
-  padding-left: var(--theme-h5);
-}
-:host .actions ::slotted(*) {
-  height: var(--vi-popup-menu-item-height, var(--theme-h1));
-  width: var(--vi-popup-menu-item-height, var(--theme-h1));
-  line-height: var(--vi-popup-menu-item-height, var(--theme-h1));
-}
-:host vi-icon {
-  position: relative;
-  display: inline-block;
-  height: var(--vi-popup-menu-item-height, var(--theme-h1));
-  width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
-}
-:host vi-icon#icon::before {
-  content: " ";
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
-  background-color: rgba(0, 0, 0, 0.04);
-}
-:host(:not([icon-space])) .icon-space {
-  display: none !important;
-}
-
-.icon-space {
-  height: var(--vi-popup-menu-item-height, var(--theme-h1));
-  width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));
-  background-color: rgba(0, 0, 0, 0.04);
-}</style>
-
-<div inverse class="layout horizontal">
-    <paper-ripple></paper-ripple>
-    <vi-icon id="icon" source="[[icon]]"></vi-icon>
-    <div class="icon-space"></div>
-    <span class="flex">[[label]]</span>
-    <div class="actions" on-tap="_actionsTap" on-down="_catch">
-        <slot name="button" on-slotchange="_popupMenuIconSpaceHandler"></slot>
-    </div>
-</div>`; }
-    constructor(label, icon, _action) {
-        super();
-        this.label = label;
-        this.icon = icon;
-        this._action = _action;
-    }
-    _popupMenuIconSpaceHandler(e) {
-        const elements = e.target.assignedElements();
-        const iconSpace = elements.some(e => e.icon && exists(e.icon));
-        elements.forEach(e => e.iconSpace = iconSpace && (!e.icon || !exists(e.icon)));
-    }
-    _onTap(e) {
-        if (this._action) {
-            this._action();
-            Popup.closeAll();
-            e.preventDefault();
-            e.stopPropagation();
-        }
-    }
-    _actionsTap(e) {
-        Popup.closeAll();
-        e.stopPropagation();
-    }
-    _catch(e) {
-        e.stopPropagation();
-        e.preventDefault();
-    }
-};
-PopupMenuItemWithActions = __decorate([
-    WebComponent.register({
-        properties: {
-            label: String,
-            icon: String,
-            iconSpace: {
-                type: Boolean,
-                reflectToAttribute: true
-            },
-        },
-        listeners: {
-            "tap": "_onTap"
-        }
-    })
-], PopupMenuItemWithActions);
-
-let PopupMenu = class PopupMenu extends WebComponent {
-    static get template() { return html$2 `<style>:host #popup {
-  line-height: var(--theme-h1);
-}
-:host #popup #items {
-  background-color: white;
-  padding: 1px;
-}
-:host([context-menu-only]) #popup {
-  position: fixed;
-  z-index: 1000000;
-}
-:host([context-menu-only]) #popup #contextHeader {
-  visibility: hidden;
-}</style>
-
-<vi-popup open-on-hover="{{openOnHover}}" id="popup" disabled="[[disabled]]" open="{{open}}" placement="[[placement]]" auto-width="[[autoWidth]]">
-    <dom-if if="[[!contextMenuOnly]]">
-        <template>
-            <slot name="header" slot="header"></slot>
-        </template>
-    </dom-if>
-    <div>
-        <slot id="items" on-slotchange="_popupMenuIconSpaceHandler"></slot>
-    </div>
-</vi-popup>`; }
-    popup() {
-        return this.$.popup.popup();
-    }
-    _hookContextMenu(isConnected, contextMenu) {
-        if (isConnected && contextMenu)
-            this.getRootNode().host.addEventListener("contextmenu", this._openContextEventListener = this._openContext.bind(this));
-        else if (this._openContextEventListener) {
-            this.getRootNode().host.removeEventListener("contextmenu", this._openContextEventListener);
-            this._openContextEventListener = undefined;
-        }
-    }
-    _openContext(e) {
-        if (!this.contextMenuOnly)
-            return true;
-        if (e.button === 2 && !!this.shiftKey === !!e.shiftKey && !!this.ctrlKey === !!e.ctrlKey) {
-            const popup = this.$.popup;
-            popup.style.left = e.pageX + "px";
-            popup.style.top = e.pageY + "px";
-            if (!popup.open)
-                popup.popup();
-            else
-                popup.close();
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-    }
-    _popupMenuIconSpaceHandler(e) {
-        const elements = e.target.assignedElements();
-        const iconSpace = elements.some(e => e.icon && exists(e.icon));
-        elements.forEach(e => e.iconSpace = iconSpace && (!e.icon || !exists(e.icon)));
-    }
-    _mouseenter() {
-        if (this.openOnHover)
-            this.popup();
-    }
-    _mousemove(e) {
-        e.stopPropagation();
-    }
-    _stopTap(e) {
-        e.stopPropagation();
-    }
-};
-PopupMenu = __decorate([
-    WebComponent.register({
-        properties: {
-            disabled: {
-                type: Boolean,
-                reflectToAttribute: true
-            },
-            openOnHover: {
-                type: Boolean,
-                reflectToAttribute: true
-            },
-            contextMenuOnly: {
-                type: Boolean,
-                reflectToAttribute: true,
-                value: false
-            },
-            shiftKey: Boolean,
-            ctrlKey: Boolean,
-            open: {
-                type: Boolean,
-                reflectToAttribute: true
-            },
-            autoWidth: {
-                type: Boolean,
-                reflectToAttribute: true
-            },
-            placement: {
-                type: String,
-                reflectToAttribute: true,
-                value: "bottom-start"
-            }
-        },
-        observers: [
-            "_hookContextMenu(isConnected, contextMenuOnly)"
-        ],
-        listeners: {
-            "mouseenter": "_mouseenter",
-            "mousemove": "_mousemove",
-            "tap": "_stopTap"
-        }
-    })
-], PopupMenu);
-
 let Checkbox = class Checkbox extends WebComponent {
     static get template() { return html$2 `<style>:host {
   display: block;
@@ -43361,6 +43380,7 @@ class QueryGridUserSettings extends Observable {
 
 const placeholder = {};
 const queryScrollOffsets = new WeakMap();
+const PHYSICAL_UPPER_LIMIT = 100000;
 let QueryGrid = class QueryGrid extends WebComponent {
     constructor() {
         super(...arguments);
@@ -43448,7 +43468,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
 :host header .more.right {
   right: 0;
 }
-:host .max-exceeded {
+:host .physical-upper-limit-exceeded {
   display: flex;
   height: var(--vi-query-grid-row-height);
   line-height: var(--vi-query-grid-row-height);
@@ -43677,7 +43697,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
             </dom-repeat>
             <vi-size-tracker size="{{visibleColumnHeaderSize}}"></vi-size-tracker>
         </div>
-        <dom-if if="[[hasMore.left.length]]">
+        <dom-if if="[[moreColumns.left.length]]">
             <template>
                 <vi-popup class="more left" on-popup-opening="_onMoreOpening" on-popup-closed="_onMoreClosed">
                     <vi-button slot="header" inverse icon="ChevronLeft"></vi-button>
@@ -43686,7 +43706,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
             </template>
         </dom-if>
     </div>
-    <dom-if if="[[hasMore.right.length]]">
+    <dom-if if="[[moreColumns.right.length]]">
         <template>
             <vi-popup class="more right" on-popup-opening="_onMoreOpening" on-popup-closed="_onMoreClosed" placement="bottom-end">
                 <vi-button slot="header" inverse icon="ChevronRight"></vi-button>
@@ -43704,9 +43724,9 @@ let QueryGrid = class QueryGrid extends WebComponent {
                     <vi-query-grid-row item="[[item]]" index="[[index]]" columns="[[columns]]" offsets="[[_computeOffsets(columnWidths)]]" visible-range="{{_computeVisibleRange(viewportWidth, horizontalScrollOffset)}}" initializing$="[[initializing]]" can-reorder="[[canReorder]]"></vi-query-grid-row>
                 </template>
             </dom-repeat>
-            <dom-if if="[[maxExceeded]]">
+            <dom-if if="[[physicalUpperLimitExceeded]]">
                 <template>
-                    <div class="max-exceeded">
+                    <div class="physical-upper-limit-exceeded">
                         <vi-icon source="Ellipsis"></vi-icon>
                     </div>
                 </template>
@@ -43795,14 +43815,16 @@ let QueryGrid = class QueryGrid extends WebComponent {
     _scrollToTop() {
         this.verticalScrollOffset = 0;
     }
-    _update(verticalScrollOffset, virtualRowCount, rowHeight, items) {
+    _update(verticalScrollOffset, virtualRowCount, rowHeight, items, skip, maxRows) {
         if (!virtualRowCount)
             return;
+        if (!maxRows)
+            maxRows = Number.MAX_SAFE_INTEGER;
         verticalScrollOffset *= this._verticalSpacerCorrection;
         const viewportStartRowIndex = Math.floor(verticalScrollOffset / rowHeight);
         const viewportEndRowIndex = Math.ceil((verticalScrollOffset + this.viewportHeight) / rowHeight);
         if (!this.virtualItems || this.virtualItems.length !== virtualRowCount) {
-            this._setVirtualItems(new Array(virtualRowCount));
+            this._setVirtualItems(new Array(Math.min(virtualRowCount, maxRows)));
             items.forceUpdate = true;
         }
         let newVirtualGridStartIndex = 0;
@@ -43823,8 +43845,8 @@ let QueryGrid = class QueryGrid extends WebComponent {
         if (newVirtualGridStartIndex < 0)
             newVirtualGridStartIndex = 0;
         const queuedItemIndexes = [];
-        for (let virtualIndex = 0; virtualIndex < this.virtualRowCount; virtualIndex++) {
-            const index = newVirtualGridStartIndex + virtualIndex;
+        for (let virtualIndex = 0; virtualIndex < this.virtualRowCount && virtualIndex < maxRows; virtualIndex++) {
+            const index = newVirtualGridStartIndex + virtualIndex + skip;
             const [item, realIndex] = this._getItem(index, true);
             this.virtualItems[virtualIndex] = item;
             if (this.virtualItems[virtualIndex] === undefined) {
@@ -43885,7 +43907,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
         const queryLazyLoading = this.query.disableLazyLoading;
         try {
             this.query.disableLazyLoading = disableLazyLoading;
-            if (!this.query.hasMore && index >= Math.min(this.items.length, this.max))
+            if (!this.query.hasMore && index >= Math.min(this.items.length, PHYSICAL_UPPER_LIMIT))
                 return [null, -1];
             if (!this.hasGrouping)
                 return [this.query.items[index], index];
@@ -43912,10 +43934,13 @@ let QueryGrid = class QueryGrid extends WebComponent {
             this.query.disableLazyLoading = queryLazyLoading;
         }
     }
-    _updateVerticalSpacer(viewportHeight, rowHeight, items, max) {
+    _updateVerticalSpacer(viewportHeight, rowHeight, items, maxRows) {
         beforeNextRender(this, () => {
-            const newHeight = Math.min(items.length, max) * rowHeight;
-            this.$.gridWrapper.style.height = `${newHeight}px`;
+            const newHeight = Math.min(Math.min(items.length, PHYSICAL_UPPER_LIMIT), maxRows || Number.MAX_SAFE_INTEGER) * rowHeight;
+            if (!maxRows || maxRows === Number.MAX_SAFE_INTEGER)
+                this.$.gridWrapper.style.height = `${newHeight}px`;
+            else
+                this.$.gridWrapper.style.maxHeight = `${newHeight}px`;
             this._verticalSpacerCorrection = (newHeight - this.viewportHeight) / (this.$.gridWrapper.clientHeight - viewportHeight);
         });
     }
@@ -43987,8 +44012,11 @@ let QueryGrid = class QueryGrid extends WebComponent {
     _computeCanReorder(canReorder, hasGrouping) {
         return canReorder && !hasGrouping;
     }
-    _computeMaxExceeded(totalItems, max) {
-        return totalItems > max;
+    _computePhysicalUpperLimitExceeded(totalItems) {
+        return totalItems > PHYSICAL_UPPER_LIMIT;
+    }
+    _computeHasMoreRows(totalItems, maxRows = Number.MAX_SAFE_INTEGER) {
+        return totalItems > maxRows;
     }
     _rowHeightChanged(rowHeight) {
         this.style.setProperty("--vi-query-grid-row-height", `${rowHeight}px`);
@@ -44043,7 +44071,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
     }
     _reset() {
         this._updateUserSettings(this.query);
-        this._update(this.verticalScrollOffset, this.virtualRowCount, this.rowHeight, this.items);
+        this._update(this.verticalScrollOffset, this.virtualRowCount, this.rowHeight, this.items, this.skip);
     }
     _updateMore(visibleColumnHeaderSize, horizontalScrollOffset) {
         if (visibleColumnHeaderSize == null || horizontalScrollOffset == null)
@@ -44051,7 +44079,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
         this._updateMoreDebouncer = Debouncer.debounce(this._updateMoreDebouncer, timeOut.after(50), () => {
             const sizeTracker = this.$.columnHeadersDomRepeat;
             const headers = Array.from(sizeTracker.parentElement.querySelectorAll("vi-query-grid-column-header"));
-            this._setHasMore({
+            this._setMoreColumns({
                 left: headers.filter(h => h.offsetLeft - horizontalScrollOffset < 0),
                 right: headers.filter(h => (h.offsetLeft + h.offsetWidth / 2) > visibleColumnHeaderSize.width)
             });
@@ -44060,7 +44088,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
     _onMoreOpening(e) {
         const popup = e.target;
         const isLeft = popup.classList.contains("left");
-        const headers = isLeft ? this.hasMore.left : this.hasMore.right;
+        const headers = isLeft ? this.moreColumns.left : this.moreColumns.right;
         popup.querySelector("vi-scroller").append(...headers.map(h => {
             return new PopupMenuItem(h.column.label, null, () => {
                 const pinnedColumns = this.columns.filter(c => c.isPinned);
@@ -44171,18 +44199,29 @@ QueryGrid = __decorate([
                 computed: "_computeCanReorder(query.canReorder, hasGrouping)"
             },
             visibleColumnHeaderSize: Object,
-            hasMore: {
+            moreColumns: {
                 type: Object,
                 readOnly: true
             },
-            max: {
-                type: Number,
-                value: 100000
-            },
-            maxExceeded: {
+            physicalUpperLimitExceeded: {
                 type: Boolean,
-                computed: "_computeMaxExceeded(query.items.length, max)"
-            }
+                computed: "_computePhysicalUpperLimitExceeded(query.items.length)"
+            },
+            maxRows: {
+                type: Number,
+                reflectToAttribute: true,
+                value: null
+            },
+            hasMoreRows: {
+                type: Boolean,
+                reflectToAttribute: true,
+                computed: "_computeHasMoreRows(query.items.length, maxRows)"
+            },
+            skip: {
+                type: Number,
+                reflectToAttribute: true,
+                value: 0
+            },
         },
         forwardObservers: [
             "query.canReorder",
@@ -44204,8 +44243,8 @@ QueryGrid = __decorate([
         },
         observers: [
             "_scrollToTop(query.items)",
-            "_update(verticalScrollOffset, virtualRowCount, rowHeight, items)",
-            "_updateVerticalSpacer(viewportHeight, rowHeight, items, max)",
+            "_update(verticalScrollOffset, virtualRowCount, rowHeight, items, skip, maxRows)",
+            "_updateVerticalSpacer(viewportHeight, rowHeight, items, maxRows)",
             "_updateUserSettings(query, query.columns)",
             "_updateMore(visibleColumnHeaderSize, horizontalScrollOffset)"
         ],
@@ -49706,6 +49745,8 @@ let PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = clas
     async _valueChanged(newValue, oldValue) {
         if (!this.attribute)
             return;
+        if (newValue === undefined)
+            return;
         if (newValue != null && this._decimalSeparator !== ".")
             newValue = newValue.replace(this._decimalSeparator, ".");
         try {
@@ -52624,7 +52665,7 @@ let App = App_1 = class App extends AppBase {
             return confirmationMessage;
         }
     }
-    _configureContextmenu(e) {
+    async _configureContextmenu(e) {
         if (!this.service || !this.service.application)
             return;
         const configureItems = e["vi:configure"];
@@ -52632,9 +52673,14 @@ let App = App_1 = class App extends AppBase {
             e.stopImmediatePropagation();
             return;
         }
+        e.stopPropagation();
+        e.preventDefault();
         const popupMenu = this.shadowRoot.querySelector("#viConfigure");
         Array.from(popupMenu.children).forEach(item => popupMenu.removeChild(item));
         configureItems.forEach(item => popupMenu.appendChild(item));
+        popupMenu.$.popup.style.left = e.pageX + "px";
+        popupMenu.$.popup.style.top = e.pageY + "px";
+        await popupMenu.popup();
     }
     _cleanUpOnSignOut(isSignedIn) {
         if (isSignedIn === false) {

@@ -3,9 +3,6 @@ export { moment }
 
 export * from "bignumber.js"
 
-import DOMPurify from 'dompurify'
-export { DOMPurify }
-
 export * as Vidyano from "../wwwroot/libs/vidyano/vidyano.js"
 export * as Polymer from "../wwwroot/libs/polymer/polymer.js"
 
