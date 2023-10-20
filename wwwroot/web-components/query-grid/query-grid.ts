@@ -493,7 +493,7 @@ export class QueryGrid extends WebComponent {
     private _updateVerticalSpacer(viewportHeight: number, rowHeight: number, items: QueryGridItem[], maxRows?: number) {
         Polymer.Render.beforeNextRender(this, () => {
             const newHeight = Math.min(Math.min(items.length, PHYSICAL_UPPER_LIMIT), maxRows || Number.MAX_SAFE_INTEGER) * rowHeight;
-            if (maxRows === Number.MAX_SAFE_INTEGER)
+            if (!maxRows || maxRows === Number.MAX_SAFE_INTEGER)
                 this.$.gridWrapper.style.height = `${newHeight}px`;
             else
                 this.$.gridWrapper.style.maxHeight = `${newHeight}px`;
