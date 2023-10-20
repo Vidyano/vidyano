@@ -176,7 +176,7 @@ export class App extends AppBase {
         }
     }
 
-    private _configureContextmenu(e: MouseEvent) {
+    private async _configureContextmenu(e: MouseEvent) {
         if (!this.service || !this.service.application)
             return;
 
@@ -186,9 +186,17 @@ export class App extends AppBase {
             return;
         }
 
+        e.stopPropagation();
+        e.preventDefault();
+
         const popupMenu = <PopupMenu>this.shadowRoot.querySelector("#viConfigure");
         Array.from(popupMenu.children).forEach(item => popupMenu.removeChild(item));
         configureItems.forEach(item => popupMenu.appendChild(item));
+
+        popupMenu.$.popup.style.left = e.pageX + "px";
+        popupMenu.$.popup.style.top = e.pageY + "px";
+
+        await popupMenu.popup();
     }
 
     protected _cleanUpOnSignOut(isSignedIn: boolean) {

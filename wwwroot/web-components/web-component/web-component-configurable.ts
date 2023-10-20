@@ -16,7 +16,10 @@ export abstract class ConfigurableWebComponent extends WebComponent {
     async connectedCallback() {
         super.connectedCallback();
 
-        this._addEventListenerToNode(this, "contextmenu", this.#_onContextmenu = (e: CustomEvent) => {
+        this._addEventListenerToNode(this, "contextmenu", this.#_onContextmenu = (e: PointerEvent) => {
+            if (!e.ctrlKey || e.defaultPrevented)
+                return;
+
             if (e["vi:configure"])
                 return;
 
