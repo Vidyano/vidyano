@@ -55,7 +55,6 @@ import { WebComponent } from "../web-component/web-component.js"
             type: Number,
             readOnly: true
         },
-        hostSize: Object,
         horizontal: {
             type: Boolean,
             readOnly: true,
@@ -159,7 +158,6 @@ export class Scroller extends WebComponent {
     readonly scrollTopShadow: boolean; private _setScrollTopShadow: (val: boolean) => void;
     readonly scrollBottomShadow: boolean; private _setScrollBottomShadow: (val: boolean) => void;
     readonly hiddenScrollbars: boolean; private _setHiddenScrollbars: (val: boolean) => void;
-    hostSize: ISize;
     noHorizontal: boolean;
     noVertical: boolean;
     horizontalScrollOffset: number;
@@ -225,14 +223,14 @@ export class Scroller extends WebComponent {
     }
 
     private _updateVerticalScrollbar(outerHeight: number, innerHeight: number, verticalScrollOffset: number, noVertical: boolean) {
-        let height = this.hostSize.height < innerHeight ? this.hostSize.height / innerHeight * this.hostSize.height : 0;
+        let height = outerHeight < innerHeight ? outerHeight / innerHeight * outerHeight : 0;
         if (height !== this._verticalScrollHeight) {
             if (height > 0 && height < Scroller._minBarSize)
                 height = Scroller._minBarSize;
             else
                 height = Math.floor(height);
 
-            this._verticalScrollSpace = this.hostSize.height - height;
+            this._verticalScrollSpace = outerHeight - height;
 
             if (height !== this._verticalScrollHeight) {
                 this._verticalScrollHeight = height;
