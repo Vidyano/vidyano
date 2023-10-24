@@ -10722,7 +10722,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.12.0-preview2";
+let version$2 = "3.12.0-preview3";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -23668,7 +23668,6 @@ let Popup = Popup_1 = class Popup extends WebComponent {
         super(...arguments);
         _Popup_cleanup.set(this, void 0);
         this.__Vidyano_WebComponents_PopupCore__Instance__ = true;
-        this._refitAF = null;
     }
     static get template() { return html$2 `<style>:host {
   display: flex;
@@ -23677,14 +23676,22 @@ let Popup = Popup_1 = class Popup extends WebComponent {
 }
 :host #popup {
   position: fixed;
-  visibility: hidden;
   background-color: white;
-  opacity: 0;
   transition: opacity 0.1s ease-out;
   overflow: visible;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 }
-:host([open]) #popup {
+:host #popup[popover] {
+  border: none;
+  margin: 0;
+  outline: none;
+  padding: 0;
+}
+:host #popup:not([popover]) {
+  visibility: hidden;
+  opacity: 0;
+}
+:host([open]) #popup:not([popover]) {
   visibility: visible;
   opacity: 1;
   z-index: 11;
@@ -23701,7 +23708,7 @@ let Popup = Popup_1 = class Popup extends WebComponent {
     <slot name="header"></slot>
 </div>
 
-<div id="popup" class="relative" on-tap="_catchContentClick" on-mouseenter="_contentMouseEnter" on-mouseleave="_contentMouseLeave">
+<div id="popup" class="relative" on-tap="_catchContentClick" on-mouseenter="_contentMouseEnter" on-mouseleave="_contentMouseLeave" popover="[[_getPopover(supportsPopover)]]">
     <vi-size-tracker on-sizechanged="refit"></vi-size-tracker>
     <slot></slot>
 </div>`; }
@@ -23744,13 +23751,14 @@ let Popup = Popup_1 = class Popup extends WebComponent {
         this.refit();
     }
     async refit() {
-        const { x, y } = await computePosition(this.$.anchor, this.$.popup, {
+        let { x, y } = await computePosition(this.$.anchor, this.$.popup, {
             placement: this.placement,
             strategy: "fixed",
             middleware: [
                 flip(),
                 shift({
-                    boundary: this.findParent(e => e instanceof Scroller)?.scroller
+                    boundary: this.supportsPopover ? undefined : this.findParent(e => e instanceof Scroller)?.scroller,
+                    rootBoundary: this.supportsPopover ? "viewport" : undefined
                 }),
                 size({
                     apply({ availableWidth, availableHeight, elements }) {
@@ -23765,6 +23773,21 @@ let Popup = Popup_1 = class Popup extends WebComponent {
                 })
             ]
         });
+        if (this.supportsPopover) {
+            this.findParent(e => {
+                if (!e || e instanceof HTMLBodyElement)
+                    return true;
+                if (!(e instanceof HTMLElement))
+                    return false;
+                if (getComputedStyle(e, null).transform?.startsWith("matrix")) {
+                    const transformedParentRect = this.$.anchor.getBoundingClientRect();
+                    x += transformedParentRect.x;
+                    y += transformedParentRect.y;
+                    return true;
+                }
+                return false;
+            }, this.$.anchor);
+        }
         Object.assign(this.$.popup.style, {
             left: `${x}px`,
             top: `${y}px`,
@@ -23871,6 +23894,14 @@ let Popup = Popup_1 = class Popup extends WebComponent {
             }, this.closeDelay);
         }
     }
+    _openChanged(open) {
+        if (!this.supportsPopover)
+            return;
+        if (open)
+            this.$.popup.showPopover();
+        else
+            this.$.popup.hidePopover();
+    }
     _hoverChanged(hover) {
         if (!this._currentTarget)
             return;
@@ -23885,6 +23916,9 @@ let Popup = Popup_1 = class Popup extends WebComponent {
             return;
         this.refit();
         e.stopPropagation();
+    }
+    _getPopover(supportsPopover) {
+        return supportsPopover ? "" : null;
     }
     static closeAll(parent) {
         const rootPopup = openPopups[0];
@@ -23923,7 +23957,8 @@ Popup = Popup_1 = __decorate([
                 type: Boolean,
                 readOnly: true,
                 reflectToAttribute: true,
-                notify: true
+                notify: true,
+                observer: "_openChanged"
             },
             openOnHover: {
                 type: Boolean,
@@ -23946,7 +23981,12 @@ Popup = Popup_1 = __decorate([
             renderPopupCoreFit: {
                 type: Boolean,
                 readOnly: true
-            }
+            },
+            supportsPopover: {
+                type: Boolean,
+                readOnly: true,
+                value: () => HTMLElement.prototype.hasOwnProperty("popover")
+            },
         },
         observers: [
             "_hookTapAndHoverEvents(isConnected, openOnHover)"
@@ -37510,8 +37550,7 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   display: block;
   border-top: 1px solid var(--theme-light-border);
   box-sizing: border-box;
-  height: var(--theme-h2);
-  line-height: var(--theme-h2);
+  line-height: var(--vi-query-grid-row-height);
   cursor: pointer;
 }
 :host vi-input-search {
@@ -37552,7 +37591,7 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   background-color: var(--theme-color-faint);
 }
 :host #preRender {
-  display: block;
+  display: flex;
 }
 :host vi-button[slot=header], :host #preRender {
   justify-content: start;
@@ -37561,7 +37600,6 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   text-align: left;
   font-weight: 500;
   width: 100%;
-  height: var(--theme-h2);
   padding: 0;
 }
 :host vi-button[slot=header] span, :host #preRender span {
@@ -37570,7 +37608,6 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
 :host #label {
   display: none;
   padding: 0 var(--vi-query-grid-cell-padding, var(--theme-h5));
-  line-height: var(--theme-h2);
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -37579,8 +37616,7 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
 :host vi-icon[source=Filter] {
   display: inline-block;
   fill: #eee;
-  line-height: var(--theme-h2);
-  height: var(--theme-h2);
+  height: var(--vi-query-grid-row-height);
   padding: 0 0 0 var(--vi-query-grid-cell-padding, var(--theme-h5));
 }
 :host([filtered]) #label {
@@ -40457,17 +40493,7 @@ let QueryGridRow = class QueryGridRow extends WebComponent {
         const grid = this.findParent(e => e instanceof QueryGrid);
         if (e.button !== 2 || e.shiftKey || e.ctrlKey || grid.asLookup)
             return true;
-        let [x, y] = [e.clientX, e.clientY];
-        this.findParent((e) => {
-            if (e instanceof HTMLHtmlElement)
-                return true;
-            const transform = getComputedStyle(e).transform;
-            if (!transform.startsWith("matrix"))
-                return;
-            const r = e.getBoundingClientRect();
-            x -= r.left;
-            y -= r.top;
-        });
+        let [x, y] = [e.pageX, e.pageY];
         const actionsPopup = new Popup();
         actionsPopup.style.position = "fixed";
         actionsPopup.style.left = `${x}px`;
@@ -40480,12 +40506,13 @@ let QueryGridRow = class QueryGridRow extends WebComponent {
         actionsPopup.addEventListener("popup-opening", this._onActionsOpening.bind(this));
         actionsPopup.addEventListener("popup-closed", this._onActionsClosed.bind(this));
         this.shadowRoot.appendChild(actionsPopup);
+        grid.shadowRoot.appendChild(actionsPopup);
         e.preventDefault();
         try {
             await actionsPopup.popup();
         }
         finally {
-            this.shadowRoot.removeChild(actionsPopup);
+            grid.shadowRoot.removeChild(actionsPopup);
         }
     }
     _onSelect(e) {
@@ -43411,6 +43438,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
   flex: 1;
   min-height: 0;
   min-width: 0;
+  isolation: isolate;
 }
 :host [grid] {
   display: grid;
@@ -43422,6 +43450,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
   position: relative;
   z-index: 1;
   border-bottom: 1px solid var(--theme-light-border);
+  background-color: white;
 }
 :host header [grid] {
   margin-left: calc(var(--vi-query-grid-horizontal, 0) * -1);
@@ -43459,8 +43488,8 @@ let QueryGrid = class QueryGrid extends WebComponent {
   z-index: 1;
 }
 :host header .more > vi-button {
-  width: var(--theme-h2);
-  height: var(--theme-h2);
+  width: var(--vi-query-grid-row-height);
+  height: var(--vi-query-grid-row-height);
 }
 :host header .more.left {
   left: 0;
@@ -55862,7 +55891,7 @@ let PersistentObjectPresenter = class PersistentObjectPresenter extends Configur
     async _renderPersistentObject(persistentObject) {
         if (persistentObject !== this.persistentObject)
             return;
-        const persistentObjectComponent = new PersistentObject();
+        const persistentObjectComponent = renderCallback ? renderCallback(persistentObject) : new PersistentObject();
         persistentObjectComponent.persistentObject = persistentObject;
         this.appendChild(persistentObjectComponent);
         this._setLoading(false);
@@ -55898,6 +55927,9 @@ let PersistentObjectPresenter = class PersistentObjectPresenter extends Configur
                 this.app.changePath(`management/persistent-object.316b2486-df38-43e3-bee2-2f7059334992/${this.persistentObject.id}`);
             }
         });
+    }
+    static registerRenderCallback(callback) {
+        renderCallback = callback;
     }
 };
 PersistentObjectPresenter = __decorate([
@@ -55954,6 +55986,7 @@ PersistentObjectPresenter = __decorate([
         sensitive: true
     })
 ], PersistentObjectPresenter);
+let renderCallback = null;
 
 let ProgramUnitPresenter = class ProgramUnitPresenter extends WebComponent {
     static get template() { return html$2 `<style>:host {

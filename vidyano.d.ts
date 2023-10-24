@@ -10504,7 +10504,6 @@ declare class Popup extends WebComponent {
     private _toggleSize;
     private _header;
     private __Vidyano_WebComponents_PopupCore__Instance__;
-    private _refitAF;
     private _resolver;
     private _closeOnMoveoutTimer;
     private _currentTarget;
@@ -10514,6 +10513,7 @@ declare class Popup extends WebComponent {
     private _setHover;
     readonly renderPopupCoreFit: boolean;
     private _setRenderPopupCoreFit;
+    readonly supportsPopover: boolean;
     placement: Placement;
     disabled: boolean;
     sticky: boolean;
@@ -10534,8 +10534,10 @@ declare class Popup extends WebComponent {
     private _catchContentClick;
     protected _contentMouseEnter(e: MouseEvent): void;
     protected _contentMouseLeave(e: MouseEvent): void;
+    private _openChanged;
     private _hoverChanged;
     private _toggleSizeChanged;
+    private _getPopover;
     static closeAll(parent?: HTMLElement | WebComponent): void;
     private static _isDescendant;
 }
@@ -12584,30 +12586,6 @@ declare class PersistentObjectGroup extends WebComponent {
     protected onCreatePersistentObjectAttributePresenter(attribute: PersistentObjectAttribute$1): PersistentObjectAttributePresenter;
 }
 
-declare class PersistentObjectPresenter extends ConfigurableWebComponent {
-    static get template(): HTMLTemplateElement;
-    private _cacheEntry;
-    readonly loading: boolean;
-    private _setLoading;
-    readonly templated: boolean;
-    private _setTemplated;
-    readonly error: string;
-    private _setError;
-    persistentObjectId: string;
-    persistentObjectObjectId: string;
-    persistentObject: PersistentObject$1;
-    private _activate;
-    private _deactivate;
-    private _updatePersistentObject;
-    private _persistentObjectChanged;
-    private _updateTitle;
-    private _renderPersistentObject;
-    private _edit;
-    private _save;
-    private _cancelSave;
-    private _configure;
-}
-
 declare class PersistentObjectTabBarItem extends WebComponent {
     static get template(): HTMLTemplateElement;
     tab: PersistentObjectTab$1;
@@ -12632,47 +12610,10 @@ declare class PersistentObjectTabBar extends WebComponent {
     private _isVisible;
 }
 
-declare class PersistentObjectTab extends ConfigurableWebComponent {
-    static get template(): HTMLTemplateElement;
-    private _attributePresenters;
-    private _autofocusTarget;
-    tab: PersistentObjectAttributeTab;
-    noAutofocus: boolean;
-    disconnectedCallback(): void;
-    private _computeColumns;
-    private _computeGroups;
-    private _autofocus;
-    private _attributeLoaded;
-    private _innerSizeChanged;
-    private _configure;
+interface IPersistentObjectWebComponent extends WebComponent {
+    persistentObject: PersistentObject$1;
 }
-
-declare class PersistentObjectWizardDialog extends Dialog {
-    readonly persistentObject: PersistentObject$1;
-    static get template(): HTMLTemplateElement;
-    readonly currentTab: PersistentObjectAttributeTab;
-    private _setCurrentTab;
-    readonly canPrevious: boolean;
-    readonly canNext: boolean;
-    readonly canFinish: boolean;
-    readonly visibleTabs: PersistentObjectAttributeTab[];
-    hasPendingAttributes: boolean;
-    constructor(persistentObject: PersistentObject$1);
-    ready(): void;
-    connectedCallback(): void;
-    private _tabInnerSizeChanged;
-    private _computeVisibleTabs;
-    private _computeCanPrevious;
-    private _previous;
-    private _computeCanNext;
-    private _next;
-    private _computeCanFinish;
-    private _computeHasPendingAttributes;
-    private _finish;
-    private _onCaptureTab;
-}
-
-declare class PersistentObject extends WebComponent {
+declare class PersistentObject extends WebComponent implements IPersistentObjectWebComponent {
     static get template(): HTMLTemplateElement;
     private _cacheEntry;
     persistentObject: PersistentObject$1;
@@ -12713,6 +12654,71 @@ declare class PersistentObjectDetailsContent extends WebComponent {
 }
 declare class PersistentObjectDetailsHeader extends WebComponent {
     static get template(): HTMLTemplateElement;
+}
+
+declare class PersistentObjectPresenter extends ConfigurableWebComponent {
+    static get template(): HTMLTemplateElement;
+    private _cacheEntry;
+    readonly loading: boolean;
+    private _setLoading;
+    readonly templated: boolean;
+    private _setTemplated;
+    readonly error: string;
+    private _setError;
+    persistentObjectId: string;
+    persistentObjectObjectId: string;
+    persistentObject: PersistentObject$1;
+    private _activate;
+    private _deactivate;
+    private _updatePersistentObject;
+    private _persistentObjectChanged;
+    private _updateTitle;
+    private _renderPersistentObject;
+    private _edit;
+    private _save;
+    private _cancelSave;
+    private _configure;
+    static registerRenderCallback(callback: (persistentObject: PersistentObject$1) => IPersistentObjectWebComponent): void;
+}
+
+declare class PersistentObjectTab extends ConfigurableWebComponent {
+    static get template(): HTMLTemplateElement;
+    private _attributePresenters;
+    private _autofocusTarget;
+    tab: PersistentObjectAttributeTab;
+    noAutofocus: boolean;
+    disconnectedCallback(): void;
+    private _computeColumns;
+    private _computeGroups;
+    private _autofocus;
+    private _attributeLoaded;
+    private _innerSizeChanged;
+    private _configure;
+}
+
+declare class PersistentObjectWizardDialog extends Dialog {
+    readonly persistentObject: PersistentObject$1;
+    static get template(): HTMLTemplateElement;
+    readonly currentTab: PersistentObjectAttributeTab;
+    private _setCurrentTab;
+    readonly canPrevious: boolean;
+    readonly canNext: boolean;
+    readonly canFinish: boolean;
+    readonly visibleTabs: PersistentObjectAttributeTab[];
+    hasPendingAttributes: boolean;
+    constructor(persistentObject: PersistentObject$1);
+    ready(): void;
+    connectedCallback(): void;
+    private _tabInnerSizeChanged;
+    private _computeVisibleTabs;
+    private _computeCanPrevious;
+    private _previous;
+    private _computeCanNext;
+    private _next;
+    private _computeCanFinish;
+    private _computeHasPendingAttributes;
+    private _finish;
+    private _onCaptureTab;
 }
 
 declare class PopupMenuItemSeparator extends WebComponent {
@@ -13330,4 +13336,4 @@ interface IKeybindingRegistration {
     scope?: AppRoute | Dialog;
 }
 
-export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppRoute, AppRoutePresenter, AppServiceHooks, AppServiceHooksBase, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, Error$1 as Error, FileDrop, type IAppRouteActivatedArgs, type IAppRouteDeactivateArgs, type IConfigurableAction, type IDatePickerCell, type IDialogOptions, type IEvent, type IFileDropDetails, type IItemTapEventArgs, type IKeybindingRegistration, type IKeysEvent, type IMessageDialogOptions, type IObserveChainDisposer, type IPersistentObjectDialogOptions, type IPosition, type IQueryGridColumnFilterDistinct, type IQueryGridUserSettingsColumnData, type IRGB, type ISelectItem, type ISize, type ISortableDragEndDetails, type ITranslatedString, type IWebComponentKeybindingInfo, type IWebComponentProperties, type IWebComponentProperty, type IWebComponentRegistrationInfo, Icon, iconRegister as IconRegister, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, type OverflowType, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, type PersistentObjectAttributeConstructor, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeIcon, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, type QueryGridCellConstructor, QueryGridCellDefault, QueryGridCellImage, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, type SelectOption, SelectOptionItem, SelectReferenceDialog, Sensitive, SessionPresenter, SignIn, SignOut, SizeTracker, type SizeTrackerEvent, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, vidyano as Vidyano, WebComponent, moment };
+export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppRoute, AppRoutePresenter, AppServiceHooks, AppServiceHooksBase, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, Error$1 as Error, FileDrop, type IAppRouteActivatedArgs, type IAppRouteDeactivateArgs, type IConfigurableAction, type IDatePickerCell, type IDialogOptions, type IEvent, type IFileDropDetails, type IItemTapEventArgs, type IKeybindingRegistration, type IKeysEvent, type IMessageDialogOptions, type IObserveChainDisposer, type IPersistentObjectDialogOptions, type IPersistentObjectWebComponent, type IPosition, type IQueryGridColumnFilterDistinct, type IQueryGridUserSettingsColumnData, type IRGB, type ISelectItem, type ISize, type ISortableDragEndDetails, type ITranslatedString, type IWebComponentKeybindingInfo, type IWebComponentProperties, type IWebComponentProperty, type IWebComponentRegistrationInfo, Icon, iconRegister as IconRegister, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, type OverflowType, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, type PersistentObjectAttributeConstructor, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeIcon, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, type QueryGridCellConstructor, QueryGridCellDefault, QueryGridCellImage, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, type SelectOption, SelectOptionItem, SelectReferenceDialog, Sensitive, SessionPresenter, SignIn, SignOut, SizeTracker, type SizeTrackerEvent, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, vidyano as Vidyano, WebComponent, moment };
