@@ -6,15 +6,25 @@
 
     #popup {
         position: fixed;
-        visibility: hidden;
         background-color: white;
-        opacity: 0;
         transition: opacity 0.1s ease-out;
         overflow: visible;
         @include z-index1();
+
+        &[popover] {
+            border: none;
+            margin: 0;
+            outline: none;
+            padding: 0;
+        }
+
+        &:not([popover]) {
+            visibility: hidden;
+            opacity: 0;
+        }
     }
 
-    &[open] #popup {
+    &[open] #popup:not([popover]) {
         visibility: visible;
         opacity: 1;
         z-index: 11;

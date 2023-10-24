@@ -46,7 +46,8 @@ const openPopups: Popup[] = [];
             type: Boolean,
             readOnly: true,
             reflectToAttribute: true,
-            notify: true
+            notify: true,
+            observer: "_openChanged"
         },
         openOnHover: {
             type: Boolean,
@@ -69,7 +70,12 @@ const openPopups: Popup[] = [];
         renderPopupCoreFit: {
             type: Boolean,
             readOnly: true
-        }
+        },
+        supportsPopover: {
+            type: Boolean,
+            readOnly: true,
+            value: () => HTMLElement.prototype.hasOwnProperty("popover")
+        },
     },
     observers: [
         "_hookTapAndHoverEvents(isConnected, openOnHover)"
@@ -88,13 +94,13 @@ export class Popup extends WebComponent {
     private _toggleSize: ISize;
     private _header: HTMLElement;
     private __Vidyano_WebComponents_PopupCore__Instance__ = true;
-    private _refitAF: number = null;
     private _resolver: Function;
     private _closeOnMoveoutTimer: ReturnType<typeof setTimeout>;
     private _currentTarget: HTMLElement | WebComponent;
     readonly open: boolean; protected _setOpen: (val: boolean) => void;
     readonly hover: boolean; private _setHover: (val: boolean) => void;
     readonly renderPopupCoreFit: boolean; private _setRenderPopupCoreFit: (renderPopupCoreFit: boolean) => void;
+    readonly supportsPopover: boolean;
     placement: Placement;
     disabled: boolean;
     sticky: boolean;
@@ -156,13 +162,14 @@ export class Popup extends WebComponent {
     }
 
     async refit() {
-        const { x, y } = await computePosition(this.$.anchor, this.$.popup, {
+        let { x, y } = await computePosition(this.$.anchor, this.$.popup, {
             placement: this.placement,
             strategy: "fixed",
             middleware: [
                 flip(),
                 shift({
-                    boundary: this.findParent<Scroller>(e => e instanceof Scroller)?.scroller
+                    boundary: this.supportsPopover ? undefined : this.findParent<Scroller>(e => e instanceof Scroller)?.scroller,
+                    rootBoundary: this.supportsPopover ? "viewport" : undefined
                 }),
                 size({
                     apply({ availableWidth, availableHeight, elements }) {
@@ -177,6 +184,27 @@ export class Popup extends WebComponent {
                 })
             ]
         });
+
+        if (this.supportsPopover) {
+            this.findParent(e => {
+                if (!e || e instanceof HTMLBodyElement)
+                    return true;
+
+                if (!(e instanceof HTMLElement))
+                    return false;
+
+                if (getComputedStyle(e, null).transform?.startsWith("matrix")) {
+                    const transformedParentRect = this.$.anchor.getBoundingClientRect();
+
+                    x += transformedParentRect.x;
+                    y += transformedParentRect.y;
+
+                    return true;
+                }
+
+                return false;
+            }, this.$.anchor);
+        }
 
         Object.assign(this.$.popup.style, {
             left: `${x}px`,
@@ -313,6 +341,16 @@ export class Popup extends WebComponent {
         }
     }
 
+    private _openChanged(open: boolean) {
+        if (!this.supportsPopover)
+            return;
+
+        if (open)
+            this.$.popup.showPopover();
+        else
+            this.$.popup.hidePopover();
+    }
+
     private _hoverChanged(hover: boolean) {
         if (!this._currentTarget)
             return;
@@ -330,6 +368,11 @@ export class Popup extends WebComponent {
 
         this.refit();
         e.stopPropagation();
+    }
+
+    private _getPopover(supportsPopover: boolean) {
+        // Return empty string to prevent Polymer from stamping 'true' as attribute value
+        return supportsPopover ? "" : null;
     }
 
     static closeAll(parent?: HTMLElement | WebComponent) {

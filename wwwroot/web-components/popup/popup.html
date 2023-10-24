@@ -5,7 +5,7 @@
     <slot name="header"></slot>
 </div>
 
-<div id="popup" class="relative" on-tap="_catchContentClick" on-mouseenter="_contentMouseEnter" on-mouseleave="_contentMouseLeave">
+<div id="popup" class="relative" on-tap="_catchContentClick" on-mouseenter="_contentMouseEnter" on-mouseleave="_contentMouseLeave" popover="[[_getPopover(supportsPopover)]]">
     <vi-size-tracker on-sizechanged="refit"></vi-size-tracker>
     <slot></slot>
 </div>

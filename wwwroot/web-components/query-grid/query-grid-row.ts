@@ -216,19 +216,7 @@ export class QueryGridRow extends WebComponent {
         if (e.button !== 2 || e.shiftKey || e.ctrlKey || grid.asLookup)
             return true;
 
-        let [x, y] = [e.clientX, e.clientY];
-        this.findParent((e: HTMLElement) => {
-            if (e instanceof HTMLHtmlElement)
-                return true;
-
-            const transform = getComputedStyle(e).transform;
-            if (!transform.startsWith("matrix"))
-                return;
-
-            const r = e.getBoundingClientRect();
-            x -= r.left;
-            y -= r.top;
-        });
+        let [x, y] = [e.pageX, e.pageY];
 
         const actionsPopup = new Popup();
         actionsPopup.style.position = "fixed";
@@ -245,6 +233,7 @@ export class QueryGridRow extends WebComponent {
         actionsPopup.addEventListener("popup-opening", this._onActionsOpening.bind(this));
         actionsPopup.addEventListener("popup-closed", this._onActionsClosed.bind(this));
         this.shadowRoot.appendChild(actionsPopup);
+        grid.shadowRoot.appendChild(actionsPopup);
 
         e.preventDefault();
 
@@ -252,7 +241,7 @@ export class QueryGridRow extends WebComponent {
             await actionsPopup.popup();
         }
         finally {
-            this.shadowRoot.removeChild(actionsPopup);
+            grid.shadowRoot.removeChild(actionsPopup);
         }
     }
 
