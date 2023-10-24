@@ -5,7 +5,7 @@ import { AppCacheEntryPersistentObject } from "../app-cache/app-cache-entry-pers
 import { AppCacheEntryPersistentObjectFromAction } from "../app-cache/app-cache-entry-persistent-object-from-action.js"
 import { AppRoute } from "../app-route/app-route.js"
 import "../error/error.js"
-import { PersistentObject } from "../persistent-object/persistent-object.js"
+import { PersistentObject, IPersistentObjectWebComponent } from "../persistent-object/persistent-object.js"
 import { ConfigurableWebComponent } from "../web-component/web-component-configurable.js"
 
 interface IPersistentObjectPresenterRouteParameters {
@@ -204,7 +204,7 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
         if (persistentObject !== this.persistentObject)
             return;
 
-        const persistentObjectComponent = new PersistentObject();
+        const persistentObjectComponent = renderCallback ? renderCallback(persistentObject) : new PersistentObject();
         persistentObjectComponent.persistentObject = persistentObject;
         this.appendChild(persistentObjectComponent);
 
@@ -250,6 +250,12 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
             }
         });
     }
+
+    static registerRenderCallback(callback: (persistentObject: Vidyano.PersistentObject) => IPersistentObjectWebComponent) {
+        renderCallback = callback;
+    }
 }
+
+let renderCallback: (persistentObject: Vidyano.PersistentObject) => IPersistentObjectWebComponent = null;
 
 export default PersistentObjectPresenter;

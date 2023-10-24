@@ -9,6 +9,10 @@ import "../persistent-object-tab-bar/persistent-object-tab-bar.js"
 import "../persistent-object-tab-presenter/persistent-object-tab-presenter.js"
 import { WebComponent } from "../web-component/web-component.js"
 
+export interface IPersistentObjectWebComponent extends WebComponent {
+    persistentObject: Vidyano.PersistentObject;
+}
+
 @WebComponent.register({
     properties: {
         persistentObject: {
@@ -111,7 +115,7 @@ import { WebComponent } from "../web-component/web-component.js"
     },
     sensitive: true
 })
-export class PersistentObject extends WebComponent {
+export class PersistentObject extends WebComponent implements IPersistentObjectWebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object.html">` }
 
     private _cacheEntry: AppCacheEntryPersistentObject;
