@@ -154,7 +154,8 @@ type HasMore = { left: QueryGridColumnHeader[], right: QueryGridColumnHeader[] }
         "query.items.*",
         "query.totalItem",
         "query.totalItems",
-        "_updatePinnedColumns(columns.*.isPinned)"
+        "_updatePinnedColumns(columns.*.isPinned)",
+        "query.selectedItems"
     ],
     listeners: {
         "column-width-changed": "_columnWidthChanged",
@@ -681,6 +682,10 @@ export class QueryGrid extends WebComponent {
     private _onMoreClosed(e: CustomEvent) {
         const popup = e.target as Popup;
         popup.querySelector("vi-scroller").innerHTML = "";
+    }
+
+    private _computedSelectedItemsLabel(selectedItems: Vidyano.QueryResultItem[]): string {
+        return selectedItems && selectedItems.length > 0 ? selectedItems.length.toString() : "";
     }
 }
 

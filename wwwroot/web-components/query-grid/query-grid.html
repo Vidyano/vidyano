@@ -22,7 +22,7 @@
                 <vi-query-grid-filters query="[[query]]"></vi-query-grid-filters>
             </template>
         </dom-if>
-        <div class="spacer"></div>
+        <div class="spacer">[[_computedSelectedItemsLabel(query.selectedItems)]]</div>
     </div>
     <div class="relative layout horizontal flex">
         <div class="relative flex" grid>
