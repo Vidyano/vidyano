@@ -28,10 +28,10 @@ $notification-ok: #339f7b;
 
 @mixin theme-color-button() {
     color: white;
-    background-color: var(--theme-color);
+    background-color: var(--color);
 
     &:hover {
-        background-color: var(--theme-color);
+        background-color: var(--color);
     }
 
     &:active {
@@ -48,7 +48,7 @@ $notification-ok: #339f7b;
 
 @mixin theme-color-button-inverse() {
     background-color: transparent;
-    color: var(--theme-color);
+    color: var(--color);
     fill: #595959;
 
     &:hover {
@@ -122,7 +122,7 @@ $notification-ok: #339f7b;
 }
 
 @mixin page-title() {
-    background-color: var(--theme-color);
+    background-color: var(--color);
     color: white;
     line-height: var(--theme-h1);
     height: var(--theme-h1);
