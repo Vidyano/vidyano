@@ -23,7 +23,7 @@ export class ActionBarTest extends WebComponent {
 
         await this.app.initialize;
 
-        this.objectWithActions = await this.app.service.getPersistentObject(null, "e8f9da82-7dca-3516-8c3b-eadd50db2cd7");
+        this.objectWithActions = await this.app.service.getPersistentObject(null, "ActionBarTest");
     }
 
     private _accentChanged(accent: boolean) {       

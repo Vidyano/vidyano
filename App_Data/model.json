@@ -1,5 +1,52 @@
 {
   "Actions": {
+    "ActionBarTestAction": {
+      "Icon": "Action_Default$",
+      "ShowedOn": 1,
+      "DisplayName": {
+        "en": "Action bar test action",
+        "nl": "Action bar test action"
+      }
+    },
+    "ActionBarTestActionGroup": {
+      "DisplayName": {
+        "en": "Action bar test action group",
+        "nl": "Action bar test action group"
+      }
+    },
+    "ActionBarTestActionGroupAction": {
+      "Icon": "Action_Default$",
+      "ShowedOn": 1,
+      "GroupActionName": "ActionBarTestActionGroup",
+      "DisplayName": {
+        "en": "Action bar test action group action",
+        "nl": "Action bar test action group action"
+      }
+    },
+    "ActionBarTestActionGroupActionWithOptions": {
+      "ShowedOn": 1,
+      "GroupActionName": "ActionBarTestActionGroup",
+      "DisplayName": {
+        "en": "Action bar test action group action with options",
+        "nl": "Action bar test action group action with options"
+      },
+      "Options": {
+        "en": "Test Option 1;Test Option 2;Test Option 3",
+        "nl": ""
+      }
+    },
+    "ActionBarTestActionWithOptions": {
+      "Icon": "Action_Default$",
+      "ShowedOn": 1,
+      "DisplayName": {
+        "en": "Action bar test action with options",
+        "nl": "Action bar test action with options"
+      },
+      "Options": {
+        "en": "Option 1;Option 2; Option 3",
+        "nl": ""
+      }
+    },
     "AddReference": {
       "RefreshQueryOnCompleted": true,
       "Offset": 300,

@@ -85,6 +85,7 @@
         <script type="module" src="./web3/web-components/program-unit-presenter/program-unit-presenter.js"></script>
         
         <!-- Test -->
+        <script type="module" src="./web3/test/action-bar-test/action-bar-test.js"></script>
         <script type="module" src="./web3/test/dialog/dialog-test.js"></script>
         <script type="module" src="./web3/test/list-test/list-test.js"></script>
         <script type="module" src="./web3/test/notification-test/notification-test.js"></script>
@@ -113,6 +114,11 @@
                     <vi-persistent-object-attribute-presenter no-label attribute="[[session.attributes.Reference]]"></vi-persistent-object-attribute-presenter>
                 </template>
             </vi-session-presenter>
+            <vi-app-route route="/:programUnitName/action-bar-test" slot="app-route">
+                <template>
+                    <vi-action-bar-test></vi-action-bar-test>
+                </template>
+            </vi-app-route>
             <vi-app-route route="/:programUnitName/dialog" slot="app-route">
                 <template>
                     <vi-dialog-test></vi-dialog-test>

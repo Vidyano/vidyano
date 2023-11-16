@@ -5,6 +5,26 @@
   },
   "Rights": [
     {
+      "Id": "56a11401-c84e-45f9-bed4-e48c3acb6e8e",
+      "Resource": "ActionBarTestAction/VidyanoWeb3.ActionBarTest",
+      "UserId": "d3bd3312-0730-43d9-9bf4-9e14c75b00f7"
+    },
+    {
+      "Id": "b593d375-f0cc-4a49-b7e9-643ad0edeaab",
+      "Resource": "ActionBarTestActionGroupAction/VidyanoWeb3.ActionBarTest",
+      "UserId": "d3bd3312-0730-43d9-9bf4-9e14c75b00f7"
+    },
+    {
+      "Id": "10214997-8671-4e4a-b33f-dabecebbed65",
+      "Resource": "ActionBarTestActionGroupActionWithOptions/VidyanoWeb3.ActionBarTest",
+      "UserId": "d3bd3312-0730-43d9-9bf4-9e14c75b00f7"
+    },
+    {
+      "Id": "8a604fb9-2e4f-4d65-9e4b-9a1a8c97107c",
+      "Resource": "ActionBarTestActionWithOptions/VidyanoWeb3.ActionBarTest",
+      "UserId": "d3bd3312-0730-43d9-9bf4-9e14c75b00f7"
+    },
+    {
       "Id": "dd700404-fbc0-42fb-92b4-e900e61ff2f6",
       "Resource": "Merge/VidyanoWeb3.Employee",
       "UserId": "f345b3f8-57ad-4242-8575-cf93335e3b9a"
@@ -18,6 +38,11 @@
       "Id": "07b213e7-3801-41c1-8913-11cf45cddb42",
       "Resource": "Retry/VidyanoWeb3.Employee",
       "UserId": "d3bd3312-0730-43d9-9bf4-9e14c75b00f7"
+    },
+    {
+      "Id": "26b25229-5df4-4a8c-a491-63e4571a450d",
+      "Resource": "WithActions/VidyanoWeb3.ActionBarTest",
+      "UserId": "f345b3f8-57ad-4242-8575-cf93335e3b9a"
     }
   ]
 }

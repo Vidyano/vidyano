@@ -75,6 +75,15 @@
       ],
       "Items": [
         {
+          "ObjectId": "components/action-bar-test",
+          "Offset": 4,
+          "Title": {
+            "en": "ActionBar",
+            "nl": ""
+          },
+          "Name": "ActionBar"
+        },
+        {
           "ObjectId": "components/dialog",
           "Offset": 5,
           "Title": {
