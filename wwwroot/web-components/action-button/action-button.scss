@@ -37,8 +37,10 @@
         min-width: 100%;
     }
 
-    vi-popup[open] vi-button.groupActions {
-        background-color: var(--color-faint);
+    &[inverse] {
+        vi-popup[open] vi-button.groupActions, vi-popup-menu[open] vi-button:not(:hover) {
+            background-color: var(--color-semi-faint);
+        }
     }
 
     &[disabled] {
@@ -96,27 +98,6 @@
 
     &:focus {
         outline: none;
-    }
-
-    ul {
-        padding: 0;
-        margin: 0;
-        list-style-type: none;
-        line-height: var(--theme-h1);
-
-        li {
-            cursor: pointer;
-            padding: 0 var(--theme-h4);
-            color: var(--color);
-
-            &:hover {
-                background-color: var(--color-faint);
-            }
-        }
-    }
-
-    vi-popup-menu[open] vi-button:not(:hover) {
-        background-color: var(--color-faint);
     }
 
     &[hidden] {

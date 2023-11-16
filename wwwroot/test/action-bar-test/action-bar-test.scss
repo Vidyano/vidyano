@@ -1,0 +1,24 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    gap: var(--theme-h1);
+    padding: var(--theme-h1);
+}
+
+:host > div {
+    display: flex;
+    flex-direction: column;
+    
+    label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: var(--theme-h4);
+    }
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--theme-h1);
+}

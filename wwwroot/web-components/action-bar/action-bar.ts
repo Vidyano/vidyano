@@ -1,4 +1,4 @@
-﻿import * as Polymer from "../../libs/polymer/polymer.js"
+import * as Polymer from "../../libs/polymer/polymer.js"
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import "../action-button/action-button.js"
 import { App } from "../app/app.js"
@@ -30,7 +30,11 @@ import { WebComponent } from "../web-component/web-component.js"
             type: Boolean,
             reflectToAttribute: true,
             computed: "_computeNoActions(pinnedActions, unpinnedActions)"
-        }
+        },
+        accent: {
+            type: Boolean,
+            reflectToAttribute: true
+        },
     },
     forwardObservers: [
         "serviceObject.charts"
@@ -39,7 +43,6 @@ import { WebComponent } from "../web-component/web-component.js"
 export class ActionBar extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="action-bar.html">`; }
 
-    accent: boolean = false;
     serviceObject: Vidyano.ServiceObjectWithActions;
     pinnedActions: Vidyano.Action[];
     unpinnedActions: Vidyano.Action[];

@@ -81,6 +81,11 @@ import { ConfigurableWebComponent } from "../web-component/web-component-configu
             type: Boolean,
             reflectToAttribute: true,
             computed: "_computeIsGroup(action)"
+        },
+        inverse: {
+            type: Boolean,
+            reflectToAttribute: true,
+            value: false
         }
     },
     listeners: {

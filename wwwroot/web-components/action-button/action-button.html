@@ -4,7 +4,7 @@
     <template>
         <dom-if if="[[!options]]">
             <template>
-                <vi-button disabled="[[!canExecute]]" header on-tap="_onExecuteWithoutOptions" inverse>
+                <vi-button disabled="[[!canExecute]]" header on-tap="_onExecuteWithoutOptions" inverse="[[inverse]]">
                     <div class="layout horizontal">
                         <vi-icon class="action-icon" source="[[icon]]"></vi-icon>
                         <div class="icon-space" hidden$="[[!iconSpace]]"></div>
@@ -16,7 +16,7 @@
         <dom-if if="[[options]]">
             <template>
                 <vi-popup-menu open-on-hover="[[_computeOpenOnHover(overflow, openOnHover)]]" disabled="[[!canExecute]]" placement="[[_getPlacement(overflow, grouped)]]" auto-width="[[!overflow]]">
-                    <vi-button disabled="[[!canExecute]]" slot="header" header inverse class="options">
+                    <vi-button disabled="[[!canExecute]]" slot="header" header inverse="[[inverse]]" class="options">
                         <div class="layout horizontal flex">
                             <vi-icon class="action-icon" source="[[icon]]"></vi-icon>
                             <div class="icon-space" hidden$="[[!iconSpace]]"></div>
@@ -37,7 +37,7 @@
 <dom-if if="[[isGroup]]">
     <template>
         <vi-popup disabled="[[!canExecute]]" open-on-hover="[[_computeOpenOnHover(overflow, openOnHover)]]" placement="[[_getPlacement(overflow, grouped)]]" auto-width="[[!overflow]]">
-            <vi-button disabled="[[!canExecute]]" slot="header" inverse class="groupActions">
+            <vi-button disabled="[[!canExecute]]" slot="header" inverse="[[inverse]]" class="groupActions">
                 <div class="layout horizontal flex">
                     <vi-icon class="action-icon" source="[[icon]]"></vi-icon>
                     <div class="icon-space" hidden$="[[!iconSpace]]"></div>
@@ -48,7 +48,7 @@
             <div content>
                 <dom-repeat items="[[action.actions]]" as="groupAction">
                     <template>
-                        <vi-action-button grouped open-on-hover action="[[groupAction]]"></vi-action-button>
+                        <vi-action-button grouped open-on-hover action="[[groupAction]]" inverse></vi-action-button>
                     </template>
                 </dom-repeat>
             </div>

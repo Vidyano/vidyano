@@ -1,0 +1,18 @@
+<link rel="stylesheet" href="action-bar-test.css" />
+
+<vi-toggle label="Accent" toggled="{{accent}}"></vi-toggle>
+
+<div>
+    <label>Action bar</label>
+    <vi-action-bar service-object="[[objectWithActions]]"></vi-action-bar>
+</div>
+
+<div>
+    <label>Action buttons</label>
+    <div class="actions">
+        <vi-action-button action="[[objectWithActions.actions.TestAction1]]"></vi-action-button>
+        <vi-action-button action="[[objectWithActions.actions.TestAction2]]"></vi-action-button>
+        <vi-action-button action="[[objectWithActions.actions.TestActionWithOptions1]]"></vi-action-button>
+        <vi-action-button action="[[objectWithActions.actions.TestAction1.group]]"></vi-action-button>
+    </div>
+</div>

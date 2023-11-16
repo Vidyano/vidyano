@@ -3,13 +3,13 @@
 <vi-overflow class="flex">
     <dom-repeat items="[[unpinnedActions]]" as="action">
         <template>
-            <vi-action-button action="[[action]]"></vi-action-button>
+            <vi-action-button action="[[action]]" inverse></vi-action-button>
         </template>
     </dom-repeat>
 </vi-overflow>
 <dom-repeat items="[[pinnedActions]]" as="action">
     <template>
-        <vi-action-button action="[[action]]" no-label></vi-action-button>
+        <vi-action-button action="[[action]]" no-label inverse></vi-action-button>
     </template>
 </dom-repeat>
 <dom-if if="[[hasCharts]]">
