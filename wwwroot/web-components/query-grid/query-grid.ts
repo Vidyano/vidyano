@@ -552,7 +552,7 @@ export class QueryGrid extends WebComponent {
             this.style.setProperty("--vi-query-grid-columns", init);
         }
 
-        return [...columns.filter(c => c.isPinned).orderBy(c => c.offset), ...columns.filter(c => !c.isPinned).orderBy(c => c.offset)];
+        return [...columns.filter(c => c.isPinned), ...columns.filter(c => !c.isPinned)];
     }
 
     private _computeVirtualRowCount(viewportHeight: number, rowHeight: number, canReorder: boolean, totalItems: number) {

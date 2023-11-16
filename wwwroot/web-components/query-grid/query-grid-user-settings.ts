@@ -25,7 +25,7 @@ export class QueryGridUserSettings extends Vidyano.Observable<QueryGridUserSetti
     }
 
     get columns(): QueryGridColumn[] {
-        return this._columns;
+        return this._columns.orderBy(c => c.offset);
     }
 
     async save(refreshOnComplete: boolean = true): Promise<any> {
