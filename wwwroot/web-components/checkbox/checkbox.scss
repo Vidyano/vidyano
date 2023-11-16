@@ -26,12 +26,12 @@
 
         &:not([disabled]) vi-icon {
             &[source="SelectedRadio"] ::content #box {
-                fill: var(--theme-color-light);
+                fill: var(--color-light);
                 opacity: 0.75;
             }
 
             &[source="Selected"] + span {
-                outline: 1px dotted var(--theme-color-light);
+                outline: 1px dotted var(--color-light);
             }
         }
     }

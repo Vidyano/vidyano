@@ -40,7 +40,7 @@
     vi-popup {
         &[open] {
             button[slot="header"] {
-                background-color: var(--theme-color-faint);
+                background-color: var(--color-faint);
             }
         }
     }

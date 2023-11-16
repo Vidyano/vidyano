@@ -30,7 +30,7 @@
         cursor: pointer;
 
         &, ::slotted(.column), .pinned {
-            background-color: var(--theme-color-semi-faint);
+            background-color: var(--color-semi-faint);
         }
     }
 

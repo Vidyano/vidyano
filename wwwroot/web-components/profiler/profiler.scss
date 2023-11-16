@@ -84,7 +84,7 @@
                         transition: all 0.2s ease;
 
                         &[selected] {
-                            background-color: var(--theme-color);
+                            background-color: var(--color);
                             color: white;
                             margin-right: 0;
                             border-radius: var(--theme-h5) 0 0 var(--theme-h5);
@@ -263,7 +263,7 @@
                         font-size: 13px;
                         font-weight: normal;
                         padding: 0 var(--theme-h5);
-                        color: var(--theme-color);
+                        color: var(--color);
                     }
                 }
 
@@ -297,7 +297,7 @@
                         font-size: var(--theme-h3);
                         margin: var(--theme-h4) 0;
                         font-weight: 400;
-                        color: var(--theme-color);
+                        color: var(--color);
                     }
                 }
             }

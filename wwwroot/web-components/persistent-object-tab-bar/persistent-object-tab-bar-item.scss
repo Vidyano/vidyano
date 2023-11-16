@@ -10,18 +10,18 @@
     box-sizing: border-box;
     white-space: nowrap;
     overflow: hidden;
-    color: var(--theme-color);
-    fill: var(--theme-color);
+    color: var(--color);
+    fill: var(--color);
 
     &:hover {
-        background-color: var(--theme-color-faint);
+        background-color: var(--color-faint);
     }
 
     span {
         line-height: calc(var(--theme-h1) - 3px);
 
         &.badge {
-            background-color: var(--theme-color-lighter);
+            background-color: var(--color-lighter);
             color: white;
             padding: calc(var(--theme-h5) / 2) calc(var(--theme-h5) + 1px) calc(var(--theme-h5) / 2) var(--theme-h5);
             margin-left: 2px;
@@ -31,11 +31,11 @@
     }
 
     &[is-selected] {
-        border-bottom-color: var(--theme-color);
+        border-bottom-color: var(--color);
 
         span {
             &.badge {
-                background-color: var(--theme-color);
+                background-color: var(--color);
             }
 
             &:not(.badge) {

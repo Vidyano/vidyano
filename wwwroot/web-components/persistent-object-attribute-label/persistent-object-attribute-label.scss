@@ -27,7 +27,7 @@ label {
     height: 14px;
     margin: 0 0 var(--theme-h5) var(--theme-h4);
     padding: 0 var(--theme-h5) 2px calc(var(--theme-h5) / 2);
-    background-color: var(--theme-color);
+    background-color: var(--color);
 
     &::before {
         content: "";
@@ -37,7 +37,7 @@ label {
         height: 0;
         border-top: 8px solid transparent;
         border-bottom: 8px solid transparent;
-        border-right-color: var(--theme-color);
+        border-right-color: var(--color);
         border-right-width: 7px;
         border-right-style: solid;
     }
@@ -65,7 +65,7 @@ label {
     &::part(icon) {
         --vi-icon-width: 12px;
         --vi-icon-height: 12px;
-        fill: var(--theme-color);
+        fill: var(--color);
     }
 }
 

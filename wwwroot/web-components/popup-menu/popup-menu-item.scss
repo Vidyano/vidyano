@@ -4,8 +4,8 @@
     display: block;
     height: var(--vi-popup-menu-item-height, var(--theme-h1));
     cursor: pointer;
-    color: var(--theme-color);
-    fill: var(--theme-color);
+    color: var(--color);
+    fill: var(--color);
 
     vi-button {
         position: relative;

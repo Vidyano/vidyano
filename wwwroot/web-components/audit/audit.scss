@@ -104,7 +104,7 @@
             color: #333 !important;
 
             &:hover {
-                background-color: var(--theme-color-faint);
+                background-color: var(--color-faint);
                 cursor: pointer;
 
                 label {
@@ -139,7 +139,7 @@
                 .dot {
                     position: relative;
                     background-color: white;
-                    border: 2px solid var(--theme-color);
+                    border: 2px solid var(--color);
                     border-radius: 50%;
                     width: var(--theme-h4);
                     height: var(--theme-h4);
@@ -259,12 +259,12 @@
                 align-items: center;
                 justify-content: center;
                 width: var(--theme-h1);
-                background: var(--theme-color-lighter);
+                background: var(--color-lighter);
 
                 vi-icon {
                     --vi-icon-width: 24px;
                     --vi-icon-height: 24px;
-                    fill: var(--theme-color);
+                    fill: var(--color);
                     transform: none;
                     transition: transform 0.3s ease-out;
 

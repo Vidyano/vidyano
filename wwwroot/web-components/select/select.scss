@@ -84,16 +84,16 @@ $border-color: #ddd;
                 cursor: pointer;
 
                 &:hover {
-                    background-color: var(--theme-color-faint);
+                    background-color: var(--color-faint);
                 }
             }
 
             vi-select-option-item[suggested], &:not([filtering]) vi-select-option-item[selected] {
                 color: white;
-                background-color: var(--theme-color);
+                background-color: var(--color);
 
                 &:hover {
-                    background-color: var(--theme-color-light);
+                    background-color: var(--color-light);
                 }
             }
 

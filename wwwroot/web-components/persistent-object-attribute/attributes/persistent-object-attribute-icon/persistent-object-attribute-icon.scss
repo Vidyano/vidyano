@@ -20,13 +20,13 @@
         aspect-ratio: 1/1;
 
         &:hover {
-            background-color: var(--theme-color-faint);
-            fill: var(--theme-color);
+            background-color: var(--color-faint);
+            fill: var(--color);
         }
 
         &[selected] {
-            background: var(--theme-color-semi-faint);
-            fill: var(--theme-color);
+            background: var(--color-semi-faint);
+            fill: var(--color);
         }
     }
 }

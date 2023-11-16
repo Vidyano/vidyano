@@ -38,7 +38,7 @@
     }
 
     vi-popup[open] vi-button.groupActions {
-        background-color: var(--theme-color-faint);
+        background-color: var(--color-faint);
     }
 
     &[disabled] {
@@ -107,16 +107,16 @@
         li {
             cursor: pointer;
             padding: 0 var(--theme-h4);
-            color: var(--theme-color);
+            color: var(--color);
 
             &:hover {
-                background-color: var(--theme-color-faint);
+                background-color: var(--color-faint);
             }
         }
     }
 
     vi-popup-menu[open] vi-button:not(:hover) {
-        background-color: var(--theme-color-faint);
+        background-color: var(--color-faint);
     }
 
     &[hidden] {

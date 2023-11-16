@@ -39,15 +39,15 @@
         outline: 0;
 
         &:not([disabled]) span {
-            outline: 1px dotted var(--theme-color-light);
+            outline: 1px dotted var(--color-light);
         }
     }
 }
 
 :host([toggled]) {
     #box {
-        background-color: var(--theme-color);
-        border-color: var(--theme-color);
+        background-color: var(--color);
+        border-color: var(--color);
 
         #switch {
             background-color: white;

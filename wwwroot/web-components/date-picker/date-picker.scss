@@ -8,7 +8,7 @@ $border-color: #eee;
 
     &:hover vi-popup[open], vi-popup[hover] {
         [slot="header"] {
-            background-color: var(--theme-color) !important;
+            background-color: var(--color) !important;
             --vi-icon-fill: white !important;
         }
     }
@@ -16,7 +16,7 @@ $border-color: #eee;
     header {
         color: white;
         fill: white;
-        background-color: var(--theme-color);
+        background-color: var(--color);
 
         vi-button {
             text-align: center;
@@ -31,7 +31,7 @@ $border-color: #eee;
             }
 
             &:hover {
-                background-color: var(--theme-color-light);
+                background-color: var(--color-light);
             }
         }
     }
@@ -43,7 +43,7 @@ $border-color: #eee;
         .cell {
             border-style: solid;
             border-width: 0 0 1px 1px;
-            border-color: var(--theme-color-faint);
+            border-color: var(--color-faint);
             box-sizing: border-box;
             cursor: pointer;
             position: relative;
@@ -85,18 +85,18 @@ $border-color: #eee;
             }
 
             &:not([is-other]):not([is-other]) {
-                color: var(--theme-color);
+                color: var(--color);
 
                 &:hover {
-                    background-color: var(--theme-color-faint);
+                    background-color: var(--color-faint);
                 }
 
                 &[is-today] {
                     color: white !important;
-                    background-color: var(--theme-color-light);
+                    background-color: var(--color-light);
 
                     &:hover {
-                        background-color: var(--theme-color-lighter);
+                        background-color: var(--color-lighter);
                     }
                 }
             }
@@ -113,7 +113,7 @@ $border-color: #eee;
                     z-index: 2;
                     bottom: 0;
                     left: 0;
-                    border: 1px solid var(--theme-color);
+                    border: 1px solid var(--color);
                 }
 
                 &[is-other]::before {
@@ -127,7 +127,7 @@ $border-color: #eee;
                 &::after {
                     z-index: 1;
                     border-left: var(--theme-h4) solid transparent;
-                    border-top-color: var(--theme-color);
+                    border-top-color: var(--color);
                     border-top-width: var(--theme-h4);
                     border-top-style: solid;
                 }

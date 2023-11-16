@@ -10,6 +10,15 @@
     fill: var(--theme-foreground);
     outline: none;
 
+    --color-faint: var(--theme-color-faint);
+    --color-semi-faint: var(--theme-color-semi-faint);
+    --color-lighter: var(--theme-color-lighter);
+    --color-light: var(--theme-color-light);
+    --color: var(--theme-color);
+    --color-dark: var(--theme-color-dark);
+    --color-darker: var(--theme-color-darker);
+    --color-rgb: var(--theme-color-rgb);
+
     @for $c from 1 through length($list-colors) {
         $color: nth($list-colors, $c);
 

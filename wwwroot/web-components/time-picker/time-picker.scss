@@ -11,7 +11,7 @@ $discSpacing: 20px;
 
     &:hover vi-popup[open], vi-popup[hover] {
         [slot="header"] {
-            background-color: var(--theme-color) !important;
+            background-color: var(--color) !important;
             --vi-icon-fill: white !important;
         }
     }
@@ -63,7 +63,7 @@ $discSpacing: 20px;
 	}
 
 	&:active .clock {
-		color: var(--theme-color) !important;
+		color: var(--color) !important;
 	}
 
 	#clockHost {
@@ -115,7 +115,7 @@ $discSpacing: 20px;
 						color: white;
 
 						&::before {
-							background-color: var(--theme-color-light);
+							background-color: var(--color-light);
 						}
 					}
 
@@ -133,11 +133,11 @@ $discSpacing: 20px;
 						color: white;
 
 						&::before {
-							background-color: var(--theme-color);
+							background-color: var(--color);
 						}
 
 						&:hover::before {
-							background-color: var(--theme-color-dark);
+							background-color: var(--color-dark);
 						}
 					}
 				}
@@ -183,7 +183,7 @@ $discSpacing: 20px;
 
 		#current {
 			.minutes {
-				color: var(--theme-color);
+				color: var(--color);
 			}
 		}
 	}
@@ -203,7 +203,7 @@ $discSpacing: 20px;
 
 		#current {
 			.hours {
-				color: var(--theme-color);
+				color: var(--color);
 			}
 		}
 	}

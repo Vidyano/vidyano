@@ -18,8 +18,8 @@
         a {
             @include layout-horizontal();
             text-decoration: none;
-            color: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
-            fill: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
+            color: var(--vi-persistent-object-attribute-foreground, var(--color));
+            fill: var(--vi-persistent-object-attribute-foreground, var(--color));
             overflow: hidden;
             text-overflow: ellipsis;
 
@@ -28,13 +28,13 @@
             }
 
             &:visited {
-                color: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
-                fill: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
+                color: var(--vi-persistent-object-attribute-foreground, var(--color));
+                fill: var(--vi-persistent-object-attribute-foreground, var(--color));
             }
 
             &:hover {
-                color: var(--vi-persistent-object-attribute-foreground, var(--theme-color-light));
-                fill: var(--vi-persistent-object-attribute-foreground, var(--theme-color-light));
+                color: var(--vi-persistent-object-attribute-foreground, var(--color-light));
+                fill: var(--vi-persistent-object-attribute-foreground, var(--color-light));
             }
 
             &[disabled] {
@@ -50,7 +50,7 @@
                 margin: 0 var(--theme-h5);
                 min-width: var(--theme-h4);
                 height: 1em;
-                fill: var(--theme-color);
+                fill: var(--color);
                 transform: translateY(2px);
             }
         }
@@ -91,7 +91,7 @@
 
     #chips {
         vi-button[inverse] {
-            background-color: var(--theme-color-faint);
+            background-color: var(--color-faint);
         }
     }
 }

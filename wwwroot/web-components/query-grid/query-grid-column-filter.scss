@@ -51,7 +51,7 @@
     }
 
     &:not([disabled])[query-filtering] {
-        background-color: var(--theme-color-faint);
+        background-color: var(--color-faint);
     }
 
     #preRender {
@@ -196,7 +196,7 @@
                 cursor: pointer;
 
                 &:hover {
-                    background-color: var(--vi-query-grid-column-filter-distinct-hover-color, var(--theme-color-faint));
+                    background-color: var(--vi-query-grid-column-filter-distinct-hover-color, var(--color-faint));
                 }
 
                 vi-checkbox {
@@ -230,7 +230,7 @@
                     }
 
                     .match {
-                        color: var(--theme-color);
+                        color: var(--color);
                         font-weight: 600;
                     }
                 }

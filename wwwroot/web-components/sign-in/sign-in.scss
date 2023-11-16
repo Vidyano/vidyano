@@ -26,7 +26,7 @@
         overflow: hidden;
 
         .default {
-            background: linear-gradient(45deg, var(--theme-color-dark) 0%, var(--theme-color) 100%);
+            background: linear-gradient(45deg, var(--color-dark) 0%, var(--color) 100%);
 
             svg {
                 height: 100%;
@@ -44,7 +44,7 @@
 
         h1 {
             margin: 0;
-            color: var(--theme-color);
+            color: var(--color);
             text-shadow: 2px 2px #eee;
 
             &:empty {
@@ -80,7 +80,7 @@
                 left: -200px;
                 width: 200px;
                 height: 4px;
-                background-color: var(--theme-color-dark);
+                background-color: var(--color-dark);
                 animation: loading 2s linear infinite;
             }
         }
@@ -136,7 +136,7 @@
                 width: 100%;
 
                 &:focus {
-                    border-color: var(--theme-color-light);
+                    border-color: var(--color-light);
                 }
 
                 &[error] {
@@ -337,7 +337,7 @@
                 display: block;
                 font-weight: normal;
                 margin: var(--theme-h3) 0 var(--theme-h1) 0;
-                color: var(--theme-color);
+                color: var(--color);
 
                 &:not(:first-child) {
                     display: none;

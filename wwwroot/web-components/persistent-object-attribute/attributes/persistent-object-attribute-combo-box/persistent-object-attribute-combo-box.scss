@@ -12,14 +12,14 @@
     }
 
     #add {
-        background-color: var(--theme-color);
+        background-color: var(--color);
 
         vi-icon {
             fill: white !important;
         }
 
         &:before {
-            border-left-color: var(--theme-color);
+            border-left-color: var(--color);
         }
     }
 }

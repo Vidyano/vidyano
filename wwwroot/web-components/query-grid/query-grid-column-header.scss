@@ -27,11 +27,11 @@
             white-space: nowrap;
             text-overflow: ellipsis;
             padding-right: var(--theme-h5);
-            color: var(--theme-color);
+            color: var(--color);
         }
 
         > vi-icon {
-            fill: var(--theme-color);
+            fill: var(--color);
             line-height: var(--theme-h2);
             height: var(--theme-h2);
             --vi-icon-height: 12px;

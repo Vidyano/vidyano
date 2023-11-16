@@ -40,7 +40,7 @@
         top: 0;
         right: 0;
         bottom: 0;
-        background-color: var(--theme-color);
+        background-color: var(--color);
         opacity: 0.1;
     }
     
@@ -98,13 +98,13 @@
 
     &[type=""], &:not([type]) {
         &:not([inverse]) {
-            background-color: var(--theme-color);
+            background-color: var(--color);
             color: white;
             fill: white;
             --vi-spinner-color: white;
 
             &:not([disabled]):hover {
-                background-color: var(--theme-color-light);
+                background-color: var(--color-light);
             }
 
             &:not([busy])[disabled] {
@@ -114,12 +114,12 @@
 
         &[inverse] {
             background-color: transparent;
-            color: var(--theme-color);
-            fill: var(--theme-color);
-            --vi-spinner-color: var(--theme-color);
+            color: var(--color);
+            fill: var(--color);
+            --vi-spinner-color: var(--color);
 
             &:not([disabled]):hover {
-                background-color: rgba(var(--theme-color-rgb), 0.1);
+                background-color: rgba(var(--color-rgb), 0.1);
             }
 
             &:not([busy])[disabled] {
@@ -159,17 +159,17 @@
     }
 
     &[accent] {
-        --theme-color: var(--theme-accent-color);
-		--theme-color-light: var(--theme-accent-color-light);
-		--theme-color-lighter: var(--theme-accent-color-lighter);
-		--theme-color-dark: var(--theme-accent-color-dark);
-		--theme-color-darker: var(--theme-accent-color-darker);
-		--theme-color-faint: var(--theme-accent-color-faint);
-		--theme-color-semi-faint: var(--theme-accent-color-semi-faint);
-		--theme-color-rgb: var(--theme-accent-color-rgb);
+        --color: var(--theme-accent-color);
+		--color-light: var(--theme-accent-color-light);
+		--color-lighter: var(--theme-accent-color-lighter);
+		--color-dark: var(--theme-accent-color-dark);
+		--color-darker: var(--theme-accent-color-darker);
+		--color-faint: var(--theme-accent-color-faint);
+		--color-semi-faint: var(--theme-accent-color-semi-faint);
+		--color-rgb: var(--theme-accent-color-rgb);
 
 		paper-ripple {
-			color: var(--theme-accent-color);
+			color: var(--color);
 		}
     }
 }
@@ -177,11 +177,11 @@
 vi-popup[open] > [toggle] vi-button[slot="header"] {
     &[type=""], &:not([type]) {
         &:not([inverse]) {
-            background-color: var(--theme-color-light);
+            background-color: var(--color-light);
         }
 
         &[inverse] {
-            background-color: var(--theme-color-faint);
+            background-color: var(--color-faint);
         }
     }
 

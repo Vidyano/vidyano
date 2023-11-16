@@ -121,7 +121,7 @@ header {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 
     .background {
-        background-color: var(--theme-color-dark);
+        background-color: var(--color-dark);
     }
 
     .label {
@@ -199,7 +199,7 @@ vi-input-search {
 
         #toggleCollapse {
             z-index: 1000;
-            background-color: var(--theme-color-dark);
+            background-color: var(--color-dark);
 
             &::part(icon) { 
                 transform: rotate(180deg);

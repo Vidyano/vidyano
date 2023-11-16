@@ -108,11 +108,11 @@
             }
 
             ::slotted(*:hover) {
-                background-color: var(--theme-color-faint);
+                background-color: var(--color-faint);
             }
 
             ::slotted(*:active) {
-                background-color: var(--theme-color-dark) !important;
+                background-color: var(--color-dark) !important;
                 --vi-icon-fill: white;
             }
 
@@ -158,20 +158,20 @@
 
     &:focus-within {
         .box {
-            border-color: var(--theme-color-lighter);
+            border-color: var(--color-lighter);
 
             .extras {
                 ::slotted(*) {
-                    --vi-icon-fill: var(--theme-color);
+                    --vi-icon-fill: var(--color);
                 }
 
                 ::slotted(*:hover) {
-                    background-color: var(--theme-color);
+                    background-color: var(--color);
                     --vi-icon-fill: white !important;
                 }
 
                 ::slotted(*)::after, ::slotted(*)::before {
-                    border-color: var(--theme-color-lighter);
+                    border-color: var(--color-lighter);
                 }
             }
         }
