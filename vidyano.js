@@ -10722,7 +10722,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.12.0-preview4";
+let version$2 = "3.12.0-preview5";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -52462,10 +52462,10 @@ class AppServiceHooks extends AppServiceHooksBase {
                 const refresh = operation;
                 if (refresh.queryId) {
                     const cacheEntry = this.app.cachePing(new AppCacheEntryQuery(refresh.queryId));
-                    if (cacheEntry && cacheEntry.query)
+                    if (cacheEntry && cacheEntry.query && cacheEntry.query.hasSearched)
                         cacheEntry.query.search({ delay: refresh.delay });
                     const poCacheEntriesWithQueries = this.app.cacheEntries.filter(e => e instanceof AppCacheEntryPersistentObject && !!e.persistentObject && e.persistentObject.queries.length > 0);
-                    poCacheEntriesWithQueries.forEach(poEntry => poEntry.persistentObject.queries.filter(q => q.id === refresh.queryId).forEach(q => q.search({ delay: refresh.delay })));
+                    poCacheEntriesWithQueries.forEach(poEntry => poEntry.persistentObject.queries.filter(q => q.id === refresh.queryId && q.hasSearched).forEach(q => q.search({ delay: refresh.delay })));
                 }
                 else {
                     const refreshPersistentObject = async () => {
