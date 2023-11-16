@@ -3,6 +3,10 @@ import { WebComponent } from "../web-component/web-component.js"
 
 @WebComponent.register({
     properties: {
+        accent: {
+            type: Boolean,
+            reflectToAttribute: true
+        },
         disabled: {
             type: Boolean,
             reflectToAttribute: true
