@@ -3,8 +3,8 @@
 :host {
     @include layout-horizontal();
     @include layout-center-center();
-    color: var(--theme-color-error);
-    fill: var(--theme-color-error);
+    color: var(--color-error);
+    fill: var(--color-error);
 
     h1, h2 {
         font-weight: normal;
