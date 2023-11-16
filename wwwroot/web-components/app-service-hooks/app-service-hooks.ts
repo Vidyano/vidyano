@@ -106,11 +106,11 @@ export class AppServiceHooks extends AppServiceHooksBase {
                 const refresh = <Vidyano.IRefreshOperation>operation;
                 if (refresh.queryId) {
                     const cacheEntry = <AppCacheEntryQuery>this.app.cachePing(new AppCacheEntryQuery(refresh.queryId));
-                    if (cacheEntry && cacheEntry.query)
+                    if (cacheEntry && cacheEntry.query && cacheEntry.query.hasSearched)
                         cacheEntry.query.search({ delay: refresh.delay });
 
                     const poCacheEntriesWithQueries = <AppCacheEntryPersistentObject[]>this.app.cacheEntries.filter(e => e instanceof AppCacheEntryPersistentObject && !!e.persistentObject && e.persistentObject.queries.length > 0);
-                    poCacheEntriesWithQueries.forEach(poEntry => poEntry.persistentObject.queries.filter(q => q.id === refresh.queryId).forEach(q => q.search({ delay: refresh.delay })));
+                    poCacheEntriesWithQueries.forEach(poEntry => poEntry.persistentObject.queries.filter(q => q.id === refresh.queryId && q.hasSearched).forEach(q => q.search({ delay: refresh.delay })));
                 }
                 else {
                     const refreshPersistentObject = async () => {
