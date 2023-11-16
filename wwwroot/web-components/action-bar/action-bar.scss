@@ -23,6 +23,10 @@
     vi-action-button {
         text-align: left;
     }
+
+    vi-overflow {
+        --vi-overflow-gap: var(--vi-action-bar-gap, 0);
+    }
     
     vi-overflow::part(button) {
         width: var(--theme-h1);

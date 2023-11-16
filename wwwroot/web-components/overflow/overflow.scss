@@ -14,10 +14,12 @@
     .visible {
         @include layout-inline();
         position: relative;
+        gap: var(--vi-overflow-gap);
 
         > div#first {
             width: 0;
             opacity: 0;
+            margin-left: calc(var(--vi-overflow-gap, 0) * -1);
         }
     }
 
