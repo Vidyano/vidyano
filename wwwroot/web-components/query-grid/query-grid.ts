@@ -337,15 +337,12 @@ export class QueryGrid extends WebComponent {
         if (!virtualRowCount)
             return;
 
-        if (!maxRows)
-            maxRows = Number.MAX_SAFE_INTEGER;
-
         verticalScrollOffset *= this._verticalSpacerCorrection;
         const viewportStartRowIndex = Math.floor(verticalScrollOffset / rowHeight);
         const viewportEndRowIndex = Math.ceil((verticalScrollOffset + this.viewportHeight) / rowHeight);
 
         if (!this.virtualItems || this.virtualItems.length !== virtualRowCount) {
-            this._setVirtualItems(new Array(Math.min(virtualRowCount, maxRows)));
+            this._setVirtualItems(new Array(Math.min(virtualRowCount, maxRows || Number.MAX_SAFE_INTEGER)));
             items.forceUpdate = true;
         }
         
@@ -370,7 +367,7 @@ export class QueryGrid extends WebComponent {
             newVirtualGridStartIndex = 0;
 
         const queuedItemIndexes: number[] = [];
-        for (let virtualIndex=0; virtualIndex < this.virtualRowCount && virtualIndex < maxRows; virtualIndex++) {
+        for (let virtualIndex=0; virtualIndex < this.virtualRowCount && (!maxRows || virtualIndex < maxRows); virtualIndex++) {
             const index = newVirtualGridStartIndex + virtualIndex + skip;
 
             const [item, realIndex] = this._getItem(index, true);
@@ -493,7 +490,7 @@ export class QueryGrid extends WebComponent {
     private _updateVerticalSpacer(viewportHeight: number, rowHeight: number, items: QueryGridItem[], maxRows?: number) {
         Polymer.Render.beforeNextRender(this, () => {
             const newHeight = Math.min(Math.min(items.length, PHYSICAL_UPPER_LIMIT), maxRows || Number.MAX_SAFE_INTEGER) * rowHeight;
-            if (!maxRows || maxRows === Number.MAX_SAFE_INTEGER)
+            if (!maxRows)
                 this.$.gridWrapper.style.height = `${newHeight}px`;
             else
                 this.$.gridWrapper.style.maxHeight = `${newHeight}px`;
@@ -592,8 +589,8 @@ export class QueryGrid extends WebComponent {
         return totalItems > PHYSICAL_UPPER_LIMIT;
     }
 
-    private _computeHasMoreRows(totalItems: number, maxRows: number = Number.MAX_SAFE_INTEGER) {
-        return totalItems > maxRows;
+    private _computeHasMoreRows(totalItems: number, maxRows: number) {
+        return !!maxRows && totalItems > maxRows;
     }
 
     private _rowHeightChanged(rowHeight: number) {
