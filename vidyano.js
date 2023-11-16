@@ -10722,7 +10722,7 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.12.0-preview3";
+let version$2 = "3.12.0-preview4";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -23704,11 +23704,11 @@ let Popup = Popup_1 = class Popup extends WebComponent {
 }</style>
 
 <vi-size-tracker on-sizechanged="_toggleSizeChanged"></vi-size-tracker>
-<div id="anchor" class="layout horizontal">
+<div id="anchor" class="layout horizontal" part="anchor">
     <slot name="header"></slot>
 </div>
 
-<div id="popup" class="relative" on-tap="_catchContentClick" on-mouseenter="_contentMouseEnter" on-mouseleave="_contentMouseLeave" popover="[[_getPopover(supportsPopover)]]">
+<div id="popup" part="popup" class="relative" on-tap="_catchContentClick" on-mouseenter="_contentMouseEnter" on-mouseleave="_contentMouseLeave" popover="[[_getPopover(supportsPopover)]]">
     <vi-size-tracker on-sizechanged="refit"></vi-size-tracker>
     <slot></slot>
 </div>`; }
@@ -24002,8 +24002,8 @@ let PopupMenuItemSplit = class PopupMenuItemSplit extends WebComponent {
   display: block;
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
   cursor: pointer;
-  color: var(--theme-color);
-  fill: var(--theme-color);
+  color: var(--color);
+  fill: var(--color);
 }
 :host vi-button {
   position: relative;
@@ -24146,8 +24146,8 @@ let PopupMenuItem = class PopupMenuItem extends WebComponent {
   display: block;
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
   cursor: pointer;
-  color: var(--theme-color);
-  fill: var(--theme-color);
+  color: var(--color);
+  fill: var(--color);
 }
 :host vi-button {
   position: relative;
@@ -25100,8 +25100,8 @@ let Error$1 = class Error extends WebComponent {
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  color: var(--theme-color-error);
-  fill: var(--theme-color-error);
+  color: var(--color-error);
+  fill: var(--color-error);
 }
 :host h1, :host h2 {
   font-weight: normal;
@@ -25265,8 +25265,8 @@ let PopupMenuItemWithActions = class PopupMenuItemWithActions extends WebCompone
   flex-direction: row;
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
   cursor: pointer;
-  color: var(--theme-color);
-  fill: var(--theme-color);
+  color: var(--color);
+  fill: var(--color);
 }
 :host > div {
   position: relative;
@@ -25295,7 +25295,7 @@ let PopupMenuItemWithActions = class PopupMenuItemWithActions extends WebCompone
   bottom: 0;
   left: 0;
   content: " ";
-  background-color: var(--theme-color);
+  background-color: var(--color);
   opacity: 0.1;
 }
 :host .actions {
@@ -30160,6 +30160,14 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
   color: var(--theme-foreground);
   fill: var(--theme-foreground);
   outline: none;
+  --color-faint: var(--theme-color-faint);
+  --color-semi-faint: var(--theme-color-semi-faint);
+  --color-lighter: var(--theme-color-lighter);
+  --color-light: var(--theme-color-light);
+  --color: var(--theme-color);
+  --color-dark: var(--theme-color-dark);
+  --color-darker: var(--theme-color-darker);
+  --color-rgb: var(--theme-color-rgb);
   --colors-steel-blue: #4682B4;
   --colors-steel-blue-50: #ecf2f7;
   --colors-steel-blue-100: #90b4d2;
@@ -31053,7 +31061,7 @@ let Button = class Button extends WebComponent {
   top: 0;
   right: 0;
   bottom: 0;
-  background-color: var(--theme-color);
+  background-color: var(--color);
   opacity: 0.1;
 }
 :host([elevation]) {
@@ -31095,25 +31103,25 @@ let Button = class Button extends WebComponent {
   visibility: hidden;
 }
 :host([type=""]:not([inverse])), :host(:not([type]):not([inverse])) {
-  background-color: var(--theme-color);
+  background-color: var(--color);
   color: white;
   fill: white;
   --vi-spinner-color: white;
 }
 :host([type=""]:not([inverse]):not([disabled]):hover), :host(:not([type]):not([inverse]):not([disabled]):hover) {
-  background-color: var(--theme-color-light);
+  background-color: var(--color-light);
 }
 :host([type=""]:not([inverse]):not([busy])[disabled]), :host(:not([type]):not([inverse]):not([busy])[disabled]) {
   opacity: 0.5;
 }
 :host([type=""][inverse]), :host(:not([type])[inverse]) {
   background-color: transparent;
-  color: var(--theme-color);
-  fill: var(--theme-color);
-  --vi-spinner-color: var(--theme-color);
+  color: var(--color);
+  fill: var(--color);
+  --vi-spinner-color: var(--color);
 }
 :host([type=""][inverse]:not([disabled]):hover), :host(:not([type])[inverse]:not([disabled]):hover) {
-  background-color: rgba(var(--theme-color-rgb), 0.1);
+  background-color: rgba(var(--color-rgb), 0.1);
 }
 :host([type=""][inverse]:not([busy])[disabled]), :host(:not([type])[inverse]:not([busy])[disabled]) {
   opacity: 0.5;
@@ -31203,24 +31211,24 @@ let Button = class Button extends WebComponent {
   color: fadeout(#3D9970, 50%) !important;
 }
 :host([accent]) {
-  --theme-color: var(--theme-accent-color);
-  --theme-color-light: var(--theme-accent-color-light);
-  --theme-color-lighter: var(--theme-accent-color-lighter);
-  --theme-color-dark: var(--theme-accent-color-dark);
-  --theme-color-darker: var(--theme-accent-color-darker);
-  --theme-color-faint: var(--theme-accent-color-faint);
-  --theme-color-semi-faint: var(--theme-accent-color-semi-faint);
-  --theme-color-rgb: var(--theme-accent-color-rgb);
+  --color: var(--theme-accent-color);
+  --color-light: var(--theme-accent-color-light);
+  --color-lighter: var(--theme-accent-color-lighter);
+  --color-dark: var(--theme-accent-color-dark);
+  --color-darker: var(--theme-accent-color-darker);
+  --color-faint: var(--theme-accent-color-faint);
+  --color-semi-faint: var(--theme-accent-color-semi-faint);
+  --color-rgb: var(--theme-accent-color-rgb);
 }
 :host([accent]) paper-ripple {
-  color: var(--theme-accent-color);
+  color: var(--color);
 }
 
 vi-popup[open] > [toggle] vi-button[slot=header][type=""]:not([inverse]), vi-popup[open] > [toggle] vi-button[slot=header]:not([type]):not([inverse]) {
-  background-color: var(--theme-color-light);
+  background-color: var(--color-light);
 }
 vi-popup[open] > [toggle] vi-button[slot=header][type=""][inverse], vi-popup[open] > [toggle] vi-button[slot=header]:not([type])[inverse] {
-  background-color: var(--theme-color-faint);
+  background-color: var(--color-faint);
 }
 vi-popup[open] > [toggle] vi-button[slot=header][type=light-monochrome]:not([inverse]) {
   background-color: white;
@@ -31282,6 +31290,10 @@ vi-popup[open] > [toggle] vi-button[slot=header][type=safe][inverse] {
 Button = __decorate([
     WebComponent.register({
         properties: {
+            accent: {
+                type: Boolean,
+                reflectToAttribute: true
+            },
             disabled: {
                 type: Boolean,
                 reflectToAttribute: true
@@ -32213,7 +32225,7 @@ header {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 header .background {
-  background-color: var(--theme-color-dark);
+  background-color: var(--color-dark);
 }
 header .label {
   display: block;
@@ -32284,7 +32296,7 @@ vi-input-search::part(input):focus {
 }
 :host([collapsed]) #toggleCollapse {
   z-index: 1000;
-  background-color: var(--theme-color-dark);
+  background-color: var(--color-dark);
 }
 :host([collapsed]) #toggleCollapse::part(icon) {
   transform: rotate(180deg);
@@ -32591,7 +32603,7 @@ let SignIn = class SignIn extends WebComponent {
   overflow: hidden;
 }
 :host #background .default {
-  background: linear-gradient(45deg, var(--theme-color-dark) 0%, var(--theme-color) 100%);
+  background: linear-gradient(45deg, var(--color-dark) 0%, var(--color) 100%);
 }
 :host #background .default svg {
   height: 100%;
@@ -32605,7 +32617,7 @@ let SignIn = class SignIn extends WebComponent {
 }
 :host header h1 {
   margin: 0;
-  color: var(--theme-color);
+  color: var(--color);
   text-shadow: 2px 2px #eee;
 }
 :host header h1:empty {
@@ -32638,7 +32650,7 @@ let SignIn = class SignIn extends WebComponent {
   left: -200px;
   width: 200px;
   height: 4px;
-  background-color: var(--theme-color-dark);
+  background-color: var(--color-dark);
   animation: loading 2s linear infinite;
 }
 :host .dialog main {
@@ -32680,7 +32692,7 @@ let SignIn = class SignIn extends WebComponent {
   width: 100%;
 }
 :host .dialog main input:focus {
-  border-color: var(--theme-color-light);
+  border-color: var(--color-light);
 }
 :host .dialog main input[error] {
   border-color: var(--colors-red-700);
@@ -32852,7 +32864,7 @@ let SignIn = class SignIn extends WebComponent {
   display: block;
   font-weight: normal;
   margin: var(--theme-h3) 0 var(--theme-h1) 0;
-  color: var(--theme-color);
+  color: var(--color);
 }
 :host vi-scroller #side h1:not(:first-child) {
   display: none;
@@ -36601,7 +36613,7 @@ let Profiler = class Profiler extends WebComponent {
   transition: all 0.2s ease;
 }
 :host vi-popup main > *:first-child .request[selected] {
-  background-color: var(--theme-color);
+  background-color: var(--color);
   color: white;
   margin-right: 0;
   border-radius: var(--theme-h5) 0 0 var(--theme-h5);
@@ -36728,7 +36740,7 @@ let Profiler = class Profiler extends WebComponent {
   font-size: 13px;
   font-weight: normal;
   padding: 0 var(--theme-h5);
-  color: var(--theme-color);
+  color: var(--color);
 }
 :host vi-popup main #selectedEntry vi-scroller {
   top: var(--theme-h2);
@@ -36752,7 +36764,7 @@ let Profiler = class Profiler extends WebComponent {
   font-size: var(--theme-h3);
   margin: var(--theme-h4) 0;
   font-weight: 400;
-  color: var(--theme-color);
+  color: var(--color);
 }</style>
 
 <vi-popup sticky disabled$="[[!lastRequest]]" auto-width>
@@ -37470,11 +37482,11 @@ let Checkbox = class Checkbox extends WebComponent {
   outline: 0;
 }
 :host(:focus:not([disabled])) vi-icon[source=SelectedRadio] ::content #box {
-  fill: var(--theme-color-light);
+  fill: var(--color-light);
   opacity: 0.75;
 }
 :host(:focus:not([disabled])) vi-icon[source=Selected] + span {
-  outline: 1px dotted var(--theme-color-light);
+  outline: 1px dotted var(--color-light);
 }</style>
 
 <div class="layout horizontal center">
@@ -37588,7 +37600,7 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   cursor: default;
 }
 :host(:not([disabled])[query-filtering]) {
-  background-color: var(--theme-color-faint);
+  background-color: var(--color-faint);
 }
 :host #preRender {
   display: flex;
@@ -37692,7 +37704,7 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   height: var(--theme-h3);
   cursor: pointer;
   background-color: transparent;
-  color: var(--theme-color);
+  color: var(--color);
   fill: #595959;
   -moz-transition-property: fill, color, background-color;
   -o-transition-property: fill, color, background-color;
@@ -37708,15 +37720,15 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   transition-timing-function: ease-out;
 }
 :host #filterContentHost .advanced > div button#inverse:hover {
-  background-color: var(--theme-color-faint);
+  background-color: var(--color-faint);
 }
 :host #filterContentHost .advanced > div button#inverse:active {
-  background-color: var(--theme-color-dark);
+  background-color: var(--color-dark);
   fill: white !important;
   color: white !important;
 }
 :host #filterContentHost .advanced > div button#inverse[disabled] {
-  fill: var(--theme-color-faint);
+  fill: var(--color-faint);
   color: fadeout(black, 50%);
 }
 :host #filterContentHost .advanced > div button#inverse[inversed]:not(:active) {
@@ -37740,7 +37752,7 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   cursor: pointer;
 }
 :host #filterContentHost #distincts .item:hover {
-  background-color: var(--vi-query-grid-column-filter-distinct-hover-color, var(--theme-color-faint));
+  background-color: var(--vi-query-grid-column-filter-distinct-hover-color, var(--color-faint));
 }
 :host #filterContentHost #distincts .item vi-checkbox {
   display: flex;
@@ -37770,7 +37782,7 @@ let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
   color: var(--vi-query-grid-column-filter-distinct-remaining-color, #aaa);
 }
 :host #filterContentHost #distincts .item > span .match {
-  color: var(--theme-color);
+  color: var(--color);
   font-weight: 600;
 }
 :host #filterContentHost #distincts div.hasMore {
@@ -38216,10 +38228,10 @@ let QueryGridColumnHeader = class QueryGridColumnHeader extends WebComponent {
   white-space: nowrap;
   text-overflow: ellipsis;
   padding-right: var(--theme-h5);
-  color: var(--theme-color);
+  color: var(--color);
 }
 :host .label > vi-icon {
-  fill: var(--theme-color);
+  fill: var(--color);
   line-height: var(--theme-h2);
   height: var(--theme-h2);
   --vi-icon-height: 12px;
@@ -39034,8 +39046,8 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
 :host vi-popup-menu {
   min-width: 100%;
 }
-:host vi-popup[open] vi-button.groupActions {
-  background-color: var(--theme-color-faint);
+:host([inverse]) vi-popup[open] vi-button.groupActions, :host([inverse]) vi-popup-menu[open] vi-button:not(:hover) {
+  background-color: var(--color-semi-faint);
 }
 :host([disabled]) vi-button[disabled] {
   opacity: 1;
@@ -39074,23 +39086,6 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
 :host(:focus) {
   outline: none;
 }
-:host ul {
-  padding: 0;
-  margin: 0;
-  list-style-type: none;
-  line-height: var(--theme-h1);
-}
-:host ul li {
-  cursor: pointer;
-  padding: 0 var(--theme-h4);
-  color: var(--theme-color);
-}
-:host ul li:hover {
-  background-color: var(--theme-color-faint);
-}
-:host vi-popup-menu[open] vi-button:not(:hover) {
-  background-color: var(--theme-color-faint);
-}
 :host([hidden]) {
   display: none !important;
 }</style>
@@ -39099,7 +39094,7 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
     <template>
         <dom-if if="[[!options]]">
             <template>
-                <vi-button disabled="[[!canExecute]]" header on-tap="_onExecuteWithoutOptions" inverse>
+                <vi-button disabled="[[!canExecute]]" header on-tap="_onExecuteWithoutOptions" inverse="[[inverse]]">
                     <div class="layout horizontal">
                         <vi-icon class="action-icon" source="[[icon]]"></vi-icon>
                         <div class="icon-space" hidden$="[[!iconSpace]]"></div>
@@ -39111,7 +39106,7 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
         <dom-if if="[[options]]">
             <template>
                 <vi-popup-menu open-on-hover="[[_computeOpenOnHover(overflow, openOnHover)]]" disabled="[[!canExecute]]" placement="[[_getPlacement(overflow, grouped)]]" auto-width="[[!overflow]]">
-                    <vi-button disabled="[[!canExecute]]" slot="header" header inverse class="options">
+                    <vi-button disabled="[[!canExecute]]" slot="header" header inverse="[[inverse]]" class="options">
                         <div class="layout horizontal flex">
                             <vi-icon class="action-icon" source="[[icon]]"></vi-icon>
                             <div class="icon-space" hidden$="[[!iconSpace]]"></div>
@@ -39132,7 +39127,7 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
 <dom-if if="[[isGroup]]">
     <template>
         <vi-popup disabled="[[!canExecute]]" open-on-hover="[[_computeOpenOnHover(overflow, openOnHover)]]" placement="[[_getPlacement(overflow, grouped)]]" auto-width="[[!overflow]]">
-            <vi-button disabled="[[!canExecute]]" slot="header" inverse class="groupActions">
+            <vi-button disabled="[[!canExecute]]" slot="header" inverse="[[inverse]]" class="groupActions">
                 <div class="layout horizontal flex">
                     <vi-icon class="action-icon" source="[[icon]]"></vi-icon>
                     <div class="icon-space" hidden$="[[!iconSpace]]"></div>
@@ -39143,7 +39138,7 @@ let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebCo
             <div content>
                 <dom-repeat items="[[action.actions]]" as="groupAction">
                     <template>
-                        <vi-action-button grouped open-on-hover action="[[groupAction]]"></vi-action-button>
+                        <vi-action-button grouped open-on-hover action="[[groupAction]]" inverse></vi-action-button>
                     </template>
                 </dom-repeat>
             </div>
@@ -39363,6 +39358,11 @@ ActionButton = ActionButton_1 = __decorate([
                 type: Boolean,
                 reflectToAttribute: true,
                 computed: "_computeIsGroup(action)"
+            },
+            inverse: {
+                type: Boolean,
+                reflectToAttribute: true,
+                value: false
             }
         },
         listeners: {
@@ -39813,7 +39813,7 @@ add(html$2 `<vi-icon name="Action_Default$">
         }
 
         :host([is-selected]:not([disabled])) #box, :host([is-selected]:not([disabled])) #backdrop {
-            fill: var(--vi-icon-selected-checked-color, var(--theme-color));
+            fill: var(--vi-icon-selected-checked-color, var(--color));
         }
 
         :host([is-selected][disabled]) #box, :host([is-selected][disabled]) #backdrop {
@@ -39840,7 +39840,7 @@ add(html$2 `<vi-icon name="Action_Default$">
         }
 
         :host([is-selected]) #check, :host([is-selected]) #box {
-            fill: var(--theme-color);
+            fill: var(--color);
         }
 
         :host(:not([is-selected])) #check {
@@ -40294,7 +40294,7 @@ let QueryGridRow = class QueryGridRow extends WebComponent {
   cursor: pointer;
 }
 :host(:not(.loading):hover), :host(:not(.loading):hover) ::slotted(.column), :host(:not(.loading):hover) .pinned {
-  background-color: var(--theme-color-semi-faint);
+  background-color: var(--color-semi-faint);
 }
 :host .pinned {
   transform: translateX(var(--vi-query-grid-horizontal));
@@ -40713,7 +40713,7 @@ let QueryGridConfigureDialogColumn = class QueryGridConfigureDialogColumn extend
   background-color: #f9f9f9;
 }
 :host .buttons vi-button {
-  fill: var(--theme-color);
+  fill: var(--color);
 }
 :host(:not([is-pinned])) .buttons vi-button:nth-child(1) {
   opacity: 0.5;
@@ -43376,7 +43376,7 @@ class QueryGridUserSettings extends Observable {
         return this._query;
     }
     get columns() {
-        return this._columns;
+        return this._columns.orderBy(c => c.offset);
     }
     async save(refreshOnComplete = true) {
         let queryData;
@@ -43438,7 +43438,6 @@ let QueryGrid = class QueryGrid extends WebComponent {
   flex: 1;
   min-height: 0;
   min-width: 0;
-  isolation: isolate;
 }
 :host [grid] {
   display: grid;
@@ -43450,7 +43449,6 @@ let QueryGrid = class QueryGrid extends WebComponent {
   position: relative;
   z-index: 1;
   border-bottom: 1px solid var(--theme-light-border);
-  background-color: white;
 }
 :host header [grid] {
   margin-left: calc(var(--vi-query-grid-horizontal, 0) * -1);
@@ -43488,8 +43486,8 @@ let QueryGrid = class QueryGrid extends WebComponent {
   z-index: 1;
 }
 :host header .more > vi-button {
-  width: var(--vi-query-grid-row-height);
-  height: var(--vi-query-grid-row-height);
+  width: var(--theme-h2);
+  height: var(--theme-h2);
 }
 :host header .more.left {
   left: 0;
@@ -43847,13 +43845,11 @@ let QueryGrid = class QueryGrid extends WebComponent {
     _update(verticalScrollOffset, virtualRowCount, rowHeight, items, skip, maxRows) {
         if (!virtualRowCount)
             return;
-        if (!maxRows)
-            maxRows = Number.MAX_SAFE_INTEGER;
         verticalScrollOffset *= this._verticalSpacerCorrection;
         const viewportStartRowIndex = Math.floor(verticalScrollOffset / rowHeight);
         const viewportEndRowIndex = Math.ceil((verticalScrollOffset + this.viewportHeight) / rowHeight);
         if (!this.virtualItems || this.virtualItems.length !== virtualRowCount) {
-            this._setVirtualItems(new Array(Math.min(virtualRowCount, maxRows)));
+            this._setVirtualItems(new Array(Math.min(virtualRowCount, maxRows || Number.MAX_SAFE_INTEGER)));
             items.forceUpdate = true;
         }
         let newVirtualGridStartIndex = 0;
@@ -43874,7 +43870,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
         if (newVirtualGridStartIndex < 0)
             newVirtualGridStartIndex = 0;
         const queuedItemIndexes = [];
-        for (let virtualIndex = 0; virtualIndex < this.virtualRowCount && virtualIndex < maxRows; virtualIndex++) {
+        for (let virtualIndex = 0; virtualIndex < this.virtualRowCount && (!maxRows || virtualIndex < maxRows); virtualIndex++) {
             const index = newVirtualGridStartIndex + virtualIndex + skip;
             const [item, realIndex] = this._getItem(index, true);
             this.virtualItems[virtualIndex] = item;
@@ -43966,7 +43962,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
     _updateVerticalSpacer(viewportHeight, rowHeight, items, maxRows) {
         beforeNextRender(this, () => {
             const newHeight = Math.min(Math.min(items.length, PHYSICAL_UPPER_LIMIT), maxRows || Number.MAX_SAFE_INTEGER) * rowHeight;
-            if (!maxRows || maxRows === Number.MAX_SAFE_INTEGER)
+            if (!maxRows)
                 this.$.gridWrapper.style.height = `${newHeight}px`;
             else
                 this.$.gridWrapper.style.maxHeight = `${newHeight}px`;
@@ -44014,7 +44010,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
             this.style.setProperty("--vi-query-grid-columns-no-data", init);
             this.style.setProperty("--vi-query-grid-columns", init);
         }
-        return [...columns.filter(c => c.isPinned).orderBy(c => c.offset), ...columns.filter(c => !c.isPinned).orderBy(c => c.offset)];
+        return [...columns.filter(c => c.isPinned), ...columns.filter(c => !c.isPinned)];
     }
     _computeVirtualRowCount(viewportHeight, rowHeight, canReorder, totalItems) {
         if (!viewportHeight)
@@ -44044,8 +44040,8 @@ let QueryGrid = class QueryGrid extends WebComponent {
     _computePhysicalUpperLimitExceeded(totalItems) {
         return totalItems > PHYSICAL_UPPER_LIMIT;
     }
-    _computeHasMoreRows(totalItems, maxRows = Number.MAX_SAFE_INTEGER) {
-        return totalItems > maxRows;
+    _computeHasMoreRows(totalItems, maxRows) {
+        return !!maxRows && totalItems > maxRows;
     }
     _rowHeightChanged(rowHeight) {
         this.style.setProperty("--vi-query-grid-row-height", `${rowHeight}px`);
@@ -44598,7 +44594,7 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
   box-sizing: content-box;
   text-align: center;
   background-color: transparent;
-  color: var(--theme-color);
+  color: var(--color);
   fill: #595959;
   -moz-transition-property: fill, color, background-color;
   -o-transition-property: fill, color, background-color;
@@ -44615,15 +44611,15 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
   transition: background-color 0.1s ease-out;
 }
 :host .box .extras ::slotted(*):hover {
-  background-color: var(--theme-color-faint);
+  background-color: var(--color-faint);
 }
 :host .box .extras ::slotted(*):active {
-  background-color: var(--theme-color-dark);
+  background-color: var(--color-dark);
   fill: white !important;
   color: white !important;
 }
 :host .box .extras ::slotted(*)[disabled] {
-  fill: var(--theme-color-faint);
+  fill: var(--color-faint);
   color: fadeout(black, 50%);
 }
 :host .box .extras ::slotted(*)::after {
@@ -44647,10 +44643,10 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
   height: calc(var(--theme-h2) - 2px);
 }
 :host .box .extras ::slotted(*:hover) {
-  background-color: var(--theme-color-faint);
+  background-color: var(--color-faint);
 }
 :host .box .extras ::slotted(*:active) {
-  background-color: var(--theme-color-dark) !important;
+  background-color: var(--color-dark) !important;
   --vi-icon-fill: white;
 }
 :host .box .extras:hover ::slotted(*)::after {
@@ -44680,17 +44676,17 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
   background-color: yellow;
 }
 :host(:focus-within) .box {
-  border-color: var(--theme-color-lighter);
+  border-color: var(--color-lighter);
 }
 :host(:focus-within) .box .extras ::slotted(*) {
-  --vi-icon-fill: var(--theme-color);
+  --vi-icon-fill: var(--color);
 }
 :host(:focus-within) .box .extras ::slotted(*:hover) {
-  background-color: var(--theme-color);
+  background-color: var(--color);
   --vi-icon-fill: white !important;
 }
 :host(:focus-within) .box .extras ::slotted(*)::after, :host(:focus-within) .box .extras ::slotted(*)::before {
-  border-color: var(--theme-color-lighter);
+  border-color: var(--color-lighter);
 }</style>
 
 <div class="box" disabled$="[[attribute.parent.isFrozen]]">
@@ -45041,7 +45037,7 @@ let PersistentObjectAttributeAsDetailRow = class PersistentObjectAttributeAsDeta
   line-height: var(--theme-h2);
   box-sizing: border-box;
   border: 1px solid var(--theme-light-border);
-  fill: var(--theme-color-light);
+  fill: var(--color-light);
   margin-left: 1px;
 }
 :host .delete-button:not(:hover):not(:active) {
@@ -45728,12 +45724,12 @@ let Toggle = class Toggle extends WebComponent {
   outline: 0;
 }
 :host(:focus:not([disabled])) span {
-  outline: 1px dotted var(--theme-color-light);
+  outline: 1px dotted var(--color-light);
 }
 
 :host([toggled]) #box {
-  background-color: var(--theme-color);
-  border-color: var(--theme-color);
+  background-color: var(--color);
+  border-color: var(--color);
 }
 :host([toggled]) #box #switch {
   background-color: white;
@@ -45975,14 +45971,14 @@ let Select = class Select extends WebComponent {
   cursor: pointer;
 }
 :host vi-popup [content] vi-select-option-item:hover {
-  background-color: var(--theme-color-faint);
+  background-color: var(--color-faint);
 }
 :host vi-popup [content] vi-select-option-item[suggested], :host vi-popup [content]:not([filtering]) vi-select-option-item[selected] {
   color: white;
-  background-color: var(--theme-color);
+  background-color: var(--color);
 }
 :host vi-popup [content] vi-select-option-item[suggested]:hover, :host vi-popup [content]:not([filtering]) vi-select-option-item[selected]:hover {
-  background-color: var(--theme-color-light);
+  background-color: var(--color-light);
 }
 :host vi-popup [content][filtering] vi-select-option-item span.match {
   background-color: rgba(255, 255, 0, 0.5);
@@ -46467,13 +46463,13 @@ let PersistentObjectAttributeComboBox = class PersistentObjectAttributeComboBox 
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
 }
 :host #add {
-  background-color: var(--theme-color);
+  background-color: var(--color);
 }
 :host #add vi-icon {
   fill: white !important;
 }
 :host #add:before {
-  border-left-color: var(--theme-color);
+  border-left-color: var(--color);
 }</style>
 
 <dom-if if="[[!editing]]">
@@ -46825,14 +46821,14 @@ let TimePicker = class TimePicker extends WebComponent {
   user-select: none;
 }
 :host(:hover) vi-popup[open] [slot=header], :host vi-popup[hover] [slot=header] {
-  background-color: var(--theme-color) !important;
+  background-color: var(--color) !important;
   --vi-icon-fill: white !important;
 }
 :host .clock {
   padding: calc(var(--theme-h4) * 2);
 }
 :host(:active) .clock {
-  color: var(--theme-color) !important;
+  color: var(--color) !important;
 }
 :host #clockHost {
   position: relative;
@@ -47235,7 +47231,7 @@ let TimePicker = class TimePicker extends WebComponent {
   color: white;
 }
 :host #clockHost .list .item span:hover::before {
-  background-color: var(--theme-color-light);
+  background-color: var(--color-light);
 }
 :host #clockHost .list .item span::before {
   position: absolute;
@@ -47248,10 +47244,10 @@ let TimePicker = class TimePicker extends WebComponent {
   color: white;
 }
 :host #clockHost .list .item.active span::before {
-  background-color: var(--theme-color);
+  background-color: var(--color);
 }
 :host #clockHost .list .item.active span:hover::before {
-  background-color: var(--theme-color-dark);
+  background-color: var(--color-dark);
 }
 :host #clockHost > .face {
   position: absolute;
@@ -47284,7 +47280,7 @@ let TimePicker = class TimePicker extends WebComponent {
   z-index: -2;
 }
 :host([state=minutes]) #current .minutes {
-  color: var(--theme-color);
+  color: var(--color);
 }
 :host([state=hours]) .list:nth-child(3) {
   transform: scale(0.7);
@@ -47297,7 +47293,7 @@ let TimePicker = class TimePicker extends WebComponent {
   z-index: 2;
 }
 :host([state=hours]) #current .hours {
-  color: var(--theme-color);
+  color: var(--color);
 }</style>
 
 <vi-popup id="popup" vertical-align="bottom" placement="bottom-end" part="popup">
@@ -47463,13 +47459,13 @@ let DatePicker = class DatePicker extends WebComponent {
   user-select: none;
 }
 :host(:hover) vi-popup[open] [slot=header], :host vi-popup[hover] [slot=header] {
-  background-color: var(--theme-color) !important;
+  background-color: var(--color) !important;
   --vi-icon-fill: white !important;
 }
 :host header {
   color: white;
   fill: white;
-  background-color: var(--theme-color);
+  background-color: var(--color);
 }
 :host header vi-button {
   text-align: center;
@@ -47483,7 +47479,7 @@ let DatePicker = class DatePicker extends WebComponent {
   --vi-icon-fill: white;
 }
 :host header vi-button:hover {
-  background-color: var(--theme-color-light);
+  background-color: var(--color-light);
 }
 :host main {
   width: calc(var(--theme-h1) * 7);
@@ -47492,7 +47488,7 @@ let DatePicker = class DatePicker extends WebComponent {
 :host main .cell {
   border-style: solid;
   border-width: 0 0 1px 1px;
-  border-color: var(--theme-color-faint);
+  border-color: var(--color-faint);
   box-sizing: border-box;
   cursor: pointer;
   position: relative;
@@ -47525,17 +47521,17 @@ let DatePicker = class DatePicker extends WebComponent {
   background-color: transparent !important;
 }
 :host main .cell:not([is-other]):not([is-other]) {
-  color: var(--theme-color);
+  color: var(--color);
 }
 :host main .cell:not([is-other]):not([is-other]):hover {
-  background-color: var(--theme-color-faint);
+  background-color: var(--color-faint);
 }
 :host main .cell:not([is-other]):not([is-other])[is-today] {
   color: white !important;
-  background-color: var(--theme-color-light);
+  background-color: var(--color-light);
 }
 :host main .cell:not([is-other]):not([is-other])[is-today]:hover {
-  background-color: var(--theme-color-lighter);
+  background-color: var(--color-lighter);
 }
 :host main .cell[is-selected]:not([unselectable])::before, :host main .cell[is-selected]:not([unselectable])::after {
   position: absolute;
@@ -47547,7 +47543,7 @@ let DatePicker = class DatePicker extends WebComponent {
   z-index: 2;
   bottom: 0;
   left: 0;
-  border: 1px solid var(--theme-color);
+  border: 1px solid var(--color);
 }
 :host main .cell[is-selected]:not([unselectable])[is-other]::before {
   border-color: #777 !important;
@@ -47558,7 +47554,7 @@ let DatePicker = class DatePicker extends WebComponent {
 :host main .cell[is-selected]:not([unselectable])::after {
   z-index: 1;
   border-left: var(--theme-h4) solid transparent;
-  border-top-color: var(--theme-color);
+  border-top-color: var(--color);
   border-top-width: var(--theme-h4);
   border-top-style: solid;
 }
@@ -48313,7 +48309,7 @@ let PersistentObjectAttributeDropDown = class PersistentObjectAttributeDropDown 
   flex-wrap: wrap;
 }
 :host #chips vi-button[inverse] {
-  background-color: var(--theme-color-faint);
+  background-color: var(--color-faint);
 }</style>
 
 <dom-if if="[[!showEditable]]">
@@ -48512,7 +48508,7 @@ let PersistentObjectAttributeFlagsEnum = class PersistentObjectAttributeFlagsEnu
   overflow: hidden;
 }
 :host ul li:hover {
-  background-color: var(--theme-color-faint);
+  background-color: var(--color-faint);
 }
 :host ul li vi-checkbox:not([checked]) {
   fill: #aaa;
@@ -48589,12 +48585,12 @@ let PersistentObjectAttributeIcon = class PersistentObjectAttributeIcon extends 
   aspect-ratio: 1/1;
 }
 .icon-grid .icon:hover {
-  background-color: var(--theme-color-faint);
-  fill: var(--theme-color);
+  background-color: var(--color-faint);
+  fill: var(--color);
 }
 .icon-grid .icon[selected] {
-  background: var(--theme-color-semi-faint);
-  fill: var(--theme-color);
+  background: var(--color-semi-faint);
+  fill: var(--color);
 }
 
 vi-persistent-object-attribute-edit vi-icon {
@@ -48942,7 +48938,7 @@ let PersistentObjectAttributeKeyValueList = class PersistentObjectAttributeKeyVa
   flex-wrap: wrap;
 }
 :host #chips vi-button[inverse] {
-  background-color: var(--theme-color-faint);
+  background-color: var(--color-faint);
 }</style>
 
 <dom-if if="[[!showEditable]]">
@@ -49123,7 +49119,7 @@ let PersistentObjectAttributeMultiStringItem = class PersistentObjectAttributeMu
   outline: none;
 }
 :host input:focus {
-  border-color: var(--theme-color-lighter);
+  border-color: var(--color-lighter);
 }
 :host input:disabled {
   background-color: #eee;
@@ -49248,7 +49244,7 @@ let Tags = class Tags extends WebComponent {
 }
 :host .tag {
   margin: 0 4px 4px 0;
-  background-color: var(--theme-color);
+  background-color: var(--color);
   color: white;
   border-radius: var(--theme-h5);
   text-align: center;
@@ -49388,7 +49384,7 @@ let PersistentObjectAttributeMultiString = class PersistentObjectAttributeMultiS
   text-align: left;
 }
 :host #suggestions ul li:hover {
-  background-color: var(--theme-color-faint);
+  background-color: var(--color-faint);
 }</style>
 
 <dom-if if="[[!isTags]]">
@@ -49707,7 +49703,7 @@ let PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = clas
   display: none;
 }
 :host([focused]) vi-persistent-object-attribute-edit span:before, :host([focused]) vi-persistent-object-attribute-edit span:after {
-  border-color: var(--theme-color-lighter);
+  border-color: var(--color-lighter);
 }</style>
 
 <dom-if if="[[!editing]]">
@@ -50020,8 +50016,8 @@ let PersistentObjectAttributeReference = class PersistentObjectAttributeReferenc
   display: flex;
   flex-direction: row;
   text-decoration: none;
-  color: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
-  fill: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
+  color: var(--vi-persistent-object-attribute-foreground, var(--color));
+  fill: var(--vi-persistent-object-attribute-foreground, var(--color));
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -50029,12 +50025,12 @@ let PersistentObjectAttributeReference = class PersistentObjectAttributeReferenc
   outline: 0;
 }
 :host(:not([editing])) a:visited {
-  color: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
-  fill: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
+  color: var(--vi-persistent-object-attribute-foreground, var(--color));
+  fill: var(--vi-persistent-object-attribute-foreground, var(--color));
 }
 :host(:not([editing])) a:hover {
-  color: var(--vi-persistent-object-attribute-foreground, var(--theme-color-light));
-  fill: var(--vi-persistent-object-attribute-foreground, var(--theme-color-light));
+  color: var(--vi-persistent-object-attribute-foreground, var(--color-light));
+  fill: var(--vi-persistent-object-attribute-foreground, var(--color-light));
 }
 :host(:not([editing])) a[disabled] {
   color: var(--vi-persistent-object-attribute-foreground, #333) !important;
@@ -50047,7 +50043,7 @@ let PersistentObjectAttributeReference = class PersistentObjectAttributeReferenc
   margin: 0 var(--theme-h5);
   min-width: var(--theme-h4);
   height: 1em;
-  fill: var(--theme-color);
+  fill: var(--color);
   transform: translateY(2px);
 }
 :host([editing]) vi-select {
@@ -50074,7 +50070,7 @@ let PersistentObjectAttributeReference = class PersistentObjectAttributeReferenc
   flex-wrap: wrap;
 }
 :host #chips vi-button[inverse] {
-  background-color: var(--theme-color-faint);
+  background-color: var(--color-faint);
 }</style>
 
 <dom-if if="[[!editing]]">
@@ -50386,14 +50382,14 @@ let PersistentObjectAttributeString = class PersistentObjectAttributeString exte
 }
 :host #suggestions[open] vi-icon {
   fill: white !important;
-  background-color: var(--theme-color);
+  background-color: var(--color);
 }
 :host #suggestions vi-icon {
   width: calc(var(--theme-h2) - 2px);
   height: calc(var(--theme-h2) - 2px);
 }
 :host #suggestions vi-icon:hover {
-  fill: var(--theme-color);
+  fill: var(--color);
 }
 :host #suggestions ul {
   margin: 0;
@@ -50407,7 +50403,7 @@ let PersistentObjectAttributeString = class PersistentObjectAttributeString exte
   text-align: left;
 }
 :host #suggestions ul li:hover {
-  background-color: var(--theme-color-faint);
+  background-color: var(--color-faint);
 }
 :host a {
   display: flex;
@@ -50415,18 +50411,18 @@ let PersistentObjectAttributeString = class PersistentObjectAttributeString exte
   text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
-  fill: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
+  fill: var(--vi-persistent-object-attribute-foreground, var(--color));
 }
 :host a:focus {
   outline: 0;
 }
 :host a:visited {
-  color: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
-  fill: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
+  color: var(--vi-persistent-object-attribute-foreground, var(--color));
+  fill: var(--vi-persistent-object-attribute-foreground, var(--color));
 }
 :host a:hover {
-  color: var(--vi-persistent-object-attribute-foreground, var(--theme-color-light));
-  fill: var(--vi-persistent-object-attribute-foreground, var(--theme-color-light));
+  color: var(--vi-persistent-object-attribute-foreground, var(--color-light));
+  fill: var(--vi-persistent-object-attribute-foreground, var(--color-light));
 }
 :host a[disabled] {
   color: var(--vi-persistent-object-attribute-foreground, #333) !important;
@@ -50439,7 +50435,7 @@ let PersistentObjectAttributeString = class PersistentObjectAttributeString exte
   -o-text-overflow: ellipsis;
   text-overflow: ellipsis;
   overflow: hidden;
-  color: var(--vi-persistent-object-attribute-foreground, var(--theme-color));
+  color: var(--vi-persistent-object-attribute-foreground, var(--color));
 }
 :host a vi-icon {
   margin: 0 var(--theme-h5);
@@ -50665,7 +50661,7 @@ let PersistentObjectAttributeTranslatedStringDialog = class PersistentObjectAttr
   outline: none;
 }
 :host ul li input:focus, :host ul li textarea:focus {
-  border-color: var(--theme-color-light);
+  border-color: var(--color-light);
 }
 :host([read-only]) input, :host([read-only]) textarea {
   background-color: var(--theme-read-only-color);
@@ -51021,7 +51017,7 @@ label {
   height: 14px;
   margin: 0 0 var(--theme-h5) var(--theme-h4);
   padding: 0 var(--theme-h5) 2px calc(var(--theme-h5) / 2);
-  background-color: var(--theme-color);
+  background-color: var(--color);
 }
 .required::before {
   content: "";
@@ -51031,7 +51027,7 @@ label {
   height: 0;
   border-top: 8px solid transparent;
   border-bottom: 8px solid transparent;
-  border-right-color: var(--theme-color);
+  border-right-color: var(--color);
   border-right-width: 7px;
   border-right-style: solid;
 }
@@ -51057,7 +51053,7 @@ label {
 .info::part(icon) {
   --vi-icon-width: 12px;
   --vi-icon-height: 12px;
-  fill: var(--theme-color);
+  fill: var(--color);
 }
 
 :host([has-error]) .label .required {
@@ -51222,15 +51218,15 @@ let PersistentObjectAttributePresenter = class PersistentObjectAttributePresente
   align-items: center;
   justify-content: center;
   background-color: rgba(255, 255, 255, 0.3);
-  border: 1px dashed var(--theme-color-faint);
+  border: 1px dashed var(--color-faint);
   cursor: pointer;
 }
 :host([developer]) #developer:hover {
-  background-color: var(--theme-color-faint);
+  background-color: var(--color-faint);
 }
 :host([developer]) #developer label {
   font-weight: bold;
-  color: var(--theme-color-darker);
+  color: var(--color-darker);
   pointer-events: none;
 }</style>
 
@@ -51551,7 +51547,7 @@ let PersistentObjectGroup = class PersistentObjectGroup extends WebComponent {
   font-weight: 600;
   text-transform: uppercase;
   padding: var(--theme-h4) var(--theme-h5) 0 0;
-  color: var(--theme-color);
+  color: var(--color);
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -52846,10 +52842,12 @@ let Overflow = class Overflow extends WebComponent {
 :host .visible {
   display: inline-flex;
   position: relative;
+  gap: var(--vi-overflow-gap);
 }
 :host .visible > div#first {
   width: 0;
   opacity: 0;
+  margin-left: calc(var(--vi-overflow-gap, 0) * -1);
 }
 :host #overflowPopup {
   position: relative;
@@ -52863,7 +52861,7 @@ let Overflow = class Overflow extends WebComponent {
   display: none;
 }
 :host vi-popup[open] button[slot=header] {
-  background-color: var(--theme-color-faint);
+  background-color: var(--color-faint);
 }</style>
 
 <div class="flex relative visibleContainer">
@@ -52949,10 +52947,6 @@ Overflow = __decorate([
 ], Overflow);
 
 let ActionBar = class ActionBar extends WebComponent {
-    constructor() {
-        super(...arguments);
-        this.accent = false;
-    }
     static get template() { return html$2 `<style>:host {
   display: flex;
   -webkit-touch-callout: none;
@@ -52972,6 +52966,9 @@ let ActionBar = class ActionBar extends WebComponent {
 }
 :host vi-action-button {
   text-align: left;
+}
+:host vi-overflow {
+  --vi-overflow-gap: var(--vi-action-bar-gap, 0);
 }
 :host vi-overflow::part(button) {
   width: var(--theme-h1);
@@ -53004,18 +53001,28 @@ let ActionBar = class ActionBar extends WebComponent {
 }
 :host .search vi-input-search::part(search), :host .search vi-input-search::part(reset) {
   fill: #B3B3B3;
+}
+:host([accent]) {
+  --color: var(--theme-accent-color);
+  --color-light: var(--theme-accent-color-light);
+  --color-lighter: var(--theme-accent-color-lighter);
+  --color-dark: var(--theme-accent-color-dark);
+  --color-darker: var(--theme-accent-color-darker);
+  --color-faint: var(--theme-accent-color-faint);
+  --color-semi-faint: var(--theme-accent-color-semi-faint);
+  --color-rgb: var(--theme-accent-color-rgb);
 }</style>
 
 <vi-overflow class="flex">
     <dom-repeat items="[[unpinnedActions]]" as="action">
         <template>
-            <vi-action-button action="[[action]]"></vi-action-button>
+            <vi-action-button action="[[action]]" inverse></vi-action-button>
         </template>
     </dom-repeat>
 </vi-overflow>
 <dom-repeat items="[[pinnedActions]]" as="action">
     <template>
-        <vi-action-button action="[[action]]" no-label></vi-action-button>
+        <vi-action-button action="[[action]]" no-label inverse></vi-action-button>
     </template>
 </dom-repeat>
 <dom-if if="[[hasCharts]]">
@@ -53095,7 +53102,11 @@ ActionBar = __decorate([
                 type: Boolean,
                 reflectToAttribute: true,
                 computed: "_computeNoActions(pinnedActions, unpinnedActions)"
-            }
+            },
+            accent: {
+                type: Boolean,
+                reflectToAttribute: true
+            },
         },
         forwardObservers: [
             "serviceObject.charts"
@@ -53110,7 +53121,7 @@ let Audit = class Audit extends WebComponent {
   --vi-audit-spacing: var(--theme-h2);
 }
 :host header {
-  background-color: var(--theme-color);
+  background-color: var(--color);
   color: white;
   line-height: var(--theme-h1);
   height: var(--theme-h1);
@@ -53206,7 +53217,7 @@ let Audit = class Audit extends WebComponent {
   color: #333 !important;
 }
 :host main .entry:hover {
-  background-color: var(--theme-color-faint);
+  background-color: var(--color-faint);
   cursor: pointer;
 }
 :host main .entry:hover label {
@@ -53234,7 +53245,7 @@ let Audit = class Audit extends WebComponent {
 :host main .entry .timeline .dot {
   position: relative;
   background-color: white;
-  border: 2px solid var(--theme-color);
+  border: 2px solid var(--color);
   border-radius: 50%;
   width: var(--theme-h4);
   height: var(--theme-h4);
@@ -53331,12 +53342,12 @@ let Audit = class Audit extends WebComponent {
   align-items: center;
   justify-content: center;
   width: var(--theme-h1);
-  background: var(--theme-color-lighter);
+  background: var(--color-lighter);
 }
 :host main .entry .expand vi-icon {
   --vi-icon-width: 24px;
   --vi-icon-height: 24px;
-  fill: var(--theme-color);
+  fill: var(--color);
   transform: none;
   transition: transform 0.3s ease-out;
 }
@@ -53701,7 +53712,7 @@ let FileDrop = class FileDrop extends WebComponent {
   --vi-icon-width: calc(var(--theme-h1) * 2);
   --vi-icon-height: calc(var(--theme-h1) * 2);
   z-index: 2;
-  fill: var(--theme-color);
+  fill: var(--color);
   pointer-events: none;
 }</style>
 
@@ -55079,17 +55090,17 @@ let PersistentObjectTabBarItem = class PersistentObjectTabBarItem extends WebCom
   box-sizing: border-box;
   white-space: nowrap;
   overflow: hidden;
-  color: var(--theme-color);
-  fill: var(--theme-color);
+  color: var(--color);
+  fill: var(--color);
 }
 :host(:hover) {
-  background-color: var(--theme-color-faint);
+  background-color: var(--color-faint);
 }
 :host span {
   line-height: calc(var(--theme-h1) - 3px);
 }
 :host span.badge {
-  background-color: var(--theme-color-lighter);
+  background-color: var(--color-lighter);
   color: white;
   padding: calc(var(--theme-h5) / 2) calc(var(--theme-h5) + 1px) calc(var(--theme-h5) / 2) var(--theme-h5);
   margin-left: 2px;
@@ -55097,10 +55108,10 @@ let PersistentObjectTabBarItem = class PersistentObjectTabBarItem extends WebCom
   font-size: 10px;
 }
 :host([is-selected]) {
-  border-bottom-color: var(--theme-color);
+  border-bottom-color: var(--color);
 }
 :host([is-selected]) span.badge {
-  background-color: var(--theme-color);
+  background-color: var(--color);
 }
 :host([is-selected]) span:not(.badge) {
   font-weight: 600;
@@ -55193,7 +55204,7 @@ let PersistentObjectTabBar = class PersistentObjectTabBar extends WebComponent {
   width: var(--theme-h1);
 }
 :host vi-overflow::part(button):hover {
-  background-color: var(--theme-color-faint);
+  background-color: var(--color-faint);
 }</style>
 
 <vi-overflow class="fit">
@@ -55262,7 +55273,7 @@ let PersistentObject = class PersistentObject extends WebComponent {
   border-bottom: 1px solid var(--theme-light-border);
 }
 :host header {
-  background-color: var(--theme-color);
+  background-color: var(--color);
   color: white;
   line-height: var(--theme-h1);
   height: var(--theme-h1);
@@ -55695,13 +55706,14 @@ PersistentObject = __decorate([
 let PersistentObjectDetailsContent = class PersistentObjectDetailsContent extends WebComponent {
     static get template() { return html$2 `<style>
     :host {
-        --theme-color: var(--theme-accent-color);
-        --theme-color-light: var(--theme-accent-color-light);
-        --theme-color-lighter: var(--theme-accent-color-lighter);
-        --theme-color-dark: var(--theme-accent-color-dark);
-        --theme-color-darker: var(--theme-accent-color-darker);
-        --theme-color-faint: var(--theme-accent-color-faint);
-        --theme-color-semi-faint: var(--theme-accent-color-semi-faint);
+        --color: var(--theme-accent-color);
+        --color-light: var(--theme-accent-color-light);
+        --color-lighter: var(--theme-accent-color-lighter);
+        --color-dark: var(--theme-accent-color-dark);
+        --color-darker: var(--theme-accent-color-darker);
+        --color-faint: var(--theme-accent-color-faint);
+        --color-semi-faint: var(--theme-accent-color-semi-faint);
+        --color-rgb: var(--theme-accent-color-rgb);
     }
 
     :host vi-action-bar {
@@ -55725,13 +55737,14 @@ PersistentObjectDetailsContent = __decorate([
 let PersistentObjectDetailsHeader = class PersistentObjectDetailsHeader extends WebComponent {
     static get template() { return html$2 `<style>
     :host {
-        --theme-color: var(--theme-accent-color);
-        --theme-color-light: var(--theme-accent-color-light);
-        --theme-color-lighter: var(--theme-accent-color-lighter);
-        --theme-color-dark: var(--theme-accent-color-dark);
-        --theme-color-darker: var(--theme-accent-color-darker);
-        --theme-color-faint: var(--theme-accent-color-faint);
-        --theme-color-semi-faint: var(--theme-accent-color-semi-faint);
+        --color: var(--theme-accent-color);
+        --color-light: var(--theme-accent-color-light);
+        --color-lighter: var(--theme-accent-color-lighter);
+        --color-dark: var(--theme-accent-color-dark);
+        --color-darker: var(--theme-accent-color-darker);
+        --color-faint: var(--theme-accent-color-faint);
+        --color-semi-faint: var(--theme-accent-color-semi-faint);
+        --color-rgb: var(--theme-accent-color-rgb);
     }
 </style>
 
@@ -56129,7 +56142,7 @@ let Query = class Query extends WebComponent {
   z-index: 1;
 }
 :host header {
-  background-color: var(--theme-color);
+  background-color: var(--color);
   color: white;
   line-height: var(--theme-h1);
   height: var(--theme-h1);

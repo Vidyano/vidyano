@@ -10561,7 +10561,6 @@ declare class Overflow extends WebComponent {
 
 declare class ActionBar extends WebComponent {
     static get template(): HTMLTemplateElement;
-    accent: boolean;
     serviceObject: ServiceObjectWithActions;
     pinnedActions: Action[];
     unpinnedActions: Action[];
