@@ -281,6 +281,7 @@ export class QueryGridRow extends WebComponent {
 
             const button = new ActionButton(this.item.query.selectedItems.length === 0 ? <Vidyano.QueryResultItem>this.item : null, actionOrGroup);
             button.forceLabel = true;
+            button.inverse = true;
             button.openOnHover = true;
             button.setAttribute("overflow", "");
 

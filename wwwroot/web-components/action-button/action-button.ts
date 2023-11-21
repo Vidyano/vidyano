@@ -114,6 +114,7 @@ export class ActionButton extends ConfigurableWebComponent {
     noLabel: boolean;
     openOnHover: boolean;
     forceLabel: boolean;
+    inverse: boolean;
     grouped: boolean;
 
     constructor(public item: Vidyano.QueryResultItem, public action: Vidyano.Action | Vidyano.ActionGroup) {
