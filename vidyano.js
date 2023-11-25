@@ -6195,13 +6195,13 @@ Array.range = function range(start, end, step = 1) {
 };
 
 class CultureInfo {
+    static { this.cultures = {}; }
     constructor(name, numberFormat, dateFormat) {
         this.name = name;
         this.numberFormat = numberFormat;
         this.dateFormat = dateFormat;
     }
 }
-CultureInfo.cultures = {};
 CultureInfo.cultures[""] = new CultureInfo("", { naNSymbol: "NaN", negativeSign: "-", positiveSign: "+", negativeInfinityText: "-Infinity", positiveInfinityText: "Infinity", percentSymbol: "%", percentGroupSizes: [3], percentDecimalDigits: 2, percentDecimalSeparator: ".", percentGroupSeparator: ",", percentPositivePattern: "{0} %", percentNegativePattern: "-{0} %", currencySymbol: "¤", currencyGroupSizes: [3], currencyDecimalDigits: 2, currencyDecimalSeparator: ".", currencyGroupSeparator: ",", currencyNegativePattern: "(${0})", currencyPositivePattern: "${0}", numberGroupSizes: [3], numberDecimalDigits: 2, numberDecimalSeparator: ".", numberGroupSeparator: "," }, { amDesignator: "AM", pmDesignator: "PM", dateSeparator: "/", timeSeparator: ":", gmtDateTimePattern: "ddd, dd MMM yyyy HH':'mm':'ss 'GMT'", universalDateTimePattern: "yyyy'-'MM'-'dd HH':'mm':'ss'Z'", sortableDateTimePattern: "yyyy'-'MM'-'dd'T'HH':'mm':'ss", dateTimePattern: "dddd, dd MMMM yyyy HH:mm:ss", longDatePattern: "dddd, dd MMMM yyyy", shortDatePattern: "MM/dd/yyyy", longTimePattern: "HH:mm:ss", shortTimePattern: "HH:mm", yearMonthPattern: "yyyy MMMM", firstDayOfWeek: 0, dayNames: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], shortDayNames: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], minimizedDayNames: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"], monthNames: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December", ""], shortMonthNames: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", ""] });
 CultureInfo.cultures["de-DE"] = new CultureInfo("de-DE", { naNSymbol: "NaN", negativeSign: "-", positiveSign: "+", negativeInfinityText: "-∞", positiveInfinityText: "∞", percentSymbol: "%", percentGroupSizes: [3], percentDecimalDigits: 2, percentDecimalSeparator: ",", percentGroupSeparator: ".", percentPositivePattern: "{0} %", percentNegativePattern: "-{0} %", currencySymbol: "€", currencyGroupSizes: [3], currencyDecimalDigits: 2, currencyDecimalSeparator: ",", currencyGroupSeparator: ".", currencyNegativePattern: "-{0} $", currencyPositivePattern: "{0} $", numberGroupSizes: [3], numberDecimalDigits: 2, numberDecimalSeparator: ",", numberGroupSeparator: "." }, { amDesignator: "", pmDesignator: "", dateSeparator: ".", timeSeparator: ":", gmtDateTimePattern: "ddd, dd MMM yyyy HH':'mm':'ss 'GMT'", universalDateTimePattern: "yyyy'-'MM'-'dd HH':'mm':'ss'Z'", sortableDateTimePattern: "yyyy'-'MM'-'dd'T'HH':'mm':'ss", dateTimePattern: "dddd, d. MMMM yyyy HH:mm:ss", longDatePattern: "dddd, d. MMMM yyyy", shortDatePattern: "dd.MM.yyyy", longTimePattern: "HH:mm:ss", shortTimePattern: "HH:mm", yearMonthPattern: "MMMM yyyy", firstDayOfWeek: 1, dayNames: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"], shortDayNames: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"], minimizedDayNames: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"], monthNames: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember", ""], shortMonthNames: ["Jan", "Feb", "Mrz", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez", ""] });
 CultureInfo.cultures["en-GB"] = new CultureInfo("en-GB", { naNSymbol: "NaN", negativeSign: "-", positiveSign: "+", negativeInfinityText: "-∞", positiveInfinityText: "∞", percentSymbol: "%", percentGroupSizes: [3], percentDecimalDigits: 2, percentDecimalSeparator: ".", percentGroupSeparator: ",", percentPositivePattern: "{0}%", percentNegativePattern: "-{0}%", currencySymbol: "£", currencyGroupSizes: [3], currencyDecimalDigits: 2, currencyDecimalSeparator: ".", currencyGroupSeparator: ",", currencyNegativePattern: "-${0}", currencyPositivePattern: "${0}", numberGroupSizes: [3], numberDecimalDigits: 2, numberDecimalSeparator: ".", numberGroupSeparator: "," }, { amDesignator: "AM", pmDesignator: "PM", dateSeparator: "/", timeSeparator: ":", gmtDateTimePattern: "ddd, dd MMM yyyy HH':'mm':'ss 'GMT'", universalDateTimePattern: "yyyy'-'MM'-'dd HH':'mm':'ss'Z'", sortableDateTimePattern: "yyyy'-'MM'-'dd'T'HH':'mm':'ss", dateTimePattern: "dd MMMM yyyy HH:mm:ss", longDatePattern: "dd MMMM yyyy", shortDatePattern: "dd/MM/yyyy", longTimePattern: "HH:mm:ss", shortTimePattern: "HH:mm", yearMonthPattern: "MMMM yyyy", firstDayOfWeek: 1, dayNames: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], shortDayNames: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], minimizedDayNames: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"], monthNames: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December", ""], shortMonthNames: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", ""] });
@@ -6615,6 +6615,9 @@ Date.prototype.netOffset = function (value) {
 };
 
 class ExpressionParser {
+    static { this.alwaysTrue = function () { return true; }; }
+    static { this._cache = {}; }
+    static { this._operands = ["<=", ">=", "<", ">", "!=", "="]; }
     static get(expression) {
         if (!expression || !expression.trim())
             return this.alwaysTrue;
@@ -6676,9 +6679,6 @@ class ExpressionParser {
         return this.alwaysTrue;
     }
 }
-ExpressionParser.alwaysTrue = function () { return true; };
-ExpressionParser._cache = {};
-ExpressionParser._operands = ["<=", ">=", "<", ">", "!=", "="];
 
 class PropertyChangedArgs {
     constructor(propertyName, newValue, oldValue) {
@@ -8468,6 +8468,7 @@ class ActionDefinition {
                 name: itemOrDefinition.getValue("Name"),
                 displayName: itemOrDefinition.getValue("DisplayName"),
                 isPinned: itemOrDefinition.getValue("IsPinned"),
+                isStreaming: itemOrDefinition.getValue("IsStreamingAction"),
                 confirmation: itemOrDefinition.getValue("Confirmation"),
                 refreshQueryOnCompleted: itemOrDefinition.getValue("RefreshQueryOnCompleted"),
                 keepSelectionOnRefresh: itemOrDefinition.getValue("KeepSelectionOnRefresh"),
@@ -8496,6 +8497,9 @@ class ActionDefinition {
     }
     get isPinned() {
         return this._definition.isPinned ?? false;
+    }
+    get isStreaming() {
+        return !!this._definition.isStreaming;
     }
     get refreshQueryOnCompleted() {
         return this._definition.refreshQueryOnCompleted;
@@ -10114,6 +10118,8 @@ class ServiceHooks {
     onAction(args) {
         return Promise.resolve(null);
     }
+    async onStreamingAction(action, messages, abort) {
+    }
     onOpen(obj, replaceCurrent = false, forceFromAction) {
     }
     onClose(obj) {
@@ -10213,6 +10219,44 @@ class ServiceHooks {
 }
 
 class NoInternetMessage {
+    static { this.messages = Object.assign({}, ...[
+        new NoInternetMessage("en", "Unable to connect to the server.", "Please check your internet connection settings and try again.", "Try again"),
+        new NoInternetMessage("ar", "غير قادر على الاتصال بالخادم", "يرجى التحقق من إعدادات الاتصال بإنترنت ثم حاول مرة أخرى", "حاول مرة أخرى"),
+        new NoInternetMessage("bg", "Не може да се свърже със сървъра", "Проверете настройките на интернет връзката и опитайте отново", "Опитайте отново"),
+        new NoInternetMessage("ca", "No es pot connectar amb el servidor", "Si us plau aturi les seves escenes de connexió d'internet i provi una altra vegada", "Provi una altra vegada"),
+        new NoInternetMessage("cs", "Nelze se připojit k serveru", "Zkontrolujte nastavení připojení k Internetu a akci opakujte", "Zkuste to znovu"),
+        new NoInternetMessage("da", "Kunne ikke oprettes forbindelse til serveren", "Kontroller indstillingerne for internetforbindelsen, og prøv igen", "Prøv igen"),
+        new NoInternetMessage("nl", "Kan geen verbinding maken met de server", "Controleer de instellingen van uw internet-verbinding en probeer opnieuw", "Opnieuw proberen"),
+        new NoInternetMessage("et", "Ei saa ühendust serveriga", "Palun kontrollige oma Interneti-ühenduse sätteid ja proovige uuesti", "Proovi uuesti"),
+        new NoInternetMessage("fa", "قادر به اتصال به سرویس دهنده", "لطفاً تنظیمات اتصال اینترنت را بررسی کرده و دوباره سعی کنید", "دوباره امتحان کن"),
+        new NoInternetMessage("fi", "Yhteyttä palvelimeen", "Tarkista internet-yhteysasetukset ja yritä uudelleen", "Yritä uudestaan"),
+        new NoInternetMessage("fr", "Impossible de se connecter au serveur", "S'il vous plaît vérifier vos paramètres de connexion internet et réessayez", "Réessayez"),
+        new NoInternetMessage("de", "Keine Verbindung zum Server herstellen", "Überprüfen Sie die Einstellungen für die Internetverbindung und versuchen Sie es erneut", "Wiederholen"),
+        new NoInternetMessage("el", "Δεν είναι δυνατή η σύνδεση με το διακομιστή", "Ελέγξτε τις ρυθμίσεις σύνδεσης στο internet και προσπαθήστε ξανά", "Δοκίμασε ξανά"),
+        new NoInternetMessage("ht", "Pat kapab pou li konekte li pou sèvè a", "Souple tcheke ou paramètres kouche sou entènèt Et eseye ankò", "eseye ankò"),
+        new NoInternetMessage("he", "אין אפשרות להתחבר לשרת", "נא בדוק את הגדרות החיבור לאינטרנט ונסה שוב", "נסה שוב"),
+        new NoInternetMessage("hi", "सर्वर से कनेक्ट करने में असमर्थ", "कृपया अपना इंटरनेट कनेक्शन सेटिंग्स की जाँच करें और पुन: प्रयास करें", "फिर कोशिश करो"),
+        new NoInternetMessage("hu", "Nem lehet kapcsolódni a szerverhez", "Kérjük, ellenőrizze az internetes kapcsolat beállításait, és próbálja újra", "próbáld újra"),
+        new NoInternetMessage("id", "Tidak dapat terhubung ke server", "Silakan periksa setelan sambungan internet Anda dan coba lagi", "Coba lagi"),
+        new NoInternetMessage("it", "Impossibile connettersi al server", "Si prega di controllare le impostazioni della connessione internet e riprovare", "Riprova"),
+        new NoInternetMessage("ja", "サーバーに接続できません。", "インターネット接続設定を確認して、やり直してください。", "もう一度やり直してください"),
+        new NoInternetMessage("ko", "서버에 연결할 수 없습니다.", "인터넷 연결 설정을 확인 하 고 다시 시도 하십시오", "다시 시도"),
+        new NoInternetMessage("lv", "Nevar izveidot savienojumu ar serveri", "Lūdzu, pārbaudiet interneta savienojuma iestatījumus un mēģiniet vēlreiz", "mēģini vēlreiz"),
+        new NoInternetMessage("lt", "Nepavyko prisijungti prie serverio", "Patikrinkite interneto ryšio parametrus ir bandykite dar kartą", "pabandyk dar kartą"),
+        new NoInternetMessage("no", "Kan ikke koble til serveren", "Kontroller innstillingene for Internett-tilkoblingen og prøv igjen", "prøv igjen"),
+        new NoInternetMessage("pl", "Nie można połączyć się z serwerem", "Proszę sprawdzić ustawienia połączenia internetowego i spróbuj ponownie", "Próbuj ponownie"),
+        new NoInternetMessage("pt", "Incapaz de conectar ao servidor", "Por favor, verifique as suas configurações de ligação à internet e tente novamente", "Tentar novamente"),
+        new NoInternetMessage("ro", "Imposibil de conectat la server", "Vă rugăm să verificaţi setările de conexiune la internet şi încercaţi din nou", "încearcă din nou"),
+        new NoInternetMessage("ru", "Не удается подключиться к серверу", "Пожалуйста, проверьте параметры подключения к Интернету и повторите попытку", "Повторить"),
+        new NoInternetMessage("sk", "Nedá sa pripojiť k serveru", "Skontrolujte nastavenie internetového pripojenia a skúste to znova", "skús znova"),
+        new NoInternetMessage("sl", "Ne morem se povezati s strežnikom", "Preverite nastavitve internetne povezave in poskusite znova", "poskusi znova"),
+        new NoInternetMessage("es", "No se puede conectar al servidor", "Por favor, compruebe la configuración de conexión a internet e inténtelo de nuevo", "Vuelve a intentarlo"),
+        new NoInternetMessage("sv", "Det gick inte att ansluta till servern", "Kontrollera inställningarna för Internetanslutningen och försök igen", "Försök igen"),
+        new NoInternetMessage("th", "สามารถเชื่อมต่อกับเซิร์ฟเวอร์", "กรุณาตรวจสอบการตั้งค่าการเชื่อมต่ออินเทอร์เน็ตของคุณ และลองอีกครั้ง", "ลองอีกครั้ง"),
+        new NoInternetMessage("tr", "Sunucuya bağlantı kurulamıyor", "Lütfen Internet bağlantı ayarlarınızı denetleyin ve yeniden deneyin", "Yeniden Deneyin"),
+        new NoInternetMessage("uk", "Не вдалося підключитися до сервера", "Перевірте параметри підключення до Інтернету та повторіть спробу", "Спробуй ще раз"),
+        new NoInternetMessage("vi", "Không thể kết nối đến máy chủ", "Hãy kiểm tra cài đặt kết nối internet của bạn và thử lại", "Thử lại")
+    ].map(m => ({ [m.language]: m }))); }
     constructor(language, title, message, tryAgain) {
         this.language = language;
         this.title = title;
@@ -10220,44 +10264,6 @@ class NoInternetMessage {
         this.tryAgain = tryAgain;
     }
 }
-NoInternetMessage.messages = Object.assign({}, ...[
-    new NoInternetMessage("en", "Unable to connect to the server.", "Please check your internet connection settings and try again.", "Try again"),
-    new NoInternetMessage("ar", "غير قادر على الاتصال بالخادم", "يرجى التحقق من إعدادات الاتصال بإنترنت ثم حاول مرة أخرى", "حاول مرة أخرى"),
-    new NoInternetMessage("bg", "Не може да се свърже със сървъра", "Проверете настройките на интернет връзката и опитайте отново", "Опитайте отново"),
-    new NoInternetMessage("ca", "No es pot connectar amb el servidor", "Si us plau aturi les seves escenes de connexió d'internet i provi una altra vegada", "Provi una altra vegada"),
-    new NoInternetMessage("cs", "Nelze se připojit k serveru", "Zkontrolujte nastavení připojení k Internetu a akci opakujte", "Zkuste to znovu"),
-    new NoInternetMessage("da", "Kunne ikke oprettes forbindelse til serveren", "Kontroller indstillingerne for internetforbindelsen, og prøv igen", "Prøv igen"),
-    new NoInternetMessage("nl", "Kan geen verbinding maken met de server", "Controleer de instellingen van uw internet-verbinding en probeer opnieuw", "Opnieuw proberen"),
-    new NoInternetMessage("et", "Ei saa ühendust serveriga", "Palun kontrollige oma Interneti-ühenduse sätteid ja proovige uuesti", "Proovi uuesti"),
-    new NoInternetMessage("fa", "قادر به اتصال به سرویس دهنده", "لطفاً تنظیمات اتصال اینترنت را بررسی کرده و دوباره سعی کنید", "دوباره امتحان کن"),
-    new NoInternetMessage("fi", "Yhteyttä palvelimeen", "Tarkista internet-yhteysasetukset ja yritä uudelleen", "Yritä uudestaan"),
-    new NoInternetMessage("fr", "Impossible de se connecter au serveur", "S'il vous plaît vérifier vos paramètres de connexion internet et réessayez", "Réessayez"),
-    new NoInternetMessage("de", "Keine Verbindung zum Server herstellen", "Überprüfen Sie die Einstellungen für die Internetverbindung und versuchen Sie es erneut", "Wiederholen"),
-    new NoInternetMessage("el", "Δεν είναι δυνατή η σύνδεση με το διακομιστή", "Ελέγξτε τις ρυθμίσεις σύνδεσης στο internet και προσπαθήστε ξανά", "Δοκίμασε ξανά"),
-    new NoInternetMessage("ht", "Pat kapab pou li konekte li pou sèvè a", "Souple tcheke ou paramètres kouche sou entènèt Et eseye ankò", "eseye ankò"),
-    new NoInternetMessage("he", "אין אפשרות להתחבר לשרת", "נא בדוק את הגדרות החיבור לאינטרנט ונסה שוב", "נסה שוב"),
-    new NoInternetMessage("hi", "सर्वर से कनेक्ट करने में असमर्थ", "कृपया अपना इंटरनेट कनेक्शन सेटिंग्स की जाँच करें और पुन: प्रयास करें", "फिर कोशिश करो"),
-    new NoInternetMessage("hu", "Nem lehet kapcsolódni a szerverhez", "Kérjük, ellenőrizze az internetes kapcsolat beállításait, és próbálja újra", "próbáld újra"),
-    new NoInternetMessage("id", "Tidak dapat terhubung ke server", "Silakan periksa setelan sambungan internet Anda dan coba lagi", "Coba lagi"),
-    new NoInternetMessage("it", "Impossibile connettersi al server", "Si prega di controllare le impostazioni della connessione internet e riprovare", "Riprova"),
-    new NoInternetMessage("ja", "サーバーに接続できません。", "インターネット接続設定を確認して、やり直してください。", "もう一度やり直してください"),
-    new NoInternetMessage("ko", "서버에 연결할 수 없습니다.", "인터넷 연결 설정을 확인 하 고 다시 시도 하십시오", "다시 시도"),
-    new NoInternetMessage("lv", "Nevar izveidot savienojumu ar serveri", "Lūdzu, pārbaudiet interneta savienojuma iestatījumus un mēģiniet vēlreiz", "mēģini vēlreiz"),
-    new NoInternetMessage("lt", "Nepavyko prisijungti prie serverio", "Patikrinkite interneto ryšio parametrus ir bandykite dar kartą", "pabandyk dar kartą"),
-    new NoInternetMessage("no", "Kan ikke koble til serveren", "Kontroller innstillingene for Internett-tilkoblingen og prøv igjen", "prøv igjen"),
-    new NoInternetMessage("pl", "Nie można połączyć się z serwerem", "Proszę sprawdzić ustawienia połączenia internetowego i spróbuj ponownie", "Próbuj ponownie"),
-    new NoInternetMessage("pt", "Incapaz de conectar ao servidor", "Por favor, verifique as suas configurações de ligação à internet e tente novamente", "Tentar novamente"),
-    new NoInternetMessage("ro", "Imposibil de conectat la server", "Vă rugăm să verificaţi setările de conexiune la internet şi încercaţi din nou", "încearcă din nou"),
-    new NoInternetMessage("ru", "Не удается подключиться к серверу", "Пожалуйста, проверьте параметры подключения к Интернету и повторите попытку", "Повторить"),
-    new NoInternetMessage("sk", "Nedá sa pripojiť k serveru", "Skontrolujte nastavenie internetového pripojenia a skúste to znova", "skús znova"),
-    new NoInternetMessage("sl", "Ne morem se povezati s strežnikom", "Preverite nastavitve internetne povezave in poskusite znova", "poskusi znova"),
-    new NoInternetMessage("es", "No se puede conectar al servidor", "Por favor, compruebe la configuración de conexión a internet e inténtelo de nuevo", "Vuelve a intentarlo"),
-    new NoInternetMessage("sv", "Det gick inte att ansluta till servern", "Kontrollera inställningarna för Internetanslutningen och försök igen", "Försök igen"),
-    new NoInternetMessage("th", "สามารถเชื่อมต่อกับเซิร์ฟเวอร์", "กรุณาตรวจสอบการตั้งค่าการเชื่อมต่ออินเทอร์เน็ตของคุณ และลองอีกครั้ง", "ลองอีกครั้ง"),
-    new NoInternetMessage("tr", "Sunucuya bağlantı kurulamıyor", "Lütfen Internet bağlantı ayarlarınızı denetleyin ve yeniden deneyin", "Yeniden Deneyin"),
-    new NoInternetMessage("uk", "Не вдалося підключитися до сервера", "Перевірте параметри підключення до Інтернету та повторіть спробу", "Спробуй ще раз"),
-    new NoInternetMessage("vi", "Không thể kết nối đến máy chủ", "Hãy kiểm tra cài đặt kết nối internet của bạn và thử lại", "Thử lại")
-].map(m => ({ [m.language]: m })));
 
 class ExecuteActionArgs {
     constructor(service, action, persistentObject, query, selectedItems, parameters) {
@@ -10323,6 +10329,54 @@ class DataType {
             "NullableBoolean"
         ].indexOf(type) >= 0;
     }
+    static { this._getDate = function (yearString, monthString, dayString, hourString, minuteString, secondString, msString) {
+        const year = parseInt(yearString, 10);
+        const month = parseInt(monthString || "1", 10) - 1;
+        const day = parseInt(dayString || "1", 10);
+        const hour = parseInt(hourString || "0", 10);
+        const minutes = parseInt(minuteString || "0", 10);
+        const seconds = parseInt(secondString || "0", 10);
+        const ms = parseInt(msString || "0", 10);
+        return new Date(year, month, day, hour, minutes, seconds, ms);
+    }; }
+    static { this._getServiceTimeString = function (timeString, defaultValue) {
+        if (!String.isNullOrWhiteSpace(timeString)) {
+            timeString = timeString.trim();
+            let ms = "0000000";
+            const parts = timeString.split(".");
+            if (parts.length === 2) {
+                ms = parts[1];
+                timeString = parts[0];
+            }
+            else if (parts.length !== 1)
+                return defaultValue;
+            const length = timeString.length;
+            if (length >= 4) {
+                const values = timeString.split(":"), valuesLen = values.length;
+                let days = 0, hours, minutes, seconds = 0;
+                if ((length === 4 || length === 5) && valuesLen === 2) {
+                    hours = parseInt(values[0], 10);
+                    minutes = parseInt(values[1], 10);
+                }
+                else if ((length === 7 || length === 8) && valuesLen === 3) {
+                    hours = parseInt(values[0], 10);
+                    minutes = parseInt(values[1], 10);
+                    seconds = parseInt(values[2], 10);
+                }
+                else if (length >= 10 && valuesLen === 4) {
+                    days = parseInt(values[0], 10);
+                    hours = parseInt(values[1], 10);
+                    minutes = parseInt(values[2], 10);
+                    seconds = parseInt(values[3], 10);
+                }
+                else
+                    return defaultValue;
+                if (!isNaN(days) && !isNaN(hours) && !isNaN(minutes) && !isNaN(seconds) && days >= 0 && hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59 && seconds >= 0 && seconds <= 59)
+                    return String.format("{0}:{1:d2}:{2:d2}:{3:d2}.{4}", days, hours, minutes, seconds, ms.padRight(7, "0"));
+            }
+        }
+        return defaultValue;
+    }; }
     static fromServiceString(value, type) {
         switch (type) {
             case "Decimal":
@@ -10481,54 +10535,6 @@ class DataType {
         return typeof (value) === "string" || value == null ? value : String(value);
     }
 }
-DataType._getDate = function (yearString, monthString, dayString, hourString, minuteString, secondString, msString) {
-    const year = parseInt(yearString, 10);
-    const month = parseInt(monthString || "1", 10) - 1;
-    const day = parseInt(dayString || "1", 10);
-    const hour = parseInt(hourString || "0", 10);
-    const minutes = parseInt(minuteString || "0", 10);
-    const seconds = parseInt(secondString || "0", 10);
-    const ms = parseInt(msString || "0", 10);
-    return new Date(year, month, day, hour, minutes, seconds, ms);
-};
-DataType._getServiceTimeString = function (timeString, defaultValue) {
-    if (!String.isNullOrWhiteSpace(timeString)) {
-        timeString = timeString.trim();
-        let ms = "0000000";
-        const parts = timeString.split(".");
-        if (parts.length === 2) {
-            ms = parts[1];
-            timeString = parts[0];
-        }
-        else if (parts.length !== 1)
-            return defaultValue;
-        const length = timeString.length;
-        if (length >= 4) {
-            const values = timeString.split(":"), valuesLen = values.length;
-            let days = 0, hours, minutes, seconds = 0;
-            if ((length === 4 || length === 5) && valuesLen === 2) {
-                hours = parseInt(values[0], 10);
-                minutes = parseInt(values[1], 10);
-            }
-            else if ((length === 7 || length === 8) && valuesLen === 3) {
-                hours = parseInt(values[0], 10);
-                minutes = parseInt(values[1], 10);
-                seconds = parseInt(values[2], 10);
-            }
-            else if (length >= 10 && valuesLen === 4) {
-                days = parseInt(values[0], 10);
-                hours = parseInt(values[1], 10);
-                minutes = parseInt(values[2], 10);
-                seconds = parseInt(values[3], 10);
-            }
-            else
-                return defaultValue;
-            if (!isNaN(days) && !isNaN(hours) && !isNaN(minutes) && !isNaN(seconds) && days >= 0 && hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59 && seconds >= 0 && seconds <= 59)
-                return String.format("{0}:{1:d2}:{2:d2}:{3:d2}.{4}", days, hours, minutes, seconds, ms.padRight(7, "0"));
-        }
-    }
-    return defaultValue;
-};
 
 Actions.CancelEdit = class CancelEdit extends Action {
     constructor(service, definition, owner) {
@@ -10722,7 +10728,205 @@ Actions.viSearch = class viSearch extends Action {
     }
 };
 
-let version$2 = "3.12.0-preview5";
+async function getBytes(stream, onChunk) {
+    const reader = stream.getReader();
+    let result;
+    while (!(result = await reader.read()).done) {
+        onChunk(result.value);
+    }
+}
+function getLines(onLine) {
+    let buffer;
+    let position;
+    let fieldLength;
+    let discardTrailingNewline = false;
+    return function onChunk(arr) {
+        if (buffer === undefined) {
+            buffer = arr;
+            position = 0;
+            fieldLength = -1;
+        }
+        else {
+            buffer = concat(buffer, arr);
+        }
+        const bufLength = buffer.length;
+        let lineStart = 0;
+        while (position < bufLength) {
+            if (discardTrailingNewline) {
+                if (buffer[position] === 10) {
+                    lineStart = ++position;
+                }
+                discardTrailingNewline = false;
+            }
+            let lineEnd = -1;
+            for (; position < bufLength && lineEnd === -1; ++position) {
+                switch (buffer[position]) {
+                    case 58:
+                        if (fieldLength === -1) {
+                            fieldLength = position - lineStart;
+                        }
+                        break;
+                    case 13:
+                        discardTrailingNewline = true;
+                    case 10:
+                        lineEnd = position;
+                        break;
+                }
+            }
+            if (lineEnd === -1) {
+                break;
+            }
+            onLine(buffer.subarray(lineStart, lineEnd), fieldLength);
+            lineStart = position;
+            fieldLength = -1;
+        }
+        if (lineStart === bufLength) {
+            buffer = undefined;
+        }
+        else if (lineStart !== 0) {
+            buffer = buffer.subarray(lineStart);
+            position -= lineStart;
+        }
+    };
+}
+function getMessages(onId, onRetry, onMessage) {
+    let message = newMessage();
+    const decoder = new TextDecoder();
+    return function onLine(line, fieldLength) {
+        if (line.length === 0) {
+            onMessage === null || onMessage === void 0 ? void 0 : onMessage(message);
+            message = newMessage();
+        }
+        else if (fieldLength > 0) {
+            const field = decoder.decode(line.subarray(0, fieldLength));
+            const valueOffset = fieldLength + (line[fieldLength + 1] === 32 ? 2 : 1);
+            const value = decoder.decode(line.subarray(valueOffset));
+            switch (field) {
+                case 'data':
+                    message.data = message.data
+                        ? message.data + '\n' + value
+                        : value;
+                    break;
+                case 'event':
+                    message.event = value;
+                    break;
+                case 'id':
+                    onId(message.id = value);
+                    break;
+                case 'retry':
+                    const retry = parseInt(value, 10);
+                    if (!isNaN(retry)) {
+                        onRetry(message.retry = retry);
+                    }
+                    break;
+            }
+        }
+    };
+}
+function concat(a, b) {
+    const res = new Uint8Array(a.length + b.length);
+    res.set(a);
+    res.set(b, a.length);
+    return res;
+}
+function newMessage() {
+    return {
+        data: '',
+        event: '',
+        id: '',
+        retry: undefined,
+    };
+}
+
+var __rest = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
+const EventStreamContentType = 'text/event-stream';
+const DefaultRetryInterval = 1000;
+const LastEventId = 'last-event-id';
+function fetchEventSource(input, _a) {
+    var { signal: inputSignal, headers: inputHeaders, onopen: inputOnOpen, onmessage, onclose, onerror, openWhenHidden, fetch: inputFetch } = _a, rest = __rest(_a, ["signal", "headers", "onopen", "onmessage", "onclose", "onerror", "openWhenHidden", "fetch"]);
+    return new Promise((resolve, reject) => {
+        const headers = Object.assign({}, inputHeaders);
+        if (!headers.accept) {
+            headers.accept = EventStreamContentType;
+        }
+        let curRequestController;
+        function onVisibilityChange() {
+            curRequestController.abort();
+            if (!document.hidden) {
+                create();
+            }
+        }
+        if (!openWhenHidden) {
+            document.addEventListener('visibilitychange', onVisibilityChange);
+        }
+        let retryInterval = DefaultRetryInterval;
+        let retryTimer = 0;
+        function dispose() {
+            document.removeEventListener('visibilitychange', onVisibilityChange);
+            window.clearTimeout(retryTimer);
+            curRequestController.abort();
+        }
+        inputSignal === null || inputSignal === void 0 ? void 0 : inputSignal.addEventListener('abort', () => {
+            dispose();
+            resolve();
+        });
+        const fetch = inputFetch !== null && inputFetch !== void 0 ? inputFetch : window.fetch;
+        const onopen = inputOnOpen !== null && inputOnOpen !== void 0 ? inputOnOpen : defaultOnOpen;
+        async function create() {
+            var _a;
+            curRequestController = new AbortController();
+            try {
+                const response = await fetch(input, Object.assign(Object.assign({}, rest), { headers, signal: curRequestController.signal }));
+                await onopen(response);
+                await getBytes(response.body, getLines(getMessages(id => {
+                    if (id) {
+                        headers[LastEventId] = id;
+                    }
+                    else {
+                        delete headers[LastEventId];
+                    }
+                }, retry => {
+                    retryInterval = retry;
+                }, onmessage)));
+                onclose === null || onclose === void 0 ? void 0 : onclose();
+                dispose();
+                resolve();
+            }
+            catch (err) {
+                if (!curRequestController.signal.aborted) {
+                    try {
+                        const interval = (_a = onerror === null || onerror === void 0 ? void 0 : onerror(err)) !== null && _a !== void 0 ? _a : retryInterval;
+                        window.clearTimeout(retryTimer);
+                        retryTimer = window.setTimeout(create, interval);
+                    }
+                    catch (innerErr) {
+                        dispose();
+                        reject(innerErr);
+                    }
+                }
+            }
+        }
+        create();
+    });
+}
+function defaultOnOpen(response) {
+    const contentType = response.headers.get('content-type');
+    if (!(contentType === null || contentType === void 0 ? void 0 : contentType.startsWith(EventStreamContentType))) {
+        throw new Error(`Expected content-type to be ${EventStreamContentType}, Actual: ${contentType}`);
+    }
+}
+
+let version$2 = "3.12.0-preview6";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -10824,13 +11028,60 @@ class Service extends Observable {
             formData.set("data", JSON.stringify(data));
             body = formData;
         }
-        const request = new Request(url, {
-            method: "POST",
-            headers: headers,
-            body: body
-        });
+        if (typeof data.action === "string") {
+            const action = data.action.split(".", 2).pop();
+            const definition = this.actionDefinitions[action];
+            if (definition?.isStreaming) {
+                let cancel;
+                let signal;
+                let awaiter = new Promise((resolve, reject) => {
+                    signal = resolve;
+                    cancel = reject;
+                });
+                const abortController = new AbortController();
+                const messages = [];
+                const iterator = async function* () {
+                    try {
+                        while (true) {
+                            await awaiter;
+                            while (messages.length > 0) {
+                                const message = messages.shift();
+                                if (!!message.data)
+                                    yield message.data;
+                            }
+                        }
+                    }
+                    catch { }
+                };
+                this.hooks.onStreamingAction(action, iterator, () => abortController.abort());
+                fetchEventSource(url, {
+                    method: "POST",
+                    headers: Array.from(headers.entries()).reduce((headers, [key, value]) => {
+                        headers[key] = value;
+                        return headers;
+                    }, {}),
+                    body: body,
+                    signal: abortController.signal,
+                    onmessage: (e) => {
+                        messages.push(e);
+                        signal();
+                        awaiter = new Promise((resolve, reject) => {
+                            signal = resolve;
+                            cancel = reject;
+                        });
+                    },
+                    onclose: () => cancel(),
+                    openWhenHidden: true
+                });
+                return;
+            }
+        }
         try {
-            const response = await this._fetch(request);
+            const response = await this._fetch(new Request(url, {
+                method: "POST",
+                headers: headers,
+                body: body
+            }));
             if (!response.ok)
                 throw response.statusText;
             let result;
@@ -11256,14 +11507,11 @@ class Service extends Observable {
     }
     async executeAction(action, parent, query, selectedItems, parameters, skipHooks = false) {
         const isObjectAction = action.startsWith("PersistentObject.") || query == null;
+        const targetServiceObject = isObjectAction ? parent : query;
         if (!skipHooks) {
-            if (!isObjectAction) {
-                query.setNotification();
-                if (query.selectAll.allSelected && !query.selectAll.inverse)
-                    selectedItems = [];
-            }
-            else if (parent)
-                parent.setNotification();
+            targetServiceObject.setNotification();
+            if (!isObjectAction && query.selectAll.allSelected && !query.selectAll.inverse)
+                selectedItems = [];
             this.hooks.trackEvent(action, parameters ? parameters.MenuLabel || parameters.MenuOption : null, query || parent);
             const args = new ExecuteActionArgs(this, action, parent, query, selectedItems, parameters);
             try {
@@ -11273,10 +11521,7 @@ class Service extends Observable {
                 return await this.executeAction(action, parent, query, selectedItems, args.parameters, true);
             }
             catch (e) {
-                if (isObjectAction)
-                    parent.setNotification(e);
-                else
-                    query.setNotification(e);
+                targetServiceObject.setNotification(e);
                 throw e;
             }
         }
@@ -11292,6 +11537,8 @@ class Service extends Observable {
         if (parameters != null)
             data.parameters = parameters;
         const executeThen = async (result) => {
+            if (!result)
+                return;
             if (result.operations) {
                 this._queuedClientOperations.push(...result.operations);
                 result.operations = null;
@@ -11334,10 +11581,7 @@ class Service extends Observable {
             return await executeThen(result);
         }
         catch (e) {
-            if (isObjectAction)
-                parent.setNotification(e);
-            else
-                query.setNotification(e);
+            targetServiceObject.setNotification(e);
             throw e;
         }
         finally {
@@ -21032,17 +21276,6 @@ function __decorate(decorators, target, key, desc) {
   else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
   return c > 3 && r && Object.defineProperty(target, key, r), r;
 }
-function __classPrivateFieldGet(receiver, state, kind, f) {
-  if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-  if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-  return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-}
-function __classPrivateFieldSet(receiver, state, value, kind, f) {
-  if (kind === "m") throw new TypeError("Private method is not writable");
-  if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-  if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-  return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
-}
 typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
   var e = new Error(message);
   return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
@@ -21173,6 +21406,9 @@ class PathHistory {
     }
 }
 class Path {
+    static { this.routes = new PathRoutes(); }
+    static { this.history = new PathHistory(); }
+    static { this._splitRegex = /\/|\./g; }
     static map(path) {
         if (Path.routes.defined.hasOwnProperty(path)) {
             return Path.routes.defined[path];
@@ -21229,9 +21465,6 @@ class Path {
             Path.routes.rescue();
     }
 }
-Path.routes = new PathRoutes();
-Path.history = new PathHistory();
-Path._splitRegex = /\/|\./g;
 
 setLegacyUndefined(true);
 setOrderedComputed(true);
@@ -21771,6 +22004,7 @@ class WebComponent extends GestureEventListeners(PolymerElement) {
         window.customElements.define(elementName, element);
         return element;
     }
+    static { this.abstractRegistrations = {}; }
     static register(infoOrTarget, prefix) {
         return (target) => {
             const info = WebComponent._clone(WebComponent.abstractRegistrations[Object.getPrototypeOf(target).name] || {});
@@ -21814,7 +22048,6 @@ class WebComponent extends GestureEventListeners(PolymerElement) {
         return output;
     }
 }
-WebComponent.abstractRegistrations = {};
 
 let resizeObserver$2;
 resizeObserver$2 = new ResizeObserver(entries => {
@@ -23091,7 +23324,8 @@ const computePosition = (reference, floating, options) => {
 };
 
 var Scroller_1;
-let Scroller = Scroller_1 = class Scroller extends WebComponent {
+let Scroller = class Scroller extends WebComponent {
+    static { Scroller_1 = this; }
     static get template() { return html$2 `<style>:host {
   display: flex;
   position: relative;
@@ -23342,6 +23576,7 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
 <div class="vertical scrollbar-parent" on-tap="_verticalScrollbarParentTap">
     <div id="vertical" class="scrollbar" on-track="_trackVertical" on-mousedown="_trapEvent"></div>
 </div>`; }
+    static { this._minBarSize = 40; }
     connectedCallback() {
         super.connectedCallback();
         this.scroller.addEventListener("scroll", this._scrollEventListener = this._scroll.bind(this), { capture: true, passive: true });
@@ -23512,7 +23747,6 @@ let Scroller = Scroller_1 = class Scroller extends WebComponent {
         }
     }
 };
-Scroller._minBarSize = 40;
 Scroller = Scroller_1 = __decorate([
     WebComponent.register({
         properties: {
@@ -23644,7 +23878,6 @@ Scroller = Scroller_1 = __decorate([
     })
 ], Scroller);
 
-var _Popup_cleanup;
 var Popup_1;
 let _documentClosePopupListener;
 document.addEventListener("mousedown", _documentClosePopupListener = e => {
@@ -23666,7 +23899,6 @@ const openPopups = [];
 let Popup = Popup_1 = class Popup extends WebComponent {
     constructor() {
         super(...arguments);
-        _Popup_cleanup.set(this, void 0);
         this.__Vidyano_WebComponents_PopupCore__Instance__ = true;
     }
     static get template() { return html$2 `<style>:host {
@@ -23712,6 +23944,7 @@ let Popup = Popup_1 = class Popup extends WebComponent {
     <vi-size-tracker on-sizechanged="refit"></vi-size-tracker>
     <slot></slot>
 </div>`; }
+    #cleanup;
     connectedCallback() {
         super.connectedCallback();
         this.addEventListener("popupparent", this._onPopupparent);
@@ -23719,7 +23952,7 @@ let Popup = Popup_1 = class Popup extends WebComponent {
     disconnectedCallback() {
         super.disconnectedCallback();
         this.removeEventListener("popupparent", this._onPopupparent);
-        __classPrivateFieldGet(this, _Popup_cleanup, "f")?.call(this);
+        this.#cleanup?.();
     }
     popup() {
         if (this.open)
@@ -23740,7 +23973,7 @@ let Popup = Popup_1 = class Popup extends WebComponent {
         const firstOpenNonParentChild = openPopups[parentPopup == null ? 0 : openPopups.indexOf(parentPopup) + 1];
         if (firstOpenNonParentChild != null)
             firstOpenNonParentChild.close();
-        __classPrivateFieldSet(this, _Popup_cleanup, autoUpdate(this.$.anchor, this.$.popup, this.refit.bind(this)), "f");
+        this.#cleanup = autoUpdate(this.$.anchor, this.$.popup, this.refit.bind(this));
         this._setOpen(true);
         openPopups.push(this);
         this.fire("popup-opened", null, { bubbles: false, cancelable: false });
@@ -23809,7 +24042,7 @@ let Popup = Popup_1 = class Popup extends WebComponent {
         this._setHover(false);
         if (this._resolver)
             this._resolver();
-        __classPrivateFieldGet(this, _Popup_cleanup, "f")?.call(this);
+        this.#cleanup?.();
         openPopups.remove(this);
         this.fire("popup-closed", null, { bubbles: false, cancelable: false });
     }
@@ -23935,7 +24168,6 @@ let Popup = Popup_1 = class Popup extends WebComponent {
         return false;
     }
 };
-_Popup_cleanup = new WeakMap();
 Popup = Popup_1 = __decorate([
     WebComponent.register({
         properties: {
@@ -24270,15 +24502,11 @@ PopupMenuItem = __decorate([
     })
 ], PopupMenuItem);
 
-var _ConfigurableWebComponent__onContextmenu;
 class ConfigurableWebComponent extends WebComponent {
-    constructor() {
-        super(...arguments);
-        _ConfigurableWebComponent__onContextmenu.set(this, void 0);
-    }
+    #_onContextmenu;
     async connectedCallback() {
         super.connectedCallback();
-        this._addEventListenerToNode(this, "contextmenu", __classPrivateFieldSet(this, _ConfigurableWebComponent__onContextmenu, (e) => {
+        this._addEventListenerToNode(this, "contextmenu", this.#_onContextmenu = (e) => {
             if (!e.ctrlKey || e.defaultPrevented)
                 return;
             if (e["vi:configure"])
@@ -24303,14 +24531,13 @@ class ConfigurableWebComponent extends WebComponent {
                 configureItems.push(item);
             });
             e["vi:configure"] = configureItems;
-        }, "f"));
+        });
     }
     disconnectedCallback() {
-        this._removeEventListenerFromNode(this, "contextmenu", __classPrivateFieldGet(this, _ConfigurableWebComponent__onContextmenu, "f"));
+        this._removeEventListenerFromNode(this, "contextmenu", this.#_onContextmenu);
         super.disconnectedCallback();
     }
 }
-_ConfigurableWebComponent__onContextmenu = new WeakMap();
 
 const styleElement$3 = document.createElement("dom-module");
 styleElement$3.innerHTML = `<template>
@@ -25386,13 +25613,7 @@ PopupMenuItemWithActions = __decorate([
     })
 ], PopupMenuItemWithActions);
 
-var _PopupMenu_contextHost, _PopupMenu_openContextEventListener;
 let PopupMenu = class PopupMenu extends WebComponent {
-    constructor() {
-        super(...arguments);
-        _PopupMenu_contextHost.set(this, void 0);
-        _PopupMenu_openContextEventListener.set(this, void 0);
-    }
     static get template() { return html$2 `<style>:host #popup {
   line-height: var(--theme-h1);
 }
@@ -25418,17 +25639,19 @@ let PopupMenu = class PopupMenu extends WebComponent {
         <slot id="items" on-slotchange="_popupMenuIconSpaceHandler"></slot>
     </div>
 </vi-popup>`; }
+    #contextHost;
+    #openContextEventListener;
     popup() {
         return this.$.popup.popup();
     }
     _hookContextMenu(isConnected, contextMenu) {
         if (isConnected && contextMenu) {
-            __classPrivateFieldSet(this, _PopupMenu_contextHost, this.getRootNode().host, "f");
-            __classPrivateFieldGet(this, _PopupMenu_contextHost, "f").addEventListener("contextmenu", () => __classPrivateFieldSet(this, _PopupMenu_openContextEventListener, this._openContext.bind(this), "f"));
+            this.#contextHost = this.getRootNode().host;
+            this.#contextHost.addEventListener("contextmenu", () => this.#openContextEventListener = this._openContext.bind(this));
         }
-        else if (__classPrivateFieldGet(this, _PopupMenu_contextHost, "f")) {
-            __classPrivateFieldGet(this, _PopupMenu_contextHost, "f").removeEventListener("contextmenu", __classPrivateFieldGet(this, _PopupMenu_openContextEventListener, "f"));
-            __classPrivateFieldSet(this, _PopupMenu_contextHost, __classPrivateFieldSet(this, _PopupMenu_openContextEventListener, undefined, "f"), "f");
+        else if (this.#contextHost) {
+            this.#contextHost.removeEventListener("contextmenu", this.#openContextEventListener);
+            this.#contextHost = this.#openContextEventListener = undefined;
         }
     }
     _openContext(e) {
@@ -25463,8 +25686,6 @@ let PopupMenu = class PopupMenu extends WebComponent {
         e.stopPropagation();
     }
 };
-_PopupMenu_contextHost = new WeakMap();
-_PopupMenu_openContextEventListener = new WeakMap();
 PopupMenu = __decorate([
     WebComponent.register({
         properties: {
@@ -25508,14 +25729,7 @@ PopupMenu = __decorate([
     })
 ], PopupMenu);
 
-var _Dialog_result, _Dialog_resolve, _Dialog_translatePosition;
 let Dialog = class Dialog extends WebComponent {
-    constructor() {
-        super(...arguments);
-        _Dialog_result.set(this, void 0);
-        _Dialog_resolve.set(this, void 0);
-        _Dialog_translatePosition.set(this, void 0);
-    }
     static dialogTemplate(innerTemplate, options) {
         const outerTemplate = html$2 `<style>dialog {
   border: none;
@@ -25589,13 +25803,16 @@ dialog[is-dragging] {
         dialog.appendChild(innerTemplate.content.cloneNode(true));
         return outerTemplate;
     }
+    #result;
+    #resolve;
+    #translatePosition;
     get dialog() {
         return this.shadowRoot.querySelector("dialog");
     }
     async open() {
         this.dialog.showModal();
         const promise = new Promise(resolve => {
-            __classPrivateFieldSet(this, _Dialog_resolve, resolve, "f");
+            this.#resolve = resolve;
         });
         const anchor = !!this.anchorTag ? this.shadowRoot.querySelector(this.anchorTag) : null;
         if (anchor) {
@@ -25608,10 +25825,10 @@ dialog[is-dragging] {
         return promise;
     }
     _track(e) {
-        if (e.detail.state === "track" && __classPrivateFieldGet(this, _Dialog_translatePosition, "f") && this.isDragging) {
+        if (e.detail.state === "track" && this.#translatePosition && this.isDragging) {
             const rect = this.dialog.getBoundingClientRect();
-            let x = __classPrivateFieldGet(this, _Dialog_translatePosition, "f").x + e.detail.ddx * 2;
-            let y = __classPrivateFieldGet(this, _Dialog_translatePosition, "f").y + e.detail.ddy * 2;
+            let x = this.#translatePosition.x + e.detail.ddx * 2;
+            let y = this.#translatePosition.y + e.detail.ddy * 2;
             if (x < 0)
                 x = Math.max(x, (window.innerWidth - rect.width) * -1);
             else if (x > 0)
@@ -25635,14 +25852,14 @@ dialog[is-dragging] {
                 return;
             }
             this._setIsDragging(true);
-            if (!__classPrivateFieldGet(this, _Dialog_translatePosition, "f"))
+            if (!this.#translatePosition)
                 this._translate({ x: 0, y: 0 });
         }
         else if (e.detail.state === "end")
             this._setIsDragging(false);
     }
     _translate(position) {
-        const { x, y } = __classPrivateFieldSet(this, _Dialog_translatePosition, position, "f");
+        const { x, y } = this.#translatePosition = position;
         this.dialog.style.left = `${x}px`;
         this.dialog.style.top = `${y}px`;
     }
@@ -25651,19 +25868,19 @@ dialog[is-dragging] {
             this.cancel();
     }
     close(result) {
-        __classPrivateFieldSet(this, _Dialog_result, result, "f");
+        this.#result = result;
         this.dialog.close();
     }
     cancel() {
         this.close();
     }
     _onClose() {
-        __classPrivateFieldGet(this, _Dialog_resolve, "f").call(this, __classPrivateFieldGet(this, _Dialog_result, "f"));
+        this.#resolve(this.#result);
     }
     _onCancel(e) {
         if (this.noCancelOnEscKey)
             e.preventDefault();
-        __classPrivateFieldSet(this, _Dialog_result, undefined, "f");
+        this.#result = undefined;
     }
     _onClick(e) {
         if (this.noCancelOnOutsideClick)
@@ -25699,9 +25916,6 @@ dialog[is-dragging] {
         }
     }
 };
-_Dialog_result = new WeakMap();
-_Dialog_resolve = new WeakMap();
-_Dialog_translatePosition = new WeakMap();
 Dialog = __decorate([
     WebComponent.register({
         properties: {
@@ -26125,6 +26339,93 @@ SelectReferenceDialog = __decorate([
     })
 ], SelectReferenceDialog);
 
+let StreamingActionDialog = class StreamingActionDialog extends Dialog {
+    static get template() { return Dialog.dialogTemplate(html$2 `<style>header {
+  gap: var(--theme-h4);
+}
+
+main {
+  background-color: #263238;
+  color: white;
+}
+
+vi-scroller {
+  width: 500px;
+  height: 375px;
+}
+
+.content {
+  padding: var(--theme-h4);
+}
+
+vi-marked p {
+  margin-block-start: 1em;
+  margin-block-end: 1em;
+}
+vi-marked p:first-of-type {
+  margin-block-start: 0;
+}</style>
+
+<header class="horizontal layout">
+    <vi-icon source="[[icon]]" hidden$="[[!icon]]"></vi-icon>
+    <h4 class="flex">[[title]]</h4>
+    <vi-button class="close" on-tap="cancel" icon="Remove"></vi-button>
+</header>
+<main>
+    <vi-scroller no-horizontal id="scroller">
+        <div class="content">
+            <vi-marked markdown="[[content]]"></vi-marked>
+        </div>
+    </vi-scroller>
+</main>`); }
+    #hasScrolled = false;
+    constructor(_actionDefinition, _abort) {
+        super();
+        this._actionDefinition = _actionDefinition;
+        this._abort = _abort;
+        this._setIcon(_actionDefinition.icon);
+        this._setTitle(_actionDefinition.displayName);
+    }
+    appendMessage(message) {
+        const data = JSON.parse(message);
+        if (data.type === "title")
+            this._setTitle(data.value);
+        else if (data.type === "message")
+            this._setContent(this.content + data.value + "\n");
+        microTask.run(() => {
+            const scroller = this.$.scroller;
+            if (scroller.atBottom || !this.#hasScrolled) {
+                scroller.scrollToBottom();
+                if (!this.#hasScrolled && scroller.atBottom)
+                    this.#hasScrolled = true;
+            }
+        });
+    }
+    close(result) {
+        this._abort();
+        super.close(result);
+    }
+};
+StreamingActionDialog = __decorate([
+    WebComponent.register({
+        properties: {
+            content: {
+                type: String,
+                readOnly: true,
+                value: ""
+            },
+            icon: {
+                type: String,
+                readOnly: true
+            },
+            title: {
+                type: String,
+                readOnly: true
+            }
+        }
+    })
+], StreamingActionDialog);
+
 var _gaq;
 class AppServiceHooksBase extends ServiceHooks {
     get app() {
@@ -26251,6 +26552,13 @@ class AppServiceHooksBase extends ServiceHooks {
                 return null;
         }
         return super.onAction(args);
+    }
+    async onStreamingAction(action, messages, abort) {
+        const streamingActionDialog = new StreamingActionDialog(this.service.actionDefinitions[action], abort);
+        this.app.showDialog(streamingActionDialog);
+        for await (const message of messages()) {
+            streamingActionDialog.appendMessage(message);
+        }
     }
     async onBeforeAppInitialized() {
         return Promise.resolve();
@@ -32119,7 +32427,8 @@ User = __decorate([
 ], User);
 
 var Menu_1;
-let Menu = Menu_1 = class Menu extends WebComponent {
+let Menu = class Menu extends WebComponent {
+    static { Menu_1 = this; }
     static get template() { return html$2 `<style>:host {
   display: flex;
   flex-direction: row;
@@ -37195,7 +37504,6 @@ function guid() {
     return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
 }
 
-var _QueryGridCell__observeOnConnected, _QueryGridCell__lastMeasuredColumn, _QueryGridCell__isObserved;
 let resizeObserver$1;
 resizeObserver$1 = new ResizeObserver(allEntries => {
     window.requestAnimationFrame(() => {
@@ -37226,49 +37534,46 @@ resizeObserver$1 = new ResizeObserver(allEntries => {
     });
 });
 let QueryGridCell = class QueryGridCell extends WebComponent {
-    constructor() {
-        super(...arguments);
-        _QueryGridCell__observeOnConnected.set(this, void 0);
-        _QueryGridCell__lastMeasuredColumn.set(this, void 0);
-        _QueryGridCell__isObserved.set(this, void 0);
-    }
+    #_observeOnConnected;
+    #_lastMeasuredColumn;
+    #_isObserved;
     connectedCallback() {
         super.connectedCallback();
-        if (__classPrivateFieldGet(this, _QueryGridCell__observeOnConnected, "f")) {
-            __classPrivateFieldSet(this, _QueryGridCell__observeOnConnected, false, "f");
+        if (this.#_observeOnConnected) {
+            this.#_observeOnConnected = false;
             this._observe();
         }
     }
     disconnectedCallback() {
         super.disconnectedCallback();
-        if (__classPrivateFieldGet(this, _QueryGridCell__isObserved, "f")) {
+        if (this.#_isObserved) {
             this._unobserve();
-            __classPrivateFieldSet(this, _QueryGridCell__observeOnConnected, true, "f");
+            this.#_observeOnConnected = true;
         }
     }
     get isObserved() {
-        return __classPrivateFieldGet(this, _QueryGridCell__isObserved, "f");
+        return this.#_isObserved;
     }
     _queueMeasure(value, isConnected) {
         if (!isConnected)
             return;
-        if (__classPrivateFieldGet(this, _QueryGridCell__lastMeasuredColumn, "f") && __classPrivateFieldGet(this, _QueryGridCell__lastMeasuredColumn, "f").query === this.column?.query && __classPrivateFieldGet(this, _QueryGridCell__lastMeasuredColumn, "f").name === this.column.name)
+        if (this.#_lastMeasuredColumn && this.#_lastMeasuredColumn.query === this.column?.query && this.#_lastMeasuredColumn.name === this.column.name)
             return;
         const row = this.parentElement;
         if (!(row.item instanceof QueryResultItem))
             return;
         if (row.index && row.item.query.items[0] !== row.item)
             return;
-        __classPrivateFieldSet(this, _QueryGridCell__lastMeasuredColumn, this.column, "f");
+        this.#_lastMeasuredColumn = this.column;
         this._observe();
     }
     _observe() {
-        __classPrivateFieldSet(this, _QueryGridCell__isObserved, true, "f");
+        this.#_isObserved = true;
         resizeObserver$1.observe(this, { box: "border-box" });
     }
     _unobserve() {
         resizeObserver$1.unobserve(this);
-        __classPrivateFieldSet(this, _QueryGridCell__isObserved, false, "f");
+        this.#_isObserved = false;
     }
     static registerCellType(type, constructor) {
         registeredQueyGridCellTypes[type] = constructor;
@@ -37277,9 +37582,6 @@ let QueryGridCell = class QueryGridCell extends WebComponent {
         return registeredQueyGridCellTypes[type];
     }
 };
-_QueryGridCell__observeOnConnected = new WeakMap();
-_QueryGridCell__lastMeasuredColumn = new WeakMap();
-_QueryGridCell__isObserved = new WeakMap();
 QueryGridCell = __decorate([
     WebComponent.register({
         properties: {
@@ -38163,7 +38465,6 @@ QueryGridColumnFilter = __decorate([
     })
 ], QueryGridColumnFilter);
 
-var _QueryGridColumnHeader__lastMeasuredColumn, _QueryGridColumnHeader__minimumColumnWidth, _QueryGridColumnHeader__calculatedWidth, _QueryGridColumnHeader__resizingRAF;
 let resizeObserver;
 resizeObserver = new ResizeObserver(allEntries => {
     window.requestAnimationFrame(() => {
@@ -38195,13 +38496,6 @@ resizeObserver = new ResizeObserver(allEntries => {
     });
 });
 let QueryGridColumnHeader = class QueryGridColumnHeader extends WebComponent {
-    constructor() {
-        super(...arguments);
-        _QueryGridColumnHeader__lastMeasuredColumn.set(this, void 0);
-        _QueryGridColumnHeader__minimumColumnWidth.set(this, void 0);
-        _QueryGridColumnHeader__calculatedWidth.set(this, void 0);
-        _QueryGridColumnHeader__resizingRAF.set(this, void 0);
-    }
     static get template() { return html$2 `<style>:host {
   display: block;
   box-sizing: border-box;
@@ -38306,6 +38600,10 @@ let QueryGridColumnHeader = class QueryGridColumnHeader extends WebComponent {
         </g>
     </svg>
 </vi-icon>`; }
+    #_lastMeasuredColumn;
+    #_minimumColumnWidth;
+    #_calculatedWidth;
+    #_resizingRAF;
     _renderPopupMenu(e) {
         e.stopPropagation();
         this._setRenderPopupMenu(true);
@@ -38383,31 +38681,31 @@ let QueryGridColumnHeader = class QueryGridColumnHeader extends WebComponent {
         this.fire("query-grid-column:configure");
     }
     _queueMeasure(column, isConnected) {
-        if (!column || !isConnected || __classPrivateFieldGet(this, _QueryGridColumnHeader__lastMeasuredColumn, "f") === column?.column)
+        if (!column || !isConnected || this.#_lastMeasuredColumn === column?.column)
             return;
         resizeObserver.observe(this, { box: "border-box" });
-        __classPrivateFieldSet(this, _QueryGridColumnHeader__lastMeasuredColumn, column.column, "f");
+        this.#_lastMeasuredColumn = column.column;
     }
     _resizeTrack(e, detail) {
         if (detail.state === "start") {
-            if (!__classPrivateFieldGet(this, _QueryGridColumnHeader__minimumColumnWidth, "f"))
-                __classPrivateFieldSet(this, _QueryGridColumnHeader__minimumColumnWidth, parseInt(getComputedStyle(this).getPropertyValue("--vi-query-grid--minimum-column-width") || "50"), "f");
-            __classPrivateFieldSet(this, _QueryGridColumnHeader__calculatedWidth, Math.max(this.getBoundingClientRect().width, __classPrivateFieldGet(this, _QueryGridColumnHeader__minimumColumnWidth, "f")), "f");
+            if (!this.#_minimumColumnWidth)
+                this.#_minimumColumnWidth = parseInt(getComputedStyle(this).getPropertyValue("--vi-query-grid--minimum-column-width") || "50");
+            this.#_calculatedWidth = Math.max(this.getBoundingClientRect().width, this.#_minimumColumnWidth);
             this.app.isTracking = true;
             this.classList.add("resizing");
         }
         else if (detail.state === "track") {
-            if (__classPrivateFieldGet(this, _QueryGridColumnHeader__resizingRAF, "f"))
-                cancelAnimationFrame(__classPrivateFieldGet(this, _QueryGridColumnHeader__resizingRAF, "f"));
-            __classPrivateFieldSet(this, _QueryGridColumnHeader__resizingRAF, requestAnimationFrame(() => {
-                this._resize(Math.max(__classPrivateFieldGet(this, _QueryGridColumnHeader__calculatedWidth, "f") + detail.dx, __classPrivateFieldGet(this, _QueryGridColumnHeader__minimumColumnWidth, "f")));
-            }), "f");
+            if (this.#_resizingRAF)
+                cancelAnimationFrame(this.#_resizingRAF);
+            this.#_resizingRAF = requestAnimationFrame(() => {
+                this._resize(Math.max(this.#_calculatedWidth + detail.dx, this.#_minimumColumnWidth));
+            });
         }
         else if (detail.state === "end") {
             this.classList.remove("resizing");
-            __classPrivateFieldSet(this, _QueryGridColumnHeader__calculatedWidth, Math.max(__classPrivateFieldGet(this, _QueryGridColumnHeader__calculatedWidth, "f") + detail.dx, __classPrivateFieldGet(this, _QueryGridColumnHeader__minimumColumnWidth, "f")), "f");
-            this.column.width = `${__classPrivateFieldGet(this, _QueryGridColumnHeader__calculatedWidth, "f")}px`;
-            this._resize(__classPrivateFieldGet(this, _QueryGridColumnHeader__calculatedWidth, "f"), true);
+            this.#_calculatedWidth = Math.max(this.#_calculatedWidth + detail.dx, this.#_minimumColumnWidth);
+            this.column.width = `${this.#_calculatedWidth}px`;
+            this._resize(this.#_calculatedWidth, true);
             this.app.isTracking = false;
         }
     }
@@ -38430,10 +38728,6 @@ let QueryGridColumnHeader = class QueryGridColumnHeader extends WebComponent {
         return safeName;
     }
 };
-_QueryGridColumnHeader__lastMeasuredColumn = new WeakMap();
-_QueryGridColumnHeader__minimumColumnWidth = new WeakMap();
-_QueryGridColumnHeader__calculatedWidth = new WeakMap();
-_QueryGridColumnHeader__resizingRAF = new WeakMap();
 QueryGridColumnHeader = __decorate([
     WebComponent.register({
         properties: {
@@ -40544,6 +40838,7 @@ let QueryGridRow = class QueryGridRow extends WebComponent {
                 actionOrGroup = action;
             const button = new ActionButton(this.item.query.selectedItems.length === 0 ? this.item : null, actionOrGroup);
             button.forceLabel = true;
+            button.inverse = true;
             button.openOnHover = true;
             button.setAttribute("overflow", "");
             e.target.appendChild(button);
@@ -46601,7 +46896,8 @@ PersistentObjectAttributeCommonMark = __decorate([
 PersistentObjectAttribute.registerAttributeType("CommonMark", PersistentObjectAttributeCommonMark);
 
 var MaskedInput_1;
-let MaskedInput = MaskedInput_1 = class MaskedInput extends WebComponent {
+let MaskedInput = class MaskedInput extends WebComponent {
+    static { MaskedInput_1 = this; }
     static get template() { return html$2 `<input id="input"
        part="input"
        size="[[size]]"
@@ -46625,6 +46921,7 @@ let MaskedInput = MaskedInput_1 = class MaskedInput extends WebComponent {
     focus() {
         this.$.input.focus();
     }
+    static { this.otherKeys = ["Tab", "Enter", "ArrowUp", "ArrowLeft", "ArrowDown", "ArrowRight"]; }
     _isOther(key) {
         return MaskedInput_1.otherKeys.indexOf(key) >= 0;
     }
@@ -46768,7 +47065,6 @@ let MaskedInput = MaskedInput_1 = class MaskedInput extends WebComponent {
         return format?.length || undefined;
     }
 };
-MaskedInput.otherKeys = ["Tab", "Enter", "ArrowUp", "ArrowLeft", "ArrowDown", "ArrowRight"];
 MaskedInput = MaskedInput_1 = __decorate([
     WebComponent.register({
         properties: {
@@ -49662,7 +49958,8 @@ PersistentObjectAttributeNullableBoolean = __decorate([
 PersistentObjectAttribute.registerAttributeType("NullableBoolean", PersistentObjectAttributeNullableBoolean);
 
 var PersistentObjectAttributeNumeric_1;
-let PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = class PersistentObjectAttributeNumeric extends PersistentObjectAttribute {
+let PersistentObjectAttributeNumeric = class PersistentObjectAttributeNumeric extends PersistentObjectAttribute {
+    static { PersistentObjectAttributeNumeric_1 = this; }
     static get template() { return html$2 `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
   display: flex;
@@ -49728,6 +50025,8 @@ let PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = clas
         </vi-persistent-object-attribute-edit>
     </template>
 </dom-if>`; }
+    static { this._decimalTypes = ["NullableDecimal", "Decimal", "NullableSingle", "Single", "NullableDouble", "Double"]; }
+    static { this._unsignedTypes = ["Byte", "NullableByte", "UInt16", "NullableUInt16", "UInt32", "NullableUInt32", "UInt64", "NullableUInt64"]; }
     _attributeChanged() {
         super._attributeChanged();
         if (this.attribute) {
@@ -49917,8 +50216,6 @@ let PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = clas
         numericSynonyms[attributeType] = numericType;
     }
 };
-PersistentObjectAttributeNumeric._decimalTypes = ["NullableDecimal", "Decimal", "NullableSingle", "Single", "NullableDouble", "Double"];
-PersistentObjectAttributeNumeric._unsignedTypes = ["Byte", "NullableByte", "UInt16", "NullableUInt16", "UInt32", "NullableUInt32", "UInt64", "NullableUInt64"];
 PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = __decorate([
     WebComponent.register({
         properties: {

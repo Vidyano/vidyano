@@ -3499,6 +3499,7 @@ interface ActionDefinitionParams {
     name: string;
     displayName?: string;
     isPinned?: boolean;
+    isStreaming?: boolean;
     showedOn?: string[];
     confirmation?: string;
     refreshQueryOnCompleted?: boolean;
@@ -3518,6 +3519,7 @@ declare class ActionDefinition {
     get name(): string;
     get displayName(): string;
     get isPinned(): boolean;
+    get isStreaming(): boolean;
     get refreshQueryOnCompleted(): boolean;
     get keepSelectionOnRefresh(): boolean;
     get offset(): number;
@@ -3846,6 +3848,7 @@ declare class Language extends Observable<ServiceObject> implements Language$1 {
     });
 }
 
+type StreamingActionMessages = AsyncGenerator<string, void, unknown>;
 declare class ServiceHooks {
     private _service;
     get service(): Service;
@@ -3856,6 +3859,7 @@ declare class ServiceHooks {
     onSessionExpired(): Promise<boolean>;
     onActionConfirmation(action: Action, option: number): Promise<boolean>;
     onAction(args: ExecuteActionArgs): Promise<PersistentObject$1>;
+    onStreamingAction(action: string, messages: () => StreamingActionMessages, abort?: () => void): Promise<void>;
     onOpen(obj: ServiceObject, replaceCurrent?: boolean, forceFromAction?: boolean): void;
     onClose(obj: ServiceObject): void;
     onConstructApplication(application: ApplicationResponse): Application;
@@ -4208,6 +4212,7 @@ declare const vidyano_ServiceObject: typeof ServiceObject;
 type vidyano_ServiceObjectWithActions = ServiceObjectWithActions;
 declare const vidyano_ServiceObjectWithActions: typeof ServiceObjectWithActions;
 type vidyano_SortDirection = SortDirection;
+type vidyano_StreamingActionMessages = StreamingActionMessages;
 type vidyano_Subject<TSource, TDetail> = Subject<TSource, TDetail>;
 declare const vidyano_Subject: typeof Subject;
 declare const vidyano_cookie: typeof cookie;
@@ -4217,7 +4222,7 @@ declare const vidyano_noop: typeof noop;
 declare const vidyano_sleep: typeof sleep;
 declare const vidyano_version: typeof version;
 declare namespace vidyano {
-  export { vidyano_Action as Action, vidyano_ActionDefinition as ActionDefinition, type vidyano_ActionDefinitionParams as ActionDefinitionParams, type vidyano_ActionExecutionHandler as ActionExecutionHandler, type vidyano_ActionExecutionHandlerDispose as ActionExecutionHandlerDispose, vidyano_ActionGroup as ActionGroup, vidyano_Actions as Actions, vidyano_Application as Application, vidyano_ArrayChangedArgs as ArrayChangedArgs, vidyano_ClientOperations as ClientOperations, vidyano_CultureInfo as CultureInfo, vidyano_DataType as DataType, service as Dto, vidyano_ExecuteActionArgs as ExecuteActionArgs, vidyano_ExpressionParser as ExpressionParser, type vidyano_IActionExecuteOptions as IActionExecuteOptions, type vidyano_IClientOperation as IClientOperation, type vidyano_ICultureInfoDateFormat as ICultureInfoDateFormat, type vidyano_ICultureInfoNumberFormat as ICultureInfoNumberFormat, type vidyano_IExecuteMethodOperation as IExecuteMethodOperation, type vidyano_IForgotPassword as IForgotPassword, type vidyano_IInstantSearchResult as IInstantSearchResult, type vidyano_IOpenOperation as IOpenOperation, type vidyano_IPropertyChangedObserver as IPropertyChangedObserver, type vidyano_IQueryColumnDistincts as IQueryColumnDistincts, type vidyano_IQueryGroupingInfo as IQueryGroupingInfo, type vidyano_IQuerySelectAll as IQuerySelectAll, type vidyano_IRefreshOperation as IRefreshOperation, type vidyano_IReportOptions as IReportOptions, type vidyano_IRoutes as IRoutes, type vidyano_ISelectedItemsActionArgs as ISelectedItemsActionArgs, type vidyano_IServiceBus as IServiceBus, type vidyano_ISortOption as ISortOption, type vidyano_ISubjectDisposer as ISubjectDisposer, type vidyano_ISubjectNotifier as ISubjectNotifier, type vidyano_ISubjectObserver as ISubjectObserver, type vidyano_KeyValue as KeyValue, type vidyano_KeyValuePair as KeyValuePair, type vidyano_KeyValueString as KeyValueString, vidyano_Language as Language, vidyano_NoInternetMessage as NoInternetMessage, type vidyano_NotificationType as NotificationType, vidyano_Observable as Observable, PersistentObject$1 as PersistentObject, PersistentObjectAttribute$1 as PersistentObjectAttribute, PersistentObjectAttributeAsDetail$1 as PersistentObjectAttributeAsDetail, vidyano_PersistentObjectAttributeGroup as PersistentObjectAttributeGroup, type vidyano_PersistentObjectAttributeOption as PersistentObjectAttributeOption, vidyano_PersistentObjectAttributeTab as PersistentObjectAttributeTab, vidyano_PersistentObjectAttributeWithReference as PersistentObjectAttributeWithReference, vidyano_PersistentObjectLayoutMode as PersistentObjectLayoutMode, vidyano_PersistentObjectQueryTab as PersistentObjectQueryTab, PersistentObjectTab$1 as PersistentObjectTab, vidyano_ProgramUnit as ProgramUnit, vidyano_ProgramUnitItem as ProgramUnitItem, vidyano_ProgramUnitItemGroup as ProgramUnitItemGroup, vidyano_ProgramUnitItemPersistentObject as ProgramUnitItemPersistentObject, vidyano_ProgramUnitItemQuery as ProgramUnitItemQuery, vidyano_ProgramUnitItemSeparator as ProgramUnitItemSeparator, vidyano_ProgramUnitItemUrl as ProgramUnitItemUrl, vidyano_PropertyChangedArgs as PropertyChangedArgs, Query$1 as Query, vidyano_QueryChart as QueryChart, vidyano_QueryColumn as QueryColumn, vidyano_QueryFilter as QueryFilter, vidyano_QueryFilters as QueryFilters, vidyano_QueryResultItem as QueryResultItem, vidyano_QueryResultItemGroup as QueryResultItemGroup, vidyano_QueryResultItemValue as QueryResultItemValue, vidyano_Queue as Queue, vidyano_Service as Service, vidyano_ServiceBus as ServiceBus, type vidyano_ServiceBusCallback as ServiceBusCallback, type vidyano_ServiceBusSubscriptionDisposer as ServiceBusSubscriptionDisposer, vidyano_ServiceHooks as ServiceHooks, vidyano_ServiceObject as ServiceObject, vidyano_ServiceObjectWithActions as ServiceObjectWithActions, type vidyano_SortDirection as SortDirection, vidyano_Subject as Subject, vidyano_cookie as cookie, vidyano_cookiePrefix as cookiePrefix, vidyano_extend as extend, vidyano_noop as noop, vidyano_sleep as sleep, vidyano_version as version };
+  export { vidyano_Action as Action, vidyano_ActionDefinition as ActionDefinition, type vidyano_ActionDefinitionParams as ActionDefinitionParams, type vidyano_ActionExecutionHandler as ActionExecutionHandler, type vidyano_ActionExecutionHandlerDispose as ActionExecutionHandlerDispose, vidyano_ActionGroup as ActionGroup, vidyano_Actions as Actions, vidyano_Application as Application, vidyano_ArrayChangedArgs as ArrayChangedArgs, vidyano_ClientOperations as ClientOperations, vidyano_CultureInfo as CultureInfo, vidyano_DataType as DataType, service as Dto, vidyano_ExecuteActionArgs as ExecuteActionArgs, vidyano_ExpressionParser as ExpressionParser, type vidyano_IActionExecuteOptions as IActionExecuteOptions, type vidyano_IClientOperation as IClientOperation, type vidyano_ICultureInfoDateFormat as ICultureInfoDateFormat, type vidyano_ICultureInfoNumberFormat as ICultureInfoNumberFormat, type vidyano_IExecuteMethodOperation as IExecuteMethodOperation, type vidyano_IForgotPassword as IForgotPassword, type vidyano_IInstantSearchResult as IInstantSearchResult, type vidyano_IOpenOperation as IOpenOperation, type vidyano_IPropertyChangedObserver as IPropertyChangedObserver, type vidyano_IQueryColumnDistincts as IQueryColumnDistincts, type vidyano_IQueryGroupingInfo as IQueryGroupingInfo, type vidyano_IQuerySelectAll as IQuerySelectAll, type vidyano_IRefreshOperation as IRefreshOperation, type vidyano_IReportOptions as IReportOptions, type vidyano_IRoutes as IRoutes, type vidyano_ISelectedItemsActionArgs as ISelectedItemsActionArgs, type vidyano_IServiceBus as IServiceBus, type vidyano_ISortOption as ISortOption, type vidyano_ISubjectDisposer as ISubjectDisposer, type vidyano_ISubjectNotifier as ISubjectNotifier, type vidyano_ISubjectObserver as ISubjectObserver, type vidyano_KeyValue as KeyValue, type vidyano_KeyValuePair as KeyValuePair, type vidyano_KeyValueString as KeyValueString, vidyano_Language as Language, vidyano_NoInternetMessage as NoInternetMessage, type vidyano_NotificationType as NotificationType, vidyano_Observable as Observable, PersistentObject$1 as PersistentObject, PersistentObjectAttribute$1 as PersistentObjectAttribute, PersistentObjectAttributeAsDetail$1 as PersistentObjectAttributeAsDetail, vidyano_PersistentObjectAttributeGroup as PersistentObjectAttributeGroup, type vidyano_PersistentObjectAttributeOption as PersistentObjectAttributeOption, vidyano_PersistentObjectAttributeTab as PersistentObjectAttributeTab, vidyano_PersistentObjectAttributeWithReference as PersistentObjectAttributeWithReference, vidyano_PersistentObjectLayoutMode as PersistentObjectLayoutMode, vidyano_PersistentObjectQueryTab as PersistentObjectQueryTab, PersistentObjectTab$1 as PersistentObjectTab, vidyano_ProgramUnit as ProgramUnit, vidyano_ProgramUnitItem as ProgramUnitItem, vidyano_ProgramUnitItemGroup as ProgramUnitItemGroup, vidyano_ProgramUnitItemPersistentObject as ProgramUnitItemPersistentObject, vidyano_ProgramUnitItemQuery as ProgramUnitItemQuery, vidyano_ProgramUnitItemSeparator as ProgramUnitItemSeparator, vidyano_ProgramUnitItemUrl as ProgramUnitItemUrl, vidyano_PropertyChangedArgs as PropertyChangedArgs, Query$1 as Query, vidyano_QueryChart as QueryChart, vidyano_QueryColumn as QueryColumn, vidyano_QueryFilter as QueryFilter, vidyano_QueryFilters as QueryFilters, vidyano_QueryResultItem as QueryResultItem, vidyano_QueryResultItemGroup as QueryResultItemGroup, vidyano_QueryResultItemValue as QueryResultItemValue, vidyano_Queue as Queue, vidyano_Service as Service, vidyano_ServiceBus as ServiceBus, type vidyano_ServiceBusCallback as ServiceBusCallback, type vidyano_ServiceBusSubscriptionDisposer as ServiceBusSubscriptionDisposer, vidyano_ServiceHooks as ServiceHooks, vidyano_ServiceObject as ServiceObject, vidyano_ServiceObjectWithActions as ServiceObjectWithActions, type vidyano_SortDirection as SortDirection, type vidyano_StreamingActionMessages as StreamingActionMessages, vidyano_Subject as Subject, vidyano_cookie as cookie, vidyano_cookiePrefix as cookiePrefix, vidyano_extend as extend, vidyano_noop as noop, vidyano_sleep as sleep, vidyano_version as version };
 }
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
@@ -9456,6 +9461,7 @@ declare class AppServiceHooksBase extends ServiceHooks {
     onActionConfirmation(action: Action, option: number): Promise<boolean>;
     onAppRouteChanging(newRoute: AppRoute, currentRoute: AppRoute): Promise<string>;
     onAction(args: ExecuteActionArgs): Promise<PersistentObject$1>;
+    onStreamingAction(action: string, messages: () => StreamingActionMessages, abort?: () => void): Promise<void>;
     onBeforeAppInitialized(): Promise<void>;
     onAppInitializeFailed(message: string): Promise<void>;
     onRedirectToSignIn(keepUrl: boolean): void;
@@ -10469,6 +10475,7 @@ declare class ActionButton extends ConfigurableWebComponent {
     noLabel: boolean;
     openOnHover: boolean;
     forceLabel: boolean;
+    inverse: boolean;
     grouped: boolean;
     constructor(item: QueryResultItem, action: Action | ActionGroup);
     connectedCallback(): Promise<void>;
