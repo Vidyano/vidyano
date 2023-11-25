@@ -1,0 +1,14 @@
+<link rel="stylesheet" href="streaming-action-dialog.css">
+
+<header class="horizontal layout">
+    <vi-icon source="[[icon]]" hidden$="[[!icon]]"></vi-icon>
+    <h4 class="flex">[[title]]</h4>
+    <vi-button class="close" on-tap="cancel" icon="Remove"></vi-button>
+</header>
+<main>
+    <vi-scroller no-horizontal id="scroller">
+        <div class="content">
+            <vi-marked markdown="[[content]]"></vi-marked>
+        </div>
+    </vi-scroller>
+</main>

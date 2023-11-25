@@ -182,6 +182,14 @@
       },
       "IconName": "Add"
     },
+    "PushData": {
+      "ShowedOn": 3,
+      "IsStreamingAction": true,
+      "DisplayName": {
+        "en": "Push data",
+        "nl": "Push data"
+      }
+    },
     "Remove": {
       "RefreshQueryOnCompleted": true,
       "Offset": 600,

@@ -10,6 +10,7 @@ import { QueryConfig } from "../app/config/query-config.js"
 import { QueryChartConfig } from "../app/config/query-chart-config.js"
 import { RetryActionDialog } from "../retry-action-dialog/retry-action-dialog.js"
 import { SelectReferenceDialog } from "../select-reference-dialog/select-reference-dialog.js"
+import { StreamingActionDialog } from "../streaming-action-dialog/streaming-action-dialog.js"
 
 /* tslint:disable:no-var-keyword */
 var _gaq: any[];
@@ -174,6 +175,15 @@ export class AppServiceHooksBase extends Vidyano.ServiceHooks {
         }
 
         return super.onAction(args);
+    }
+
+    async onStreamingAction(action: string, messages: () => Vidyano.StreamingActionMessages, abort?: () => void): Promise<void> {
+        const streamingActionDialog = new StreamingActionDialog(this.service.actionDefinitions[action], abort);
+        this.app.showDialog(streamingActionDialog);
+
+        for await (const message of messages()) {
+            streamingActionDialog.appendMessage(message);
+        }
     }
 
     async onBeforeAppInitialized(): Promise<void> {

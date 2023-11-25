@@ -20,6 +20,7 @@ import { DataType } from "./service-data-type.js"
 import Boolean from "./common/boolean.js"
 import "./actions.js"
 import { sleep } from "./common/sleep.js"
+import { fetchEventSource, EventSourceMessage } from '@microsoft/fetch-event-source'
 
 export let version = "vidyano-latest-version";
 
@@ -166,16 +167,73 @@ export class Service extends Observable<Service> {
             delete data.__form_data;
             formData.set("data", JSON.stringify(data));
             body = formData;
-        } 
+        }
 
-        const request = new Request(url, {
-            method: "POST",
-            headers: headers,
-            body: body
-        });
+        // Streaming post
+        if (typeof data.action === "string") {
+            const action = data.action.split(".", 2).pop();
+            const definition = this.actionDefinitions[action];
+            if (definition?.isStreaming) {
+                let cancel: () => void;
+                let signal: (e?: unknown) => void;
 
+                let awaiter = new Promise((resolve, reject) => {
+                    signal = resolve;
+                    cancel = reject;
+                });
+
+                const abortController = new AbortController();
+                const messages: EventSourceMessage[] = [];
+                const iterator = async function* () {
+                    try {
+                        while(true) {
+                            await awaiter;
+
+                            while (messages.length > 0) {
+                                const message = messages.shift();
+                                if (!!message.data) // Ignore keep-alive messages
+                                    yield message.data;
+                            }
+                        }
+                    }
+                    catch { /* Ignore */ }
+                };
+
+                this.hooks.onStreamingAction(action, iterator, () => abortController.abort());
+
+                fetchEventSource(url, {
+                    method: "POST",
+                    headers: Array.from(headers.entries()).reduce((headers, [key, value]) => {
+                        headers[key] = value;
+                        return headers;
+                    }, {}),
+                    body: body,
+                    signal: abortController.signal,
+                    onmessage: (e: EventSourceMessage) => {
+                        messages.push(e);
+                        signal();
+
+                        awaiter = new Promise((resolve, reject) => {
+                            signal = resolve;
+                            cancel = reject;
+                        });
+                    },
+                    onclose: () => cancel(),
+                    openWhenHidden: true
+                });
+
+                return;
+            }
+        }
+
+        // Normal post
         try {
-            const response = await this._fetch(request);
+            const response = await this._fetch(new Request(url, {
+                method: "POST",
+                headers: headers,
+                body: body
+            }));
+
             if (!response.ok)
                 throw response.statusText;
 
@@ -726,15 +784,14 @@ export class Service extends Observable<Service> {
 
     async executeAction(action: string, parent: PersistentObject, query: Query, selectedItems: Array<QueryResultItem>, parameters?: any, skipHooks: boolean = false): Promise<PersistentObject> {
         const isObjectAction = action.startsWith("PersistentObject.") || query == null;
+        const targetServiceObject = isObjectAction ? parent : query;
 
         if (!skipHooks) {
-            if (!isObjectAction) {
-                query.setNotification();
-                if (query.selectAll.allSelected && !query.selectAll.inverse)
-                    selectedItems = [];
-            }
-            else if (parent)
-                parent.setNotification();
+            targetServiceObject.setNotification();
+
+            // Clear selected items if all are selected and not inverse
+            if (!isObjectAction && query.selectAll.allSelected && !query.selectAll.inverse)
+                selectedItems = [];
 
             this.hooks.trackEvent(action, parameters ? parameters.MenuLabel || parameters.MenuOption : null, query || parent);
 
@@ -747,11 +804,7 @@ export class Service extends Observable<Service> {
                 return await this.executeAction(action, parent, query, selectedItems, args.parameters, true);
             }
             catch (e) {
-                if (isObjectAction)
-                    parent.setNotification(e);
-                else
-                    query.setNotification(e);
-
+                targetServiceObject.setNotification(e);
                 throw e;
             }
         }
@@ -769,6 +822,9 @@ export class Service extends Observable<Service> {
             data.parameters = parameters;
 
         const executeThen: (result: any) => Promise<PersistentObject> = async result => {
+            if (!result)
+                return;
+
             if (result.operations) {
                 this._queuedClientOperations.push(...result.operations);
                 result.operations = null;
@@ -822,10 +878,7 @@ export class Service extends Observable<Service> {
             return await executeThen(result);
         }
         catch (e) {
-            if (isObjectAction)
-                parent.setNotification(e);
-            else
-                query.setNotification(e);
+            targetServiceObject.setNotification(e);
 
             throw e;
         }

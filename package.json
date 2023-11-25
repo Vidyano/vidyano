@@ -11,6 +11,7 @@
   "license": "MIT",
   "devDependencies": {
     "@floating-ui/dom": "^1.5.3",
+    "@microsoft/fetch-event-source": "^2.0.1",
     "@polymer/iron-a11y-keys": "3.0.1",
     "@polymer/iron-collapse": "3.0.1",
     "@polymer/iron-list": "3.1.0",

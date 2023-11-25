@@ -1,0 +1,30 @@
+@import "../_vars.scss";
+
+header {
+    gap: var(--theme-h4);
+}
+
+main {
+    background-color: $blue-grey-900;
+    color: white;
+}
+
+vi-scroller {
+    width: 500px;
+    height: 375px;
+}
+
+.content {
+    padding: var(--theme-h4);
+}
+
+vi-marked {
+    p {
+        margin-block-start: 1em;
+        margin-block-end: 1em;
+
+        &:first-of-type {
+            margin-block-start: 0;
+        }
+    }
+}

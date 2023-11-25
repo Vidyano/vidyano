@@ -20,6 +20,8 @@ import type { Language } from "./language.js"
 import { cookiePrefix } from "./cookie.js"
 import messages from "./client-messages.js"
 
+export type StreamingActionMessages = AsyncGenerator<string, void, unknown>;
+
 export class ServiceHooks {
     private _service: Service;
 
@@ -53,6 +55,10 @@ export class ServiceHooks {
 
     onAction(args: ExecuteActionArgs): Promise<PersistentObject> {
         return Promise.resolve(null);
+    }
+
+    async onStreamingAction(action: string, messages: () => StreamingActionMessages, abort?: () => void): Promise<void> {
+        // Noop
     }
 
     onOpen(obj: ServiceObject, replaceCurrent: boolean = false, forceFromAction?: boolean) {

@@ -6,6 +6,7 @@ export interface ActionDefinitionParams {
     name: string;
     displayName?: string;
     isPinned?: boolean;
+    isStreaming?: boolean;
     showedOn?: string[];
     confirmation?: string
     refreshQueryOnCompleted?: boolean;
@@ -28,6 +29,7 @@ export class ActionDefinition {
                 name: itemOrDefinition.getValue("Name"),
                 displayName: itemOrDefinition.getValue("DisplayName"),
                 isPinned: itemOrDefinition.getValue("IsPinned"),
+                isStreaming: itemOrDefinition.getValue("IsStreamingAction"),
                 confirmation: itemOrDefinition.getValue("Confirmation"),
                 refreshQueryOnCompleted: itemOrDefinition.getValue("RefreshQueryOnCompleted"),
                 keepSelectionOnRefresh: itemOrDefinition.getValue("KeepSelectionOnRefresh"),
@@ -61,6 +63,10 @@ export class ActionDefinition {
 
     get isPinned(): boolean {
         return this._definition.isPinned ?? false;
+    }
+
+    get isStreaming(): boolean {
+        return !!this._definition.isStreaming;
     }
 
     get refreshQueryOnCompleted(): boolean {
