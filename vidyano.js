@@ -10926,7 +10926,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.12.0-preview6";
+let version$2 = "3.12.0-preview7";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -23703,11 +23703,11 @@ let Scroller = class Scroller extends WebComponent {
     _updateScrollOffsets() {
         if (this.vertical) {
             this._setAtTop((this.verticalScrollOffset = this.scroller.scrollTop) === 0);
-            this._setAtBottom(this.scroller.scrollTop + this.scroller.offsetHeight === this.scroller.scrollHeight);
+            this._setAtBottom(Math.abs(Math.round(this.scroller.scrollTop + this.scroller.offsetHeight) - this.scroller.scrollHeight) <= 1);
         }
         if (this.horizontal) {
             this._setAtStart((this.horizontalScrollOffset = this.scroller.scrollLeft) === 0);
-            this._setAtEnd(this.scroller.scrollLeft + this.scroller.offsetWidth === this.scroller.scrollWidth);
+            this._setAtEnd(Math.abs(Math.round(this.scroller.scrollLeft + this.scroller.offsetWidth) - this.scroller.scrollWidth) <= 1);
         }
     }
     _verticalScrollOffsetChanged(newVerticalScrollOffset) {
