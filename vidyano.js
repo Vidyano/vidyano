@@ -10926,7 +10926,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.12.0-preview7";
+let version$2 = "3.12.0-preview8";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -49405,8 +49405,8 @@ let PersistentObjectAttributeMultiStringItem = class PersistentObjectAttributeMu
 :host input {
   border: 1px solid var(--theme-light-border);
   box-sizing: border-box;
-  height: calc(var(--theme-h2) - 2px);
-  line-height: calc(var(--theme-h2) - 2px);
+  height: var(--theme-h2);
+  line-height: var(--theme-h2);
   -moz-transition: border-color 0.2s ease-in-out;
   -o-transition: border-color 0.2s ease-in-out;
   -webkit-transition: border-color 0.2s ease-in-out;
@@ -49700,6 +49700,7 @@ let PersistentObjectAttributeMultiString = class PersistentObjectAttributeMultiS
                     <vi-persistent-object-attribute-multi-string-items id="strings" draggable-items="vi-persistent-object-attribute-multi-string-item" handle=".sort-handle" enabled="[[!attribute.parent.isFrozen]]" sensitive="[[sensitive]]" disabled="[[frozen]]"></vi-persistent-object-attribute-multi-string-items>
                     <vi-persistent-object-attribute-multi-string-item disabled="[[frozen]]" is-new hidden$="[[readOnly]]" placeholder="[[placeholder]]" sensitive="[[sensitive]]"></vi-persistent-object-attribute-multi-string-item>
                 </vi-scroller>
+                <vi-persistent-object-attribute-validation-error attribute="[[attribute]]"></vi-persistent-object-attribute-validation-error>
             </template>
         </dom-if>
     </template>
@@ -52141,8 +52142,8 @@ let PersistentObjectTab = class PersistentObjectTab extends ConfigurableWebCompo
             return 2;
         return 1;
     }
-    _computeGroups(groups) {
-        return groups.filter(g => g.attributes.some(a => a.isVisible));
+    _updateGroups() {
+        this._setGroups(this.tab?.groups.filter(g => g.attributes.some(a => a.isVisible)));
     }
     _autofocus(noAutofocus, isEditing) {
         if (!noAutofocus && isEditing && this._autofocusTarget)
@@ -52192,7 +52193,7 @@ PersistentObjectTab = __decorate([
             },
             groups: {
                 type: Array,
-                computed: "_computeGroups(tab.groups, tab.parent.attributes.isVisible.*)"
+                readOnly: true
             },
             size: Object,
             innerSize: {
@@ -52218,6 +52219,7 @@ PersistentObjectTab = __decorate([
             "vi:configure": "_configure"
         },
         forwardObservers: [
+            "_updateGroups(tab.attributes.*.isVisible)",
             "tab.parent.isEditing",
             "tab.groups"
         ]

@@ -12691,11 +12691,13 @@ declare class PersistentObjectTab extends ConfigurableWebComponent {
     static get template(): HTMLTemplateElement;
     private _attributePresenters;
     private _autofocusTarget;
+    readonly groups: PersistentObjectAttributeGroup[];
+    private _setGroups;
     tab: PersistentObjectAttributeTab;
     noAutofocus: boolean;
     disconnectedCallback(): void;
     private _computeColumns;
-    private _computeGroups;
+    private _updateGroups;
     private _autofocus;
     private _attributeLoaded;
     private _innerSizeChanged;
