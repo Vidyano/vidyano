@@ -7,8 +7,8 @@
     input {
         border: 1px solid var(--theme-light-border);
         box-sizing: border-box;
-        height: calc(var(--theme-h2) - 2px);
-        line-height: calc(var(--theme-h2) - 2px);
+        height: var(--theme-h2);
+        line-height: var(--theme-h2);
         -moz-transition: border-color 0.2s ease-in-out;
         -o-transition: border-color 0.2s ease-in-out;
         -webkit-transition: border-color 0.2s ease-in-out;
