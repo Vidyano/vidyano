@@ -15,7 +15,7 @@ import { ConfigurableWebComponent } from "../web-component/web-component-configu
         },
         groups: {
             type: Array,
-            computed: "_computeGroups(tab.groups, tab.parent.attributes.isVisible.*)"
+            readOnly: true
         },
         size: Object,
         innerSize: {
@@ -41,6 +41,7 @@ import { ConfigurableWebComponent } from "../web-component/web-component-configu
         "vi:configure": "_configure"
     },
     forwardObservers: [
+        "_updateGroups(tab.attributes.*.isVisible)",
         "tab.parent.isEditing",
         "tab.groups"
     ]
@@ -50,6 +51,7 @@ export class PersistentObjectTab extends ConfigurableWebComponent {
 
     private _attributePresenters: PersistentObjectAttributePresenter[];
     private _autofocusTarget: PersistentObjectAttributePresenter;
+    readonly groups: Vidyano.PersistentObjectAttributeGroup[]; private _setGroups: (groups: Vidyano.PersistentObjectAttributeGroup[]) => void;
     tab: Vidyano.PersistentObjectAttributeTab;
     noAutofocus: boolean;
 
@@ -73,8 +75,8 @@ export class PersistentObjectTab extends ConfigurableWebComponent {
         return 1;
     }
 
-    private _computeGroups(groups: Vidyano.PersistentObjectAttributeGroup[]) {
-        return groups.filter(g => g.attributes.some(a => a.isVisible));
+    private _updateGroups() {
+        this._setGroups(this.tab?.groups.filter(g => g.attributes.some(a => a.isVisible)));
     }
 
     private _autofocus(noAutofocus: boolean, isEditing: boolean) {
