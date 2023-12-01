@@ -6,7 +6,8 @@ $min-main-width: 400px;
     --vi-persistent-object-dialog-base-width-base: #{$min-main-width};
 
     header {
-        padding: var(--theme-h5);
+        padding: 0 var(--theme-h4);
+        line-height: 4em;
     }
 
     main {
@@ -15,16 +16,17 @@ $min-main-width: 400px;
 
         > h4 {
             display: block;
-            padding: var(--theme-h4) var(--theme-h5);
+            padding: 0 var(--theme-h4);
             font-weight: normal;
             border-bottom: 1px solid var(--theme-light-border);
             margin: 0;
+            line-height: 3em;
         }
 
         > vi-persistent-object-tab-presenter {
             @include flex();
             @include layout-vertical();
-            min-height: calc(var(--theme-h2) * 3);
+            padding: var(--theme-h5) 0;
 
             > vi-persistent-object-tab {
                 position: static;

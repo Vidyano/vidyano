@@ -26,7 +26,7 @@ export class RetryActionDialog extends Dialog {
     connectedCallback() {
         super.connectedCallback();
 
-        this.noCancelOnOutsideClick = this.noCancelOnEscKey = this.retry.cancelOption == null;
+        this.noCancelOnEscKey = this.retry.cancelOption == null;
     }
 
     cancel() {
