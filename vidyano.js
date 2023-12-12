@@ -10926,7 +10926,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.12.0-preview8";
+let version$2 = "3.12.0-preview9";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -11073,6 +11073,7 @@ class Service extends Observable {
                     onclose: () => cancel(),
                     openWhenHidden: true
                 });
+                await awaiter;
                 return;
             }
         }
@@ -25946,7 +25947,8 @@ let RetryActionDialog = class RetryActionDialog extends Dialog {
   --vi-persistent-object-dialog-base-width-base: 400px;
 }
 :host header {
-  padding: var(--theme-h5);
+  padding: 0 var(--theme-h4);
+  line-height: 4em;
 }
 :host main {
   display: flex;
@@ -25955,10 +25957,11 @@ let RetryActionDialog = class RetryActionDialog extends Dialog {
 }
 :host main > h4 {
   display: block;
-  padding: var(--theme-h4) var(--theme-h5);
+  padding: 0 var(--theme-h4);
   font-weight: normal;
   border-bottom: 1px solid var(--theme-light-border);
   margin: 0;
+  line-height: 3em;
 }
 :host main > vi-persistent-object-tab-presenter {
   flex: 1;
@@ -25966,7 +25969,7 @@ let RetryActionDialog = class RetryActionDialog extends Dialog {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  min-height: calc(var(--theme-h2) * 3);
+  padding: var(--theme-h5) 0;
 }
 :host main > vi-persistent-object-tab-presenter > vi-persistent-object-tab {
   position: static;
@@ -26002,7 +26005,7 @@ let RetryActionDialog = class RetryActionDialog extends Dialog {
     }
     connectedCallback() {
         super.connectedCallback();
-        this.noCancelOnOutsideClick = this.noCancelOnEscKey = this.retry.cancelOption == null;
+        this.noCancelOnEscKey = this.retry.cancelOption == null;
     }
     cancel() {
         this.close(this.retry.cancelOption);
@@ -26345,13 +26348,13 @@ let StreamingActionDialog = class StreamingActionDialog extends Dialog {
 }
 
 main {
-  background-color: #263238;
-  color: white;
+  background-color: var(--vi-streaming-action-dialog-background-color, #263238);
+  color: var(--vi-streaming-action-dialog-foreground-color, white);
 }
 
 vi-scroller {
-  width: 500px;
-  height: 375px;
+  width: var(--vi-streaming-action-dialog-width, 500px);
+  height: var(--vi-streaming-action-dialog-height, 375px);
 }
 
 .content {
@@ -26372,6 +26375,7 @@ vi-marked p:first-of-type {
     <vi-button class="close" on-tap="cancel" icon="Remove"></vi-button>
 </header>
 <main>
+    <vi-notification service-object="[[notificationObject]]"></vi-notification>
     <vi-scroller no-horizontal id="scroller">
         <div class="content">
             <vi-marked markdown="[[content]]"></vi-marked>
@@ -26388,8 +26392,24 @@ vi-marked p:first-of-type {
     }
     appendMessage(message) {
         const data = JSON.parse(message);
-        if (data.type === "title")
-            this._setTitle(data.value);
+        if (data.type === "dialog") {
+            const details = data.value;
+            if (details.title)
+                this._setTitle(details.title);
+            if (details.backgroundColor)
+                this.style.setProperty("--vi-streaming-action-dialog-background-color", details.backgroundColor);
+            if (details.foregroundColor)
+                this.style.setProperty("--vi-streaming-action-dialog-foreground-color", details.foregroundColor);
+            if (details.width)
+                this.style.setProperty("--vi-streaming-action-dialog-width", details.width);
+            if (details.height)
+                this.style.setProperty("--vi-streaming-action-dialog-height", details.height);
+            if (details.notification) {
+                const svcObject = new ServiceObjectWithActions(this.service);
+                svcObject.setNotification(details.notification, details.notificationType);
+                this._setNotificationObject(svcObject);
+            }
+        }
         else if (data.type === "message")
             this._setContent(this.content + data.value + "\n");
         microTask.run(() => {
@@ -26420,6 +26440,10 @@ StreamingActionDialog = __decorate([
             },
             title: {
                 type: String,
+                readOnly: true
+            },
+            notificationObject: {
+                type: Object,
                 readOnly: true
             }
         }
@@ -26554,9 +26578,12 @@ class AppServiceHooksBase extends ServiceHooks {
         return super.onAction(args);
     }
     async onStreamingAction(action, messages, abort) {
+        const messageIterator = messages();
+        const firstMessage = await messageIterator.next();
         const streamingActionDialog = new StreamingActionDialog(this.service.actionDefinitions[action], abort);
         this.app.showDialog(streamingActionDialog);
-        for await (const message of messages()) {
+        streamingActionDialog.appendMessage(firstMessage.value);
+        for await (const message of messageIterator) {
             streamingActionDialog.appendMessage(message);
         }
     }
@@ -52841,7 +52868,11 @@ let App = App_1 = class App extends AppBase {
   min-width: 0;
 }</style>
 
-<vi-profiler service="[[service]]" hidden$="[[!sProfiling]]"></vi-profiler>
+<dom-if if="[[isProfiling]]">
+    <template>
+        <vi-profiler service="[[service]]"></vi-profiler>
+    </template>
+</dom-if>
 <dom-if if="[[showMenu]]" restamp>
     <template>
         <vi-menu menu label="[[label]]" program-units="[[service.application.programUnits]]" active-program-unit="[[programUnit]]">
