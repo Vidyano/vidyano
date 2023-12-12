@@ -178,10 +178,14 @@ export class AppServiceHooksBase extends Vidyano.ServiceHooks {
     }
 
     async onStreamingAction(action: string, messages: () => Vidyano.StreamingActionMessages, abort?: () => void): Promise<void> {
+        const messageIterator = messages();
+
+        const firstMessage = await messageIterator.next(); // Wait for the first message before showing the dialog
         const streamingActionDialog = new StreamingActionDialog(this.service.actionDefinitions[action], abort);
         this.app.showDialog(streamingActionDialog);
+        streamingActionDialog.appendMessage(<string>firstMessage.value); // Append the first message
 
-        for await (const message of messages()) {
+        for await (const message of messageIterator) {
             streamingActionDialog.appendMessage(message);
         }
     }

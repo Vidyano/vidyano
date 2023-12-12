@@ -222,6 +222,9 @@ export class Service extends Observable<Service> {
                     openWhenHidden: true
                 });
 
+                // Make sure the parent is busy until the first message arrives
+                await awaiter;
+
                 return;
             }
         }

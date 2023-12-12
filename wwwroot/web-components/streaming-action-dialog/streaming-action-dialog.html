@@ -6,6 +6,7 @@
     <vi-button class="close" on-tap="cancel" icon="Remove"></vi-button>
 </header>
 <main>
+    <vi-notification service-object="[[notificationObject]]"></vi-notification>
     <vi-scroller no-horizontal id="scroller">
         <div class="content">
             <vi-marked markdown="[[content]]"></vi-marked>

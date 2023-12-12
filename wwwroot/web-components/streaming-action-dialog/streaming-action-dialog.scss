@@ -5,13 +5,13 @@ header {
 }
 
 main {
-    background-color: $blue-grey-900;
-    color: white;
+    background-color: var(--vi-streaming-action-dialog-background-color, $blue-grey-900);
+    color: var(--vi-streaming-action-dialog-foreground-color, white);
 }
 
 vi-scroller {
-    width: 500px;
-    height: 375px;
+    width: var(--vi-streaming-action-dialog-width, 500px);
+    height: var(--vi-streaming-action-dialog-height, 375px);
 }
 
 .content {

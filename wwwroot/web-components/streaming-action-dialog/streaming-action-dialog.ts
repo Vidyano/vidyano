@@ -4,6 +4,16 @@ import { Dialog } from "../dialog/dialog.js"
 import { Scroller } from "../scroller/scroller.js";
 import { WebComponent } from "../web-component/web-component.js"
 
+type StreamingActionDialogDetails = {
+    backgroundColor: string;
+    foregroundColor: string;
+    height: string;
+    notification: string;
+    notificationType: Vidyano.NotificationType;
+    title: string;
+    width: string;
+};
+
 @WebComponent.register({
     properties: {
         content: {
@@ -18,6 +28,10 @@ import { WebComponent } from "../web-component/web-component.js"
         title: {
             type: String,
             readOnly: true
+        },
+        notificationObject: {
+            type: Object,
+            readOnly: true
         }
     }
 })
@@ -27,6 +41,7 @@ export class StreamingActionDialog extends Dialog {
     readonly content: string; private _setContent: (content: string) => void;
     readonly icon: string; private _setIcon: (icon: string) => void;
     readonly title: string; private _setTitle: (title: string) => void;
+    readonly notificationObject: Vidyano.ServiceObjectWithActions; private _setNotificationObject: (notificationObject: Vidyano.ServiceObjectWithActions) => void;
 
     #hasScrolled = false;
 
@@ -38,10 +53,32 @@ export class StreamingActionDialog extends Dialog {
     }
 
     appendMessage(message: string) {
-        const data = JSON.parse(message) as { type: string; value: string; };
+        const data = JSON.parse(message) as { type: string; value: any; };
 
-        if (data.type === "title")
-            this._setTitle(data.value);
+        if (data.type === "dialog") {
+            const details = data.value as StreamingActionDialogDetails;
+            if (details.title)
+                this._setTitle(details.title);
+
+            if (details.backgroundColor)
+                this.style.setProperty("--vi-streaming-action-dialog-background-color", details.backgroundColor);
+            
+            if (details.foregroundColor)
+                this.style.setProperty("--vi-streaming-action-dialog-foreground-color", details.foregroundColor);
+
+            if (details.width)
+                this.style.setProperty("--vi-streaming-action-dialog-width", details.width);
+
+            if (details.height)
+                this.style.setProperty("--vi-streaming-action-dialog-height", details.height);
+
+            if (details.notification) {
+                const svcObject = new Vidyano.ServiceObjectWithActions(this.service);
+                svcObject.setNotification(details.notification, details.notificationType);
+
+                this._setNotificationObject(svcObject);
+            }
+        }
         else if (data.type === "message")
             this._setContent(this.content + data.value + "\n");
 
