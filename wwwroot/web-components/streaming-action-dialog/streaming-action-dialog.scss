@@ -9,10 +9,13 @@ main {
     color: var(--vi-streaming-action-dialog-foreground-color, #333);
 }
 
-vi-scroller {
+vi-scroller, vi-notification {
     width: var(--vi-streaming-action-dialog-width, 600px);
-    height: var(--vi-streaming-action-dialog-height, 500px);
     max-width: 90vw;
+}
+
+vi-scroller {
+    height: var(--vi-streaming-action-dialog-height, 500px);
     max-height: 90vh;
 }
 
