@@ -10926,7 +10926,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.12.0-preview10";
+let version$2 = "3.12.0-preview11";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -26348,13 +26348,15 @@ let StreamingActionDialog = class StreamingActionDialog extends Dialog {
 }
 
 main {
-  background-color: var(--vi-streaming-action-dialog-background-color, #263238);
-  color: var(--vi-streaming-action-dialog-foreground-color, white);
+  background-color: var(--vi-streaming-action-dialog-background-color, white);
+  color: var(--vi-streaming-action-dialog-foreground-color, #333);
 }
 
 vi-scroller {
-  width: var(--vi-streaming-action-dialog-width, 500px);
-  height: var(--vi-streaming-action-dialog-height, 375px);
+  width: var(--vi-streaming-action-dialog-width, 600px);
+  height: var(--vi-streaming-action-dialog-height, 500px);
+  max-width: 90vw;
+  max-height: 90vh;
 }
 
 .content {
