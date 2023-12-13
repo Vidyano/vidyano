@@ -18,6 +18,7 @@ export * from "@polymer/polymer/lib/mixins/gesture-event-listeners.js"
 export * from "@polymer/polymer/lib/utils/mixin.js"
 export * from "@polymer/iron-overlay-behavior"
 export * from "@polymer/iron-overlay-behavior/iron-focusables-helper"
+export { IronListElement } from "@polymer/iron-list"
 import "@polymer/iron-media-query"
 
 declare module "@polymer/polymer/lib/utils/gestures" {
