@@ -10926,7 +10926,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.12.0-preview11";
+let version$2 = "3.12.0";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -26352,10 +26352,13 @@ main {
   color: var(--vi-streaming-action-dialog-foreground-color, #333);
 }
 
-vi-scroller {
+vi-scroller, vi-notification {
   width: var(--vi-streaming-action-dialog-width, 600px);
-  height: var(--vi-streaming-action-dialog-height, 500px);
   max-width: 90vw;
+}
+
+vi-scroller {
+  height: var(--vi-streaming-action-dialog-height, 500px);
   max-height: 90vh;
 }
 
