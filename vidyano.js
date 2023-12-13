@@ -10926,7 +10926,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.12.0-preview9";
+let version$2 = "3.12.0-preview10";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -26367,6 +26367,9 @@ vi-marked p {
 }
 vi-marked p:first-of-type {
   margin-block-start: 0;
+}
+vi-marked p:last-of-type {
+  margin-block-end: 0;
 }</style>
 
 <header class="horizontal layout">
@@ -26379,6 +26382,11 @@ vi-marked p:first-of-type {
     <vi-scroller no-horizontal id="scroller">
         <div class="content">
             <vi-marked markdown="[[content]]"></vi-marked>
+            <dom-if if="[[isBusy]]">
+                <template>
+                    <vi-streaming-action-dialog-busy-indicator></vi-streaming-action-dialog-busy-indicator>
+                </template>
+            </dom-if>
         </div>
     </vi-scroller>
 </main>`); }
@@ -26421,6 +26429,9 @@ vi-marked p:first-of-type {
             }
         });
     }
+    completed() {
+        this._setIsBusy(false);
+    }
     close(result) {
         this._abort();
         super.close(result);
@@ -26438,6 +26449,11 @@ StreamingActionDialog = __decorate([
                 type: String,
                 readOnly: true
             },
+            isBusy: {
+                type: Boolean,
+                readOnly: true,
+                value: true
+            },
             title: {
                 type: String,
                 readOnly: true
@@ -26449,6 +26465,25 @@ StreamingActionDialog = __decorate([
         }
     })
 ], StreamingActionDialog);
+let StreamingActionDialogBusyIndicator = class StreamingActionDialogBusyIndicator extends WebComponent {
+    #interval;
+    connectedCallback() {
+        super.connectedCallback();
+        const values = ["◜", "◝", "◞", "◟"];
+        this.#interval = setInterval(() => {
+            const value = values.shift();
+            this.innerText = value;
+            values.push(value);
+        }, 100);
+    }
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        clearInterval(this.#interval);
+    }
+};
+StreamingActionDialogBusyIndicator = __decorate([
+    WebComponent.register()
+], StreamingActionDialogBusyIndicator);
 
 var _gaq;
 class AppServiceHooksBase extends ServiceHooks {
@@ -26583,8 +26618,13 @@ class AppServiceHooksBase extends ServiceHooks {
         const streamingActionDialog = new StreamingActionDialog(this.service.actionDefinitions[action], abort);
         this.app.showDialog(streamingActionDialog);
         streamingActionDialog.appendMessage(firstMessage.value);
-        for await (const message of messageIterator) {
-            streamingActionDialog.appendMessage(message);
+        try {
+            for await (const message of messageIterator) {
+                streamingActionDialog.appendMessage(message);
+            }
+        }
+        finally {
+            streamingActionDialog.completed();
         }
     }
     async onBeforeAppInitialized() {
