@@ -185,8 +185,13 @@ export class AppServiceHooksBase extends Vidyano.ServiceHooks {
         this.app.showDialog(streamingActionDialog);
         streamingActionDialog.appendMessage(<string>firstMessage.value); // Append the first message
 
-        for await (const message of messageIterator) {
-            streamingActionDialog.appendMessage(message);
+        try {
+            for await (const message of messageIterator) {
+                streamingActionDialog.appendMessage(message);
+            }
+        }
+        finally {
+            streamingActionDialog.completed();
         }
     }
 

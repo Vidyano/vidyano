@@ -10,6 +10,11 @@
     <vi-scroller no-horizontal id="scroller">
         <div class="content">
             <vi-marked markdown="[[content]]"></vi-marked>
+            <dom-if if="[[isBusy]]">
+                <template>
+                    <vi-streaming-action-dialog-busy-indicator></vi-streaming-action-dialog-busy-indicator>
+                </template>
+            </dom-if>
         </div>
     </vi-scroller>
 </main>

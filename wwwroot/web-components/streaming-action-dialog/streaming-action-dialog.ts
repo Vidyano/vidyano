@@ -25,6 +25,11 @@ type StreamingActionDialogDetails = {
             type: String,
             readOnly: true
         },
+        isBusy: {
+            type: Boolean,
+            readOnly: true,
+            value: true
+        },
         title: {
             type: String,
             readOnly: true
@@ -40,6 +45,7 @@ export class StreamingActionDialog extends Dialog {
 
     readonly content: string; private _setContent: (content: string) => void;
     readonly icon: string; private _setIcon: (icon: string) => void;
+    readonly isBusy: boolean; private _setIsBusy: (isBusy: boolean) => void;
     readonly title: string; private _setTitle: (title: string) => void;
     readonly notificationObject: Vidyano.ServiceObjectWithActions; private _setNotificationObject: (notificationObject: Vidyano.ServiceObjectWithActions) => void;
 
@@ -93,8 +99,34 @@ export class StreamingActionDialog extends Dialog {
         });
     }
 
+    completed() {
+        this._setIsBusy(false);
+    }
+
     close(result?: any) {
         this._abort();
         super.close(result);
+    }
+}
+
+@WebComponent.register()
+export class StreamingActionDialogBusyIndicator extends WebComponent {
+    #interval: number;
+
+    connectedCallback(): void {
+        super.connectedCallback();
+
+        const values = ["◜", "◝", "◞", "◟"];
+        this.#interval = setInterval(() => {
+            const value = values.shift();
+            this.innerText = value;
+            values.push(value);
+        }, 100);
+    }
+
+    disconnectedCallback(): void {
+        super.disconnectedCallback();
+
+        clearInterval(this.#interval);
     }
 }
