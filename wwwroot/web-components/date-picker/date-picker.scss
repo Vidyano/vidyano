@@ -64,11 +64,12 @@ $border-color: #eee;
                     }
 
                     &[is-today] {
-                        color: white !important;
+                        color: white;
                         background-color: #bbb;
 
                         &:hover {
                             background-color: #aaa;
+                            color: var(--color);
                         }
                     }
                 }
@@ -84,7 +85,7 @@ $border-color: #eee;
                 }
             }
 
-            &:not([is-other]):not([is-other]) {
+            &:not([is-other]) {
                 color: var(--color);
 
                 &:hover {
@@ -101,7 +102,7 @@ $border-color: #eee;
                 }
             }
 
-            &[is-selected]:not([unselectable]) {
+            &[is-selected]:not([blocked]) {
                 &::before, &::after {
                     position: absolute;
                     right: 0;
@@ -141,7 +142,7 @@ $border-color: #eee;
                 width: calc(100% / 3);
             }
 
-            &[unselectable] {
+            &[blocked] {
                 color: #dedede !important;
                 cursor: default !important;
 

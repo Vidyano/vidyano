@@ -10,6 +10,7 @@ export interface IDatePickerCell {
     content?: string;
     date?: moment.Moment;
     monthOffset?: number;
+    blocked?: boolean;
 }
 
 @WebComponent.register({
@@ -68,7 +69,7 @@ export interface IDatePickerCell {
         newTime: String
     },
     observers: [
-        "_render(cells, currentDate, deferredCellsUpdate)"
+        "_render(cells, currentDate, minDate, maxDate, deferredCellsUpdate)"
     ],
     listeners: {
         "tap": "_catchTap"
@@ -83,7 +84,7 @@ export class DatePicker extends WebComponent {
     readonly today: moment.Moment; private _setToday: (date: moment.Moment) => void;
     readonly header: string; private _setHeader: (header: string) => void;
     readonly deferredCellsUpdate: boolean; private _setDeferredCellsUpdate: (defer: boolean) => void;
-    zoom: string;
+    zoom: "days" | "months" | "years";
     selectedDate: Date;
     monthMode: boolean;
     minDate: Date;
@@ -130,7 +131,7 @@ export class DatePicker extends WebComponent {
         }
     }
 
-    private _render(cells: IDatePickerCell[], currentDate: moment.Moment, deferredCellsUpdate: boolean) {
+    private _render(cells: IDatePickerCell[], currentDate: moment.Moment, minDate: Date, maxDate: Date, deferredCellsUpdate: boolean) {
         if (deferredCellsUpdate)
             return;
 
@@ -150,6 +151,7 @@ export class DatePicker extends WebComponent {
                 this.set(`cells.${index}.date`, loop.clone());
                 this.set(`cells.${index}.content`, loop.format("D"));
                 this.set(`cells.${index}.monthOffset`, loop.isSame(currentDate, "month") ? 0 : (loop.isBefore(currentDate) ? -1 : 1));
+                this.set(`cells.${index}.blocked`, this._isBlocked(cells[index], minDate, maxDate));
 
                 index++;
                 loop.add(1, "days");
@@ -166,6 +168,7 @@ export class DatePicker extends WebComponent {
             do {
                 this.set(`cells.${index}.date`, loop.clone());
                 this.set(`cells.${index}.content`, Vidyano.CultureInfo.currentCulture.dateFormat.shortMonthNames[index]);
+                this.set(`cells.${index}.blocked`, this._isBlocked(cells[index], minDate, maxDate));
 
                 index++;
                 loop.add(1, "months");
@@ -180,6 +183,7 @@ export class DatePicker extends WebComponent {
             do {
                 this.set(`cells.${index}.date`, loop.clone());
                 this.set(`cells.${index}.content`, loop.year());
+                this.set(`cells.${index}.blocked`, this._isBlocked(cells[index], minDate, maxDate));
 
                 index++;
                 loop.add(1, "years");
@@ -218,11 +222,13 @@ export class DatePicker extends WebComponent {
         return !!monthOffset;
     }
 
-    private _isDateUnselectable(date: moment.Moment, minDate: Date, maxDate: Date): boolean {
+    private _isBlocked(cell: IDatePickerCell, minDate: Date, maxDate: Date): boolean {
+        const date = cell.date;
         if (!date || (!minDate && !maxDate))
             return false;
 
-        return (minDate && date.isBefore(minDate)) || (maxDate && date.isAfter(maxDate));
+        const granularity = this.zoom === "days" ? "day" : (this.zoom === "months" ? "month" : "year");
+        return (minDate && date.isBefore(minDate, granularity)) || (maxDate && date.isAfter(maxDate, granularity));
     }
 
     private _computeMoment(date: Date): moment.Moment {
@@ -262,10 +268,10 @@ export class DatePicker extends WebComponent {
 
     private _select(e: Polymer.Gestures.TapEvent) {
         const cell = <IDatePickerCell>e.model.cell;
-        if (!cell || !cell.date)
+        if (!cell?.date)
             return;
 
-        if ((<HTMLElement>e.target).hasAttribute("unselectable")) {
+        if (cell.blocked) {
             e.stopPropagation();
             return;
         }
