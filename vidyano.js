@@ -10926,7 +10926,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.12.0";
+let version$2 = "3.12.1";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -23948,6 +23948,7 @@ let Popup = Popup_1 = class Popup extends WebComponent {
     #cleanup;
     connectedCallback() {
         super.connectedCallback();
+        this._setSupportsPopover(HTMLElement.prototype.hasOwnProperty("popover") && Boolean.parse(this.app.configuration.getSetting("Experimental.UseNativePopover", "false")));
         this.addEventListener("popupparent", this._onPopupparent);
     }
     disconnectedCallback() {
@@ -24217,8 +24218,7 @@ Popup = Popup_1 = __decorate([
             },
             supportsPopover: {
                 type: Boolean,
-                readOnly: true,
-                value: () => HTMLElement.prototype.hasOwnProperty("popover")
+                readOnly: true
             },
         },
         observers: [
@@ -47874,11 +47874,12 @@ let DatePicker = class DatePicker extends WebComponent {
   background-color: #eee;
 }
 :host main .cell[type=day][is-other][is-today] {
-  color: white !important;
+  color: white;
   background-color: #bbb;
 }
 :host main .cell[type=day][is-other][is-today]:hover {
   background-color: #aaa;
+  color: var(--color);
 }
 :host main .cell[type=weekday] {
   font-weight: bold;
@@ -47888,55 +47889,55 @@ let DatePicker = class DatePicker extends WebComponent {
 :host main .cell[type=weekday]:hover {
   background-color: transparent !important;
 }
-:host main .cell:not([is-other]):not([is-other]) {
+:host main .cell:not([is-other]) {
   color: var(--color);
 }
-:host main .cell:not([is-other]):not([is-other]):hover {
+:host main .cell:not([is-other]):hover {
   background-color: var(--color-faint);
 }
-:host main .cell:not([is-other]):not([is-other])[is-today] {
+:host main .cell:not([is-other])[is-today] {
   color: white !important;
   background-color: var(--color-light);
 }
-:host main .cell:not([is-other]):not([is-other])[is-today]:hover {
+:host main .cell:not([is-other])[is-today]:hover {
   background-color: var(--color-lighter);
 }
-:host main .cell[is-selected]:not([unselectable])::before, :host main .cell[is-selected]:not([unselectable])::after {
+:host main .cell[is-selected]:not([blocked])::before, :host main .cell[is-selected]:not([blocked])::after {
   position: absolute;
   right: 0;
   top: 0;
   content: "";
 }
-:host main .cell[is-selected]:not([unselectable])::before {
+:host main .cell[is-selected]:not([blocked])::before {
   z-index: 2;
   bottom: 0;
   left: 0;
   border: 1px solid var(--color);
 }
-:host main .cell[is-selected]:not([unselectable])[is-other]::before {
+:host main .cell[is-selected]:not([blocked])[is-other]::before {
   border-color: #777 !important;
 }
-:host main .cell[is-selected]:not([unselectable])[is-other]::after {
+:host main .cell[is-selected]:not([blocked])[is-other]::after {
   border-top-color: #777 !important;
 }
-:host main .cell[is-selected]:not([unselectable])::after {
+:host main .cell[is-selected]:not([blocked])::after {
   z-index: 1;
   border-left: var(--theme-h4) solid transparent;
   border-top-color: var(--color);
   border-top-width: var(--theme-h4);
   border-top-style: solid;
 }
-:host main .cell[is-selected]:not([unselectable])[is-today]::after {
+:host main .cell[is-selected]:not([blocked])[is-today]::after {
   border-top-color: white !important;
 }
 :host main .cell[type$=month], :host main .cell[type$=year] {
   width: 33.3333333333%;
 }
-:host main .cell[unselectable] {
+:host main .cell[blocked] {
   color: #dedede !important;
   cursor: default !important;
 }
-:host main .cell[unselectable]:hover {
+:host main .cell[blocked]:hover {
   background-color: transparent !important;
 }</style>
 
@@ -47955,7 +47956,7 @@ let DatePicker = class DatePicker extends WebComponent {
                 <template>
                     <dom-repeat items="[[cells]]" as="cell">
                         <template>
-                            <div class="cell layout horizontal center-center" type$="[[cell.type]]" is-selected$="[[_isDateSelected(zoom, cell.date, selectedDateMoment)]]" is-today$="[[_isDateToday(zoom, cell.date, today)]]" is-other$="[[_isOtherMonth(cell.monthOffset)]]" unselectable$="[[_isDateUnselectable(cell.date, minDate, maxDate)]]" break$="[[cell.break]]" on-tap="_select">[[cell.content]]</div>
+                            <div class="cell layout horizontal center-center" type$="[[cell.type]]" is-selected$="[[_isDateSelected(zoom, cell.date, selectedDateMoment)]]" is-today$="[[_isDateToday(zoom, cell.date, today)]]" is-other$="[[_isOtherMonth(cell.monthOffset)]]" blocked$="[[cell.blocked]]" break$="[[cell.break]]" on-tap="_select">[[cell.content]]</div>
                         </template>
                     </dom-repeat>
                 </template>
@@ -47996,7 +47997,7 @@ let DatePicker = class DatePicker extends WebComponent {
             this._setCanFast(false);
         }
     }
-    _render(cells, currentDate, deferredCellsUpdate) {
+    _render(cells, currentDate, minDate, maxDate, deferredCellsUpdate) {
         if (deferredCellsUpdate)
             return;
         const currentDateMoment = currentDate.clone();
@@ -48011,6 +48012,7 @@ let DatePicker = class DatePicker extends WebComponent {
                 this.set(`cells.${index}.date`, loop.clone());
                 this.set(`cells.${index}.content`, loop.format("D"));
                 this.set(`cells.${index}.monthOffset`, loop.isSame(currentDate, "month") ? 0 : (loop.isBefore(currentDate) ? -1 : 1));
+                this.set(`cells.${index}.blocked`, this._isBlocked(cells[index], minDate, maxDate));
                 index++;
                 loop.add(1, "days");
             } while (loop.isBefore(end));
@@ -48023,6 +48025,7 @@ let DatePicker = class DatePicker extends WebComponent {
             do {
                 this.set(`cells.${index}.date`, loop.clone());
                 this.set(`cells.${index}.content`, CultureInfo.currentCulture.dateFormat.shortMonthNames[index]);
+                this.set(`cells.${index}.blocked`, this._isBlocked(cells[index], minDate, maxDate));
                 index++;
                 loop.add(1, "months");
             } while (loop.isBefore(end));
@@ -48034,6 +48037,7 @@ let DatePicker = class DatePicker extends WebComponent {
             do {
                 this.set(`cells.${index}.date`, loop.clone());
                 this.set(`cells.${index}.content`, loop.year());
+                this.set(`cells.${index}.blocked`, this._isBlocked(cells[index], minDate, maxDate));
                 index++;
                 loop.add(1, "years");
             } while (loop.isBefore(end));
@@ -48061,10 +48065,12 @@ let DatePicker = class DatePicker extends WebComponent {
     _isOtherMonth(monthOffset) {
         return !!monthOffset;
     }
-    _isDateUnselectable(date, minDate, maxDate) {
+    _isBlocked(cell, minDate, maxDate) {
+        const date = cell.date;
         if (!date || (!minDate && !maxDate))
             return false;
-        return (minDate && date.isBefore(minDate)) || (maxDate && date.isAfter(maxDate));
+        const granularity = this.zoom === "days" ? "day" : (this.zoom === "months" ? "month" : "year");
+        return (minDate && date.isBefore(minDate, granularity)) || (maxDate && date.isAfter(maxDate, granularity));
     }
     _computeMoment(date) {
         return moment(date);
@@ -48094,9 +48100,9 @@ let DatePicker = class DatePicker extends WebComponent {
     }
     _select(e) {
         const cell = e.model.cell;
-        if (!cell || !cell.date)
+        if (!cell?.date)
             return;
-        if (e.target.hasAttribute("unselectable")) {
+        if (cell.blocked) {
             e.stopPropagation();
             return;
         }
@@ -48201,7 +48207,7 @@ DatePicker = __decorate([
             newTime: String
         },
         observers: [
-            "_render(cells, currentDate, deferredCellsUpdate)"
+            "_render(cells, currentDate, minDate, maxDate, deferredCellsUpdate)"
         ],
         listeners: {
             "tap": "_catchTap"

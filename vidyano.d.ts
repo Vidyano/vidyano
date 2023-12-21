@@ -11649,6 +11649,7 @@ declare class Popup extends WebComponent {
     readonly renderPopupCoreFit: boolean;
     private _setRenderPopupCoreFit;
     readonly supportsPopover: boolean;
+    private _setSupportsPopover;
     placement: Placement;
     disabled: boolean;
     sticky: boolean;
@@ -11754,6 +11755,7 @@ interface IDatePickerCell {
     content?: string;
     date?: moment.Moment;
     monthOffset?: number;
+    blocked?: boolean;
 }
 declare class DatePicker extends WebComponent {
     static get template(): HTMLTemplateElement;
@@ -11769,7 +11771,7 @@ declare class DatePicker extends WebComponent {
     private _setHeader;
     readonly deferredCellsUpdate: boolean;
     private _setDeferredCellsUpdate;
-    zoom: string;
+    zoom: "days" | "months" | "years";
     selectedDate: Date;
     monthMode: boolean;
     minDate: Date;
@@ -11782,7 +11784,7 @@ declare class DatePicker extends WebComponent {
     private _isDateSelected;
     private _isDateToday;
     private _isOtherMonth;
-    private _isDateUnselectable;
+    private _isBlocked;
     private _computeMoment;
     private _slow;
     private _fast;
