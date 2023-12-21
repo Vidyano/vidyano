@@ -73,8 +73,7 @@ const openPopups: Popup[] = [];
         },
         supportsPopover: {
             type: Boolean,
-            readOnly: true,
-            value: () => HTMLElement.prototype.hasOwnProperty("popover")
+            readOnly: true
         },
     },
     observers: [
@@ -100,7 +99,7 @@ export class Popup extends WebComponent {
     readonly open: boolean; protected _setOpen: (val: boolean) => void;
     readonly hover: boolean; private _setHover: (val: boolean) => void;
     readonly renderPopupCoreFit: boolean; private _setRenderPopupCoreFit: (renderPopupCoreFit: boolean) => void;
-    readonly supportsPopover: boolean;
+    readonly supportsPopover: boolean; private _setSupportsPopover: (supportsPopover: boolean) => void;
     placement: Placement;
     disabled: boolean;
     sticky: boolean;
@@ -110,6 +109,8 @@ export class Popup extends WebComponent {
 
     connectedCallback() {
         super.connectedCallback();
+
+        this._setSupportsPopover(HTMLElement.prototype.hasOwnProperty("popover") && Boolean.parse(this.app.configuration.getSetting("Experimental.UseNativePopover", "false")));
 
         this.addEventListener("popupparent", this._onPopupparent);
     }
