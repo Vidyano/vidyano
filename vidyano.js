@@ -10926,7 +10926,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.12.1";
+let version$2 = "3.12.2";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -39310,6 +39310,8 @@ let QueryGridFooter = class QueryGridFooter extends WebComponent {
     }
     _computeItemValue(item, column) {
         const value = item.getValue(column.name);
+        if (value == null)
+            return "";
         const format = item.getTypeHint("displayformat", column.column.getTypeHint("displayformat", null));
         return !String.isNullOrEmpty(format) ? String.format(format, value) : value;
     }
