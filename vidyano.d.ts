@@ -11649,7 +11649,6 @@ declare class Popup extends WebComponent {
     readonly renderPopupCoreFit: boolean;
     private _setRenderPopupCoreFit;
     readonly supportsPopover: boolean;
-    private _setSupportsPopover;
     placement: Placement;
     disabled: boolean;
     sticky: boolean;

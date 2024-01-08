@@ -10926,7 +10926,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.12.2";
+let version$2 = "3.12.3";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -23948,7 +23948,6 @@ let Popup = Popup_1 = class Popup extends WebComponent {
     #cleanup;
     connectedCallback() {
         super.connectedCallback();
-        this._setSupportsPopover(HTMLElement.prototype.hasOwnProperty("popover") && Boolean.parse(this.app.configuration.getSetting("Experimental.UseNativePopover", "false")));
         this.addEventListener("popupparent", this._onPopupparent);
     }
     disconnectedCallback() {
@@ -24005,24 +24004,10 @@ let Popup = Popup_1 = class Popup extends WebComponent {
                             });
                         }
                     },
-                })
+                }),
+                topLayerOverTransforms()
             ]
         });
-        if (this.supportsPopover) {
-            this.findParent(e => {
-                if (!e || e instanceof HTMLBodyElement)
-                    return true;
-                if (!(e instanceof HTMLElement))
-                    return false;
-                if (getComputedStyle(e, null).transform?.startsWith("matrix")) {
-                    const transformedParentRect = this.$.anchor.getBoundingClientRect();
-                    x += transformedParentRect.x;
-                    y += transformedParentRect.y;
-                    return true;
-                }
-                return false;
-            }, this.$.anchor);
-        }
         Object.assign(this.$.popup.style, {
             left: `${x}px`,
             top: `${y}px`,
@@ -24218,7 +24203,8 @@ Popup = Popup_1 = __decorate([
             },
             supportsPopover: {
                 type: Boolean,
-                readOnly: true
+                readOnly: true,
+                value: () => HTMLElement.prototype.hasOwnProperty("popover")
             },
         },
         observers: [
@@ -24229,6 +24215,99 @@ Popup = Popup_1 = __decorate([
         }
     })
 ], Popup);
+const topLayerOverTransforms = () => ({
+    name: 'topLayer',
+    async fn(middlewareArguments) {
+        const { x, y, elements: { reference, floating }, } = middlewareArguments;
+        let onTopLayer = false;
+        let topLayerIsFloating = false;
+        let withinReference = false;
+        const diffCoords = {
+            x: 0,
+            y: 0,
+        };
+        try {
+            onTopLayer = onTopLayer || floating.matches(':popover-open');
+        }
+        catch (error) { }
+        try {
+            onTopLayer = onTopLayer || floating.matches(':open');
+        }
+        catch (error) { }
+        try {
+            onTopLayer = onTopLayer || floating.matches(':modal');
+        }
+        catch (error) { }
+        topLayerIsFloating = onTopLayer;
+        const dialogAncestorQueryEvent = new Event('floating-ui-dialog-test', {
+            composed: true,
+            bubbles: true,
+        });
+        floating.addEventListener('floating-ui-dialog-test', (event) => {
+            event.composedPath().forEach((el) => {
+                withinReference = withinReference || el === reference;
+                if (el === floating || el.localName !== 'dialog')
+                    return;
+                try {
+                    onTopLayer = onTopLayer || el.matches(':modal');
+                }
+                catch (error) { }
+            });
+        }, { once: true });
+        floating.dispatchEvent(dialogAncestorQueryEvent);
+        let overTransforms = false;
+        const root = (withinReference ? reference : floating);
+        const containingBlock = isContainingBlock(root)
+            ? root
+            : getContainingBlock(root);
+        let css = {};
+        if (containingBlock !== null &&
+            getWindow(containingBlock) !==
+                containingBlock) {
+            css = getComputedStyle(containingBlock);
+            overTransforms =
+                css.transform !== 'none' ||
+                    css.translate !== 'none' ||
+                    (css.containerType
+                        ?
+                            css.containerType !== 'none'
+                        : false) ||
+                    (css.backdropFilter
+                        ?
+                            css.backdropFilter !== 'none'
+                        : false) ||
+                    (css.filter ? css.filter !== 'none' : false) ||
+                    css.willChange.search('transform') > -1 ||
+                    css.willChange.search('translate') > -1 ||
+                    ['paint', 'layout', 'strict', 'content'].some((value) => (css.contain || '').includes(value));
+        }
+        if (onTopLayer && overTransforms && containingBlock) {
+            const rect = containingBlock.getBoundingClientRect();
+            const { marginInlineStart = '0', marginBlockStart = '0' } = css;
+            diffCoords.x = rect.x + parseFloat(marginInlineStart);
+            diffCoords.y = rect.y + parseFloat(marginBlockStart);
+        }
+        if (onTopLayer && topLayerIsFloating) {
+            return {
+                x: x + diffCoords.x,
+                y: y + diffCoords.y,
+                data: diffCoords,
+            };
+        }
+        if (onTopLayer) {
+            return {
+                x,
+                y,
+                data: diffCoords,
+            };
+        }
+        return {
+            x: x - diffCoords.x,
+            y: y - diffCoords.y,
+            data: diffCoords,
+        };
+    },
+});
 
 let PopupMenuItemSplit = class PopupMenuItemSplit extends WebComponent {
     static get template() { return html$2 `<style>:host {
