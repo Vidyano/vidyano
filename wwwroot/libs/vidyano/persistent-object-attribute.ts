@@ -10,6 +10,8 @@ import type { PersistentObjectAttributeWithReference } from "./persistent-object
 
 export type PersistentObjectAttributeOption = KeyValuePair<string, string>;
 export class PersistentObjectAttribute extends ServiceObject {
+    #input: HTMLInputElement;
+
     private _isSystem: boolean;
     private _lastParsedValue: string;
     private _cachedValue: any;
@@ -45,7 +47,6 @@ export class PersistentObjectAttribute extends ServiceObject {
     triggersRefresh: boolean;
     column: number;
     columnSpan: number;
-    input: HTMLInputElement;
 
     constructor(service: Service, attr: Dto.PersistentObjectAttribute, parent: PersistentObject);
     constructor(service: Service, attr: Dto.PersistentObjectAttribute, public parent: PersistentObject) {
@@ -76,6 +77,14 @@ export class PersistentObjectAttribute extends ServiceObject {
 
         if (this.type !== "Reference")
             this._setOptions(attr.options);
+
+        if (this.type === "BinaryFile") {
+            const input = document?.createElement("input");
+            input.type = "file";
+            input.accept = this.getTypeHint("accept", null);
+
+            this.#input = input;
+        }
     }
 
     get groupKey(): string {
@@ -313,6 +322,10 @@ export class PersistentObjectAttribute extends ServiceObject {
         return this._isSensitive;
     }
 
+    get input(): HTMLInputElement {
+        return this.#input;
+    }
+
     getTypeHint(name: string, defaultValue?: string, typeHints?: any, ignoreCasing?: boolean): string {
         if (typeHints != null) {
             if (this.typeHints != null)
@@ -364,6 +377,9 @@ export class PersistentObjectAttribute extends ServiceObject {
 
             this.notifyPropertyChanged("value", this.value, oldValue);
             this.notifyPropertyChanged("displayValue", this.displayValue, oldDisplayValue);
+
+            if (this.#input)
+                this.#input.value = null;
 
             this.isValueChanged = resultAttr.isValueChanged;
         }

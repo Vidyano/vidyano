@@ -14,71 +14,74 @@ import { PersistentObjectAttribute } from "../../persistent-object-attribute.js"
             type: String,
             computed: "_computeFileName(value)"
         }
-    },
-    observers: [
-        "_registerInput(attribute, isConnected)"
-    ]
+    }
 })
 export class PersistentObjectAttributeBinaryFile extends PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-binary-file.html">`; }
 
-    focus() {
-        (this.querySelector("input[type='file']") as HTMLInputElement)?.focus();
+    connectedCallback(): void {
+        super.connectedCallback();
+
+        this._hookInput(this.attribute);
     }
 
-    private _inputContainer: HTMLDivElement;
-        private _inputAttribute: Vidyano.PersistentObjectAttribute;
+    disconnectedCallback(): void {
+        super.disconnectedCallback();
 
-        private async _change(e: Event) {
-            const targetInput = <HTMLInputElement>e.target;
-            if (targetInput.files && targetInput.files.length > 0) {
-                this.value = targetInput.files[0].name;
-                if (this.attribute.triggersRefresh)
-                    await this.attribute._triggerAttributeRefresh(true);
-            }
+        this._unhookInput();
+    }
+
+    focus() {
+        this.attribute?.input?.focus();
+    }
+
+    protected _attributeChanged() {
+        super._attributeChanged();
+
+        this._unhookInput();
+        this._hookInput(this.attribute);
+    }
+
+    private async _change(e: Event) {
+        const targetInput = <HTMLInputElement>e.target;
+        if (targetInput.files && targetInput.files.length > 0) {
+            this.value = targetInput.files[0].name;
+            if (this.attribute.triggersRefresh)
+                await this.attribute._triggerAttributeRefresh(true);
         }
+    }
 
-        private _registerInput(attribute: Vidyano.PersistentObjectAttribute, isConnected: boolean) {
-            if (this._inputAttribute) {
-                this._inputAttribute.input = null;
-                this._inputAttribute = null;
-            }
+    private _unhookInput() {
+        const currentInput = this.querySelector("input[slot=upload]") as HTMLInputElement;
+        if (currentInput)
+            this.removeChild(currentInput);
+    }
 
-            if (this._inputContainer)
-                this._inputContainer.textContent = "";
+    private _hookInput(attribute: Vidyano.PersistentObjectAttribute) {
+        if (!attribute?.input)
+            return;
+        
+        attribute.input.setAttribute("slot", "upload");
+        this.appendChild(attribute.input);
+    }
 
-            if (attribute && isConnected) {
-                this._inputAttribute = attribute;
+    private _clear() {
+        this.value = null;
+        
+        if (this.attribute?.input?.files?.length)
+            this.attribute.input.value = null;
+    }
 
-                const input = document.createElement("input");
-                this._inputAttribute.input = input;
-                input.type = "file";
-                input.accept = this.attribute.getTypeHint("accept");
+    private _computeCanClear(value: string, readOnly: boolean): boolean {
+        return !readOnly && !String.isNullOrEmpty(value);
+    }
 
-                if (!this._inputContainer) {
-                    this._inputContainer = document.createElement("div");
-                    this._inputContainer.setAttribute("slot", "upload");
+    private _computeFileName(value: string): string {
+        if (String.isNullOrEmpty(value))
+            return "";
 
-                    this.appendChild(this._inputContainer);
-                }
-                this._inputContainer.appendChild(input);
-            }
-        }
-
-        private _clear() {
-            this.value = null;
-        }
-
-        private _computeCanClear(value: string, readOnly: boolean): boolean {
-            return !readOnly && !String.isNullOrEmpty(value);
-        }
-
-        private _computeFileName(value: string): string {
-            if (String.isNullOrEmpty(value))
-                return "";
-
-            return value.split("|")[0];
-        }
+        return value.split("|")[0];
+    }
 }
 
 PersistentObjectAttribute.registerAttributeType("BinaryFile", PersistentObjectAttributeBinaryFile);
