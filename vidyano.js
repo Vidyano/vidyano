@@ -7438,6 +7438,7 @@ class ServiceObjectWithActions extends ServiceObject {
 }
 
 let PersistentObjectAttribute$1 = class PersistentObjectAttribute extends ServiceObject {
+    #input;
     constructor(service, attr, parent) {
         super(service);
         this.parent = parent;
@@ -7466,6 +7467,12 @@ let PersistentObjectAttribute$1 = class PersistentObjectAttribute extends Servic
         this.visibility = attr.visibility;
         if (this.type !== "Reference")
             this._setOptions(attr.options);
+        if (this.type === "BinaryFile") {
+            const input = document?.createElement("input");
+            input.type = "file";
+            input.accept = this.getTypeHint("accept", null);
+            this.#input = input;
+        }
     }
     get groupKey() {
         return this._groupKey;
@@ -7654,6 +7661,9 @@ let PersistentObjectAttribute$1 = class PersistentObjectAttribute extends Servic
     get isSensitive() {
         return this._isSensitive;
     }
+    get input() {
+        return this.#input;
+    }
     getTypeHint(name, defaultValue, typeHints, ignoreCasing) {
         if (typeHints != null) {
             if (this.typeHints != null)
@@ -7694,6 +7704,8 @@ let PersistentObjectAttribute$1 = class PersistentObjectAttribute extends Servic
             this._lastParsedValue = undefined;
             this.notifyPropertyChanged("value", this.value, oldValue);
             this.notifyPropertyChanged("displayValue", this.displayValue, oldDisplayValue);
+            if (this.#input)
+                this.#input.value = null;
             this.isValueChanged = resultAttr.isValueChanged;
         }
         this._refreshServiceValue = undefined;
@@ -10926,7 +10938,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.12.4";
+let version$2 = "3.12.5";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -46020,7 +46032,7 @@ let PersistentObjectAttributeBinaryFile = class PersistentObjectAttributeBinaryF
   min-width: 0;
   z-index: 1;
 }
-:host .browse ::slotted(div) {
+:host .browse ::slotted(input) {
   position: absolute;
   top: 0;
   right: 0;
@@ -46074,8 +46086,21 @@ let PersistentObjectAttributeBinaryFile = class PersistentObjectAttributeBinaryF
         </g>
     </svg>
 </vi-icon>`; }
+    connectedCallback() {
+        super.connectedCallback();
+        this._hookInput(this.attribute);
+    }
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        this._unhookInput();
+    }
     focus() {
-        this.querySelector("input[type='file']")?.focus();
+        this.attribute?.input?.focus();
+    }
+    _attributeChanged() {
+        super._attributeChanged();
+        this._unhookInput();
+        this._hookInput(this.attribute);
     }
     async _change(e) {
         const targetInput = e.target;
@@ -46085,29 +46110,21 @@ let PersistentObjectAttributeBinaryFile = class PersistentObjectAttributeBinaryF
                 await this.attribute._triggerAttributeRefresh(true);
         }
     }
-    _registerInput(attribute, isConnected) {
-        if (this._inputAttribute) {
-            this._inputAttribute.input = null;
-            this._inputAttribute = null;
-        }
-        if (this._inputContainer)
-            this._inputContainer.textContent = "";
-        if (attribute && isConnected) {
-            this._inputAttribute = attribute;
-            const input = document.createElement("input");
-            this._inputAttribute.input = input;
-            input.type = "file";
-            input.accept = this.attribute.getTypeHint("accept");
-            if (!this._inputContainer) {
-                this._inputContainer = document.createElement("div");
-                this._inputContainer.setAttribute("slot", "upload");
-                this.appendChild(this._inputContainer);
-            }
-            this._inputContainer.appendChild(input);
-        }
+    _unhookInput() {
+        const currentInput = this.querySelector("input[slot=upload]");
+        if (currentInput)
+            this.removeChild(currentInput);
+    }
+    _hookInput(attribute) {
+        if (!attribute?.input)
+            return;
+        attribute.input.setAttribute("slot", "upload");
+        this.appendChild(attribute.input);
     }
     _clear() {
         this.value = null;
+        if (this.attribute?.input?.files?.length)
+            this.attribute.input.value = null;
     }
     _computeCanClear(value, readOnly) {
         return !readOnly && !String.isNullOrEmpty(value);
@@ -46129,10 +46146,7 @@ PersistentObjectAttributeBinaryFile = __decorate([
                 type: String,
                 computed: "_computeFileName(value)"
             }
-        },
-        observers: [
-            "_registerInput(attribute, isConnected)"
-        ]
+        }
     })
 ], PersistentObjectAttributeBinaryFile);
 PersistentObjectAttribute.registerAttributeType("BinaryFile", PersistentObjectAttributeBinaryFile);

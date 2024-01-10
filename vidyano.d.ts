@@ -3207,6 +3207,7 @@ declare class PersistentObjectQueryTab extends PersistentObjectTab$1 {
 
 type PersistentObjectAttributeOption = KeyValuePair<string, string>;
 declare class PersistentObjectAttribute$1 extends ServiceObject {
+    #private;
     parent: PersistentObject$1;
     private _isSystem;
     private _lastParsedValue;
@@ -3241,7 +3242,6 @@ declare class PersistentObjectAttribute$1 extends ServiceObject {
     triggersRefresh: boolean;
     column: number;
     columnSpan: number;
-    input: HTMLInputElement;
     constructor(service: Service, attr: PersistentObjectAttribute$2, parent: PersistentObject$1);
     get groupKey(): string;
     get group(): PersistentObjectAttributeGroup;
@@ -3269,6 +3269,7 @@ declare class PersistentObjectAttribute$1 extends ServiceObject {
     get isValueChanged(): boolean;
     set isValueChanged(isValueChanged: boolean);
     get isSensitive(): boolean;
+    get input(): HTMLInputElement;
     getTypeHint(name: string, defaultValue?: string, typeHints?: any, ignoreCasing?: boolean): string;
     _toServiceObject(): any;
     _refreshFromResult(resultAttr: PersistentObjectAttribute$1, resultWins: boolean): boolean;
@@ -12001,11 +12002,13 @@ declare class PersistentObjectAttributeAsDetail extends PersistentObjectAttribut
 
 declare class PersistentObjectAttributeBinaryFile extends PersistentObjectAttribute {
     static get template(): HTMLTemplateElement;
+    connectedCallback(): void;
+    disconnectedCallback(): void;
     focus(): void;
-    private _inputContainer;
-    private _inputAttribute;
+    protected _attributeChanged(): void;
     private _change;
-    private _registerInput;
+    private _unhookInput;
+    private _hookInput;
     private _clear;
     private _computeCanClear;
     private _computeFileName;
