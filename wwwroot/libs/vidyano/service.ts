@@ -219,6 +219,10 @@ export class Service extends Observable<Service> {
                         });
                     },
                     onclose: () => cancel(),
+                    onerror: () => {
+                        cancel();
+                        return null;
+                    },
                     openWhenHidden: true
                 });
 
