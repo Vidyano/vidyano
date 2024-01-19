@@ -10938,7 +10938,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.12.5";
+let version$2 = "3.12.6";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -11083,6 +11083,10 @@ class Service extends Observable {
                         });
                     },
                     onclose: () => cancel(),
+                    onerror: () => {
+                        cancel();
+                        return null;
+                    },
                     openWhenHidden: true
                 });
                 await awaiter;
