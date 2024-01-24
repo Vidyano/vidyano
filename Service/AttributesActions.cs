@@ -23,6 +23,8 @@ namespace VidyanoWeb3.Service
                     a.IsSensitive = true;
                 });
             }
+
+            obj.Attributes.Run(attr => attr.Actions = new[] { "Test" });
         }
 
         protected override Attributes LoadEntity(PersistentObject obj, bool forRefresh = false)

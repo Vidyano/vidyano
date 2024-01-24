@@ -150,6 +150,7 @@ export declare type PersistentObjectAttribute = {
     validationError?: string;
     triggersRefresh?: boolean;
     options?: string[];
+    actions?: string[];
 };
 export declare type PersistentObjectAttributeWithReference = {
     displayAttribute: string;

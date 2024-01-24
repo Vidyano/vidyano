@@ -45,6 +45,11 @@
       "UserId": "d3bd3312-0730-43d9-9bf4-9e14c75b00f7"
     },
     {
+      "Id": "3769e545-1f75-408e-bae9-efafc0ca26ba",
+      "Resource": "Test/VidyanoWeb3.Attributes",
+      "UserId": "f345b3f8-57ad-4242-8575-cf93335e3b9a"
+    },
+    {
       "Id": "26b25229-5df4-4a8c-a491-63e4571a450d",
       "Resource": "WithActions/VidyanoWeb3.ActionBarTest",
       "UserId": "f345b3f8-57ad-4242-8575-cf93335e3b9a"

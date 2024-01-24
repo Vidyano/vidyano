@@ -70,7 +70,7 @@
             position: relative;
             background-color: white;
 
-            ::slotted(*) {
+            ::slotted(*), .action {
                 position: relative;
                 outline: none;
                 cursor: pointer;
@@ -107,35 +107,41 @@
                 }
             }
 
-            ::slotted(*:hover) {
+            ::slotted(*:hover), .action:hover {
                 background-color: var(--color-faint);
             }
 
-            ::slotted(*:active) {
+            ::slotted(*:active), .action:active {
                 background-color: var(--color-dark) !important;
                 --vi-icon-fill: white;
             }
 
-            &:hover ::slotted(*) {
-                &::after {
-                    left: 0;
+            &:hover {
+                ::slotted(*), .action {
+                    &::after {
+                        left: 0;
+                        right: 0;
+                    }
+        
+                    &::before {
+                        top: 0;
+                        bottom: 0;
+                    }
+                }
+            }
+
+            &.left {
+                ::slotted(*)::before, .action::before {
                     right: 0;
-                }
-    
-                &::before {
-                    top: 0;
-                    bottom: 0;
+                    border-right: 1px solid var(--theme-light-border);
                 }
             }
 
-            &.left ::slotted(*)::before {
-                right: 0;
-                border-right: 1px solid var(--theme-light-border);
-            }
-
-            &.right ::slotted(*)::before {
-                left: 0;
-                border-left: 1px solid var(--theme-light-border);
+            &.right {
+                ::slotted(*)::before, .action::before {
+                    left: 0;
+                    border-left: 1px solid var(--theme-light-border);
+                }
             }
 
             &.left, &.right {
@@ -161,16 +167,16 @@
             border-color: var(--color-lighter);
 
             .extras {
-                ::slotted(*) {
+                ::slotted(*), .action {
                     --vi-icon-fill: var(--color);
                 }
 
-                ::slotted(*:hover) {
+                ::slotted(*:hover), .action:hover {
                     background-color: var(--color);
                     --vi-icon-fill: white !important;
                 }
 
-                ::slotted(*)::after, ::slotted(*)::before {
+                ::slotted(*)::after, ::slotted(*)::before, .action::after, .action::before {
                     border-color: var(--color-lighter);
                 }
             }

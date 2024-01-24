@@ -6,6 +6,13 @@
     </div>
     <slot></slot>
     <div class="right extras">
+        <dom-repeat items="[[attribute.actions]]" as="action">
+            <template>
+                <vi-button class="action" on-tap="_onActionTap" tabindex="-1">
+                    <vi-icon source="[[_computeActionIcon(action)]]"></vi-icon>
+                </vi-button>
+            </template>
+        </dom-repeat>
         <slot name="right"></slot>
     </div>
 </div>

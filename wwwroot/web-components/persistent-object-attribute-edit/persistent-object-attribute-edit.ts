@@ -1,5 +1,6 @@
 import * as Polymer from "../../libs/polymer/polymer.js"
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
+import * as IconRegister from "../icon/icon-register.js"
 import "../persistent-object-attribute-validation-error/persistent-object-attribute-validation-error.js"
 import { WebComponent } from "../web-component/web-component.js"
 
@@ -40,6 +41,7 @@ import { WebComponent } from "../web-component/web-component.js"
         "focusout": "_blur",
     },
     forwardObservers: [
+        "attribute.actions",
         "attribute.isSensitive",
         "attribute.validationError",
         "attribute.parent.isFrozen",
@@ -72,5 +74,21 @@ export class PersistentObjectAttributeEdit extends WebComponent {
 
     private _computeHasValidationError(validationError: string, isReadOnly: boolean) {
         return validationError && !isReadOnly;
+    }
+
+    private _computeActionIcon(action: Vidyano.Action): string {
+        if (!action)
+            return "";
+
+        return !IconRegister.exists(action.definition.icon) ? "Action_Default$" : action.definition.icon;
+    }
+
+    private _onActionTap(e: Polymer.Gestures.TapEvent) {
+        const action = e.model.action as Vidyano.Action;
+        action?.execute({
+            parameters: {
+                "AttributeName": this.attribute.name
+            }
+        });
     }
 }

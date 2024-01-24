@@ -7,10 +7,12 @@ import { ServiceObject } from "./service-object.js"
 import { CultureInfo } from "./cultures.js"
 import type { PersistentObjectAttributeGroup } from "./persistent-object-attribute-group.js"
 import type { PersistentObjectAttributeWithReference } from "./persistent-object-attribute-with-reference.js"
+import { Action } from "./action.js"
 
 export type PersistentObjectAttributeOption = KeyValuePair<string, string>;
 export class PersistentObjectAttribute extends ServiceObject {
     #input: HTMLInputElement;
+    #actions: Array<Action> & Record<string, Action>;
 
     private _isSystem: boolean;
     private _lastParsedValue: string;
@@ -85,6 +87,9 @@ export class PersistentObjectAttribute extends ServiceObject {
 
             this.#input = input;
         }
+
+        this.#actions = <any>[];
+        Action.addActions(this.service, this.parent, this.#actions, attr.actions || []);
     }
 
     get groupKey(): string {
@@ -326,6 +331,15 @@ export class PersistentObjectAttribute extends ServiceObject {
         return this.#input;
     }
 
+    get actions(): Array<Action> & Record<string, Action> {
+        return this.#actions;
+    }
+
+    private _setActions(actions: Array<Action> & Record<string, Action>) {
+        const oldActions = this.#actions;
+        this.notifyPropertyChanged("actions", this.#actions = actions, oldActions);
+    }
+
     getTypeHint(name: string, defaultValue?: string, typeHints?: any, ignoreCasing?: boolean): string {
         if (typeHints != null) {
             if (this.typeHints != null)
@@ -348,6 +362,8 @@ export class PersistentObjectAttribute extends ServiceObject {
         const result = this.copyProperties(["id", "name", "label", "type", "isReadOnly", "triggersRefresh", "isRequired", "differsInBulkEditMode", "isValueChanged", "displayAttribute", "objectId", "visibility"]);
         result.value = this._serviceValue;
 
+        result.actions = this.actions.map(a => a.name);
+
         if (this.options && this.options.length > 0 && this.isValueChanged)
             result.options = (<any[]>this.options).map(o => o ? (typeof (o) !== "string" ? o.key + "=" + o.value : o) : null);
         else
@@ -359,6 +375,7 @@ export class PersistentObjectAttribute extends ServiceObject {
     _refreshFromResult(resultAttr: PersistentObjectAttribute, resultWins: boolean): boolean {
         let visibilityChanged = false;
 
+        this._setActions(resultAttr.actions);
         this._setOptions(resultAttr._serviceOptions);
         this._setIsReadOnly(resultAttr.isReadOnly);
         this._setRules(resultAttr.rules);

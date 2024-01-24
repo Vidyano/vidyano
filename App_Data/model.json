@@ -229,6 +229,12 @@
       "IsPinned": true,
       "IconName": "Help"
     },
+    "Test": {
+      "DisplayName": {
+        "en": "Test",
+        "nl": "Test"
+      }
+    },
     "viLoadAdvancedSearch": {
       "Offset": 1600,
       "ShowedOn": 2,
