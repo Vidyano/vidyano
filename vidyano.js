@@ -7439,6 +7439,7 @@ class ServiceObjectWithActions extends ServiceObject {
 
 let PersistentObjectAttribute$1 = class PersistentObjectAttribute extends ServiceObject {
     #input;
+    #actions;
     constructor(service, attr, parent) {
         super(service);
         this.parent = parent;
@@ -7473,6 +7474,8 @@ let PersistentObjectAttribute$1 = class PersistentObjectAttribute extends Servic
             input.accept = this.getTypeHint("accept", null);
             this.#input = input;
         }
+        this.#actions = [];
+        Action.addActions(this.service, this.parent, this.#actions, attr.actions || []);
     }
     get groupKey() {
         return this._groupKey;
@@ -7664,6 +7667,13 @@ let PersistentObjectAttribute$1 = class PersistentObjectAttribute extends Servic
     get input() {
         return this.#input;
     }
+    get actions() {
+        return this.#actions;
+    }
+    _setActions(actions) {
+        const oldActions = this.#actions;
+        this.notifyPropertyChanged("actions", this.#actions = actions, oldActions);
+    }
     getTypeHint(name, defaultValue, typeHints, ignoreCasing) {
         if (typeHints != null) {
             if (this.typeHints != null)
@@ -7681,6 +7691,7 @@ let PersistentObjectAttribute$1 = class PersistentObjectAttribute extends Servic
     _toServiceObject() {
         const result = this.copyProperties(["id", "name", "label", "type", "isReadOnly", "triggersRefresh", "isRequired", "differsInBulkEditMode", "isValueChanged", "displayAttribute", "objectId", "visibility"]);
         result.value = this._serviceValue;
+        result.actions = this.actions.map(a => a.name);
         if (this.options && this.options.length > 0 && this.isValueChanged)
             result.options = this.options.map(o => o ? (typeof (o) !== "string" ? o.key + "=" + o.value : o) : null);
         else
@@ -7689,6 +7700,7 @@ let PersistentObjectAttribute$1 = class PersistentObjectAttribute extends Servic
     }
     _refreshFromResult(resultAttr, resultWins) {
         let visibilityChanged = false;
+        this._setActions(resultAttr.actions);
         this._setOptions(resultAttr._serviceOptions);
         this._setIsReadOnly(resultAttr.isReadOnly);
         this._setRules(resultAttr.rules);
@@ -10938,7 +10950,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.12.6";
+let version$2 = "3.13.0-preview1";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -45047,7 +45059,7 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
   position: relative;
   background-color: white;
 }
-:host .box .extras ::slotted(*) {
+:host .box .extras ::slotted(*), :host .box .extras .action {
   position: relative;
   outline: none;
   cursor: pointer;
@@ -45074,19 +45086,19 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
   transition-timing-function: ease-out;
   transition: background-color 0.1s ease-out;
 }
-:host .box .extras ::slotted(*):hover {
+:host .box .extras ::slotted(*):hover, :host .box .extras .action:hover {
   background-color: var(--color-faint);
 }
-:host .box .extras ::slotted(*):active {
+:host .box .extras ::slotted(*):active, :host .box .extras .action:active {
   background-color: var(--color-dark);
   fill: white !important;
   color: white !important;
 }
-:host .box .extras ::slotted(*)[disabled] {
+:host .box .extras ::slotted(*)[disabled], :host .box .extras .action[disabled] {
   fill: var(--color-faint);
   color: fadeout(black, 50%);
 }
-:host .box .extras ::slotted(*)::after {
+:host .box .extras ::slotted(*)::after, :host .box .extras .action::after {
   position: absolute;
   bottom: -1px;
   left: 3px;
@@ -45095,37 +45107,37 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
   border-bottom: 1px solid var(--theme-light-border);
   transition: all 0.1s ease-in-out;
 }
-:host .box .extras ::slotted(*)::before {
+:host .box .extras ::slotted(*)::before, :host .box .extras .action::before {
   position: absolute;
   top: 4px;
   bottom: 4px;
   content: " ";
   transition: all 0.1s ease-in-out;
 }
-:host .box .extras ::slotted(*) vi-icon {
+:host .box .extras ::slotted(*) vi-icon, :host .box .extras .action vi-icon {
   width: calc(var(--theme-h2) - 2px);
   height: calc(var(--theme-h2) - 2px);
 }
-:host .box .extras ::slotted(*:hover) {
+:host .box .extras ::slotted(*:hover), :host .box .extras .action:hover {
   background-color: var(--color-faint);
 }
-:host .box .extras ::slotted(*:active) {
+:host .box .extras ::slotted(*:active), :host .box .extras .action:active {
   background-color: var(--color-dark) !important;
   --vi-icon-fill: white;
 }
-:host .box .extras:hover ::slotted(*)::after {
+:host .box .extras:hover ::slotted(*)::after, :host .box .extras:hover .action::after {
   left: 0;
   right: 0;
 }
-:host .box .extras:hover ::slotted(*)::before {
+:host .box .extras:hover ::slotted(*)::before, :host .box .extras:hover .action::before {
   top: 0;
   bottom: 0;
 }
-:host .box .extras.left ::slotted(*)::before {
+:host .box .extras.left ::slotted(*)::before, :host .box .extras.left .action::before {
   right: 0;
   border-right: 1px solid var(--theme-light-border);
 }
-:host .box .extras.right ::slotted(*)::before {
+:host .box .extras.right ::slotted(*)::before, :host .box .extras.right .action::before {
   left: 0;
   border-left: 1px solid var(--theme-light-border);
 }
@@ -45142,14 +45154,14 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
 :host(:focus-within) .box {
   border-color: var(--color-lighter);
 }
-:host(:focus-within) .box .extras ::slotted(*) {
+:host(:focus-within) .box .extras ::slotted(*), :host(:focus-within) .box .extras .action {
   --vi-icon-fill: var(--color);
 }
-:host(:focus-within) .box .extras ::slotted(*:hover) {
+:host(:focus-within) .box .extras ::slotted(*:hover), :host(:focus-within) .box .extras .action:hover {
   background-color: var(--color);
   --vi-icon-fill: white !important;
 }
-:host(:focus-within) .box .extras ::slotted(*)::after, :host(:focus-within) .box .extras ::slotted(*)::before {
+:host(:focus-within) .box .extras ::slotted(*)::after, :host(:focus-within) .box .extras ::slotted(*)::before, :host(:focus-within) .box .extras .action::after, :host(:focus-within) .box .extras .action::before {
   border-color: var(--color-lighter);
 }</style>
 
@@ -45159,6 +45171,13 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
     </div>
     <slot></slot>
     <div class="right extras">
+        <dom-repeat items="[[attribute.actions]]" as="action">
+            <template>
+                <vi-button class="action" on-tap="_onActionTap" tabindex="-1">
+                    <vi-icon source="[[_computeActionIcon(action)]]"></vi-icon>
+                </vi-button>
+            </template>
+        </dom-repeat>
         <slot name="right"></slot>
     </div>
 </div>
@@ -45182,6 +45201,19 @@ let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends 
     }
     _computeHasValidationError(validationError, isReadOnly) {
         return validationError && !isReadOnly;
+    }
+    _computeActionIcon(action) {
+        if (!action)
+            return "";
+        return !exists(action.definition.icon) ? "Action_Default$" : action.definition.icon;
+    }
+    _onActionTap(e) {
+        const action = e.model.action;
+        action?.execute({
+            parameters: {
+                "AttributeName": this.attribute.name
+            }
+        });
     }
 };
 PersistentObjectAttributeEdit = __decorate([
@@ -45222,6 +45254,7 @@ PersistentObjectAttributeEdit = __decorate([
             "focusout": "_blur",
         },
         forwardObservers: [
+            "attribute.actions",
             "attribute.isSensitive",
             "attribute.validationError",
             "attribute.parent.isFrozen",

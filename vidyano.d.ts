@@ -2903,6 +2903,7 @@ declare type PersistentObjectAttribute$2 = {
     validationError?: string;
     triggersRefresh?: boolean;
     options?: string[];
+    actions?: string[];
 };
 declare type PersistentObjectAttributeWithReference$1 = {
     displayAttribute: string;
@@ -3270,6 +3271,8 @@ declare class PersistentObjectAttribute$1 extends ServiceObject {
     set isValueChanged(isValueChanged: boolean);
     get isSensitive(): boolean;
     get input(): HTMLInputElement;
+    get actions(): Array<Action> & Record<string, Action>;
+    private _setActions;
     getTypeHint(name: string, defaultValue?: string, typeHints?: any, ignoreCasing?: boolean): string;
     _toServiceObject(): any;
     _refreshFromResult(resultAttr: PersistentObjectAttribute$1, resultWins: boolean): boolean;
@@ -11912,6 +11915,8 @@ declare class PersistentObjectAttributeEdit extends WebComponent {
     private _computeHasError;
     private _computeSensitive;
     private _computeHasValidationError;
+    private _computeActionIcon;
+    private _onActionTap;
 }
 
 declare class PersistentObjectAttributeLabel extends WebComponent {
