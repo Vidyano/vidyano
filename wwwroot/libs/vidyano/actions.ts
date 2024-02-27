@@ -149,7 +149,8 @@ Actions.Save = class Save extends Action {
         if (this.service.queuedClientOperations.length > 0 &&
             this.service.queuedClientOperations.some(o => {
                 if (o.type === "Open") {
-                    (<IOpenOperation>o).replace = true;
+                    // Replace the current visible service object if the parent is not a dialog
+                    (<IOpenOperation>o).replace = this.parent.stateBehavior.indexOf("Dialog") === -1;
                     return true;
                 }
                 else if (o.type === "ExecuteMethod") {
