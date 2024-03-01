@@ -72,7 +72,7 @@ export class PersistentObjectAttributeBinaryFile extends PersistentObjectAttribu
             this.attribute.input.value = null;
 
         if(this.attribute?.triggersRefresh)
-            await this.attribute?._triggerAttributeRefresh(true);
+            await this.attribute._triggerAttributeRefresh(true);
     }
 
     private _computeCanClear(value: string, readOnly: boolean): boolean {
