@@ -10677,7 +10677,7 @@ Actions.Save = class Save extends Action {
         if (this.service.queuedClientOperations.length > 0 &&
             this.service.queuedClientOperations.some(o => {
                 if (o.type === "Open") {
-                    o.replace = true;
+                    o.replace = this.parent.stateBehavior.indexOf("Dialog") === -1;
                     return true;
                 }
                 else if (o.type === "ExecuteMethod") {
@@ -10950,7 +10950,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.13.0-preview1";
+let version$2 = "3.13.0-preview2";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -25271,8 +25271,8 @@ let AppRoute = class AppRoute extends WebComponent {
         if (this.active && this.matchesParameters(parameters))
             return;
         this._parameters = parameters;
-        if (this.preserveContent && this.shadowRoot.querySelector("slot").assignedElements().length > 0)
-            this._fireActivate(this.shadowRoot.querySelector("slot").assignedElements()[0]);
+        if (this.preserveContent && this._hasChildren)
+            this.shadowRoot.querySelector("slot").assignedElements().forEach(this._fireActivate.bind(this));
         else {
             this._clearChildren();
             const template = this.querySelector("template");
@@ -25496,7 +25496,7 @@ let AppRoutePresenter = class AppRoutePresenter extends WebComponent {
 </dom-if>`; }
     connectedCallback() {
         super.connectedCallback();
-        this.fire("app-route-presenter:connected");
+        microTask.run(() => this.fire("app-route-presenter:connected", { presenter: this }));
         this._routesObserver = new FlattenedNodesObserver(this.$.routes, this._routesChanged.bind(this));
     }
     disconnectedCallback() {
@@ -31179,8 +31179,7 @@ let AppBase = AppBase_1 = class AppBase extends WebComponent {
         });
     }
     _appRoutePresenterConnected(e) {
-        const appRoutePresenter = e.composedPath()[0];
-        this._setAppRoutePresenter(appRoutePresenter);
+        this._setAppRoutePresenter(e.detail["presenter"]);
     }
     async _computeInitialService(uri, isConnected) {
         if (!isConnected)
@@ -46158,10 +46157,12 @@ let PersistentObjectAttributeBinaryFile = class PersistentObjectAttributeBinaryF
         attribute.input.setAttribute("slot", "upload");
         this.appendChild(attribute.input);
     }
-    _clear() {
+    async _clear() {
         this.value = null;
         if (this.attribute?.input?.files?.length)
             this.attribute.input.value = null;
+        if (this.attribute?.triggersRefresh)
+            await this.attribute._triggerAttributeRefresh(true);
     }
     _computeCanClear(value, readOnly) {
         return !readOnly && !String.isNullOrEmpty(value);
@@ -56018,7 +56019,7 @@ let PersistentObject = class PersistentObject extends WebComponent {
         return tabs && tabs.length > 0;
     }
     _computeShowNavigation(persistentObject) {
-        return !persistentObject.isNew && !!persistentObject.ownerQuery && !persistentObject.isBulkEdit;
+        return !persistentObject.isNew && persistentObject.ownerQuery?.totalItems > 0 && !persistentObject.isBulkEdit;
     }
     _tabselect(e) {
         let { name, tab } = e.detail;
