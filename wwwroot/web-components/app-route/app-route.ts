@@ -69,8 +69,8 @@ export class AppRoute extends WebComponent {
 
         this._parameters = parameters;
 
-        if (this.preserveContent && this.shadowRoot.querySelector("slot").assignedElements().length > 0)
-            this._fireActivate(<WebComponent>this.shadowRoot.querySelector("slot").assignedElements()[0]);
+        if (this.preserveContent && this._hasChildren)
+            this.shadowRoot.querySelector("slot").assignedElements().forEach(this._fireActivate.bind(this));
         else {
             this._clearChildren();
 
