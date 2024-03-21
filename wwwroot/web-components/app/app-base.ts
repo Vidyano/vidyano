@@ -257,8 +257,7 @@ export abstract class AppBase extends WebComponent {
     }
 
     private _appRoutePresenterConnected(e: CustomEvent) {
-        const appRoutePresenter = <AppRoutePresenter>e.composedPath()[0];
-        this._setAppRoutePresenter(appRoutePresenter);
+        this._setAppRoutePresenter(e.detail["presenter"] as AppRoutePresenter);
     }
 
     private async _computeInitialService(uri: string, isConnected: boolean) {

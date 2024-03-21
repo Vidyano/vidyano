@@ -37,7 +37,7 @@ export class AppRoutePresenter extends WebComponent {
     connectedCallback() {
         super.connectedCallback();
 
-        this.fire("app-route-presenter:connected");
+        Polymer.Async.microTask.run(() => this.fire("app-route-presenter:connected", { presenter: this }));
 
         // FlattenedNodesObserver also flattens slots that have other slots assigned to them.
         // We need this to make sure additional routes defined in the app are also added.
