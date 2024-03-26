@@ -41,9 +41,9 @@ import { PersistentObjectDialog } from "../../../persistent-object-dialog/persis
             value: true,
             readOnly: true
         },
-        activeObject: {
-            type: Object,
-            value: null
+        activeObjectIndex: {
+            type: Number,
+            value: -1
         },
         isAdding: {
             type: Boolean,
@@ -68,12 +68,14 @@ import { PersistentObjectDialog } from "../../../persistent-object-dialog/persis
 export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-as-detail.html">`; }
 
+    #_unfrozenActiveObjectIndex: number;
     private _inlineAddHeight: number;
     readonly initializing: boolean; private _setInitializing: (init: boolean) => void;
     readonly newAction: Vidyano.Action; private _setNewAction: (action: Vidyano.Action) => void;
     readonly deleteAction: boolean; private _setDeleteAction: (action: boolean) => void;
     readonly isAdding: boolean; private _setIsAdding: (isAdding: boolean) => void;
     attribute: Vidyano.PersistentObjectAttributeAsDetail;
+    activeObjectIndex: number;
     newActionPinned: boolean;
 
     private _isColumnVisible(column: Vidyano.QueryColumn) {
@@ -211,7 +213,7 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
             po.parent = this.attribute.parent;
             this.push("attribute.objects", po);
         });
-        this.set("activeObject", objects[objects.length - 1]);
+        this.activeObjectIndex = this.attribute.objects.length - 1;
 
         Polymer.flush();
         Polymer.Async.microTask.run(() => (<Scroller>this.$.body).verticalScrollOffset = (<Scroller>this.$.body).innerHeight);
@@ -237,20 +239,25 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
             this.attribute._triggerAttributeRefresh(true);
     }
 
-    private _setActiveObject(e: Polymer.Gestures.TapEvent) {
+    private _setActiveObjectIndex(e: Polymer.Gestures.TapEvent) {
         if (!this.readOnly)
-            this.set("activeObject", e.model.obj);
+            this.activeObjectIndex = e.model.index;
 
         e.stopPropagation();
     }
 
-    private _isRowFullEdit(forceFullEdit: boolean, activeObject: Vidyano.PersistentObject, obj: Vidyano.PersistentObject) {
-        return forceFullEdit || activeObject === obj;
+    private _isRowFullEdit(forceFullEdit: boolean, activeObjectIndex: number, index: number) {
+        return forceFullEdit || activeObjectIndex === index;
     }
 
     private _frozenChanged(frozen: boolean) {
-        if (frozen)
-            this.set("activeObject", null);
+        if (frozen) {
+            this.#_unfrozenActiveObjectIndex = this.activeObjectIndex;
+            this.activeObjectIndex = -1;
+        } else if (this.#_unfrozenActiveObjectIndex !== undefined && this.attribute.objects.length > this.#_unfrozenActiveObjectIndex) {
+            this.activeObjectIndex = this.#_unfrozenActiveObjectIndex;
+            this.#_unfrozenActiveObjectIndex = undefined;
+        }
     }
 
     private _titleMouseenter(e: MouseEvent) {
