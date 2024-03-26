@@ -3863,6 +3863,7 @@ declare class ServiceHooks {
     onSessionExpired(): Promise<boolean>;
     onActionConfirmation(action: Action, option: number): Promise<boolean>;
     onAction(args: ExecuteActionArgs): Promise<PersistentObject$1>;
+    onActionDefinitionNotFound(name: string): ActionDefinition;
     onStreamingAction(action: string, messages: () => StreamingActionMessages, abort?: () => void): Promise<void>;
     onOpen(obj: ServiceObject, replaceCurrent?: boolean, forceFromAction?: boolean): void;
     onClose(obj: ServiceObject): void;

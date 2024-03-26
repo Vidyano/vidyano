@@ -7327,19 +7327,22 @@ class Action extends ServiceObject {
         (this.query || this.parent).setNotification(notification, notificationType, notificationDuration);
     }
     static get(service, name, owner) {
-        const definition = service.actionDefinitions[name];
-        if (definition != null) {
-            const hook = Actions[name];
-            return service.hooks.onConstructAction(service, hook != null ? new hook(service, definition, owner) : new Action(service, definition, owner));
+        let definition = service.actionDefinitions[name];
+        if (definition == null) {
+            definition = service.hooks.onActionDefinitionNotFound(name);
+            if (definition == null)
+                return null;
         }
-        else
-            return null;
+        const hook = Actions[name];
+        return service.hooks.onConstructAction(service, hook != null ? new hook(service, definition, owner) : new Action(service, definition, owner));
     }
     static addActions(service, owner, actions, actionNames) {
         if (actionNames == null || actionNames.length === 0)
             return;
         actionNames.forEach(actionName => {
             const action = Action.get(service, actionName, owner);
+            if (!action)
+                return;
             action.offset = actions.length;
             actions.push(action);
             Action.addActions(service, owner, actions, action.dependentActions);
@@ -10142,6 +10145,10 @@ class ServiceHooks {
     onAction(args) {
         return Promise.resolve(null);
     }
+    onActionDefinitionNotFound(name) {
+        console.error(`No action definition found for ${name}`);
+        return null;
+    }
     async onStreamingAction(action, messages, abort) {
     }
     onOpen(obj, replaceCurrent = false, forceFromAction) {
@@ -10950,7 +10957,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.13.0-preview3";
+let version$2 = "3.13.0-preview4";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
