@@ -530,7 +530,7 @@ export class PersistentObject extends ServiceObjectWithActions {
         else
             result = work();
 
-        if (result && this.ownerDetailAttribute && this.ownerDetailAttribute.triggersRefresh) {
+        if (result && Boolean.parse(attr.getTypeHint("TriggerRefreshOnOwner", "false")?.toLowerCase()) && this.ownerDetailAttribute?.triggersRefresh) {
             return result.then(async res => {
                 await this.ownerDetailAttribute._triggerAttributeRefresh(immediate);
                 return res;
