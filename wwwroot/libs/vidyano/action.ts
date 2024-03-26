@@ -317,13 +317,15 @@ export class Action extends ServiceObject {
     }
 
     static get(service: Service, name: string, owner: ServiceObjectWithActions): Action {
-        const definition = service.actionDefinitions[name];
-        if (definition != null) {
-            const hook = Actions[name];
-            return service.hooks.onConstructAction(service, hook != null ? new hook(service, definition, owner) : new Action(service, definition, owner));
+        let definition = service.actionDefinitions[name];
+        if (definition == null) {
+            definition = service.hooks.onActionDefinitionNotFound(name);
+            if (definition == null)
+                return null;
         }
-        else
-            return null;
+
+        const hook = Actions[name];
+        return service.hooks.onConstructAction(service, hook != null ? new hook(service, definition, owner) : new Action(service, definition, owner));
     }
 
     static addActions(service: Service, owner: ServiceObjectWithActions, actions: Action[], actionNames: string[]) {
@@ -332,6 +334,9 @@ export class Action extends ServiceObject {
 
         actionNames.forEach(actionName => {
             const action = Action.get(service, actionName, owner);
+            if (!action)
+                return;
+
             action.offset = actions.length;
             actions.push(action);
 

@@ -2,6 +2,7 @@ import type * as Dto from "./typings/service.js"
 import type { NotificationType, Service } from "./service.js"
 import type { ServiceObjectWithActions } from "./service-object-with-actions.js"
 import type { Action, ISelectedItemsActionArgs } from "./action.js"
+import { ActionDefinition } from "./action-definition.js"
 import { ClientOperations, IClientOperation, IExecuteMethodOperation, IOpenOperation } from "./client-operations.js"
 import { PersistentObject } from "./persistent-object.js"
 import type { ExecuteActionArgs } from "./execute-action-args.js"
@@ -55,6 +56,11 @@ export class ServiceHooks {
 
     onAction(args: ExecuteActionArgs): Promise<PersistentObject> {
         return Promise.resolve(null);
+    }
+
+    onActionDefinitionNotFound(name: string): ActionDefinition {
+        console.error(`No action definition found for ${name}`);
+        return null;
     }
 
     async onStreamingAction(action: string, messages: () => StreamingActionMessages, abort?: () => void): Promise<void> {
