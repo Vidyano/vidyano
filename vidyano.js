@@ -10244,7 +10244,11 @@ class ServiceHooks {
     }
     setDefaultTranslations(languages) {
         languages.forEach(lang => {
-            lang.messages = Object.assign({}, messages);
+            Object.keys(messages).forEach(key => {
+                if (!lang.messages.hasOwnProperty(key)) {
+                    lang.messages[key] = messages[key];
+                }
+            });
         });
     }
 }
@@ -10957,7 +10961,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.13.0-preview4";
+let version$2 = "3.13.0-preview5";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
