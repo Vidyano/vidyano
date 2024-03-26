@@ -195,7 +195,11 @@ export class ServiceHooks {
 
     setDefaultTranslations(languages: Language[]) {
         languages.forEach(lang => {
-            lang.messages = Object.assign({}, messages);
-        });
+            Object.keys(messages).forEach(key => {
+                if (!lang.messages.hasOwnProperty(key)) {
+                    lang.messages[key] = messages[key];
+                }
+            });
+        });        
     }
 }
