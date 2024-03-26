@@ -8286,7 +8286,7 @@ let PersistentObject$1 = class PersistentObject extends ServiceObjectWithActions
             result = this.queueWork(work, false);
         else
             result = work();
-        if (result && this.ownerDetailAttribute && this.ownerDetailAttribute.triggersRefresh) {
+        if (result && Boolean.parse(attr.getTypeHint("TriggerRefreshOnOwner", "false")?.toLowerCase()) && this.ownerDetailAttribute?.triggersRefresh) {
             return result.then(async (res) => {
                 await this.ownerDetailAttribute._triggerAttributeRefresh(immediate);
                 return res;
@@ -10950,7 +10950,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.13.0-preview2";
+let version$2 = "3.13.0-preview3";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -45816,7 +45816,7 @@ let PersistentObjectAttributeAsDetail = class PersistentObjectAttributeAsDetail 
                 <div id="rows">
                     <dom-repeat items="[[attribute.objects]]" as="obj" filter="_isNotDeleted" observe="isDeleted">
                         <template>
-                            <vi-persistent-object-attribute-as-detail-row class="row" service-object="[[obj]]" columns="[[attribute.details.columns]]" editing="[[editing]]" can-delete="[[canDelete]]" on-delete="_delete" full-edit="[[_isRowFullEdit(forceFullEdit, activeObject, obj)]]" on-full-edit="_setActiveObject" read-only$="[[readOnly]]" frozen="[[frozen]]"></vi-persistent-object-attribute-as-detail-row>
+                            <vi-persistent-object-attribute-as-detail-row class="row" service-object="[[obj]]" columns="[[attribute.details.columns]]" editing="[[editing]]" can-delete="[[canDelete]]" on-delete="_delete" full-edit="[[_isRowFullEdit(forceFullEdit, activeObjectIndex, index)]]" on-full-edit="_setActiveObjectIndex" read-only$="[[readOnly]]" frozen="[[frozen]]"></vi-persistent-object-attribute-as-detail-row>
                         </template>
                     </dom-repeat>
                 </div>
@@ -45848,6 +45848,7 @@ let PersistentObjectAttributeAsDetail = class PersistentObjectAttributeAsDetail 
         </template>
     </dom-if>
 </div>`; }
+    #_unfrozenActiveObjectIndex;
     _isColumnVisible(column) {
         return !column.isHidden && column.width !== "0";
     }
@@ -45957,7 +45958,7 @@ let PersistentObjectAttributeAsDetail = class PersistentObjectAttributeAsDetail 
             po.parent = this.attribute.parent;
             this.push("attribute.objects", po);
         });
-        this.set("activeObject", objects[objects.length - 1]);
+        this.activeObjectIndex = this.attribute.objects.length - 1;
         flush$1();
         microTask.run(() => this.$.body.verticalScrollOffset = this.$.body.innerHeight);
         this.attribute.isValueChanged = true;
@@ -45975,17 +45976,23 @@ let PersistentObjectAttributeAsDetail = class PersistentObjectAttributeAsDetail 
         if (this.attribute.triggersRefresh)
             this.attribute._triggerAttributeRefresh(true);
     }
-    _setActiveObject(e) {
+    _setActiveObjectIndex(e) {
         if (!this.readOnly)
-            this.set("activeObject", e.model.obj);
+            this.activeObjectIndex = e.model.index;
         e.stopPropagation();
     }
-    _isRowFullEdit(forceFullEdit, activeObject, obj) {
-        return forceFullEdit || activeObject === obj;
+    _isRowFullEdit(forceFullEdit, activeObjectIndex, index) {
+        return forceFullEdit || activeObjectIndex === index;
     }
     _frozenChanged(frozen) {
-        if (frozen)
-            this.set("activeObject", null);
+        if (frozen) {
+            this.#_unfrozenActiveObjectIndex = this.activeObjectIndex;
+            this.activeObjectIndex = -1;
+        }
+        else if (this.#_unfrozenActiveObjectIndex !== undefined && this.attribute.objects.length > this.#_unfrozenActiveObjectIndex) {
+            this.activeObjectIndex = this.#_unfrozenActiveObjectIndex;
+            this.#_unfrozenActiveObjectIndex = undefined;
+        }
     }
     _titleMouseenter(e) {
         const label = e.target;
@@ -46027,9 +46034,9 @@ PersistentObjectAttributeAsDetail = __decorate([
                 value: true,
                 readOnly: true
             },
-            activeObject: {
-                type: Object,
-                value: null
+            activeObjectIndex: {
+                type: Number,
+                value: -1
             },
             isAdding: {
                 type: Boolean,
@@ -51506,12 +51513,16 @@ let PersistentObjectAttributeLabel = class PersistentObjectAttributeLabel extend
   box-sizing: border-box;
   overflow: hidden;
 }
+:host > div {
+  gap: var(--theme-h5);
+  align-items: center;
+}
 
 label {
   font-size: 0.9em;
   font-weight: 400;
   color: var(--vi-persistent-object-attribute-label-color, #888);
-  letter-spacing: 0.5px;
+  letter-spacing: 0.2px;
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 2em;
@@ -51524,9 +51535,9 @@ label {
   color: white;
   line-height: 1.5em;
   height: 14px;
-  margin: 0 0 var(--theme-h5) var(--theme-h4);
   padding: 0 var(--theme-h5) 2px calc(var(--theme-h5) / 2);
   background-color: var(--color);
+  margin-left: var(--theme-h5);
 }
 .required::before {
   content: "";
@@ -51544,7 +51555,6 @@ label {
 .locked {
   fill: #666;
   display: none;
-  margin: 0 0 2px var(--theme-h5);
 }
 .locked > vi-icon {
   height: var(--theme-h3);
@@ -51556,8 +51566,6 @@ label {
 .info {
   width: var(--theme-h3);
   height: var(--theme-h3);
-  margin-bottom: 2px;
-  margin-left: 2px;
 }
 .info::part(icon) {
   --vi-icon-width: 12px;
@@ -51580,12 +51588,14 @@ label {
   display: inline-block;
 }</style>
 
-<label>[[attribute.label]]</label>
-<span class="required">[[translateMessage('Required', isConnected)]]</span>
-<div class="locked">
-    <vi-icon source="Lock"></vi-icon>
-</div>
-<vi-button inverse class="info" icon="Info" on-tap="_showTooltip" hidden$="[[!hasToolTip]]" tabindex="-1"></vi-button>`; }
+<div class="layout horizontal">
+    <label>[[attribute.label]]</label>
+    <span class="required">[[translateMessage('Required', isConnected)]]</span>
+    <div class="locked">
+        <vi-icon source="Lock"></vi-icon>
+    </div>
+    <vi-button inverse class="info" icon="Info" on-tap="_showTooltip" hidden$="[[!hasToolTip]]" tabindex="-1"></vi-button>
+</div>`; }
     _computeRequired(attribute, required, value) {
         return required && (value == null || (attribute && attribute.rules && attribute.rules.contains("NotEmpty") && value === ""));
     }

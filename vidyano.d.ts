@@ -11977,6 +11977,7 @@ declare abstract class PersistentObjectAttribute extends WebComponent {
 type PersistentObjectAttributeConstructor = new (...args: any[]) => PersistentObjectAttribute;
 
 declare class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute {
+    #private;
     static get template(): HTMLTemplateElement;
     private _inlineAddHeight;
     readonly initializing: boolean;
@@ -11988,6 +11989,7 @@ declare class PersistentObjectAttributeAsDetail extends PersistentObjectAttribut
     readonly isAdding: boolean;
     private _setIsAdding;
     attribute: PersistentObjectAttributeAsDetail$1;
+    activeObjectIndex: number;
     newActionPinned: boolean;
     private _isColumnVisible;
     private _computeColumns;
@@ -11999,7 +12001,7 @@ declare class PersistentObjectAttributeAsDetail extends PersistentObjectAttribut
     private _add;
     private _finalizeAdd;
     private _delete;
-    private _setActiveObject;
+    private _setActiveObjectIndex;
     private _isRowFullEdit;
     private _frozenChanged;
     private _titleMouseenter;
