@@ -14,6 +14,7 @@ export class PersistentObjectAttribute extends ServiceObject {
     #input: HTMLInputElement;
     #actions: Array<Action> & Record<string, Action>;
 
+    private _label: string;
     private _isSystem: boolean;
     private _lastParsedValue: string;
     private _cachedValue: any;
@@ -39,7 +40,6 @@ export class PersistentObjectAttribute extends ServiceObject {
 
     id: string;
     name: string;
-    label: string;
     options: string[] | PersistentObjectAttributeOption[];
     offset: number;
     type: string;
@@ -58,7 +58,7 @@ export class PersistentObjectAttribute extends ServiceObject {
         this._isSystem = !!attr.isSystem;
         this.name = attr.name;
         this.type = attr.type;
-        this.label = attr.label;
+        this._label = attr.label;
         this._serviceValue = attr.value !== undefined ? attr.value : null;
         this._groupKey = attr.group;
         this._tabKey = attr.tab;
@@ -90,6 +90,16 @@ export class PersistentObjectAttribute extends ServiceObject {
 
         this.#actions = <any>[];
         Action.addActions(this.service, this.parent, this.#actions, attr.actions || []);
+    }
+
+    get label(): string {
+        return this._label;
+    }
+
+    set label(label: string) {
+        const oldLabel = this._label;
+        if (oldLabel !== label)
+            this.notifyPropertyChanged("label", this._label = label, oldLabel);
     }
 
     get groupKey(): string {
@@ -375,11 +385,14 @@ export class PersistentObjectAttribute extends ServiceObject {
     _refreshFromResult(resultAttr: PersistentObjectAttribute, resultWins: boolean): boolean {
         let visibilityChanged = false;
 
+        this.label = resultAttr.label;
+
         this._setActions(resultAttr.actions);
         this._setOptions(resultAttr._serviceOptions);
         this._setIsReadOnly(resultAttr.isReadOnly);
         this._setRules(resultAttr.rules);
         this._setIsRequired(resultAttr.isRequired);
+
         if (this.visibility !== resultAttr.visibility) {
             this.visibility = resultAttr.visibility;
             visibilityChanged = true;

@@ -51,7 +51,8 @@ import { WebComponent } from "../web-component/web-component.js"
         "attribute.isReadOnly",
         "attribute.value",
         "attribute.validationError",
-        "attribute.parent.isBulkEdit"
+        "attribute.parent.isBulkEdit",
+        "attribute.label"
     ]
 })
 export class PersistentObjectAttributeLabel extends WebComponent {
