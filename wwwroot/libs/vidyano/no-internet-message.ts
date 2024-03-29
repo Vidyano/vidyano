@@ -1,7 +1,7 @@
 import type { KeyValue } from "./typings/common.js"
 
 export class NoInternetMessage {
-    static messages: KeyValue<NoInternetMessage> = Object.assign({}, ...[
+    static messages: Record<string, NoInternetMessage> = Object.assign({}, ...[
         new NoInternetMessage("en", "Unable to connect to the server.", "Please check your internet connection settings and try again.", "Try again"),
         new NoInternetMessage("ar", "غير قادر على الاتصال بالخادم", "يرجى التحقق من إعدادات الاتصال بإنترنت ثم حاول مرة أخرى", "حاول مرة أخرى"),
         new NoInternetMessage("bg", "Не може да се свърже със сървъра", "Проверете настройките на интернет връзката и опитайте отново", "Опитайте отново"),

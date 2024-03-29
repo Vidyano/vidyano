@@ -24,7 +24,7 @@ interface IServiceBusTopic {
 }
 
 class ServiceBusImpl implements IServiceBus {
-    private _topics: KeyValue<IServiceBusTopic> = {};
+    private _topics: Record<string, IServiceBusTopic> = {};
 
     private _getTopic(topic: string = ""): IServiceBusTopic {
         if (!this._topics[topic]) {

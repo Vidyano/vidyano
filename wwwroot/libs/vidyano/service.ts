@@ -44,8 +44,8 @@ export class Service extends Observable<Service> {
     private _queuedClientOperations: IClientOperation[] = [];
     private _initial: PersistentObject;
     staySignedIn: boolean;
-    icons: KeyValue<string>;
-    actionDefinitions: KeyValue<ActionDefinition> = {};
+    icons: Record<string, string>;
+    actionDefinitions: Record<string, ActionDefinition> = {};
     environment: string = "Web";
     environmentVersion: string = "3";
     clearSiteData: boolean;

@@ -3,7 +3,7 @@ import type { KeyValue } from "./typings/common.js"
 export class CultureInfo {
     static currentCulture: CultureInfo;
     static invariantCulture: CultureInfo;
-    static cultures: KeyValue<CultureInfo> = {};
+    static cultures: Record<string, CultureInfo> = {};
 
     constructor(public name: string, public numberFormat: ICultureInfoNumberFormat, public dateFormat: ICultureInfoDateFormat) {
     }

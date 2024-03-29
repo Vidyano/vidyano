@@ -1,5 +1,3 @@
-import type { KeyValue, KeyValueString } from "./common.js"
-
 export declare type NotificationType = "" | "OK" | "Notice" | "Warning" | "Error";
 export declare type SortDirection = "" | "ASC" | "DESC";
 export declare type Request = {
@@ -91,7 +89,7 @@ export declare type Languages = {
 export declare type Language = {
     name: string;
     isDefault: boolean;
-    messages: KeyValueString;
+    messages: Record<string, string>;
 };
 export declare type ApplicationResponse = {
     application: PersistentObject;
@@ -122,7 +120,7 @@ export declare type PersistentObject = {
     queryLayoutMode?: string;
     securityToken?: never;
     stateBehavior?: PersistentObjectStateBehavior;
-    tabs?: KeyValue<PersistentObjectTab>;
+    tabs?: Record<string, PersistentObjectTab>;
     type: string;
 };
 export declare type PersistentObjectAttributeVisibility = "Always" | "Read" | "New" | "Never" | "Query" | "Read, Query" | "Read, New" | "Query, New";
@@ -146,7 +144,7 @@ export declare type PersistentObjectAttribute = {
     visibility?: PersistentObjectAttributeVisibility;
     toolTip?: string;
     columnSpan?: number;
-    typeHints?: KeyValue<string>;
+    typeHints?: Record<string, string>;
     validationError?: string;
     triggersRefresh?: boolean;
     options?: string[];
@@ -163,7 +161,7 @@ export declare type PersistentObjectTab = {
     name: string;
 };
 export declare type Query = {
-    actionLabels?: KeyValueString;
+    actionLabels?: Record<string, string>;
     actions: string[];
     allowTextSearch: boolean;
     allSelected: boolean;
@@ -220,13 +218,13 @@ export declare type QueryResult = {
 export declare type QueryResultItem = {
     id: string;
     values: QueryResultItemValue[];
-    typeHints?: KeyValueString;
+    typeHints?: Record<string, string>;
 };
 export declare type QueryResultItemValue = {
     key: string;
     value: string;
     objectId?: string;
-    typeHints?: KeyValueString;
+    typeHints?: Record<string, string>;
 };
 export declare type QueryGroupingInfo = {
     groupedBy: string;
