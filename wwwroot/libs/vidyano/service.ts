@@ -45,7 +45,7 @@ export class Service extends Observable<Service> {
     private _initial: PersistentObject;
     staySignedIn: boolean;
     icons: KeyValue<string>;
-    actionDefinitions: KeyValue<ActionDefinition>;
+    actionDefinitions: KeyValue<ActionDefinition> = {};
     environment: string = "Web";
     environmentVersion: string = "3";
     clearSiteData: boolean;
@@ -673,7 +673,7 @@ export class Service extends Observable<Service> {
         const resourcesQuery = this.application.getQuery("Resources");
         this.icons = resourcesQuery ? Object.assign({}, ...resourcesQuery.items.filter(i => i.getValue("Type") === "Icon").map(i => ({ [i.getValue("Key")]: i.getValue("Data") }))) : {};
 
-        this.actionDefinitions = Object.assign({}, ...this.application.getQuery("Actions").items.map(i => ({ [i.getValue("Name")]: new ActionDefinition(this, i) })));
+        Object.assign(this.actionDefinitions, ...this.application.getQuery("Actions").items.map(i => ({ [i.getValue("Name")]: new ActionDefinition(this, i) })));
 
         this.language = this._languages.find(l => l.culture === result.userLanguage) || this._languages.find(l => l.isDefault);
 
