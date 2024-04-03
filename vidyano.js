@@ -6194,6 +6194,158 @@ Array.range = function range(start, end, step = 1) {
     return Array.from({ length: end - start + 1 }, (_, k) => k * step + start);
 };
 
+class PathRoutes {
+    constructor() {
+        this.current = null;
+        this.previous = null;
+        this.root = null;
+        this.rootPath = null;
+        this.rescue = null;
+        this.defined = {};
+    }
+}
+class PathRoute {
+    constructor(path) {
+        this.path = path;
+        this.do_enter = [];
+        this.do_exit = [];
+        this.params = {};
+        Path.routes.defined[path] = this;
+    }
+    to(fn) {
+        this.action = fn;
+        return this;
+    }
+    enter(fns) {
+        if (fns instanceof Array)
+            this.do_enter = this.do_enter.concat(fns);
+        else
+            this.do_enter.push(fns);
+        return this;
+    }
+    exit(fns) {
+        if (fns instanceof Array)
+            this.do_exit = this.do_exit.concat(fns);
+        else
+            this.do_exit.push(fns);
+        return this;
+    }
+    partition() {
+        const re = /\(([^}]+?)\)/g, parts = [], options = [];
+        let text;
+        while (text = re.exec(this.path))
+            parts.push(text[1]);
+        options.push(this.path.split("(")[0]);
+        for (let i = 0; i < parts.length; i++)
+            options.push(options[options.length - 1] + parts[i]);
+        return options;
+    }
+    run() {
+        let halt_execution = false, result;
+        if (Path.routes.defined[this.path].hasOwnProperty("do_enter")) {
+            if (Path.routes.defined[this.path].do_enter.length > 0) {
+                for (let i = 0; i < Path.routes.defined[this.path].do_enter.length; i++) {
+                    result = Path.routes.defined[this.path].do_enter[i].apply(this, null);
+                    if (result === false) {
+                        halt_execution = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if (!halt_execution) {
+            Path.routes.defined[this.path].action();
+        }
+    }
+}
+class PathHistory {
+    constructor() {
+        this.initial = {
+            popped: false,
+            URL: ""
+        };
+    }
+    pushState(state, title, path) {
+        Path.dispatch(path);
+        history.pushState(state, title, this.noHistory ? undefined : path);
+    }
+    replaceState(state, title, path) {
+        Path.dispatch(path);
+        history.replaceState(state, title, this.noHistory ? undefined : path);
+    }
+    popState() {
+        var initialPop = !Path.history.initial.popped && location.href == Path.history.initial.URL;
+        Path.history.initial.popped = true;
+        if (initialPop)
+            return;
+        Path.dispatch(Path.routes.rootPath ? document.location.href.substr(Path.routes.root.length).replace(document.location.hash, "") : document.location.hash);
+    }
+    listen() {
+        this.initial.popped = ('state' in window.history), this.initial.URL = location.href;
+        window.onpopstate = Path.history.popState;
+    }
+}
+class Path {
+    static { this.routes = new PathRoutes(); }
+    static { this.history = new PathHistory(); }
+    static { this._splitRegex = /\/|\./g; }
+    static map(path) {
+        if (Path.routes.defined.hasOwnProperty(path)) {
+            return Path.routes.defined[path];
+        }
+        else {
+            return new PathRoute(path);
+        }
+    }
+    static root(path) {
+        Path.routes.root = path;
+    }
+    static rescue(fn) {
+        Path.routes.rescue = fn;
+    }
+    static match(path, parameterize) {
+        var matchedRoutes = [];
+        let route, possible_routes, slice, compare;
+        for (route in Path.routes.defined) {
+            if (route !== null && route !== undefined) {
+                route = Path.routes.defined[route];
+                possible_routes = route.partition();
+                for (let j = 0; j < possible_routes.length; j++) {
+                    const params = {};
+                    slice = possible_routes[j];
+                    compare = path;
+                    if (slice.search(/:/) > 0) {
+                        var splittedSlice = slice.split(Path._splitRegex);
+                        for (let i = 0; i < splittedSlice.length; i++) {
+                            var splittedCompare = slice.search(/\*/) > 0 ? compare.splitWithTail(Path._splitRegex, splittedSlice.length) : compare.split(Path._splitRegex);
+                            if ((i < splittedCompare.length) && (splittedSlice[i].charAt(0) === ":")) {
+                                params[splittedSlice[i].replace(/:/, '').replace(/\*/, '')] = splittedCompare[i];
+                                compare = compare.replace(new RegExp("(\\b|^|\\.|\\/)" + splittedCompare[i].replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&") + "(\\b|$|\\.|\\/)"), "$1" + splittedSlice[i] + "$2");
+                            }
+                        }
+                    }
+                    if (slice === compare) {
+                        if (parameterize)
+                            route.params = params;
+                        matchedRoutes.push(route);
+                    }
+                }
+            }
+        }
+        return matchedRoutes.length > 0 ? matchedRoutes.orderBy(function (r) { return r.params ? Object.keys(r.params).length : 0; })[0] : null;
+    }
+    static dispatch(passed_route) {
+        Path.routes.current = passed_route;
+        const matched_route = this.match(passed_route, true);
+        if (matched_route !== null) {
+            matched_route.run();
+            return true;
+        }
+        else if (Path.routes.rescue !== null)
+            Path.routes.rescue();
+    }
+}
+
 class CultureInfo {
     static { this.cultures = {}; }
     constructor(name, numberFormat, dateFormat) {
@@ -10961,7 +11113,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.13.0-preview5";
+let version$2 = "3.13.0-preview6";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -10970,6 +11122,7 @@ class Service extends Observable {
         this.isTransient = isTransient;
         this._lastAuthTokenUpdate = new Date();
         this._queuedClientOperations = [];
+        this.actionDefinitions = {};
         this.environment = "Web";
         this.environmentVersion = "3";
         this.hooks._service = this;
@@ -11456,7 +11609,7 @@ class Service extends Observable {
         this._setApplication(this.hooks.onConstructApplication(result));
         const resourcesQuery = this.application.getQuery("Resources");
         this.icons = resourcesQuery ? Object.assign({}, ...resourcesQuery.items.filter(i => i.getValue("Type") === "Icon").map(i => ({ [i.getValue("Key")]: i.getValue("Data") }))) : {};
-        this.actionDefinitions = Object.assign({}, ...this.application.getQuery("Actions").items.map(i => ({ [i.getValue("Name")]: new ActionDefinition(this, i) })));
+        Object.assign(this.actionDefinitions, ...this.application.getQuery("Actions").items.map(i => ({ [i.getValue("Name")]: new ActionDefinition(this, i) })));
         this.language = this._languages.find(l => l.culture === result.userLanguage) || this._languages.find(l => l.isDefault);
         const clientMessagesQuery = this.application.getQuery("ClientMessages");
         if (clientMessagesQuery) {
@@ -21353,158 +21506,6 @@ var iconRegister = /*#__PURE__*/Object.freeze({
 	exists: exists,
 	load: load
 });
-
-class PathRoutes {
-    constructor() {
-        this.current = null;
-        this.previous = null;
-        this.root = null;
-        this.rootPath = null;
-        this.rescue = null;
-        this.defined = {};
-    }
-}
-class PathRoute {
-    constructor(path) {
-        this.path = path;
-        this.do_enter = [];
-        this.do_exit = [];
-        this.params = {};
-        Path.routes.defined[path] = this;
-    }
-    to(fn) {
-        this.action = fn;
-        return this;
-    }
-    enter(fns) {
-        if (fns instanceof Array)
-            this.do_enter = this.do_enter.concat(fns);
-        else
-            this.do_enter.push(fns);
-        return this;
-    }
-    exit(fns) {
-        if (fns instanceof Array)
-            this.do_exit = this.do_exit.concat(fns);
-        else
-            this.do_exit.push(fns);
-        return this;
-    }
-    partition() {
-        const re = /\(([^}]+?)\)/g, parts = [], options = [];
-        let text;
-        while (text = re.exec(this.path))
-            parts.push(text[1]);
-        options.push(this.path.split("(")[0]);
-        for (let i = 0; i < parts.length; i++)
-            options.push(options[options.length - 1] + parts[i]);
-        return options;
-    }
-    run() {
-        let halt_execution = false, result;
-        if (Path.routes.defined[this.path].hasOwnProperty("do_enter")) {
-            if (Path.routes.defined[this.path].do_enter.length > 0) {
-                for (let i = 0; i < Path.routes.defined[this.path].do_enter.length; i++) {
-                    result = Path.routes.defined[this.path].do_enter[i].apply(this, null);
-                    if (result === false) {
-                        halt_execution = true;
-                        break;
-                    }
-                }
-            }
-        }
-        if (!halt_execution) {
-            Path.routes.defined[this.path].action();
-        }
-    }
-}
-class PathHistory {
-    constructor() {
-        this.initial = {
-            popped: false,
-            URL: ""
-        };
-    }
-    pushState(state, title, path) {
-        Path.dispatch(path);
-        history.pushState(state, title, this.noHistory ? undefined : path);
-    }
-    replaceState(state, title, path) {
-        Path.dispatch(path);
-        history.replaceState(state, title, this.noHistory ? undefined : path);
-    }
-    popState() {
-        var initialPop = !Path.history.initial.popped && location.href == Path.history.initial.URL;
-        Path.history.initial.popped = true;
-        if (initialPop)
-            return;
-        Path.dispatch(Path.routes.rootPath ? document.location.href.substr(Path.routes.root.length).replace(document.location.hash, "") : document.location.hash);
-    }
-    listen() {
-        this.initial.popped = ('state' in window.history), this.initial.URL = location.href;
-        window.onpopstate = Path.history.popState;
-    }
-}
-class Path {
-    static { this.routes = new PathRoutes(); }
-    static { this.history = new PathHistory(); }
-    static { this._splitRegex = /\/|\./g; }
-    static map(path) {
-        if (Path.routes.defined.hasOwnProperty(path)) {
-            return Path.routes.defined[path];
-        }
-        else {
-            return new PathRoute(path);
-        }
-    }
-    static root(path) {
-        Path.routes.root = path;
-    }
-    static rescue(fn) {
-        Path.routes.rescue = fn;
-    }
-    static match(path, parameterize) {
-        var matchedRoutes = [];
-        let route, possible_routes, slice, compare;
-        for (route in Path.routes.defined) {
-            if (route !== null && route !== undefined) {
-                route = Path.routes.defined[route];
-                possible_routes = route.partition();
-                for (let j = 0; j < possible_routes.length; j++) {
-                    const params = {};
-                    slice = possible_routes[j];
-                    compare = path;
-                    if (slice.search(/:/) > 0) {
-                        var splittedSlice = slice.split(Path._splitRegex);
-                        for (let i = 0; i < splittedSlice.length; i++) {
-                            var splittedCompare = slice.search(/\*/) > 0 ? compare.splitWithTail(Path._splitRegex, splittedSlice.length) : compare.split(Path._splitRegex);
-                            if ((i < splittedCompare.length) && (splittedSlice[i].charAt(0) === ":")) {
-                                params[splittedSlice[i].replace(/:/, '').replace(/\*/, '')] = splittedCompare[i];
-                                compare = compare.replace(new RegExp("(\\b|^|\\.|\\/)" + splittedCompare[i].replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&") + "(\\b|$|\\.|\\/)"), "$1" + splittedSlice[i] + "$2");
-                            }
-                        }
-                    }
-                    if (slice === compare) {
-                        if (parameterize)
-                            route.params = params;
-                        matchedRoutes.push(route);
-                    }
-                }
-            }
-        }
-        return matchedRoutes.length > 0 ? matchedRoutes.orderBy(function (r) { return r.params ? Object.keys(r.params).length : 0; })[0] : null;
-    }
-    static dispatch(passed_route) {
-        Path.routes.current = passed_route;
-        const matched_route = this.match(passed_route, true);
-        if (matched_route !== null) {
-            matched_route.run();
-            return true;
-        }
-        else if (Path.routes.rescue !== null)
-            Path.routes.rescue();
-    }
-}
 
 setLegacyUndefined(true);
 setOrderedComputed(true);
@@ -56920,4 +56921,4 @@ QueryPresenter = __decorate([
     })
 ], QueryPresenter);
 
-export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppRoute, AppRoutePresenter, AppServiceHooks, AppServiceHooksBase, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, Error$1 as Error, FileDrop, Icon, iconRegister as IconRegister, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeIcon, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellDefault, QueryGridCellImage, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, SelectOptionItem, SelectReferenceDialog, Sensitive, SessionPresenter, SignIn, SignOut, SizeTracker, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, Vidyano, WebComponent, moment };
+export { ActionBar, ActionButton, Alert, App, AppBase, AppCacheEntry, AppCacheEntryPersistentObject, AppCacheEntryPersistentObjectFromAction, AppCacheEntryQuery, AppColor, AppConfig, AppRoute, AppRoutePresenter, AppServiceHooks, AppServiceHooksBase, AppSetting, Audit, BigNumber, Button, Checkbox, ConfigurableWebComponent, ConnectedNotifier, DatePicker, Dialog, Error$1 as Error, FileDrop, Icon, iconRegister as IconRegister, InputSearch, Keys, List, MaskedInput, Menu, MenuItem, MessageDialog, Notification, Overflow, Path, PersistentObject, PersistentObjectAttribute, PersistentObjectAttributeAsDetail, PersistentObjectAttributeAsDetailRow, PersistentObjectAttributeBinaryFile, PersistentObjectAttributeBoolean, PersistentObjectAttributeComboBox, PersistentObjectAttributeCommonMark, PersistentObjectAttributeConfig, PersistentObjectAttributeDateTime, PersistentObjectAttributeDropDown, PersistentObjectAttributeEdit, PersistentObjectAttributeFlagsEnum, PersistentObjectAttributeFlagsEnumFlag, PersistentObjectAttributeIcon, PersistentObjectAttributeImage, PersistentObjectAttributeImageDialog, PersistentObjectAttributeKeyValueList, PersistentObjectAttributeLabel, PersistentObjectAttributeMultiLineString, PersistentObjectAttributeMultiString, PersistentObjectAttributeMultiStringItem, PersistentObjectAttributeMultiStringItems, PersistentObjectAttributeNullableBoolean, PersistentObjectAttributeNumeric, PersistentObjectAttributePassword, PersistentObjectAttributePresenter, PersistentObjectAttributeReference, PersistentObjectAttributeString, PersistentObjectAttributeTranslatedString, PersistentObjectAttributeTranslatedStringDialog, PersistentObjectAttributeUser, PersistentObjectAttributeValidationError, PersistentObjectConfig, PersistentObjectDetailsContent, PersistentObjectDetailsHeader, PersistentObjectDialog, PersistentObjectGroup, PersistentObjectPresenter, PersistentObjectTab, PersistentObjectTabBar, PersistentObjectTabBarItem, PersistentObjectTabConfig, PersistentObjectTabPresenter, PersistentObjectWizardDialog, polymer as Polymer, Popup, PopupMenu, PopupMenuItem, PopupMenuItemSeparator, PopupMenuItemSplit, PopupMenuItemWithActions, Profiler, ProgramUnitConfig, ProgramUnitPresenter, Query, QueryChartConfig, QueryChartSelector, QueryConfig, QueryGrid, QueryGridCell, QueryGridCellBoolean, QueryGridCellDefault, QueryGridCellImage, QueryGridColumn, QueryGridColumnFilter, QueryGridColumnHeader, QueryGridColumnMeasure, QueryGridConfigureDialog, QueryGridConfigureDialogColumn, QueryGridConfigureDialogColumnList, QueryGridFilterDialog, QueryGridFilterDialogName, QueryGridFilters, QueryGridFooter, QueryGridGrouping, QueryGridRow, QueryGridRowGroup, QueryGridSelectAll, QueryGridUserSettings, QueryItemsPresenter, QueryPresenter, RetryActionDialog, Scroller, Select, SelectOptionItem, SelectReferenceDialog, Sensitive, SessionPresenter, SignIn, SignOut, SizeTracker, Sortable, Spinner, Tags, TemplateConfig, TimePicker, Toggle, User, Vidyano, WebComponent, moment };
