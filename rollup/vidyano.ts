@@ -3,6 +3,8 @@ export { moment }
 
 export * from "bignumber.js"
 
+export { Path } from "../wwwroot/libs/pathjs/pathjs.js";
+
 export * as Vidyano from "../wwwroot/libs/vidyano/vidyano.js"
 export * as Polymer from "../wwwroot/libs/polymer/polymer.js"
 
