@@ -783,7 +783,16 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
 
     static register(infoOrTarget?: IWebComponentRegistrationInfo, prefix?: string): (obj: any) => void {
         return (target: CustomElementConstructor) => {
-            const info: IWebComponentRegistrationInfo = WebComponent._clone(WebComponent.abstractRegistrations[Object.getPrototypeOf(target).name] || {});
+            let currentProto = Object.getPrototypeOf(target);
+            let info: IWebComponentRegistrationInfo = {};
+    
+            while (currentProto && currentProto !== WebComponent) {
+                const baseInfo = WebComponent.abstractRegistrations[currentProto.name];
+                if (baseInfo)
+                    info = WebComponent._clone(Vidyano.extend(info, WebComponent._clone(baseInfo)));
+
+                currentProto = Object.getPrototypeOf(currentProto);
+            }
 
             const targetInfo = <IWebComponentRegistrationInfo>infoOrTarget;
             if (targetInfo) {
