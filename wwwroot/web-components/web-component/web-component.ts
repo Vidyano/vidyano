@@ -365,6 +365,15 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
         };
     }
 
+    /**
+     * Forwards the service.language.messages to the translations property. Can be overridden to provide custom translations.
+     * @param messages The current service.language.messages
+     * @returns The translations to be used in the component
+     */
+    protected _computeTranslations(messages: Record<string, string>): Record<string, string> {
+        return messages;
+    }
+
     // This function simply returns the value. This can be used to reflect a property on an observable object as an attribute.
     private _forwardComputed(value: any): any {
         return value;
@@ -494,7 +503,7 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
         if (!baseProperties.translations && !info.properties.translations) {
             info.properties.translations = {
                 type: Object,
-                computed: "_forwardComputed(service.language.messages)"
+                computed: "_computeTranslations(service.language.messages)"
             };
         }
 
@@ -774,17 +783,8 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
 
     static register(infoOrTarget?: IWebComponentRegistrationInfo, prefix?: string): (obj: any) => void {
         return (target: CustomElementConstructor) => {
-            let currentProto = Object.getPrototypeOf(target);
-            let info: IWebComponentRegistrationInfo = {};
-    
-            while (currentProto && currentProto !== WebComponent) {
-                const baseInfo = WebComponent.abstractRegistrations[currentProto.name];
-                if (baseInfo)
-                    info = WebComponent._clone(Vidyano.extend(info, WebComponent._clone(baseInfo)));
+            const info: IWebComponentRegistrationInfo = WebComponent._clone(WebComponent.abstractRegistrations[Object.getPrototypeOf(target).name] || {});
 
-                currentProto = Object.getPrototypeOf(currentProto);
-            }
-    
             const targetInfo = <IWebComponentRegistrationInfo>infoOrTarget;
             if (targetInfo) {
                 if (targetInfo.properties)
