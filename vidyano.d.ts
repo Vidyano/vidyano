@@ -11096,6 +11096,7 @@ declare class WebComponent extends WebComponent_base {
     protected _focusElement(element: string | HTMLElement, maxAttempts?: number, interval?: number, attempt?: number): void;
     protected _escapeHTML(val: string): string;
     protected _forwardObservable(source: Observable<any> | Array<any>, path: string, pathPrefix: string, callback?: (path: string) => void): IObserveChainDisposer;
+    protected _computeTranslations(messages: Record<string, string>): Record<string, string>;
     private _forwardComputed;
     private _forwardNegate;
     private _forwardTruthy;

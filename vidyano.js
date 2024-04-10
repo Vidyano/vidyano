@@ -11113,7 +11113,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.13.0-preview7";
+let version$2 = "3.13.0-preview8";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -21722,6 +21722,9 @@ class WebComponent extends GestureEventListeners(PolymerElement) {
             disposers.splice(0, disposers.length);
         };
     }
+    _computeTranslations(messages) {
+        return messages;
+    }
     _forwardComputed(value) {
         return value;
     }
@@ -21822,7 +21825,7 @@ class WebComponent extends GestureEventListeners(PolymerElement) {
         if (!baseProperties.translations && !info.properties.translations) {
             info.properties.translations = {
                 type: Object,
-                computed: "_forwardComputed(service.language.messages)"
+                computed: "_computeTranslations(service.language.messages)"
             };
         }
         if (info.listeners) {
@@ -22048,14 +22051,7 @@ class WebComponent extends GestureEventListeners(PolymerElement) {
     static { this.abstractRegistrations = {}; }
     static register(infoOrTarget, prefix) {
         return (target) => {
-            let currentProto = Object.getPrototypeOf(target);
-            let info = {};
-            while (currentProto && currentProto !== WebComponent) {
-                const baseInfo = WebComponent.abstractRegistrations[currentProto.name];
-                if (baseInfo)
-                    info = WebComponent._clone(extend$2(info, WebComponent._clone(baseInfo)));
-                currentProto = Object.getPrototypeOf(currentProto);
-            }
+            const info = WebComponent._clone(WebComponent.abstractRegistrations[Object.getPrototypeOf(target).name] || {});
             const targetInfo = infoOrTarget;
             if (targetInfo) {
                 if (targetInfo.properties)
