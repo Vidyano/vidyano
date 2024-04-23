@@ -3255,6 +3255,7 @@ type PersistentObjectAttributeOption = KeyValuePair<string, string>;
 declare class PersistentObjectAttribute$1 extends ServiceObject {
     #private;
     parent: PersistentObject$1;
+    private _label;
     private _isSystem;
     private _lastParsedValue;
     private _cachedValue;
@@ -3278,7 +3279,6 @@ declare class PersistentObjectAttribute$1 extends ServiceObject {
     private _refreshServiceValue;
     id: string;
     name: string;
-    label: string;
     options: string[] | PersistentObjectAttributeOption[];
     offset: number;
     type: string;
@@ -3289,6 +3289,8 @@ declare class PersistentObjectAttribute$1 extends ServiceObject {
     column: number;
     columnSpan: number;
     constructor(service: Service, attr: PersistentObjectAttribute$2, parent: PersistentObject$1);
+    get label(): string;
+    set label(label: string);
     get groupKey(): string;
     get group(): PersistentObjectAttributeGroup;
     set group(group: PersistentObjectAttributeGroup);

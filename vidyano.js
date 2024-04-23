@@ -7603,7 +7603,7 @@ let PersistentObjectAttribute$1 = class PersistentObjectAttribute extends Servic
         this._isSystem = !!attr.isSystem;
         this.name = attr.name;
         this.type = attr.type;
-        this.label = attr.label;
+        this._label = attr.label;
         this._serviceValue = attr.value !== undefined ? attr.value : null;
         this._groupKey = attr.group;
         this._tabKey = attr.tab;
@@ -7631,6 +7631,14 @@ let PersistentObjectAttribute$1 = class PersistentObjectAttribute extends Servic
         }
         this.#actions = [];
         Action.addActions(this.service, this.parent, this.#actions, attr.actions || []);
+    }
+    get label() {
+        return this._label;
+    }
+    set label(label) {
+        const oldLabel = this._label;
+        if (oldLabel !== label)
+            this.notifyPropertyChanged("label", this._label = label, oldLabel);
     }
     get groupKey() {
         return this._groupKey;
@@ -7855,6 +7863,7 @@ let PersistentObjectAttribute$1 = class PersistentObjectAttribute extends Servic
     }
     _refreshFromResult(resultAttr, resultWins) {
         let visibilityChanged = false;
+        this.label = resultAttr.label;
         this._setActions(resultAttr.actions);
         this._setOptions(resultAttr._serviceOptions);
         this._setIsReadOnly(resultAttr.isReadOnly);
@@ -11113,7 +11122,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.13.0-preview9";
+let version$2 = "3.13.0";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -51693,7 +51702,8 @@ PersistentObjectAttributeLabel = __decorate([
             "attribute.isReadOnly",
             "attribute.value",
             "attribute.validationError",
-            "attribute.parent.isBulkEdit"
+            "attribute.parent.isBulkEdit",
+            "attribute.label"
         ]
     })
 ], PersistentObjectAttributeLabel);
