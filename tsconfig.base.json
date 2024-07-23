@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+      "module": "ESNext",
+      "useDefineForClassFields": false,
+      "allowSyntheticDefaultImports": true,
+      "importHelpers": true,
+      "moduleResolution": "node",
+      "declaration": true,
+      "declarationDir": "rollup",
+      "lib": [
+          "ES2022",
+          "DOM",
+          "DOM.Iterable"
+      ],
+      "removeComments": true,
+      "experimentalDecorators": true,
+      "noEmitOnError": false,
+      "rootDir": ".",
+      "types": [
+          "qunit"
+      ]
+  },
+  "exclude": [
+      "wwwroot/dist"
+  ],
+  "include": [
+      "wwwroot/libs/vidyano/**/*.ts",
+      "wwwroot/test/**/*.ts",
+      "wwwroot/web-components/**/*.ts"
+  ],
+  "watchOptions": {
+    "watchFile": "dynamicprioritypolling"
+  }
+}
