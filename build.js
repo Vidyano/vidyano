@@ -51,8 +51,9 @@ function execCommand(command) {
         console.info("Executing rollup");
         await execCommand("./node_modules/rollup/dist/bin/rollup -c --bundleConfigAsCjs");
 
-        console.info("Renaming file");
+        console.info("Renaming files");
         await fs.rename("vidyano.js", `vidyano.es2020.js`);
+        await fs.rename("vidyano.d.ts", `vidyano.es2020.d.ts`);
 
         console.info("Executing TypeScript build");
         await execCommand("tsc --project tsconfig.json");
