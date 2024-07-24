@@ -11146,7 +11146,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.13.1";
+let version$2 = "3.13.2";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -21891,6 +21891,7 @@ class WebComponent extends GestureEventListeners(PolymerElement) {
             }
             element.prototype[methodValues] = source.value.slice(0);
             info.observers.push(`${methodName}(${source.key}, isConnected)`);
+            console.log(`${methodName}(${source.key}`);
             element.prototype[methodName] = function (sourceObj, isConnected) {
                 if (sourceObj == null)
                     return;
