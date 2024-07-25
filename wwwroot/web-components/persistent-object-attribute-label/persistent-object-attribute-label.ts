@@ -52,7 +52,8 @@ import { WebComponent } from "../web-component/web-component.js"
         "attribute.value",
         "attribute.validationError",
         "attribute.parent.isBulkEdit",
-        "attribute.label"
+        "attribute.label",
+        "attribute.toolTip"
     ]
 })
 export class PersistentObjectAttributeLabel extends WebComponent {

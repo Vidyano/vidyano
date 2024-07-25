@@ -22,6 +22,7 @@ export class PersistentObjectAttribute extends ServiceObject {
     private _serviceOptions: string[];
     private _displayValueSource: any;
     private _displayValue: string;
+    private _toolTip: string;
     private _rules: string;
     private _validationError: string;
     private _tab: PersistentObjectAttributeTab;
@@ -43,7 +44,6 @@ export class PersistentObjectAttribute extends ServiceObject {
     options: string[] | PersistentObjectAttributeOption[];
     offset: number;
     type: string;
-    toolTip: string;
     typeHints: any;
     disableSort: boolean;
     triggersRefresh: boolean;
@@ -67,7 +67,7 @@ export class PersistentObjectAttribute extends ServiceObject {
         this._isValueChanged = !!attr.isValueChanged;
         this._isSensitive = !!attr.isSensitive;
         this.offset = attr.offset || 0;
-        this.toolTip = attr.toolTip;
+        this._toolTip = attr.toolTip;
         this._rules = attr.rules;
         this.validationError = attr.validationError || null;
         this.typeHints = attr.typeHints || {};
@@ -100,6 +100,16 @@ export class PersistentObjectAttribute extends ServiceObject {
         const oldLabel = this._label;
         if (oldLabel !== label)
             this.notifyPropertyChanged("label", this._label = label, oldLabel);
+    }
+
+    get toolTip(): string {
+        return this._toolTip;
+    }
+
+    set toolTip(toolTip: string) {
+        const oldToolTip = this._toolTip;
+        if (oldToolTip !== toolTip)
+            this.notifyPropertyChanged("toolTip", this._toolTip = toolTip, oldToolTip);
     }
 
     get groupKey(): string {
@@ -157,7 +167,7 @@ export class PersistentObjectAttribute extends ServiceObject {
         if (newIsVisible !== oldIsVisible) {
             this.notifyPropertyChanged("isVisible", this._isVisible, oldIsVisible);
 
-            if (typeof(oldVisibility) !== "undefined" && !this.parent.isBusy)
+            if (typeof (oldVisibility) !== "undefined" && !this.parent.isBusy)
                 this.parent.refreshTabsAndGroups(this);
         }
     }
@@ -272,7 +282,7 @@ export class PersistentObjectAttribute extends ServiceObject {
     }
 
     set value(val: any) {
-        this.setValue(val).catch(() => {});
+        this.setValue(val).catch(() => { });
     }
 
     async setValue(val: any, allowRefresh: boolean = true): Promise<any> {
@@ -353,7 +363,7 @@ export class PersistentObjectAttribute extends ServiceObject {
     getTypeHint(name: string, defaultValue?: string, typeHints?: any, ignoreCasing?: boolean): string {
         if (typeHints != null) {
             if (this.typeHints != null)
-                typeHints = Object.assign({...this.typeHints}, typeHints);
+                typeHints = Object.assign({ ...this.typeHints }, typeHints);
         }
         else
             typeHints = this.typeHints;
@@ -383,9 +393,25 @@ export class PersistentObjectAttribute extends ServiceObject {
     }
 
     _refreshFromResult(resultAttr: PersistentObjectAttribute, resultWins: boolean): boolean {
+        function areObjectsEqual(obj1: any, obj2: any): boolean {
+            const keys1 = Object.keys(obj1);
+            const keys2 = Object.keys(obj2);
+
+            if (keys1.length !== keys2.length) {
+                return false;
+            }
+
+            return keys1.every(key => obj2.hasOwnProperty(key) && obj1[key] === obj2[key]);
+        }
+
         let visibilityChanged = false;
 
+        const oldTypeHints = this.typeHints;
+        const oldValue = this.value;
+        const oldDisplayValue = this.displayValue;
+
         this.label = resultAttr.label;
+        this.toolTip = resultAttr.toolTip;
 
         this._setActions(resultAttr.actions);
         this._setOptions(resultAttr._serviceOptions);
@@ -398,10 +424,23 @@ export class PersistentObjectAttribute extends ServiceObject {
             visibilityChanged = true;
         }
 
-        if (resultWins || (this._serviceValue !== resultAttr._serviceValue && (this.isReadOnly || this._refreshServiceValue !== resultAttr._serviceValue))) {
-            const oldDisplayValue = this.displayValue;
-            const oldValue = this.value;
+        if (resultAttr.typeHints && Object.keys(resultAttr.typeHints).some(k => resultAttr.typeHints[k] !== this.typeHints[k])) {
+            for (let name in this.typeHints) {
+                if (resultAttr.typeHints[name] != null)
+                    continue;
 
+                resultAttr.typeHints[name] = this.typeHints[name];
+            }
+        }
+
+        if (!areObjectsEqual(oldTypeHints, resultAttr.typeHints)) {
+            if (resultAttr.typeHints["displayformat"] !== oldTypeHints["displayformat"])
+                this._displayValueSource = undefined; // Note: Force refresh of display value
+
+            this.notifyPropertyChanged("typeHints", this.typeHints = resultAttr.typeHints, oldTypeHints);
+        }
+
+        if (resultWins || (this._serviceValue !== resultAttr._serviceValue && (this.isReadOnly || this._refreshServiceValue !== resultAttr._serviceValue))) {
             this._serviceValue = resultAttr._serviceValue;
             this._lastParsedValue = undefined;
 
@@ -414,25 +453,19 @@ export class PersistentObjectAttribute extends ServiceObject {
             this.isValueChanged = resultAttr.isValueChanged;
         }
 
+        if (this._displayValueSource !== this._serviceValue) {
+            if (oldDisplayValue !== this.displayValue)
+                this.notifyPropertyChanged("displayValue", this.displayValue, oldDisplayValue);
+        }
+
         this._refreshServiceValue = undefined;
 
         this.triggersRefresh = resultAttr.triggersRefresh;
         this.validationError = resultAttr.validationError || null;
 
-        if (resultAttr.typeHints && Object.keys(resultAttr.typeHints).some(k => resultAttr.typeHints[k] !== this.typeHints[k])) {
-            for (let name in this.typeHints) {
-                if (resultAttr.typeHints[name] != null)
-                    continue;
-
-                resultAttr.typeHints[name] = this.typeHints[name];
-            }
-
-            const oldTypeHints = this.typeHints;
-            this.notifyPropertyChanged("typeHints", this.typeHints = resultAttr.typeHints, oldTypeHints);
-        }
-
         return visibilityChanged;
     }
+
 
     _triggerAttributeRefresh(immediate?: boolean): Promise<any> {
         this._shouldRefresh = false;
