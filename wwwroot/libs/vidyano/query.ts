@@ -570,7 +570,9 @@ export class Query extends ServiceObjectWithActions {
             const index = parseInt(property);
             if (!isNaN(index)) {
                 const item = Reflect.get(target, index, receiver);
-                if (item === undefined && !this.disableLazyLoading) {
+                
+                // Lazy load item if it's not available yet, except when lazy loading is disabled or the index is out of range
+                if (item === undefined && !this.disableLazyLoading && (index < this.totalItems || this.hasMore)) {
                     if (this._queuedLazyItemIndexes)
                         this._queuedLazyItemIndexes.push(index);
                     else
