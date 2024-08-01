@@ -9822,7 +9822,7 @@ let Query$1 = class Query extends ServiceObjectWithActions {
             const index = parseInt(property);
             if (!isNaN(index)) {
                 const item = Reflect.get(target, index, receiver);
-                if (item === undefined && !this.disableLazyLoading) {
+                if (item === undefined && !this.disableLazyLoading && (index < this.totalItems || this.hasMore)) {
                     if (this._queuedLazyItemIndexes)
                         this._queuedLazyItemIndexes.push(index);
                     else
@@ -11122,7 +11122,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.13.2";
+let version$2 = "3.13.3";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -21878,7 +21878,6 @@ class WebComponent extends GestureEventListeners(PolymerElement) {
             }
             element.prototype[methodValues] = source.value.slice(0);
             info.observers.push(`${methodName}(${source.key}, isConnected)`);
-            console.log(`${methodName}(${source.key}`);
             element.prototype[methodName] = function (sourceObj, isConnected) {
                 if (sourceObj == null)
                     return;
