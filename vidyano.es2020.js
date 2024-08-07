@@ -11146,7 +11146,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.13.3";
+let version$2 = "3.13.4";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -11664,11 +11664,15 @@ class Service extends Observable {
             this._setIsSignedIn(false);
         return this.application;
     }
-    async getQuery(id, asLookup, parent) {
+    async getQuery(id, asLookup, parent, textSearch, sortOptions) {
         const data = this._createData("getQuery");
         data.id = id;
         if (parent != null)
             data.parent = parent.toServiceObject();
+        if (!!textSearch)
+            data.textSearch = textSearch;
+        if (!!sortOptions)
+            data.sortOptions = sortOptions;
         const result = await this._postJSON(this._createUri("GetQuery"), data);
         if (result.exception)
             throw result.exception;

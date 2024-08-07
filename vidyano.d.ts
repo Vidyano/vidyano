@@ -4039,7 +4039,7 @@ declare class Service extends Observable<Service> {
     signInUsingDefaultCredentials(): Promise<Application>;
     signOut(skipAcs?: boolean): Promise<boolean>;
     private _getApplication;
-    getQuery(id: string, asLookup?: boolean, parent?: PersistentObject$1): Promise<Query$1>;
+    getQuery(id: string, asLookup?: boolean, parent?: PersistentObject$1, textSearch?: string, sortOptions?: string): Promise<Query$1>;
     getPersistentObject(parent: PersistentObject$1, id: string, objectId?: string, isNew?: boolean): Promise<PersistentObject$1>;
     executeQuery(parent: PersistentObject$1, query: Query$1, asLookup?: boolean, throwExceptions?: boolean): Promise<QueryResult>;
     executeAction(action: string, parent: PersistentObject$1, query: Query$1, selectedItems: Array<QueryResultItem>, parameters?: any, skipHooks?: boolean): Promise<PersistentObject$1>;
