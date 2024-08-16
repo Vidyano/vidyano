@@ -2,12 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-	<UserSecretsId>60A2590B-D165-41F5-9D56-36B1A10ED282</UserSecretsId>
+    <Nullable>annotations</Nullable>
+	  <UserSecretsId>60A2590B-D165-41F5-9D56-36B1A10ED282</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="RavenDB.Embedded" Version="5.3.101" />
-    <PackageReference Include="Vidyano.RavenDB" Version="6.0.20231124.5424" />
+    <PackageReference Include="Vidyano.RavenDB" Version="6.0.20240802.5719" />
   </ItemGroup>
 
   <ItemGroup>
