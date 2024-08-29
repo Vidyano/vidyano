@@ -11122,7 +11122,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.13.4";
+let version$2 = "3.14.0";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -11640,19 +11640,27 @@ class Service extends Observable {
             this._setIsSignedIn(false);
         return this.application;
     }
-    async getQuery(id, asLookup, parent, textSearch, sortOptions) {
+    async getQuery(id, arg2, parent, textSearch, sortOptions) {
         const data = this._createData("getQuery");
         data.id = id;
-        if (parent != null)
-            data.parent = parent.toServiceObject();
-        if (!!textSearch)
-            data.textSearch = textSearch;
-        if (!!sortOptions)
-            data.sortOptions = sortOptions;
+        const options = typeof arg2 === "object" ? arg2 : {
+            asLookup: arg2,
+            parent,
+            textSearch,
+            sortOptions
+        };
+        if (options.parent != null)
+            data.parent = options.parent.toServiceObject();
+        if (!!options.textSearch)
+            data.textSearch = options.textSearch;
+        if (!!options.sortOptions)
+            data.sortOptions = options.sortOptions;
+        if (!!options.columnOverrides)
+            data.columnOverrides = options.columnOverrides;
         const result = await this._postJSON(this._createUri("GetQuery"), data);
         if (result.exception)
             throw result.exception;
-        return this.hooks.onConstructQuery(this, result.query, null, asLookup);
+        return this.hooks.onConstructQuery(this, result.query, null, options.asLookup);
     }
     async getPersistentObject(parent, id, objectId, isNew) {
         const data = this._createData("getPersistentObject");
