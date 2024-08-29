@@ -4,7 +4,6 @@ import "./common/array.js" // NOTE: We need the side effect from this import
 import type { Application } from "./application.js"
 import type { IClientOperation } from "./client-operations.js"
 import { Language } from "./language.js"
-import type { KeyValue } from "./typings/common.js"
 import { PersistentObject } from "./persistent-object.js"
 import { PersistentObjectAttribute } from "./persistent-object-attribute.js"
 import { PersistentObjectAttributeAsDetail } from "./persistent-object-attribute-as-detail.js"
@@ -25,6 +24,18 @@ import { fetchEventSource, EventSourceMessage } from '@microsoft/fetch-event-sou
 export let version = "vidyano-latest-version";
 
 export declare type NotificationType = Dto.NotificationType;
+
+export type GetQueryOptions = {
+    asLookup?: boolean;
+    columnOverrides?: { 
+        name: string;
+        includes?: string[];
+        excludes?: string[];
+    }[];
+    parent?: PersistentObject;
+    textSearch?: string;
+    sortOptions?: string;
+};
 
 export class Service extends Observable<Service> {
     private static _token: string;
@@ -706,23 +717,36 @@ export class Service extends Observable<Service> {
         return this.application;
     }
 
-    async getQuery(id: string, asLookup?: boolean, parent?: PersistentObject, textSearch?: string, sortOptions?: string): Promise<Query> {
+    async getQuery(id: string, options?: GetQueryOptions): Promise<Query>;
+    async getQuery(id: string, asLookup?: boolean, parent?: PersistentObject, textSearch?: string, sortOptions?: string): Promise<Query>;
+    async getQuery(id: string, arg2?: boolean | GetQueryOptions, parent?: PersistentObject, textSearch?: string, sortOptions?: string): Promise<Query> {
         const data = this._createData("getQuery");
         data.id = id;
-        if (parent != null)
-            data.parent = parent.toServiceObject();
 
-        if (!!textSearch)
-            data.textSearch = textSearch;
+        const options = typeof arg2 === "object" ? arg2 : {
+            asLookup: arg2,
+            parent,
+            textSearch,
+            sortOptions
+        };
 
-        if (!!sortOptions)
-            data.sortOptions = sortOptions;
+        if (options.parent != null)
+            data.parent = options.parent.toServiceObject();
+
+        if (!!options.textSearch)
+            data.textSearch = options.textSearch;
+
+        if (!!options.sortOptions)
+            data.sortOptions = options.sortOptions;
+
+        if (!!options.columnOverrides)
+            data.columnOverrides = options.columnOverrides;
 
         const result = await this._postJSON(this._createUri("GetQuery"), data);
         if (result.exception)
             throw result.exception;
 
-        return this.hooks.onConstructQuery(this, result.query, null, asLookup);
+        return this.hooks.onConstructQuery(this, result.query, null, options.asLookup);
     }
 
     async getPersistentObject(parent: PersistentObject, id: string, objectId?: string, isNew?: boolean): Promise<PersistentObject> {
