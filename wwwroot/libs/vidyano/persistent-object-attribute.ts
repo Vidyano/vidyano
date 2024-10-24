@@ -34,6 +34,7 @@ export class PersistentObjectAttribute extends ServiceObject {
     private _isSensitive: boolean;
     private _visibility: Dto.PersistentObjectAttributeVisibility;
     private _isVisible: boolean;
+    private _tag: any;
 
     protected _shouldRefresh: boolean = false;
     private _refreshServiceValue: string;
@@ -76,6 +77,7 @@ export class PersistentObjectAttribute extends ServiceObject {
         this.column = attr.column;
         this.columnSpan = attr.columnSpan || 0;
         this.visibility = attr.visibility;
+        this._tag = attr.tag;
 
         if (this.type !== "Reference")
             this._setOptions(attr.options);
@@ -350,6 +352,10 @@ export class PersistentObjectAttribute extends ServiceObject {
         this.notifyPropertyChanged("actions", this.#actions = actions, oldActions);
     }
 
+    get tag(): any {
+        return this._tag;
+    }
+
     getTypeHint(name: string, defaultValue?: string, typeHints?: any, ignoreCasing?: boolean): string {
         if (typeHints != null) {
             if (this.typeHints != null)
@@ -414,6 +420,7 @@ export class PersistentObjectAttribute extends ServiceObject {
             this.isValueChanged = resultAttr.isValueChanged;
         }
 
+        this._tag = resultAttr._tag;
         this._refreshServiceValue = undefined;
 
         this.triggersRefresh = resultAttr.triggersRefresh;

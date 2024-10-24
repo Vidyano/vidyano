@@ -118,6 +118,7 @@ export class Query extends ServiceObjectWithActions {
     private _items: QueryResultItem[];
     private _queuedLazyItemIndexes: number[];
     private _queuedLazyItemIndexesTimeout: any;
+    private _tag: any;
 
     persistentObject: PersistentObject;
     columns: QueryColumn[];
@@ -187,6 +188,8 @@ export class Query extends ServiceObjectWithActions {
             this._filters = null;
 
         this._canFilter = this.actions.some(a => a.name === "Filter") && this.columns.some(c => c.canFilter);
+
+        this._tag = query.tag;
 
         if (query.result)
             this._setResult(query.result);
@@ -296,6 +299,10 @@ export class Query extends ServiceObjectWithActions {
             return;
 
         this.notifyPropertyChanged("groupingInfo", this._groupingInfo = groupingInfo, oldValue);
+    }
+
+    get tag(): any {
+        return this._tag;
     }
 
     get lastUpdated(): Date {
@@ -545,6 +552,7 @@ export class Query extends ServiceObjectWithActions {
         if ((this._charts && this._charts.length > 0) || (result.charts && result.charts.length > 0))
             this._setCharts(result.charts.map(c => new QueryChart(this, c.label, c.name, c.options, c.type)));
 
+        this._tag = result.tag;
         this._setLastUpdated();
     }
 

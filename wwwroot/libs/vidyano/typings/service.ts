@@ -122,6 +122,7 @@ export declare type PersistentObject = {
     stateBehavior?: PersistentObjectStateBehavior;
     tabs?: Record<string, PersistentObjectTab>;
     type: string;
+    tag?: any;
 };
 export declare type PersistentObjectAttributeVisibility = "Always" | "Read" | "New" | "Never" | "Query" | "Read, Query" | "Read, New" | "Query, New";
 export declare type PersistentObjectAttribute = {
@@ -149,6 +150,7 @@ export declare type PersistentObjectAttribute = {
     triggersRefresh?: boolean;
     options?: string[];
     actions?: string[];
+    tag?: any;
 };
 export declare type PersistentObjectAttributeWithReference = {
     displayAttribute: string;
@@ -184,6 +186,7 @@ export declare type Query = {
     result: QueryResult;
     sortOptions: string;
     textSearch: string;
+    tag?: any;
 };
 export declare type QueryColumn = {
     canFilter: boolean;
@@ -198,6 +201,7 @@ export declare type QueryColumn = {
     offset: number;
     persistentObjectId: string;
     type: string;
+    tag?: any;
 };
 export declare type QueryResult = {
     charts: QueryChart[];
@@ -214,11 +218,13 @@ export declare type QueryResult = {
     sortOptions: string;
     totalItem?: QueryResultItem;
     totalItems?: number;
+    tag?: any;
 };
 export declare type QueryResultItem = {
     id: string;
     values: QueryResultItemValue[];
     typeHints?: Record<string, string>;
+    tag?: any;
 };
 export declare type QueryResultItemValue = {
     key: string;

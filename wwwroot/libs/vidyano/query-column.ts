@@ -33,6 +33,7 @@ export class QueryColumn extends ServiceObject {
     private _selectedDistincts: string[];
     private _selectedDistinctsInversed: boolean;
     private _total: QueryResultItemValue;
+    private _tag: any;
 
     offset: number;
     isPinned: boolean;
@@ -68,6 +69,7 @@ export class QueryColumn extends ServiceObject {
         this.width = col.width;
         this.typeHints = col.typeHints;
         this._sortDirection = "";
+        this._tag = col._tag;
 
         query.propertyChanged.attach(this._queryPropertyChanged.bind(this));
     }
@@ -159,6 +161,10 @@ export class QueryColumn extends ServiceObject {
 
     get total(): QueryResultItemValue {
         return this._total;
+    }
+
+    get tag(): any {
+        return this._tag;
     }
 
     private _setTotal(total: QueryResultItemValue) {

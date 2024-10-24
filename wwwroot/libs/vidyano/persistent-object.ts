@@ -28,6 +28,7 @@ export class PersistentObject extends ServiceObjectWithActions {
     private _isDeleted: boolean;
     private _tabs: PersistentObjectTab[];
     private _isFrozen: boolean = false;
+    private _tag: any;
     readonly isBreadcrumbSensitive: boolean;
     readonly forceFromAction: boolean;
     fullTypeName: string;
@@ -106,6 +107,7 @@ export class PersistentObject extends ServiceObjectWithActions {
         if (this._tabs.length === 0)
             this._tabs = [this.service.hooks.onConstructPersistentObjectAttributeTab(service, [], "", "", "", null, this, 0, true)];
 
+        this._tag = po.tag;
         this._lastResult = po;
 
         if (this.isNew || this.stateBehavior === "OpenInEdit" || this.stateBehavior.indexOf("OpenInEdit") >= 0 || this.stateBehavior === "StayInEdit" || this.stateBehavior.indexOf("StayInEdit") >= 0)
@@ -151,6 +153,10 @@ export class PersistentObject extends ServiceObjectWithActions {
     set tabs(tabs: PersistentObjectTab[]) {
         const oldTabs = this._tabs;
         this.notifyPropertyChanged("tabs", this._tabs = tabs, oldTabs);
+    }
+
+    get tag() {
+        return this._tag;
     }
 
     get isEditing(): boolean {

@@ -12,6 +12,7 @@ export class QueryResultItem extends ServiceObject {
     typeHints: any;
     private _fullValuesByName: any;
     private _values: any;
+    private _tag: any;
 
     constructor(service: Service, item: any, public query: Query, private _isSelected: boolean) {
         super(service);
@@ -26,6 +27,7 @@ export class QueryResultItem extends ServiceObject {
             this.rawValues = [];
 
         this.typeHints = item.typeHints;
+        this._tag = this._tag;
     }
 
     get values(): { [key: string]: any; } {
@@ -65,6 +67,10 @@ export class QueryResultItem extends ServiceObject {
             this._ignoreSelect = this.getTypeHint("extraclass", "").toUpperCase().split(" ").some(c => c === "DISABLED" || c === "READONLY");
 
         return this._ignoreSelect;
+    }
+
+    get tag(): any {
+        return this._tag;
     }
 
     getValue(key: string): any {
