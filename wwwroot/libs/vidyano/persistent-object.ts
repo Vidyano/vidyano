@@ -414,6 +414,8 @@ export class PersistentObject extends ServiceObjectWithActions {
             });
         }
 
+        this._tag = result.tag;
+
         this.service.hooks.onRefreshFromResult(this);
         this._setLastUpdated(new Date());
     }
