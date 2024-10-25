@@ -2922,6 +2922,7 @@ declare type PersistentObject$2 = {
     stateBehavior?: PersistentObjectStateBehavior;
     tabs?: Record<string, PersistentObjectTab$2>;
     type: string;
+    tag?: any;
 };
 declare type PersistentObjectAttributeVisibility = "Always" | "Read" | "New" | "Never" | "Query" | "Read, Query" | "Read, New" | "Query, New";
 declare type PersistentObjectAttribute$2 = {
@@ -2949,6 +2950,7 @@ declare type PersistentObjectAttribute$2 = {
     triggersRefresh?: boolean;
     options?: string[];
     actions?: string[];
+    tag?: any;
 };
 declare type PersistentObjectAttributeWithReference$1 = {
     displayAttribute: string;
@@ -2984,6 +2986,7 @@ declare type Query$2 = {
     result: QueryResult;
     sortOptions: string;
     textSearch: string;
+    tag?: any;
 };
 declare type QueryColumn$1 = {
     canFilter: boolean;
@@ -2998,6 +3001,7 @@ declare type QueryColumn$1 = {
     offset: number;
     persistentObjectId: string;
     type: string;
+    tag?: any;
 };
 declare type QueryResult = {
     charts: QueryChart$1[];
@@ -3014,11 +3018,13 @@ declare type QueryResult = {
     sortOptions: string;
     totalItem?: QueryResultItem$1;
     totalItems?: number;
+    tag?: any;
 };
 declare type QueryResultItem$1 = {
     id: string;
     values: QueryResultItemValue$1[];
     typeHints?: Record<string, string>;
+    tag?: any;
 };
 declare type QueryResultItemValue$1 = {
     key: string;
@@ -3169,6 +3175,7 @@ declare class QueryColumn extends ServiceObject {
     private _selectedDistincts;
     private _selectedDistinctsInversed;
     private _total;
+    private _tag;
     offset: number;
     isPinned: boolean;
     isHidden: boolean;
@@ -3194,6 +3201,7 @@ declare class QueryColumn extends ServiceObject {
     get distincts(): IQueryColumnDistincts;
     set distincts(distincts: IQueryColumnDistincts);
     get total(): QueryResultItemValue;
+    get tag(): any;
     private _setTotal;
     private _setSortDirection;
     _toServiceObject(): any;
@@ -3275,6 +3283,7 @@ declare class PersistentObjectAttribute$1 extends ServiceObject {
     private _isSensitive;
     private _visibility;
     private _isVisible;
+    private _tag;
     protected _shouldRefresh: boolean;
     private _refreshServiceValue;
     id: string;
@@ -3320,6 +3329,7 @@ declare class PersistentObjectAttribute$1 extends ServiceObject {
     get input(): HTMLInputElement;
     get actions(): Array<Action> & Record<string, Action>;
     private _setActions;
+    get tag(): any;
     getTypeHint(name: string, defaultValue?: string, typeHints?: any, ignoreCasing?: boolean): string;
     _toServiceObject(): any;
     _refreshFromResult(resultAttr: PersistentObjectAttribute$1, resultWins: boolean): boolean;
@@ -3446,6 +3456,7 @@ declare class Query$1 extends ServiceObjectWithActions {
     private _items;
     private _queuedLazyItemIndexes;
     private _queuedLazyItemIndexesTimeout;
+    private _tag;
     persistentObject: PersistentObject$1;
     columns: QueryColumn[];
     id: string;
@@ -3481,6 +3492,7 @@ declare class Query$1 extends ServiceObjectWithActions {
     set defaultChartName(defaultChart: string);
     get groupingInfo(): IQueryGroupingInfo;
     private _setGroupingInfo;
+    get tag(): any;
     get lastUpdated(): Date;
     private _setLastUpdated;
     get selectedItems(): QueryResultItem[];
@@ -3532,6 +3544,7 @@ declare class QueryResultItem extends ServiceObject {
     typeHints: any;
     private _fullValuesByName;
     private _values;
+    private _tag;
     constructor(service: Service, item: any, query: Query$1, _isSelected: boolean);
     get values(): {
         [key: string]: any;
@@ -3539,6 +3552,7 @@ declare class QueryResultItem extends ServiceObject {
     get isSelected(): boolean;
     set isSelected(val: boolean);
     get ignoreSelect(): boolean;
+    get tag(): any;
     getValue(key: string): any;
     getFullValue(key: string): QueryResultItemValue;
     getTypeHint(name: string, defaultValue?: string, typeHints?: any): string;
@@ -3726,6 +3740,7 @@ declare class PersistentObject$1 extends ServiceObjectWithActions {
     private _isDeleted;
     private _tabs;
     private _isFrozen;
+    private _tag;
     readonly isBreadcrumbSensitive: boolean;
     readonly forceFromAction: boolean;
     fullTypeName: string;
@@ -3756,6 +3771,7 @@ declare class PersistentObject$1 extends ServiceObjectWithActions {
     get isBulkEdit(): boolean;
     get tabs(): PersistentObjectTab$1[];
     set tabs(tabs: PersistentObjectTab$1[]);
+    get tag(): any;
     get isEditing(): boolean;
     private setIsEditing;
     get breadcrumb(): string;

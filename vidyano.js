@@ -7621,6 +7621,7 @@ let PersistentObjectAttribute$1 = class PersistentObjectAttribute extends Servic
         this.column = attr.column;
         this.columnSpan = attr.columnSpan || 0;
         this.visibility = attr.visibility;
+        this._tag = attr.tag;
         if (this.type !== "Reference")
             this._setOptions(attr.options);
         if (this.type === "BinaryFile") {
@@ -7837,6 +7838,9 @@ let PersistentObjectAttribute$1 = class PersistentObjectAttribute extends Servic
         const oldActions = this.#actions;
         this.notifyPropertyChanged("actions", this.#actions = actions, oldActions);
     }
+    get tag() {
+        return this._tag;
+    }
     getTypeHint(name, defaultValue, typeHints, ignoreCasing) {
         if (typeHints != null) {
             if (this.typeHints != null)
@@ -7884,6 +7888,7 @@ let PersistentObjectAttribute$1 = class PersistentObjectAttribute extends Servic
                 this.#input.value = null;
             this.isValueChanged = resultAttr.isValueChanged;
         }
+        this._tag = resultAttr._tag;
         this._refreshServiceValue = undefined;
         this.triggersRefresh = resultAttr.triggersRefresh;
         this.validationError = resultAttr.validationError || null;
@@ -8121,6 +8126,7 @@ let PersistentObject$1 = class PersistentObject extends ServiceObjectWithActions
         this._tabs = this.service.hooks.onSortPersistentObjectTabs(this, attributeTabs, this.queries.map(q => this.service.hooks.onConstructPersistentObjectQueryTab(this.service, q)));
         if (this._tabs.length === 0)
             this._tabs = [this.service.hooks.onConstructPersistentObjectAttributeTab(service, [], "", "", "", null, this, 0, true)];
+        this._tag = po.tag;
         this._lastResult = po;
         if (this.isNew || this.stateBehavior === "OpenInEdit" || this.stateBehavior.indexOf("OpenInEdit") >= 0 || this.stateBehavior === "StayInEdit" || this.stateBehavior.indexOf("StayInEdit") >= 0)
             this.beginEdit();
@@ -8154,6 +8160,9 @@ let PersistentObject$1 = class PersistentObject extends ServiceObjectWithActions
     set tabs(tabs) {
         const oldTabs = this._tabs;
         this.notifyPropertyChanged("tabs", this._tabs = tabs, oldTabs);
+    }
+    get tag() {
+        return this._tag;
     }
     get isEditing() {
         return this._isEditing;
@@ -8581,6 +8590,7 @@ class QueryResultItem extends ServiceObject {
         else
             this.rawValues = [];
         this.typeHints = item.typeHints;
+        this._tag = this._tag;
     }
     get values() {
         if (!this._values) {
@@ -8610,6 +8620,9 @@ class QueryResultItem extends ServiceObject {
         if (typeof this._ignoreSelect === "undefined")
             this._ignoreSelect = this.getTypeHint("extraclass", "").toUpperCase().split(" ").some(c => c === "DISABLED" || c === "READONLY");
         return this._ignoreSelect;
+    }
+    get tag() {
+        return this._tag;
     }
     getValue(key) {
         return this.values[key];
@@ -9028,6 +9041,7 @@ class QueryColumn extends ServiceObject {
         this.width = col.width;
         this.typeHints = col.typeHints;
         this._sortDirection = "";
+        this._tag = col._tag;
         query.propertyChanged.attach(this._queryPropertyChanged.bind(this));
     }
     get id() {
@@ -9095,6 +9109,9 @@ class QueryColumn extends ServiceObject {
     }
     get total() {
         return this._total;
+    }
+    get tag() {
+        return this._tag;
     }
     _setTotal(total) {
         const oldTotal = this._total;
@@ -9529,6 +9546,7 @@ let Query$1 = class Query extends ServiceObjectWithActions {
         else
             this._filters = null;
         this._canFilter = this.actions.some(a => a.name === "Filter") && this.columns.some(c => c.canFilter);
+        this._tag = query.tag;
         if (query.result)
             this._setResult(query.result);
         else {
@@ -9611,6 +9629,9 @@ let Query$1 = class Query extends ServiceObjectWithActions {
         if (oldValue === groupingInfo)
             return;
         this.notifyPropertyChanged("groupingInfo", this._groupingInfo = groupingInfo, oldValue);
+    }
+    get tag() {
+        return this._tag;
     }
     get lastUpdated() {
         return this._lastUpdated;
@@ -9802,6 +9823,7 @@ let Query$1 = class Query extends ServiceObjectWithActions {
         this.setNotification(result.notification, result.notificationType, result.notificationDuration);
         if ((this._charts && this._charts.length > 0) || (result.charts && result.charts.length > 0))
             this._setCharts(result.charts.map(c => new QueryChart(this, c.label, c.name, c.options, c.type)));
+        this._tag = result.tag;
         this._setLastUpdated();
     }
     getColumn(name) {
@@ -11122,7 +11144,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.14.0";
+let version$2 = "3.15.0";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
