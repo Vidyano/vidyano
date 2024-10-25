@@ -8362,6 +8362,7 @@ let PersistentObject$1 = class PersistentObject extends ServiceObjectWithActions
                     await query.search();
             });
         }
+        this._tag = result.tag;
         this.service.hooks.onRefreshFromResult(this);
         this._setLastUpdated(new Date());
     }
@@ -11144,7 +11145,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.15.0";
+let version$2 = "3.15.1";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
