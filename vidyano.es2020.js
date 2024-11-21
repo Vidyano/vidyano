@@ -8039,8 +8039,10 @@ class PersistentObjectAttributeWithReference extends PersistentObjectAttribute$1
     constructor(service, attr, parent) {
         super(service, attr, parent);
         this.parent = parent;
-        if (attr.lookup)
+        if (attr.lookup) {
             this.lookup = this.service.hooks.onConstructQuery(service, attr.lookup, parent, false, 1);
+            this.lookup.ownerAttributeWithReference = this;
+        }
         else
             this.lookup = null;
         this.objectId = typeof attr.objectId === "undefined" ? null : attr.objectId;
@@ -10088,7 +10090,9 @@ let Query$1 = class Query extends ServiceObjectWithActions {
         return search();
     }
     clone(asLookup = false) {
-        return this.service.hooks.onConstructQuery(this.service, this, this.parent, asLookup);
+        const cloned = this.service.hooks.onConstructQuery(this.service, this, this.parent, asLookup);
+        cloned.ownerAttributeWithReference = this.ownerAttributeWithReference;
+        return cloned;
     }
     _updateColumns(_columns = []) {
         const oldColumns = this.columns ? this.columns.slice(0) : this.columns;
@@ -11169,7 +11173,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.15.1";
+let version$2 = "3.15.2";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -11738,6 +11742,8 @@ class Service extends Observable {
             data.parent = parent.toServiceObject();
         if (asLookup)
             data.asLookup = asLookup;
+        if (query.ownerAttributeWithReference)
+            data.forReferenceAttribute = query.ownerAttributeWithReference.name;
         try {
             const result = await this._postJSON(this._createUri("ExecuteQuery"), data);
             if (result.exception)

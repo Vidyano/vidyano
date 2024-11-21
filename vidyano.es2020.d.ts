@@ -3418,6 +3418,20 @@ declare class QueryResultItemGroup extends Observable<QueryResultItemGroup> impl
     update(group: QueryResultItemGroup$1, start: number, end: number): void;
 }
 
+declare class PersistentObjectAttributeWithReference extends PersistentObjectAttribute$1 {
+    parent: PersistentObject$1;
+    lookup: Query$1;
+    objectId: string;
+    displayAttribute: string;
+    canAddNewReference: boolean;
+    selectInPlace: boolean;
+    constructor(service: Service, attr: any, parent: PersistentObject$1);
+    addNewReference(): Promise<void>;
+    changeReference(selectedItems: QueryResultItem[] | string[]): Promise<boolean>;
+    getPersistentObject(): Promise<PersistentObject$1>;
+    _refreshFromResult(resultAttr: PersistentObjectAttribute$1, resultWins: boolean): boolean;
+}
+
 interface ISortOption {
     column: QueryColumn;
     name: string;
@@ -3474,6 +3488,7 @@ declare class Query$1 extends ServiceObjectWithActions {
     continuation: string;
     selectAll: IQuerySelectAll;
     disableLazyLoading: boolean;
+    ownerAttributeWithReference: PersistentObjectAttributeWithReference;
     constructor(service: Service, query: Query$2, parent?: PersistentObject$1, asLookup?: boolean, maxSelectedItems?: number);
     get isSystem(): boolean;
     get allowTextSearch(): boolean;
@@ -3706,20 +3721,6 @@ declare class ServiceObjectWithActions extends ServiceObject {
     queueWork<T>(work: () => Promise<T>, blockActions?: boolean): Promise<T>;
     protected _initializeActions(): void;
     private _blockActions;
-}
-
-declare class PersistentObjectAttributeWithReference extends PersistentObjectAttribute$1 {
-    parent: PersistentObject$1;
-    lookup: Query$1;
-    objectId: string;
-    displayAttribute: string;
-    canAddNewReference: boolean;
-    selectInPlace: boolean;
-    constructor(service: Service, attr: any, parent: PersistentObject$1);
-    addNewReference(): Promise<void>;
-    changeReference(selectedItems: QueryResultItem[] | string[]): Promise<boolean>;
-    getPersistentObject(): Promise<PersistentObject$1>;
-    _refreshFromResult(resultAttr: PersistentObjectAttribute$1, resultWins: boolean): boolean;
 }
 
 declare enum PersistentObjectLayoutMode {
