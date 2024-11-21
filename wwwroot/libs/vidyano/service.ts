@@ -782,6 +782,8 @@ export class Service extends Observable<Service> {
             data.parent = parent.toServiceObject();
         if (asLookup)
             data.asLookup = asLookup;
+        if (query.ownerAttributeWithReference)
+            data.forReferenceAttribute = query.ownerAttributeWithReference.name;
 
         try {
             const result = await this._postJSON(this._createUri("ExecuteQuery"), data);

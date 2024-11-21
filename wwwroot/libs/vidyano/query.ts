@@ -10,7 +10,7 @@ import { IQueryGroupingInfo, QueryResultItemGroup } from "./query-result-item-gr
 import { PersistentObject } from "./persistent-object.js"
 import { Action } from "./action.js"
 import { ExpressionParser } from "./common/expression-parser.js"
-import { ActionDefinition } from "./action-definition.js"
+import { PersistentObjectAttributeWithReference } from "./persistent-object-attribute-with-reference.js"
 
 export interface ISortOption {
     column: QueryColumn;
@@ -137,6 +137,7 @@ export class Query extends ServiceObjectWithActions {
     continuation: string;
     selectAll: IQuerySelectAll;
     disableLazyLoading: boolean;
+    ownerAttributeWithReference: PersistentObjectAttributeWithReference;
 
     constructor(service: Service, query: Dto.Query, parent?: PersistentObject, asLookup?: boolean, maxSelectedItems?: number);
     constructor(service: Service, query: any, public parent?: PersistentObject, asLookup: boolean = false, public maxSelectedItems?: number) {
@@ -853,7 +854,10 @@ export class Query extends ServiceObjectWithActions {
     }
 
     clone(asLookup: boolean = false): Query {
-        return this.service.hooks.onConstructQuery(this.service, this, this.parent, asLookup);
+        const cloned = this.service.hooks.onConstructQuery(this.service, this, this.parent, asLookup);
+        cloned.ownerAttributeWithReference = this.ownerAttributeWithReference;
+
+        return cloned;
     }
 
     private _updateColumns(_columns: any[] = []) {

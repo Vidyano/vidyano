@@ -14,8 +14,10 @@ export class PersistentObjectAttributeWithReference extends PersistentObjectAttr
     constructor(service: Service, attr: any, public parent: PersistentObject) {
         super(service, attr, parent);
 
-        if (attr.lookup)
+        if (attr.lookup) {
             this.lookup = this.service.hooks.onConstructQuery(service, attr.lookup, parent, false, 1);
+            this.lookup.ownerAttributeWithReference = this;
+        }
         else
             this.lookup = null;
 
