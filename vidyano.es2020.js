@@ -11173,7 +11173,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.15.2";
+let version$2 = "3.16.0";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -11885,7 +11885,7 @@ class Service extends Observable {
                 a.download = matches[1].replace(/['"]/g, '');
             a.href = URL.createObjectURL(blob);
             document.body.appendChild(a);
-            a.click();
+            a.dispatchEvent(new MouseEvent("click", { bubbles: false }));
             document.body.removeChild(a);
             URL.revokeObjectURL(a.href);
         }
