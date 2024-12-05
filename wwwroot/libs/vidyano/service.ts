@@ -962,7 +962,7 @@ export class Service extends Observable<Service> {
 
             a.href = URL.createObjectURL(blob);
             document.body.appendChild(a);
-            a.click();
+            a.dispatchEvent(new MouseEvent("click", { bubbles: false }));
             document.body.removeChild(a);
             URL.revokeObjectURL(a.href);
         }
