@@ -11173,7 +11173,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.16.0";
+let version$2 = "3.16.1";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -39525,6 +39525,9 @@ let QueryGridFooter = class QueryGridFooter extends WebComponent {
   padding: 0 var(--theme-h5);
   line-height: var(--vi-query-grid-row-height);
   font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 :host .column[is-numeric] {
   text-align: right;
