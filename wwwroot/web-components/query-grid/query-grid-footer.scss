@@ -6,6 +6,9 @@
         padding: 0 var(--theme-h5);
         line-height: var(--vi-query-grid-row-height);
         font-weight: bold;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
 
         &[is-numeric] {
             text-align: right;
