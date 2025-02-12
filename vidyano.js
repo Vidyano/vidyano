@@ -11149,7 +11149,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.16.1";
+let version$2 = "3.16.2";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -14866,7 +14866,7 @@ function htmlValue(value) {
         `non-template value passed to Polymer's html function: ${value}`);
   }
 }
-const html$2 = function html(strings, ...values) {
+const html$3 = function html(strings, ...values) {
   assertValidTemplateStringParameters(strings, values);
   const template =
        (document.createElement('template'));
@@ -20331,7 +20331,7 @@ class IronFocusablesHelperClass {
 const IronFocusablesHelper = new IronFocusablesHelperClass();
 
 Polymer({
-  _template: html$2`
+  _template: html$3`
     <style>
       :host {
         position: fixed;
@@ -21508,7 +21508,7 @@ var polymer = /*#__PURE__*/Object.freeze({
 	dedupingMixin: dedupingMixin,
 	enqueueDebouncer: enqueueDebouncer,
 	flush: flush$1,
-	html: html$2,
+	html: html$3,
 	mixinBehaviors: mixinBehaviors,
 	version: version$1
 });
@@ -21538,7 +21538,7 @@ function add(icon_or_string_or_template) {
         return;
     }
     if (Array.isArray(icon_or_string_or_template))
-        icon_or_string_or_template = html$2(icon_or_string_or_template);
+        icon_or_string_or_template = html$3(icon_or_string_or_template);
     Array.from(icon_or_string_or_template.content.querySelectorAll("vi-icon")).forEach((icon) => {
         document.body.appendChild(icon);
         icons[icon.name] = icon;
@@ -21818,7 +21818,7 @@ class WebComponent extends GestureEventListeners(PolymerElement) {
                 icons.forEach(icon => {
                     const iconTemplate = document.createElement("template");
                     iconTemplate.innerHTML = icon.outerHTML;
-                    add(html$2 `${iconTemplate}`);
+                    add(html$3 `${iconTemplate}`);
                     icon.parentNode.removeChild(icon);
                 });
                 return template;
@@ -23427,7 +23427,7 @@ const computePosition = (reference, floating, options) => {
 var Scroller_1;
 let Scroller = class Scroller extends WebComponent {
     static { Scroller_1 = this; }
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   position: relative;
   --vi-scroller-thumb-color: #888;
@@ -24002,7 +24002,7 @@ let Popup = Popup_1 = class Popup extends WebComponent {
         super(...arguments);
         this.__Vidyano_WebComponents_PopupCore__Instance__ = true;
     }
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   flex-direction: row;
   position: relative;
@@ -24410,7 +24410,7 @@ const topLayerOverTransforms = () => ({
 });
 
 let PopupMenuItemSplit = class PopupMenuItemSplit extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: block;
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
   cursor: pointer;
@@ -24554,7 +24554,7 @@ PopupMenuItemSplit = __decorate([
 ], PopupMenuItemSplit);
 
 let PopupMenuItem = class PopupMenuItem extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: block;
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
   cursor: pointer;
@@ -25318,7 +25318,7 @@ QueryConfig = __decorate([
 ], QueryConfig);
 
 let AppRoute = class AppRoute extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   position: relative;
 }
@@ -25443,7 +25443,7 @@ AppRoute = __decorate([
 ], AppRoute);
 
 let Alert = class Alert extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   position: fixed;
   z-index: 5000;
   bottom: 10px;
@@ -25502,7 +25502,7 @@ Alert = __decorate([
 ], Alert);
 
 let Error$1 = class Error extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -25556,7 +25556,7 @@ let AppRoutePresenter = class AppRoutePresenter extends WebComponent {
         this._routeMap = {};
         this._routeUpdater = Promise.resolve();
     }
-    static get template() { return html$2 `<style>:host vi-error {
+    static get template() { return html$3 `<style>:host vi-error {
   margin: calc(var(--theme-h1) * 2) 0;
 }</style>
 
@@ -25655,7 +25655,7 @@ AppRoutePresenter = __decorate([
 ], AppRoutePresenter);
 
 let PopupMenuItemSeparator = class PopupMenuItemSeparator extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: block;
   border-top: 1px solid #ddd;
 }</style>
@@ -25667,7 +25667,7 @@ PopupMenuItemSeparator = __decorate([
 ], PopupMenuItemSeparator);
 
 let PopupMenuItemWithActions = class PopupMenuItemWithActions extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   flex-direction: row;
   height: var(--vi-popup-menu-item-height, var(--theme-h1));
@@ -25794,7 +25794,7 @@ PopupMenuItemWithActions = __decorate([
 ], PopupMenuItemWithActions);
 
 let PopupMenu = class PopupMenu extends WebComponent {
-    static get template() { return html$2 `<style>:host #popup {
+    static get template() { return html$3 `<style>:host #popup {
   line-height: var(--theme-h1);
 }
 :host #popup #items {
@@ -25911,7 +25911,7 @@ PopupMenu = __decorate([
 
 let Dialog = class Dialog extends WebComponent {
     static dialogTemplate(innerTemplate, options) {
-        const outerTemplate = html$2 `<style>dialog {
+        const outerTemplate = html$3 `<style>dialog {
   border: none;
   background: white;
   box-shadow: rgba(0, 0, 0, 0.24) -2px 5px 12px 0px, rgba(0, 0, 0, 0.12) 0px 0px 12px 0px;
@@ -26122,7 +26122,7 @@ Dialog = __decorate([
 ], Dialog);
 
 let RetryActionDialog = class RetryActionDialog extends Dialog {
-    static get template() { return Dialog.dialogTemplate(html$2 `<style>:host {
+    static get template() { return Dialog.dialogTemplate(html$3 `<style>:host {
   --vi-persistent-object-dialog-base-width-base: 400px;
 }
 :host header {
@@ -26225,7 +26225,7 @@ const findUriLabel = /\[url:([^|]+)\|((https?:\/\/[-\w]+(\.[-\w]+)*(:\d+)?(\/#?!
 const findUri = /(https?:\/\/[-\w]+(\.[-\w]+)*(:\d+)?(\/#?!?[^\.\s]*(\.[^\.\s]+)*)?)/g;
 const findNewLine = /\r?\n|\r/g;
 let Notification = class Notification extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -26409,7 +26409,7 @@ Notification = __decorate([
 ], Notification);
 
 let SelectReferenceDialog = class SelectReferenceDialog extends Dialog {
-    static get template() { return Dialog.dialogTemplate(html$2 `<style>vi-input-search {
+    static get template() { return Dialog.dialogTemplate(html$3 `<style>vi-input-search {
   line-height: var(--theme-h2);
   height: var(--theme-h2);
   border: 1px solid #EAEAEA;
@@ -26522,7 +26522,7 @@ SelectReferenceDialog = __decorate([
 ], SelectReferenceDialog);
 
 let StreamingActionDialog = class StreamingActionDialog extends Dialog {
-    static get template() { return Dialog.dialogTemplate(html$2 `<style>header {
+    static get template() { return Dialog.dialogTemplate(html$3 `<style>header {
   gap: var(--theme-h4);
 }
 
@@ -26913,81 +26913,402 @@ function _getDefaults() {
         renderer: null,
         silent: false,
         tokenizer: null,
-        walkTokens: null
+        walkTokens: null,
     };
 }
 let _defaults = _getDefaults();
 function changeDefaults(newDefaults) {
     _defaults = newDefaults;
 }
-const escapeTest = /[&<>"']/;
-const escapeReplace = new RegExp(escapeTest.source, 'g');
-const escapeTestNoEncode = /[<>"']|&(?!(#\d{1,7}|#[Xx][a-fA-F0-9]{1,6}|\w+);)/;
-const escapeReplaceNoEncode = new RegExp(escapeTestNoEncode.source, 'g');
+const noopTest = { exec: () => null };
+function edit(regex, opt = '') {
+    let source = typeof regex === 'string' ? regex : regex.source;
+    const obj = {
+        replace: (name, val) => {
+            let valSource = typeof val === 'string' ? val : val.source;
+            valSource = valSource.replace(other.caret, '$1');
+            source = source.replace(name, valSource);
+            return obj;
+        },
+        getRegex: () => {
+            return new RegExp(source, opt);
+        },
+    };
+    return obj;
+}
+const other = {
+    codeRemoveIndent: /^(?: {1,4}| {0,3}\t)/gm,
+    outputLinkReplace: /\\([\[\]])/g,
+    indentCodeCompensation: /^(\s+)(?:```)/,
+    beginningSpace: /^\s+/,
+    endingHash: /#$/,
+    startingSpaceChar: /^ /,
+    endingSpaceChar: / $/,
+    nonSpaceChar: /[^ ]/,
+    newLineCharGlobal: /\n/g,
+    tabCharGlobal: /\t/g,
+    multipleSpaceGlobal: /\s+/g,
+    blankLine: /^[ \t]*$/,
+    doubleBlankLine: /\n[ \t]*\n[ \t]*$/,
+    blockquoteStart: /^ {0,3}>/,
+    blockquoteSetextReplace: /\n {0,3}((?:=+|-+) *)(?=\n|$)/g,
+    blockquoteSetextReplace2: /^ {0,3}>[ \t]?/gm,
+    listReplaceTabs: /^\t+/,
+    listReplaceNesting: /^ {1,4}(?=( {4})*[^ ])/g,
+    listIsTask: /^\[[ xX]\] /,
+    listReplaceTask: /^\[[ xX]\] +/,
+    anyLine: /\n.*\n/,
+    hrefBrackets: /^<(.*)>$/,
+    tableDelimiter: /[:|]/,
+    tableAlignChars: /^\||\| *$/g,
+    tableRowBlankLine: /\n[ \t]*$/,
+    tableAlignRight: /^ *-+: *$/,
+    tableAlignCenter: /^ *:-+: *$/,
+    tableAlignLeft: /^ *:-+ *$/,
+    startATag: /^<a /i,
+    endATag: /^<\/a>/i,
+    startPreScriptTag: /^<(pre|code|kbd|script)(\s|>)/i,
+    endPreScriptTag: /^<\/(pre|code|kbd|script)(\s|>)/i,
+    startAngleBracket: /^</,
+    endAngleBracket: />$/,
+    pedanticHrefTitle: /^([^'"]*[^\s])\s+(['"])(.*)\2/,
+    unicodeAlphaNumeric: /[\p{L}\p{N}]/u,
+    escapeTest: /[&<>"']/,
+    escapeReplace: /[&<>"']/g,
+    escapeTestNoEncode: /[<>"']|&(?!(#\d{1,7}|#[Xx][a-fA-F0-9]{1,6}|\w+);)/,
+    escapeReplaceNoEncode: /[<>"']|&(?!(#\d{1,7}|#[Xx][a-fA-F0-9]{1,6}|\w+);)/g,
+    unescapeTest: /&(#(?:\d+)|(?:#x[0-9A-Fa-f]+)|(?:\w+));?/ig,
+    caret: /(^|[^\[])\^/g,
+    percentDecode: /%25/g,
+    findPipe: /\|/g,
+    splitPipe: / \|/,
+    slashPipe: /\\\|/g,
+    carriageReturn: /\r\n|\r/g,
+    spaceLine: /^ +$/gm,
+    notSpaceStart: /^\S*/,
+    endingNewline: /\n$/,
+    listItemRegex: (bull) => new RegExp(`^( {0,3}${bull})((?:[\t ][^\\n]*)?(?:\\n|$))`),
+    nextBulletRegex: (indent) => new RegExp(`^ {0,${Math.min(3, indent - 1)}}(?:[*+-]|\\d{1,9}[.)])((?:[ \t][^\\n]*)?(?:\\n|$))`),
+    hrRegex: (indent) => new RegExp(`^ {0,${Math.min(3, indent - 1)}}((?:- *){3,}|(?:_ *){3,}|(?:\\* *){3,})(?:\\n+|$)`),
+    fencesBeginRegex: (indent) => new RegExp(`^ {0,${Math.min(3, indent - 1)}}(?:\`\`\`|~~~)`),
+    headingBeginRegex: (indent) => new RegExp(`^ {0,${Math.min(3, indent - 1)}}#`),
+    htmlBeginRegex: (indent) => new RegExp(`^ {0,${Math.min(3, indent - 1)}}<(?:[a-z].*>|!--)`, 'i'),
+};
+const newline = /^(?:[ \t]*(?:\n|$))+/;
+const blockCode = /^((?: {4}| {0,3}\t)[^\n]+(?:\n(?:[ \t]*(?:\n|$))*)?)+/;
+const fences = /^ {0,3}(`{3,}(?=[^`\n]*(?:\n|$))|~{3,})([^\n]*)(?:\n|$)(?:|([\s\S]*?)(?:\n|$))(?: {0,3}\1[~`]* *(?=\n|$)|$)/;
+const hr = /^ {0,3}((?:-[\t ]*){3,}|(?:_[ \t]*){3,}|(?:\*[ \t]*){3,})(?:\n+|$)/;
+const heading = /^ {0,3}(#{1,6})(?=\s|$)(.*)(?:\n+|$)/;
+const bullet = /(?:[*+-]|\d{1,9}[.)])/;
+const lheadingCore = /^(?!bull |blockCode|fences|blockquote|heading|html|table)((?:.|\n(?!\s*?\n|bull |blockCode|fences|blockquote|heading|html|table))+?)\n {0,3}(=+|-+) *(?:\n+|$)/;
+const lheading = edit(lheadingCore)
+    .replace(/bull/g, bullet)
+    .replace(/blockCode/g, /(?: {4}| {0,3}\t)/)
+    .replace(/fences/g, / {0,3}(?:`{3,}|~{3,})/)
+    .replace(/blockquote/g, / {0,3}>/)
+    .replace(/heading/g, / {0,3}#{1,6}/)
+    .replace(/html/g, / {0,3}<[^\n>]+>\n/)
+    .replace(/\|table/g, '')
+    .getRegex();
+const lheadingGfm = edit(lheadingCore)
+    .replace(/bull/g, bullet)
+    .replace(/blockCode/g, /(?: {4}| {0,3}\t)/)
+    .replace(/fences/g, / {0,3}(?:`{3,}|~{3,})/)
+    .replace(/blockquote/g, / {0,3}>/)
+    .replace(/heading/g, / {0,3}#{1,6}/)
+    .replace(/html/g, / {0,3}<[^\n>]+>\n/)
+    .replace(/table/g, / {0,3}\|?(?:[:\- ]*\|)+[\:\- ]*\n/)
+    .getRegex();
+const _paragraph = /^([^\n]+(?:\n(?!hr|heading|lheading|blockquote|fences|list|html|table| +\n)[^\n]+)*)/;
+const blockText = /^[^\n]+/;
+const _blockLabel = /(?!\s*\])(?:\\.|[^\[\]\\])+/;
+const def = edit(/^ {0,3}\[(label)\]: *(?:\n[ \t]*)?([^<\s][^\s]*|<.*?>)(?:(?: +(?:\n[ \t]*)?| *\n[ \t]*)(title))? *(?:\n+|$)/)
+    .replace('label', _blockLabel)
+    .replace('title', /(?:"(?:\\"?|[^"\\])*"|'[^'\n]*(?:\n[^'\n]+)*\n?'|\([^()]*\))/)
+    .getRegex();
+const list = edit(/^( {0,3}bull)([ \t][^\n]+?)?(?:\n|$)/)
+    .replace(/bull/g, bullet)
+    .getRegex();
+const _tag = 'address|article|aside|base|basefont|blockquote|body|caption'
+    + '|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption'
+    + '|figure|footer|form|frame|frameset|h[1-6]|head|header|hr|html|iframe'
+    + '|legend|li|link|main|menu|menuitem|meta|nav|noframes|ol|optgroup|option'
+    + '|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title'
+    + '|tr|track|ul';
+const _comment = /<!--(?:-?>|[\s\S]*?(?:-->|$))/;
+const html$2 = edit('^ {0,3}(?:'
+    + '<(script|pre|style|textarea)[\\s>][\\s\\S]*?(?:</\\1>[^\\n]*\\n+|$)'
+    + '|comment[^\\n]*(\\n+|$)'
+    + '|<\\?[\\s\\S]*?(?:\\?>\\n*|$)'
+    + '|<![A-Z][\\s\\S]*?(?:>\\n*|$)'
+    + '|<!\\[CDATA\\[[\\s\\S]*?(?:\\]\\]>\\n*|$)'
+    + '|</?(tag)(?: +|\\n|/?>)[\\s\\S]*?(?:(?:\\n[ \t]*)+\\n|$)'
+    + '|<(?!script|pre|style|textarea)([a-z][\\w-]*)(?:attribute)*? */?>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:(?:\\n[ \t]*)+\\n|$)'
+    + '|</(?!script|pre|style|textarea)[a-z][\\w-]*\\s*>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:(?:\\n[ \t]*)+\\n|$)'
+    + ')', 'i')
+    .replace('comment', _comment)
+    .replace('tag', _tag)
+    .replace('attribute', / +[a-zA-Z:_][\w.:-]*(?: *= *"[^"\n]*"| *= *'[^'\n]*'| *= *[^\s"'=<>`]+)?/)
+    .getRegex();
+const paragraph = edit(_paragraph)
+    .replace('hr', hr)
+    .replace('heading', ' {0,3}#{1,6}(?:\\s|$)')
+    .replace('|lheading', '')
+    .replace('|table', '')
+    .replace('blockquote', ' {0,3}>')
+    .replace('fences', ' {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n')
+    .replace('list', ' {0,3}(?:[*+-]|1[.)]) ')
+    .replace('html', '</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)')
+    .replace('tag', _tag)
+    .getRegex();
+const blockquote = edit(/^( {0,3}> ?(paragraph|[^\n]*)(?:\n|$))+/)
+    .replace('paragraph', paragraph)
+    .getRegex();
+const blockNormal = {
+    blockquote,
+    code: blockCode,
+    def,
+    fences,
+    heading,
+    hr,
+    html: html$2,
+    lheading,
+    list,
+    newline,
+    paragraph,
+    table: noopTest,
+    text: blockText,
+};
+const gfmTable = edit('^ *([^\\n ].*)\\n'
+    + ' {0,3}((?:\\| *)?:?-+:? *(?:\\| *:?-+:? *)*(?:\\| *)?)'
+    + '(?:\\n((?:(?! *\\n|hr|heading|blockquote|code|fences|list|html).*(?:\\n|$))*)\\n*|$)')
+    .replace('hr', hr)
+    .replace('heading', ' {0,3}#{1,6}(?:\\s|$)')
+    .replace('blockquote', ' {0,3}>')
+    .replace('code', '(?: {4}| {0,3}\t)[^\\n]')
+    .replace('fences', ' {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n')
+    .replace('list', ' {0,3}(?:[*+-]|1[.)]) ')
+    .replace('html', '</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)')
+    .replace('tag', _tag)
+    .getRegex();
+const blockGfm = {
+    ...blockNormal,
+    lheading: lheadingGfm,
+    table: gfmTable,
+    paragraph: edit(_paragraph)
+        .replace('hr', hr)
+        .replace('heading', ' {0,3}#{1,6}(?:\\s|$)')
+        .replace('|lheading', '')
+        .replace('table', gfmTable)
+        .replace('blockquote', ' {0,3}>')
+        .replace('fences', ' {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n')
+        .replace('list', ' {0,3}(?:[*+-]|1[.)]) ')
+        .replace('html', '</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)')
+        .replace('tag', _tag)
+        .getRegex(),
+};
+const blockPedantic = {
+    ...blockNormal,
+    html: edit('^ *(?:comment *(?:\\n|\\s*$)'
+        + '|<(tag)[\\s\\S]+?</\\1> *(?:\\n{2,}|\\s*$)'
+        + '|<tag(?:"[^"]*"|\'[^\']*\'|\\s[^\'"/>\\s]*)*?/?> *(?:\\n{2,}|\\s*$))')
+        .replace('comment', _comment)
+        .replace(/tag/g, '(?!(?:'
+        + 'a|em|strong|small|s|cite|q|dfn|abbr|data|time|code|var|samp|kbd|sub'
+        + '|sup|i|b|u|mark|ruby|rt|rp|bdi|bdo|span|br|wbr|ins|del|img)'
+        + '\\b)\\w+(?!:|[^\\w\\s@]*@)\\b')
+        .getRegex(),
+    def: /^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +(["(][^\n]+[")]))? *(?:\n+|$)/,
+    heading: /^(#{1,6})(.*)(?:\n+|$)/,
+    fences: noopTest,
+    lheading: /^(.+?)\n {0,3}(=+|-+) *(?:\n+|$)/,
+    paragraph: edit(_paragraph)
+        .replace('hr', hr)
+        .replace('heading', ' *#{1,6} *[^\n]')
+        .replace('lheading', lheading)
+        .replace('|table', '')
+        .replace('blockquote', ' {0,3}>')
+        .replace('|fences', '')
+        .replace('|list', '')
+        .replace('|html', '')
+        .replace('|tag', '')
+        .getRegex(),
+};
+const escape$1 = /^\\([!"#$%&'()*+,\-./:;<=>?@\[\]\\^_`{|}~])/;
+const inlineCode = /^(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)/;
+const br = /^( {2,}|\\)\n(?!\s*$)/;
+const inlineText = /^(`+|[^`])(?:(?= {2,}\n)|[\s\S]*?(?:(?=[\\<!\[`*_]|\b_|$)|[^ ](?= {2,}\n)))/;
+const _punctuation = /[\p{P}\p{S}]/u;
+const _punctuationOrSpace = /[\s\p{P}\p{S}]/u;
+const _notPunctuationOrSpace = /[^\s\p{P}\p{S}]/u;
+const punctuation = edit(/^((?![*_])punctSpace)/, 'u')
+    .replace(/punctSpace/g, _punctuationOrSpace).getRegex();
+const _punctuationGfmStrongEm = /(?!~)[\p{P}\p{S}]/u;
+const _punctuationOrSpaceGfmStrongEm = /(?!~)[\s\p{P}\p{S}]/u;
+const _notPunctuationOrSpaceGfmStrongEm = /(?:[^\s\p{P}\p{S}]|~)/u;
+const blockSkip = /\[[^[\]]*?\]\((?:\\.|[^\\\(\)]|\((?:\\.|[^\\\(\)])*\))*\)|`[^`]*?`|<[^<>]*?>/g;
+const emStrongLDelimCore = /^(?:\*+(?:((?!\*)punct)|[^\s*]))|^_+(?:((?!_)punct)|([^\s_]))/;
+const emStrongLDelim = edit(emStrongLDelimCore, 'u')
+    .replace(/punct/g, _punctuation)
+    .getRegex();
+const emStrongLDelimGfm = edit(emStrongLDelimCore, 'u')
+    .replace(/punct/g, _punctuationGfmStrongEm)
+    .getRegex();
+const emStrongRDelimAstCore = '^[^_*]*?__[^_*]*?\\*[^_*]*?(?=__)'
+    + '|[^*]+(?=[^*])'
+    + '|(?!\\*)punct(\\*+)(?=[\\s]|$)'
+    + '|notPunctSpace(\\*+)(?!\\*)(?=punctSpace|$)'
+    + '|(?!\\*)punctSpace(\\*+)(?=notPunctSpace)'
+    + '|[\\s](\\*+)(?!\\*)(?=punct)'
+    + '|(?!\\*)punct(\\*+)(?!\\*)(?=punct)'
+    + '|notPunctSpace(\\*+)(?=notPunctSpace)';
+const emStrongRDelimAst = edit(emStrongRDelimAstCore, 'gu')
+    .replace(/notPunctSpace/g, _notPunctuationOrSpace)
+    .replace(/punctSpace/g, _punctuationOrSpace)
+    .replace(/punct/g, _punctuation)
+    .getRegex();
+const emStrongRDelimAstGfm = edit(emStrongRDelimAstCore, 'gu')
+    .replace(/notPunctSpace/g, _notPunctuationOrSpaceGfmStrongEm)
+    .replace(/punctSpace/g, _punctuationOrSpaceGfmStrongEm)
+    .replace(/punct/g, _punctuationGfmStrongEm)
+    .getRegex();
+const emStrongRDelimUnd = edit('^[^_*]*?\\*\\*[^_*]*?_[^_*]*?(?=\\*\\*)'
+    + '|[^_]+(?=[^_])'
+    + '|(?!_)punct(_+)(?=[\\s]|$)'
+    + '|notPunctSpace(_+)(?!_)(?=punctSpace|$)'
+    + '|(?!_)punctSpace(_+)(?=notPunctSpace)'
+    + '|[\\s](_+)(?!_)(?=punct)'
+    + '|(?!_)punct(_+)(?!_)(?=punct)', 'gu')
+    .replace(/notPunctSpace/g, _notPunctuationOrSpace)
+    .replace(/punctSpace/g, _punctuationOrSpace)
+    .replace(/punct/g, _punctuation)
+    .getRegex();
+const anyPunctuation = edit(/\\(punct)/, 'gu')
+    .replace(/punct/g, _punctuation)
+    .getRegex();
+const autolink = edit(/^<(scheme:[^\s\x00-\x1f<>]*|email)>/)
+    .replace('scheme', /[a-zA-Z][a-zA-Z0-9+.-]{1,31}/)
+    .replace('email', /[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+(@)[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+(?![-_])/)
+    .getRegex();
+const _inlineComment = edit(_comment).replace('(?:-->|$)', '-->').getRegex();
+const tag = edit('^comment'
+    + '|^</[a-zA-Z][\\w:-]*\\s*>'
+    + '|^<[a-zA-Z][\\w-]*(?:attribute)*?\\s*/?>'
+    + '|^<\\?[\\s\\S]*?\\?>'
+    + '|^<![a-zA-Z]+\\s[\\s\\S]*?>'
+    + '|^<!\\[CDATA\\[[\\s\\S]*?\\]\\]>')
+    .replace('comment', _inlineComment)
+    .replace('attribute', /\s+[a-zA-Z:_][\w.:-]*(?:\s*=\s*"[^"]*"|\s*=\s*'[^']*'|\s*=\s*[^\s"'=<>`]+)?/)
+    .getRegex();
+const _inlineLabel = /(?:\[(?:\\.|[^\[\]\\])*\]|\\.|`[^`]*`|[^\[\]\\`])*?/;
+const link = edit(/^!?\[(label)\]\(\s*(href)(?:\s+(title))?\s*\)/)
+    .replace('label', _inlineLabel)
+    .replace('href', /<(?:\\.|[^\n<>\\])+>|[^\s\x00-\x1f]*/)
+    .replace('title', /"(?:\\"?|[^"\\])*"|'(?:\\'?|[^'\\])*'|\((?:\\\)?|[^)\\])*\)/)
+    .getRegex();
+const reflink = edit(/^!?\[(label)\]\[(ref)\]/)
+    .replace('label', _inlineLabel)
+    .replace('ref', _blockLabel)
+    .getRegex();
+const nolink = edit(/^!?\[(ref)\](?:\[\])?/)
+    .replace('ref', _blockLabel)
+    .getRegex();
+const reflinkSearch = edit('reflink|nolink(?!\\()', 'g')
+    .replace('reflink', reflink)
+    .replace('nolink', nolink)
+    .getRegex();
+const inlineNormal = {
+    _backpedal: noopTest,
+    anyPunctuation,
+    autolink,
+    blockSkip,
+    br,
+    code: inlineCode,
+    del: noopTest,
+    emStrongLDelim,
+    emStrongRDelimAst,
+    emStrongRDelimUnd,
+    escape: escape$1,
+    link,
+    nolink,
+    punctuation,
+    reflink,
+    reflinkSearch,
+    tag,
+    text: inlineText,
+    url: noopTest,
+};
+const inlinePedantic = {
+    ...inlineNormal,
+    link: edit(/^!?\[(label)\]\((.*?)\)/)
+        .replace('label', _inlineLabel)
+        .getRegex(),
+    reflink: edit(/^!?\[(label)\]\s*\[([^\]]*)\]/)
+        .replace('label', _inlineLabel)
+        .getRegex(),
+};
+const inlineGfm = {
+    ...inlineNormal,
+    emStrongRDelimAst: emStrongRDelimAstGfm,
+    emStrongLDelim: emStrongLDelimGfm,
+    url: edit(/^((?:ftp|https?):\/\/|www\.)(?:[a-zA-Z0-9\-]+\.?)+[^\s<]*|^email/, 'i')
+        .replace('email', /[A-Za-z0-9._+-]+(@)[a-zA-Z0-9-_]+(?:\.[a-zA-Z0-9-_]*[a-zA-Z0-9])+(?![-_])/)
+        .getRegex(),
+    _backpedal: /(?:[^?!.,:;*_'"~()&]+|\([^)]*\)|&(?![a-zA-Z0-9]+;$)|[?!.,:;*_'"~)]+(?!$))+/,
+    del: /^(~~?)(?=[^\s~])((?:\\.|[^\\])*?(?:\\.|[^\s~\\]))\1(?=[^~]|$)/,
+    text: /^([`~]+|[^`~])(?:(?= {2,}\n)|(?=[a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-]+@)|[\s\S]*?(?:(?=[\\<!\[`*~_]|\b_|https?:\/\/|ftp:\/\/|www\.|$)|[^ ](?= {2,}\n)|[^a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-](?=[a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-]+@)))/,
+};
+const inlineBreaks = {
+    ...inlineGfm,
+    br: edit(br).replace('{2,}', '*').getRegex(),
+    text: edit(inlineGfm.text)
+        .replace('\\b_', '\\b_| {2,}\\n')
+        .replace(/\{2,\}/g, '*')
+        .getRegex(),
+};
+const block = {
+    normal: blockNormal,
+    gfm: blockGfm,
+    pedantic: blockPedantic,
+};
+const inline = {
+    normal: inlineNormal,
+    gfm: inlineGfm,
+    breaks: inlineBreaks,
+    pedantic: inlinePedantic,
+};
 const escapeReplacements = {
     '&': '&amp;',
     '<': '&lt;',
     '>': '&gt;',
     '"': '&quot;',
-    "'": '&#39;'
+    "'": '&#39;',
 };
 const getEscapeReplacement = (ch) => escapeReplacements[ch];
 function escape(html, encode) {
     if (encode) {
-        if (escapeTest.test(html)) {
-            return html.replace(escapeReplace, getEscapeReplacement);
+        if (other.escapeTest.test(html)) {
+            return html.replace(other.escapeReplace, getEscapeReplacement);
         }
     }
     else {
-        if (escapeTestNoEncode.test(html)) {
-            return html.replace(escapeReplaceNoEncode, getEscapeReplacement);
+        if (other.escapeTestNoEncode.test(html)) {
+            return html.replace(other.escapeReplaceNoEncode, getEscapeReplacement);
         }
     }
     return html;
 }
-const unescapeTest = /&(#(?:\d+)|(?:#x[0-9A-Fa-f]+)|(?:\w+));?/ig;
-function unescape(html) {
-    return html.replace(unescapeTest, (_, n) => {
-        n = n.toLowerCase();
-        if (n === 'colon')
-            return ':';
-        if (n.charAt(0) === '#') {
-            return n.charAt(1) === 'x'
-                ? String.fromCharCode(parseInt(n.substring(2), 16))
-                : String.fromCharCode(+n.substring(1));
-        }
-        return '';
-    });
-}
-const caret = /(^|[^\[])\^/g;
-function edit(regex, opt) {
-    regex = typeof regex === 'string' ? regex : regex.source;
-    opt = opt || '';
-    const obj = {
-        replace: (name, val) => {
-            val = typeof val === 'object' && 'source' in val ? val.source : val;
-            val = val.replace(caret, '$1');
-            regex = regex.replace(name, val);
-            return obj;
-        },
-        getRegex: () => {
-            return new RegExp(regex, opt);
-        }
-    };
-    return obj;
-}
 function cleanUrl(href) {
     try {
-        href = encodeURI(href).replace(/%25/g, '%');
+        href = encodeURI(href).replace(other.percentDecode, '%');
     }
-    catch (e) {
+    catch {
         return null;
     }
     return href;
 }
-const noopTest = { exec: () => null };
 function splitCells(tableRow, count) {
-    const row = tableRow.replace(/\|/g, (match, offset, str) => {
+    const row = tableRow.replace(other.findPipe, (match, offset, str) => {
         let escaped = false;
         let curr = offset;
         while (--curr >= 0 && str[curr] === '\\')
@@ -26998,12 +27319,12 @@ function splitCells(tableRow, count) {
         else {
             return ' |';
         }
-    }), cells = row.split(/ \|/);
+    }), cells = row.split(other.splitPipe);
     let i = 0;
     if (!cells[0].trim()) {
         cells.shift();
     }
-    if (cells.length > 0 && !cells[cells.length - 1].trim()) {
+    if (cells.length > 0 && !cells.at(-1)?.trim()) {
         cells.pop();
     }
     if (count) {
@@ -27016,7 +27337,7 @@ function splitCells(tableRow, count) {
         }
     }
     for (; i < cells.length; i++) {
-        cells[i] = cells[i].trim().replace(/\\\|/g, '|');
+        cells[i] = cells[i].trim().replace(other.slashPipe, '|');
     }
     return cells;
 }
@@ -27028,10 +27349,7 @@ function rtrim(str, c, invert) {
     let suffLen = 0;
     while (suffLen < l) {
         const currChar = str.charAt(l - suffLen - 1);
-        if (currChar === c && !invert) {
-            suffLen++;
-        }
-        else if (currChar !== c && invert) {
+        if (currChar === c && true) {
             suffLen++;
         }
         else {
@@ -27061,10 +27379,10 @@ function findClosingBracket(str, b) {
     }
     return -1;
 }
-function outputLink(cap, link, raw, lexer) {
+function outputLink(cap, link, raw, lexer, rules) {
     const href = link.href;
-    const title = link.title ? escape(link.title) : null;
-    const text = cap[1].replace(/\\([\[\]])/g, '$1');
+    const title = link.title || null;
+    const text = cap[1].replace(rules.other.outputLinkReplace, '$1');
     if (cap[0].charAt(0) !== '!') {
         lexer.state.inLink = true;
         const token = {
@@ -27073,7 +27391,7 @@ function outputLink(cap, link, raw, lexer) {
             href,
             title,
             text,
-            tokens: lexer.inlineTokens(text)
+            tokens: lexer.inlineTokens(text),
         };
         lexer.state.inLink = false;
         return token;
@@ -27083,11 +27401,11 @@ function outputLink(cap, link, raw, lexer) {
         raw,
         href,
         title,
-        text: escape(text)
+        text,
     };
 }
-function indentCodeCompensation(raw, text) {
-    const matchIndentToCode = raw.match(/^(\s+)(?:```)/);
+function indentCodeCompensation(raw, text, rules) {
+    const matchIndentToCode = raw.match(rules.other.indentCodeCompensation);
     if (matchIndentToCode === null) {
         return text;
     }
@@ -27095,7 +27413,7 @@ function indentCodeCompensation(raw, text) {
     return text
         .split('\n')
         .map(node => {
-        const matchIndentInNode = node.match(/^\s+/);
+        const matchIndentInNode = node.match(rules.other.beginningSpace);
         if (matchIndentInNode === null) {
             return node;
         }
@@ -27119,21 +27437,21 @@ class _Tokenizer {
         if (cap && cap[0].length > 0) {
             return {
                 type: 'space',
-                raw: cap[0]
+                raw: cap[0],
             };
         }
     }
     code(src) {
         const cap = this.rules.block.code.exec(src);
         if (cap) {
-            const text = cap[0].replace(/^ {1,4}/gm, '');
+            const text = cap[0].replace(this.rules.other.codeRemoveIndent, '');
             return {
                 type: 'code',
                 raw: cap[0],
                 codeBlockStyle: 'indented',
                 text: !this.options.pedantic
                     ? rtrim(text, '\n')
-                    : text
+                    : text,
             };
         }
     }
@@ -27141,12 +27459,12 @@ class _Tokenizer {
         const cap = this.rules.block.fences.exec(src);
         if (cap) {
             const raw = cap[0];
-            const text = indentCodeCompensation(raw, cap[3] || '');
+            const text = indentCodeCompensation(raw, cap[3] || '', this.rules);
             return {
                 type: 'code',
                 raw,
-                lang: cap[2] ? cap[2].trim().replace(this.rules.inline._escapes, '$1') : cap[2],
-                text
+                lang: cap[2] ? cap[2].trim().replace(this.rules.inline.anyPunctuation, '$1') : cap[2],
+                text,
             };
         }
     }
@@ -27154,12 +27472,12 @@ class _Tokenizer {
         const cap = this.rules.block.heading.exec(src);
         if (cap) {
             let text = cap[2].trim();
-            if (/#$/.test(text)) {
+            if (this.rules.other.endingHash.test(text)) {
                 const trimmed = rtrim(text, '#');
                 if (this.options.pedantic) {
                     text = trimmed.trim();
                 }
-                else if (!trimmed || / $/.test(trimmed)) {
+                else if (!trimmed || this.rules.other.endingSpaceChar.test(trimmed)) {
                     text = trimmed.trim();
                 }
             }
@@ -27168,7 +27486,7 @@ class _Tokenizer {
                 raw: cap[0],
                 depth: cap[1].length,
                 text,
-                tokens: this.lexer.inline(text)
+                tokens: this.lexer.inline(text),
             };
         }
     }
@@ -27177,23 +27495,76 @@ class _Tokenizer {
         if (cap) {
             return {
                 type: 'hr',
-                raw: cap[0]
+                raw: rtrim(cap[0], '\n'),
             };
         }
     }
     blockquote(src) {
         const cap = this.rules.block.blockquote.exec(src);
         if (cap) {
-            const text = cap[0].replace(/^ *>[ \t]?/gm, '');
-            const top = this.lexer.state.top;
-            this.lexer.state.top = true;
-            const tokens = this.lexer.blockTokens(text);
-            this.lexer.state.top = top;
+            let lines = rtrim(cap[0], '\n').split('\n');
+            let raw = '';
+            let text = '';
+            const tokens = [];
+            while (lines.length > 0) {
+                let inBlockquote = false;
+                const currentLines = [];
+                let i;
+                for (i = 0; i < lines.length; i++) {
+                    if (this.rules.other.blockquoteStart.test(lines[i])) {
+                        currentLines.push(lines[i]);
+                        inBlockquote = true;
+                    }
+                    else if (!inBlockquote) {
+                        currentLines.push(lines[i]);
+                    }
+                    else {
+                        break;
+                    }
+                }
+                lines = lines.slice(i);
+                const currentRaw = currentLines.join('\n');
+                const currentText = currentRaw
+                    .replace(this.rules.other.blockquoteSetextReplace, '\n    $1')
+                    .replace(this.rules.other.blockquoteSetextReplace2, '');
+                raw = raw ? `${raw}\n${currentRaw}` : currentRaw;
+                text = text ? `${text}\n${currentText}` : currentText;
+                const top = this.lexer.state.top;
+                this.lexer.state.top = true;
+                this.lexer.blockTokens(currentText, tokens, true);
+                this.lexer.state.top = top;
+                if (lines.length === 0) {
+                    break;
+                }
+                const lastToken = tokens.at(-1);
+                if (lastToken?.type === 'code') {
+                    break;
+                }
+                else if (lastToken?.type === 'blockquote') {
+                    const oldToken = lastToken;
+                    const newText = oldToken.raw + '\n' + lines.join('\n');
+                    const newToken = this.blockquote(newText);
+                    tokens[tokens.length - 1] = newToken;
+                    raw = raw.substring(0, raw.length - oldToken.raw.length) + newToken.raw;
+                    text = text.substring(0, text.length - oldToken.text.length) + newToken.text;
+                    break;
+                }
+                else if (lastToken?.type === 'list') {
+                    const oldToken = lastToken;
+                    const newText = oldToken.raw + '\n' + lines.join('\n');
+                    const newToken = this.list(newText);
+                    tokens[tokens.length - 1] = newToken;
+                    raw = raw.substring(0, raw.length - lastToken.raw.length) + newToken.raw;
+                    text = text.substring(0, text.length - oldToken.raw.length) + newToken.raw;
+                    lines = newText.substring(tokens.at(-1).raw.length).split('\n');
+                    continue;
+                }
+            }
             return {
                 type: 'blockquote',
-                raw: cap[0],
+                raw,
                 tokens,
-                text
+                text,
             };
         }
     }
@@ -27208,18 +27579,18 @@ class _Tokenizer {
                 ordered: isordered,
                 start: isordered ? +bull.slice(0, -1) : '',
                 loose: false,
-                items: []
+                items: [],
             };
             bull = isordered ? `\\d{1,9}\\${bull.slice(-1)}` : `\\${bull}`;
             if (this.options.pedantic) {
                 bull = isordered ? bull : '[*+-]';
             }
-            const itemRegex = new RegExp(`^( {0,3}${bull})((?:[\t ][^\\n]*)?(?:\\n|$))`);
-            let raw = '';
-            let itemContents = '';
+            const itemRegex = this.rules.other.listItemRegex(bull);
             let endsWithBlankLine = false;
             while (src) {
                 let endEarly = false;
+                let raw = '';
+                let itemContents = '';
                 if (!(cap = itemRegex.exec(src))) {
                     break;
                 }
@@ -27228,35 +27599,44 @@ class _Tokenizer {
                 }
                 raw = cap[0];
                 src = src.substring(raw.length);
-                let line = cap[2].split('\n', 1)[0].replace(/^\t+/, (t) => ' '.repeat(3 * t.length));
+                let line = cap[2].split('\n', 1)[0].replace(this.rules.other.listReplaceTabs, (t) => ' '.repeat(3 * t.length));
                 let nextLine = src.split('\n', 1)[0];
+                let blankLine = !line.trim();
                 let indent = 0;
                 if (this.options.pedantic) {
                     indent = 2;
                     itemContents = line.trimStart();
                 }
+                else if (blankLine) {
+                    indent = cap[1].length + 1;
+                }
                 else {
-                    indent = cap[2].search(/[^ ]/);
+                    indent = cap[2].search(this.rules.other.nonSpaceChar);
                     indent = indent > 4 ? 1 : indent;
                     itemContents = line.slice(indent);
                     indent += cap[1].length;
                 }
-                let blankLine = false;
-                if (!line && /^ *$/.test(nextLine)) {
+                if (blankLine && this.rules.other.blankLine.test(nextLine)) {
                     raw += nextLine + '\n';
                     src = src.substring(nextLine.length + 1);
                     endEarly = true;
                 }
                 if (!endEarly) {
-                    const nextBulletRegex = new RegExp(`^ {0,${Math.min(3, indent - 1)}}(?:[*+-]|\\d{1,9}[.)])((?:[ \t][^\\n]*)?(?:\\n|$))`);
-                    const hrRegex = new RegExp(`^ {0,${Math.min(3, indent - 1)}}((?:- *){3,}|(?:_ *){3,}|(?:\\* *){3,})(?:\\n+|$)`);
-                    const fencesBeginRegex = new RegExp(`^ {0,${Math.min(3, indent - 1)}}(?:\`\`\`|~~~)`);
-                    const headingBeginRegex = new RegExp(`^ {0,${Math.min(3, indent - 1)}}#`);
+                    const nextBulletRegex = this.rules.other.nextBulletRegex(indent);
+                    const hrRegex = this.rules.other.hrRegex(indent);
+                    const fencesBeginRegex = this.rules.other.fencesBeginRegex(indent);
+                    const headingBeginRegex = this.rules.other.headingBeginRegex(indent);
+                    const htmlBeginRegex = this.rules.other.htmlBeginRegex(indent);
                     while (src) {
                         const rawLine = src.split('\n', 1)[0];
+                        let nextLineWithoutTabs;
                         nextLine = rawLine;
                         if (this.options.pedantic) {
-                            nextLine = nextLine.replace(/^ {1,4}(?=( {4})*[^ ])/g, '  ');
+                            nextLine = nextLine.replace(this.rules.other.listReplaceNesting, '  ');
+                            nextLineWithoutTabs = nextLine;
+                        }
+                        else {
+                            nextLineWithoutTabs = nextLine.replace(this.rules.other.tabCharGlobal, '    ');
                         }
                         if (fencesBeginRegex.test(nextLine)) {
                             break;
@@ -27264,20 +27644,23 @@ class _Tokenizer {
                         if (headingBeginRegex.test(nextLine)) {
                             break;
                         }
+                        if (htmlBeginRegex.test(nextLine)) {
+                            break;
+                        }
                         if (nextBulletRegex.test(nextLine)) {
                             break;
                         }
-                        if (hrRegex.test(src)) {
+                        if (hrRegex.test(nextLine)) {
                             break;
                         }
-                        if (nextLine.search(/[^ ]/) >= indent || !nextLine.trim()) {
-                            itemContents += '\n' + nextLine.slice(indent);
+                        if (nextLineWithoutTabs.search(this.rules.other.nonSpaceChar) >= indent || !nextLine.trim()) {
+                            itemContents += '\n' + nextLineWithoutTabs.slice(indent);
                         }
                         else {
                             if (blankLine) {
                                 break;
                             }
-                            if (line.search(/[^ ]/) >= 4) {
+                            if (line.replace(this.rules.other.tabCharGlobal, '    ').search(this.rules.other.nonSpaceChar) >= 4) {
                                 break;
                             }
                             if (fencesBeginRegex.test(line)) {
@@ -27296,24 +27679,24 @@ class _Tokenizer {
                         }
                         raw += rawLine + '\n';
                         src = src.substring(rawLine.length + 1);
-                        line = nextLine.slice(indent);
+                        line = nextLineWithoutTabs.slice(indent);
                     }
                 }
                 if (!list.loose) {
                     if (endsWithBlankLine) {
                         list.loose = true;
                     }
-                    else if (/\n *\n *$/.test(raw)) {
+                    else if (this.rules.other.doubleBlankLine.test(raw)) {
                         endsWithBlankLine = true;
                     }
                 }
                 let istask = null;
                 let ischecked;
                 if (this.options.gfm) {
-                    istask = /^\[[ xX]\] /.exec(itemContents);
+                    istask = this.rules.other.listIsTask.exec(itemContents);
                     if (istask) {
                         ischecked = istask[0] !== '[ ] ';
-                        itemContents = itemContents.replace(/^\[[ xX]\] +/, '');
+                        itemContents = itemContents.replace(this.rules.other.listReplaceTask, '');
                     }
                 }
                 list.items.push({
@@ -27323,19 +27706,25 @@ class _Tokenizer {
                     checked: ischecked,
                     loose: false,
                     text: itemContents,
-                    tokens: []
+                    tokens: [],
                 });
                 list.raw += raw;
             }
-            list.items[list.items.length - 1].raw = raw.trimEnd();
-            list.items[list.items.length - 1].text = itemContents.trimEnd();
+            const lastItem = list.items.at(-1);
+            if (lastItem) {
+                lastItem.raw = lastItem.raw.trimEnd();
+                lastItem.text = lastItem.text.trimEnd();
+            }
+            else {
+                return;
+            }
             list.raw = list.raw.trimEnd();
             for (let i = 0; i < list.items.length; i++) {
                 this.lexer.state.top = false;
                 list.items[i].tokens = this.lexer.blockTokens(list.items[i].text, []);
                 if (!list.loose) {
                     const spacers = list.items[i].tokens.filter(t => t.type === 'space');
-                    const hasMultipleLineBreaks = spacers.length > 0 && spacers.some(t => /\n.*\n/.test(t.raw));
+                    const hasMultipleLineBreaks = spacers.length > 0 && spacers.some(t => this.rules.other.anyLine.test(t.raw));
                     list.loose = hasMultipleLineBreaks;
                 }
             }
@@ -27355,7 +27744,7 @@ class _Tokenizer {
                 block: true,
                 raw: cap[0],
                 pre: cap[1] === 'pre' || cap[1] === 'script' || cap[1] === 'style',
-                text: cap[0]
+                text: cap[0],
             };
             return token;
         }
@@ -27363,73 +27752,72 @@ class _Tokenizer {
     def(src) {
         const cap = this.rules.block.def.exec(src);
         if (cap) {
-            const tag = cap[1].toLowerCase().replace(/\s+/g, ' ');
-            const href = cap[2] ? cap[2].replace(/^<(.*)>$/, '$1').replace(this.rules.inline._escapes, '$1') : '';
-            const title = cap[3] ? cap[3].substring(1, cap[3].length - 1).replace(this.rules.inline._escapes, '$1') : cap[3];
+            const tag = cap[1].toLowerCase().replace(this.rules.other.multipleSpaceGlobal, ' ');
+            const href = cap[2] ? cap[2].replace(this.rules.other.hrefBrackets, '$1').replace(this.rules.inline.anyPunctuation, '$1') : '';
+            const title = cap[3] ? cap[3].substring(1, cap[3].length - 1).replace(this.rules.inline.anyPunctuation, '$1') : cap[3];
             return {
                 type: 'def',
                 tag,
                 raw: cap[0],
                 href,
-                title
+                title,
             };
         }
     }
     table(src) {
         const cap = this.rules.block.table.exec(src);
-        if (cap) {
-            if (!/[:|]/.test(cap[2])) {
-                return;
+        if (!cap) {
+            return;
+        }
+        if (!this.rules.other.tableDelimiter.test(cap[2])) {
+            return;
+        }
+        const headers = splitCells(cap[1]);
+        const aligns = cap[2].replace(this.rules.other.tableAlignChars, '').split('|');
+        const rows = cap[3]?.trim() ? cap[3].replace(this.rules.other.tableRowBlankLine, '').split('\n') : [];
+        const item = {
+            type: 'table',
+            raw: cap[0],
+            header: [],
+            align: [],
+            rows: [],
+        };
+        if (headers.length !== aligns.length) {
+            return;
+        }
+        for (const align of aligns) {
+            if (this.rules.other.tableAlignRight.test(align)) {
+                item.align.push('right');
             }
-            const item = {
-                type: 'table',
-                raw: cap[0],
-                header: splitCells(cap[1]).map(c => {
-                    return { text: c, tokens: [] };
-                }),
-                align: cap[2].replace(/^\||\| *$/g, '').split('|'),
-                rows: cap[3] && cap[3].trim() ? cap[3].replace(/\n[ \t]*$/, '').split('\n') : []
-            };
-            if (item.header.length === item.align.length) {
-                let l = item.align.length;
-                let i, j, k, row;
-                for (i = 0; i < l; i++) {
-                    const align = item.align[i];
-                    if (align) {
-                        if (/^ *-+: *$/.test(align)) {
-                            item.align[i] = 'right';
-                        }
-                        else if (/^ *:-+: *$/.test(align)) {
-                            item.align[i] = 'center';
-                        }
-                        else if (/^ *:-+ *$/.test(align)) {
-                            item.align[i] = 'left';
-                        }
-                        else {
-                            item.align[i] = null;
-                        }
-                    }
-                }
-                l = item.rows.length;
-                for (i = 0; i < l; i++) {
-                    item.rows[i] = splitCells(item.rows[i], item.header.length).map(c => {
-                        return { text: c, tokens: [] };
-                    });
-                }
-                l = item.header.length;
-                for (j = 0; j < l; j++) {
-                    item.header[j].tokens = this.lexer.inline(item.header[j].text);
-                }
-                l = item.rows.length;
-                for (j = 0; j < l; j++) {
-                    row = item.rows[j];
-                    for (k = 0; k < row.length; k++) {
-                        row[k].tokens = this.lexer.inline(row[k].text);
-                    }
-                }
-                return item;
+            else if (this.rules.other.tableAlignCenter.test(align)) {
+                item.align.push('center');
+            }
+            else if (this.rules.other.tableAlignLeft.test(align)) {
+                item.align.push('left');
+            }
+            else {
+                item.align.push(null);
             }
         }
+        for (let i = 0; i < headers.length; i++) {
+            item.header.push({
+                text: headers[i],
+                tokens: this.lexer.inline(headers[i]),
+                header: true,
+                align: item.align[i],
+            });
+        }
+        for (const row of rows) {
+            item.rows.push(splitCells(row, item.header.length).map((cell, i) => {
+                return {
+                    text: cell,
+                    tokens: this.lexer.inline(cell),
+                    header: false,
+                    align: item.align[i],
+                };
+            }));
+        }
+        return item;
     }
     lheading(src) {
         const cap = this.rules.block.lheading.exec(src);
@@ -27439,7 +27827,7 @@ class _Tokenizer {
                 raw: cap[0],
                 depth: cap[2].charAt(0) === '=' ? 1 : 2,
                 text: cap[1],
-                tokens: this.lexer.inline(cap[1])
+                tokens: this.lexer.inline(cap[1]),
             };
         }
     }
@@ -27453,7 +27841,7 @@ class _Tokenizer {
                 type: 'paragraph',
                 raw: cap[0],
                 text,
-                tokens: this.lexer.inline(text)
+                tokens: this.lexer.inline(text),
             };
         }
     }
@@ -27464,7 +27852,7 @@ class _Tokenizer {
                 type: 'text',
                 raw: cap[0],
                 text: cap[0],
-                tokens: this.lexer.inline(cap[0])
+                tokens: this.lexer.inline(cap[0]),
             };
         }
     }
@@ -27474,23 +27862,23 @@ class _Tokenizer {
             return {
                 type: 'escape',
                 raw: cap[0],
-                text: escape(cap[1])
+                text: cap[1],
             };
         }
     }
     tag(src) {
         const cap = this.rules.inline.tag.exec(src);
         if (cap) {
-            if (!this.lexer.state.inLink && /^<a /i.test(cap[0])) {
+            if (!this.lexer.state.inLink && this.rules.other.startATag.test(cap[0])) {
                 this.lexer.state.inLink = true;
             }
-            else if (this.lexer.state.inLink && /^<\/a>/i.test(cap[0])) {
+            else if (this.lexer.state.inLink && this.rules.other.endATag.test(cap[0])) {
                 this.lexer.state.inLink = false;
             }
-            if (!this.lexer.state.inRawBlock && /^<(pre|code|kbd|script)(\s|>)/i.test(cap[0])) {
+            if (!this.lexer.state.inRawBlock && this.rules.other.startPreScriptTag.test(cap[0])) {
                 this.lexer.state.inRawBlock = true;
             }
-            else if (this.lexer.state.inRawBlock && /^<\/(pre|code|kbd|script)(\s|>)/i.test(cap[0])) {
+            else if (this.lexer.state.inRawBlock && this.rules.other.endPreScriptTag.test(cap[0])) {
                 this.lexer.state.inRawBlock = false;
             }
             return {
@@ -27499,7 +27887,7 @@ class _Tokenizer {
                 inLink: this.lexer.state.inLink,
                 inRawBlock: this.lexer.state.inRawBlock,
                 block: false,
-                text: cap[0]
+                text: cap[0],
             };
         }
     }
@@ -27507,8 +27895,8 @@ class _Tokenizer {
         const cap = this.rules.inline.link.exec(src);
         if (cap) {
             const trimmedUrl = cap[2].trim();
-            if (!this.options.pedantic && /^</.test(trimmedUrl)) {
-                if (!(/>$/.test(trimmedUrl))) {
+            if (!this.options.pedantic && this.rules.other.startAngleBracket.test(trimmedUrl)) {
+                if (!(this.rules.other.endAngleBracket.test(trimmedUrl))) {
                     return;
                 }
                 const rtrimSlash = rtrim(trimmedUrl.slice(0, -1), '\\');
@@ -27529,7 +27917,7 @@ class _Tokenizer {
             let href = cap[2];
             let title = '';
             if (this.options.pedantic) {
-                const link = /^([^'"]*[^\s])\s+(['"])(.*)\2/.exec(href);
+                const link = this.rules.other.pedanticHrefTitle.exec(href);
                 if (link) {
                     href = link[1];
                     title = link[3];
@@ -27539,8 +27927,8 @@ class _Tokenizer {
                 title = cap[3] ? cap[3].slice(1, -1) : '';
             }
             href = href.trim();
-            if (/^</.test(href)) {
-                if (this.options.pedantic && !(/>$/.test(trimmedUrl))) {
+            if (this.rules.other.startAngleBracket.test(href)) {
+                if (this.options.pedantic && !(this.rules.other.endAngleBracket.test(trimmedUrl))) {
                     href = href.slice(1);
                 }
                 else {
@@ -27548,41 +27936,41 @@ class _Tokenizer {
                 }
             }
             return outputLink(cap, {
-                href: href ? href.replace(this.rules.inline._escapes, '$1') : href,
-                title: title ? title.replace(this.rules.inline._escapes, '$1') : title
-            }, cap[0], this.lexer);
+                href: href ? href.replace(this.rules.inline.anyPunctuation, '$1') : href,
+                title: title ? title.replace(this.rules.inline.anyPunctuation, '$1') : title,
+            }, cap[0], this.lexer, this.rules);
         }
     }
     reflink(src, links) {
         let cap;
         if ((cap = this.rules.inline.reflink.exec(src))
             || (cap = this.rules.inline.nolink.exec(src))) {
-            let link = (cap[2] || cap[1]).replace(/\s+/g, ' ');
-            link = links[link.toLowerCase()];
+            const linkString = (cap[2] || cap[1]).replace(this.rules.other.multipleSpaceGlobal, ' ');
+            const link = links[linkString.toLowerCase()];
             if (!link) {
                 const text = cap[0].charAt(0);
                 return {
                     type: 'text',
                     raw: text,
-                    text
+                    text,
                 };
             }
-            return outputLink(cap, link, cap[0], this.lexer);
+            return outputLink(cap, link, cap[0], this.lexer, this.rules);
         }
     }
     emStrong(src, maskedSrc, prevChar = '') {
-        let match = this.rules.inline.emStrong.lDelim.exec(src);
+        let match = this.rules.inline.emStrongLDelim.exec(src);
         if (!match)
             return;
-        if (match[3] && prevChar.match(/[\p{L}\p{N}]/u))
+        if (match[3] && prevChar.match(this.rules.other.unicodeAlphaNumeric))
             return;
         const nextChar = match[1] || match[2] || '';
         if (!nextChar || !prevChar || this.rules.inline.punctuation.exec(prevChar)) {
             const lLength = [...match[0]].length - 1;
             let rDelim, rLength, delimTotal = lLength, midDelimTotal = 0;
-            const endReg = match[0][0] === '*' ? this.rules.inline.emStrong.rDelimAst : this.rules.inline.emStrong.rDelimUnd;
+            const endReg = match[0][0] === '*' ? this.rules.inline.emStrongRDelimAst : this.rules.inline.emStrongRDelimUnd;
             endReg.lastIndex = 0;
-            maskedSrc = maskedSrc.slice(-1 * src.length + match[0].length - 1);
+            maskedSrc = maskedSrc.slice(-1 * src.length + lLength);
             while ((match = endReg.exec(maskedSrc)) != null) {
                 rDelim = match[1] || match[2] || match[3] || match[4] || match[5] || match[6];
                 if (!rDelim)
@@ -27602,14 +27990,15 @@ class _Tokenizer {
                 if (delimTotal > 0)
                     continue;
                 rLength = Math.min(rLength, rLength + delimTotal + midDelimTotal);
-                const raw = [...src].slice(0, lLength + match.index + rLength + 1).join('');
+                const lastCharLength = [...match[0]][0].length;
+                const raw = src.slice(0, lLength + match.index + lastCharLength + rLength);
                 if (Math.min(lLength, rLength) % 2) {
                     const text = raw.slice(1, -1);
                     return {
                         type: 'em',
                         raw,
                         text,
-                        tokens: this.lexer.inlineTokens(text)
+                        tokens: this.lexer.inlineTokens(text),
                     };
                 }
                 const text = raw.slice(2, -2);
@@ -27617,7 +28006,7 @@ class _Tokenizer {
                     type: 'strong',
                     raw,
                     text,
-                    tokens: this.lexer.inlineTokens(text)
+                    tokens: this.lexer.inlineTokens(text),
                 };
             }
         }
@@ -27625,17 +28014,16 @@ class _Tokenizer {
     codespan(src) {
         const cap = this.rules.inline.code.exec(src);
         if (cap) {
-            let text = cap[2].replace(/\n/g, ' ');
-            const hasNonSpaceChars = /[^ ]/.test(text);
-            const hasSpaceCharsOnBothEnds = /^ /.test(text) && / $/.test(text);
+            let text = cap[2].replace(this.rules.other.newLineCharGlobal, ' ');
+            const hasNonSpaceChars = this.rules.other.nonSpaceChar.test(text);
+            const hasSpaceCharsOnBothEnds = this.rules.other.startingSpaceChar.test(text) && this.rules.other.endingSpaceChar.test(text);
             if (hasNonSpaceChars && hasSpaceCharsOnBothEnds) {
                 text = text.substring(1, text.length - 1);
             }
-            text = escape(text, true);
             return {
                 type: 'codespan',
                 raw: cap[0],
-                text
+                text,
             };
         }
     }
@@ -27644,7 +28032,7 @@ class _Tokenizer {
         if (cap) {
             return {
                 type: 'br',
-                raw: cap[0]
+                raw: cap[0],
             };
         }
     }
@@ -27655,7 +28043,7 @@ class _Tokenizer {
                 type: 'del',
                 raw: cap[0],
                 text: cap[2],
-                tokens: this.lexer.inlineTokens(cap[2])
+                tokens: this.lexer.inlineTokens(cap[2]),
             };
         }
     }
@@ -27664,11 +28052,11 @@ class _Tokenizer {
         if (cap) {
             let text, href;
             if (cap[2] === '@') {
-                text = escape(cap[1]);
+                text = cap[1];
                 href = 'mailto:' + text;
             }
             else {
-                text = escape(cap[1]);
+                text = cap[1];
                 href = text;
             }
             return {
@@ -27680,9 +28068,9 @@ class _Tokenizer {
                     {
                         type: 'text',
                         raw: text,
-                        text
-                    }
-                ]
+                        text,
+                    },
+                ],
             };
         }
     }
@@ -27691,16 +28079,16 @@ class _Tokenizer {
         if (cap = this.rules.inline.url.exec(src)) {
             let text, href;
             if (cap[2] === '@') {
-                text = escape(cap[0]);
+                text = cap[0];
                 href = 'mailto:' + text;
             }
             else {
                 let prevCapZero;
                 do {
                     prevCapZero = cap[0];
-                    cap[0] = this.rules.inline._backpedal.exec(cap[0])[0];
+                    cap[0] = this.rules.inline._backpedal.exec(cap[0])?.[0] ?? '';
                 } while (prevCapZero !== cap[0]);
-                text = escape(cap[0]);
+                text = cap[0];
                 if (cap[1] === 'www.') {
                     href = 'http://' + cap[0];
                 }
@@ -27717,269 +28105,25 @@ class _Tokenizer {
                     {
                         type: 'text',
                         raw: text,
-                        text
-                    }
-                ]
+                        text,
+                    },
+                ],
             };
         }
     }
     inlineText(src) {
         const cap = this.rules.inline.text.exec(src);
         if (cap) {
-            let text;
-            if (this.lexer.state.inRawBlock) {
-                text = cap[0];
-            }
-            else {
-                text = escape(cap[0]);
-            }
+            const escaped = this.lexer.state.inRawBlock;
             return {
                 type: 'text',
                 raw: cap[0],
-                text
+                text: cap[0],
+                escaped,
             };
         }
     }
 }
-const block = {
-    newline: /^(?: *(?:\n|$))+/,
-    code: /^( {4}[^\n]+(?:\n(?: *(?:\n|$))*)?)+/,
-    fences: /^ {0,3}(`{3,}(?=[^`\n]*(?:\n|$))|~{3,})([^\n]*)(?:\n|$)(?:|([\s\S]*?)(?:\n|$))(?: {0,3}\1[~`]* *(?=\n|$)|$)/,
-    hr: /^ {0,3}((?:-[\t ]*){3,}|(?:_[ \t]*){3,}|(?:\*[ \t]*){3,})(?:\n+|$)/,
-    heading: /^ {0,3}(#{1,6})(?=\s|$)(.*)(?:\n+|$)/,
-    blockquote: /^( {0,3}> ?(paragraph|[^\n]*)(?:\n|$))+/,
-    list: /^( {0,3}bull)([ \t][^\n]+?)?(?:\n|$)/,
-    html: '^ {0,3}(?:'
-        + '<(script|pre|style|textarea)[\\s>][\\s\\S]*?(?:</\\1>[^\\n]*\\n+|$)'
-        + '|comment[^\\n]*(\\n+|$)'
-        + '|<\\?[\\s\\S]*?(?:\\?>\\n*|$)'
-        + '|<![A-Z][\\s\\S]*?(?:>\\n*|$)'
-        + '|<!\\[CDATA\\[[\\s\\S]*?(?:\\]\\]>\\n*|$)'
-        + '|</?(tag)(?: +|\\n|/?>)[\\s\\S]*?(?:(?:\\n *)+\\n|$)'
-        + '|<(?!script|pre|style|textarea)([a-z][\\w-]*)(?:attribute)*? */?>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:(?:\\n *)+\\n|$)'
-        + '|</(?!script|pre|style|textarea)[a-z][\\w-]*\\s*>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:(?:\\n *)+\\n|$)'
-        + ')',
-    def: /^ {0,3}\[(label)\]: *(?:\n *)?([^<\s][^\s]*|<.*?>)(?:(?: +(?:\n *)?| *\n *)(title))? *(?:\n+|$)/,
-    table: noopTest,
-    lheading: /^(?!bull )((?:.|\n(?!\s*?\n|bull ))+?)\n {0,3}(=+|-+) *(?:\n+|$)/,
-    _paragraph: /^([^\n]+(?:\n(?!hr|heading|lheading|blockquote|fences|list|html|table| +\n)[^\n]+)*)/,
-    text: /^[^\n]+/
-};
-block._label = /(?!\s*\])(?:\\.|[^\[\]\\])+/;
-block._title = /(?:"(?:\\"?|[^"\\])*"|'[^'\n]*(?:\n[^'\n]+)*\n?'|\([^()]*\))/;
-block.def = edit(block.def)
-    .replace('label', block._label)
-    .replace('title', block._title)
-    .getRegex();
-block.bullet = /(?:[*+-]|\d{1,9}[.)])/;
-block.listItemStart = edit(/^( *)(bull) */)
-    .replace('bull', block.bullet)
-    .getRegex();
-block.list = edit(block.list)
-    .replace(/bull/g, block.bullet)
-    .replace('hr', '\\n+(?=\\1?(?:(?:- *){3,}|(?:_ *){3,}|(?:\\* *){3,})(?:\\n+|$))')
-    .replace('def', '\\n+(?=' + block.def.source + ')')
-    .getRegex();
-block._tag = 'address|article|aside|base|basefont|blockquote|body|caption'
-    + '|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption'
-    + '|figure|footer|form|frame|frameset|h[1-6]|head|header|hr|html|iframe'
-    + '|legend|li|link|main|menu|menuitem|meta|nav|noframes|ol|optgroup|option'
-    + '|p|param|section|source|summary|table|tbody|td|tfoot|th|thead|title|tr'
-    + '|track|ul';
-block._comment = /<!--(?!-?>)[\s\S]*?(?:-->|$)/;
-block.html = edit(block.html, 'i')
-    .replace('comment', block._comment)
-    .replace('tag', block._tag)
-    .replace('attribute', / +[a-zA-Z:_][\w.:-]*(?: *= *"[^"\n]*"| *= *'[^'\n]*'| *= *[^\s"'=<>`]+)?/)
-    .getRegex();
-block.lheading = edit(block.lheading)
-    .replace(/bull/g, block.bullet)
-    .getRegex();
-block.paragraph = edit(block._paragraph)
-    .replace('hr', block.hr)
-    .replace('heading', ' {0,3}#{1,6} ')
-    .replace('|lheading', '')
-    .replace('|table', '')
-    .replace('blockquote', ' {0,3}>')
-    .replace('fences', ' {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n')
-    .replace('list', ' {0,3}(?:[*+-]|1[.)]) ')
-    .replace('html', '</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)')
-    .replace('tag', block._tag)
-    .getRegex();
-block.blockquote = edit(block.blockquote)
-    .replace('paragraph', block.paragraph)
-    .getRegex();
-block.normal = { ...block };
-block.gfm = {
-    ...block.normal,
-    table: '^ *([^\\n ].*)\\n'
-        + ' {0,3}((?:\\| *)?:?-+:? *(?:\\| *:?-+:? *)*(?:\\| *)?)'
-        + '(?:\\n((?:(?! *\\n|hr|heading|blockquote|code|fences|list|html).*(?:\\n|$))*)\\n*|$)'
-};
-block.gfm.table = edit(block.gfm.table)
-    .replace('hr', block.hr)
-    .replace('heading', ' {0,3}#{1,6} ')
-    .replace('blockquote', ' {0,3}>')
-    .replace('code', ' {4}[^\\n]')
-    .replace('fences', ' {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n')
-    .replace('list', ' {0,3}(?:[*+-]|1[.)]) ')
-    .replace('html', '</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)')
-    .replace('tag', block._tag)
-    .getRegex();
-block.gfm.paragraph = edit(block._paragraph)
-    .replace('hr', block.hr)
-    .replace('heading', ' {0,3}#{1,6} ')
-    .replace('|lheading', '')
-    .replace('table', block.gfm.table)
-    .replace('blockquote', ' {0,3}>')
-    .replace('fences', ' {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n')
-    .replace('list', ' {0,3}(?:[*+-]|1[.)]) ')
-    .replace('html', '</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)')
-    .replace('tag', block._tag)
-    .getRegex();
-block.pedantic = {
-    ...block.normal,
-    html: edit('^ *(?:comment *(?:\\n|\\s*$)'
-        + '|<(tag)[\\s\\S]+?</\\1> *(?:\\n{2,}|\\s*$)'
-        + '|<tag(?:"[^"]*"|\'[^\']*\'|\\s[^\'"/>\\s]*)*?/?> *(?:\\n{2,}|\\s*$))')
-        .replace('comment', block._comment)
-        .replace(/tag/g, '(?!(?:'
-        + 'a|em|strong|small|s|cite|q|dfn|abbr|data|time|code|var|samp|kbd|sub'
-        + '|sup|i|b|u|mark|ruby|rt|rp|bdi|bdo|span|br|wbr|ins|del|img)'
-        + '\\b)\\w+(?!:|[^\\w\\s@]*@)\\b')
-        .getRegex(),
-    def: /^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +(["(][^\n]+[")]))? *(?:\n+|$)/,
-    heading: /^(#{1,6})(.*)(?:\n+|$)/,
-    fences: noopTest,
-    lheading: /^(.+?)\n {0,3}(=+|-+) *(?:\n+|$)/,
-    paragraph: edit(block.normal._paragraph)
-        .replace('hr', block.hr)
-        .replace('heading', ' *#{1,6} *[^\n]')
-        .replace('lheading', block.lheading)
-        .replace('blockquote', ' {0,3}>')
-        .replace('|fences', '')
-        .replace('|list', '')
-        .replace('|html', '')
-        .getRegex()
-};
-const inline = {
-    escape: /^\\([!"#$%&'()*+,\-./:;<=>?@\[\]\\^_`{|}~])/,
-    autolink: /^<(scheme:[^\s\x00-\x1f<>]*|email)>/,
-    url: noopTest,
-    tag: '^comment'
-        + '|^</[a-zA-Z][\\w:-]*\\s*>'
-        + '|^<[a-zA-Z][\\w-]*(?:attribute)*?\\s*/?>'
-        + '|^<\\?[\\s\\S]*?\\?>'
-        + '|^<![a-zA-Z]+\\s[\\s\\S]*?>'
-        + '|^<!\\[CDATA\\[[\\s\\S]*?\\]\\]>',
-    link: /^!?\[(label)\]\(\s*(href)(?:\s+(title))?\s*\)/,
-    reflink: /^!?\[(label)\]\[(ref)\]/,
-    nolink: /^!?\[(ref)\](?:\[\])?/,
-    reflinkSearch: 'reflink|nolink(?!\\()',
-    emStrong: {
-        lDelim: /^(?:\*+(?:((?!\*)[punct])|[^\s*]))|^_+(?:((?!_)[punct])|([^\s_]))/,
-        rDelimAst: /^[^_*]*?__[^_*]*?\*[^_*]*?(?=__)|[^*]+(?=[^*])|(?!\*)[punct](\*+)(?=[\s]|$)|[^punct\s](\*+)(?!\*)(?=[punct\s]|$)|(?!\*)[punct\s](\*+)(?=[^punct\s])|[\s](\*+)(?!\*)(?=[punct])|(?!\*)[punct](\*+)(?!\*)(?=[punct])|[^punct\s](\*+)(?=[^punct\s])/,
-        rDelimUnd: /^[^_*]*?\*\*[^_*]*?_[^_*]*?(?=\*\*)|[^_]+(?=[^_])|(?!_)[punct](_+)(?=[\s]|$)|[^punct\s](_+)(?!_)(?=[punct\s]|$)|(?!_)[punct\s](_+)(?=[^punct\s])|[\s](_+)(?!_)(?=[punct])|(?!_)[punct](_+)(?!_)(?=[punct])/
-    },
-    code: /^(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)/,
-    br: /^( {2,}|\\)\n(?!\s*$)/,
-    del: noopTest,
-    text: /^(`+|[^`])(?:(?= {2,}\n)|[\s\S]*?(?:(?=[\\<!\[`*_]|\b_|$)|[^ ](?= {2,}\n)))/,
-    punctuation: /^((?![*_])[\spunctuation])/
-};
-inline._punctuation = '\\p{P}$+<=>`^|~';
-inline.punctuation = edit(inline.punctuation, 'u').replace(/punctuation/g, inline._punctuation).getRegex();
-inline.blockSkip = /\[[^[\]]*?\]\([^\(\)]*?\)|`[^`]*?`|<[^<>]*?>/g;
-inline.anyPunctuation = /\\[punct]/g;
-inline._escapes = /\\([punct])/g;
-inline._comment = edit(block._comment).replace('(?:-->|$)', '-->').getRegex();
-inline.emStrong.lDelim = edit(inline.emStrong.lDelim, 'u')
-    .replace(/punct/g, inline._punctuation)
-    .getRegex();
-inline.emStrong.rDelimAst = edit(inline.emStrong.rDelimAst, 'gu')
-    .replace(/punct/g, inline._punctuation)
-    .getRegex();
-inline.emStrong.rDelimUnd = edit(inline.emStrong.rDelimUnd, 'gu')
-    .replace(/punct/g, inline._punctuation)
-    .getRegex();
-inline.anyPunctuation = edit(inline.anyPunctuation, 'gu')
-    .replace(/punct/g, inline._punctuation)
-    .getRegex();
-inline._escapes = edit(inline._escapes, 'gu')
-    .replace(/punct/g, inline._punctuation)
-    .getRegex();
-inline._scheme = /[a-zA-Z][a-zA-Z0-9+.-]{1,31}/;
-inline._email = /[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+(@)[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+(?![-_])/;
-inline.autolink = edit(inline.autolink)
-    .replace('scheme', inline._scheme)
-    .replace('email', inline._email)
-    .getRegex();
-inline._attribute = /\s+[a-zA-Z:_][\w.:-]*(?:\s*=\s*"[^"]*"|\s*=\s*'[^']*'|\s*=\s*[^\s"'=<>`]+)?/;
-inline.tag = edit(inline.tag)
-    .replace('comment', inline._comment)
-    .replace('attribute', inline._attribute)
-    .getRegex();
-inline._label = /(?:\[(?:\\.|[^\[\]\\])*\]|\\.|`[^`]*`|[^\[\]\\`])*?/;
-inline._href = /<(?:\\.|[^\n<>\\])+>|[^\s\x00-\x1f]*/;
-inline._title = /"(?:\\"?|[^"\\])*"|'(?:\\'?|[^'\\])*'|\((?:\\\)?|[^)\\])*\)/;
-inline.link = edit(inline.link)
-    .replace('label', inline._label)
-    .replace('href', inline._href)
-    .replace('title', inline._title)
-    .getRegex();
-inline.reflink = edit(inline.reflink)
-    .replace('label', inline._label)
-    .replace('ref', block._label)
-    .getRegex();
-inline.nolink = edit(inline.nolink)
-    .replace('ref', block._label)
-    .getRegex();
-inline.reflinkSearch = edit(inline.reflinkSearch, 'g')
-    .replace('reflink', inline.reflink)
-    .replace('nolink', inline.nolink)
-    .getRegex();
-inline.normal = { ...inline };
-inline.pedantic = {
-    ...inline.normal,
-    strong: {
-        start: /^__|\*\*/,
-        middle: /^__(?=\S)([\s\S]*?\S)__(?!_)|^\*\*(?=\S)([\s\S]*?\S)\*\*(?!\*)/,
-        endAst: /\*\*(?!\*)/g,
-        endUnd: /__(?!_)/g
-    },
-    em: {
-        start: /^_|\*/,
-        middle: /^()\*(?=\S)([\s\S]*?\S)\*(?!\*)|^_(?=\S)([\s\S]*?\S)_(?!_)/,
-        endAst: /\*(?!\*)/g,
-        endUnd: /_(?!_)/g
-    },
-    link: edit(/^!?\[(label)\]\((.*?)\)/)
-        .replace('label', inline._label)
-        .getRegex(),
-    reflink: edit(/^!?\[(label)\]\s*\[([^\]]*)\]/)
-        .replace('label', inline._label)
-        .getRegex()
-};
-inline.gfm = {
-    ...inline.normal,
-    escape: edit(inline.escape).replace('])', '~|])').getRegex(),
-    _extended_email: /[A-Za-z0-9._+-]+(@)[a-zA-Z0-9-_]+(?:\.[a-zA-Z0-9-_]*[a-zA-Z0-9])+(?![-_])/,
-    url: /^((?:ftp|https?):\/\/|www\.)(?:[a-zA-Z0-9\-]+\.?)+[^\s<]*|^email/,
-    _backpedal: /(?:[^?!.,:;*_'"~()&]+|\([^)]*\)|&(?![a-zA-Z0-9]+;$)|[?!.,:;*_'"~)]+(?!$))+/,
-    del: /^(~~?)(?=[^\s~])([\s\S]*?[^\s~])\1(?=[^~]|$)/,
-    text: /^([`~]+|[^`~])(?:(?= {2,}\n)|(?=[a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-]+@)|[\s\S]*?(?:(?=[\\<!\[`*~_]|\b_|https?:\/\/|ftp:\/\/|www\.|$)|[^ ](?= {2,}\n)|[^a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-](?=[a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-]+@)))/
-};
-inline.gfm.url = edit(inline.gfm.url, 'i')
-    .replace('email', inline.gfm._extended_email)
-    .getRegex();
-inline.breaks = {
-    ...inline.gfm,
-    br: edit(inline.br).replace('{2,}', '*').getRegex(),
-    text: edit(inline.gfm.text)
-        .replace('\\b_', '\\b_| {2,}\\n')
-        .replace(/\{2,\}/g, '*')
-        .getRegex()
-};
 class _Lexer {
     tokens;
     options;
@@ -27998,11 +28142,12 @@ class _Lexer {
         this.state = {
             inLink: false,
             inRawBlock: false,
-            top: true
+            top: true,
         };
         const rules = {
+            other,
             block: block.normal,
-            inline: inline.normal
+            inline: inline.normal,
         };
         if (this.options.pedantic) {
             rules.block = block.pedantic;
@@ -28022,7 +28167,7 @@ class _Lexer {
     static get rules() {
         return {
             block,
-            inline
+            inline,
         };
     }
     static lex(src, options) {
@@ -28034,45 +28179,36 @@ class _Lexer {
         return lexer.inlineTokens(src);
     }
     lex(src) {
-        src = src
-            .replace(/\r\n|\r/g, '\n');
+        src = src.replace(other.carriageReturn, '\n');
         this.blockTokens(src, this.tokens);
-        let next;
-        while (next = this.inlineQueue.shift()) {
+        for (let i = 0; i < this.inlineQueue.length; i++) {
+            const next = this.inlineQueue[i];
             this.inlineTokens(next.src, next.tokens);
         }
+        this.inlineQueue = [];
         return this.tokens;
     }
-    blockTokens(src, tokens = []) {
+    blockTokens(src, tokens = [], lastParagraphClipped = false) {
         if (this.options.pedantic) {
-            src = src.replace(/\t/g, '    ').replace(/^ +$/gm, '');
+            src = src.replace(other.tabCharGlobal, '    ').replace(other.spaceLine, '');
         }
-        else {
-            src = src.replace(/^( *)(\t+)/gm, (_, leading, tabs) => {
-                return leading + '    '.repeat(tabs.length);
-            });
-        }
-        let token;
-        let lastToken;
-        let cutSrc;
-        let lastParagraphClipped;
         while (src) {
-            if (this.options.extensions
-                && this.options.extensions.block
-                && this.options.extensions.block.some((extTokenizer) => {
-                    if (token = extTokenizer.call({ lexer: this }, src, tokens)) {
-                        src = src.substring(token.raw.length);
-                        tokens.push(token);
-                        return true;
-                    }
-                    return false;
-                })) {
+            let token;
+            if (this.options.extensions?.block?.some((extTokenizer) => {
+                if (token = extTokenizer.call({ lexer: this }, src, tokens)) {
+                    src = src.substring(token.raw.length);
+                    tokens.push(token);
+                    return true;
+                }
+                return false;
+            })) {
                 continue;
             }
             if (token = this.tokenizer.space(src)) {
                 src = src.substring(token.raw.length);
-                if (token.raw.length === 1 && tokens.length > 0) {
-                    tokens[tokens.length - 1].raw += '\n';
+                const lastToken = tokens.at(-1);
+                if (token.raw.length === 1 && lastToken !== undefined) {
+                    lastToken.raw += '\n';
                 }
                 else {
                     tokens.push(token);
@@ -28081,11 +28217,11 @@ class _Lexer {
             }
             if (token = this.tokenizer.code(src)) {
                 src = src.substring(token.raw.length);
-                lastToken = tokens[tokens.length - 1];
-                if (lastToken && (lastToken.type === 'paragraph' || lastToken.type === 'text')) {
+                const lastToken = tokens.at(-1);
+                if (lastToken?.type === 'paragraph' || lastToken?.type === 'text') {
                     lastToken.raw += '\n' + token.raw;
                     lastToken.text += '\n' + token.text;
-                    this.inlineQueue[this.inlineQueue.length - 1].src = lastToken.text;
+                    this.inlineQueue.at(-1).src = lastToken.text;
                 }
                 else {
                     tokens.push(token);
@@ -28124,16 +28260,16 @@ class _Lexer {
             }
             if (token = this.tokenizer.def(src)) {
                 src = src.substring(token.raw.length);
-                lastToken = tokens[tokens.length - 1];
-                if (lastToken && (lastToken.type === 'paragraph' || lastToken.type === 'text')) {
+                const lastToken = tokens.at(-1);
+                if (lastToken?.type === 'paragraph' || lastToken?.type === 'text') {
                     lastToken.raw += '\n' + token.raw;
                     lastToken.text += '\n' + token.raw;
-                    this.inlineQueue[this.inlineQueue.length - 1].src = lastToken.text;
+                    this.inlineQueue.at(-1).src = lastToken.text;
                 }
                 else if (!this.tokens.links[token.tag]) {
                     this.tokens.links[token.tag] = {
                         href: token.href,
-                        title: token.title
+                        title: token.title,
                     };
                 }
                 continue;
@@ -28148,8 +28284,8 @@ class _Lexer {
                 tokens.push(token);
                 continue;
             }
-            cutSrc = src;
-            if (this.options.extensions && this.options.extensions.startBlock) {
+            let cutSrc = src;
+            if (this.options.extensions?.startBlock) {
                 let startIndex = Infinity;
                 const tempSrc = src.slice(1);
                 let tempStart;
@@ -28164,28 +28300,28 @@ class _Lexer {
                 }
             }
             if (this.state.top && (token = this.tokenizer.paragraph(cutSrc))) {
-                lastToken = tokens[tokens.length - 1];
-                if (lastParagraphClipped && lastToken.type === 'paragraph') {
+                const lastToken = tokens.at(-1);
+                if (lastParagraphClipped && lastToken?.type === 'paragraph') {
                     lastToken.raw += '\n' + token.raw;
                     lastToken.text += '\n' + token.text;
                     this.inlineQueue.pop();
-                    this.inlineQueue[this.inlineQueue.length - 1].src = lastToken.text;
+                    this.inlineQueue.at(-1).src = lastToken.text;
                 }
                 else {
                     tokens.push(token);
                 }
-                lastParagraphClipped = (cutSrc.length !== src.length);
+                lastParagraphClipped = cutSrc.length !== src.length;
                 src = src.substring(token.raw.length);
                 continue;
             }
             if (token = this.tokenizer.text(src)) {
                 src = src.substring(token.raw.length);
-                lastToken = tokens[tokens.length - 1];
-                if (lastToken && lastToken.type === 'text') {
+                const lastToken = tokens.at(-1);
+                if (lastToken?.type === 'text') {
                     lastToken.raw += '\n' + token.raw;
                     lastToken.text += '\n' + token.text;
                     this.inlineQueue.pop();
-                    this.inlineQueue[this.inlineQueue.length - 1].src = lastToken.text;
+                    this.inlineQueue.at(-1).src = lastToken.text;
                 }
                 else {
                     tokens.push(token);
@@ -28211,16 +28347,16 @@ class _Lexer {
         return tokens;
     }
     inlineTokens(src, tokens = []) {
-        let token, lastToken, cutSrc;
         let maskedSrc = src;
-        let match;
-        let keepPrevChar, prevChar;
+        let match = null;
         if (this.tokens.links) {
             const links = Object.keys(this.tokens.links);
             if (links.length > 0) {
                 while ((match = this.tokenizer.rules.inline.reflinkSearch.exec(maskedSrc)) != null) {
                     if (links.includes(match[0].slice(match[0].lastIndexOf('[') + 1, -1))) {
-                        maskedSrc = maskedSrc.slice(0, match.index) + '[' + 'a'.repeat(match[0].length - 2) + ']' + maskedSrc.slice(this.tokenizer.rules.inline.reflinkSearch.lastIndex);
+                        maskedSrc = maskedSrc.slice(0, match.index)
+                            + '[' + 'a'.repeat(match[0].length - 2) + ']'
+                            + maskedSrc.slice(this.tokenizer.rules.inline.reflinkSearch.lastIndex);
                     }
                 }
             }
@@ -28231,21 +28367,22 @@ class _Lexer {
         while ((match = this.tokenizer.rules.inline.anyPunctuation.exec(maskedSrc)) != null) {
             maskedSrc = maskedSrc.slice(0, match.index) + '++' + maskedSrc.slice(this.tokenizer.rules.inline.anyPunctuation.lastIndex);
         }
+        let keepPrevChar = false;
+        let prevChar = '';
         while (src) {
             if (!keepPrevChar) {
                 prevChar = '';
             }
             keepPrevChar = false;
-            if (this.options.extensions
-                && this.options.extensions.inline
-                && this.options.extensions.inline.some((extTokenizer) => {
-                    if (token = extTokenizer.call({ lexer: this }, src, tokens)) {
-                        src = src.substring(token.raw.length);
-                        tokens.push(token);
-                        return true;
-                    }
-                    return false;
-                })) {
+            let token;
+            if (this.options.extensions?.inline?.some((extTokenizer) => {
+                if (token = extTokenizer.call({ lexer: this }, src, tokens)) {
+                    src = src.substring(token.raw.length);
+                    tokens.push(token);
+                    return true;
+                }
+                return false;
+            })) {
                 continue;
             }
             if (token = this.tokenizer.escape(src)) {
@@ -28255,14 +28392,7 @@ class _Lexer {
             }
             if (token = this.tokenizer.tag(src)) {
                 src = src.substring(token.raw.length);
-                lastToken = tokens[tokens.length - 1];
-                if (lastToken && token.type === 'text' && lastToken.type === 'text') {
-                    lastToken.raw += token.raw;
-                    lastToken.text += token.text;
-                }
-                else {
-                    tokens.push(token);
-                }
+                tokens.push(token);
                 continue;
             }
             if (token = this.tokenizer.link(src)) {
@@ -28272,8 +28402,8 @@ class _Lexer {
             }
             if (token = this.tokenizer.reflink(src, this.tokens.links)) {
                 src = src.substring(token.raw.length);
-                lastToken = tokens[tokens.length - 1];
-                if (lastToken && token.type === 'text' && lastToken.type === 'text') {
+                const lastToken = tokens.at(-1);
+                if (token.type === 'text' && lastToken?.type === 'text') {
                     lastToken.raw += token.raw;
                     lastToken.text += token.text;
                 }
@@ -28312,8 +28442,8 @@ class _Lexer {
                 tokens.push(token);
                 continue;
             }
-            cutSrc = src;
-            if (this.options.extensions && this.options.extensions.startInline) {
+            let cutSrc = src;
+            if (this.options.extensions?.startInline) {
                 let startIndex = Infinity;
                 const tempSrc = src.slice(1);
                 let tempStart;
@@ -28333,8 +28463,8 @@ class _Lexer {
                     prevChar = token.raw.slice(-1);
                 }
                 keepPrevChar = true;
-                lastToken = tokens[tokens.length - 1];
-                if (lastToken && lastToken.type === 'text') {
+                const lastToken = tokens.at(-1);
+                if (lastToken?.type === 'text') {
                     lastToken.raw += token.raw;
                     lastToken.text += token.text;
                 }
@@ -28359,52 +28489,104 @@ class _Lexer {
 }
 class _Renderer {
     options;
+    parser;
     constructor(options) {
         this.options = options || _defaults;
     }
-    code(code, infostring, escaped) {
-        const lang = (infostring || '').match(/^\S*/)?.[0];
-        code = code.replace(/\n$/, '') + '\n';
-        if (!lang) {
+    space(token) {
+        return '';
+    }
+    code({ text, lang, escaped }) {
+        const langString = (lang || '').match(other.notSpaceStart)?.[0];
+        const code = text.replace(other.endingNewline, '') + '\n';
+        if (!langString) {
             return '<pre><code>'
                 + (escaped ? code : escape(code, true))
                 + '</code></pre>\n';
         }
         return '<pre><code class="language-'
-            + escape(lang)
+            + escape(langString)
             + '">'
             + (escaped ? code : escape(code, true))
             + '</code></pre>\n';
     }
-    blockquote(quote) {
-        return `<blockquote>\n${quote}</blockquote>\n`;
+    blockquote({ tokens }) {
+        const body = this.parser.parse(tokens);
+        return `<blockquote>\n${body}</blockquote>\n`;
     }
-    html(html, block) {
-        return html;
+    html({ text }) {
+        return text;
     }
-    heading(text, level, raw) {
-        return `<h${level}>${text}</h${level}>\n`;
+    heading({ tokens, depth }) {
+        return `<h${depth}>${this.parser.parseInline(tokens)}</h${depth}>\n`;
     }
-    hr() {
+    hr(token) {
         return '<hr>\n';
     }
-    list(body, ordered, start) {
+    list(token) {
+        const ordered = token.ordered;
+        const start = token.start;
+        let body = '';
+        for (let j = 0; j < token.items.length; j++) {
+            const item = token.items[j];
+            body += this.listitem(item);
+        }
         const type = ordered ? 'ol' : 'ul';
-        const startatt = (ordered && start !== 1) ? (' start="' + start + '"') : '';
-        return '<' + type + startatt + '>\n' + body + '</' + type + '>\n';
+        const startAttr = (ordered && start !== 1) ? (' start="' + start + '"') : '';
+        return '<' + type + startAttr + '>\n' + body + '</' + type + '>\n';
     }
-    listitem(text, task, checked) {
-        return `<li>${text}</li>\n`;
+    listitem(item) {
+        let itemBody = '';
+        if (item.task) {
+            const checkbox = this.checkbox({ checked: !!item.checked });
+            if (item.loose) {
+                if (item.tokens[0]?.type === 'paragraph') {
+                    item.tokens[0].text = checkbox + ' ' + item.tokens[0].text;
+                    if (item.tokens[0].tokens && item.tokens[0].tokens.length > 0 && item.tokens[0].tokens[0].type === 'text') {
+                        item.tokens[0].tokens[0].text = checkbox + ' ' + escape(item.tokens[0].tokens[0].text);
+                        item.tokens[0].tokens[0].escaped = true;
+                    }
+                }
+                else {
+                    item.tokens.unshift({
+                        type: 'text',
+                        raw: checkbox + ' ',
+                        text: checkbox + ' ',
+                        escaped: true,
+                    });
+                }
+            }
+            else {
+                itemBody += checkbox + ' ';
+            }
+        }
+        itemBody += this.parser.parse(item.tokens, !!item.loose);
+        return `<li>${itemBody}</li>\n`;
     }
-    checkbox(checked) {
+    checkbox({ checked }) {
         return '<input '
             + (checked ? 'checked="" ' : '')
             + 'disabled="" type="checkbox">';
     }
-    paragraph(text) {
-        return `<p>${text}</p>\n`;
+    paragraph({ tokens }) {
+        return `<p>${this.parser.parseInline(tokens)}</p>\n`;
     }
-    table(header, body) {
+    table(token) {
+        let header = '';
+        let cell = '';
+        for (let j = 0; j < token.header.length; j++) {
+            cell += this.tablecell(token.header[j]);
+        }
+        header += this.tablerow({ text: cell });
+        let body = '';
+        for (let j = 0; j < token.rows.length; j++) {
+            const row = token.rows[j];
+            cell = '';
+            for (let k = 0; k < row.length; k++) {
+                cell += this.tablecell(row[k]);
+            }
+            body += this.tablerow({ text: cell });
+        }
         if (body)
             body = `<tbody>${body}</tbody>`;
         return '<table>\n'
@@ -28414,32 +28596,34 @@ class _Renderer {
             + body
             + '</table>\n';
     }
-    tablerow(content) {
-        return `<tr>\n${content}</tr>\n`;
+    tablerow({ text }) {
+        return `<tr>\n${text}</tr>\n`;
     }
-    tablecell(content, flags) {
-        const type = flags.header ? 'th' : 'td';
-        const tag = flags.align
-            ? `<${type} align="${flags.align}">`
+    tablecell(token) {
+        const content = this.parser.parseInline(token.tokens);
+        const type = token.header ? 'th' : 'td';
+        const tag = token.align
+            ? `<${type} align="${token.align}">`
             : `<${type}>`;
         return tag + content + `</${type}>\n`;
     }
-    strong(text) {
-        return `<strong>${text}</strong>`;
+    strong({ tokens }) {
+        return `<strong>${this.parser.parseInline(tokens)}</strong>`;
     }
-    em(text) {
-        return `<em>${text}</em>`;
+    em({ tokens }) {
+        return `<em>${this.parser.parseInline(tokens)}</em>`;
     }
-    codespan(text) {
-        return `<code>${text}</code>`;
+    codespan({ text }) {
+        return `<code>${escape(text, true)}</code>`;
     }
-    br() {
+    br(token) {
         return '<br>';
     }
-    del(text) {
-        return `<del>${text}</del>`;
+    del({ tokens }) {
+        return `<del>${this.parser.parseInline(tokens)}</del>`;
     }
-    link(href, title, text) {
+    link({ href, title, tokens }) {
+        const text = this.parser.parseInline(tokens);
         const cleanHref = cleanUrl(href);
         if (cleanHref === null) {
             return text;
@@ -28447,51 +28631,53 @@ class _Renderer {
         href = cleanHref;
         let out = '<a href="' + href + '"';
         if (title) {
-            out += ' title="' + title + '"';
+            out += ' title="' + (escape(title)) + '"';
         }
         out += '>' + text + '</a>';
         return out;
     }
-    image(href, title, text) {
+    image({ href, title, text }) {
         const cleanHref = cleanUrl(href);
         if (cleanHref === null) {
-            return text;
+            return escape(text);
         }
         href = cleanHref;
         let out = `<img src="${href}" alt="${text}"`;
         if (title) {
-            out += ` title="${title}"`;
+            out += ` title="${escape(title)}"`;
         }
         out += '>';
         return out;
     }
-    text(text) {
-        return text;
+    text(token) {
+        return 'tokens' in token && token.tokens
+            ? this.parser.parseInline(token.tokens)
+            : ('escaped' in token && token.escaped ? token.text : escape(token.text));
     }
 }
 class _TextRenderer {
-    strong(text) {
+    strong({ text }) {
         return text;
     }
-    em(text) {
+    em({ text }) {
         return text;
     }
-    codespan(text) {
+    codespan({ text }) {
         return text;
     }
-    del(text) {
+    del({ text }) {
         return text;
     }
-    html(text) {
+    html({ text }) {
         return text;
     }
-    text(text) {
+    text({ text }) {
         return text;
     }
-    link(href, title, text) {
+    link({ text }) {
         return '' + text;
     }
-    image(href, title, text) {
+    image({ text }) {
         return '' + text;
     }
     br() {
@@ -28507,6 +28693,7 @@ class _Parser {
         this.options.renderer = this.options.renderer || new _Renderer();
         this.renderer = this.options.renderer;
         this.renderer.options = this.options;
+        this.renderer.parser = this;
         this.textRenderer = new _TextRenderer();
     }
     static parse(tokens, options) {
@@ -28520,114 +28707,71 @@ class _Parser {
     parse(tokens, top = true) {
         let out = '';
         for (let i = 0; i < tokens.length; i++) {
-            const token = tokens[i];
-            if (this.options.extensions && this.options.extensions.renderers && this.options.extensions.renderers[token.type]) {
-                const genericToken = token;
+            const anyToken = tokens[i];
+            if (this.options.extensions?.renderers?.[anyToken.type]) {
+                const genericToken = anyToken;
                 const ret = this.options.extensions.renderers[genericToken.type].call({ parser: this }, genericToken);
                 if (ret !== false || !['space', 'hr', 'heading', 'code', 'table', 'blockquote', 'list', 'html', 'paragraph', 'text'].includes(genericToken.type)) {
                     out += ret || '';
                     continue;
                 }
             }
+            const token = anyToken;
             switch (token.type) {
                 case 'space': {
+                    out += this.renderer.space(token);
                     continue;
                 }
                 case 'hr': {
-                    out += this.renderer.hr();
+                    out += this.renderer.hr(token);
                     continue;
                 }
                 case 'heading': {
-                    const headingToken = token;
-                    out += this.renderer.heading(this.parseInline(headingToken.tokens), headingToken.depth, unescape(this.parseInline(headingToken.tokens, this.textRenderer)));
+                    out += this.renderer.heading(token);
                     continue;
                 }
                 case 'code': {
-                    const codeToken = token;
-                    out += this.renderer.code(codeToken.text, codeToken.lang, !!codeToken.escaped);
+                    out += this.renderer.code(token);
                     continue;
                 }
                 case 'table': {
-                    const tableToken = token;
-                    let header = '';
-                    let cell = '';
-                    for (let j = 0; j < tableToken.header.length; j++) {
-                        cell += this.renderer.tablecell(this.parseInline(tableToken.header[j].tokens), { header: true, align: tableToken.align[j] });
-                    }
-                    header += this.renderer.tablerow(cell);
-                    let body = '';
-                    for (let j = 0; j < tableToken.rows.length; j++) {
-                        const row = tableToken.rows[j];
-                        cell = '';
-                        for (let k = 0; k < row.length; k++) {
-                            cell += this.renderer.tablecell(this.parseInline(row[k].tokens), { header: false, align: tableToken.align[k] });
-                        }
-                        body += this.renderer.tablerow(cell);
-                    }
-                    out += this.renderer.table(header, body);
+                    out += this.renderer.table(token);
                     continue;
                 }
                 case 'blockquote': {
-                    const blockquoteToken = token;
-                    const body = this.parse(blockquoteToken.tokens);
-                    out += this.renderer.blockquote(body);
+                    out += this.renderer.blockquote(token);
                     continue;
                 }
                 case 'list': {
-                    const listToken = token;
-                    const ordered = listToken.ordered;
-                    const start = listToken.start;
-                    const loose = listToken.loose;
-                    let body = '';
-                    for (let j = 0; j < listToken.items.length; j++) {
-                        const item = listToken.items[j];
-                        const checked = item.checked;
-                        const task = item.task;
-                        let itemBody = '';
-                        if (item.task) {
-                            const checkbox = this.renderer.checkbox(!!checked);
-                            if (loose) {
-                                if (item.tokens.length > 0 && item.tokens[0].type === 'paragraph') {
-                                    item.tokens[0].text = checkbox + ' ' + item.tokens[0].text;
-                                    if (item.tokens[0].tokens && item.tokens[0].tokens.length > 0 && item.tokens[0].tokens[0].type === 'text') {
-                                        item.tokens[0].tokens[0].text = checkbox + ' ' + item.tokens[0].tokens[0].text;
-                                    }
-                                }
-                                else {
-                                    item.tokens.unshift({
-                                        type: 'text',
-                                        text: checkbox + ' '
-                                    });
-                                }
-                            }
-                            else {
-                                itemBody += checkbox + ' ';
-                            }
-                        }
-                        itemBody += this.parse(item.tokens, loose);
-                        body += this.renderer.listitem(itemBody, task, !!checked);
-                    }
-                    out += this.renderer.list(body, ordered, start);
+                    out += this.renderer.list(token);
                     continue;
                 }
                 case 'html': {
-                    const htmlToken = token;
-                    out += this.renderer.html(htmlToken.text, htmlToken.block);
+                    out += this.renderer.html(token);
                     continue;
                 }
                 case 'paragraph': {
-                    const paragraphToken = token;
-                    out += this.renderer.paragraph(this.parseInline(paragraphToken.tokens));
+                    out += this.renderer.paragraph(token);
                     continue;
                 }
                 case 'text': {
                     let textToken = token;
-                    let body = textToken.tokens ? this.parseInline(textToken.tokens) : textToken.text;
+                    let body = this.renderer.text(textToken);
                     while (i + 1 < tokens.length && tokens[i + 1].type === 'text') {
                         textToken = tokens[++i];
-                        body += '\n' + (textToken.tokens ? this.parseInline(textToken.tokens) : textToken.text);
+                        body += '\n' + this.renderer.text(textToken);
                     }
-                    out += top ? this.renderer.paragraph(body) : body;
+                    if (top) {
+                        out += this.renderer.paragraph({
+                            type: 'paragraph',
+                            raw: body,
+                            text: body,
+                            tokens: [{ type: 'text', raw: body, text: body, escaped: true }],
+                        });
+                    }
+                    else {
+                        out += body;
+                    }
                     continue;
                 }
                 default: {
@@ -28644,66 +28788,57 @@ class _Parser {
         }
         return out;
     }
-    parseInline(tokens, renderer) {
-        renderer = renderer || this.renderer;
+    parseInline(tokens, renderer = this.renderer) {
         let out = '';
         for (let i = 0; i < tokens.length; i++) {
-            const token = tokens[i];
-            if (this.options.extensions && this.options.extensions.renderers && this.options.extensions.renderers[token.type]) {
-                const ret = this.options.extensions.renderers[token.type].call({ parser: this }, token);
-                if (ret !== false || !['escape', 'html', 'link', 'image', 'strong', 'em', 'codespan', 'br', 'del', 'text'].includes(token.type)) {
+            const anyToken = tokens[i];
+            if (this.options.extensions?.renderers?.[anyToken.type]) {
+                const ret = this.options.extensions.renderers[anyToken.type].call({ parser: this }, anyToken);
+                if (ret !== false || !['escape', 'html', 'link', 'image', 'strong', 'em', 'codespan', 'br', 'del', 'text'].includes(anyToken.type)) {
                     out += ret || '';
                     continue;
                 }
             }
+            const token = anyToken;
             switch (token.type) {
                 case 'escape': {
-                    const escapeToken = token;
-                    out += renderer.text(escapeToken.text);
+                    out += renderer.text(token);
                     break;
                 }
                 case 'html': {
-                    const tagToken = token;
-                    out += renderer.html(tagToken.text);
+                    out += renderer.html(token);
                     break;
                 }
                 case 'link': {
-                    const linkToken = token;
-                    out += renderer.link(linkToken.href, linkToken.title, this.parseInline(linkToken.tokens, renderer));
+                    out += renderer.link(token);
                     break;
                 }
                 case 'image': {
-                    const imageToken = token;
-                    out += renderer.image(imageToken.href, imageToken.title, imageToken.text);
+                    out += renderer.image(token);
                     break;
                 }
                 case 'strong': {
-                    const strongToken = token;
-                    out += renderer.strong(this.parseInline(strongToken.tokens, renderer));
+                    out += renderer.strong(token);
                     break;
                 }
                 case 'em': {
-                    const emToken = token;
-                    out += renderer.em(this.parseInline(emToken.tokens, renderer));
+                    out += renderer.em(token);
                     break;
                 }
                 case 'codespan': {
-                    const codespanToken = token;
-                    out += renderer.codespan(codespanToken.text);
+                    out += renderer.codespan(token);
                     break;
                 }
                 case 'br': {
-                    out += renderer.br();
+                    out += renderer.br(token);
                     break;
                 }
                 case 'del': {
-                    const delToken = token;
-                    out += renderer.del(this.parseInline(delToken.tokens, renderer));
+                    out += renderer.del(token);
                     break;
                 }
                 case 'text': {
-                    const textToken = token;
-                    out += renderer.text(textToken.text);
+                    out += renderer.text(token);
                     break;
                 }
                 default: {
@@ -28723,12 +28858,14 @@ class _Parser {
 }
 class _Hooks {
     options;
+    block;
     constructor(options) {
         this.options = options || _defaults;
     }
     static passThroughHooks = new Set([
         'preprocess',
-        'postprocess'
+        'postprocess',
+        'processAllTokens',
     ]);
     preprocess(markdown) {
         return markdown;
@@ -28736,18 +28873,25 @@ class _Hooks {
     postprocess(html) {
         return html;
     }
+    processAllTokens(tokens) {
+        return tokens;
+    }
+    provideLexer() {
+        return this.block ? _Lexer.lex : _Lexer.lexInline;
+    }
+    provideParser() {
+        return this.block ? _Parser.parse : _Parser.parseInline;
+    }
 }
 let Marked$1 = class Marked {
     defaults = _getDefaults();
     options = this.setOptions;
-    parse = this.#parseMarkdown(_Lexer.lex, _Parser.parse);
-    parseInline = this.#parseMarkdown(_Lexer.lexInline, _Parser.parseInline);
+    parse = this.parseMarkdown(true);
+    parseInline = this.parseMarkdown(false);
     Parser = _Parser;
-    parser = _Parser.parse;
     Renderer = _Renderer;
     TextRenderer = _TextRenderer;
     Lexer = _Lexer;
-    lexer = _Lexer.lex;
     Tokenizer = _Tokenizer;
     Hooks = _Hooks;
     constructor(...args) {
@@ -28779,7 +28923,8 @@ let Marked$1 = class Marked {
                     const genericToken = token;
                     if (this.defaults.extensions?.childTokens?.[genericToken.type]) {
                         this.defaults.extensions.childTokens[genericToken.type].forEach((childTokens) => {
-                            values = values.concat(this.walkTokens(genericToken[childTokens], callback));
+                            const tokens = genericToken[childTokens].flat(Infinity);
+                            values = values.concat(this.walkTokens(tokens, callback));
                         });
                     }
                     else if (genericToken.tokens) {
@@ -28854,10 +28999,16 @@ let Marked$1 = class Marked {
             if (pack.renderer) {
                 const renderer = this.defaults.renderer || new _Renderer(this.defaults);
                 for (const prop in pack.renderer) {
-                    const rendererFunc = pack.renderer[prop];
-                    const rendererKey = prop;
-                    const prevRenderer = renderer[rendererKey];
-                    renderer[rendererKey] = (...args) => {
+                    if (!(prop in renderer)) {
+                        throw new Error(`renderer '${prop}' does not exist`);
+                    }
+                    if (['options', 'parser'].includes(prop)) {
+                        continue;
+                    }
+                    const rendererProp = prop;
+                    const rendererFunc = pack.renderer[rendererProp];
+                    const prevRenderer = renderer[rendererProp];
+                    renderer[rendererProp] = (...args) => {
                         let ret = rendererFunc.apply(renderer, args);
                         if (ret === false) {
                             ret = prevRenderer.apply(renderer, args);
@@ -28870,10 +29021,16 @@ let Marked$1 = class Marked {
             if (pack.tokenizer) {
                 const tokenizer = this.defaults.tokenizer || new _Tokenizer(this.defaults);
                 for (const prop in pack.tokenizer) {
-                    const tokenizerFunc = pack.tokenizer[prop];
-                    const tokenizerKey = prop;
-                    const prevTokenizer = tokenizer[tokenizerKey];
-                    tokenizer[tokenizerKey] = (...args) => {
+                    if (!(prop in tokenizer)) {
+                        throw new Error(`tokenizer '${prop}' does not exist`);
+                    }
+                    if (['options', 'rules', 'lexer'].includes(prop)) {
+                        continue;
+                    }
+                    const tokenizerProp = prop;
+                    const tokenizerFunc = pack.tokenizer[tokenizerProp];
+                    const prevTokenizer = tokenizer[tokenizerProp];
+                    tokenizer[tokenizerProp] = (...args) => {
                         let ret = tokenizerFunc.apply(tokenizer, args);
                         if (ret === false) {
                             ret = prevTokenizer.apply(tokenizer, args);
@@ -28886,11 +29043,17 @@ let Marked$1 = class Marked {
             if (pack.hooks) {
                 const hooks = this.defaults.hooks || new _Hooks();
                 for (const prop in pack.hooks) {
-                    const hooksFunc = pack.hooks[prop];
-                    const hooksKey = prop;
-                    const prevHook = hooks[hooksKey];
+                    if (!(prop in hooks)) {
+                        throw new Error(`hook '${prop}' does not exist`);
+                    }
+                    if (['options', 'block'].includes(prop)) {
+                        continue;
+                    }
+                    const hooksProp = prop;
+                    const hooksFunc = pack.hooks[hooksProp];
+                    const prevHook = hooks[hooksProp];
                     if (_Hooks.passThroughHooks.has(prop)) {
-                        hooks[hooksKey] = (arg) => {
+                        hooks[hooksProp] = (arg) => {
                             if (this.defaults.async) {
                                 return Promise.resolve(hooksFunc.call(hooks, arg)).then(ret => {
                                     return prevHook.call(hooks, ret);
@@ -28901,7 +29064,7 @@ let Marked$1 = class Marked {
                         };
                     }
                     else {
-                        hooks[hooksKey] = (...args) => {
+                        hooks[hooksProp] = (...args) => {
                             let ret = hooksFunc.apply(hooks, args);
                             if (ret === false) {
                                 ret = prevHook.apply(hooks, args);
@@ -28932,17 +29095,20 @@ let Marked$1 = class Marked {
         this.defaults = { ...this.defaults, ...opt };
         return this;
     }
-    #parseMarkdown(lexer, parser) {
-        return (src, options) => {
+    lexer(src, options) {
+        return _Lexer.lex(src, options ?? this.defaults);
+    }
+    parser(tokens, options) {
+        return _Parser.parse(tokens, options ?? this.defaults);
+    }
+    parseMarkdown(blockType) {
+        const parse = (src, options) => {
             const origOpt = { ...options };
             const opt = { ...this.defaults, ...origOpt };
+            const throwError = this.onError(!!opt.silent, !!opt.async);
             if (this.defaults.async === true && origOpt.async === false) {
-                if (!opt.silent) {
-                    console.warn('marked(): The async option was set to true by an extension. The async: false option sent to parse will be ignored.');
-                }
-                opt.async = true;
+                return throwError(new Error('marked(): The async option was set to true by an extension. Remove async: false from the parse options object to return a Promise.'));
             }
-            const throwError = this.#onError(!!opt.silent, !!opt.async);
             if (typeof src === 'undefined' || src === null) {
                 return throwError(new Error('marked(): input parameter is undefined or null'));
             }
@@ -28952,10 +29118,14 @@ let Marked$1 = class Marked {
             }
             if (opt.hooks) {
                 opt.hooks.options = opt;
+                opt.hooks.block = blockType;
             }
+            const lexer = opt.hooks ? opt.hooks.provideLexer() : (blockType ? _Lexer.lex : _Lexer.lexInline);
+            const parser = opt.hooks ? opt.hooks.provideParser() : (blockType ? _Parser.parse : _Parser.parseInline);
             if (opt.async) {
                 return Promise.resolve(opt.hooks ? opt.hooks.preprocess(src) : src)
                     .then(src => lexer(src, opt))
+                    .then(tokens => opt.hooks ? opt.hooks.processAllTokens(tokens) : tokens)
                     .then(tokens => opt.walkTokens ? Promise.all(this.walkTokens(tokens, opt.walkTokens)).then(() => tokens) : tokens)
                     .then(tokens => parser(tokens, opt))
                     .then(html => opt.hooks ? opt.hooks.postprocess(html) : html)
@@ -28965,7 +29135,10 @@ let Marked$1 = class Marked {
                 if (opt.hooks) {
                     src = opt.hooks.preprocess(src);
                 }
-                const tokens = lexer(src, opt);
+                let tokens = lexer(src, opt);
+                if (opt.hooks) {
+                    tokens = opt.hooks.processAllTokens(tokens);
+                }
                 if (opt.walkTokens) {
                     this.walkTokens(tokens, opt.walkTokens);
                 }
@@ -28979,8 +29152,9 @@ let Marked$1 = class Marked {
                 return throwError(e);
             }
         };
+        return parse;
     }
-    #onError(silent, async) {
+    onError(silent, async) {
         return (e) => {
             e.message += '\nPlease report this to https://github.com/markedjs/marked.';
             if (silent) {
@@ -29930,24 +30104,35 @@ function createDOMPurify() {
 }
 var purify = createDOMPurify();
 
+purify.addHook("afterSanitizeAttributes", function (node) {
+    if ("target" in node) {
+        node.setAttribute("target", "_blank");
+        node.setAttribute("rel", "noopener");
+    }
+});
 let Marked = class Marked extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: block;
 }</style>
 
 <slot></slot>`; }
     async _markdownChanged(markdown, breaks, gfm, addTags, forbidTags) {
-        this.innerHTML = await marked(markdown, {
+        var renderer = new marked.Renderer();
+        renderer.link = function (token) {
+            var anchor = marked.Renderer.prototype.link.call(this, token);
+            if (token.href.startsWith("http"))
+                return anchor.replace("<a", `<a target="_blank" rel="noopener" `);
+            return anchor;
+        };
+        const html = await marked(markdown, {
             breaks,
             gfm,
             async: false,
-            hooks: {
-                preprocess: (markdown) => (markdown),
-                postprocess: (html) => purify.sanitize(html, {
-                    ADD_TAGS: addTags?.split(",") || [],
-                    FORBID_TAGS: forbidTags?.split(",") || []
-                })
-            }
+            renderer: renderer
+        });
+        this.innerHTML = purify.sanitize(html, {
+            ADD_TAGS: addTags?.split(",") || [],
+            FORBID_TAGS: forbidTags?.split(",") || [],
         });
     }
 };
@@ -29977,29 +30162,9 @@ Marked = __decorate([
         ]
     })
 ], Marked);
-let Element$1 = class Element extends Marked {
-    connectedCallback() {
-        super.connectedCallback();
-        console.warn("marked-element is deprecated and set to be removed by October 1st 2024. Use vi-marked instead.");
-    }
-};
-Element$1 = __decorate([
-    WebComponent.register({
-        properties: {
-            breaks: {
-                type: Boolean,
-                value: true
-            },
-            markdown: String
-        },
-        observers: [
-            "_markdownChanged(markdown, breaks)"
-        ]
-    }, "marked")
-], Element$1);
 
 let MessageDialog = class MessageDialog extends Dialog {
-    static get template() { return Dialog.dialogTemplate(html$2 `<style>:host main {
+    static get template() { return Dialog.dialogTemplate(html$3 `<style>:host main {
   min-width: 17em;
   max-width: 70vw;
   display: flex;
@@ -30154,7 +30319,7 @@ MessageDialog = __decorate([
 ], MessageDialog);
 
 let Sensitive = class Sensitive extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: contents;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -30178,7 +30343,7 @@ Sensitive = __decorate([
 ], Sensitive);
 
 let SessionPresenter = class SessionPresenter extends WebComponent {
-    static get template() { return html$2 `<slot></slot>`; }
+    static get template() { return html$3 `<slot></slot>`; }
     _stamp(session, isConnected) {
         if (!isConnected)
             return;
@@ -30440,7 +30605,7 @@ Ripple.prototype = {
   }
 };
 Polymer({
-  _template: html$2`
+  _template: html$3`
     <style>
       :host {
         display: block;
@@ -30697,7 +30862,7 @@ const base = document.head.querySelector("base");
 if (!base)
     throw new Error("Document is missing base tag");
 let AppBase = AppBase_1 = class AppBase extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   --theme-color-error: #a80511;
   --theme-color-warning: #e5a300;
   --theme-color-notice: #48545e;
@@ -31595,7 +31760,7 @@ AppBase = AppBase_1 = __decorate([
 ], AppBase);
 
 let Button = class Button extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -31887,7 +32052,7 @@ Button = __decorate([
 ], Button);
 
 let InputSearch = class InputSearch extends WebComponent {
-    static get template() { return html$2 `<style include="vi-reset-css-style-module"></style>
+    static get template() { return html$3 `<style include="vi-reset-css-style-module"></style>
 <style>:host {
   display: flex;
   flex-direction: row;
@@ -31999,7 +32164,7 @@ InputSearch = __decorate([
 ], InputSearch);
 
 Polymer({
-  _template: html$2`
+  _template: html$3`
     <style>
       :host {
         display: block;
@@ -32120,7 +32285,7 @@ Polymer({
 
 var MenuItem_1;
 let MenuItem = MenuItem_1 = class MenuItem extends ConfigurableWebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   position: relative;
   box-sizing: border-box;
   display: block;
@@ -32470,7 +32635,7 @@ MenuItem = MenuItem_1 = __decorate([
 ], MenuItem);
 
 let User = class User extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: block;
   border-top: 1px solid #3b484e;
 }
@@ -32679,7 +32844,7 @@ User = __decorate([
 var Menu_1;
 let Menu = class Menu extends WebComponent {
     static { Menu_1 = this; }
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   flex-direction: row;
   position: relative;
@@ -33135,7 +33300,7 @@ const Keys = {
 };
 
 let SignIn = class SignIn extends WebComponent {
-    static get template() { return html$2 `<style>@font-face {
+    static get template() { return html$3 `<style>@font-face {
   font-family: "viBrands";
   src: url(data:font/truetype;charset=utf-8;base64,AAEAAAALAIAAAwAwT1MvMg8SB4gAAAC8AAAAYGNtYXDVZ9RhAAABHAAAAGxnYXNwAAAAEAAAAYgAAAAIZ2x5ZsRSMBQAAAGQAAAD1GhlYWQRp15dAAAFZAAAADZoaGVhCHQEfAAABZwAAAAkaG10eBqyAQ0AAAXAAAAAJGxvY2ECjAOOAAAF5AAAABRtYXhwAA4AcgAABfgAAAAgbmFtZZlKCfsAAAYYAAABhnBvc3QAAwAAAAAHoAAAACAAAwPIAZAABQAAApkCzAAAAI8CmQLMAAAB6wAzAQkAAAAAAAAAAAAAAAAAAAABEAAAAAAAAAAAAAAAAAAAAABAAADqlgPA/8AAQAPAAEAAAAABAAAAAAAAAAAAAAAgAAAAAAADAAAAAwAAABwAAQADAAAAHAADAAEAAAAcAAQAUAAAABAAEAADAAAAAQAg6QHqiOqQ6pb//f//AAAAAAAg6QDqiOqQ6pb//f//AAH/4xcEFX4VdxVyAAMAAQAAAAAAAAAAAAAAAAAAAAAAAQAB//8ADwABAAAAAAAAAAAAAgAANzkBAAAAAAEAAAAAAAAAAAACAAA3OQEAAAAAAQAAAAAAAAAAAAIAADc5AQAAAAAEAAD/wAQAA8AAAwAHAAsADwAAASERIQEhESEBIREhASERIQHn/hkB5wIZ/hkB5/3n/hkB5wIZ/hkB5wHZAef+GQHn/AAB5/4ZAecABAAD/8QEsgO8ABsAMwBLAG8AAAEqASM4ASMxIgcOAQcGFxYXHgEXFjM+AScuAScDJicuAScmBwYXHgEXFhceARcWNjc2JicRPgEnLgEHIgYHBgcOAQcGFxY3PgE3NjcBDgEjIiYjJgYHBhYXHgEzMjY3ATYmJyYGBwMjAy4BBw4BFwEEggEEAgERPT2CMTIGByUmaz4+NxcdAgEbFHAwODhkJSYLDCUlaTIzDwIEARMnCw0IEhIIDQsnEwEEAg8zMmklJQwLJiVkODgw/QAcQT0GHQITIQUGFxYQIA9wYyUBIwgYGBksCc0D1wswGBkXCAEPAfQGBhQNDA0NCQkNAwMEJRgVHgT+oRobGykKCggIIyNQIyMIAQIBBQ0SFC4PAkEOLxQRDgYCAQkjIlEiIwgICgooGxsb/f5RTQIBFxQWKQYDAnVeAtYZLggIFxf94wIhFxQJCjAZ/WsAAQAK/8AD9gPAADoAAAEVIQYHDgEHBiMiJy4BJyY1NDc+ATc2MzIWFzcmJy4BJyYjIgcOAQcGFRQXHgEXFjMyNz4BNzY1NCYnAgoBIwUREkQ2NUxBOjpWGRkZGVY6OkFLZRyLIScmVi8wNGpdXYspKCgpi11dam9bWoEkIwUDAgmvHSYmRBgYGRpXOztDQzs7VxoZMxyGHxkZIwkJKCiLXl1qal1eiygoJSWFXFxtGSkTAAAAAQEA/8ADAAPAABcAAAEzNSMiBw4BBwYdASMVMxEzETM3IzU0NgJgoKAuKSk9ERKAgMCgIMATAwDAEhE9KSkuYMD+AAIAwGANEwAAAAEAAAAABAADQABPAAABDgEHPgE3DgEHLgEjIgcOAQcGFRQWFyYnLgEnJicOARUUFhcuASccARUUFhcOASMiJiceARcOASMiJicWFx4BFxYzMjc+ATc2NTQmNT4BNwQAHD0gITAMH0MkHFAtKycmORARAwJBPT5uMDAnDQ8zKhkxFWFIDRwPChMKFGtFNoVKDRkMIyYmUSsrLJFvcJgnJwEfNRUC3g0RAxM8JRIaBx4kEBE5JiYsDBgMAxEROScnMBc2HTZcHQEODAEBAUx0DgQDAgE+UgIqMAIBFhIRGAcGNjesamtoBw0HFjcgAAAAAAEAAAAAAABLNQeLXw889QALBAAAAAAA1uuM8AAAAADW64zwAAD/wASyA8AAAAAIAAIAAAAAAAAAAQAAA8D/wAAABLIAAAAABLIAAQAAAAAAAAAAAAAAAAAAAAkEAAAAAAAAAAAAAAACAAAABAAAAASyAAMEAAAKBAABAAQAAAAAAAAAAAoAFAAeAEQA8gFMAXIB6gABAAAACQBwAAQAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAADgCuAAEAAAAAAAEABwAAAAEAAAAAAAIABwBgAAEAAAAAAAMABwA2AAEAAAAAAAQABwB1AAEAAAAAAAUACwAVAAEAAAAAAAYABwBLAAEAAAAAAAoAGgCKAAMAAQQJAAEADgAHAAMAAQQJAAIADgBnAAMAAQQJAAMADgA9AAMAAQQJAAQADgB8AAMAAQQJAAUAFgAgAAMAAQQJAAYADgBSAAMAAQQJAAoANACkaWNvbW9vbgBpAGMAbwBtAG8AbwBuVmVyc2lvbiAxLjAAVgBlAHIAcwBpAG8AbgAgADEALgAwaWNvbW9vbgBpAGMAbwBtAG8AbwBuaWNvbW9vbgBpAGMAbwBtAG8AbwBuUmVndWxhcgBSAGUAZwB1AGwAYQByaWNvbW9vbgBpAGMAbwBtAG8AbwBuRm9udCBnZW5lcmF0ZWQgYnkgSWNvTW9vbi4ARgBvAG4AdAAgAGcAZQBuAGUAcgBhAHQAZQBkACAAYgB5ACAASQBjAG8ATQBvAG8AbgAuAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==) format("truetype");
 }
@@ -34014,7 +34179,7 @@ SignIn = __decorate([
 ], SignIn);
 
 let SignOut = class SignOut extends WebComponent {
-    static get template() { return html$2 `<vi-spinner></vi-spinner>`; }
+    static get template() { return html$3 `<vi-spinner></vi-spinner>`; }
     async _activate(e) {
         e.preventDefault();
         const signInUsingDefaultCredentials = !this.service.isUsingDefaultCredentials && !!this.service.defaultUserName;
@@ -34038,7 +34203,7 @@ SignOut = __decorate([
 ], SignOut);
 
 let Spinner = class Spinner extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: block;
   position: relative;
   width: var(--vi-spinner-size, var(--theme-h2));
@@ -37093,7 +37258,7 @@ let Profiler = class Profiler extends WebComponent {
         super(...arguments);
         this._boundMousehweel = this._onMousewheel.bind(this);
     }
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   flex-direction: row;
   background-color: #444;
@@ -37857,7 +38022,7 @@ let QueryGridCellDefault = class QueryGridCellDefault extends QueryGridCell {
         this._tag = { currentValue: null };
         this._textAlign = { currentValue: null };
     }
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   padding: 0 var(--theme-h5);
   height: var(--vi-query-grid-row-height);
   line-height: var(--vi-query-grid-row-height);
@@ -37987,7 +38152,7 @@ QueryGridCellDefault = __decorate([
 
 let QueryGridColumnMeasure = class QueryGridColumnMeasure extends WebComponent {
     static get template() {
-        return html$2 `
+        return html$3 `
             <style>:host { height: 0; }</style>
             <div style="position: relative; height: 1px;">
                 <vi-size-tracker size="{{size}}"></vi-size-tracker>
@@ -38014,7 +38179,7 @@ QueryGridColumnMeasure = __decorate([
 ], QueryGridColumnMeasure);
 
 let Checkbox = class Checkbox extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: block;
   box-sizing: border-box;
 }
@@ -38109,7 +38274,7 @@ Checkbox = __decorate([
 ], Checkbox);
 
 let QueryGridColumnFilter = class QueryGridColumnFilter extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   position: relative;
   display: block;
   border-top: 1px solid var(--theme-light-border);
@@ -38746,7 +38911,7 @@ resizeObserver = new ResizeObserver(allEntries => {
     });
 });
 let QueryGridColumnHeader = class QueryGridColumnHeader extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: block;
   box-sizing: border-box;
   border-right: 1px solid var(--theme-light-border);
@@ -39034,7 +39199,7 @@ QueryGridColumnHeader = __decorate([
 ], QueryGridColumnHeader);
 
 let QueryGridFilterDialogName = class QueryGridFilterDialogName extends WebComponent {
-    static get template() { return html$2 `<style include="vi-reset-css-style-module"></style>
+    static get template() { return html$3 `<style include="vi-reset-css-style-module"></style>
 <style>:host {
   display: flex;
   flex-direction: row;
@@ -39128,7 +39293,7 @@ QueryGridFilterDialogName = __decorate([
 ], QueryGridFilterDialogName);
 
 let QueryGridFilterDialog = class QueryGridFilterDialog extends Dialog {
-    static get template() { return Dialog.dialogTemplate(html$2 `<style>:host dialog {
+    static get template() { return Dialog.dialogTemplate(html$3 `<style>:host dialog {
   min-width: 400px;
 }
 :host main {
@@ -39183,7 +39348,7 @@ QueryGridFilterDialog = __decorate([
 ], QueryGridFilterDialog);
 
 let QueryGridFilters = class QueryGridFilters extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: block;
   width: var(--vi-query-grid-row-height);
   height: var(--vi-query-grid-row-height);
@@ -39465,7 +39630,7 @@ QueryGridFilters = __decorate([
 ], QueryGridFilters);
 
 let QueryGridFooter = class QueryGridFooter extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: grid;
   grid-template-columns: var(--vi-query-grid-columns);
 }
@@ -39507,7 +39672,7 @@ QueryGridFooter = __decorate([
 ], QueryGridFooter);
 
 let QueryGridGrouping = class QueryGridGrouping extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: block;
 }
 :host vi-button {
@@ -39564,7 +39729,7 @@ QueryGridGrouping = __decorate([
 
 var ActionButton_1;
 let ActionButton = ActionButton_1 = class ActionButton extends ConfigurableWebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   box-sizing: border-box;
 }
@@ -39935,7 +40100,7 @@ let Icon = class Icon extends WebComponent {
         super(...arguments);
         this._aliases = [];
     }
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   position: relative;
   display: block;
   pointer-events: none;
@@ -40027,7 +40192,7 @@ Icon = __decorate([
         ]
     })
 ], Icon);
-add(html$2 `<vi-icon name="Action_Default$">
+add(html$3 `<vi-icon name="Action_Default$">
     <svg viewBox="0 0 32 32">
         <g>
             <path d="M 25.095139,2.6002179 24.640776,0 22.852563,1.9434153 20.241099,1.5722771 21.53446,3.8722102 20.374933,6.2418724 22.961656,5.7200294 24.860085,7.5588513 25.164868,4.9361402 27.497415,3.6978876 25.095139,2.6002179 Z m 3.569677,15.2402901 -0.20469,-1.405826 -0.993076,1.016694 -1.39908,-0.241802 0.661302,1.247249 -0.661302,1.241626 1.39908,-0.245175 0.993076,1.007696 0.20469,-1.405826 1.274241,-0.63206 -1.274241,-0.582576 z M 4.7128949,5.9978209 5.7790743,5.5794467 6.7282887,6.2193791 6.6585596,5.0800968 7.5605385,4.3749341 6.4527466,4.0870206 6.0602397,3.0107194 5.4450497,3.9768038 4.3012687,4.0172915 5.0278001,4.900151 4.7128949,5.9978209 Z M 10.919903,9.1839874 12.068182,7.9513582 13.733806,8.1976591 12.915052,6.7232276 13.665202,5.216181 12.013074,5.5400836 10.81081,4.3603134 10.606122,6.0349348 9.1125721,6.8132006 l 1.5272899,0.7119108 0.280041,1.658876 z m 7.642076,2.4945006 c -0.6613,-0.412752 -1.318104,-0.693917 -1.901804,-0.81988 -0.553333,-0.101213 -1.168522,-0.166449 -1.602643,0.420624 L 2.0609426,32 9.5736825,32 20.448036,14.661091 c 0.340773,-0.647806 0.0135,-1.170773 -0.318279,-1.626262 -0.365515,-0.473482 -0.905352,-0.943591 -1.567778,-1.356341 z m -4.072401,10.363757 c -0.285663,-0.445366 -0.832249,-0.960461 -1.54416,-1.410325 -0.710786,-0.445366 -1.414824,-0.714162 -1.941166,-0.773768 l 4.972129,-7.942361 c 0.07086,-0.01687 0.294663,-0.02363 0.610692,0.07198 0.389133,0.104593 0.882859,0.320529 1.37771,0.63206 0.566831,0.350894 1.021194,0.76252 1.274242,1.092046 0.127087,0.164201 0.200191,0.304783 0.219309,0.376761 0.0023,0.0067 0.0045,0.01237 0.0045,0.01687 l -4.973255,7.936737 z" />
@@ -40601,7 +40766,7 @@ add(html$2 `<vi-icon name="Action_Default$">
 </vi-icon>`);
 
 let QueryGridCellBoolean = class QueryGridCellBoolean extends QueryGridCell {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   --vi-icon-selected-checked-color: var(--vi-query-grid-cell-boolean-checked-color, #555);
   display: block;
 }
@@ -40697,7 +40862,7 @@ QueryGridCell.registerCellType("NullableBoolean", QueryGridCellBoolean);
 QueryGridCell.registerCellType("YesNo", QueryGridCellBoolean);
 
 let QueryGridCellImage = class QueryGridCellImage extends QueryGridCell {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: block;
   padding: 0 1px;
   overflow: hidden;
@@ -40746,7 +40911,7 @@ QueryGridCellImage = __decorate([
 QueryGridCell.registerCellType("Image", QueryGridCellImage);
 
 let QueryGridRowGroup = class QueryGridRowGroup extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   box-sizing: border-box;
   border-bottom: 1px solid var(--theme-light-border);
@@ -40819,7 +40984,7 @@ let QueryGridRow = class QueryGridRow extends WebComponent {
         super(...arguments);
         this._invisibleCellValues = [];
     }
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: grid;
   position: relative;
   width: initial;
@@ -41154,7 +41319,7 @@ QueryGridRow = __decorate([
 ], QueryGridRow);
 
 let QueryGridSelectAll = class QueryGridSelectAll extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: block;
   position: relative;
   width: var(--vi-query-grid-row-height);
@@ -41230,7 +41395,7 @@ QueryGridSelectAll = __decorate([
 ], QueryGridSelectAll);
 
 let QueryGridConfigureDialogColumn = class QueryGridConfigureDialogColumn extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   flex-direction: row;
   min-width: 20em;
@@ -43727,7 +43892,7 @@ Sortable = __decorate([
 ], Sortable);
 
 let QueryGridConfigureDialog = class QueryGridConfigureDialog extends Dialog {
-    static get template() { return Dialog.dialogTemplate(html$2 `<style>:host main {
+    static get template() { return Dialog.dialogTemplate(html$3 `<style>:host main {
   display: flex;
   flex-direction: column;
   -webkit-touch-callout: none;
@@ -43965,7 +44130,7 @@ let QueryGrid = class QueryGrid extends WebComponent {
         this._virtualGridStartIndex = 0;
         this._verticalSpacerCorrection = 1;
     }
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   flex-direction: column;
   position: relative;
@@ -44829,14 +44994,14 @@ QueryGrid = __decorate([
     })
 ], QueryGrid);
 let QueryGridSortable = class QueryGridSortable extends Sortable {
-    static get template() { return html$2 `<style>:host { display: block; }</style><slot></slot>`; }
+    static get template() { return html$3 `<style>:host { display: block; }</style><slot></slot>`; }
 };
 QueryGridSortable = __decorate([
     WebComponent.register()
 ], QueryGridSortable);
 
 let QueryItemsPresenter = class QueryItemsPresenter extends ConfigurableWebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   flex-direction: row;
   position: relative;
@@ -45003,7 +45168,7 @@ QueryItemsPresenter = __decorate([
 ], QueryItemsPresenter);
 
 let PersistentObjectAttributeValidationError = class PersistentObjectAttributeValidationError extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   width: var(--theme-h2);
   height: var(--theme-h2);
   line-height: var(--theme-h2);
@@ -45068,7 +45233,7 @@ PersistentObjectAttributeValidationError = __decorate([
 ], PersistentObjectAttributeValidationError);
 
 let PersistentObjectAttributeEdit = class PersistentObjectAttributeEdit extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   flex-direction: row;
   flex: 1;
@@ -45537,7 +45702,7 @@ PersistentObjectAttribute = __decorate([
 const registeredAttributeTypes = {};
 
 let PersistentObjectAttributeAsDetailRow = class PersistentObjectAttributeAsDetailRow extends WebComponent {
-    static get template() { return html$2 `<style include="vi-persistent-object-attribute-style-module"></style>
+    static get template() { return html$3 `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
   display: grid;
   grid-template-columns: var(--column-widths);
@@ -45747,7 +45912,7 @@ PersistentObjectAttributeAsDetailRow = __decorate([
 ], PersistentObjectAttributeAsDetailRow);
 
 let PersistentObjectAttributeAsDetail = class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute {
-    static get template() { return html$2 `<style include="vi-persistent-object-attribute-style-module"></style>
+    static get template() { return html$3 `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
   display: flex;
   flex-direction: row;
@@ -46137,7 +46302,7 @@ PersistentObjectAttributeAsDetail = __decorate([
 PersistentObjectAttribute.registerAttributeType("AsDetail", PersistentObjectAttributeAsDetail);
 
 let PersistentObjectAttributeBinaryFile = class PersistentObjectAttributeBinaryFile extends PersistentObjectAttribute {
-    static get template() { return html$2 `<style include="vi-persistent-object-attribute-style-module"></style>
+    static get template() { return html$3 `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
   display: flex;
   flex-direction: row;
@@ -46272,7 +46437,7 @@ PersistentObjectAttributeBinaryFile = __decorate([
 PersistentObjectAttribute.registerAttributeType("BinaryFile", PersistentObjectAttributeBinaryFile);
 
 let Toggle = class Toggle extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: block;
   padding-right: var(--theme-h5);
   box-sizing: border-box;
@@ -46386,7 +46551,7 @@ Toggle = __decorate([
 ], Toggle);
 
 let PersistentObjectAttributeBoolean = class PersistentObjectAttributeBoolean extends PersistentObjectAttribute {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
@@ -46476,7 +46641,7 @@ PersistentObjectAttributeBoolean = __decorate([
 PersistentObjectAttribute.registerAttributeType("Boolean", PersistentObjectAttributeBoolean);
 
 let Select = class Select extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   flex-direction: row;
   position: relative;
@@ -47033,7 +47198,7 @@ SelectOptionItem = __decorate([
 ], SelectOptionItem);
 
 let PersistentObjectAttributeComboBox = class PersistentObjectAttributeComboBox extends PersistentObjectAttribute {
-    static get template() { return html$2 `<style include="vi-persistent-object-attribute-style-module"></style>
+    static get template() { return html$3 `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
   display: flex;
   flex-direction: row;
@@ -47134,7 +47299,7 @@ PersistentObjectAttributeComboBox = __decorate([
 PersistentObjectAttribute.registerAttributeType("ComboBox", PersistentObjectAttributeComboBox);
 
 let PersistentObjectAttributeCommonMark = class PersistentObjectAttributeCommonMark extends PersistentObjectAttribute {
-    static get template() { return html$2 `<style include="vi-persistent-object-attribute-style-module"></style>
+    static get template() { return html$3 `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
   display: flex;
   flex-direction: row;
@@ -47185,7 +47350,7 @@ PersistentObjectAttribute.registerAttributeType("CommonMark", PersistentObjectAt
 var MaskedInput_1;
 let MaskedInput = class MaskedInput extends WebComponent {
     static { MaskedInput_1 = this; }
-    static get template() { return html$2 `<input id="input"
+    static get template() { return html$3 `<input id="input"
        part="input"
        size="[[size]]"
        value="{{value::input}}"
@@ -47396,7 +47561,7 @@ MaskedInput = MaskedInput_1 = __decorate([
 ], MaskedInput);
 
 let TimePicker = class TimePicker extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: block;
   position: relative;
   -webkit-touch-callout: none;
@@ -48035,7 +48200,7 @@ TimePicker = __decorate([
 ], TimePicker);
 
 let DatePicker = class DatePicker extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: block;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -48431,7 +48596,7 @@ DatePicker = __decorate([
 ], DatePicker);
 
 let PersistentObjectAttributeDateTime = class PersistentObjectAttributeDateTime extends PersistentObjectAttribute {
-    static get template() { return html$2 `<style include="vi-persistent-object-attribute-style-module"></style>
+    static get template() { return html$3 `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
   display: flex;
   flex-direction: row;
@@ -48875,7 +49040,7 @@ PersistentObjectAttributeDateTime = __decorate([
 PersistentObjectAttribute.registerAttributeType("DateTime", PersistentObjectAttributeDateTime);
 
 let PersistentObjectAttributeDropDown = class PersistentObjectAttributeDropDown extends PersistentObjectAttribute {
-    static get template() { return html$2 `<style include="vi-persistent-object-attribute-style-module"></style>
+    static get template() { return html$3 `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
   display: flex;
   flex-direction: row;
@@ -48996,7 +49161,7 @@ PersistentObjectAttributeDropDown = __decorate([
 PersistentObjectAttribute.registerAttributeType("DropDown", PersistentObjectAttributeDropDown);
 
 let PersistentObjectAttributeFlagsEnumFlag = class PersistentObjectAttributeFlagsEnumFlag extends WebComponent {
-    static get template() { return html$2 `<vi-checkbox checked="{{checked}}" label="[[label]]"></vi-checkbox>`; }
+    static get template() { return html$3 `<vi-checkbox checked="{{checked}}" label="[[label]]"></vi-checkbox>`; }
     _checkedChanged(checked, oldChecked) {
         if (this._skipCheckedChanged || !this.attribute || oldChecked === undefined)
             return;
@@ -49076,7 +49241,7 @@ PersistentObjectAttributeFlagsEnumFlag = __decorate([
 ], PersistentObjectAttributeFlagsEnumFlag);
 
 let PersistentObjectAttributeFlagsEnum = class PersistentObjectAttributeFlagsEnum extends PersistentObjectAttribute {
-    static get template() { return html$2 `<style include="vi-persistent-object-attribute-style-module"></style>
+    static get template() { return html$3 `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
   display: flex;
   flex-direction: row;
@@ -49152,7 +49317,7 @@ PersistentObjectAttributeFlagsEnum = __decorate([
 PersistentObjectAttribute.registerAttributeType("FlagsEnum", PersistentObjectAttributeFlagsEnum);
 
 let PersistentObjectAttributeIcon = class PersistentObjectAttributeIcon extends PersistentObjectAttribute {
-    static get template() { return html$2 `<style include="vi-persistent-object-attribute-style-module"></style>
+    static get template() { return html$3 `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
   display: flex;
   flex-direction: row;
@@ -49245,7 +49410,7 @@ PersistentObjectAttributeIcon = __decorate([
 PersistentObjectAttribute.registerAttributeType("Icon", PersistentObjectAttributeIcon);
 
 let PersistentObjectAttributeImageDialog = class PersistentObjectAttributeImageDialog extends Dialog {
-    static get template() { return Dialog.dialogTemplate(html$2 `<style>:host main {
+    static get template() { return Dialog.dialogTemplate(html$3 `<style>:host main {
   position: relative;
   overflow: hidden;
   min-width: var(--theme-h1);
@@ -49330,7 +49495,7 @@ PersistentObjectAttributeImageDialog = __decorate([
 ], PersistentObjectAttributeImageDialog);
 
 let PersistentObjectAttributeImage = class PersistentObjectAttributeImage extends PersistentObjectAttribute {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   flex-direction: row;
   position: relative;
@@ -49504,7 +49669,7 @@ PersistentObjectAttributeImage = __decorate([
 PersistentObjectAttribute.registerAttributeType("Image", PersistentObjectAttributeImage);
 
 let PersistentObjectAttributeKeyValueList = class PersistentObjectAttributeKeyValueList extends PersistentObjectAttribute {
-    static get template() { return html$2 `<style include="vi-persistent-object-attribute-style-module"></style>
+    static get template() { return html$3 `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
   display: flex;
   flex-direction: row;
@@ -49633,7 +49798,7 @@ PersistentObjectAttributeKeyValueList = __decorate([
 PersistentObjectAttribute.registerAttributeType("KeyValueList", PersistentObjectAttributeKeyValueList);
 
 let PersistentObjectAttributeMultiLineString = class PersistentObjectAttributeMultiLineString extends PersistentObjectAttribute {
-    static get template() { return html$2 `<style include="vi-persistent-object-attribute-style-module"></style>
+    static get template() { return html$3 `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
   display: flex;
   flex-direction: row;
@@ -49690,7 +49855,7 @@ PersistentObjectAttributeMultiLineString = __decorate([
 PersistentObjectAttribute.registerAttributeType("MultiLineString", PersistentObjectAttributeMultiLineString);
 
 let PersistentObjectAttributeMultiStringItem = class PersistentObjectAttributeMultiStringItem extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   flex-direction: row;
   margin-bottom: 2px;
@@ -49814,7 +49979,7 @@ PersistentObjectAttributeMultiStringItem = __decorate([
 ], PersistentObjectAttributeMultiStringItem);
 
 let Tags = class Tags extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   flex-direction: row;
 }
@@ -49937,7 +50102,7 @@ PersistentObjectAttributeMultiStringItems = __decorate([
     WebComponent.register()
 ], PersistentObjectAttributeMultiStringItems);
 let PersistentObjectAttributeMultiString = class PersistentObjectAttributeMultiString extends PersistentObjectAttribute {
-    static get template() { return html$2 `<style include="vi-persistent-object-attribute-style-module"></style>
+    static get template() { return html$3 `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
   display: flex;
   flex-direction: row;
@@ -50164,7 +50329,7 @@ PersistentObjectAttributeMultiString = __decorate([
 PersistentObjectAttribute.registerAttributeType("MultiString", PersistentObjectAttributeMultiString);
 
 let PersistentObjectAttributeNullableBoolean = class PersistentObjectAttributeNullableBoolean extends PersistentObjectAttribute {
-    static get template() { return html$2 `<style include="vi-persistent-object-attribute-style-module"></style>
+    static get template() { return html$3 `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -50254,7 +50419,7 @@ PersistentObjectAttribute.registerAttributeType("NullableBoolean", PersistentObj
 var PersistentObjectAttributeNumeric_1;
 let PersistentObjectAttributeNumeric = class PersistentObjectAttributeNumeric extends PersistentObjectAttribute {
     static { PersistentObjectAttributeNumeric_1 = this; }
-    static get template() { return html$2 `<style include="vi-persistent-object-attribute-style-module"></style>
+    static get template() { return html$3 `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
   display: flex;
   flex-direction: row;
@@ -50539,7 +50704,7 @@ PersistentObjectAttribute.registerAttributeType("Numeric", PersistentObjectAttri
 const numericSynonyms = {};
 
 let PersistentObjectAttributePassword = class PersistentObjectAttributePassword extends PersistentObjectAttribute {
-    static get template() { return html$2 `<style include="vi-persistent-object-attribute-style-module"></style>
+    static get template() { return html$3 `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
   display: flex;
   flex-direction: row;
@@ -50588,7 +50753,7 @@ PersistentObjectAttributePassword = __decorate([
 PersistentObjectAttribute.registerAttributeType("Password", PersistentObjectAttributePassword);
 
 let PersistentObjectAttributeReference = class PersistentObjectAttributeReference extends PersistentObjectAttribute {
-    static get template() { return html$2 `<style include="vi-persistent-object-attribute-style-module"></style>
+    static get template() { return html$3 `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
   display: flex;
   flex-direction: row;
@@ -50958,7 +51123,7 @@ PersistentObjectAttributeReference = __decorate([
 PersistentObjectAttribute.registerAttributeType("Reference", PersistentObjectAttributeReference);
 
 let PersistentObjectAttributeString = class PersistentObjectAttributeString extends PersistentObjectAttribute {
-    static get template() { return html$2 `<style include="vi-persistent-object-attribute-style-module"></style>
+    static get template() { return html$3 `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
   display: flex;
   flex-direction: row;
@@ -51220,7 +51385,7 @@ PersistentObjectAttributeString = __decorate([
 PersistentObjectAttribute.registerAttributeType("String", PersistentObjectAttributeString);
 
 let PersistentObjectAttributeTranslatedStringDialog = class PersistentObjectAttributeTranslatedStringDialog extends Dialog {
-    static get template() { return Dialog.dialogTemplate(html$2 `<style>:host ul {
+    static get template() { return Dialog.dialogTemplate(html$3 `<style>:host ul {
   margin: 0;
   padding: var(--theme-h4);
   list-style: none;
@@ -51332,7 +51497,7 @@ PersistentObjectAttributeTranslatedStringDialog = __decorate([
 ], PersistentObjectAttributeTranslatedStringDialog);
 
 let PersistentObjectAttributeTranslatedString = class PersistentObjectAttributeTranslatedString extends PersistentObjectAttribute {
-    static get template() { return html$2 `<style include="vi-persistent-object-attribute-style-module"></style>
+    static get template() { return html$3 `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
   display: flex;
   flex-direction: row;
@@ -51488,7 +51653,7 @@ PersistentObjectAttributeTranslatedString = __decorate([
 PersistentObjectAttribute.registerAttributeType("TranslatedString", PersistentObjectAttributeTranslatedString);
 
 let PersistentObjectAttributeUser = class PersistentObjectAttributeUser extends PersistentObjectAttribute {
-    static get template() { return html$2 `<style include="vi-persistent-object-attribute-style-module"></style>
+    static get template() { return html$3 `<style include="vi-persistent-object-attribute-style-module"></style>
 <style>:host {
   display: flex;
   flex-direction: row;
@@ -51580,7 +51745,7 @@ PersistentObjectAttributeUser = __decorate([
 PersistentObjectAttribute.registerAttributeType("User", PersistentObjectAttributeUser);
 
 let PersistentObjectAttributeLabel = class PersistentObjectAttributeLabel extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   flex-direction: row;
   align-items: flex-end;
@@ -51775,7 +51940,7 @@ document.addEventListener("keyup", e => {
     developerShortcut.state = e.ctrlKey && e.altKey;
 });
 let PersistentObjectAttributePresenter = class PersistentObjectAttributePresenter extends ConfigurableWebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: block;
   white-space: nowrap;
   color: #222;
@@ -52126,7 +52291,7 @@ let PersistentObjectGroup = class PersistentObjectGroup extends WebComponent {
         this._asyncHandles = [];
         this._presentersLoading = 0;
     }
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: block;
   padding: var(--vi-persistent-object-group--attribute-padding, 0 var(--theme-h4));
 }
@@ -52382,7 +52547,7 @@ PersistentObjectGroup = __decorate([
 ], PersistentObjectGroup);
 
 let PersistentObjectTab = class PersistentObjectTab extends ConfigurableWebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   flex-direction: row;
 }
@@ -52524,7 +52689,7 @@ PersistentObjectTab = __decorate([
 ], PersistentObjectTab);
 
 let PersistentObjectTabPresenter = class PersistentObjectTabPresenter extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   flex-direction: row;
   position: relative;
@@ -52611,7 +52776,7 @@ PersistentObjectTabPresenter = __decorate([
 ], PersistentObjectTabPresenter);
 
 let PersistentObjectDialog = class PersistentObjectDialog extends Dialog {
-    static get template() { return Dialog.dialogTemplate(html$2 `<style>:host {
+    static get template() { return Dialog.dialogTemplate(html$3 `<style>:host {
   --vi-persistent-object-dialog-base-width-base: 400px;
 }
 :host main {
@@ -52811,7 +52976,7 @@ PersistentObjectDialog = __decorate([
 ], PersistentObjectDialog);
 
 let PersistentObjectWizardDialog = class PersistentObjectWizardDialog extends Dialog {
-    static get template() { return Dialog.dialogTemplate(html$2 `<style>:host {
+    static get template() { return Dialog.dialogTemplate(html$3 `<style>:host {
   --vi-persistent-object-dialog-base-width-base: 400px;
 }
 :host header {
@@ -53121,7 +53286,7 @@ var App_1;
 let App = App_1 = class App extends AppBase {
     static get template() {
         const baseTemplate = AppBase.template;
-        baseTemplate.content.appendChild(html$2 `<style>:host {
+        baseTemplate.content.appendChild(html$3 `<style>:host {
   display: flex;
   width: 100vw;
   height: 100vh;
@@ -53426,7 +53591,7 @@ App = App_1 = __decorate([
 ], App);
 
 let Overflow = class Overflow extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   height: var(--theme-h1);
   line-height: var(--theme-h1);
   -webkit-touch-callout: none;
@@ -53547,7 +53712,7 @@ Overflow = __decorate([
 ], Overflow);
 
 let ActionBar = class ActionBar extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -53715,7 +53880,7 @@ ActionBar = __decorate([
 ], ActionBar);
 
 let Audit = class Audit extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   flex-direction: column;
   --vi-audit-spacing: var(--theme-h2);
@@ -54276,7 +54441,7 @@ var audit = /*#__PURE__*/Object.freeze({
 });
 
 let FileDrop = class FileDrop extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: block;
   position: relative;
 }
@@ -54514,7 +54679,7 @@ var DEFAULT_PHYSICAL_COUNT = 3;
 var HIDDEN_Y = '-10000px';
 var SECRET_TABINDEX = -100;
 Polymer({
-  _template: html$2`
+  _template: html$3`
     <style>
       :host {
         display: block;
@@ -55616,7 +55781,7 @@ Polymer({
 });
 
 let List = class List extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   position: relative;
   display: flex;
   flex-direction: row;
@@ -55680,7 +55845,7 @@ List = __decorate([
 ], List);
 
 let PersistentObjectTabBarItem = class PersistentObjectTabBarItem extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   line-height: var(--theme-h1);
   height: var(--theme-h1);
   align-items: flex-end;
@@ -55791,7 +55956,7 @@ PersistentObjectTabBarItem = __decorate([
 ], PersistentObjectTabBarItem);
 
 let PersistentObjectTabBar = class PersistentObjectTabBar extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: block;
   position: relative;
   line-height: var(--theme-h1);
@@ -55863,7 +56028,7 @@ PersistentObjectTabBar = __decorate([
 ], PersistentObjectTabBar);
 
 let PersistentObject = class PersistentObject extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   flex-direction: column-reverse;
   --vi-persistent-object-master-width: 40%;
@@ -56304,7 +56469,7 @@ PersistentObject = __decorate([
     })
 ], PersistentObject);
 let PersistentObjectDetailsContent = class PersistentObjectDetailsContent extends WebComponent {
-    static get template() { return html$2 `<style>
+    static get template() { return html$3 `<style>
     :host {
         --color: var(--theme-accent-color);
         --color-light: var(--theme-accent-color-light);
@@ -56335,7 +56500,7 @@ PersistentObjectDetailsContent = __decorate([
     })
 ], PersistentObjectDetailsContent);
 let PersistentObjectDetailsHeader = class PersistentObjectDetailsHeader extends WebComponent {
-    static get template() { return html$2 `<style>
+    static get template() { return html$3 `<style>
     :host {
         --color: var(--theme-accent-color);
         --color-light: var(--theme-accent-color-light);
@@ -56363,7 +56528,7 @@ PersistentObjectDetailsHeader = __decorate([
 ], PersistentObjectDetailsHeader);
 
 let PersistentObjectPresenter = class PersistentObjectPresenter extends ConfigurableWebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   flex-direction: row;
 }
@@ -56602,7 +56767,7 @@ PersistentObjectPresenter = __decorate([
 let renderCallback = null;
 
 let ProgramUnitPresenter = class ProgramUnitPresenter extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: block;
   position: relative;
 }</style>
@@ -56654,7 +56819,7 @@ ProgramUnitPresenter = __decorate([
 ], ProgramUnitPresenter);
 
 let QueryChartSelector = class QueryChartSelector extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   border-left: 1px solid #EAEAEA;
   margin-left: var(--theme-h5);
@@ -56732,7 +56897,7 @@ class ChartType {
 }
 
 let Query = class Query extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto auto auto minmax(0, 1fr);
@@ -56843,7 +57008,7 @@ Query = __decorate([
 ], Query);
 
 let QueryPresenter = class QueryPresenter extends WebComponent {
-    static get template() { return html$2 `<style>:host {
+    static get template() { return html$3 `<style>:host {
   display: flex;
   flex-direction: row;
   position: relative;
