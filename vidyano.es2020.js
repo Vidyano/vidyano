@@ -11173,7 +11173,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.16.2";
+let version$2 = "3.17.0";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -25036,15 +25036,54 @@ class AppColor {
     }
 }
 
+let Config = class Config extends WebComponent {
+};
+Config = __decorate([
+    WebComponent.register({
+        properties: {
+            key: {
+                type: String,
+                reflectToAttribute: true
+            },
+            value: {
+                type: String,
+                reflectToAttribute: true
+            }
+        }
+    })
+], Config);
+
+var _TemplateConfig_configs, _TemplateConfig_configObserver;
 let TemplateConfig = class TemplateConfig extends WebComponent {
     constructor() {
         super();
+        _TemplateConfig_configs.set(this, {});
+        _TemplateConfig_configObserver.set(this, void 0);
         this.setAttribute("slot", "vi-app-config");
     }
     connectedCallback() {
         super.connectedCallback();
         this.setAttribute("slot", "vi-app-config");
         this._setHasTemplate(!!(this.__template = this.querySelector("template")));
+        __classPrivateFieldSet(this, _TemplateConfig_configs, Array.from(this.querySelectorAll("vi-config")).reduce((configs, config) => {
+            configs[config.key] = config.value;
+            return configs;
+        }, {}), "f");
+        __classPrivateFieldSet(this, _TemplateConfig_configObserver, new MutationObserver(mutations => {
+            mutations.forEach(mutation => {
+                if (mutation.type === "attributes") {
+                    const config = mutation.target;
+                    this.configs[config.key] = config.value;
+                }
+            });
+        }), "f");
+    }
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        __classPrivateFieldGet(this, _TemplateConfig_configObserver, "f").disconnect();
+    }
+    get configs() {
+        return __classPrivateFieldGet(this, _TemplateConfig_configs, "f");
     }
     get template() {
         return this.__template;
@@ -25058,6 +25097,8 @@ let TemplateConfig = class TemplateConfig extends WebComponent {
         return new templateClass(model).root;
     }
 };
+_TemplateConfig_configs = new WeakMap();
+_TemplateConfig_configObserver = new WeakMap();
 TemplateConfig = __decorate([
     WebComponent.register({
         properties: {
@@ -52861,10 +52902,43 @@ let PersistentObjectDialog = class PersistentObjectDialog extends Dialog {
 :host([is-tablet]) main, :host([is-tablet]) vi-notification, :host([is-desktop]) main, :host([is-desktop]) vi-notification {
   min-width: 400px;
   max-width: var(--vi-persistent-object-dialog-computed-width);
+}
+
+header nav {
+  display: flex;
+  gap: var(--theme-h5);
+  margin: calc(var(--theme-h5) * -1) calc(var(--theme-h4) * -1) calc(var(--theme-h5) * -1) var(--theme-h4);
+}
+header nav span {
+  align-self: center;
+}
+header nav vi-button {
+  width: var(--theme-h1);
+}
+
+footer vi-button.cancel {
+  display: grid;
+  grid-template-areas: "stack";
+  justify-items: center;
+}
+footer vi-button.cancel span {
+  grid-area: stack;
+}
+footer vi-button.cancel span[hide] {
+  visibility: hidden;
 }</style>
 
 <header class="horizontal layout">
     <h4 class="flex">[[persistentObject.breadcrumb]]</h4>
+    <dom-if if="[[showNavigation]]">
+        <template>
+            <nav class="layout horizontal">
+                <span>[[_getNavigationIndex(persistentObject)]]</span>
+                <vi-button icon="ChevronLeft" inverse data-direction="previous" on-tap="_navigate" busy$="[[isBusy]]" disabled$="[[isBusy]]"></vi-button>
+                <vi-button icon="ChevronRight" inverse data-direction="next" on-tap="_navigate" busy$="[[isBusy]]" disabled$="[[isBusy]]"></vi-button>
+            </nav>
+        </template>
+    </dom-if>
 </header>
 <vi-notification service-object="[[persistentObject]]"></vi-notification>
 <main id="main">
@@ -52882,7 +52956,19 @@ let PersistentObjectDialog = class PersistentObjectDialog extends Dialog {
         <dom-if if="[[!readOnly]]">
             <template>
                 <vi-button on-tap="_save" action-type="Default" label="[[saveLabel]]" disabled$="[[!canSave]]"></vi-button>
-                <vi-button inverse on-tap="_cancel" label="[[translateMessage('Cancel', isConnected)]]" disabled$="[[persistentObject.isBusy]]" hidden$="[[options.noCancel]]"></vi-button>
+                <vi-button class="cancel" inverse on-tap="_cancel" disabled$="[[persistentObject.isBusy]]" hidden$="[[options.noCancel]]">
+                    <dom-if if="[[!showNavigation]]">
+                        <template>
+                            <span>[[translateMessage('Cancel', isConnected)]]</span>
+                        </template>
+                    </dom-if>
+                    <dom-if if="[[showNavigation]]">
+                        <template>
+                            <span hide$="[[persistentObject.isDirty]]">Close</span>
+                            <span hide$="[[!persistentObject.isDirty]]">[[translateMessage('Cancel', isConnected)]]</span>
+                        </template>
+                    </dom-if>
+                </vi-button>
             </template>
         </dom-if>
         <dom-if if="[[readOnly]]">
@@ -52930,6 +53016,11 @@ let PersistentObjectDialog = class PersistentObjectDialog extends Dialog {
         }
     }
     _cancel() {
+        if (this.showNavigation && this.persistentObject.isDirty) {
+            this.persistentObject.cancelEdit();
+            this.persistentObject.beginEdit();
+            return;
+        }
         if (this.options.cancel)
             this.options.cancel(() => this.cancel());
         else if (this.persistentObject) {
@@ -52939,6 +53030,11 @@ let PersistentObjectDialog = class PersistentObjectDialog extends Dialog {
     }
     _computeCanSave(isBusy, canExecute) {
         return !isBusy && canExecute;
+    }
+    _computeCancelLabel(app, isDirty) {
+        if (!app)
+            return null;
+        return isDirty ? this.translateMessage("Cancel") : this.translateMessage("Close");
     }
     _computeSaveLabel(app) {
         if (!app)
@@ -52968,6 +53064,56 @@ let PersistentObjectDialog = class PersistentObjectDialog extends Dialog {
     }
     _computeHideCancel(readOnly, noCancel) {
         return readOnly || noCancel;
+    }
+    _computeShowNavigation(persistentObject, app) {
+        const config = app.configuration.getPersistentObjectConfig(persistentObject);
+        if (!config)
+            return false;
+        return Boolean.parse(config.configs["show-dialog-navigation"]);
+    }
+    _getNavigationIndex(persistentObject) {
+        if (!persistentObject.ownerQuery)
+            return;
+        const index = persistentObject.ownerQuery.items.findIndex(i => i.id === persistentObject.objectId);
+        return `${index + 1} / ${persistentObject.ownerQuery.totalItems}${persistentObject.ownerQuery.hasMore ? "+" : ""}`;
+    }
+    async _navigate(e) {
+        if (this.persistentObject.isDirty) {
+            const result = await this.app.showMessageDialog({
+                title: this.service.getTranslatedMessage("PageWithUnsavedChanges"),
+                noClose: true,
+                message: this.service.getTranslatedMessage("ConfirmLeavePage"),
+                actions: [
+                    this.service.getTranslatedMessage("StayOnThisPage"),
+                    this.service.getTranslatedMessage("LeaveThisPage")
+                ]
+            });
+            if (result !== 1)
+                return;
+        }
+        let index = this.persistentObject.ownerQuery.items.findIndex(i => i.id === this.persistentObject.objectId);
+        index += (e.target.getAttribute("data-direction") === "previous" ? -1 : 1);
+        if (!this.persistentObject.ownerQuery.hasMore)
+            index = (index + this.persistentObject.ownerQuery.totalItems) % this.persistentObject.ownerQuery.totalItems;
+        if (index < 0)
+            return;
+        const currentPath = this.app.path;
+        try {
+            let targetItem = this.persistentObject.ownerQuery.items[index] || await (this.persistentObject.ownerQuery.getItemsByIndex(index))[0];
+            if (targetItem == null) {
+                targetItem = await this.persistentObject.ownerQuery.queueWork(async () => {
+                    return this.persistentObject.ownerQuery.items[index];
+                });
+                if (targetItem == null)
+                    return;
+            }
+            if (currentPath !== this.app.path)
+                return;
+            this.persistentObject = await targetItem.getPersistentObject(true);
+        }
+        catch (e) {
+            this.app.showAlert(e, "Error");
+        }
     }
     _executeExtraAction(e) {
         const action = e.model.action;
@@ -53003,6 +53149,10 @@ PersistentObjectDialog = __decorate([
                 type: Boolean,
                 computed: "_computeCanSave(persistentObject.isBusy, persistentObject.dialogSaveAction.canExecute)"
             },
+            cancelLabel: {
+                type: String,
+                computed: "_computeCancelLabel(app, persistentObject.isDirty)"
+            },
             saveLabel: {
                 type: String,
                 computed: "_computeSaveLabel(app)"
@@ -53014,10 +53164,15 @@ PersistentObjectDialog = __decorate([
             options: {
                 type: Object,
                 readOnly: true
-            }
+            },
+            showNavigation: {
+                type: Boolean,
+                computed: "_computeShowNavigation(persistentObject, app)"
+            },
         },
         forwardObservers: [
             "persistentObject.isBusy",
+            "persistentObject.isDirty",
             "persistentObject.dialogSaveAction.canExecute"
         ],
         listeners: {
@@ -56110,8 +56265,9 @@ let PersistentObject = class PersistentObject extends WebComponent {
 :host header vi-spinner {
   align-self: center;
 }
-:host header nav span {
-  margin-right: var(--theme-h5);
+:host header nav {
+  display: flex;
+  gap: var(--theme-h5);
 }
 :host header nav vi-button {
   width: var(--theme-h1);
@@ -56385,10 +56541,10 @@ let PersistentObject = class PersistentObject extends WebComponent {
         return !!config.hideActionBar;
     }
     _getNavigationIndex(persistentObject) {
-        if (!this.persistentObject.ownerQuery)
+        if (!persistentObject.ownerQuery)
             return;
-        const index = this.persistentObject.ownerQuery.items.findIndex(i => i.id === this.persistentObject.objectId);
-        return `${index + 1} / ${this.persistentObject.ownerQuery.totalItems}${this.persistentObject.ownerQuery.hasMore ? "+" : ""}`;
+        const index = persistentObject.ownerQuery.items.findIndex(i => i.id === persistentObject.objectId);
+        return `${index + 1} / ${persistentObject.ownerQuery.totalItems}${persistentObject.ownerQuery.hasMore ? "+" : ""}`;
     }
     async _navigate(e) {
         let index = this.persistentObject.ownerQuery.items.findIndex(i => i.id === this.persistentObject.objectId);

@@ -10506,6 +10506,7 @@ declare namespace polymer {
 }
 
 declare abstract class TemplateConfig<T> extends WebComponent {
+    #private;
     private __template;
     readonly hasTemplate: boolean;
     private _setHasTemplate;
@@ -10513,6 +10514,8 @@ declare abstract class TemplateConfig<T> extends WebComponent {
     asModel: (model: T) => any;
     constructor();
     connectedCallback(): void;
+    disconnectedCallback(): void;
+    get configs(): Record<string, string>;
     get template(): HTMLTemplateElement;
     stamp(obj: T, as?: string, asModel?: (model: T) => any): DocumentFragment;
 }
@@ -12649,16 +12652,21 @@ declare class PersistentObjectDialog extends Dialog {
     readonly options: IPersistentObjectDialogOptions;
     private _setOptions;
     tab: PersistentObjectAttributeTab;
+    readonly showNavigation: boolean;
     constructor(persistentObject: PersistentObject$1, _options?: IPersistentObjectDialogOptions);
     private _keyboardSave;
     private _save;
     private _cancel;
     private _computeCanSave;
+    private _computeCancelLabel;
     private _computeSaveLabel;
     private _computeTab;
     private _computeReadOnly;
     private _computeDialogActions;
     private _computeHideCancel;
+    private _computeShowNavigation;
+    private _getNavigationIndex;
+    private _navigate;
     private _executeExtraAction;
     private _onCaptureTab;
     private _tabInnerSizeChanged;
