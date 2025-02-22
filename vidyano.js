@@ -11149,7 +11149,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.17.0";
+let version$2 = "3.17.1";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -52934,7 +52934,7 @@ footer vi-button.cancel span[hide] {
     }
     async _save() {
         if (this.options.save)
-            this.options.save(this.persistentObject, () => this.close(this.persistentObject));
+            this.options.save(this.persistentObject, () => this._close(this.persistentObject));
         else {
             const wasNew = this.persistentObject.isNew;
             await this.persistentObject.dialogSaveAction.execute();
@@ -52943,19 +52943,26 @@ footer vi-button.cancel span[hide] {
                     try {
                         const po2 = await this.persistentObject.queueWork(() => this.persistentObject.service.getPersistentObject(this.persistentObject.parent, this.persistentObject.id, this.persistentObject.objectId));
                         this.persistentObject.service.hooks.onOpen(po2, true);
-                        this.close(this.persistentObject);
+                        this._close(this.persistentObject);
                     }
                     catch (e) {
-                        this.close(this.persistentObject);
+                        this._close(this.persistentObject);
                         const owner = this.persistentObject.ownerQuery || this.persistentObject.parent;
                         if (!!owner)
                             owner.setNotification(e);
                     }
                 }
                 else
-                    this.close(this.persistentObject);
+                    this._close(this.persistentObject);
             }
         }
+    }
+    _close(persistentObject) {
+        if (!this.showNavigation) {
+            this.close(persistentObject);
+            return;
+        }
+        this.persistentObject.beginEdit();
     }
     _cancel() {
         if (this.showNavigation && this.persistentObject.isDirty) {

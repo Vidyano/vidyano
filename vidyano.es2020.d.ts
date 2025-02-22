@@ -12656,6 +12656,7 @@ declare class PersistentObjectDialog extends Dialog {
     constructor(persistentObject: PersistentObject$1, _options?: IPersistentObjectDialogOptions);
     private _keyboardSave;
     private _save;
+    private _close;
     private _cancel;
     private _computeCanSave;
     private _computeCancelLabel;
