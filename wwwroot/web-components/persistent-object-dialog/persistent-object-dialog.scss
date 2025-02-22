@@ -40,3 +40,32 @@ $min-main-width: 400px;
         }
     }
 }
+
+header nav {
+    display: flex;
+    gap: var(--theme-h5);
+
+    margin: calc(var(--theme-h5) * -1) calc(var(--theme-h4) * -1) calc(var(--theme-h5) * -1) var(--theme-h4);
+
+    span {
+        align-self: center;
+    }
+
+    vi-button {
+        width: var(--theme-h1);
+    }
+}
+
+footer vi-button.cancel {
+    display: grid;
+    grid-template-areas: "stack";
+    justify-items: center;
+
+    span {
+        grid-area: stack;
+        
+        &[hide] {
+            visibility: hidden;
+        }
+    }
+}

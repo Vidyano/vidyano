@@ -333,13 +333,19 @@ export class PersistentObject extends WebComponent implements IPersistentObjectW
         return !!config.hideActionBar;
     }
 
+    /**
+     * Returns the navigation index of the persistent object within its owner query.
+     * 
+     * @param {Vidyano.PersistentObject} persistentObject - The persistent object to get the navigation index for.
+     * @returns {string | undefined} The navigation index in the format "currentIndex / totalItems" or undefined if there is no owner query.
+     */
     private _getNavigationIndex(persistentObject: Vidyano.PersistentObject) {
-        if (!this.persistentObject.ownerQuery)
+        if (!persistentObject.ownerQuery)
             return;
 
-        const index = this.persistentObject.ownerQuery.items.findIndex(i => i.id === this.persistentObject.objectId);
-        
-        return `${index + 1} / ${this.persistentObject.ownerQuery.totalItems}${this.persistentObject.ownerQuery.hasMore ? "+" : ""}`;
+        // Find the index of the persistent object within the owner query
+        const index = persistentObject.ownerQuery.items.findIndex(i => i.id === persistentObject.objectId);
+        return `${index + 1} / ${persistentObject.ownerQuery.totalItems}${persistentObject.ownerQuery.hasMore ? "+" : ""}`;
     }
 
     private async _navigate(e: Polymer.Gestures.TapEvent) {

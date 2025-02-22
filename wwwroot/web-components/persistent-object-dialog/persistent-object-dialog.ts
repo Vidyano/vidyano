@@ -1,6 +1,7 @@
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import * as Polymer from "../../libs/polymer/polymer.js"
 import { App } from "../app/app.js"
+import { Button } from "../button/button.js"
 import { Dialog } from "../dialog/dialog.js"
 import "../notification/notification.js"
 import "../persistent-object-tab-presenter/persistent-object-tab-presenter.js"
@@ -30,6 +31,10 @@ export interface IPersistentObjectDialogOptions {
             type: Boolean,
             computed: "_computeCanSave(persistentObject.isBusy, persistentObject.dialogSaveAction.canExecute)"
         },
+        cancelLabel: {
+            type: String,
+            computed: "_computeCancelLabel(app, persistentObject.isDirty)"
+        },
         saveLabel: {
             type: String,
             computed: "_computeSaveLabel(app)"
@@ -41,10 +46,15 @@ export interface IPersistentObjectDialogOptions {
         options: {
             type: Object,
             readOnly: true
-        }
+        },
+        showNavigation: {
+            type: Boolean,
+            computed: "_computeShowNavigation(persistentObject, app)"
+        },
     },
     forwardObservers: [
         "persistentObject.isBusy",
+        "persistentObject.isDirty",
         "persistentObject.dialogSaveAction.canExecute"
     ],
     listeners: {
@@ -61,6 +71,7 @@ export class PersistentObjectDialog extends Dialog {
     private _saveHook: (po: Vidyano.PersistentObject) => Promise<any>;
     readonly options: IPersistentObjectDialogOptions; private _setOptions: (options: IPersistentObjectDialogOptions) => void;
     tab: Vidyano.PersistentObjectAttributeTab;
+    readonly showNavigation: boolean;
 
     constructor(public persistentObject: Vidyano.PersistentObject, _options: IPersistentObjectDialogOptions = {}) {
         super();
@@ -105,6 +116,12 @@ export class PersistentObjectDialog extends Dialog {
     }
 
     private _cancel() {
+        if (this.showNavigation && this.persistentObject.isDirty) {
+            this.persistentObject.cancelEdit();
+            this.persistentObject.beginEdit();
+            return;
+        }
+
         if (this.options.cancel)
             this.options.cancel(() => this.cancel());
         else if (this.persistentObject) {
@@ -115,6 +132,13 @@ export class PersistentObjectDialog extends Dialog {
 
     private _computeCanSave(isBusy: boolean, canExecute: boolean): boolean {
         return !isBusy && canExecute;
+    }
+
+    private _computeCancelLabel(app: App, isDirty: boolean): string {
+        if (!app)
+            return null;
+
+        return isDirty ? this.translateMessage("Cancel") : this.translateMessage("Close");
     }
 
     private _computeSaveLabel(app: App): string {
@@ -154,6 +178,77 @@ export class PersistentObjectDialog extends Dialog {
 
     private _computeHideCancel(readOnly: boolean, noCancel: boolean): boolean {
         return readOnly || noCancel;
+    }
+
+    private _computeShowNavigation(persistentObject: Vidyano.PersistentObject, app: App): boolean {
+        const config = app.configuration.getPersistentObjectConfig(persistentObject);
+        if (!config)
+            return false;
+
+        return Boolean.parse(config.configs["show-dialog-navigation"]);
+    }
+
+    /**
+     * Returns the navigation index of the persistent object within its owner query.
+     * 
+     * @param {Vidyano.PersistentObject} persistentObject - The persistent object to get the navigation index for.
+     * @returns {string | undefined} The navigation index in the format "currentIndex / totalItems" or undefined if there is no owner query.
+     */
+    private _getNavigationIndex(persistentObject: Vidyano.PersistentObject) {
+        if (!persistentObject.ownerQuery)
+            return;
+
+        // Find the index of the persistent object within the owner query
+        const index = persistentObject.ownerQuery.items.findIndex(i => i.id === persistentObject.objectId);
+        return `${index + 1} / ${persistentObject.ownerQuery.totalItems}${persistentObject.ownerQuery.hasMore ? "+" : ""}`;
+    }
+
+    private async _navigate(e: Polymer.Gestures.TapEvent) {
+        if (this.persistentObject.isDirty) {
+            const result = await this.app.showMessageDialog( {
+                title: this.service.getTranslatedMessage("PageWithUnsavedChanges"),
+                noClose: true,
+                message: this.service.getTranslatedMessage("ConfirmLeavePage"),
+                actions: [
+                    this.service.getTranslatedMessage("StayOnThisPage"), // 0
+                    this.service.getTranslatedMessage("LeaveThisPage") // 1
+                ]
+            });
+
+            if (result !== 1)
+                return;
+        }
+
+        let index = this.persistentObject.ownerQuery.items.findIndex(i => i.id === this.persistentObject.objectId);
+        index += ((e.target as Button).getAttribute("data-direction") === "previous" ? -1 : 1);
+
+        if (!this.persistentObject.ownerQuery.hasMore)
+            index = (index + this.persistentObject.ownerQuery.totalItems) % this.persistentObject.ownerQuery.totalItems;
+
+        if (index < 0)
+            return;
+
+        const currentPath = this.app.path;
+        try {
+            let targetItem: Vidyano.QueryResultItem = this.persistentObject.ownerQuery.items[index] || await (this.persistentObject.ownerQuery.getItemsByIndex(index))[0];
+            if (targetItem == null) {
+                targetItem = await this.persistentObject.ownerQuery.queueWork(async () => { 
+                    return this.persistentObject.ownerQuery.items[index];
+                });
+
+                if (targetItem == null)
+                    return;
+            }
+
+            // Check if the user navigated while the item was loading
+            if (currentPath !== this.app.path)
+                return;
+
+            this.persistentObject = await targetItem.getPersistentObject(true);
+        }
+        catch (e) {
+            this.app.showAlert(e, "Error")
+        }
     }
 
     private _executeExtraAction(e: Polymer.Gestures.TapEvent) {

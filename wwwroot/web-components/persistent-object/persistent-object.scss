@@ -18,9 +18,8 @@
         }
 
         nav {
-            span {
-                margin-right: var(--theme-h5);
-            }
+            display: flex;
+            gap: var(--theme-h5);
 
             vi-button {
                 width: var(--theme-h1);
