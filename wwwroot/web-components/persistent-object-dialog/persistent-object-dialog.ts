@@ -90,7 +90,7 @@ export class PersistentObjectDialog extends Dialog {
 
     private async _save() {
         if (this.options.save)
-            this.options.save(this.persistentObject, () => this.close(this.persistentObject));
+            this.options.save(this.persistentObject, () => this._close(this.persistentObject));
         else {
             const wasNew = this.persistentObject.isNew;
             await this.persistentObject.dialogSaveAction.execute();
@@ -100,19 +100,28 @@ export class PersistentObjectDialog extends Dialog {
                     try {
                         const po2 = await this.persistentObject.queueWork(() => this.persistentObject.service.getPersistentObject(this.persistentObject.parent, this.persistentObject.id, this.persistentObject.objectId));
                         this.persistentObject.service.hooks.onOpen(po2, true);
-                        this.close(this.persistentObject);
+                        this._close(this.persistentObject);
                     }
                     catch (e) {
-                        this.close(this.persistentObject);
+                        this._close(this.persistentObject);
                         const owner: Vidyano.ServiceObjectWithActions = this.persistentObject.ownerQuery || this.persistentObject.parent;
                         if (!!owner)
                             owner.setNotification(e);
                     }
                 }
                 else
-                    this.close(this.persistentObject);
+                    this._close(this.persistentObject);
             }
         }
+    }
+
+    private _close(persistentObject: Vidyano.PersistentObject) {
+        if (!this.showNavigation) {
+            this.close(persistentObject);
+            return;
+        }
+        
+        this.persistentObject.beginEdit();
     }
 
     private _cancel() {
