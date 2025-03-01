@@ -11173,7 +11173,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.17.1";
+let version$2 = "3.17.2";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -53073,6 +53073,8 @@ footer vi-button.cancel span[hide] {
         return readOnly || noCancel;
     }
     _computeShowNavigation(persistentObject, app) {
+        if (!persistentObject.ownerQuery || persistentObject.isNew || persistentObject.isBulkEdit)
+            return false;
         const config = app.configuration.getPersistentObjectConfig(persistentObject);
         if (!config)
             return false;
