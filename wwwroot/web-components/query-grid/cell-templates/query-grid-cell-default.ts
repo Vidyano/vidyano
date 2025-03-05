@@ -25,28 +25,27 @@ export class QueryGridCellDefault extends QueryGridCell {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-cell-default.html">` }
 
     private _extraClass: string;
-    private _typeHints: any;
-    private _textNode: Text;
-    private _textNodeValue: string;
+    #typeHints: any;
+    #textNode: Text;
+    #textNodeValue: string;
     private _foreground: { currentValue?: any; originalValue?: any } = { currentValue: null };
     private _tag: { currentValue?: any; originalValue?: any } = { currentValue: null };
     private _textAlign: { currentValue?: any; originalValue?: any } = { currentValue: null };
     right: boolean;
     tag: boolean;
+    value: Vidyano.QueryResultItemValue;
 
-    private _valueChanged(itemValue: Vidyano.QueryResultItemValue) {
+    protected _valueChanged(itemValue: Vidyano.QueryResultItemValue) {
         this._setSensitive(itemValue?.column.isSensitive);
 
         if (!itemValue) {
-            if (this._textNode && this._textNodeValue !== "")
-                this._textNode.nodeValue = this._textNodeValue = "";
-
+            this._clearCell();
             return;
         }
 
         let value = null;
 
-        this._typeHints = Object.assign({}, itemValue.item.typeHints, itemValue ? itemValue.typeHints : undefined);
+        this.#typeHints = Object.assign({}, itemValue.item.typeHints, itemValue ? itemValue.typeHints : undefined);
         value = itemValue.item.getValue(itemValue.column.name);
         if (value != null && (itemValue.column.type === "Boolean" || itemValue.column.type === "NullableBoolean"))
             value = itemValue.item.query.service.getTranslatedMessage(value ? this._getTypeHint(itemValue.column, "truekey", "True") : this._getTypeHint(itemValue.column, "falsekey", "False"));
@@ -114,15 +113,24 @@ export class QueryGridCellDefault extends QueryGridCell {
                 this.classList.add(...this._extraClass.split(" "));
         }
 
-        if (this._textNode) {
-            if (this._textNodeValue !== value)
-                this._textNode.nodeValue = this._textNodeValue = <string>value;
-        }
-        else
-            this.$.text.appendChild(this._textNode = document.createTextNode(this._textNodeValue = <string>value));
+        this._updateCell(value);
     }
 
-    private _getTypeHint(column: Vidyano.QueryColumn, name: string, defaultValue?: string): string {
-        return column.getTypeHint(name, defaultValue, this._typeHints, true);
+    protected _clearCell() {
+        if (this.#textNode && this.#textNodeValue !== "")
+            this.#textNode.nodeValue = this.#textNodeValue = "";
+    }
+
+    protected _updateCell(value: string) {
+        if (this.#textNode) {
+            if (this.#textNodeValue !== value)
+                this.#textNode.nodeValue = this.#textNodeValue = <string>value;
+        }
+        else
+            this.$.text.appendChild(this.#textNode = document.createTextNode(this.#textNodeValue = <string>value));
+    }
+
+    protected _getTypeHint(column: Vidyano.QueryColumn, name: string, defaultValue?: string): string {
+        return column.getTypeHint(name, defaultValue, this.#typeHints, true);
     }
 }
