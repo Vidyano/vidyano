@@ -39,25 +39,34 @@ export class Marked extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="marked.html">` }
 
     private async _markdownChanged(markdown: string, breaks: boolean, gfm: boolean, addTags: string, forbidTags: string) {
-        var renderer = new marked.Renderer();
-        renderer.link = function(token) {
-            var anchor = marked.Renderer.prototype.link.call(this, token) as string;
-            if (token.href.startsWith("http"))
-                return anchor.replace("<a",`<a target="_blank" rel="noopener" `);
-
-            return anchor;
-        };
-
-        const html = await marked(markdown, {
-            breaks,
-            gfm,
-            async: false,
-            renderer: renderer
-        });
-
-        this.innerHTML = DOMPurify.sanitize(html, {
-            ADD_TAGS: addTags?.split(",") || [],
-            FORBID_TAGS: forbidTags?.split(",") || [],
-        });
+        this.innerHTML = getMarkdown(markdown, { breaks, gfm, addTags, forbidTags });
     }
+}
+
+export function getMarkdown(markdown: string, options?: {
+    breaks?: boolean;
+    gfm?: boolean;
+    addTags?: string;
+    forbidTags?: string;
+}) {
+    var renderer = new marked.Renderer();
+    renderer.link = function(token) {
+        var anchor = marked.Renderer.prototype.link.call(this, token) as string;
+        if (token.href.startsWith("http"))
+            return anchor.replace("<a",`<a target="_blank" rel="noopener" `);
+
+        return anchor;
+    };
+
+    const html = marked(markdown, {
+        breaks: options?.breaks !== false ? true : false,
+        gfm: options?.gfm !== false ? true : false,
+        async: false,
+        renderer: renderer
+    });
+
+    return DOMPurify.sanitize(html, {
+        ADD_TAGS: options?.addTags?.split(",") || [],
+        FORBID_TAGS: options?.forbidTags?.split(",") || [],
+    });
 }
