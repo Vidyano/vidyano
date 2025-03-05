@@ -12947,18 +12947,19 @@ declare class QueryGridCellBoolean extends QueryGridCell {
 }
 
 declare class QueryGridCellDefault extends QueryGridCell {
+    #private;
     static get template(): HTMLTemplateElement;
     private _extraClass;
-    private _typeHints;
-    private _textNode;
-    private _textNodeValue;
     private _foreground;
     private _tag;
     private _textAlign;
     right: boolean;
     tag: boolean;
-    private _valueChanged;
-    private _getTypeHint;
+    value: QueryResultItemValue;
+    protected _valueChanged(itemValue: QueryResultItemValue): void;
+    protected _clearCell(): void;
+    protected _updateCell(value: string): void;
+    protected _getTypeHint(column: QueryColumn, name: string, defaultValue?: string): string;
 }
 
 declare class QueryGridCellImage extends QueryGridCell {

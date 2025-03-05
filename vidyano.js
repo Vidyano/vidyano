@@ -11149,7 +11149,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.17.2";
+let version$2 = "3.18.0";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -30155,23 +30155,7 @@ let Marked = class Marked extends WebComponent {
 
 <slot></slot>`; }
     async _markdownChanged(markdown, breaks, gfm, addTags, forbidTags) {
-        var renderer = new marked.Renderer();
-        renderer.link = function (token) {
-            var anchor = marked.Renderer.prototype.link.call(this, token);
-            if (token.href.startsWith("http"))
-                return anchor.replace("<a", `<a target="_blank" rel="noopener" `);
-            return anchor;
-        };
-        const html = await marked(markdown, {
-            breaks,
-            gfm,
-            async: false,
-            renderer: renderer
-        });
-        this.innerHTML = purify.sanitize(html, {
-            ADD_TAGS: addTags?.split(",") || [],
-            FORBID_TAGS: forbidTags?.split(",") || [],
-        });
+        this.innerHTML = getMarkdown(markdown, { breaks, gfm, addTags, forbidTags });
     }
 };
 Marked = __decorate([
@@ -30200,6 +30184,25 @@ Marked = __decorate([
         ]
     })
 ], Marked);
+function getMarkdown(markdown, options) {
+    var renderer = new marked.Renderer();
+    renderer.link = function (token) {
+        var anchor = marked.Renderer.prototype.link.call(this, token);
+        if (token.href.startsWith("http"))
+            return anchor.replace("<a", `<a target="_blank" rel="noopener" `);
+        return anchor;
+    };
+    const html = marked(markdown, {
+        breaks: options?.breaks !== false ? true : false,
+        gfm: options?.gfm !== false ? true : false,
+        async: false,
+        renderer: renderer
+    });
+    return purify.sanitize(html, {
+        ADD_TAGS: options?.addTags?.split(",") || [],
+        FORBID_TAGS: options?.forbidTags?.split(",") || [],
+    });
+}
 
 let MessageDialog = class MessageDialog extends Dialog {
     static get template() { return Dialog.dialogTemplate(html$3 `<style>:host main {
@@ -38089,15 +38092,17 @@ let QueryGridCellDefault = class QueryGridCellDefault extends QueryGridCell {
   padding: 0 var(--theme-h5);
 }</style>
 <div id="text"></div>`; }
+    #typeHints;
+    #textNode;
+    #textNodeValue;
     _valueChanged(itemValue) {
         this._setSensitive(itemValue?.column.isSensitive);
         if (!itemValue) {
-            if (this._textNode && this._textNodeValue !== "")
-                this._textNode.nodeValue = this._textNodeValue = "";
+            this._clearCell();
             return;
         }
         let value = null;
-        this._typeHints = Object.assign({}, itemValue.item.typeHints, itemValue ? itemValue.typeHints : undefined);
+        this.#typeHints = Object.assign({}, itemValue.item.typeHints, itemValue ? itemValue.typeHints : undefined);
         value = itemValue.item.getValue(itemValue.column.name);
         if (value != null && (itemValue.column.type === "Boolean" || itemValue.column.type === "NullableBoolean"))
             value = itemValue.item.query.service.getTranslatedMessage(value ? this._getTypeHint(itemValue.column, "truekey", "True") : this._getTypeHint(itemValue.column, "falsekey", "False"));
@@ -38156,15 +38161,22 @@ let QueryGridCellDefault = class QueryGridCellDefault extends QueryGridCell {
             if (!String.isNullOrEmpty(extraClass))
                 this.classList.add(...this._extraClass.split(" "));
         }
-        if (this._textNode) {
-            if (this._textNodeValue !== value)
-                this._textNode.nodeValue = this._textNodeValue = value;
+        this._updateCell(value);
+    }
+    _clearCell() {
+        if (this.#textNode && this.#textNodeValue !== "")
+            this.#textNode.nodeValue = this.#textNodeValue = "";
+    }
+    _updateCell(value) {
+        if (this.#textNode) {
+            if (this.#textNodeValue !== value)
+                this.#textNode.nodeValue = this.#textNodeValue = value;
         }
         else
-            this.$.text.appendChild(this._textNode = document.createTextNode(this._textNodeValue = value));
+            this.$.text.appendChild(this.#textNode = document.createTextNode(this.#textNodeValue = value));
     }
     _getTypeHint(column, name, defaultValue) {
-        return column.getTypeHint(name, defaultValue, this._typeHints, true);
+        return column.getTypeHint(name, defaultValue, this.#typeHints, true);
     }
 };
 QueryGridCellDefault = __decorate([
@@ -40898,6 +40910,100 @@ QueryGridCellBoolean = __decorate([
 QueryGridCell.registerCellType("Boolean", QueryGridCellBoolean);
 QueryGridCell.registerCellType("NullableBoolean", QueryGridCellBoolean);
 QueryGridCell.registerCellType("YesNo", QueryGridCellBoolean);
+
+let QueryGridCellCommonMark = class QueryGridCellCommonMark extends QueryGridCellDefault {
+    static get template() { return html$3 `<style>:host {
+  padding: 0 var(--theme-h5);
+  height: var(--vi-query-grid-row-height);
+  line-height: var(--vi-query-grid-row-height);
+  min-width: var(--theme-h2);
+}
+:host #text {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+:host([is-app-sensitive][sensitive]) #text {
+  filter: blur(5px);
+}
+:host([tag]) {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+}
+:host([tag]) #text {
+  border-radius: var(--theme-h5);
+  background-color: var(--tag-background);
+  color: var(--foreground, white);
+  line-height: var(--theme-h3);
+  padding: 0 var(--theme-h5);
+}</style>
+<style>p, ol {
+  margin: 0;
+  padding: 0;
+}
+
+a, a:visited {
+  color: inherit;
+}</style>
+<div id="text" on-click="_onClick"></div>`; }
+    #asmarkdown;
+    #textNode;
+    #textNodeValue;
+    #markdownValue;
+    _clearCell() {
+        super._clearCell();
+        if (this.#asmarkdown && this.#markdownValue) {
+            this.$.text.innerHTML = "";
+            this.#markdownValue = null;
+        }
+    }
+    _updateCell(value) {
+        const asmarkdown = this._getTypeHint(this.value.column, "displayingrid", null);
+        this.#asmarkdown = Boolean.parse(asmarkdown);
+        if (this.#asmarkdown) {
+            if (this.#textNode) {
+                this.$.text.removeChild(this.#textNode);
+                this.#textNode = this.#textNodeValue = null;
+            }
+            if (this.#markdownValue !== value)
+                this.$.text.innerHTML = getMarkdown(this.#markdownValue = value);
+            return;
+        }
+        if (this.#markdownValue) {
+            this.$.text.innerHTML = "";
+            this.#markdownValue = null;
+        }
+        super._updateCell(value);
+    }
+    _onClick(e) {
+        if (e.target?.tagName === "A")
+            e.stopPropagation();
+    }
+};
+QueryGridCellCommonMark = __decorate([
+    WebComponent.register({
+        properties: {
+            value: {
+                type: Object,
+                observer: "_valueChanged"
+            },
+            column: Object,
+            right: {
+                type: Boolean,
+                reflectToAttribute: true
+            },
+            tag: {
+                type: Boolean,
+                reflectToAttribute: true
+            }
+        },
+        sensitive: true
+    })
+], QueryGridCellCommonMark);
+QueryGridCell.registerCellType("CommonMark", QueryGridCellCommonMark);
 
 let QueryGridCellImage = class QueryGridCellImage extends QueryGridCell {
     static get template() { return html$3 `<style>:host {
