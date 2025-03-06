@@ -11149,7 +11149,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.18.0";
+let version$2 = "3.18.1";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -30143,10 +30143,14 @@ function createDOMPurify() {
 var purify = createDOMPurify();
 
 purify.addHook("afterSanitizeAttributes", function (node) {
-    if ("target" in node) {
+    if (node instanceof HTMLAnchorElement && node.getAttribute("href")?.startsWith("http")) {
         node.setAttribute("target", "_blank");
         node.setAttribute("rel", "noopener");
     }
+});
+purify.addHook('uponSanitizeAttribute', (node, data) => {
+    if (node.tagName === "VI-ICON" && data.attrName === 'source')
+        data.forceKeepAttr = true;
 });
 let Marked = class Marked extends WebComponent {
     static get template() { return html$3 `<style>:host {
@@ -30185,23 +30189,16 @@ Marked = __decorate([
     })
 ], Marked);
 function getMarkdown(markdown, options) {
-    var renderer = new marked.Renderer();
-    renderer.link = function (token) {
-        var anchor = marked.Renderer.prototype.link.call(this, token);
-        if (token.href.startsWith("http"))
-            return anchor.replace("<a", `<a target="_blank" rel="noopener" `);
-        return anchor;
-    };
     const html = marked(markdown, {
         breaks: options?.breaks !== false ? true : false,
         gfm: options?.gfm !== false ? true : false,
-        async: false,
-        renderer: renderer
+        async: false
     });
-    return purify.sanitize(html, {
+    const sanitized = purify.sanitize(html, {
         ADD_TAGS: options?.addTags?.split(",") || [],
-        FORBID_TAGS: options?.forbidTags?.split(",") || [],
+        FORBID_TAGS: options?.forbidTags?.split(",") || []
     });
+    return sanitized;
 }
 
 let MessageDialog = class MessageDialog extends Dialog {
@@ -40946,7 +40943,15 @@ let QueryGridCellCommonMark = class QueryGridCellCommonMark extends QueryGridCel
 }
 
 a, a:visited {
-  color: inherit;
+  display: inline-block;
+  line-height: var(--vi-query-grid-row-height);
+  color: var(--theme-color);
+}
+
+vi-icon {
+  display: inline-block;
+  pointer-events: all;
+  vertical-align: -2px;
 }</style>
 <div id="text" on-click="_onClick"></div>`; }
     #asmarkdown;
@@ -40968,8 +40973,11 @@ a, a:visited {
                 this.$.text.removeChild(this.#textNode);
                 this.#textNode = this.#textNodeValue = null;
             }
-            if (this.#markdownValue !== value)
-                this.$.text.innerHTML = getMarkdown(this.#markdownValue = value);
+            if (this.#markdownValue !== value) {
+                this.$.text.innerHTML = getMarkdown(this.#markdownValue = value, {
+                    addTags: "VI-ICON"
+                });
+            }
             return;
         }
         if (this.#markdownValue) {
@@ -40979,8 +40987,16 @@ a, a:visited {
         super._updateCell(value);
     }
     _onClick(e) {
-        if (e.target?.tagName === "A")
+        if (e.target instanceof HTMLAnchorElement) {
             e.stopPropagation();
+            if (!e.ctrlKey && e.target.href.startsWith(Path.routes.root || "") && !(e.target.getAttribute("rel") || "").contains("external")) {
+                e.preventDefault();
+                let path = e.target.href.slice(Path.routes.root.length);
+                if (path.startsWith("#!/"))
+                    path = path.substring(3);
+                this.app.changePath(path);
+            }
+        }
     }
 };
 QueryGridCellCommonMark = __decorate([
