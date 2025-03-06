@@ -3,6 +3,7 @@ import { QueryGridCell } from "./query-grid-cell.js"
 import { QueryGridCellDefault } from "./query-grid-cell-default.js"
 import { WebComponent } from "../../web-component/web-component.js"
 import { getMarkdown } from "../../marked/marked.js"
+import { Path } from "../../../libs/pathjs/pathjs.js"
 
 @WebComponent.register({
     properties: {
@@ -49,8 +50,11 @@ export class QueryGridCellCommonMark extends QueryGridCellDefault {
                 this.#textNode = this.#textNodeValue = null;
             }
 
-            if (this.#markdownValue !== value)
-                this.$.text.innerHTML = getMarkdown(this.#markdownValue = value);
+            if (this.#markdownValue !== value) {
+                this.$.text.innerHTML = getMarkdown(this.#markdownValue = value, {
+                    addTags: "VI-ICON"
+                });
+            }
 
             return;
         }
