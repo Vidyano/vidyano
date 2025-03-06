@@ -68,9 +68,20 @@ export class QueryGridCellCommonMark extends QueryGridCellDefault {
         super._updateCell(value);
     }
 
-    private _onClick(e: Event) {
-        if ((e.target as HTMLElement)?.tagName === "A")
+    private _onClick(e: MouseEvent) {
+        if (e.target instanceof HTMLAnchorElement) {
             e.stopPropagation();
+
+            if (!e.ctrlKey && e.target.href.startsWith(Path.routes.root || "") && !(e.target.getAttribute("rel") || "").contains("external")) {
+                e.preventDefault();
+    
+                let path = e.target.href.slice(Path.routes.root.length);
+                if (path.startsWith("#!/"))
+                    path = path.substring(3);
+    
+                this.app.changePath(path);
+            }
+        }
     }
 }
 

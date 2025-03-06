@@ -4,7 +4,9 @@ p, ol {
 }
 
 a, a:visited {
-    color: inherit;
+    display: inline-block;
+    line-height: var(--vi-query-grid-row-height);
+    color: var(--theme-color);
 }
 
 vi-icon {
