@@ -11,6 +11,11 @@ DOMPurify.addHook("afterSanitizeAttributes", function (node) {
     }
 });
 
+DOMPurify.addHook('uponSanitizeAttribute', (node, data) => {
+    if (node.tagName === "VI-ICON" && data.attrName === 'source')
+        data.forceKeepAttr = true;
+});
+
 @WebComponent.register({
     properties: {
         addTags: {
