@@ -1,3 +1,9 @@
+p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 p, ol {
     margin: 0;
     padding: 0;
