@@ -11149,7 +11149,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.18.2";
+let version$2 = "3.18.3";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -44249,6 +44249,9 @@ class QueryGridUserSettings extends Observable {
             isHidden: c.isHidden,
             width: c.width
         }));
+        if (!this._columns?.length || this._columns.some(c => !c.isHidden))
+            return;
+        this._columns[0].isHidden = false;
     }
     getColumn(name) {
         return this._columnsByName[name];
@@ -44272,6 +44275,8 @@ class QueryGridUserSettings extends Observable {
             if (c.width !== c.column.width)
                 columnData(c.name).width = c.width;
         });
+        if (this._columns.length > 0 && !this._columns.some(c => !c.isHidden))
+            this._columns[0].isHidden = false;
         if (queryData)
             this._query.service.application.userSettings["QueryGridSettings"][this._query.id] = queryData;
         else if (this._query.service.application.userSettings["QueryGridSettings"][this._query.id])
@@ -56321,6 +56326,8 @@ let PersistentObject = class PersistentObject extends WebComponent {
   display: flex;
   flex-direction: column-reverse;
   --vi-persistent-object-master-width: 40%;
+  --vi-persistent-object-master-min-width: 5%;
+  --vi-persistent-object-master-max-width: 95%;
 }
 :host vi-action-bar {
   padding-top: 3px;
@@ -56393,6 +56400,8 @@ let PersistentObject = class PersistentObject extends WebComponent {
   transform: translateX(-3px);
 }
 :host([layout-master-detail]) .master {
+  min-width: var(--vi-persistent-object-master-min-width);
+  max-width: var(--vi-persistent-object-master-max-width);
   width: var(--vi-persistent-object-master-width);
 }
 :host([layout-details-only]) .master {
