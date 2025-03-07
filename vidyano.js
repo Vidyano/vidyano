@@ -11149,7 +11149,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.18.1";
+let version$2 = "3.18.2";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -40937,7 +40937,13 @@ let QueryGridCellCommonMark = class QueryGridCellCommonMark extends QueryGridCel
   line-height: var(--theme-h3);
   padding: 0 var(--theme-h5);
 }</style>
-<style>p, ol {
+<style>p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+p, ol {
   margin: 0;
   padding: 0;
 }
