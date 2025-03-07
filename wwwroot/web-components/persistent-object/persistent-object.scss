@@ -3,6 +3,8 @@
 :host {
     @include layout-vertical-reverse();
     --vi-persistent-object-master-width: 40%;
+    --vi-persistent-object-master-min-width: 5%;
+    --vi-persistent-object-master-max-width: 95%;
 
     vi-action-bar {
         padding-top: 3px;
@@ -78,6 +80,8 @@
         }
 
         .master {
+            min-width: var(--vi-persistent-object-master-min-width);
+            max-width: var(--vi-persistent-object-master-max-width);
             width: var(--vi-persistent-object-master-width);
         }
     }
