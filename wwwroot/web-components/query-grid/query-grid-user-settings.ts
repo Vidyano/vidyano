@@ -14,6 +14,12 @@ export class QueryGridUserSettings extends Vidyano.Observable<QueryGridUserSetti
             isHidden: c.isHidden,
             width: c.width
         }));
+
+        // Make sure at least one column is visible
+        if (!this._columns?.length || this._columns.some(c => !c.isHidden))
+            return;
+
+        this._columns[0].isHidden = false;
     }
 
     getColumn(name: string): QueryGridColumn {
@@ -45,6 +51,10 @@ export class QueryGridUserSettings extends Vidyano.Observable<QueryGridUserSetti
             if (c.width !== c.column.width)
                 columnData(c.name).width = c.width;
         });
+
+        // Make sure at least one column is visible
+        if (this._columns.length > 0 && !this._columns.some(c => !c.isHidden))
+            this._columns[0].isHidden = false;
 
         if (queryData)
             this._query.service.application.userSettings["QueryGridSettings"][this._query.id] = queryData;
