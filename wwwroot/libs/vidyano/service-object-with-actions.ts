@@ -1,66 +1,115 @@
-import { Queue } from "./common/queue.js"
-import { ServiceObject } from "./service-object.js"
-import type { NotificationType, Service } from "./service.js"
-import { Action } from "./action.js"
+import { Queue } from "./common/queue.js";
+import { ServiceObject } from "./service-object.js";
+import type { NotificationType, Service } from "./service.js";
+import { Action } from "./action.js";
 
+/**
+ * Represents a service object that manages actions and notifications.
+ */
 export class ServiceObjectWithActions extends ServiceObject {
-    private _queue: Queue;
-    private _isBusy: boolean = false;
-    private _notification: string;
-    private _notificationType: NotificationType;
-    private _notificationDuration: number;
-    actions: Array<Action> & { [name: string]: Action} = <any>[]; // TODO: typed?
+    readonly #queue: Queue;
+    #isBusy: boolean = false;
+    #notification: string;
+    #notificationType: NotificationType;
+    #notificationDuration: number;
+    readonly #actionNames: string[];
+    readonly #actionLabels?: { [key: string]: string };
 
-    constructor(service: Service, private _actionNames: string[] = [], private _actionLabels?: { [key: string]: string }) {
+    /**
+     * An array of actions associated with the service object.
+     * Indexed both as an array and as a dictionary by action name.
+     */
+    actions: Array<Action> & Record<string, Action> = <any>[];
+
+    /**
+     * Initializes a new instance of the ServiceObjectWithActions class.
+     * @param service - The associated service.
+     * @param actionNames - Names of actions to initialize.
+     * @param actionLabels - Optional labels for actions.
+     */
+    constructor(service: Service, actionNames: string[] = [], actionLabels?: { [key: string]: string }) {
         super(service);
 
-        this._queue = new Queue(1);
+        this.#actionNames = actionNames;
+        this.#actionLabels = actionLabels;
+        this.#queue = new Queue(1);
     }
 
+    /**
+     * Gets a value indicating whether the service object is busy.
+     */
     get isBusy(): boolean {
-        return this._isBusy;
+        return this.#isBusy;
     }
 
-    private _setIsBusy(val: boolean) {
-        if (this._isBusy === val)
+    /**
+     * Sets the busy state and notifies listeners if it changes.
+     * @param val - The new busy state.
+     */
+    #setIsBusy(val: boolean) {
+        if (this.#isBusy === val)
             return;
 
-        const oldIsBusy = this._isBusy;
-        this.notifyPropertyChanged("isBusy", this._isBusy = val, oldIsBusy);
+        const oldIsBusy = this.#isBusy;
+        this.notifyPropertyChanged("isBusy", this.#isBusy = val, oldIsBusy);
     }
 
+    /**
+     * Gets the current notification message.
+     */
     get notification(): string {
-        return this._notification;
+        return this.#notification;
     }
 
+    /**
+     * Gets the current notification type.
+     */
     get notificationType(): NotificationType {
-        return this._notificationType;
+        return this.#notificationType;
     }
 
+    /**
+     * Gets the current notification duration.
+     */
     get notificationDuration(): number {
-        return this._notificationDuration;
+        return this.#notificationDuration;
     }
 
+    /**
+     * Retrieves an action by its name.
+     * @param name - The name of the action.
+     * @returns The requested Action.
+     */
     getAction(name: string): Action {
         return this.actions[name];
     }
 
-    setNotification(notification?: string, type?: NotificationType, duration?: number, skipShowNotification?: boolean);
-    setNotification(notification?: Error, type?: NotificationType, duration?: number, skipShowNotification?: boolean);
+    /**
+     * Sets the notification for the service object.
+     * Overload: Accepts a string message.
+     */
+    setNotification(notification?: string, type?: NotificationType, duration?: number, skipShowNotification?: boolean): void;
+    /**
+     * Sets the notification for the service object.
+     * Overload: Accepts an Error object.
+     */
+    setNotification(notification?: Error, type?: NotificationType, duration?: number, skipShowNotification?: boolean): void;
     setNotification(notificationOrError: string | Error = null, type: NotificationType = "Error", duration: number = null, skipShowNotification?: boolean) {
-        const notification = typeof notificationOrError === "string" || !notificationOrError ? notificationOrError as string : notificationOrError?.["message"];
+        const notification = typeof notificationOrError === "string" || !notificationOrError 
+            ? notificationOrError as string 
+            : notificationOrError?.["message"];
 
         const oldNotificationDuration = this.notificationDuration;
         if (oldNotificationDuration !== duration)
-            this.notifyPropertyChanged("notificationDuration", this._notificationDuration = duration, oldNotificationDuration);
+            this.notifyPropertyChanged("notificationDuration", this.#notificationDuration = duration, oldNotificationDuration);
 
-        const oldNotificationType = this._notificationType;
+        const oldNotificationType = this.#notificationType;
         if (oldNotificationType !== type)
-            this.notifyPropertyChanged("notificationType", this._notificationType = type, oldNotificationType);
+            this.notifyPropertyChanged("notificationType", this.#notificationType = type, oldNotificationType);
 
         const oldNotification = this.notification;
         if (oldNotification !== notification)
-            this.notifyPropertyChanged("notification", this._notification = notification, oldNotification);
+            this.notifyPropertyChanged("notification", this.#notification = notification, oldNotification);
 
         if (!skipShowNotification && this.notificationDuration) {
             this.service.hooks.onShowNotification(notification, type, duration);
@@ -68,42 +117,55 @@ export class ServiceObjectWithActions extends ServiceObject {
         }
     }
 
+    /**
+     * Queues a work function to be executed asynchronously.
+     * @param work - The asynchronous work function.
+     * @param blockActions - If true, actions are blocked during execution.
+     * @returns A promise that resolves with the result of the work.
+     */
     queueWork<T>(work: () => Promise<T>, blockActions: boolean = true): Promise<T> {
-        this._setIsBusy(true);
+        this.#setIsBusy(true);
 
-        return this._queue.add(async () => {
+        return this.#queue.add(async () => {
             if (blockActions)
-                this._blockActions(true);
+                this.#blockActions(true);
 
             try {
                 const result = await work();
-                this._setIsBusy(this._queue.queueLength > 0);
+                this.#setIsBusy(this.#queue.queueLength > 0);
                 if (blockActions)
-                    this._blockActions(false);
+                    this.#blockActions(false);
 
                 return result;
             }
             catch (e) {
-                this._setIsBusy(this._queue.queueLength > 0);
-                this._blockActions(false);
+                this.#setIsBusy(this.#queue.queueLength > 0);
+                this.#blockActions(false);
 
                 throw e;
             }
         });
     }
 
+    /**
+     * Initializes actions based on the provided action names and labels.
+     */
     protected _initializeActions() {
-        Action.addActions(this.service, this, this.actions, this._actionNames);
+        Action.addActions(this.service, this, this.actions, this.#actionNames);
 
         this.actions.forEach(a => {
             this.actions[a.name] = a;
 
-            if (this._actionLabels && this._actionLabels[a.name] != null)
-                a.displayName = this._actionLabels[a.name];
+            if (this.#actionLabels && this.#actionLabels[a.name] != null)
+                a.displayName = this.#actionLabels[a.name];
         });
     }
 
-    private _blockActions(block: boolean) {
+    /**
+     * Blocks or unblocks all associated actions.
+     * @param block - True to block actions; false to unblock them.
+     */
+    #blockActions(block: boolean) {
         this.actions.forEach(action => {
             action.block = block;
         });

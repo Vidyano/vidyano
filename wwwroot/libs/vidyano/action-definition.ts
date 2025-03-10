@@ -1,31 +1,52 @@
-import { ExpressionParser } from "./common/expression-parser.js"
-import { QueryResultItem } from "./query-result-item.js"
-import type { Service } from "./service.js"
+import { ExpressionParser } from "./common/expression-parser.js";
+import { QueryResultItem } from "./query-result-item.js";
+import type { Service } from "./service.js";
 
+/**
+ * Parameters that define an action.
+ */
 export interface ActionDefinitionParams {
     name: string;
     displayName?: string;
     isPinned?: boolean;
     isStreaming?: boolean;
     showedOn?: string[];
-    confirmation?: string
+    confirmation?: string;
     refreshQueryOnCompleted?: boolean;
-    keepSelectionOnRefresh?: boolean
+    keepSelectionOnRefresh?: boolean;
     offset?: number;
-    selectionRule?: string
+    selectionRule?: string;
     options?: ("PersistentObject" | "Query")[];
     icon?: string;
 }
-export class ActionDefinition {
-    private _groupDefinition: string | ActionDefinition;
-    private _selectionRule: (count: number) => boolean;
-    private readonly _definition: ActionDefinitionParams;
 
+/**
+ * Defines an action within the system.
+ * Actions are operations that can be performed on queries or persistent objects.
+ */
+export class ActionDefinition {
+    readonly #definition: ActionDefinitionParams;
+    #groupDefinition: string | ActionDefinition;
+    #selectionRule: (count: number) => boolean;
+    readonly #service: Service;
+
+    /**
+     * Initializes a new instance of the ActionDefinition class from parameters.
+     * @param service - The associated service.
+     * @param definition - The action definition parameters.
+     */
     constructor(service: Service, definition: ActionDefinitionParams);
+    /**
+     * Initializes a new instance of the ActionDefinition class from a query result item.
+     * @param service - The associated service.
+     * @param item - The query result item containing action definition data.
+     */
     constructor(service: Service, item: QueryResultItem);
-    constructor(private readonly _service: Service, itemOrDefinition: QueryResultItem | ActionDefinitionParams) {
+    constructor(service: Service, itemOrDefinition: QueryResultItem | ActionDefinitionParams) {
+        this.#service = service;
+
         if (itemOrDefinition instanceof QueryResultItem) {
-            this._definition = {
+            this.#definition = {
                 name: itemOrDefinition.getValue("Name"),
                 displayName: itemOrDefinition.getValue("DisplayName"),
                 isPinned: itemOrDefinition.getValue("IsPinned"),
@@ -42,72 +63,111 @@ export class ActionDefinition {
 
             const groupAction = itemOrDefinition.getFullValue("GroupAction");
             if (groupAction != null)
-                this._groupDefinition = groupAction.objectId;
+                this.#groupDefinition = groupAction.objectId;
         }
         else {
-            this._definition = Object.assign({
+            this.#definition = Object.assign({
                 options: []
             }, itemOrDefinition);
         }
 
-        this._selectionRule = ExpressionParser.get(this._definition.selectionRule);
+        this.#selectionRule = ExpressionParser.get(this.#definition.selectionRule);
     }
 
+    /**
+     * Gets the name of the action.
+     */
     get name(): string {
-        return this._definition.name;
+        return this.#definition.name;
     }
 
+    /**
+     * Gets the display name of the action.
+     */
     get displayName(): string {
-        return this._definition.displayName;
+        return this.#definition.displayName;
     }
 
+    /**
+     * Gets whether the action is pinned.
+     */
     get isPinned(): boolean {
-        return this._definition.isPinned ?? false;
+        return this.#definition.isPinned ?? false;
     }
 
+    /**
+     * Gets whether the action is streaming.
+     */
     get isStreaming(): boolean {
-        return !!this._definition.isStreaming;
+        return !!this.#definition.isStreaming;
     }
 
+    /**
+     * Gets whether the query should be refreshed on completion.
+     */
     get refreshQueryOnCompleted(): boolean {
-        return this._definition.refreshQueryOnCompleted;
+        return this.#definition.refreshQueryOnCompleted;
     }
 
+    /**
+     * Gets whether to keep selection on refresh.
+     */
     get keepSelectionOnRefresh(): boolean {
-        return this._definition.keepSelectionOnRefresh;
+        return this.#definition.keepSelectionOnRefresh;
     }
 
+    /**
+     * Gets the offset value.
+     */
     get offset(): number {
-        return this._definition.offset;
+        return this.#definition.offset;
     }
 
+    /**
+     * Gets the confirmation message.
+     */
     get confirmation(): string {
-        return this._definition.confirmation;
+        return this.#definition.confirmation;
     }
 
+    /**
+     * Gets the available options for this action.
+     */
     get options(): Array<string> {
-        return this._definition.options;
+        return this.#definition.options;
     }
 
+    /**
+     * Gets the selection rule function.
+     */
     get selectionRule(): (count: number) => boolean {
-        return this._selectionRule;
+        return this.#selectionRule;
     }
 
+    /**
+     * Gets the contexts where this action is shown.
+     */
     get showedOn(): string[] {
-        return this._definition.showedOn;
+        return this.#definition.showedOn;
     }
 
+    /**
+     * Gets the group definition this action belongs to.
+     */
     get groupDefinition(): ActionDefinition {
-        if (this._groupDefinition == null)
+        if (this.#groupDefinition == null)
             return null;
 
-        if (typeof this._groupDefinition === "string")
-            this._groupDefinition = this._service.actionDefinitions[this._groupDefinition];
+        if (typeof this.#groupDefinition === "string")
+            this.#groupDefinition = this.#service.actionDefinitions[this.#groupDefinition];
 
-        return <ActionDefinition>this._groupDefinition;
+        return <ActionDefinition>this.#groupDefinition;
     }
 
+    /**
+     * Gets the icon for this action.
+     */
     get icon(): string {
-        return this._definition.icon;
+        return this.#definition.icon;
     }
 }

@@ -1,18 +1,50 @@
 import { Observable } from "./common/observable.js"
 import type { Service } from "./service.js"
 
-export class ServiceObject extends Observable<ServiceObject> {
-    constructor(public service: Service) {
+export function nameof<TObject>(key: keyof TObject): string;
+export function nameof(key: any): any {
+    return key;
+}
+
+/**
+ * Represents a base class for objects that are used by the backend service.
+ * This class provides common functionality for service objects, such as
+ * copying properties to another object. It extends the Observable class
+ * to support reactive programming patterns.
+ */
+export abstract class ServiceObject extends Observable<ServiceObject> {
+    #service: Service;
+
+    constructor(service: Service) {
         super();
+        
+        this.#service = service;
     }
 
-    copyProperties(propertyNames: Array<string>, includeNullValues?: boolean, result?: any): any {
+    /**
+     * Gets the associated service.
+     */
+    get service(): Service {
+        return this.#service;
+    }
+
+    /**
+     * Copy properties from a dictionary of values to an object. 
+     * @param values A dictionary of values to copy.
+     * @param includeNullValues Include null values in the result.
+     * @param result The object to copy the properties to.
+     * @returns The object with the properties copied.
+     */
+    protected _copyPropertiesFromValues(values: { [key: string]: any }, includeNullValues?: boolean, result?: any): any {
         result = result || {};
-        propertyNames.forEach(p => {
-            const value = (this as any)[p];
-            if (includeNullValues || (value != null && value !== false && (value !== 0 || p === "pageSize") && (!Array.isArray(value) || value.length > 0)))
-                result[p] = value;
+        Object.keys(values).forEach(key => {
+            const value = values[key];
+            if (!value || (Array.isArray(value) && value.length === 0))
+                return;
+
+            result[key] = value;
         });
+
         return result;
     }
 }

@@ -12,11 +12,11 @@ Actions.CancelEdit = class CancelEdit extends Action {
         this.canExecute = this.parent.stateBehavior.indexOf("StayInEdit") < 0 || this.parent.isDirty;
     }
 
-    _onParentIsEditingChanged(isEditing: boolean) {
+    protected _onParentIsEditingChanged(isEditing: boolean) {
         this.isVisible = isEditing;
     }
 
-    _onParentIsDirtyChanged(isDirty: boolean) {
+    protected _onParentIsDirtyChanged(isDirty: boolean) {
         this.canExecute = this.parent.stateBehavior.indexOf("StayInEdit") < 0 || isDirty;
     }
 
@@ -45,7 +45,7 @@ Actions.Edit = class Edit extends Action {
         this.dependentActions = ["EndEdit", "CancelEdit"];
     }
 
-    _onParentIsEditingChanged(isEditing: boolean) {
+    protected _onParentIsEditingChanged(isEditing: boolean) {
         this.isVisible = !isEditing;
     }
 
@@ -62,11 +62,11 @@ Actions.EndEdit = class EndEdit extends Action {
         this.canExecute = this.parent.isDirty;
     }
 
-    _onParentIsEditingChanged(isEditing: boolean) {
+    protected _onParentIsEditingChanged(isEditing: boolean) {
         this.isVisible = isEditing;
     }
 
-    _onParentIsDirtyChanged(isDirty: boolean) {
+    protected _onParentIsDirtyChanged(isDirty: boolean) {
         this.canExecute = isDirty;
     }
 
@@ -136,7 +136,7 @@ Actions.Save = class Save extends Action {
         this.canExecute = this.parent.isDirty || this.parent.isNew;
     }
 
-    _onParentIsDirtyChanged(isDirty: boolean) {
+    protected _onParentIsDirtyChanged(isDirty: boolean) {
         this.canExecute = isDirty;
     }
 
