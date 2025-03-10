@@ -1,8 +1,9 @@
-import { Service } from "./service.js"
+import type { Service } from "./service.js"
 import { ServiceObject } from "./service-object.js"
 import type { QueryResultItem } from "./query-result-item.js"
 import type { QueryColumn } from "./query-column.js"
 import { PersistentObjectAttribute } from "./persistent-object-attribute.js"
+import { DataType } from "./service-data-type.js"
 
 export class QueryResultItemValue extends ServiceObject {
     private _column: QueryColumn;
@@ -42,13 +43,18 @@ export class QueryResultItemValue extends ServiceObject {
         if (this._valueParsed)
             return this._value;
 
-        this._value = Service.fromServiceString(this.value, this._item.query.getColumn(this.key).type);
+        this._value = DataType.fromServiceString(this.value, this._item.query.getColumn(this.key).type);
         this._valueParsed = true;
 
         return this._value;
     }
 
     _toServiceObject() {
-        return this.copyProperties(["key", "value", "persistentObjectId", "objectId"]);
+        return this._copyPropertiesFromValues({
+            key: this.key,
+            value: this.value,
+            persistentObjectId: this.persistentObjectId,
+            objectId: this.objectId
+        });
     }
 }

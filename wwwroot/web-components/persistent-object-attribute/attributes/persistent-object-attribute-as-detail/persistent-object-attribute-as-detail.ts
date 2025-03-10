@@ -222,7 +222,7 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
         this.attribute.parent.triggerDirty();
 
         if (this.attribute.triggersRefresh)
-            await this.attribute._triggerAttributeRefresh(true);
+            await this.attribute.triggerRefresh(true);
     }
 
     private _delete(e: CustomEvent) {
@@ -236,7 +236,7 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
         this.attribute.parent.triggerDirty();
 
         if (this.attribute.triggersRefresh)
-            this.attribute._triggerAttributeRefresh(true);
+            this.attribute.triggerRefresh(true);
     }
 
     private _setActiveObjectIndex(e: Polymer.Gestures.TapEvent) {

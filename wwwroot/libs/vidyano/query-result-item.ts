@@ -1,9 +1,10 @@
 import type { Query } from "./query.js"
-import { Service } from "./service.js"
+import type { Service } from "./service.js"
 import { ServiceObject } from "./service-object.js"
 import type { QueryResultItemValue } from "./query-result-item-value.js"
 import type { PersistentObject } from "./persistent-object.js"
 import { PersistentObjectAttribute } from "./persistent-object-attribute.js"
+import { DataType } from "./service-data-type.js"
 
 export class QueryResultItem extends ServiceObject {
     private _ignoreSelect: boolean;
@@ -38,7 +39,7 @@ export class QueryResultItem extends ServiceObject {
                 if (!col)
                     return;
 
-                this._values[v.key] = Service.fromServiceString(v.value, col.type);
+                this._values[v.key] = DataType.fromServiceString(v.value, col.type);
             });
         }
 
@@ -111,7 +112,7 @@ export class QueryResultItem extends ServiceObject {
     }
 
     _toServiceObject() {
-        const result = this.copyProperties(["id"]);
+        const result = this._copyPropertiesFromValues({ id: this.id });
         result.values = this.rawValues.map(v => v._toServiceObject());
 
         return result;

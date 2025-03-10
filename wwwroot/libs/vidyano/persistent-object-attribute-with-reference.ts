@@ -1,35 +1,85 @@
-import type { PersistentObject } from "./persistent-object.js"
-import { PersistentObjectAttribute } from "./persistent-object-attribute.js"
-import type { Query } from "./query.js"
-import type { QueryResultItem } from "./query-result-item.js"
-import type { Service } from "./service.js"
+import { _internal } from "./_internals.js";
+import { PersistentObjectAttribute } from "./persistent-object-attribute.js";
+import type { PersistentObject } from "./persistent-object.js";
+import type { Query } from "./query.js";
+import type { QueryResultItem } from "./query-result-item.js";
+import type { Service } from "./service.js";
+import type * as Dto from "./typings/service.js";
 
+/**
+ * Represents a persistent object attribute that contains a reference to another persistent object.
+ */
 export class PersistentObjectAttributeWithReference extends PersistentObjectAttribute {
-    lookup: Query;
-    objectId: string;
-    displayAttribute: string;
-    canAddNewReference: boolean;
-    selectInPlace: boolean;
+    #canAddNewReference: boolean;
+    #displayAttribute: string;
+    #lookup: Query;
+    #objectId: string;
+    #selectInPlace: boolean;
 
-    constructor(service: Service, attr: any, public parent: PersistentObject) {
+    /**
+     * Initializes a new instance of the PersistentObjectAttributeWithReference class.
+     * @param service - The service instance.
+     * @param attr - The attribute data transfer object.
+     * @param parent - The parent persistent object.
+     */
+    constructor(service: Service, attr: Dto.PersistentObjectAttributeWithReference, parent: PersistentObject) {
         super(service, attr, parent);
 
         if (attr.lookup) {
-            this.lookup = this.service.hooks.onConstructQuery(service, attr.lookup, parent, false, 1);
-            this.lookup.ownerAttributeWithReference = this;
+            this.#lookup = this.service.hooks.onConstructQuery(service, attr.lookup, parent, false, 1);
+            this.#lookup.ownerAttributeWithReference = this;
         }
         else
-            this.lookup = null;
+            this.#lookup = null;
 
-        this.objectId = typeof attr.objectId === "undefined" ? null : attr.objectId;
-        this.displayAttribute = attr.displayAttribute;
-        this.canAddNewReference = !!attr.canAddNewReference;
-        this.selectInPlace = !!attr.selectInPlace;
-
-        this._setOptions(attr.options);
+        this.#objectId = typeof attr.objectId === "undefined" ? null : attr.objectId;
+        this.#displayAttribute = attr.displayAttribute;
+        this.#canAddNewReference = !!attr.canAddNewReference;
+        this.#selectInPlace = !!attr.selectInPlace;
+        this.options = attr.options;
     }
 
-    async addNewReference() {
+    /**
+     * Gets a value indicating whether a new reference can be added.
+     */
+    get canAddNewReference(): boolean {
+        return this.#canAddNewReference;
+    }
+
+    /**
+     * Gets the display attribute of the reference.
+     */
+    get displayAttribute(): string {
+        return this.#displayAttribute;
+    }
+
+    /**
+     * Gets the lookup query for this attribute.
+     */
+    get lookup(): Query {
+        return this.#lookup;
+    }
+
+    /**
+     * Gets the object id of the reference.
+     */
+    get objectId(): string {
+        return this.#objectId;
+    }
+
+    /**
+     * Gets a value indicating whether the reference should be selected in place.
+     */
+    get selectInPlace(): boolean {
+        return this.#selectInPlace;
+    }
+
+    /**
+     * Adds a new reference through the associated lookup query.
+     * Opens the resulting persistent object as a dialog.
+     * @returns A promise that resolves when the operation is complete.
+     */
+    async addNewReference(): Promise<void> {
         if (this.isReadOnly)
             return;
 
@@ -45,12 +95,17 @@ export class PersistentObjectAttributeWithReference extends PersistentObjectAttr
         }
     }
 
+    /**
+     * Changes the reference to the selected items.
+     * @param selectedItems - The items to set as the new reference.
+     * @returns A promise that resolves to true when the reference has been changed.
+     */
     changeReference(selectedItems: QueryResultItem[] | string[]): Promise<boolean> {
         return this.parent.queueWork(async () => {
             if (this.isReadOnly)
                 throw "Attribute is read-only.";
 
-            this.parent._prepareAttributesForRefresh(this);
+            _internal(this.parent).prepareAttributesForRefresh(this);
             if (selectedItems.length && selectedItems.length > 0 && typeof selectedItems[0] === "string") {
                 const selectedObjectIds = <string[]>selectedItems;
                 selectedItems = selectedObjectIds.map(id => this.service.hooks.onConstructQueryResultItem(this.service, { id: id }, null));
@@ -58,12 +113,16 @@ export class PersistentObjectAttributeWithReference extends PersistentObjectAttr
 
             const result = await this.service.executeAction("PersistentObject.SelectReference", this.parent, this.lookup, <QueryResultItem[]>selectedItems, { PersistentObjectAttributeId: this.id });
             if (result)
-                this.parent.refreshFromResult(result);
+                _internal(this.parent).refreshFromResult(result);
 
             return true;
         });
     }
 
+    /**
+     * Gets the persistent object that this attribute references.
+     * @returns A promise that resolves to the referenced persistent object, or null if none exists.
+     */
     getPersistentObject(): Promise<PersistentObject> {
         if (!this.objectId)
             return Promise.resolve(null);
@@ -71,21 +130,35 @@ export class PersistentObjectAttributeWithReference extends PersistentObjectAttr
         return this.parent.queueWork(() => this.service.getPersistentObject(this.parent, this.lookup.persistentObject.id, this.objectId));
     }
 
-    _refreshFromResult(resultAttr: PersistentObjectAttribute, resultWins: boolean): boolean {
-        const resultAttrWithRef = <PersistentObjectAttributeWithReference>resultAttr;
-
-        if (resultWins || this.objectId !== resultAttrWithRef.objectId) {
-            this.objectId = resultAttrWithRef.objectId;
+    /**
+     * Refreshes this attribute from a result attribute.
+     * @param resultAttr - The result attribute to refresh from.
+     * @param resultWins - Whether the result attribute takes precedence over local changes.
+     * @returns True if the attribute's visibility changed.
+     */
+    protected _refreshFromResult(resultAttr: Dto.PersistentObjectAttributeWithReference, resultWins: boolean): boolean {
+        if (resultWins || this.objectId !== resultAttr.objectId) {
+            this.#objectId = resultAttr.objectId;
             this.isValueChanged = resultAttr.isValueChanged;
         }
 
         const visibilityChanged = super._refreshFromResult(resultAttr, resultWins);
 
-        this.displayAttribute = resultAttrWithRef.displayAttribute;
-        this.canAddNewReference = resultAttrWithRef.canAddNewReference;
-        this.selectInPlace = resultAttrWithRef.selectInPlace;
-
+        this.#displayAttribute = resultAttr.displayAttribute;
+        this.#canAddNewReference = resultAttr.canAddNewReference;
+        this.#selectInPlace = resultAttr.selectInPlace;
 
         return visibilityChanged;
+    }
+
+    /**
+     * Converts this attribute to a service object.
+     * @returns The service object representation of this attribute.
+     */
+    protected _toServiceObject(): any {
+        return super._toServiceObject({
+            "objectId": this.objectId,
+            "displayAttribute": this.displayAttribute,
+        });
     }
 }

@@ -79,7 +79,7 @@ export class ServiceHooks {
         return new Application(this.service, application);
     }
 
-    onConstructPersistentObject(service: Service, po: any): PersistentObject {
+    onConstructPersistentObject(service: Service, po: Dto.PersistentObject): PersistentObject {
         return new PersistentObject(service, po);
     }
 
@@ -95,7 +95,7 @@ export class ServiceHooks {
         return new PersistentObjectAttributeGroup(service, key, attributes, parent);
     }
 
-    onConstructPersistentObjectAttribute(service: Service, attr: any, parent: PersistentObject): PersistentObjectAttribute {
+    onConstructPersistentObjectAttribute(service: Service, attr: Dto.PersistentObjectAttribute, parent: PersistentObject): PersistentObjectAttribute {
         return new PersistentObjectAttribute(service, attr, parent);
     }
 

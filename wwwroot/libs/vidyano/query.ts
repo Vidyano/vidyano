@@ -11,6 +11,7 @@ import { PersistentObject } from "./persistent-object.js"
 import { Action } from "./action.js"
 import { ExpressionParser } from "./common/expression-parser.js"
 import { PersistentObjectAttributeWithReference } from "./persistent-object-attribute-with-reference.js"
+import { QuerySymbols } from "./_internals.js"
 
 export interface ISortOption {
     column: QueryColumn;
@@ -93,6 +94,7 @@ class QuerySelectAllImpl extends Observable<IQuerySelectAll> implements IQuerySe
 }
 
 export class Query extends ServiceObjectWithActions {
+    #dto: Dto.Query; // Used to store the original DTO object when we need to clone the Query object.
     private _lastResult: Dto.QueryResult;
     private _asLookup: boolean;
     private _isSelectionModifying: boolean;
@@ -109,6 +111,7 @@ export class Query extends ServiceObjectWithActions {
     private _defaultChartName: string = null;
     private _currentChart: QueryChart = null;
     private _lastUpdated: Date;
+    #maxSelectedItems: number;
     private _totalItem: QueryResultItem;
     private _isSystem: boolean;
     private _isFiltering: boolean;
@@ -139,69 +142,73 @@ export class Query extends ServiceObjectWithActions {
     disableLazyLoading: boolean;
     ownerAttributeWithReference: PersistentObjectAttributeWithReference;
 
-    constructor(service: Service, query: Dto.Query, parent?: PersistentObject, asLookup?: boolean, maxSelectedItems?: number);
-    constructor(service: Service, query: any, public parent?: PersistentObject, asLookup: boolean = false, public maxSelectedItems?: number) {
-        super(service, query._actionNames || query.actions, query.actionLabels);
+    constructor(service: Service, queryDto: Dto.Query, public parent?: PersistentObject, asLookup: boolean = false, maxSelectedItems?: number) {
+        super(service, queryDto.actions, queryDto.actionLabels);
+
+        this.#dto = queryDto;
+        this[QuerySymbols.IsQuery] = true;
 
         this._asLookup = asLookup;
-        this._isSystem = !!query.isSystem;
-        this.id = query.id;
-        this.name = query.name;
-        this.autoQuery = query.autoQuery;
+        this._isSystem = !!queryDto.isSystem;
+        this.id = queryDto.id;
+        this.name = queryDto.name;
+        this.autoQuery = queryDto.autoQuery;
 
-        this._allowTextSearch = query.allowTextSearch;
-        this._canRead = !!query.canRead;
-        this.isHidden = query.isHidden;
-        this.label = query.label;
-        this.setNotification(query.notification, query.notificationType, query.notificationDuration);
-        this.offset = query.offset || 0;
-        this.textSearch = query.textSearch || "";
-        this.pageSize = query.pageSize;
-        this.skip = query.skip;
-        this.top = query.top;
+        this._allowTextSearch = queryDto.allowTextSearch;
+        this._canRead = !!queryDto.canRead;
+        this.isHidden = queryDto.isHidden;
+        this.label = queryDto.label;
+        this.setNotification(queryDto.notification, queryDto.notificationType, queryDto.notificationDuration);
+        this.offset = queryDto.offset || 0;
+        this.textSearch = queryDto.textSearch || "";
+        this.pageSize = queryDto.pageSize;
+        this.skip = queryDto.skip;
+        this.top = queryDto.top;
 
-        this.persistentObject = query.persistentObject instanceof PersistentObject ? query.persistentObject : service.hooks.onConstructPersistentObject(service, query.persistentObject);
+        this.#maxSelectedItems = maxSelectedItems;
+
+        this.persistentObject = queryDto.persistentObject instanceof PersistentObject ? queryDto.persistentObject : service.hooks.onConstructPersistentObject(service, queryDto.persistentObject);
         this.singularLabel = this.persistentObject.label;
 
-        this._updateColumns(query.columns);
+        this._updateColumns(queryDto.columns);
         this._initializeActions();
 
-        this._canReorder = !!query.canReorder && !asLookup;
+        this._canReorder = !!queryDto.canReorder && !asLookup;
 
-        this.selectAll = new QuerySelectAllImpl(this, (!!query.isSystem || !!query.enableSelectAll) && !query.maxSelectedItems && this.actions.some(a => a.isVisible && a.definition.selectionRule !== ExpressionParser.alwaysTrue), this._selectAllPropertyChanged.bind(this));
+        this.selectAll = new QuerySelectAllImpl(this, (!!queryDto.isSystem || !!queryDto.enableSelectAll) && !this.maxSelectedItems && this.actions.some(a => a.isVisible && a.definition.selectionRule !== ExpressionParser.alwaysTrue), this._selectAllPropertyChanged.bind(this));
 
-        this._setTotalItems(query.totalItems);
-        this._setSortOptionsFromService(query.sortOptions);
+        this._setTotalItems(queryDto.totalItems);
+        this._setSortOptionsFromService(queryDto.sortOptions);
 
-        if (query.disableBulkEdit) {
+        if (queryDto.disableBulkEdit) {
             const bulkEdit = <Action>this.actions["BulkEdit"];
             if (bulkEdit)
                 bulkEdit.selectionRule = count => count === 1;
         }
 
-        if (query.filters) {
-            if (query.filters instanceof QueryFilters)
-                this._filters = asLookup ? query.filters.clone(this) : null;
+        if (queryDto.filters) {
+            if (queryDto.filters instanceof QueryFilters)
+                this._filters = asLookup ? queryDto.filters.clone(this) : null;
             else
-                this._filters = new QueryFilters(this, service.hooks.onConstructPersistentObject(service, query.filters));
+                this._filters = new QueryFilters(this, service.hooks.onConstructPersistentObject(service, queryDto.filters));
         }
         else
             this._filters = null;
 
         this._canFilter = this.actions.some(a => a.name === "Filter") && this.columns.some(c => c.canFilter);
 
-        this._tag = query.tag;
+        this._tag = queryDto.tag;
 
-        if (query.result)
-            this._setResult(query.result);
+        if (queryDto.result)
+            this._setResult(queryDto.result);
         else {
             this.items = [];
             this._labelWithTotalItems = this.label;
             this._lastUpdated = new Date();
         }
 
-        if (query instanceof Query && query.groupingInfo)
-            this._setGroupingInfo({ groupedBy: query.groupingInfo.groupedBy });
+        if (queryDto instanceof Query && queryDto.groupingInfo)
+            this._setGroupingInfo({ groupedBy: queryDto.groupingInfo.groupedBy });
     }
 
     get isSystem(): boolean {
@@ -316,6 +323,18 @@ export class Query extends ServiceObjectWithActions {
 
         const oldLastUpdated = this._lastUpdated;
         this.notifyPropertyChanged("lastUpdated", this._lastUpdated = date, oldLastUpdated);
+    }
+
+    get maxSelectedItems(): number {
+        return this.#maxSelectedItems;
+    }
+
+    set maxSelectedItems(maxSelectedItems: number) {
+        if (this.#maxSelectedItems === maxSelectedItems)
+            return;
+
+        const oldValue = this.#maxSelectedItems;
+        this.notifyPropertyChanged("maxSelectedItems", this.#maxSelectedItems = maxSelectedItems, oldValue);
     }
 
     get selectedItems(): QueryResultItem[] {
@@ -501,7 +520,18 @@ export class Query extends ServiceObjectWithActions {
     }
 
     _toServiceObject() {
-        const result = this.copyProperties(["id", "isSystem", "name", "label", "pageSize", "skip", "top", "textSearch", "continuation"]);
+        const result = this._copyPropertiesFromValues({
+            "id": this.id,
+            "isSystem": this.isSystem,
+            "name": this.name,
+            "label": this.label,
+            "pageSize": this.pageSize,
+            "skip": this.skip,
+            "top": this.top,
+            "textSearch": this.textSearch,
+            "continuation": this.continuation
+        });
+
         if (this.selectAll.allSelected) {
             result["allSelected"] = true;
             if (this.selectAll.inverse)
@@ -854,7 +884,7 @@ export class Query extends ServiceObjectWithActions {
     }
 
     clone(asLookup: boolean = false): Query {
-        const cloned = this.service.hooks.onConstructQuery(this.service, this, this.parent, asLookup);
+        const cloned = this.service.hooks.onConstructQuery(this.service, this.#dto, this.parent, asLookup);
         cloned.ownerAttributeWithReference = this.ownerAttributeWithReference;
 
         return cloned;

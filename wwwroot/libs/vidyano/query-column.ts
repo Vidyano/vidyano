@@ -182,7 +182,14 @@ export class QueryColumn extends ServiceObject {
     }
 
     _toServiceObject() {
-        const serviceObject = this.copyProperties(["id", "name", "label", "type", "displayAttribute"]);
+        const serviceObject = this._copyPropertiesFromValues({
+            id: this.id,
+            name: this.name,
+            label: this.label,
+            type: this.type,
+            displayAttribute: this.displayAttribute
+        });
+
         serviceObject.includes = !this.selectedDistinctsInversed ? this.selectedDistincts : [];
         serviceObject.excludes = this.selectedDistinctsInversed ? this.selectedDistincts : [];
 
@@ -218,7 +225,7 @@ export class QueryColumn extends ServiceObject {
             matching: <string[]>matchingDistinctsAttr.options,
             remaining: <string[]>remainingDistinctsAttr.options,
             isDirty: false,
-            hasMore: matchingDistinctsAttr.typeHints.hasmore || remainingDistinctsAttr.typeHints.hasmore
+            hasMore: Boolean.parse(matchingDistinctsAttr.typeHints.hasmore || remainingDistinctsAttr.typeHints.hasmore)
         };
 
         return this.distincts;
