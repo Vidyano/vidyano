@@ -11501,6 +11501,8 @@ declare class Menu extends WebComponent {
     private _setInstantSearchResults;
     readonly isResizing: boolean;
     private _setIsResizing;
+    readonly hasCustomLabel: boolean;
+    private _setHasCustomLabel;
     filter: string;
     filtering: boolean;
     activeProgramUnit: ProgramUnit;
@@ -11522,6 +11524,7 @@ declare class Menu extends WebComponent {
     private _catchInputSearchTap;
     private _resetFilter;
     private _onResize;
+    private _onLabelSlotchange;
     private _isFirstRunProgramUnit;
     private _add;
     private _instantSearchResultMouseEnter;
@@ -11909,9 +11912,10 @@ declare class Icon extends WebComponent {
 
 declare function load(name: string): Icon;
 declare function exists(name: string): boolean;
-declare function add(icon: Element): any;
-declare function add(strings: TemplateStringsArray): any;
-declare function add(template: HTMLTemplateElement): any;
+declare function add(icon: Element): void;
+declare function add(strings: TemplateStringsArray): void;
+declare function add(template: HTMLTemplateElement): void;
+declare function add(name: string, innerHTML: string): void;
 declare function all(): string[];
 
 declare const iconRegister_add: typeof add;
