@@ -24,6 +24,10 @@ import "../user/user.js"
             type: Boolean,
             computed: "_computeCollapsedWithGlobalSearch(collapsed, hasGlobalSearch)"
         },
+        hasCustomLabel: {
+            type: Boolean,
+            readOnly: true,
+        },
         hasGlobalSearch: {
             type: Boolean,
             computed: "_computeHasGlobalSearch(app.service.application.globalSearchId)"
@@ -73,6 +77,8 @@ export class Menu extends WebComponent {
     readonly instantSearchDelay: number;
     readonly instantSearchResults: Vidyano.IInstantSearchResult[]; private _setInstantSearchResults: (results: Vidyano.IInstantSearchResult[]) => void;
     readonly isResizing: boolean; private _setIsResizing: (val: boolean) => void;
+    readonly hasCustomLabel: boolean; private _setHasCustomLabel: (val: boolean) => void;
+    
     filter: string;
     filtering: boolean;
     activeProgramUnit: Vidyano.ProgramUnit;
@@ -204,6 +210,11 @@ export class Menu extends WebComponent {
             this._setIsResizing(false);
             this.app.isTracking = false;
         }
+    }
+
+    private _onLabelSlotchange(e: Event) {
+        const slot = e.target as HTMLSlotElement;
+        this._setHasCustomLabel(slot?.assignedElements({ flatten: true })?.length > 0);
     }
 
     private _isFirstRunProgramUnit(application: Vidyano.Application, programUnit: Vidyano.ProgramUnit): boolean {

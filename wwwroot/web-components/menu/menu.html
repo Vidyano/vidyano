@@ -3,7 +3,10 @@
 <div class="container layout vertical fit">
     <header>
         <div class="background layout vertical">
-            <div class="label flex">[[label]]<slot name="label"></slot></div>
+            <div class="label flex">
+                <span hidden$="[[hasCustomLabel]]">[[label]]</span>
+                <slot name="label" on-slotchange="_onLabelSlotchange"></slot>
+            </div>
             <div id="headerElements"></div>
         </div>
         <vi-input-search value="{{filter}}" on-search="_search" focused="{{searchFocused}}"></vi-input-search>
