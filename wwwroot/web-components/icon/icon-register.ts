@@ -1,5 +1,6 @@
 import * as Polymer from "../../libs/polymer/polymer.js"
 import type { Icon } from "./icon.js"
+import DOMPurify from "dompurify";
 
 const icons: Record<string, Icon> = {};
 
@@ -10,21 +11,34 @@ export function load(name: string): Icon {
 export function exists(name: string): boolean {
     return !!load(name);
 }
+export function add(icon: Element): void;
+export function add(strings: TemplateStringsArray): void;
+export function add(template: HTMLTemplateElement): void;
+export function add(name: string, innerHTML: string): void;
 
-export function add(icon: Element);
-export function add(strings: TemplateStringsArray);
-export function add(template: HTMLTemplateElement);
-export function add(icon_or_string_or_template: Element | HTMLTemplateElement | TemplateStringsArray) {
-    if (icon_or_string_or_template instanceof Element && icon_or_string_or_template.tagName === "VI-ICON") {
-        const icon = icon_or_string_or_template as Icon;
+export function add(arg: Element | HTMLTemplateElement | TemplateStringsArray | string, maybeInnerHTML?: string) {
+    // add(name, innerHTML)
+    if (typeof arg === "string" && typeof maybeInnerHTML === "string") {
+        const icon = document.createElement("vi-icon") as Icon;
+        icon.name = arg;
+        icon.innerHTML = DOMPurify.sanitize(maybeInnerHTML);
         icons[icon.name] = icon;
         return;
     }
+    
+    // add(Element) for where the element is a <vi-icon>
+    if (arg instanceof Element && arg.tagName === "VI-ICON") {
+        const icon = arg as Icon;
+        icons[icon.name] = icon;
+        return;
+    }
+    
+    // For TemplateStringsArray overload
+    if (Array.isArray(arg))
+        arg = Polymer.html(<TemplateStringsArray>arg);
 
-    if (Array.isArray(icon_or_string_or_template))
-        icon_or_string_or_template = Polymer.html(<TemplateStringsArray>icon_or_string_or_template);
-
-    Array.from((<HTMLTemplateElement>icon_or_string_or_template).content.querySelectorAll("vi-icon")).forEach((icon: Icon) => {
+    // For HTMLTemplateElement overload: extract all <vi-icon> elements
+    Array.from((<HTMLTemplateElement>arg).content.querySelectorAll("vi-icon")).forEach((icon: Icon) => {
         document.body.appendChild(icon);
         icons[icon.name] = icon;
         document.body.removeChild(icon);
