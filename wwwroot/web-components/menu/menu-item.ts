@@ -272,7 +272,7 @@ export class MenuItem extends ConfigurableWebComponent {
 
         if (this.item instanceof Vidyano.ProgramUnit) {
             e.detail.push({
-                label: `Program unit: ${this.item.name} `,
+                label: `Program unit: ${this.item.name}`,
                 icon: "viConfigure",
                 action: () => this.app.changePath(`Management/PersistentObject.b53ec1cd-e0b3-480f-b16d-bf33b133c05c/${this.item.name}`),
                 subActions: [
@@ -299,9 +299,9 @@ export class MenuItem extends ConfigurableWebComponent {
         }
         else if (this.item instanceof Vidyano.ProgramUnitItem) {
             e.detail.push({
-                label: `Program unit item: ${this.item.name} `,
+                label: `Program unit item: ${this.item.name}`,
                 icon: "viConfigure",
-                action: () => this.app.changePath(`Management/PersistentObject.68f7b99e-ce10-4d43-80fb-191b6742d53c/${this.item.name} `)
+                action: () => this.app.changePath(`Management/PersistentObject.68f7b99e-ce10-4d43-80fb-191b6742d53c/${this.item.name}`)
             });
         }
     }
