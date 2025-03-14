@@ -98,4 +98,3 @@ export class Icon extends WebComponent {
 }
 
 IconRegister.add(Polymer.html`<link rel="import" href="icons.html">`);
-window["IconRegister"] = IconRegister;
