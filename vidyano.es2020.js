@@ -11173,7 +11173,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.18.4";
+let version$2 = "3.18.5";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -32599,7 +32599,7 @@ let MenuItem = MenuItem_1 = class MenuItem extends ConfigurableWebComponent {
             return;
         if (this.item instanceof ProgramUnit) {
             e.detail.push({
-                label: `Program unit: ${this.item.name} `,
+                label: `Program unit: ${this.item.name}`,
                 icon: "viConfigure",
                 action: () => this.app.changePath(`Management/PersistentObject.b53ec1cd-e0b3-480f-b16d-bf33b133c05c/${this.item.name}`),
                 subActions: [
@@ -32623,9 +32623,9 @@ let MenuItem = MenuItem_1 = class MenuItem extends ConfigurableWebComponent {
         }
         else if (this.item instanceof ProgramUnitItem) {
             e.detail.push({
-                label: `Program unit item: ${this.item.name} `,
+                label: `Program unit item: ${this.item.name}`,
                 icon: "viConfigure",
-                action: () => this.app.changePath(`Management/PersistentObject.68f7b99e-ce10-4d43-80fb-191b6742d53c/${this.item.name} `)
+                action: () => this.app.changePath(`Management/PersistentObject.68f7b99e-ce10-4d43-80fb-191b6742d53c/${this.item.name}`)
             });
         }
     }
