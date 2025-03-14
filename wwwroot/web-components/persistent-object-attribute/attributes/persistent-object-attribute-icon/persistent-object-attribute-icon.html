@@ -13,9 +13,9 @@
     <template>
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
             <vi-popup auto-width on-popup-opening="_onOpening">
-                <div class="layout horizontal value" slot="header">
+                <div class="flex layout horizontal value" slot="header">
                     <vi-icon source="[[attribute.value]]"></vi-icon>
-                    <span>[[attribute.value]]</span>
+                    <input class="flex" value="{{value::input}}"></input>
                 </div>
                 <vi-scroller>
                     <div class="icon-grid">

@@ -48,7 +48,7 @@ export class Icon extends WebComponent {
         this._aliases.push(...alias);
     }
 
-    private _load(source: string, isConnected: boolean) {
+    private async _load(source: string, isConnected: boolean) {
         if (isConnected === undefined || source === undefined)
             return;
 
@@ -59,6 +59,32 @@ export class Icon extends WebComponent {
             this.$.svgHost.innerHTML = "";
 
         const resource = IconRegister.load(this._source = source);
+        if (!resource && source?.indexOf(":") > 0) {
+            // Try to load the resource from an Iconify provider
+            const response = await fetch(`https://icons.vidyano.com/${source.replace(":", "/")}.svg`);
+            if (response.ok) {
+                const svgText = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(svgText, "image/svg+xml");
+                let svgEl: Element = doc.documentElement;
+            
+                // If the root is not an <svg>, wrap it.
+                if (svgEl.nodeName.toLowerCase() !== "svg") {
+                    const container = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                    container.appendChild(svgEl.cloneNode(true));
+                    svgEl = container;
+                }
+            
+                // Append the SVG element to the host.
+                this.$.svgHost.appendChild(svgEl);
+                this._setUnresolved(false);
+            
+                // Cache the icon for future use.
+                IconRegister.add(source, svgText);
+                return;
+            }
+        }
+
         this._setUnresolved(!resource);
         if (this.unresolved)
             return;
@@ -72,3 +98,4 @@ export class Icon extends WebComponent {
 }
 
 IconRegister.add(Polymer.html`<link rel="import" href="icons.html">`);
+window["IconRegister"] = IconRegister;
