@@ -11173,7 +11173,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.19.1";
+let version$2 = "3.19.2";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -40241,6 +40241,7 @@ let Icon = class Icon extends WebComponent {
   width: var(--vi-icon-width, 16px);
   height: var(--vi-icon-height, 16px);
   fill: var(--vi-icon-fill, inherit);
+  color: var(--vi-icon-fill, inherit);
 }
 :host(.size-h1) svg {
   width: var(--theme-h1);
