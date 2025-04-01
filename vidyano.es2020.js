@@ -11173,7 +11173,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.19.2";
+let version$2 = "3.19.3";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -38077,7 +38077,9 @@ let QueryGridCell = class QueryGridCell extends WebComponent {
         const row = this.parentElement;
         if (!(row.item instanceof QueryResultItem))
             return;
-        if (row.index && row.item.query.items[0] !== row.item)
+        const rowContainer = row.parentElement;
+        const firstQueryGridRow = rowContainer.querySelector("vi-query-grid-row:not([is-group])");
+        if (firstQueryGridRow !== row)
             return;
         __classPrivateFieldSet(this, _QueryGridCell__lastMeasuredColumn, this.column, "f");
         this._observe();
