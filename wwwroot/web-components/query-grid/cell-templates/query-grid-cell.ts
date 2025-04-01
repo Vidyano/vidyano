@@ -102,8 +102,10 @@ export abstract class QueryGridCell extends WebComponent {
         if (!(row.item instanceof Vidyano.QueryResultItem))
             return;
 
-        // Only measure the cell when it is the first query result item in the query result set
-        if (row.index && row.item.query.items[0] !== row.item)
+        // Only measure if this is the first non-group query grid row in the grid
+        const rowContainer = row.parentElement as HTMLElement;
+        const firstQueryGridRow = rowContainer.querySelector("vi-query-grid-row:not([is-group])");
+        if (firstQueryGridRow !== row)
             return;
 
         // Update the last measured column and queue the measure
