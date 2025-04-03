@@ -242,6 +242,61 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
         }
     }
 
+    private _onPaste(e: ClipboardEvent): void {
+        if (!this.attribute || !e.clipboardData)
+            return;
+
+        // Get pasted data
+        let pastedText = e.clipboardData.getData('text');
+        if (!pastedText)
+            return;
+
+        // Get only digits, decimal and thousand separator from pasted text
+        const regex = new RegExp(`[^0-9.,]`, 'g');
+        pastedText = pastedText.replace(regex, '');
+
+        // Get the current number format from culture
+        const nf = Vidyano.CultureInfo.currentCulture.numberFormat;
+        const thousandSeparator = nf.numberGroupSeparator;
+        const decimalSeparator = nf.numberDecimalSeparator;
+
+        // Remove thousand separators but preserve decimal separator
+        let cleanedText = pastedText.replace(new RegExp(`\\${thousandSeparator}`, 'g'), '');
+        
+        // Replace any potential decimal separator that isn't matching the current culture with the correct one
+        if (decimalSeparator !== "." && cleanedText.includes("."))
+            cleanedText = cleanedText.replace(/\./g, decimalSeparator);
+
+        if (decimalSeparator !== "," && cleanedText.includes(","))
+            cleanedText = cleanedText.replace(/,/g, decimalSeparator);
+
+        // Allow only one decimal separator
+        const parts = cleanedText.split(decimalSeparator);
+        if (parts.length > 2)
+            cleanedText = parts[0] + decimalSeparator + parts.slice(1).join('');
+
+        // Only replace clipboard data if resulting value would be valid
+        const input = <HTMLInputElement>e.target;
+        const selStart = input.selectionStart || 0;
+        const selEnd = input.selectionEnd || 0;
+        const currentValue = input.value;
+        const newValue = currentValue.substring(0, selStart) + cleanedText + currentValue.substring(selEnd);
+        
+        if (this._canParse(newValue)) {
+            e.preventDefault();
+            
+            // Update the input value
+            input.value = newValue;
+            
+            // Set the cursor position after inserted text
+            const newPosition = selStart + cleanedText.length;
+            input.setSelectionRange(newPosition, newPosition);
+            
+            // Trigger input event to ensure value changes are processed
+            input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+        }
+    }
+
     private _computeDisplayValueWithUnit(value: number, displayValue: string, unit: string, unitPosition: string): string {
         let result = value != null && unit && unitPosition && unitPosition.toLowerCase() === "before" ? unit + " " : "";
 
