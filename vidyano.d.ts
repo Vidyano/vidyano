@@ -12461,6 +12461,7 @@ declare class PersistentObjectAttributeNumeric extends PersistentObjectAttribute
     private _between;
     private _setCarretIndex;
     private _keypress;
+    private _onPaste;
     private _computeDisplayValueWithUnit;
     private _computeBeforeUnit;
     private _computeAfterUnit;

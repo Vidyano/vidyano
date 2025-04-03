@@ -11173,7 +11173,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.19.3";
+let version$2 = "3.20.0";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -50756,7 +50756,7 @@ let PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = clas
             <div class="layout horizontal">
                 <span class="before" hidden$="[[!unitBefore]]">[[unitBefore]]</span>
                 <vi-sensitive disabled="[[!sensitive]]">
-                    <input class="flex" value="{{value::input}}" type$="[[inputtype]]" on-keypress="_keypress" on-focus="_editInputFocus" on-blur="_editInputBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder="[[placeholder]]" disabled="[[frozen]]">
+                    <input class="flex" value="{{value::input}}" type$="[[inputtype]]" on-keypress="_keypress" on-paste="_onPaste" on-focus="_editInputFocus" on-blur="_editInputBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder="[[placeholder]]" disabled="[[frozen]]">
                 </vi-sensitive>
                 <span class="after" hidden$="[[!unitAfter]]">[[unitAfter]]</span>
             </div>
@@ -50929,6 +50929,38 @@ let PersistentObjectAttributeNumeric = PersistentObjectAttributeNumeric_1 = clas
                 this._setCarretIndex(input, carretIndex + 1);
             }
             e.preventDefault();
+        }
+    }
+    _onPaste(e) {
+        if (!this.attribute || !e.clipboardData)
+            return;
+        let pastedText = e.clipboardData.getData('text');
+        if (!pastedText)
+            return;
+        const regex = new RegExp(`[^0-9.,]`, 'g');
+        pastedText = pastedText.replace(regex, '');
+        const nf = CultureInfo.currentCulture.numberFormat;
+        const thousandSeparator = nf.numberGroupSeparator;
+        const decimalSeparator = nf.numberDecimalSeparator;
+        let cleanedText = pastedText.replace(new RegExp(`\\${thousandSeparator}`, 'g'), '');
+        if (decimalSeparator !== "." && cleanedText.includes("."))
+            cleanedText = cleanedText.replace(/\./g, decimalSeparator);
+        if (decimalSeparator !== "," && cleanedText.includes(","))
+            cleanedText = cleanedText.replace(/,/g, decimalSeparator);
+        const parts = cleanedText.split(decimalSeparator);
+        if (parts.length > 2)
+            cleanedText = parts[0] + decimalSeparator + parts.slice(1).join('');
+        const input = e.target;
+        const selStart = input.selectionStart || 0;
+        const selEnd = input.selectionEnd || 0;
+        const currentValue = input.value;
+        const newValue = currentValue.substring(0, selStart) + cleanedText + currentValue.substring(selEnd);
+        if (this._canParse(newValue)) {
+            e.preventDefault();
+            input.value = newValue;
+            const newPosition = selStart + cleanedText.length;
+            input.setSelectionRange(newPosition, newPosition);
+            input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
         }
     }
     _computeDisplayValueWithUnit(value, displayValue, unit, unitPosition) {
