@@ -1,8 +1,9 @@
 @import "../_vars.scss";
 
 :host {
-    display: block;
-    padding-right: var(--theme-h5);
+    display: flex;
+    align-items: center;
+    gap: var(--theme-h5);
     box-sizing: border-box;
 
     &:not([disabled]) {

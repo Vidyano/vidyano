@@ -9,6 +9,10 @@
         display: inline-block;
         color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
     }
+
+    vi-toggle {
+        align-self: start;
+    }
 }
 
 :host-context(vi-persistent-object-attribute-as-detail) {

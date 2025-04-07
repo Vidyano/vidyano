@@ -1,8 +1,6 @@
 <link rel="stylesheet" href="toggle.css" />
 
-<div class="layout horizontal center">
-    <div id="box" class="relative">
-        <div id="switch"></div>
-    </div>
-    <span hidden$="[[op_isEmpty(label)]]">[[label]]</span>
+<div id="box" class="relative" part="box">
+    <div id="switch" part="switch"></div>
 </div>
+<span hidden$="[[op_isEmpty(label)]]" part="label">[[label]]</span>
