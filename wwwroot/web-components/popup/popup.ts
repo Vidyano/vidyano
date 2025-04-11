@@ -9,19 +9,37 @@ import { Scroller } from "../scroller/scroller.js"
 
 let _documentClosePopupListener: EventListener;
 document.addEventListener("mousedown", _documentClosePopupListener = e => {
-    const path = e.composedPath().slice();
-    do {
-        const el = path.shift();
-        if (!el || el === <any>document) {
-            Popup.closeAll();
+    const target = e.target;
+    if (!target)
+        return;
+
+    let shouldClose = true;
+    for (const el of e.composedPath()) {
+        // Stop iterating if we reach the document root
+        if (el === document)
+            break;
+
+        // Skip processing if the current item in the path is not an Element
+        if (!(el instanceof Element))
+            continue;
+
+        // Is the click within the DOM structure of an open popup?
+        const containingPopup = el.closest("vi-popup") as Popup | null;
+        if (containingPopup && containingPopup.open) {
+            shouldClose = false;
             break;
         }
-        else if ((<any>el).__Vidyano_WebComponents_PopupCore__Instance__ && (<Popup><any>el).open)
-            break;
-        else if ((<any>el).popup && (<any>el).popup.__Vidyano_WebComponents_PopupCore__Instance__ && (<Popup>(<any>el).popup).open)
-            break;
+
+        // Is the click on the trigger element that references an open popup?
+        const elPopupRef = (el as any).popup;
+        if (elPopupRef instanceof Popup && elPopupRef.open) {
+             shouldClose = false;
+             break;
+        }
     }
-    while (true);
+
+    if (shouldClose)
+        Popup.closeAll();
 });
 document.addEventListener("touchstart", _documentClosePopupListener);
 
@@ -99,7 +117,6 @@ export class Popup extends WebComponent {
     private _headerLeaveHandler: EventListener;
     private _toggleSize: ISize;
     private _header: HTMLElement;
-    private __Vidyano_WebComponents_PopupCore__Instance__ = true;
     private _resolver: Function;
     private _closeOnMoveoutTimer: ReturnType<typeof setTimeout>;
     private _openOnHoverTimer: ReturnType<typeof setTimeout>;
