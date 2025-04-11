@@ -11173,7 +11173,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.20.0";
+let version$2 = "3.20.1";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -46720,8 +46720,9 @@ PersistentObjectAttribute.registerAttributeType("BinaryFile", PersistentObjectAt
 
 let Toggle = class Toggle extends WebComponent {
     static get template() { return html$3 `<style>:host {
-  display: block;
-  padding-right: var(--theme-h5);
+  display: flex;
+  align-items: center;
+  gap: var(--theme-h5);
   box-sizing: border-box;
 }
 :host(:not([disabled])) {
@@ -46777,12 +46778,10 @@ let Toggle = class Toggle extends WebComponent {
   background-color: #a5a5a5;
 }</style>
 
-<div class="layout horizontal center">
-    <div id="box" class="relative">
-        <div id="switch"></div>
-    </div>
-    <span hidden$="[[op_isEmpty(label)]]">[[label]]</span>
-</div>`; }
+<div id="box" class="relative" part="box">
+    <div id="switch" part="switch"></div>
+</div>
+<span hidden$="[[op_isEmpty(label)]]" part="label">[[label]]</span>`; }
     connectedCallback() {
         super.connectedCallback();
         this.setAttribute("tabindex", "0");
@@ -46844,6 +46843,9 @@ let PersistentObjectAttributeBoolean = class PersistentObjectAttributeBoolean ex
 :host vi-checkbox {
   display: inline-block;
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
+}
+:host vi-toggle {
+  align-self: start;
 }
 
 :host-context(vi-persistent-object-attribute-as-detail) {
