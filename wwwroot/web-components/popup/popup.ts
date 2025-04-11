@@ -33,6 +33,10 @@ const openPopups: Popup[] = [];
             type: Number,
             value: 500
         },
+        openDelay: {
+            type: Number,
+            value: 0
+        },
         disabled: {
             type: Boolean,
             reflectToAttribute: true
@@ -92,11 +96,13 @@ export class Popup extends WebComponent {
     private _tapHandler: EventListener;
     private _enterHandler: EventListener;
     private _leaveHandler: EventListener;
+    private _headerLeaveHandler: EventListener;
     private _toggleSize: ISize;
     private _header: HTMLElement;
     private __Vidyano_WebComponents_PopupCore__Instance__ = true;
     private _resolver: Function;
     private _closeOnMoveoutTimer: ReturnType<typeof setTimeout>;
+    private _openOnHoverTimer: ReturnType<typeof setTimeout>;
     private _currentTarget: HTMLElement | WebComponent;
     readonly open: boolean; protected _setOpen: (val: boolean) => void;
     readonly hover: boolean; private _setHover: (val: boolean) => void;
@@ -106,6 +112,7 @@ export class Popup extends WebComponent {
     disabled: boolean;
     sticky: boolean;
     closeDelay: number;
+    openDelay: number;
     openOnHover: boolean;
     autoWidth: boolean;
 
@@ -120,6 +127,9 @@ export class Popup extends WebComponent {
 
         this.removeEventListener("popupparent", this._onPopupparent);
         this.#cleanup?.();
+
+        clearTimeout(this._openOnHoverTimer);
+        clearTimeout(this._closeOnMoveoutTimer);
     }
 
     popup(): Promise<any> {
@@ -198,6 +208,10 @@ export class Popup extends WebComponent {
         if (!this.open || this.fire("popup-closing", null, { bubbles: false, cancelable: true }).defaultPrevented)
             return;
 
+        // Clear any pending open timer
+        clearTimeout(this._openOnHoverTimer);
+        this._openOnHoverTimer = undefined;
+
         if (!this.open && this._closeOnMoveoutTimer) {
             clearTimeout(this._closeOnMoveoutTimer);
             this._closeOnMoveoutTimer = undefined;
@@ -228,7 +242,28 @@ export class Popup extends WebComponent {
 
         if (this.isConnected) {
             if (this.openOnHover) {
-                this._header.addEventListener("mouseenter", this._enterHandler = () => this.popup());
+                // Add delay logic to mouseenter
+                this._header.addEventListener("mouseenter", this._enterHandler = () => {
+                    clearTimeout(this._openOnHoverTimer); // Clear previous timer if any
+                    clearTimeout(this._closeOnMoveoutTimer); // Clear pending close timer when re-entering header
+
+                    if (!this.open) { // Only schedule open if not already open
+                        if (this.openDelay > 0) {
+                            this._openOnHoverTimer = setTimeout(() => {
+                                this.popup();
+                                this._openOnHoverTimer = undefined;
+                            }, this.openDelay);
+                        } else {
+                            this.popup(); // Open immediately if delay is 0
+                        }
+                    }
+                });
+                // Add listener to header to cancel open timer on leave
+                this._header.addEventListener("mouseleave", this._headerLeaveHandler = () => {
+                    clearTimeout(this._openOnHoverTimer);
+                    this._openOnHoverTimer = undefined;
+                });
+                // Keep existing leave handler on popup content for closing
                 this.addEventListener("mouseleave", this._leaveHandler = this.close.bind(this));
             }
             else
@@ -238,6 +273,11 @@ export class Popup extends WebComponent {
             if (this._enterHandler) {
                 this._header.removeEventListener("mouseenter", this._enterHandler);
                 this._enterHandler = undefined;
+            }
+
+            if (this._headerLeaveHandler) {
+                this._header.removeEventListener("mouseleave", this._headerLeaveHandler);
+                this._headerLeaveHandler = undefined;
             }
 
             if (this._leaveHandler) {
@@ -255,6 +295,10 @@ export class Popup extends WebComponent {
     private _tap(e: CustomEvent) {
         if (this.disabled)
             return;
+
+        // Clear any pending hover open timer for instant click open
+        clearTimeout(this._openOnHoverTimer);
+        this._openOnHoverTimer = undefined;
 
         if (this.open) {
             if (!this.sticky)
@@ -300,6 +344,10 @@ export class Popup extends WebComponent {
         if (this._setHover)
             this._setHover(true);
 
+        // Clear pending open timer if mouse enters content before timer fires
+        clearTimeout(this._openOnHoverTimer);
+        this._openOnHoverTimer = undefined;
+
         if (this._closeOnMoveoutTimer) {
             clearTimeout(this._closeOnMoveoutTimer);
             this._closeOnMoveoutTimer = undefined;
@@ -307,8 +355,12 @@ export class Popup extends WebComponent {
     }
 
     protected _contentMouseLeave(e: MouseEvent) {
-        if (this.openOnHover)
-            return;
+        if (this.openOnHover && !this.sticky) {
+            this._closeOnMoveoutTimer = setTimeout(() => {
+                this.close();
+            }, this.closeDelay);
+        }
+
 
         if (e.relatedTarget == null) {
             e.stopPropagation();
