@@ -11149,7 +11149,7 @@ function defaultOnOpen(response) {
     }
 }
 
-let version$2 = "3.20.1";
+let version$2 = "3.20.2";
 class Service extends Observable {
     constructor(serviceUri, hooks = new ServiceHooks(), isTransient = false) {
         super();
@@ -24880,26 +24880,32 @@ Scroller = Scroller_1 = __decorate([
 var Popup_1;
 let _documentClosePopupListener;
 document.addEventListener("mousedown", _documentClosePopupListener = e => {
-    const path = e.composedPath().slice();
-    do {
-        const el = path.shift();
-        if (!el || el === document) {
-            Popup.closeAll();
+    const target = e.target;
+    if (!target)
+        return;
+    let shouldClose = true;
+    for (const el of e.composedPath()) {
+        if (el === document)
+            break;
+        if (!(el instanceof Element))
+            continue;
+        const containingPopup = el.closest("vi-popup");
+        if (containingPopup && containingPopup.open) {
+            shouldClose = false;
             break;
         }
-        else if (el.__Vidyano_WebComponents_PopupCore__Instance__ && el.open)
+        const elPopupRef = el.popup;
+        if (elPopupRef instanceof Popup && elPopupRef.open) {
+            shouldClose = false;
             break;
-        else if (el.popup && el.popup.__Vidyano_WebComponents_PopupCore__Instance__ && el.popup.open)
-            break;
-    } while (true);
+        }
+    }
+    if (shouldClose)
+        Popup.closeAll();
 });
 document.addEventListener("touchstart", _documentClosePopupListener);
 const openPopups = [];
 let Popup = Popup_1 = class Popup extends WebComponent {
-    constructor() {
-        super(...arguments);
-        this.__Vidyano_WebComponents_PopupCore__Instance__ = true;
-    }
     static get template() { return html$3 `<style>:host {
   display: flex;
   flex-direction: row;
@@ -24952,6 +24958,8 @@ let Popup = Popup_1 = class Popup extends WebComponent {
         super.disconnectedCallback();
         this.removeEventListener("popupparent", this._onPopupparent);
         this.#cleanup?.();
+        clearTimeout(this._openOnHoverTimer);
+        clearTimeout(this._closeOnMoveoutTimer);
     }
     popup() {
         if (this.open)
@@ -25015,6 +25023,8 @@ let Popup = Popup_1 = class Popup extends WebComponent {
     close() {
         if (!this.open || this.fire("popup-closing", null, { bubbles: false, cancelable: true }).defaultPrevented)
             return;
+        clearTimeout(this._openOnHoverTimer);
+        this._openOnHoverTimer = undefined;
         if (!this.open && this._closeOnMoveoutTimer) {
             clearTimeout(this._closeOnMoveoutTimer);
             this._closeOnMoveoutTimer = undefined;
@@ -25037,7 +25047,25 @@ let Popup = Popup_1 = class Popup extends WebComponent {
             this._header.popup = this;
         if (this.isConnected) {
             if (this.openOnHover) {
-                this._header.addEventListener("mouseenter", this._enterHandler = () => this.popup());
+                this._header.addEventListener("mouseenter", this._enterHandler = () => {
+                    clearTimeout(this._openOnHoverTimer);
+                    clearTimeout(this._closeOnMoveoutTimer);
+                    if (!this.open) {
+                        if (this.openDelay > 0) {
+                            this._openOnHoverTimer = setTimeout(() => {
+                                this.popup();
+                                this._openOnHoverTimer = undefined;
+                            }, this.openDelay);
+                        }
+                        else {
+                            this.popup();
+                        }
+                    }
+                });
+                this._header.addEventListener("mouseleave", this._headerLeaveHandler = () => {
+                    clearTimeout(this._openOnHoverTimer);
+                    this._openOnHoverTimer = undefined;
+                });
                 this.addEventListener("mouseleave", this._leaveHandler = this.close.bind(this));
             }
             else
@@ -25047,6 +25075,10 @@ let Popup = Popup_1 = class Popup extends WebComponent {
             if (this._enterHandler) {
                 this._header.removeEventListener("mouseenter", this._enterHandler);
                 this._enterHandler = undefined;
+            }
+            if (this._headerLeaveHandler) {
+                this._header.removeEventListener("mouseleave", this._headerLeaveHandler);
+                this._headerLeaveHandler = undefined;
             }
             if (this._leaveHandler) {
                 this.removeEventListener("mouseleave", this._leaveHandler);
@@ -25061,6 +25093,8 @@ let Popup = Popup_1 = class Popup extends WebComponent {
     _tap(e) {
         if (this.disabled)
             return;
+        clearTimeout(this._openOnHoverTimer);
+        this._openOnHoverTimer = undefined;
         if (this.open) {
             if (!this.sticky)
                 this.close();
@@ -25094,14 +25128,19 @@ let Popup = Popup_1 = class Popup extends WebComponent {
     _contentMouseEnter(e) {
         if (this._setHover)
             this._setHover(true);
+        clearTimeout(this._openOnHoverTimer);
+        this._openOnHoverTimer = undefined;
         if (this._closeOnMoveoutTimer) {
             clearTimeout(this._closeOnMoveoutTimer);
             this._closeOnMoveoutTimer = undefined;
         }
     }
     _contentMouseLeave(e) {
-        if (this.openOnHover)
-            return;
+        if (this.openOnHover && !this.sticky) {
+            this._closeOnMoveoutTimer = setTimeout(() => {
+                this.close();
+            }, this.closeDelay);
+        }
         if (e.relatedTarget == null) {
             e.stopPropagation();
             return;
@@ -25159,6 +25198,10 @@ Popup = Popup_1 = __decorate([
             closeDelay: {
                 type: Number,
                 value: 500
+            },
+            openDelay: {
+                type: Number,
+                value: 0
             },
             disabled: {
                 type: Boolean,
@@ -38008,6 +38051,7 @@ let QueryGridCell = class QueryGridCell extends WebComponent {
     #_observeOnConnected;
     #_lastMeasuredColumn;
     #_isObserved;
+    #typeHints;
     connectedCallback() {
         super.connectedCallback();
         if (this.#_observeOnConnected) {
@@ -38047,6 +38091,13 @@ let QueryGridCell = class QueryGridCell extends WebComponent {
     _unobserve() {
         resizeObserver$1.unobserve(this);
         this.#_isObserved = false;
+    }
+    _valueChanged(itemValue, oldValue) {
+        this._setSensitive(itemValue?.column.isSensitive);
+        this.#typeHints = Object.assign({}, itemValue?.item.typeHints, itemValue?.typeHints);
+    }
+    _getTypeHint(column, name, defaultValue) {
+        return column.getTypeHint(name, defaultValue, this.#typeHints, true);
     }
     static registerCellType(type, constructor) {
         registeredQueyGridCellTypes[type] = constructor;
@@ -38109,17 +38160,15 @@ let QueryGridCellDefault = class QueryGridCellDefault extends QueryGridCell {
   padding: 0 var(--theme-h5);
 }</style>
 <div id="text"></div>`; }
-    #typeHints;
     #textNode;
     #textNodeValue;
-    _valueChanged(itemValue) {
-        this._setSensitive(itemValue?.column.isSensitive);
+    _valueChanged(itemValue, oldValue) {
+        super._valueChanged(itemValue, oldValue);
         if (!itemValue) {
             this._clearCell();
             return;
         }
         let value = null;
-        this.#typeHints = Object.assign({}, itemValue.item.typeHints, itemValue ? itemValue.typeHints : undefined);
         value = itemValue.item.getValue(itemValue.column.name);
         if (value != null && (itemValue.column.type === "Boolean" || itemValue.column.type === "NullableBoolean"))
             value = itemValue.item.query.service.getTranslatedMessage(value ? this._getTypeHint(itemValue.column, "truekey", "True") : this._getTypeHint(itemValue.column, "falsekey", "False"));
@@ -38191,9 +38240,6 @@ let QueryGridCellDefault = class QueryGridCellDefault extends QueryGridCell {
         }
         else
             this.$.text.appendChild(this.#textNode = document.createTextNode(this.#textNodeValue = value));
-    }
-    _getTypeHint(column, name, defaultValue) {
-        return column.getTypeHint(name, defaultValue, this.#typeHints, true);
     }
 };
 QueryGridCellDefault = __decorate([
@@ -40866,11 +40912,9 @@ let QueryGridCellBoolean = class QueryGridCellBoolean extends QueryGridCell {
 :host([is-app-sensitive][sensitive]) {
   filter: blur(5px);
 }</style>`; }
+    #foreground = { currentValue: null };
     _valueChanged(value, oldValue) {
-        this._setOldValue(oldValue == null ? null : oldValue);
-    }
-    _update(value, oldValue) {
-        this._setSensitive(value?.column.isSensitive);
+        super._valueChanged(value, oldValue);
         if (!!value && !!oldValue && value.getValue() === oldValue.getValue()) {
             const oldHints = oldValue.column.typeHints;
             const hints = value.column.typeHints;
@@ -40886,6 +40930,9 @@ let QueryGridCellBoolean = class QueryGridCellBoolean extends QueryGridCell {
                 this._textNode.nodeValue = "";
         }
         else {
+            const foreground = this._getTypeHint(value.column, "foreground", null);
+            if (foreground !== this.#foreground.currentValue)
+                this.style.color = this.#foreground.currentValue = foreground || this.#foreground.originalValue || null;
             const displayValue = value.getValue();
             if (displayValue == null) {
                 if (this._icon) {
@@ -40931,15 +40978,8 @@ QueryGridCellBoolean = __decorate([
             value: {
                 type: Object,
                 observer: "_valueChanged"
-            },
-            oldValue: {
-                type: Object,
-                readOnly: true
             }
         },
-        observers: [
-            "_update(value, oldValue, isConnected)"
-        ],
         sensitive: true
     })
 ], QueryGridCellBoolean);
@@ -41081,8 +41121,8 @@ let QueryGridCellImage = class QueryGridCellImage extends QueryGridCell {
 :host([is-app-sensitive][sensitive]) {
   filter: blur(5px);
 }</style>`; }
-    _valueChanged(value) {
-        this._setSensitive(value?.column.isSensitive);
+    _valueChanged(value, oldValue) {
+        super._valueChanged(value, oldValue);
         if (!value || !value.value) {
             if (this._image && !this._image.hasAttribute("hidden")) {
                 this._image.style.backgroundImage = "";
@@ -46648,9 +46688,8 @@ PersistentObjectAttribute.registerAttributeType("BinaryFile", PersistentObjectAt
 
 let Toggle = class Toggle extends WebComponent {
     static get template() { return html$3 `<style>:host {
-  display: flex;
-  align-items: center;
-  gap: var(--theme-h5);
+  display: block;
+  padding-right: var(--theme-h5);
   box-sizing: border-box;
 }
 :host(:not([disabled])) {
@@ -46771,9 +46810,6 @@ let PersistentObjectAttributeBoolean = class PersistentObjectAttributeBoolean ex
 :host vi-checkbox {
   display: inline-block;
   color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
-}
-:host vi-toggle {
-  align-self: start;
 }
 
 :host-context(vi-persistent-object-attribute-as-detail) {

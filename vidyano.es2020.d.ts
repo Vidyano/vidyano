@@ -11725,11 +11725,12 @@ declare class Popup extends WebComponent {
     private _tapHandler;
     private _enterHandler;
     private _leaveHandler;
+    private _headerLeaveHandler;
     private _toggleSize;
     private _header;
-    private __Vidyano_WebComponents_PopupCore__Instance__;
     private _resolver;
     private _closeOnMoveoutTimer;
+    private _openOnHoverTimer;
     private _currentTarget;
     readonly open: boolean;
     protected _setOpen: (val: boolean) => void;
@@ -11742,6 +11743,7 @@ declare class Popup extends WebComponent {
     disabled: boolean;
     sticky: boolean;
     closeDelay: number;
+    openDelay: number;
     openOnHover: boolean;
     autoWidth: boolean;
     connectedCallback(): void;
@@ -12935,20 +12937,20 @@ declare abstract class QueryGridCell extends WebComponent {
     private _queueMeasure;
     private _observe;
     _unobserve(): void;
+    protected _valueChanged(itemValue: QueryResultItemValue, oldValue: QueryResultItemValue): void;
+    protected _getTypeHint(column: QueryColumn, name: string, defaultValue?: string): string;
     static registerCellType(type: string, constructor: QueryGridCellConstructor): void;
     static getCellTypeConstructor(type: string): QueryGridCellConstructor;
 }
 type QueryGridCellConstructor = new (...args: any[]) => QueryGridCell;
 
 declare class QueryGridCellBoolean extends QueryGridCell {
+    #private;
     static get template(): HTMLTemplateElement;
     private _isHidden;
     private _icon;
     private _textNode;
-    readonly oldValue: QueryResultItemValue;
-    private _setOldValue;
-    private _valueChanged;
-    private _update;
+    protected _valueChanged(value: QueryResultItemValue, oldValue: QueryResultItemValue): void;
 }
 
 declare class QueryGridCellDefault extends QueryGridCell {
@@ -12960,18 +12962,16 @@ declare class QueryGridCellDefault extends QueryGridCell {
     private _textAlign;
     right: boolean;
     tag: boolean;
-    value: QueryResultItemValue;
-    protected _valueChanged(itemValue: QueryResultItemValue): void;
+    protected _valueChanged(itemValue: QueryResultItemValue, oldValue: QueryResultItemValue): void;
     protected _clearCell(): void;
     protected _updateCell(value: string): void;
-    protected _getTypeHint(column: QueryColumn, name: string, defaultValue?: string): string;
 }
 
 declare class QueryGridCellImage extends QueryGridCell {
     static get template(): HTMLTemplateElement;
     private _isHidden;
     private _image;
-    private _valueChanged;
+    protected _valueChanged(value: QueryResultItemValue, oldValue: QueryResultItemValue): void;
 }
 
 interface IQueryGridUserSettingsColumnData {
