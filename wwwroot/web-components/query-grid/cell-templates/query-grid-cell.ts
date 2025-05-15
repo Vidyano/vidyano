@@ -54,6 +54,7 @@ export abstract class QueryGridCell extends WebComponent {
     #_observeOnConnected: boolean;
     #_lastMeasuredColumn: Vidyano.QueryColumn;
     #_isObserved: boolean;
+    #typeHints: any;
 
     readonly sensitive: boolean; protected _setSensitive: (sensitive: boolean) => void;
 
@@ -121,6 +122,17 @@ export abstract class QueryGridCell extends WebComponent {
     _unobserve() {
         resizeObserver.unobserve(this);
         this.#_isObserved = false;
+    }
+
+    protected _valueChanged(itemValue: Vidyano.QueryResultItemValue, oldValue: Vidyano.QueryResultItemValue) {
+        this._setSensitive(itemValue?.column.isSensitive);
+
+        // Prepare type hints for the cell
+        this.#typeHints = Object.assign({}, itemValue?.item.typeHints, itemValue?.typeHints);
+    }
+
+    protected _getTypeHint(column: Vidyano.QueryColumn, name: string, defaultValue?: string): string {
+        return column.getTypeHint(name, defaultValue, this.#typeHints, true);
     }
 
     static registerCellType(type: string, constructor: QueryGridCellConstructor) {

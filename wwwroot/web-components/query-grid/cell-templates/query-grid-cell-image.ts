@@ -18,8 +18,8 @@ export class QueryGridCellImage extends QueryGridCell {
     private _isHidden: boolean;
     private _image: HTMLDivElement;
 
-    private _valueChanged(value: Vidyano.QueryResultItemValue) {
-        this._setSensitive(value?.column.isSensitive);
+    protected _valueChanged(value: Vidyano.QueryResultItemValue, oldValue: Vidyano.QueryResultItemValue) {
+        super._valueChanged(value, oldValue);
 
         if (!value || !value.value) {
             if (this._image && !this._image.hasAttribute("hidden")) {

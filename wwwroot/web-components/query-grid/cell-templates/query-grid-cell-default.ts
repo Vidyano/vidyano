@@ -25,7 +25,6 @@ export class QueryGridCellDefault extends QueryGridCell {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-cell-default.html">` }
 
     private _extraClass: string;
-    #typeHints: any;
     #textNode: Text;
     #textNodeValue: string;
     private _foreground: { currentValue?: any; originalValue?: any } = { currentValue: null };
@@ -33,10 +32,9 @@ export class QueryGridCellDefault extends QueryGridCell {
     private _textAlign: { currentValue?: any; originalValue?: any } = { currentValue: null };
     right: boolean;
     tag: boolean;
-    value: Vidyano.QueryResultItemValue;
 
-    protected _valueChanged(itemValue: Vidyano.QueryResultItemValue) {
-        this._setSensitive(itemValue?.column.isSensitive);
+    protected _valueChanged(itemValue: Vidyano.QueryResultItemValue, oldValue: Vidyano.QueryResultItemValue) {
+        super._valueChanged(itemValue, oldValue);
 
         if (!itemValue) {
             this._clearCell();
@@ -45,7 +43,6 @@ export class QueryGridCellDefault extends QueryGridCell {
 
         let value = null;
 
-        this.#typeHints = Object.assign({}, itemValue.item.typeHints, itemValue ? itemValue.typeHints : undefined);
         value = itemValue.item.getValue(itemValue.column.name);
         if (value != null && (itemValue.column.type === "Boolean" || itemValue.column.type === "NullableBoolean"))
             value = itemValue.item.query.service.getTranslatedMessage(value ? this._getTypeHint(itemValue.column, "truekey", "True") : this._getTypeHint(itemValue.column, "falsekey", "False"));
@@ -128,9 +125,5 @@ export class QueryGridCellDefault extends QueryGridCell {
         }
         else
             this.$.text.appendChild(this.#textNode = document.createTextNode(this.#textNodeValue = <string>value));
-    }
-
-    protected _getTypeHint(column: Vidyano.QueryColumn, name: string, defaultValue?: string): string {
-        return column.getTypeHint(name, defaultValue, this.#typeHints, true);
     }
 }

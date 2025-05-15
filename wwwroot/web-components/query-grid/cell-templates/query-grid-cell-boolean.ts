@@ -26,9 +26,9 @@ export class QueryGridCellBoolean extends QueryGridCell {
     private _isHidden: boolean;
     private _icon: HTMLElement;
     private _textNode: Text;
-    readonly oldValue: Vidyano.QueryResultItemValue; private _setOldValue: (oldValue: Vidyano.QueryResultItemValue) => void;
 
-    private _valueChanged(value: Vidyano.QueryResultItemValue, oldValue: Vidyano.QueryResultItemValue) {
+    protected _valueChanged(value: Vidyano.QueryResultItemValue, oldValue: Vidyano.QueryResultItemValue) {
+        super._valueChanged(value, oldValue);
         this._setOldValue(oldValue == null ? null : oldValue);
     }
 
