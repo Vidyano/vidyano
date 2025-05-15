@@ -9,31 +9,20 @@ import { WebComponent } from "../../web-component/web-component.js"
         value: {
             type: Object,
             observer: "_valueChanged"
-        },
-        oldValue: {
-            type: Object,
-            readOnly: true
         }
     },
-    observers: [
-        "_update(value, oldValue, isConnected)"
-    ],
     sensitive: true
 })
 export class QueryGridCellBoolean extends QueryGridCell {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-cell-boolean.html">` }
 
+    #foreground: { currentValue?: any; originalValue?: any } = { currentValue: null };
     private _isHidden: boolean;
     private _icon: HTMLElement;
     private _textNode: Text;
 
     protected _valueChanged(value: Vidyano.QueryResultItemValue, oldValue: Vidyano.QueryResultItemValue) {
         super._valueChanged(value, oldValue);
-        this._setOldValue(oldValue == null ? null : oldValue);
-    }
-
-    private _update(value: Vidyano.QueryResultItemValue, oldValue: Vidyano.QueryResultItemValue) {
-        this._setSensitive(value?.column.isSensitive);
 
         if (!!value && !!oldValue && value.getValue() === oldValue.getValue()) {
             const oldHints = oldValue.column.typeHints;
@@ -51,6 +40,10 @@ export class QueryGridCellBoolean extends QueryGridCell {
             if (this._textNode && this._textNode.nodeValue)
                 this._textNode.nodeValue = "";
         } else {
+            const foreground = this._getTypeHint(value.column, "foreground", null);
+            if (foreground !== this.#foreground.currentValue)
+                this.style.color = this.#foreground.currentValue = foreground || this.#foreground.originalValue || null;
+
             const displayValue: boolean = value.getValue();
             if (displayValue == null) {
                 if (this._icon) {
