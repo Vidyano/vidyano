@@ -65,7 +65,7 @@ export class Service extends Observable<Service> {
     constructor(public serviceUri: string, public hooks: ServiceHooks = new ServiceHooks(), public readonly isTransient: boolean = false) {
         super();
 
-        (<any>this.hooks)._service = this;
+        _internal(this.hooks).setService(this);
 
         if (!isTransient)
             this.staySignedIn = cookie("staySignedIn", { force: true }) === "true";

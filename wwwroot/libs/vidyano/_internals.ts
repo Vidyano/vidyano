@@ -5,6 +5,8 @@ import type { Dto } from "./vidyano";
 import type { QueryResultItem } from "./query-result-item";
 import type { QueryResultItemValue } from "./query-result-item-value";
 import type { QueryColumn } from "./query-column";
+import type { Service } from "./service";
+import type { ServiceHooks } from "./service-hooks";
 
 export const PersistentObjectSymbols = {
     Dto: Symbol("PersistentObject_Dto"),
@@ -38,6 +40,11 @@ export const QueryResultItemValueSymbols = {
 
 export const QuerySymbols = {
     IsQuery: Symbol("Query_IsQuery"),
+};
+
+export const ServiceHooksSymbols = {
+    IsServiceHooks: Symbol("ServiceHooks_IsServiceHooks"),
+    SetService: Symbol("ServiceHooks_SetService"),
 };
 
 // Internal proxy symbol for accessing internal methods.
@@ -114,6 +121,13 @@ export type InternalQueryResultItemValue = {
 export type InternalQuery = Query & {
 };
 
+export type InternalServiceHooks = ServiceHooks & {
+    /**
+     * Sets the service instance for the hooks.
+     */
+    setService(service: Service);
+};
+
 /**
  * Gets the internal proxy for the target.
  * @param target The target to get the internal proxy for.
@@ -124,6 +138,7 @@ export function _internal(target: Query): InternalQuery;
 export function _internal(target: QueryResultItem): InternalQueryResultItem;
 export function _internal(target: QueryResultItemValue): InternalQueryResultItemValue;
 export function _internal(target: QueryColumn): InternalQueryColumn;
+export function _internal(target: ServiceHooks): InternalServiceHooks;
 export function _internal(target: any) {
     if (target[InternalProxy])
         return target[InternalProxy];
@@ -212,6 +227,18 @@ export function _internal(target: any) {
                 }
             }
         }) as InternalQueryResultItemValue;
+    } else if (target[ServiceHooksSymbols.IsServiceHooks]) {
+        return target[InternalProxy] = new Proxy(target, {
+            get: (obj, prop, receiver) => {
+                switch (prop) {
+                    case "setService":
+                        return (...args: any[]) => obj[ServiceHooksSymbols.SetService].apply(obj, args);
+
+                    default:
+                        return Reflect.get(obj, prop, receiver);
+                }
+            }
+        }) as InternalServiceHooks;
     } else
         throw new Error("Invalid target");
 }
