@@ -2,6 +2,7 @@ import type { PersistentObject } from "./persistent-object";
 import type { PersistentObjectAttribute } from "./persistent-object-attribute";
 import type { Query } from "./query";
 import type { Dto } from "./vidyano";
+import type { QueryResultItem } from "./query-result-item";
 
 export const PersistentObjectSymbols = {
     Dto: Symbol("PersistentObject_Dto"),
@@ -16,6 +17,11 @@ export const PersistentObjectAttributeSymbols = {
     IsPersistentObjectAttribute: Symbol("PersistentObjectAttribute_IsPersistentObjectAttribute"),
     RefreshFromResult: Symbol("PersistentObjectAttribute_RefreshFromResult"),
     ToServiceObject: Symbol("PersistentObjectAttribute_ToServiceObject"),
+};
+
+export const QueryResultItemSymbols = {
+    IsQueryResultItem: Symbol("QueryResultItem_IsQueryResultItem"),
+    ToServiceObject: Symbol("QueryResultItem_ToServiceObject"),
 };
 
 export const QuerySymbols = {
@@ -72,6 +78,13 @@ export type InternalPersistentObjectAttribute = PersistentObjectAttribute & {
     toServiceObject(): Dto.PersistentObjectAttribute;
 };
 
+export type InternalQueryResultItem = QueryResultItem & {
+    /**
+     * Converts the query result item to a service object.
+     */
+    toServiceObject(): Dto.QueryResultItem;
+};
+
 export type InternalQuery = Query & {
 };
 
@@ -82,6 +95,7 @@ export type InternalQuery = Query & {
 export function _internal(target: PersistentObject): InternalPersistentObject;
 export function _internal(target: PersistentObjectAttribute): InternalPersistentObjectAttribute;
 export function _internal(target: Query): InternalQuery;
+export function _internal(target: QueryResultItem): InternalQueryResultItem;
 export function _internal(target: any) {
     if (target[InternalProxy])
         return target[InternalProxy];
@@ -134,6 +148,18 @@ export function _internal(target: any) {
                 };
             }
         }) as InternalPersistentObjectAttribute;
+    } else if (target[QueryResultItemSymbols.IsQueryResultItem]) {
+        return target[InternalProxy] = new Proxy(target, {
+            get: (obj, prop, receiver) => {
+                switch (prop) {
+                    case "toServiceObject":
+                        return (...args: any[]) => obj[QueryResultItemSymbols.ToServiceObject].apply(obj, args);
+
+                    default:
+                        return Reflect.get(obj, prop, receiver);
+                }
+            }
+        }) as InternalQueryResultItem;
     } else
         throw new Error("Invalid target");
 }

@@ -20,6 +20,7 @@ import Boolean from "./common/boolean.js"
 import "./actions.js"
 import { sleep } from "./common/sleep.js"
 import { fetchEventSource, EventSourceMessage } from '@microsoft/fetch-event-source'
+import { _internal } from "./vidyano.js"
 
 export let version = "vidyano-latest-version";
 
@@ -856,7 +857,7 @@ export class Service extends Observable<Service> {
         if (query != null)
             data.query = query._toServiceObject();
         if (selectedItems != null)
-            data.selectedItems = selectedItems.map(item => item && item._toServiceObject());
+            data.selectedItems = selectedItems.map(item => item && _internal(item).toServiceObject());
         if (parameters != null)
             data.parameters = parameters;
 
@@ -937,7 +938,7 @@ export class Service extends Observable<Service> {
         if (query != null)
             data.query = query._toServiceObject();
         if (selectedItems != null)
-            data.selectedItems = selectedItems.map(si => si._toServiceObject());
+            data.selectedItems = selectedItems.map(si => _internal(si).toServiceObject());
         if (parameters != null)
             data.parameters = parameters;
 
