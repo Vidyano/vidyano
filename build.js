@@ -54,6 +54,8 @@ function execCommand(command) {
         console.info("Renaming files");
         await fs.rename("vidyano.js", `vidyano.es2020.js`);
         await fs.rename("vidyano.d.ts", `vidyano.es2020.d.ts`);
+        await fs.rename("vidyano-base.js", `vidyano-base.es2020.js`);
+        await fs.rename("vidyano-base.d.ts", `vidyano-base.es2020.d.ts`);
 
         console.info("Executing TypeScript build");
         await execCommand("tsc --project tsconfig.json");
