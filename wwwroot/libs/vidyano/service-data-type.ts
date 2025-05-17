@@ -1,6 +1,13 @@
-import BigNumber from "bignumber.js"
+import BigNumber from "bignumber.js";
 
+/**
+ * Provides helpers for working with service data types.
+ */
 export abstract class DataType {
+    /**
+     * Determines if the type is a date or time type.
+     * @param type The type string.
+     */
     static isDateTimeType(type: string): boolean {
         return [
             "NullableDate",
@@ -14,6 +21,10 @@ export abstract class DataType {
         ].indexOf(type) >= 0;
     }
 
+    /**
+     * Determines if the type is a numeric type.
+     * @param type The type string.
+     */
     static isNumericType(type: string): boolean {
         return [
             "NullableDecimal",
@@ -41,6 +52,10 @@ export abstract class DataType {
         ].indexOf(type) >= 0;
     }
 
+    /**
+     * Determines if the type is a boolean type.
+     * @param type The type string.
+     */
     static isBooleanType(type: string): boolean {
         return [
             "Boolean",
@@ -49,7 +64,7 @@ export abstract class DataType {
         ].indexOf(type) >= 0;
     }
 
-    private static _getDate = function (yearString: string, monthString: string, dayString: string, hourString: string, minuteString: string, secondString: string, msString: string) {
+    static #getDate = function (yearString: string, monthString: string, dayString: string, hourString: string, minuteString: string, secondString: string, msString: string) {
         const year = parseInt(yearString, 10);
         const month = parseInt(monthString || "1", 10) - 1;
         const day = parseInt(dayString || "1", 10);
@@ -61,7 +76,7 @@ export abstract class DataType {
         return new Date(year, month, day, hour, minutes, seconds, ms);
     }
 
-    private static _getServiceTimeString = function (timeString: string, defaultValue: string) {
+    static #getServiceTimeString = function (timeString: string, defaultValue: string) {
         if (!String.isNullOrWhiteSpace(timeString)) {
             timeString = timeString.trim();
 
@@ -109,6 +124,11 @@ export abstract class DataType {
         return defaultValue;
     }
 
+    /**
+     * Converts a service string value to a specific data type.
+     * @param value The value to convert.
+     * @param type The data type of the service string value.
+     */
     static fromServiceString(value: string, type: string): any {
         switch (type) {
             case "Decimal":
@@ -164,7 +184,7 @@ export abstract class DataType {
                     const parts = value.split(" ");
                     const date = parts[0].split("-");
                     const time = parts[1].split(":");
-                    const dateTime = DataType._getDate(date[2], date[1], date[0], time[0], time[1], time[2].substring(0, 2), time[2].length > 2 ? time[2].substr(3, 3) : null);
+                    const dateTime = DataType.#getDate(date[2], date[1], date[0], time[0], time[1], time[2].substring(0, 2), time[2].length > 2 ? time[2].substr(3, 3) : null);
                     if (parts.length === 3) {
                         dateTime.netType("DateTimeOffset");
                         dateTime.netOffset(parts[2]);
@@ -205,6 +225,11 @@ export abstract class DataType {
         }
     }
 
+    /**
+     * Converts a value to a service string based on the specified data type.
+     * @param value The value to convert.
+     * @param type The data type of the service string value.
+     */
     static toServiceString(value: any, type: string): string {
         switch (type) {
             case "NullableDecimal":
@@ -291,10 +316,10 @@ export abstract class DataType {
                 return value ? "True" : "False";
 
             case "Time":
-                return DataType._getServiceTimeString(value, "0:00:00:00.0000000");
+                return DataType.#getServiceTimeString(value, "0:00:00:00.0000000");
 
             case "NullableTime":
-                return DataType._getServiceTimeString(value, null);
+                return DataType.#getServiceTimeString(value, null);
         }
 
         return typeof (value) === "string" || value == null ? value : String(value);
