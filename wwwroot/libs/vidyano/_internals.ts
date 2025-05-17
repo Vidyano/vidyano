@@ -4,6 +4,7 @@ import type { Query } from "./query";
 import type { Dto } from "./vidyano";
 import type { QueryResultItem } from "./query-result-item";
 import type { QueryResultItemValue } from "./query-result-item-value";
+import type { QueryColumn } from "./query-column";
 
 export const PersistentObjectSymbols = {
     Dto: Symbol("PersistentObject_Dto"),
@@ -18,6 +19,11 @@ export const PersistentObjectAttributeSymbols = {
     IsPersistentObjectAttribute: Symbol("PersistentObjectAttribute_IsPersistentObjectAttribute"),
     RefreshFromResult: Symbol("PersistentObjectAttribute_RefreshFromResult"),
     ToServiceObject: Symbol("PersistentObjectAttribute_ToServiceObject"),
+};
+
+export const QueryColumnSymbols = {
+    IsQueryColumn: Symbol("QueryColumn_IsQueryColumn"),
+    ToServiceObject: Symbol("QueryColumn_ToServiceObject"),
 };
 
 export const QueryResultItemSymbols = {
@@ -84,6 +90,13 @@ export type InternalPersistentObjectAttribute = PersistentObjectAttribute & {
     toServiceObject(): Dto.PersistentObjectAttribute;
 };
 
+export type InternalQueryColumn = QueryColumn & {
+    /**
+     * Converts the query column to a service object.
+     */
+    toServiceObject(): Dto.QueryColumn;
+};
+
 export type InternalQueryResultItem = QueryResultItem & {
     /**
      * Converts the query result item to a service object.
@@ -110,6 +123,7 @@ export function _internal(target: PersistentObjectAttribute): InternalPersistent
 export function _internal(target: Query): InternalQuery;
 export function _internal(target: QueryResultItem): InternalQueryResultItem;
 export function _internal(target: QueryResultItemValue): InternalQueryResultItemValue;
+export function _internal(target: QueryColumn): InternalQueryColumn;
 export function _internal(target: any) {
     if (target[InternalProxy])
         return target[InternalProxy];
@@ -153,6 +167,18 @@ export function _internal(target: any) {
                 };
             }
         }) as InternalPersistentObjectAttribute;
+    } else if (target[QueryColumnSymbols.IsQueryColumn]) {
+        return target[InternalProxy] = new Proxy(target, {
+            get: (obj, prop, receiver) => {
+                switch (prop) {
+                    case "toServiceObject":
+                        return (...args: any[]) => obj[QueryColumnSymbols.ToServiceObject].apply(obj, args);
+
+                    default:
+                        return Reflect.get(obj, prop, receiver);
+                }
+            }
+        }) as InternalQueryColumn;
     } else if (target[QuerySymbols.IsQuery]) {
         return target[InternalProxy] = new Proxy(target, {
             get: (obj, prop, receiver) => {

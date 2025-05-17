@@ -20,7 +20,7 @@ import Boolean from "./common/boolean.js"
 import "./actions.js"
 import { sleep } from "./common/sleep.js"
 import { fetchEventSource, EventSourceMessage } from '@microsoft/fetch-event-source'
-import { _internal } from "./vidyano.js"
+import { _internal } from "./_internals.js";
 
 export let version = "vidyano-latest-version";
 

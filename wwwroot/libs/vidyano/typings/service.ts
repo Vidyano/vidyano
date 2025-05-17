@@ -521,6 +521,8 @@ export declare type QueryColumn = {
     persistentObjectId: string;
     type: string;
     tag?: any;
+    includes: string[];
+    excludes: string[];
 };
 export declare type QueryResult = {
     charts: QueryChart[];

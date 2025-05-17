@@ -2707,33 +2707,33 @@ interface ISubjectNotifier<TSource, TDetail> {
     notify?: (source: TSource, detail?: TDetail) => void;
 }
 declare class PropertyChangedArgs {
-    readonly propertyName: string;
-    readonly newValue: any;
-    readonly oldValue: any;
+    #private;
     constructor(propertyName: string, newValue: any, oldValue: any);
+    get propertyName(): string;
+    get newValue(): any;
+    get oldValue(): any;
 }
 declare class ArrayChangedArgs {
-    arrayPropertyName: string;
-    readonly index: number;
-    readonly removedItems?: any[];
-    readonly addedItemCount?: number;
+    #private;
     constructor(arrayPropertyName: string, index: number, removedItems?: any[], addedItemCount?: number);
+    get arrayPropertyName(): string;
+    get index(): number;
+    get removedItems(): any[] | undefined;
+    get addedItemCount(): number | undefined;
 }
 interface ISubjectDisposer {
     (): void;
 }
 declare class Subject<TSource, TDetail> {
-    private _observers;
+    #private;
     constructor(notifier: ISubjectNotifier<TSource, TDetail>);
     attach(observer: ISubjectObserver<TSource, TDetail>): ISubjectDisposer;
-    private _detach;
 }
 interface ISubjectObserver<TSource, TDetail> {
     (sender: TSource, detail: TDetail): void;
 }
 declare class Observable<T> {
-    private _propertyChangedNotifier;
-    private _arrayChangedNotifier;
+    #private;
     readonly propertyChanged: Subject<T, PropertyChangedArgs>;
     readonly arrayChanged: Subject<T, ArrayChangedArgs>;
     constructor();
@@ -2759,17 +2759,11 @@ type ServiceBusCallback = (sender: any, message: string, detail: any) => void;
 interface ServiceBusSubscriptionDisposer extends ISubjectDisposer {
 }
 interface IServiceBus {
-    send(sender: any, message: string, parameters: any): any;
-    subscribe(message: string, callback: ServiceBusCallback, receiveLast?: boolean): ServiceBusSubscriptionDisposer;
-}
-declare class ServiceBusImpl implements IServiceBus {
-    private _topics;
-    private _getTopic;
     send(message: string, detail?: any): void;
     send(sender: any, message: string, detail?: any): void;
-    subscribe(message: string, callback: ServiceBusCallback, receiveLast?: boolean): ISubjectDisposer;
+    subscribe(message: string, callback: ServiceBusCallback, receiveLast?: boolean): ServiceBusSubscriptionDisposer;
 }
-declare const ServiceBus: ServiceBusImpl;
+declare const ServiceBus: IServiceBus;
 
 declare global {
     export interface String {
@@ -2899,34 +2893,42 @@ declare type ApplicationResponse = {
     hasSensitive: boolean;
 } & Response$1;
 declare type PersistentObjectStateBehavior = "None" | "OpenInEdit" | "StayInEdit" | "AsDialog";
-declare type PersistentObject$2 = {
-    actions?: string[];
-    attributes?: PersistentObjectAttribute$2[];
-    breadcrumb?: string;
-    dialogSaveAction?: string;
+declare type PersistentObject$2 = Partial<{
+    actions: string[];
+    actionLabels: Record<string, string>;
+    attributes: PersistentObjectAttribute$2[];
+    breadcrumb: string;
+    bulkObjectIds: string[];
+    dialogSaveAction: string;
     forceFromAction?: boolean;
     fullTypeName: string;
     id: string;
-    isBreadcrumbSensitive?: boolean;
-    isNew?: boolean;
-    isSystem?: boolean;
-    label?: string;
-    newOptions?: string;
-    notification?: string;
-    notificationType?: NotificationType$1;
-    notificationDuration?: number;
-    objectId?: string;
-    queries?: Query$2[];
-    queryLayoutMode?: string;
-    securityToken?: never;
-    stateBehavior?: PersistentObjectStateBehavior;
-    tabs?: Record<string, PersistentObjectTab$2>;
+    isBreadcrumbSensitive: boolean;
+    isDeleted: boolean;
+    isHidden: boolean;
+    isNew: boolean;
+    isReadOnly: boolean;
+    isSystem: boolean;
+    label: string;
+    metadata: Record<string, string>;
+    newOptions: string;
+    notification: string;
+    notificationType: NotificationType$1;
+    notificationDuration: number;
+    objectId: string;
+    parent: PersistentObject$2;
+    queries: Query$2[];
+    queryLayoutMode: "Application" | "MasterDetail" | "FullPage";
+    queriesToRefresh: string[];
+    securityToken: never;
+    stateBehavior: PersistentObjectStateBehavior;
+    tabs: Record<string, PersistentObjectTab$2>;
     type: string;
-    tag?: any;
-};
+    tag: any;
+}>;
 declare type PersistentObjectAttributeVisibility = "Always" | "Read" | "New" | "Never" | "Query" | "Read, Query" | "Read, New" | "Query, New";
 declare type PersistentObjectAttribute$2 = {
-    disableSort?: boolean;
+    actions: string[];
     id?: string;
     column?: number;
     name: string;
@@ -2949,27 +2951,35 @@ declare type PersistentObjectAttribute$2 = {
     validationError?: string;
     triggersRefresh?: boolean;
     options?: string[];
-    actions?: string[];
     tag?: any;
 };
 declare type PersistentObjectAttributeWithReference$1 = {
+    canAddNewReference: boolean;
     displayAttribute: string;
     lookup: Query$2;
     objectId: string;
+    selectInPlace: boolean;
 } & PersistentObjectAttribute$2;
-declare type PersistentObjectTab$2 = {
+declare type PersistentObjectAttributeAsDetail$2 = {
+    details: Query$2;
+    lookupAttribute: string;
+    objects: PersistentObject$2[];
+} & PersistentObjectAttribute$2;
+declare type PersistentObjectTab$2 = Partial<{
     columnCount: number;
-    id?: string;
+    id: string;
+    layout: any;
     name: string;
-};
-declare type Query$2 = {
-    actionLabels?: Record<string, string>;
+}>;
+declare type Query$2 = Partial<{
+    actionLabels: Record<string, string>;
     actions: string[];
     allowTextSearch: boolean;
     allSelected: boolean;
     allSelectedInversed: boolean;
     autoQuery: boolean;
     canRead: boolean;
+    canReorder: boolean;
     columns: QueryColumn$1[];
     disableBulkEdit: boolean;
     enableSelectAll: boolean;
@@ -2981,13 +2991,19 @@ declare type Query$2 = {
     notification: string;
     notificationType: NotificationType$1;
     notificationDuration: number;
+    offset: number;
     pageSize: number;
     persistentObject: PersistentObject$2;
     result: QueryResult;
+    skip: number;
     sortOptions: string;
     textSearch: string;
-    tag?: any;
-};
+    tag: any;
+    top: number;
+    totalItems: number;
+    isSystem: boolean;
+    isHidden: boolean;
+}>;
 declare type QueryColumn$1 = {
     canFilter: boolean;
     canGroupBy: boolean;
@@ -3124,13 +3140,17 @@ type service_QueryGroupingInfo = QueryGroupingInfo;
 type service_QueryResult = QueryResult;
 type service_RetryAction = RetryAction;
 declare namespace service {
-  export type { service_ApplicationResponse as ApplicationResponse, service_ClientData as ClientData, service_ExecuteActionParameters as ExecuteActionParameters, service_ExecuteActionRefreshParameters as ExecuteActionRefreshParameters, service_ExecuteActionRequest as ExecuteActionRequest, service_ExecuteActionResponse as ExecuteActionResponse, service_ExecutePersistentObjectActionRequest as ExecutePersistentObjectActionRequest, service_ExecuteQueryActionRequest as ExecuteQueryActionRequest, service_ExecuteQueryFilterActionRequest as ExecuteQueryFilterActionRequest, service_ExecuteQueryRequest as ExecuteQueryRequest, service_ExecuteQueryResponse as ExecuteQueryResponse, service_GetApplicationRequest as GetApplicationRequest, service_GetPersistentObjectRequest as GetPersistentObjectRequest, service_GetPersistentObjectResponse as GetPersistentObjectResponse, service_GetQueryRequest as GetQueryRequest, service_GetQueryResponse as GetQueryResponse, Language$1 as Language, service_Languages as Languages, NotificationType$1 as NotificationType, PersistentObject$2 as PersistentObject, PersistentObjectAttribute$2 as PersistentObjectAttribute, service_PersistentObjectAttributeVisibility as PersistentObjectAttributeVisibility, PersistentObjectAttributeWithReference$1 as PersistentObjectAttributeWithReference, service_PersistentObjectStateBehavior as PersistentObjectStateBehavior, PersistentObjectTab$2 as PersistentObjectTab, Profiler$1 as Profiler, service_ProfilerEntry as ProfilerEntry, ProfilerRequest$1 as ProfilerRequest, service_ProfilerSql as ProfilerSql, service_ProfilerSqlParameter as ProfilerSqlParameter, service_ProviderParameters as ProviderParameters, Query$2 as Query, QueryChart$1 as QueryChart, QueryColumn$1 as QueryColumn, service_QueryGroupingInfo as QueryGroupingInfo, service_QueryResult as QueryResult, QueryResultItem$1 as QueryResultItem, QueryResultItemGroup$1 as QueryResultItemGroup, QueryResultItemValue$1 as QueryResultItemValue, Request$1 as Request, Response$1 as Response, service_RetryAction as RetryAction, SortDirection$1 as SortDirection };
+  export type { service_ApplicationResponse as ApplicationResponse, service_ClientData as ClientData, service_ExecuteActionParameters as ExecuteActionParameters, service_ExecuteActionRefreshParameters as ExecuteActionRefreshParameters, service_ExecuteActionRequest as ExecuteActionRequest, service_ExecuteActionResponse as ExecuteActionResponse, service_ExecutePersistentObjectActionRequest as ExecutePersistentObjectActionRequest, service_ExecuteQueryActionRequest as ExecuteQueryActionRequest, service_ExecuteQueryFilterActionRequest as ExecuteQueryFilterActionRequest, service_ExecuteQueryRequest as ExecuteQueryRequest, service_ExecuteQueryResponse as ExecuteQueryResponse, service_GetApplicationRequest as GetApplicationRequest, service_GetPersistentObjectRequest as GetPersistentObjectRequest, service_GetPersistentObjectResponse as GetPersistentObjectResponse, service_GetQueryRequest as GetQueryRequest, service_GetQueryResponse as GetQueryResponse, Language$1 as Language, service_Languages as Languages, NotificationType$1 as NotificationType, PersistentObject$2 as PersistentObject, PersistentObjectAttribute$2 as PersistentObjectAttribute, PersistentObjectAttributeAsDetail$2 as PersistentObjectAttributeAsDetail, service_PersistentObjectAttributeVisibility as PersistentObjectAttributeVisibility, PersistentObjectAttributeWithReference$1 as PersistentObjectAttributeWithReference, service_PersistentObjectStateBehavior as PersistentObjectStateBehavior, PersistentObjectTab$2 as PersistentObjectTab, Profiler$1 as Profiler, service_ProfilerEntry as ProfilerEntry, ProfilerRequest$1 as ProfilerRequest, service_ProfilerSql as ProfilerSql, service_ProfilerSqlParameter as ProfilerSqlParameter, service_ProviderParameters as ProviderParameters, Query$2 as Query, QueryChart$1 as QueryChart, QueryColumn$1 as QueryColumn, service_QueryGroupingInfo as QueryGroupingInfo, service_QueryResult as QueryResult, QueryResultItem$1 as QueryResultItem, QueryResultItemGroup$1 as QueryResultItemGroup, QueryResultItemValue$1 as QueryResultItemValue, Request$1 as Request, Response$1 as Response, service_RetryAction as RetryAction, SortDirection$1 as SortDirection };
 }
 
-declare class ServiceObject extends Observable<ServiceObject> {
-    service: Service;
+declare function nameof<TObject>(key: keyof TObject): string;
+declare abstract class ServiceObject extends Observable<ServiceObject> {
+    #private;
     constructor(service: Service);
-    copyProperties(propertyNames: Array<string>, includeNullValues?: boolean, result?: any): any;
+    get service(): Service;
+    protected _copyPropertiesFromValues(values: {
+        [key: string]: any;
+    }, includeNullValues?: boolean, result?: any): any;
 }
 
 declare class QueryResultItemValue extends ServiceObject {
@@ -3211,98 +3231,86 @@ declare class QueryColumn extends ServiceObject {
     private _queryPropertyChanged;
 }
 
-declare class PersistentObjectAttributeGroup extends Observable<PersistentObjectAttributeGroup> {
-    service: Service;
-    key: string;
-    parent: PersistentObject$1;
-    private _attributes;
-    label: string;
-    index: number;
-    constructor(service: Service, key: string, _attributes: PersistentObjectAttribute$1[], parent: PersistentObject$1);
-    get attributes(): PersistentObjectAttribute$1[];
-    set attributes(attributes: PersistentObjectAttribute$1[]);
+declare class ServiceObjectWithActions extends ServiceObject {
+    #private;
+    actions: Array<Action> & Record<string, Action>;
+    constructor(service: Service, actionNames?: string[], actionLabels?: {
+        [key: string]: string;
+    });
+    get isBusy(): boolean;
+    get notification(): string;
+    get notificationType(): NotificationType;
+    get notificationDuration(): number;
+    getAction(name: string): Action;
+    setNotification(notification?: string, type?: NotificationType, duration?: number, skipShowNotification?: boolean): void;
+    setNotification(notification?: Error, type?: NotificationType, duration?: number, skipShowNotification?: boolean): void;
+    queueWork<T>(work: () => Promise<T>, blockActions?: boolean): Promise<T>;
+    protected _initializeActions(): void;
 }
 
-declare class PersistentObjectTab$1 extends Observable<PersistentObjectTab$1> {
-    service: Service;
-    name: string;
-    label: string;
-    target: ServiceObjectWithActions;
-    parent?: PersistentObject$1;
-    private _isVisible;
+declare class PersistentObjectAttributeGroup extends Observable<PersistentObjectAttributeGroup> {
+    #private;
+    index: number;
+    constructor(service: Service, key: string, attributes: PersistentObjectAttribute$1[], parent: PersistentObject$1);
+    get service(): Service;
+    get parent(): PersistentObject$1;
+    get attributes(): PersistentObjectAttribute$1[];
+    set attributes(attributes: PersistentObjectAttribute$1[]);
+    get key(): string;
+    get label(): string;
+}
+
+declare abstract class PersistentObjectTab$1 extends Observable<PersistentObjectTab$1> {
+    #private;
     tabGroupIndex: number;
-    constructor(service: Service, name: string, label: string, target: ServiceObjectWithActions, parent?: PersistentObject$1, _isVisible?: boolean);
+    constructor(service: Service, name: string, label: string, target: ServiceObjectWithActions, parent?: PersistentObject$1, isVisible?: boolean);
+    get service(): Service;
+    get name(): string;
+    get label(): string;
+    get target(): ServiceObjectWithActions;
+    get parent(): PersistentObject$1 | undefined;
     get isVisible(): boolean;
     set isVisible(val: boolean);
 }
 declare class PersistentObjectAttributeTab extends PersistentObjectTab$1 {
-    private _groups;
-    key: string;
-    id: string;
-    private _layout;
-    columnCount: number;
-    private _attributes;
-    constructor(service: Service, _groups: PersistentObjectAttributeGroup[], key: string, id: string, name: string, _layout: any, po: PersistentObject$1, columnCount: number, isVisible: boolean);
+    #private;
+    constructor(service: Service, groups: PersistentObjectAttributeGroup[], key: string, id: string, name: string, layout: any, po: PersistentObject$1, columnCount: number, isVisible: boolean);
     get isVisible(): boolean;
     set isVisible(val: boolean);
     get layout(): any;
-    private _setLayout;
     get attributes(): PersistentObjectAttribute$1[];
     get groups(): PersistentObjectAttributeGroup[];
     set groups(groups: PersistentObjectAttributeGroup[]);
+    get key(): string;
+    get id(): string;
+    get columnCount(): number;
+    set columnCount(val: number);
     saveLayout(layout: any): Promise<any>;
-    private _updateAttributes;
 }
 declare class PersistentObjectQueryTab extends PersistentObjectTab$1 {
-    query: Query$1;
+    #private;
     constructor(service: Service, query: Query$1);
+    get query(): Query$1;
     get isVisible(): boolean;
 }
 
 type PersistentObjectAttributeOption = KeyValuePair<string, string>;
 declare class PersistentObjectAttribute$1 extends ServiceObject {
     #private;
-    parent: PersistentObject$1;
-    private _label;
-    private _isSystem;
-    private _lastParsedValue;
-    private _cachedValue;
-    private _serviceValue;
-    private _serviceOptions;
-    private _displayValueSource;
-    private _displayValue;
-    private _rules;
-    private _validationError;
-    private _tab;
-    private _tabKey;
-    private _group;
-    private _groupKey;
-    private _isRequired;
-    private _isReadOnly;
-    private _isValueChanged;
-    private _isSensitive;
-    private _visibility;
-    private _isVisible;
-    private _tag;
     protected _shouldRefresh: boolean;
-    private _refreshServiceValue;
-    id: string;
-    name: string;
-    options: string[] | PersistentObjectAttributeOption[];
-    offset: number;
-    type: string;
-    toolTip: string;
-    typeHints: any;
-    disableSort: boolean;
-    triggersRefresh: boolean;
-    column: number;
-    columnSpan: number;
     constructor(service: Service, attr: PersistentObjectAttribute$2, parent: PersistentObject$1);
+    get id(): string;
+    get name(): string;
+    get type(): string;
     get label(): string;
     set label(label: string);
     get groupKey(): string;
     get group(): PersistentObjectAttributeGroup;
     set group(group: PersistentObjectAttributeGroup);
+    get column(): number;
+    get columnSpan(): number;
+    get offset(): number;
+    get parent(): PersistentObject$1;
     get tabKey(): string;
     get tab(): PersistentObjectAttributeTab;
     set tab(tab: PersistentObjectAttributeTab);
@@ -3310,16 +3318,17 @@ declare class PersistentObjectAttribute$1 extends ServiceObject {
     get visibility(): PersistentObjectAttributeVisibility;
     set visibility(visibility: PersistentObjectAttributeVisibility);
     get isVisible(): boolean;
+    get options(): string[] | PersistentObjectAttributeOption[];
+    set options(options: string[]);
     get validationError(): string;
     set validationError(error: string);
     get rules(): string;
-    private _setRules;
     get isRequired(): boolean;
-    private _setIsRequired;
     get isReadOnly(): boolean;
-    private _setIsReadOnly;
     get displayValue(): string;
     get shouldRefresh(): boolean;
+    get toolTip(): string;
+    get triggersRefresh(): boolean;
     get value(): any;
     set value(val: any);
     setValue(val: any, allowRefresh?: boolean): Promise<any>;
@@ -3328,27 +3337,24 @@ declare class PersistentObjectAttribute$1 extends ServiceObject {
     get isSensitive(): boolean;
     get input(): HTMLInputElement;
     get actions(): Array<Action> & Record<string, Action>;
-    private _setActions;
     get tag(): any;
+    get typeHints(): Record<string, string>;
     getTypeHint(name: string, defaultValue?: string, typeHints?: any, ignoreCasing?: boolean): string;
-    _toServiceObject(): any;
-    _refreshFromResult(resultAttr: PersistentObjectAttribute$1, resultWins: boolean): boolean;
-    _triggerAttributeRefresh(immediate?: boolean): Promise<any>;
-    protected _setOptions(options: string[]): void;
+    triggerRefresh(immediate?: boolean): Promise<any>;
+    protected _toServiceObject(inheritedPropertyValues?: Record<string, any>): any;
+    protected _refreshFromResult(resultAttr: PersistentObjectAttribute$2, resultWins: boolean): boolean;
 }
 
 declare class PersistentObjectAttributeAsDetail$1 extends PersistentObjectAttribute$1 {
-    parent: PersistentObject$1;
-    private _objects;
-    details: Query$1;
-    lookupAttribute: string;
-    constructor(service: Service, attr: any, parent: PersistentObject$1);
-    get objects(): PersistentObject$1[];
-    private _setObjects;
-    newObject(): Promise<PersistentObject$1>;
-    _refreshFromResult(resultAttr: PersistentObjectAttribute$1, resultWins: boolean): boolean;
-    _toServiceObject(): any;
+    #private;
+    constructor(service: Service, attr: PersistentObjectAttributeAsDetail$2, parent: PersistentObject$1);
     onChanged(allowRefresh: boolean): Promise<any>;
+    get details(): Query$1;
+    get lookupAttribute(): string;
+    get objects(): PersistentObject$1[];
+    newObject(): Promise<PersistentObject$1>;
+    protected _refreshFromResult(resultAttr: PersistentObjectAttributeAsDetail$2, resultWins: boolean): boolean;
+    protected _toServiceObject(): any;
 }
 
 declare class QueryFilters extends Observable<QueryFilters> {
@@ -3419,17 +3425,18 @@ declare class QueryResultItemGroup extends Observable<QueryResultItemGroup> impl
 }
 
 declare class PersistentObjectAttributeWithReference extends PersistentObjectAttribute$1 {
-    parent: PersistentObject$1;
-    lookup: Query$1;
-    objectId: string;
-    displayAttribute: string;
-    canAddNewReference: boolean;
-    selectInPlace: boolean;
-    constructor(service: Service, attr: any, parent: PersistentObject$1);
+    #private;
+    constructor(service: Service, attr: PersistentObjectAttributeWithReference$1, parent: PersistentObject$1);
+    get canAddNewReference(): boolean;
+    get displayAttribute(): string;
+    get lookup(): Query$1;
+    get objectId(): string;
+    get selectInPlace(): boolean;
     addNewReference(): Promise<void>;
     changeReference(selectedItems: QueryResultItem[] | string[]): Promise<boolean>;
     getPersistentObject(): Promise<PersistentObject$1>;
-    _refreshFromResult(resultAttr: PersistentObjectAttribute$1, resultWins: boolean): boolean;
+    protected _refreshFromResult(resultAttr: PersistentObjectAttributeWithReference$1, resultWins: boolean): boolean;
+    protected _toServiceObject(): any;
 }
 
 interface ISortOption {
@@ -3443,8 +3450,8 @@ interface IQuerySelectAll {
     inverse: boolean;
 }
 declare class Query$1 extends ServiceObjectWithActions {
+    #private;
     parent?: PersistentObject$1;
-    maxSelectedItems?: number;
     private _lastResult;
     private _asLookup;
     private _isSelectionModifying;
@@ -3489,7 +3496,7 @@ declare class Query$1 extends ServiceObjectWithActions {
     selectAll: IQuerySelectAll;
     disableLazyLoading: boolean;
     ownerAttributeWithReference: PersistentObjectAttributeWithReference;
-    constructor(service: Service, query: Query$2, parent?: PersistentObject$1, asLookup?: boolean, maxSelectedItems?: number);
+    constructor(service: Service, queryDto: Query$2, parent?: PersistentObject$1, asLookup?: boolean, maxSelectedItems?: number);
     get isSystem(): boolean;
     get allowTextSearch(): boolean;
     get filters(): QueryFilters;
@@ -3510,6 +3517,8 @@ declare class Query$1 extends ServiceObjectWithActions {
     get tag(): any;
     get lastUpdated(): Date;
     private _setLastUpdated;
+    get maxSelectedItems(): number;
+    set maxSelectedItems(maxSelectedItems: number);
     get selectedItems(): QueryResultItem[];
     set selectedItems(items: QueryResultItem[]);
     private _selectAllPropertyChanged;
@@ -3590,10 +3599,7 @@ interface ActionDefinitionParams {
     icon?: string;
 }
 declare class ActionDefinition {
-    private readonly _service;
-    private _groupDefinition;
-    private _selectionRule;
-    private readonly _definition;
+    #private;
     constructor(service: Service, definition: ActionDefinitionParams);
     constructor(service: Service, item: QueryResultItem);
     get name(): string;
@@ -3612,11 +3618,8 @@ declare class ActionDefinition {
 }
 
 declare class ActionGroup extends ServiceObject {
-    service: Service;
+    #private;
     definition: ActionDefinition;
-    private _actions;
-    private _canExecute;
-    private _isVisible;
     constructor(service: Service, definition: ActionDefinition);
     addAction(action: Action): void;
     removeAction(action: Action): void;
@@ -3624,12 +3627,9 @@ declare class ActionGroup extends ServiceObject {
     get name(): string;
     get displayName(): string;
     get canExecute(): boolean;
-    private _setCanExecute;
     get isVisible(): boolean;
-    private _setIsVisible;
     get isPinned(): boolean;
     get options(): string[];
-    private _actionPropertyChanged;
 }
 
 interface IActionExecuteOptions {
@@ -3649,24 +3649,13 @@ interface ISelectedItemsActionArgs {
 type ActionExecutionHandler = (action: Action, worker: Promise<PersistentObject$1>, args: IActionExecuteOptions) => boolean | void | Promise<void>;
 type ActionExecutionHandlerDispose = () => void;
 declare class Action extends ServiceObject {
-    service: Service;
+    #private;
     definition: ActionDefinition;
     owner: ServiceObjectWithActions;
-    private _targetType;
-    private _query;
-    private _parent;
-    private _isVisible;
-    private _canExecute;
-    private _block;
-    private _parameters;
-    private _offset;
     protected _isPinned: boolean;
-    private _options;
-    private _executeHandlers;
-    private _group;
     selectionRule: (count: number) => boolean;
     displayName: string;
-    dependentActions: any[];
+    dependentActions: string[];
     constructor(service: Service, definition: ActionDefinition, owner: ServiceObjectWithActions);
     get parent(): PersistentObject$1;
     get query(): Query$1;
@@ -3676,19 +3665,18 @@ declare class Action extends ServiceObject {
     get group(): ActionGroup;
     get canExecute(): boolean;
     set canExecute(val: boolean);
+    get block(): boolean;
     set block(block: boolean);
     get isVisible(): boolean;
     set isVisible(val: boolean);
     get isPinned(): boolean;
     get options(): string[];
-    private _setOptions;
     subscribe(handler: ActionExecutionHandler): ActionExecutionHandlerDispose;
     execute(options?: IActionExecuteOptions): Promise<PersistentObject$1>;
     protected _onExecute(options: IActionExecuteOptions): Promise<PersistentObject$1>;
     _getParameters(parameters: any, option: any): any;
-    _onParentIsEditingChanged(isEditing: boolean): void;
-    _onParentIsDirtyChanged(isDirty: boolean): void;
-    private _setNotification;
+    protected _onParentIsEditingChanged(isEditing: boolean): void;
+    protected _onParentIsDirtyChanged(isDirty: boolean): void;
     static get(service: Service, name: string, owner: ServiceObjectWithActions): Action;
     static addActions(service: Service, owner: ServiceObjectWithActions, actions: Action[], actionNames: string[]): void;
 }
@@ -3696,109 +3684,62 @@ declare let Actions: {
     [name: string]: typeof Action;
 };
 
-declare class ServiceObjectWithActions extends ServiceObject {
-    private _actionNames;
-    private _actionLabels?;
-    private _queue;
-    private _isBusy;
-    private _notification;
-    private _notificationType;
-    private _notificationDuration;
-    actions: Array<Action> & {
-        [name: string]: Action;
-    };
-    constructor(service: Service, _actionNames?: string[], _actionLabels?: {
-        [key: string]: string;
-    });
-    get isBusy(): boolean;
-    private _setIsBusy;
-    get notification(): string;
-    get notificationType(): NotificationType;
-    get notificationDuration(): number;
-    getAction(name: string): Action;
-    setNotification(notification?: string, type?: NotificationType, duration?: number, skipShowNotification?: boolean): any;
-    setNotification(notification?: Error, type?: NotificationType, duration?: number, skipShowNotification?: boolean): any;
-    queueWork<T>(work: () => Promise<T>, blockActions?: boolean): Promise<T>;
-    protected _initializeActions(): void;
-    private _blockActions;
-}
-
 declare enum PersistentObjectLayoutMode {
     FullPage = 0,
     MasterDetail = 1
 }
 declare class PersistentObject$1 extends ServiceObjectWithActions {
-    private _isSystem;
-    private _lastResult;
-    private _lastUpdated;
-    private _lastResultBackup;
-    private securityToken;
-    private _isEditing;
-    private _isDirty;
-    private _id;
-    private _type;
-    private _breadcrumb;
-    private _isDeleted;
-    private _tabs;
-    private _isFrozen;
-    private _tag;
-    readonly isBreadcrumbSensitive: boolean;
-    readonly forceFromAction: boolean;
-    fullTypeName: string;
-    label: string;
-    objectId: string;
-    isHidden: boolean;
-    isNew: boolean;
-    isReadOnly: boolean;
-    queryLayoutMode: PersistentObjectLayoutMode;
-    newOptions: string;
-    ignoreCheckRules: boolean;
-    stateBehavior: string;
-    dialogSaveAction: Action;
+    #private;
     parent: PersistentObject$1;
     ownerDetailAttribute: PersistentObjectAttributeAsDetail$1;
-    ownerAttributeWithReference: PersistentObjectAttributeWithReference;
+    ownerAttributeWithReference: any;
     ownerPersistentObject: PersistentObject$1;
     ownerQuery: Query$1;
-    bulkObjectIds: string[];
-    queriesToRefresh: Array<string>;
-    attributes: PersistentObjectAttribute$1[];
-    queries: Query$1[];
+    readonly bulkObjectIds: string[];
+    readonly queriesToRefresh: string[];
+    readonly attributes: PersistentObjectAttribute$1[] & Record<string, PersistentObjectAttribute$1>;
+    readonly queries: Query$1[] & Record<string, Query$1>;
+    isNew: boolean;
     constructor(service: Service, po: PersistentObject$2);
-    private _createPersistentObjectAttribute;
     get id(): string;
     get isSystem(): boolean;
     get type(): string;
     get isBulkEdit(): boolean;
+    get isBreadcrumbSensitive(): boolean;
+    get label(): string;
+    get objectId(): string;
+    get stateBehavior(): string;
+    set stateBehavior(value: string);
     get tabs(): PersistentObjectTab$1[];
     set tabs(tabs: PersistentObjectTab$1[]);
+    get dialogSaveAction(): Action;
+    get queryLayoutMode(): PersistentObjectLayoutMode;
     get tag(): any;
     get isEditing(): boolean;
-    private setIsEditing;
+    get isReadOnly(): boolean;
     get breadcrumb(): string;
-    private _setBreadcrumb;
+    get forceFromAction(): boolean;
     get isDirty(): boolean;
-    private _setIsDirty;
     get isDeleted(): boolean;
     set isDeleted(isDeleted: boolean);
+    get isHidden(): boolean;
     get isFrozen(): boolean;
+    get fullTypeName(): string;
+    get newOptions(): string;
     freeze(): void;
     unfreeze(): void;
     getAttribute(name: string): PersistentObjectAttribute$1;
-    getAttributeValue(name: string): any;
+    getAttributeValue<T = any>(name: string): T;
     setAttributeValue(name: string, value: any, allowRefresh?: boolean): Promise<any>;
     get lastUpdated(): Date;
-    private _setLastUpdated;
     getQuery(name: string): Query$1;
     beginEdit(): void;
     cancelEdit(): void;
     save(waitForOwnerQuery?: boolean): Promise<boolean>;
+    refresh(): Promise<void>;
     toServiceObject(skipParent?: boolean): any;
-    refreshFromResult(result: PersistentObject$1, resultWins?: boolean): void;
-    refreshTabsAndGroups(...changedAttributes: PersistentObjectAttribute$1[]): void;
     triggerDirty(): boolean;
-    _triggerAttributeRefresh(attr: PersistentObjectAttribute$1, immediate?: boolean): Promise<boolean>;
-    _prepareAttributesForRefresh(sender: PersistentObjectAttribute$1): void;
+    triggerAttributeRefresh(attr: PersistentObjectAttribute$1, immediate?: boolean): Promise<boolean>;
 }
 
 declare class ProgramUnitItem extends ServiceObject {
@@ -3840,22 +3781,10 @@ declare class ProgramUnit extends ProgramUnitItem {
 }
 
 declare class Application extends PersistentObject$1 {
-    private _userId;
-    private _friendlyUserName;
-    private _feedbackId;
-    private _userSettingsId;
-    private _globalSearchId;
-    private _analyticsKey;
-    private _userSettings;
-    private _canProfile;
-    private _hasManagement;
-    private _session;
-    private _routes;
-    private _poRe;
-    private _queryRe;
-    readonly programUnits: ProgramUnit[];
-    readonly hasSensitive: boolean;
+    #private;
     constructor(service: Service, { application, hasSensitive }: ApplicationResponse);
+    get programUnits(): ProgramUnit[];
+    get hasSensitive(): boolean;
     get userId(): string;
     get friendlyUserName(): string;
     get feedbackId(): string;
@@ -3867,7 +3796,6 @@ declare class Application extends PersistentObject$1 {
     get hasManagement(): boolean;
     get session(): PersistentObject$1;
     get routes(): IRoutes;
-    private _setRoutes;
     get poRe(): RegExp;
     get queryRe(): RegExp;
     saveUserSettings(): Promise<any>;
@@ -3932,11 +3860,11 @@ declare class ServiceHooks {
     onOpen(obj: ServiceObject, replaceCurrent?: boolean, forceFromAction?: boolean): void;
     onClose(obj: ServiceObject): void;
     onConstructApplication(application: ApplicationResponse): Application;
-    onConstructPersistentObject(service: Service, po: any): PersistentObject$1;
+    onConstructPersistentObject(service: Service, po: PersistentObject$2): PersistentObject$1;
     onConstructPersistentObjectAttributeTab(service: Service, groups: PersistentObjectAttributeGroup[], key: string, id: string, name: string, layout: any, parent: PersistentObject$1, columnCount: number, isVisible: boolean): PersistentObjectAttributeTab;
     onConstructPersistentObjectQueryTab(service: Service, query: Query$1): PersistentObjectQueryTab;
     onConstructPersistentObjectAttributeGroup(service: Service, key: string, attributes: PersistentObjectAttribute$1[], parent: PersistentObject$1): PersistentObjectAttributeGroup;
-    onConstructPersistentObjectAttribute(service: Service, attr: any, parent: PersistentObject$1): PersistentObjectAttribute$1;
+    onConstructPersistentObjectAttribute(service: Service, attr: PersistentObjectAttribute$2, parent: PersistentObject$1): PersistentObjectAttribute$1;
     onConstructPersistentObjectAttributeWithReference(service: Service, attr: any, parent: PersistentObject$1): PersistentObjectAttributeWithReference;
     onConstructPersistentObjectAttributeAsDetail(service: Service, attr: any, parent: PersistentObject$1): PersistentObjectAttributeAsDetail$1;
     onConstructQuery(service: Service, query: any, parent?: PersistentObject$1, asLookup?: boolean, maxSelectedItems?: number): Query$1;
@@ -4098,6 +4026,22 @@ interface IInstantSearchResult {
     objectId: string;
     breadcrumb: string;
 }
+
+type InternalPersistentObject = PersistentObject$1 & {
+    get dto(): PersistentObject$2;
+    prepareAttributesForRefresh(sender: PersistentObjectAttribute$1): void;
+    refreshFromResult(po: PersistentObject$1 | PersistentObject$2, resultWins?: boolean): void;
+    refreshTabsAndGroups(...changedAttributes: PersistentObjectAttribute$1[]): void;
+};
+type InternalPersistentObjectAttribute = PersistentObjectAttribute$1 & {
+    backupServiceValue(): void;
+    refreshFromResult(attr: PersistentObjectAttribute$1 | PersistentObjectAttribute$2, resultWins?: boolean): boolean;
+    toServiceObject(): PersistentObjectAttribute$2;
+};
+type InternalQuery = Query$1 & {};
+declare function _internal(target: PersistentObject$1): InternalPersistentObject;
+declare function _internal(target: PersistentObjectAttribute$1): InternalPersistentObjectAttribute;
+declare function _internal(target: Query$1): InternalQuery;
 
 declare function cookiePrefix(prefix?: string): string;
 declare function cookie(key: string, value?: any, options?: {
@@ -4297,14 +4241,16 @@ type vidyano_SortDirection = SortDirection;
 type vidyano_StreamingActionMessages = StreamingActionMessages;
 type vidyano_Subject<TSource, TDetail> = Subject<TSource, TDetail>;
 declare const vidyano_Subject: typeof Subject;
+declare const vidyano__internal: typeof _internal;
 declare const vidyano_cookie: typeof cookie;
 declare const vidyano_cookiePrefix: typeof cookiePrefix;
 declare const vidyano_extend: typeof extend;
+declare const vidyano_nameof: typeof nameof;
 declare const vidyano_noop: typeof noop;
 declare const vidyano_sleep: typeof sleep;
 declare const vidyano_version: typeof version;
 declare namespace vidyano {
-  export { vidyano_Action as Action, vidyano_ActionDefinition as ActionDefinition, type vidyano_ActionDefinitionParams as ActionDefinitionParams, type vidyano_ActionExecutionHandler as ActionExecutionHandler, type vidyano_ActionExecutionHandlerDispose as ActionExecutionHandlerDispose, vidyano_ActionGroup as ActionGroup, vidyano_Actions as Actions, vidyano_Application as Application, vidyano_ArrayChangedArgs as ArrayChangedArgs, vidyano_ClientOperations as ClientOperations, vidyano_CultureInfo as CultureInfo, vidyano_DataType as DataType, service as Dto, vidyano_ExecuteActionArgs as ExecuteActionArgs, vidyano_ExpressionParser as ExpressionParser, type vidyano_GetQueryOptions as GetQueryOptions, type vidyano_IActionExecuteOptions as IActionExecuteOptions, type vidyano_IClientOperation as IClientOperation, type vidyano_ICultureInfoDateFormat as ICultureInfoDateFormat, type vidyano_ICultureInfoNumberFormat as ICultureInfoNumberFormat, type vidyano_IExecuteMethodOperation as IExecuteMethodOperation, type vidyano_IForgotPassword as IForgotPassword, type vidyano_IInstantSearchResult as IInstantSearchResult, type vidyano_IOpenOperation as IOpenOperation, type vidyano_IPropertyChangedObserver as IPropertyChangedObserver, type vidyano_IQueryColumnDistincts as IQueryColumnDistincts, type vidyano_IQueryGroupingInfo as IQueryGroupingInfo, type vidyano_IQuerySelectAll as IQuerySelectAll, type vidyano_IRefreshOperation as IRefreshOperation, type vidyano_IReportOptions as IReportOptions, type vidyano_IRoutes as IRoutes, type vidyano_ISelectedItemsActionArgs as ISelectedItemsActionArgs, type vidyano_IServiceBus as IServiceBus, type vidyano_ISortOption as ISortOption, type vidyano_ISubjectDisposer as ISubjectDisposer, type vidyano_ISubjectNotifier as ISubjectNotifier, type vidyano_ISubjectObserver as ISubjectObserver, type vidyano_KeyValue as KeyValue, type vidyano_KeyValuePair as KeyValuePair, type vidyano_KeyValueString as KeyValueString, vidyano_Language as Language, vidyano_NoInternetMessage as NoInternetMessage, type vidyano_NotificationType as NotificationType, vidyano_Observable as Observable, PersistentObject$1 as PersistentObject, PersistentObjectAttribute$1 as PersistentObjectAttribute, PersistentObjectAttributeAsDetail$1 as PersistentObjectAttributeAsDetail, vidyano_PersistentObjectAttributeGroup as PersistentObjectAttributeGroup, type vidyano_PersistentObjectAttributeOption as PersistentObjectAttributeOption, vidyano_PersistentObjectAttributeTab as PersistentObjectAttributeTab, vidyano_PersistentObjectAttributeWithReference as PersistentObjectAttributeWithReference, vidyano_PersistentObjectLayoutMode as PersistentObjectLayoutMode, vidyano_PersistentObjectQueryTab as PersistentObjectQueryTab, PersistentObjectTab$1 as PersistentObjectTab, vidyano_ProgramUnit as ProgramUnit, vidyano_ProgramUnitItem as ProgramUnitItem, vidyano_ProgramUnitItemGroup as ProgramUnitItemGroup, vidyano_ProgramUnitItemPersistentObject as ProgramUnitItemPersistentObject, vidyano_ProgramUnitItemQuery as ProgramUnitItemQuery, vidyano_ProgramUnitItemSeparator as ProgramUnitItemSeparator, vidyano_ProgramUnitItemUrl as ProgramUnitItemUrl, vidyano_PropertyChangedArgs as PropertyChangedArgs, Query$1 as Query, vidyano_QueryChart as QueryChart, vidyano_QueryColumn as QueryColumn, vidyano_QueryFilter as QueryFilter, vidyano_QueryFilters as QueryFilters, vidyano_QueryResultItem as QueryResultItem, vidyano_QueryResultItemGroup as QueryResultItemGroup, vidyano_QueryResultItemValue as QueryResultItemValue, vidyano_Queue as Queue, vidyano_Service as Service, vidyano_ServiceBus as ServiceBus, type vidyano_ServiceBusCallback as ServiceBusCallback, type vidyano_ServiceBusSubscriptionDisposer as ServiceBusSubscriptionDisposer, vidyano_ServiceHooks as ServiceHooks, vidyano_ServiceObject as ServiceObject, vidyano_ServiceObjectWithActions as ServiceObjectWithActions, type vidyano_SortDirection as SortDirection, type vidyano_StreamingActionMessages as StreamingActionMessages, vidyano_Subject as Subject, vidyano_cookie as cookie, vidyano_cookiePrefix as cookiePrefix, vidyano_extend as extend, vidyano_noop as noop, vidyano_sleep as sleep, vidyano_version as version };
+  export { vidyano_Action as Action, vidyano_ActionDefinition as ActionDefinition, type vidyano_ActionDefinitionParams as ActionDefinitionParams, type vidyano_ActionExecutionHandler as ActionExecutionHandler, type vidyano_ActionExecutionHandlerDispose as ActionExecutionHandlerDispose, vidyano_ActionGroup as ActionGroup, vidyano_Actions as Actions, vidyano_Application as Application, vidyano_ArrayChangedArgs as ArrayChangedArgs, vidyano_ClientOperations as ClientOperations, vidyano_CultureInfo as CultureInfo, vidyano_DataType as DataType, service as Dto, vidyano_ExecuteActionArgs as ExecuteActionArgs, vidyano_ExpressionParser as ExpressionParser, type vidyano_GetQueryOptions as GetQueryOptions, type vidyano_IActionExecuteOptions as IActionExecuteOptions, type vidyano_IClientOperation as IClientOperation, type vidyano_ICultureInfoDateFormat as ICultureInfoDateFormat, type vidyano_ICultureInfoNumberFormat as ICultureInfoNumberFormat, type vidyano_IExecuteMethodOperation as IExecuteMethodOperation, type vidyano_IForgotPassword as IForgotPassword, type vidyano_IInstantSearchResult as IInstantSearchResult, type vidyano_IOpenOperation as IOpenOperation, type vidyano_IPropertyChangedObserver as IPropertyChangedObserver, type vidyano_IQueryColumnDistincts as IQueryColumnDistincts, type vidyano_IQueryGroupingInfo as IQueryGroupingInfo, type vidyano_IQuerySelectAll as IQuerySelectAll, type vidyano_IRefreshOperation as IRefreshOperation, type vidyano_IReportOptions as IReportOptions, type vidyano_IRoutes as IRoutes, type vidyano_ISelectedItemsActionArgs as ISelectedItemsActionArgs, type vidyano_IServiceBus as IServiceBus, type vidyano_ISortOption as ISortOption, type vidyano_ISubjectDisposer as ISubjectDisposer, type vidyano_ISubjectNotifier as ISubjectNotifier, type vidyano_ISubjectObserver as ISubjectObserver, type vidyano_KeyValue as KeyValue, type vidyano_KeyValuePair as KeyValuePair, type vidyano_KeyValueString as KeyValueString, vidyano_Language as Language, vidyano_NoInternetMessage as NoInternetMessage, type vidyano_NotificationType as NotificationType, vidyano_Observable as Observable, PersistentObject$1 as PersistentObject, PersistentObjectAttribute$1 as PersistentObjectAttribute, PersistentObjectAttributeAsDetail$1 as PersistentObjectAttributeAsDetail, vidyano_PersistentObjectAttributeGroup as PersistentObjectAttributeGroup, type vidyano_PersistentObjectAttributeOption as PersistentObjectAttributeOption, vidyano_PersistentObjectAttributeTab as PersistentObjectAttributeTab, vidyano_PersistentObjectAttributeWithReference as PersistentObjectAttributeWithReference, vidyano_PersistentObjectLayoutMode as PersistentObjectLayoutMode, vidyano_PersistentObjectQueryTab as PersistentObjectQueryTab, PersistentObjectTab$1 as PersistentObjectTab, vidyano_ProgramUnit as ProgramUnit, vidyano_ProgramUnitItem as ProgramUnitItem, vidyano_ProgramUnitItemGroup as ProgramUnitItemGroup, vidyano_ProgramUnitItemPersistentObject as ProgramUnitItemPersistentObject, vidyano_ProgramUnitItemQuery as ProgramUnitItemQuery, vidyano_ProgramUnitItemSeparator as ProgramUnitItemSeparator, vidyano_ProgramUnitItemUrl as ProgramUnitItemUrl, vidyano_PropertyChangedArgs as PropertyChangedArgs, Query$1 as Query, vidyano_QueryChart as QueryChart, vidyano_QueryColumn as QueryColumn, vidyano_QueryFilter as QueryFilter, vidyano_QueryFilters as QueryFilters, vidyano_QueryResultItem as QueryResultItem, vidyano_QueryResultItemGroup as QueryResultItemGroup, vidyano_QueryResultItemValue as QueryResultItemValue, vidyano_Queue as Queue, vidyano_Service as Service, vidyano_ServiceBus as ServiceBus, type vidyano_ServiceBusCallback as ServiceBusCallback, type vidyano_ServiceBusSubscriptionDisposer as ServiceBusSubscriptionDisposer, vidyano_ServiceHooks as ServiceHooks, vidyano_ServiceObject as ServiceObject, vidyano_ServiceObjectWithActions as ServiceObjectWithActions, type vidyano_SortDirection as SortDirection, type vidyano_StreamingActionMessages as StreamingActionMessages, vidyano_Subject as Subject, vidyano__internal as _internal, vidyano_cookie as cookie, vidyano_cookiePrefix as cookiePrefix, vidyano_extend as extend, vidyano_nameof as nameof, vidyano_noop as noop, vidyano_sleep as sleep, vidyano_version as version };
 }
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.

@@ -7,7 +7,11 @@ import { PersistentObjectAttribute } from "./persistent-object-attribute.js"
 import type { PersistentObject } from "./persistent-object.js"
 import type { PropertyChangedArgs } from "./common/observable.js"
 import type { QueryResultItem } from "./query-result-item.js"
+import { QueryColumnSymbols } from "./_internals.js";
 
+/**
+ * Represents the distinct values for a query column.
+ */
 export interface IQueryColumnDistincts {
     matching: string[];
     remaining: string[];
@@ -17,23 +21,26 @@ export interface IQueryColumnDistincts {
 
 export type SortDirection = Dto.SortDirection;
 
+/**
+ * Represents a column in a query, including metadata and filter/sort state.
+ */
 export class QueryColumn extends ServiceObject {
-    private _id: string;
-    private _displayAttribute: string;
-    private _sortDirection: SortDirection;
-    private _canSort: boolean;
-    private _canGroupBy: boolean;
-    private _canFilter: boolean;
-    private _canListDistincts: boolean;
-    private _isSensitive: boolean;
-    private _name: string;
-    private _type: string;
-    private _label: string;
-    private _distincts: IQueryColumnDistincts;
-    private _selectedDistincts: string[];
-    private _selectedDistinctsInversed: boolean;
-    private _total: QueryResultItemValue;
-    private _tag: any;
+    #id: string;
+    #displayAttribute: string;
+    #sortDirection: SortDirection;
+    #canSort: boolean;
+    #canGroupBy: boolean;
+    #canFilter: boolean;
+    #canListDistincts: boolean;
+    #isSensitive: boolean;
+    #name: string;
+    #type: string;
+    #label: string;
+    #distincts: IQueryColumnDistincts;
+    #selectedDistincts: string[];
+    #selectedDistinctsInversed: boolean;
+    #total: QueryResultItemValue;
+    #tag: any;
 
     offset: number;
     isPinned: boolean;
@@ -41,95 +48,116 @@ export class QueryColumn extends ServiceObject {
     width: string;
     typeHints: any;
 
-    constructor(service: Service, col: Dto.QueryColumn, query: Query);
-    constructor(service: Service, col: any, public query: Query) {
+    /**
+     * Initializes a new instance of the QueryColumn class.
+     * @param service The service instance.
+     * @param col The column DTO or QueryColumn to copy from.
+     * @param query The parent query.
+     */
+    constructor(service: Service, col: Dto.QueryColumn | any, public query: Query) {
         super(service);
 
-        this._id = col.id;
-        this._canSort = !!col.canSort;
-        this._canGroupBy = !!col.canGroupBy;
-        this._canFilter = !!col.canFilter;
-        this._canListDistincts = !!col.canListDistincts;
-        this._displayAttribute = col.displayAttribute;
-        this._isSensitive = !!col.isSensitive;
+        this[QueryColumnSymbols.IsQueryColumn] = true;
+        this[QueryColumnSymbols.ToServiceObject] = this.#toServiceObject.bind(this);
+
+        this.#id = col.id;
+        this.#canSort = !!col.canSort;
+        this.#canGroupBy = !!col.canGroupBy;
+        this.#canFilter = !!col.canFilter;
+        this.#canListDistincts = !!col.canListDistincts;
+        this.#displayAttribute = col.displayAttribute;
+        this.#isSensitive = !!col.isSensitive;
         if (col instanceof QueryColumn) {
-            this._selectedDistincts = col._selectedDistincts;
-            this._selectedDistinctsInversed = col._selectedDistinctsInversed;
+            this.#selectedDistincts = col.#selectedDistincts;
+            this.#selectedDistinctsInversed = col.#selectedDistinctsInversed;
         }
         else {
-            this._selectedDistincts = col.includes || col.excludes || [];
-            this._selectedDistinctsInversed = !!col.excludes && col.excludes.length > 0;
+            this.#selectedDistincts = col.includes || col.excludes || [];
+            this.#selectedDistinctsInversed = !!col.excludes && col.excludes.length > 0;
         }
-        this._label = col.label;
-        this._name = col.name;
+        this.#label = col.label;
+        this.#name = col.name;
         this.offset = col.offset || 0;
-        this._type = col.type;
+        this.#type = col.type;
         this.isPinned = !!col.isPinned;
         this.isHidden = !!col.isHidden;
         this.width = col.width;
         this.typeHints = col.typeHints;
-        this._sortDirection = "";
-        this._tag = col._tag;
+        this.#sortDirection = "";
+        this.#tag = col._tag;
 
-        query.propertyChanged.attach(this._queryPropertyChanged.bind(this));
+        query.propertyChanged.attach(this.#queryPropertyChanged.bind(this));
     }
 
+    /** Gets the column id. */
     get id(): string {
-        return this._id;
+        return this.#id;
     }
 
+    /** Gets the column name. */
     get name(): string {
-        return this._name;
+        return this.#name;
     }
 
+    /** Gets the column type. */
     get type(): string {
-        return this._type;
+        return this.#type;
     }
 
+    /** Gets the column label. */
     get label(): string {
-        return this._label;
+        return this.#label;
     }
 
+    /** Gets whether the column can be filtered. */
     get canFilter(): boolean {
-        return this._canFilter;
+        return this.#canFilter;
     }
 
+    /** Gets whether the column can be sorted. */
     get canSort(): boolean {
-        return this._canSort;
+        return this.#canSort;
     }
 
+    /** Gets whether the column can be grouped by. */
     get canGroupBy(): boolean {
-        return this._canGroupBy;
+        return this.#canGroupBy;
     }
 
+    /** Gets whether the column can list distinct values. */
     get canListDistincts(): boolean {
-        return this._canListDistincts;
+        return this.#canListDistincts;
     }
 
+    /** Gets the display attribute for the column. */
     get displayAttribute(): string {
-        return this._displayAttribute;
+        return this.#displayAttribute;
     }
 
+    /** Gets whether the column is sensitive. */
     get isSensitive(): boolean {
-        return this._isSensitive;
+        return this.#isSensitive;
     }
 
+    /** Gets whether the column is currently sorted. */
     get isSorting(): boolean {
-        return this._sortDirection !== "";
+        return this.#sortDirection !== "";
     }
 
+    /** Gets the current sort direction. */
     get sortDirection(): SortDirection {
-        return this._sortDirection;
+        return this.#sortDirection;
     }
 
+    /** Gets or sets the selected distinct values for the column. */
     get selectedDistincts(): string[] {
-        return this._selectedDistincts;
+        return this.#selectedDistincts;
     }
 
     set selectedDistincts(selectedDistincts: string[]) {
-        const oldSelectedIncludes = this._selectedDistincts;
+        const oldSelectedIncludes = this.#selectedDistincts;
 
-        this.notifyPropertyChanged("selectedDistincts", this._selectedDistincts = (selectedDistincts || []), oldSelectedIncludes);
+        this.notifyPropertyChanged("selectedDistincts", this.#selectedDistincts = (selectedDistincts || []), oldSelectedIncludes);
         this.query.columns.forEach(c => {
             if (c === this)
                 return;
@@ -139,50 +167,60 @@ export class QueryColumn extends ServiceObject {
         });
     }
 
+    /** Gets or sets whether the selected distincts are inversed (excludes instead of includes). */
     get selectedDistinctsInversed(): boolean {
-        return this._selectedDistinctsInversed;
+        return this.#selectedDistinctsInversed;
     }
 
     set selectedDistinctsInversed(selectedDistinctsInversed: boolean) {
-        const oldSelectedDistinctsInversed = this._selectedDistinctsInversed;
+        const oldSelectedDistinctsInversed = this.#selectedDistinctsInversed;
 
-        this.notifyPropertyChanged("selectedDistinctsInversed", this._selectedDistinctsInversed = selectedDistinctsInversed, oldSelectedDistinctsInversed);
+        this.notifyPropertyChanged("selectedDistinctsInversed", this.#selectedDistinctsInversed = selectedDistinctsInversed, oldSelectedDistinctsInversed);
     }
 
+    /** Gets or sets the distinct values for the column. */
     get distincts(): IQueryColumnDistincts {
-        return this._distincts;
+        return this.#distincts;
     }
 
     set distincts(distincts: IQueryColumnDistincts) {
-        const oldDistincts = this._distincts;
+        const oldDistincts = this.#distincts;
 
-        this.notifyPropertyChanged("distincts", this._distincts = distincts, oldDistincts);
+        this.notifyPropertyChanged("distincts", this.#distincts = distincts, oldDistincts);
     }
 
+    /** Gets the total value for the column. */
     get total(): QueryResultItemValue {
-        return this._total;
+        return this.#total;
     }
 
+    /** Gets the tag associated with the column. */
     get tag(): any {
-        return this._tag;
+        return this.#tag;
     }
 
-    private _setTotal(total: QueryResultItemValue) {
-        const oldTotal = this._total;
+    /** @internal Sets the total value for the column. */
+    #setTotal(total: QueryResultItemValue) {
+        const oldTotal = this.#total;
 
-        this.notifyPropertyChanged("total", this._total = total, oldTotal);
+        this.notifyPropertyChanged("total", this.#total = total, oldTotal);
     }
 
-    private _setSortDirection(direction: SortDirection) {
-        if (this._sortDirection === direction)
+    /** @internal Sets the sort direction for the column. */
+    #setSortDirection(direction: SortDirection) {
+        if (this.#sortDirection === direction)
             return;
 
-        const oldSortDirection = this._sortDirection;
-        this.notifyPropertyChanged("sortDirection", this._sortDirection = direction, oldSortDirection);
+        const oldSortDirection = this.#sortDirection;
+        this.notifyPropertyChanged("sortDirection", this.#sortDirection = direction, oldSortDirection);
     }
 
-    _toServiceObject() {
-        const serviceObject = this._copyPropertiesFromValues({
+    /**
+     * Converts the column to a service object representation.
+     * @returns The service object.
+     */
+    #toServiceObject(): Dto.QueryColumn {
+        const serviceObject = <Dto.QueryColumn>this._copyPropertiesFromValues({
             id: this.id,
             name: this.name,
             label: this.label,
@@ -196,10 +234,24 @@ export class QueryColumn extends ServiceObject {
         return serviceObject;
     }
 
+    /**
+     * Gets the type hint for a given name, with an optional default value.
+     * @param name The name of the type hint to retrieve.
+     * @param defaultValue The default value to return if the type hint is not found.
+     * @param typeHints Optional type hints object to use instead of the instance's typeHints.
+     * @param ignoreCasing Optional flag to ignore casing.
+     * @returns The type hint value or the default value if not found.
+     */
     getTypeHint(name: string, defaultValue?: string, typeHints?: any, ignoreCasing?: boolean): string {
+        // Use the PersistentObjectAttribute's getTypeHint method to ensure consistent behavior.
         return PersistentObjectAttribute.prototype.getTypeHint.apply(this, arguments);
     }
 
+    /**
+     * Refreshes the distinct values for the column, optionally with a search string.
+     * @param search Optional search string to filter distincts.
+     * @returns A promise resolving to the distincts.
+     */
     async refreshDistincts(search?: string): Promise<IQueryColumnDistincts> {
         const parameters: any = { ColumnName: this.name, AsLookup: this.query.asLookup };
         if (search)
@@ -231,6 +283,12 @@ export class QueryColumn extends ServiceObject {
         return this.distincts;
     }
 
+    /**
+     * Sorts the query by this column.
+     * @param direction The sort direction.
+     * @param multiSort Whether to use multi-sort.
+     * @returns A promise resolving to the query result items.
+     */
     async sort(direction: SortDirection, multiSort?: boolean): Promise<QueryResultItem[]> {
         if (!!multiSort) {
             const sortOption = this.query.sortOptions.filter(option => option.column === this)[0];
@@ -268,11 +326,16 @@ export class QueryColumn extends ServiceObject {
         return this.query.items;
     }
 
-    private _queryPropertyChanged(sender: Query, args: PropertyChangedArgs) {
+    /**
+     * Handles property changes on the parent query.
+     * @param sender The query.
+     * @param args The property changed arguments.
+     */
+    #queryPropertyChanged(sender: Query, args: PropertyChangedArgs) {
         if (args.propertyName === "sortOptions") {
             const sortOption = this.query.sortOptions ? this.query.sortOptions.filter(option => option.column === this)[0] : null;
-            this._setSortDirection(sortOption ? sortOption.direction : "");
+            this.#setSortDirection(sortOption ? sortOption.direction : "");
         } else if (args.propertyName === "totalItem")
-            this._setTotal(sender.totalItem ? sender.totalItem.getFullValue(this.name) : null);
+            this.#setTotal(sender.totalItem ? sender.totalItem.getFullValue(this.name) : null);
     }
 }

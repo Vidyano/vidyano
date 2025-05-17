@@ -11,7 +11,7 @@ import { PersistentObject } from "./persistent-object.js"
 import { Action } from "./action.js"
 import { ExpressionParser } from "./common/expression-parser.js"
 import { PersistentObjectAttributeWithReference } from "./persistent-object-attribute-with-reference.js"
-import { QuerySymbols } from "./_internals.js"
+import { _internal, QuerySymbols } from "./_internals.js"
 
 export interface ISortOption {
     column: QueryColumn;
@@ -545,7 +545,7 @@ export class Query extends ServiceObjectWithActions {
         if (this.persistentObject)
             result.persistentObject = this.persistentObject.toServiceObject();
 
-        result.columns = this.columns.map(col => col._toServiceObject());
+        result.columns = this.columns.map(col => _internal(col).toServiceObject());
 
         return result;
     }

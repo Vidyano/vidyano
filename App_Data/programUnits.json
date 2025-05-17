@@ -312,10 +312,7 @@
             "en": "Dynamic employees",
             "nl": ""
           },
-          "Name": "DynamicEmployees",
-          "Query": {
-            "$ref": "Query:9e683c56-e3df-48b2-9a2e-3d3a0378018e"
-          }
+          "Name": "DynamicEmployees"
         },
         {
           "Offset": 50,
@@ -323,10 +320,7 @@
             "en": "Large employees",
             "nl": "Large employees"
           },
-          "Name": "LargeEmployees",
-          "Query": {
-            "$ref": "Query:9a9626bc-bc95-403c-984a-231a5bddf853"
-          }
+          "Name": "LargeEmployees"
         }
       ]
     }
