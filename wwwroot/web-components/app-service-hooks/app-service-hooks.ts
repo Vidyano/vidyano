@@ -120,7 +120,7 @@ export class AppServiceHooks extends AppServiceHooksBase {
 
                         try {
                             const po = await this.app.service.getPersistentObject(cacheEntry.persistentObject.parent, cacheEntry.persistentObject.id, cacheEntry.persistentObject.objectId);
-                            cacheEntry.persistentObject.refreshFromResult(po, true);
+                            Vidyano._internal(cacheEntry.persistentObject).refreshFromResult(po, true);
                         }
                         catch (e) {
                             cacheEntry.persistentObject.setNotification(e);

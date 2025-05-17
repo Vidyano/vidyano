@@ -111,7 +111,7 @@ export class PersistentObjectWizardDialog extends Dialog {
     private _next(e: Polymer.Gestures.TapEvent) {
         this.persistentObject.queueWork(async () => {
             const result = await this.persistentObject.service.executeAction("Wizard.NextStep", this.persistentObject, undefined, undefined, { CurrentTab: this.currentTab.key, Attributes: this.currentTab.attributes.map(a => a.name).join("\n") });
-            this.persistentObject.refreshFromResult(result);
+            Vidyano._internal(this.persistentObject).refreshFromResult(result);
 
             if (this.currentTab.attributes.some(attr => !!attr.validationError))
                 return;

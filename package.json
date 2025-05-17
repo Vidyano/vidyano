@@ -21,6 +21,7 @@
     "@polymer/polymer": "vidyano/polymer#vidyano",
     "@rollup/plugin-node-resolve": "15.2.1",
     "@rollup/plugin-replace": "^5.0.2",
+    "@rollup/plugin-terser": "^0.4.4",
     "@types/dompurify": "^3.0.3",
     "@types/qunit": "2.19.6",
     "bignumber.js": "9.1.2",

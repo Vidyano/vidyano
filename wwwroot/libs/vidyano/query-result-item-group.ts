@@ -1,71 +1,101 @@
-import { Observable } from "./common/observable.js"
-import type { Query } from "./query.js"
-import type { QueryResultItem } from "./query-result-item.js"
-import type * as Dto from "./typings/service.js"
+import { Observable } from "./common/observable.js";
+import type { Query } from "./query.js";
+import type { QueryResultItem } from "./query-result-item.js";
+import type * as Dto from "./typings/service.js";
 
+/**
+ * Extends the Dto.QueryGroupingInfo with an optional groups property.
+ */
 export interface IQueryGroupingInfo extends Dto.QueryGroupingInfo {
     groups?: QueryResultItemGroup[];
 }
 
+/**
+ * Represents a group of query result items.
+ */
 export class QueryResultItemGroup extends Observable<QueryResultItemGroup> implements Dto.QueryResultItemGroup {
-    private _name: string;
-    private _count: number;
-    private _items: QueryResultItem[];
-    private _isCollapsed: boolean;
+    readonly query: Query;
+    #name: string;
+    #count: number;
+    #items: QueryResultItem[];
+    #isCollapsed: boolean;
+    #start: number;
+    #end: number;
+    #notifier: () => void;
 
-    constructor(public readonly query: Query, group: Dto.QueryResultItemGroup, private _start: number, private _end: number, private _notifier: () => void) {
+    /**
+     * Initializes a new instance of the QueryResultItemGroup class.
+     * @param query The parent query.
+     * @param group The group DTO.
+     * @param start The start index.
+     * @param end The end index.
+     * @param notifier Callback to notify changes.
+     */
+    constructor(query: Query, group: Dto.QueryResultItemGroup, start: number, end: number, notifier: () => void) {
         super();
 
-        this._name = group.name;
-        this._count = group.count;
+        this.query = query;
+        this.#name = group.name;
+        this.#count = group.count;
+        this.#start = start;
+        this.#end = end;
+        this.#notifier = notifier;
 
-        this._items = new Array(this._count);
-        const items = query.items.slice(_start, _end);
-        this._items.splice(0, items.length, ...items);
+        this.#items = new Array(this.#count);
+        const items = query.items.slice(start, end);
+        this.#items.splice(0, items.length, ...items);
 
-        this._isCollapsed = false;
+        this.#isCollapsed = false;
     }
 
+    /**
+     * Gets the group name.
+     */
     get name(): string {
-        return this._name;
+        return this.#name;
     }
 
+    /**
+     * Gets the number of items in the group.
+     */
     get count(): number {
-        return this._count;
+        return this.#count;
     }
 
+    /**
+     * Gets the start index of the group.
+     */
     get start(): number {
-        return this._start;
+        return this.#start;
     }
 
+    /**
+     * Gets the end index of the group.
+     */
     get end(): number {
-        return this._end;
+        return this.#end;
     }
 
+    /**
+     * Gets the items in the group.
+     */
     get items(): QueryResultItem[] {
-        return this._items;
+        return this.#items;
     }
 
+    /**
+     * Gets or sets whether the group is collapsed.
+     */
     get isCollapsed(): boolean {
-        return this._isCollapsed;
+        return this.#isCollapsed;
     }
 
     set isCollapsed(isCollapsed: boolean) {
-        if (this._isCollapsed === isCollapsed)
+        if (this.#isCollapsed === isCollapsed)
             return;
-        
-        const oldIsCollapsed = this._isCollapsed;
-        this.notifyPropertyChanged("isCollapsed", this._isCollapsed = isCollapsed, oldIsCollapsed);
-        this._notifier();
-    }
 
-    update(group: Dto.QueryResultItemGroup, start: number, end: number) {
-        this._count = group.count;
-        this._start = start;
-        this._end = end;
-
-        this._items = new Array(this._count);
-        const items = this.query.items.slice(start, end);
-        this._items.splice(0, items.length, ...items);
+        const oldIsCollapsed = this.#isCollapsed;
+        this.notifyPropertyChanged("isCollapsed", this.#isCollapsed = isCollapsed, oldIsCollapsed);
+        this.#notifier();
     }
 }
