@@ -47,7 +47,7 @@ export class PersistentObjectAttributeBinaryFile extends PersistentObjectAttribu
         if (targetInput.files && targetInput.files.length > 0) {
             this.value = targetInput.files[0].name;
             if (this.attribute.triggersRefresh)
-                await this.attribute._triggerAttributeRefresh(true);
+                await this.attribute.triggerRefresh(true);
         }
     }
 
@@ -72,7 +72,7 @@ export class PersistentObjectAttributeBinaryFile extends PersistentObjectAttribu
             this.attribute.input.value = null;
 
         if(this.attribute?.triggersRefresh)
-            await this.attribute._triggerAttributeRefresh(true);
+            await this.attribute.triggerRefresh(true);
     }
 
     private _computeCanClear(value: string, readOnly: boolean): boolean {

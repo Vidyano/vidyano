@@ -4,53 +4,78 @@ import type { PersistentObject } from "./persistent-object.js"
 import type { Query } from "./query.js"
 import type { PersistentObjectAttributeAsDetail } from "./persistent-object-attribute-as-detail.js"
 
+/**
+ * Manages a collection of query filters for a query.
+ */
 export class QueryFilters extends Observable<QueryFilters> {
-    private _filters: QueryFilter[];
-    private _currentFilter: QueryFilter;
-    private _filtersAsDetail: PersistentObjectAttributeAsDetail;
-    private _skipSearch: boolean;
+    #filters: QueryFilter[];
+    #currentFilter: QueryFilter;
+    #filtersAsDetail: PersistentObjectAttributeAsDetail;
+    #skipSearch: boolean;
+    #query: Query;
+    #filtersPO: PersistentObject;
 
-    constructor(private _query: Query, private _filtersPO: PersistentObject) {
+    /**
+     * Initializes a new instance of the QueryFilters class.
+     * @param query The parent query.
+     * @param filtersPO The persistent object containing filters.
+     */
+    constructor(query: Query, filtersPO: PersistentObject) {
         super();
 
-        this._filtersAsDetail = <PersistentObjectAttributeAsDetail>this._filtersPO.attributes["Filters"];
-        this._computeFilters(true);
+        this.#query = query;
+        this.#filtersPO = filtersPO;
+        this.#filtersAsDetail = <PersistentObjectAttributeAsDetail>this.#filtersPO.attributes["Filters"];
+        this.#computeFilters(true);
 
-        const defaultFilter = this._filters.find(f => f.isDefault);
+        const defaultFilter = this.#filters.find(f => f.isDefault);
         if (defaultFilter) {
-            this._skipSearch = true;
+            this.#skipSearch = true;
             try {
                 this.currentFilter = defaultFilter;
             }
             finally {
-                this._skipSearch = false;
+                this.#skipSearch = false;
             }
         }
     }
 
+    /**
+     * Gets the list of filters.
+     */
     get filters(): QueryFilter[] {
-        return this._filters;
+        return this.#filters;
     }
 
-    private _setFilters(filters: QueryFilter[]) {
-        const oldFilters = this._filters;
-        this.notifyPropertyChanged("filters", this._filters = filters, oldFilters);
+    /**
+     * Sets the filters and notifies listeners.
+     * @param filters The new filters array.
+     */
+    #setFilters(filters: QueryFilter[]) {
+        const oldFilters = this.#filters;
+        this.notifyPropertyChanged("filters", this.#filters = filters, oldFilters);
     }
 
+    /**
+     * Gets the details attribute as a PersistentObjectAttributeAsDetail.
+     */
     get detailsAttribute(): PersistentObjectAttributeAsDetail {
-        return this._filtersAsDetail;
+        return this.#filtersAsDetail;
     }
 
+    /**
+     * Gets or sets the current filter.
+     */
     get currentFilter(): QueryFilter {
-        return this._currentFilter;
+        return this.#currentFilter;
     }
 
     set currentFilter(filter: QueryFilter) {
-        let doSearch : boolean;
+        let doSearch: boolean;
         if (!!filter) {
             if (!filter.persistentObject.isNew) {
                 let columnsFilterData = <{ name: string; includes: string[]; excludes: string[]; }[]>JSON.parse(filter.persistentObject.getAttributeValue("Columns"));
-                this._query.columns.forEach(col => {
+                this.#query.columns.forEach(col => {
                     let columnFilterData = columnsFilterData.find(c => c.name === col.name);
                     if (columnFilterData) {
                         if (columnFilterData.includes && columnFilterData.includes.length > 0)
@@ -70,40 +95,47 @@ export class QueryFilters extends Observable<QueryFilters> {
                 });
             }
         } else {
-            this._query.columns.forEach(col => {
+            this.#query.columns.forEach(col => {
                 col.selectedDistincts = [];
                 col.selectedDistinctsInversed = false;
                 col.distincts = null;
             });
 
-            doSearch = !!this._currentFilter;
+            doSearch = !!this.#currentFilter;
         }
 
-        const oldCurrentFilter = this._currentFilter;
-        this.notifyPropertyChanged("currentFilter", this._currentFilter = filter, oldCurrentFilter);
+        const oldCurrentFilter = this.#currentFilter;
+        this.notifyPropertyChanged("currentFilter", this.#currentFilter = filter, oldCurrentFilter);
 
-        if (doSearch && !this._skipSearch)
-            this._query.search();
+        if (doSearch && !this.#skipSearch)
+            this.#query.search();
     }
 
-    private _computeFilters(setDefaultFilter?: boolean) {
-        if (!this._filtersAsDetail) {
-            this._setFilters([]);
+    /**
+     * Computes the filters from the details attribute.
+     * @param setDefaultFilter If true, sets the default filter.
+     */
+    #computeFilters(setDefaultFilter?: boolean) {
+        if (!this.#filtersAsDetail) {
+            this.#setFilters([]);
             return;
         }
 
         const currentFilters: { [name: string]: QueryFilter; } = {};
-        if (this._filters)
-            this._filters.forEach(f => currentFilters[f.name || ""] = f);
+        if (this.#filters)
+            this.#filters.forEach(f => currentFilters[f.name || ""] = f);
 
-        this._setFilters(this._filtersAsDetail.objects.map(filter => new QueryFilter(filter)));
+        this.#setFilters(this.#filtersAsDetail.objects.map(filter => new QueryFilter(filter)));
 
         if (setDefaultFilter)
-            this._currentFilter = this._filters.find(f => f.persistentObject.getAttributeValue("IsDefault")) || null;
+            this.#currentFilter = this.#filters.find(f => f.persistentObject.getAttributeValue("IsDefault")) || null;
     }
 
-    private _computeFilterData(): string {
-        return JSON.stringify(this._query.columns.filter(c => c.selectedDistincts.length > 0).map(c => {
+    /**
+     * Computes the filter data as a JSON string.
+     */
+    #computeFilterData(): string {
+        return JSON.stringify(this.#query.columns.filter(c => c.selectedDistincts.length > 0).map(c => {
             return {
                 name: c.name,
                 includes: !c.selectedDistinctsInversed ? c.selectedDistincts : [],
@@ -112,23 +144,38 @@ export class QueryFilters extends Observable<QueryFilters> {
         }));
     }
 
+    /**
+     * Clones the filters for a target query.
+     * @param targetQuery The target query.
+     */
     clone(targetQuery: Query): QueryFilters {
-        return new QueryFilters(targetQuery, targetQuery.service.hooks.onConstructPersistentObject(targetQuery.service, this._filtersPO["_lastResult"]));
+        return new QueryFilters(targetQuery, targetQuery.service.hooks.onConstructPersistentObject(targetQuery.service, this.#filtersPO["_lastResult"]));
     }
 
+    /**
+     * Gets a filter by name.
+     * @param name The filter name.
+     */
     getFilter(name: string): QueryFilter {
         return this.filters.find(f => f.name === name);
     }
 
+    /**
+     * Creates a new filter.
+     */
     createNew(): Promise<QueryFilter> {
-        const newAction = (<Action>this._filtersAsDetail.details.actions["New"]);
+        const newAction = (<Action>this.#filtersAsDetail.details.actions["New"]);
 
-        return this._query.queueWork(async () => {
+        return this.#query.queueWork(async () => {
             const po = await newAction.execute({ skipOpen: true });
             return new QueryFilter(po);
         });
     }
 
+    /**
+     * Saves a filter.
+     * @param filter The filter to save.
+     */
     save(filter: QueryFilter = this.currentFilter): Promise<boolean> {
         if (!filter)
             return Promise.reject<boolean>("Expected argument filter.");
@@ -136,41 +183,45 @@ export class QueryFilters extends Observable<QueryFilters> {
         if (filter.isLocked)
             return Promise.reject<boolean>("Filter is locked.");
 
-        if (this._filtersAsDetail.objects.some(f => f.isNew))
+        if (this.#filtersAsDetail.objects.some(f => f.isNew))
             return Promise.reject<boolean>("Only one new filter can be saved at a time.");
 
-        this._filtersPO.beginEdit();
+        this.#filtersPO.beginEdit();
 
         if (filter === this.currentFilter || filter.persistentObject.isNew) {
             filter.persistentObject.beginEdit();
-            filter.persistentObject.attributes["Columns"].setValue(this._computeFilterData());
+            filter.persistentObject.attributes["Columns"].setValue(this.#computeFilterData());
         }
 
         if (filter.persistentObject.isNew)
-            this._filtersAsDetail.objects.push(filter.persistentObject);
+            this.#filtersAsDetail.objects.push(filter.persistentObject);
 
-        return this._query.queueWork(async () => {
+        return this.#query.queueWork(async () => {
             let result: boolean;
 
             try {
-                result = await this._filtersPO.save();
+                result = await this.#filtersPO.save();
             }
             catch (e) {
                 result = false;
                 filter.persistentObject.setNotification(e, "Error");
             }
 
-            const newFilter = this._filtersAsDetail.objects.find(f => f.isNew);
+            const newFilter = this.#filtersAsDetail.objects.find(f => f.isNew);
             if (newFilter)
-                this._filtersAsDetail.objects.remove(filter.persistentObject = newFilter);
+                this.#filtersAsDetail.objects.remove(filter.persistentObject = newFilter);
 
-            this._computeFilters();
+            this.#computeFilters();
             this.currentFilter = this.filters.find(f => f.name === filter.name);
 
             return result;
         });
     }
 
+    /**
+     * Deletes a filter by name or instance.
+     * @param name The filter name or instance.
+     */
     delete(name: string | QueryFilter): Promise<any> {
         const filter = typeof name === "string" ? this.getFilter(name) : name;
         if (!filter)
@@ -182,11 +233,11 @@ export class QueryFilters extends Observable<QueryFilters> {
         if (!filter.persistentObject.isNew) {
             filter.persistentObject.isDeleted = true;
 
-            return this._query.queueWork(async () => {
-                this._filtersPO.beginEdit();
+            return this.#query.queueWork(async () => {
+                this.#filtersPO.beginEdit();
 
-                await this._filtersPO.save();
-                this._computeFilters();
+                await this.#filtersPO.save();
+                this.#computeFilters();
 
                 if (this.currentFilter === filter)
                     this.currentFilter = null;
@@ -195,27 +246,57 @@ export class QueryFilters extends Observable<QueryFilters> {
             });
         }
 
-        this._filtersAsDetail.objects.remove(filter.persistentObject);
-        this._computeFilters();
+        this.#filtersAsDetail.objects.remove(filter.persistentObject);
+        this.#computeFilters();
 
         return Promise.resolve(null);
     }
 }
 
+/**
+ * Represents a single query filter.
+ */
 export class QueryFilter extends Observable<QueryFilter> {
-    constructor(public persistentObject: PersistentObject) {
+    #persistentObject: PersistentObject;
+
+    /**
+     * Initializes a new instance of the QueryFilter class.
+     * @param persistentObject The persistent object for this filter.
+     */
+    constructor(persistentObject: PersistentObject) {
         super();
+        this.#persistentObject = persistentObject;
     }
 
+    /**
+     * Gets or sets the persistent object backing this filter.
+     */
+    get persistentObject(): PersistentObject {
+        return this.#persistentObject;
+    }
+
+    set persistentObject(po: PersistentObject) {
+        this.#persistentObject = po;
+    }
+
+    /**
+     * Gets the name of the filter.
+     */
     get name(): string {
-        return this.persistentObject.getAttributeValue("Name") || "";
+        return this.#persistentObject.getAttributeValue("Name") || "";
     }
 
+    /**
+     * Gets whether the filter is locked.
+     */
     get isLocked(): boolean {
-        return this.persistentObject.getAttributeValue("IsLocked");
+        return this.#persistentObject.getAttributeValue("IsLocked");
     }
 
+    /**
+     * Gets whether the filter is the default filter.
+     */
     get isDefault(): boolean {
-        return this.persistentObject.getAttributeValue("IsDefault");
+        return this.#persistentObject.getAttributeValue("IsDefault");
     }
 }

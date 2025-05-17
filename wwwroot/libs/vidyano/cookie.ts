@@ -1,25 +1,34 @@
+import { IS_BROWSER } from "./environment.js";
+
+const STORAGE_TEST_KEY = "__VIDYANO_COOKIE_LIB_STORAGE_TEST__";
+
 let _cookiePrefix: string;
-if (document.head) {
-    const base = document.head.querySelector("base") as HTMLBaseElement;
-    if (base) {
-        const parser = document.createElement("a");
-        parser.href = base.href;
 
-        _cookiePrefix = parser.pathname;
+if (IS_BROWSER) {
+    if (document.head) {
+        const base = document.head.querySelector("base");
+        if (base && base.href) {
+            const parser = document.createElement("a");
+            parser.href = base.href;
+            _cookiePrefix = normalizePath(getDirectoryPath(parser.pathname));
+        }
     }
-}
 
-if (!_cookiePrefix)
-    _cookiePrefix = document.location.pathname;
+    if (typeof _cookiePrefix !== 'string')
+        _cookiePrefix = normalizePath(getDirectoryPath(document.location.pathname));
+} else
+    _cookiePrefix = '/';
 
-const hasStorage = (function () {
-    const vi = "Vidyano";
+
+const hasStorage = ((): boolean => {
+    if (!IS_BROWSER)
+        return false;
+
     try {
-        window.localStorage.setItem(vi, vi);
-        window.localStorage.removeItem(vi);
-
-        window.sessionStorage.setItem(vi, vi);
-        window.sessionStorage.removeItem(vi);
+        window.localStorage.setItem(STORAGE_TEST_KEY, STORAGE_TEST_KEY);
+        window.localStorage.removeItem(STORAGE_TEST_KEY);
+        window.sessionStorage.setItem(STORAGE_TEST_KEY, STORAGE_TEST_KEY);
+        window.sessionStorage.removeItem(STORAGE_TEST_KEY);
 
         return true;
     } catch (e) {
@@ -27,86 +36,299 @@ const hasStorage = (function () {
     }
 })();
 
+/**
+ * Normalizes a path string to ensure it starts and ends with a slash,
+ * and collapses multiple consecutive slashes.
+ * @param path The path string to normalize.
+ * @returns Normalized path string.
+ */
+function normalizePath(path: string | null | undefined): string {
+    if (!path || path.trim() === "" || path.trim() === "/")
+        return "/";
+
+    let p = path.trim();
+    if (!p.startsWith('/'))
+        p = '/' + p;
+
+    if (!p.endsWith('/'))
+        p = p + '/';
+
+    return p.replace(/\/\/+/g, '/');
+}
+
+/**
+ * Extracts a directory path from a full path string (e.g., URL pathname).
+ * Ensures the path ends with a '/', suitable for use as a cookie path prefix.
+ * @param fullPath The full path string.
+ * @returns Normalized directory path.
+ */
+function getDirectoryPath(fullPath: string): string {
+    if (!fullPath || fullPath === '/')
+        return '/';
+
+    const lastSlash = fullPath.lastIndexOf('/');
+
+    if (lastSlash === -1)
+        return '/';
+
+    if (lastSlash === fullPath.length - 1)
+        return fullPath;
+
+    const partAfterLastSlash = fullPath.substring(lastSlash + 1);
+    if (partAfterLastSlash.includes('.'))
+        return fullPath.substring(0, lastSlash + 1);
+    else
+        return fullPath + '/';
+}
+
+/**
+ * Clears a cookie from document.cookie.
+ */
+function clearActualCookie(name: string, path: string, domain?: string): void {
+    if (!IS_BROWSER)
+        return;
+
+    let cookieString = `${encodeURIComponent(name)}=; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+    cookieString += `; path=${path}`;
+
+    if (domain)
+        cookieString += `; domain=${domain}`;
+
+    cookieString += `; SameSite=Lax`;
+    document.cookie = cookieString;
+}
+
+/**
+ * Gets or sets the cookie prefix used for storage keys and default cookie paths.
+ * @param prefix Optional prefix to set.
+ * @returns The current cookie prefix.
+ */
 export function cookiePrefix(prefix?: string): string {
-    if (!!prefix)
-        _cookiePrefix = prefix;
-    
+    if (prefix !== undefined && prefix !== null)
+        _cookiePrefix = normalizePath(prefix);
+
+    if (typeof _cookiePrefix !== 'string')
+         if (IS_BROWSER && document.location)
+            _cookiePrefix = normalizePath(getDirectoryPath(document.location.pathname));
+        else
+            _cookiePrefix = '/';
+
     return _cookiePrefix;
 }
 
-export function cookie(key: string, value?: any, options?: { force?: boolean; raw?: boolean; path?: string; domain?: string; secure?: boolean; expires?: number | Date; }): string {
+// --- Cookie Function Overloads ---
+
+/**
+ * Options for getting a cookie or storage value.
+ */
+export interface CookieGetOptions {
+    /** If true, forces reading from document.cookie, bypassing Web Storage. */
+    force?: boolean;
+    /** If true, does not decode the value (retrieves it as stored). */
+    raw?: boolean;
+}
+
+/**
+ * Options for setting a cookie or storage value.
+ */
+export interface CookieSetOptions {
+    /** If true, forces setting to document.cookie, bypassing Web Storage. */
+    force?: boolean;
+    /** If true, does not encode the value before storing. */
+    raw?: boolean;
+    /** The cookie path. Defaults to the current global cookie prefix. */
+    path?: string;
+    /** The cookie domain. */
+    domain?: string;
+    /** If true, marks the cookie as Secure (HTTPS only). */
+    secure?: boolean;
+    /**
+     * Expiration time.
+     * - Number: Days from now.
+     * - Date: Specific expiration date.
+     * - Omitted: Session cookie/storage.
+     * - Negative number or past date: Deletes the cookie/storage item.
+     */
+    expires?: number | Date;
+    /**
+     * The SameSite attribute for the cookie. Defaults to 'Lax'.
+     * If 'None', 'secure' must also be true.
+     */
+    sameSite?: 'Lax' | 'Strict' | 'None';
+}
+
+/**
+ * Gets a cookie or storage value.
+ * @param key The key for the cookie or storage.
+ * @param options Optional settings for how to retrieve the value.
+ * @returns The value string, or an empty string "" if not found/expired.
+ */
+export function cookie(key: string, options?: CookieGetOptions): string;
+
+/**
+ * Sets a cookie or storage value.
+ * @param key The key for the cookie or storage.
+ * @param value The value to set. Use `null` or `undefined` along with a past/negative `expires` to delete.
+ * @param options Additional options for setting the cookie.
+ * @returns For Web Storage: The prefixed key. For document.cookie: The full cookie string.
+ */
+export function cookie(key: string, value: string | null | undefined, options?: CookieSetOptions): string;
+/**
+ * Gets or sets a cookie or storage value.
+ * @param key The key for the cookie or storage.
+ * @param valueOrOptions Optional value to set or options for getting the value.
+ * @param optionsForSet Optional settings for how to set the value.
+ * @returns The value string, or an empty string "" if not found/expired, or the prefixed key/cookie string if setting.
+ */
+export function cookie(key: string, valueOrOptions?: string | null | undefined | CookieGetOptions, optionsForSet?: CookieSetOptions): string {
     const now = new Date();
+    const currentGlobalPrefix = cookiePrefix();
 
-    // key and at least value given, set cookie...
-    if (arguments.length > 1 && (Object.prototype.toString.call(value) === "[object String]" || value === null || value === undefined)) {
-        options = { ...options };
+    const isSetOperation =
+        optionsForSet !== undefined ||
+        (valueOrOptions !== undefined && typeof valueOrOptions !== 'object') ||
+        valueOrOptions === null;
 
-        if (value == null)
-            options.expires = -1;
 
-        let expires: Date = <Date>options.expires;
-        if (typeof options.expires === "number") {
-            expires = new Date();
-            expires.setDate(expires.getDate() + <number>options.expires);
+    if (isSetOperation) {
+        // Set cookie or storage value
+        const valueToSet = valueOrOptions as (string | null | undefined);
+        let mergedOptions: CookieSetOptions = { ...(optionsForSet || {}) };
+
+        // Intend to delete?
+        if (valueToSet == null) {
+            const expiresIsInThePast = mergedOptions.expires instanceof Date && mergedOptions.expires.getTime() < now.getTime();
+            const expiresIsNegativeNumber = typeof mergedOptions.expires === "number" && mergedOptions.expires < 0;
+            const expiresAlreadySetForDeletion = expiresIsInThePast || expiresIsNegativeNumber;
+
+            if (!expiresAlreadySetForDeletion)
+                mergedOptions.expires = -1; // Default to deletion if not already specified
         }
 
-        value = String(value);
+        let expiresDate: Date | undefined;
+        if (typeof mergedOptions.expires === "number") {
+            expiresDate = new Date();
+            expiresDate.setDate(now.getDate() + mergedOptions.expires);
+        } else if (mergedOptions.expires instanceof Date)
+            expiresDate = mergedOptions.expires;
 
-        if (hasStorage && !options.force) {
-            // Clear cookie
-            document.cookie = encodeURIComponent(key) + "=; expires=" + new Date(Date.parse("2000-01-01")).toUTCString();
+        const stringValue = String(valueToSet);
+        const pathForCookie = mergedOptions.path ? normalizePath(mergedOptions.path) : currentGlobalPrefix;
 
-            // Save to localStorage/sessionStorage
-            key = cookiePrefix() + key;
+        if (IS_BROWSER && hasStorage && !mergedOptions.force) {
+            // Use Web Storage
+            clearActualCookie(key, pathForCookie, mergedOptions.domain);
 
-            if (expires) {
-                if (expires > now)
-                    window.localStorage.setItem(key, JSON.stringify({ val: options.raw ? value : encodeURIComponent(value), exp: expires.toUTCString() }));
-                else
-                    window.localStorage.removeItem(key);
+            const storageKey = currentGlobalPrefix + key;
+            const itemToStore: { val: string; exp?: string } = {
+                val: mergedOptions.raw ? stringValue : encodeURIComponent(stringValue),
+            };
 
-                window.sessionStorage.removeItem(key);
-            } else {
-                window.sessionStorage.setItem(key, JSON.stringify({ val: options.raw ? value : encodeURIComponent(value) }));
-                window.localStorage.removeItem(key);
+            try {
+                if (expiresDate)
+                    if (expiresDate > now) {
+                        itemToStore.exp = expiresDate.toUTCString();
+                        window.localStorage.setItem(storageKey, JSON.stringify(itemToStore));
+                        window.sessionStorage.removeItem(storageKey);
+                    } else {
+                        window.localStorage.removeItem(storageKey);
+                        window.sessionStorage.removeItem(storageKey);
+                    }
+                else {
+                    window.sessionStorage.setItem(storageKey, JSON.stringify(itemToStore));
+                    window.localStorage.removeItem(storageKey);
+                }
+            } catch (e) {
+                console.error("Error interacting with Web Storage:", e);
             }
 
-            return key;
+            return storageKey;
         } else {
-            return (document.cookie = [
-                encodeURIComponent(key), "=",
-                options.raw ? value : encodeURIComponent(value),
-                options.expires ? "; expires=" + expires.toUTCString() : "", // use expires attribute, max-age is not supported by IE
-                "; path=" + (options.path || cookiePrefix()),
-                options.domain ? "; domain=" + options.domain : "",
-                options.secure ? "; secure" : ""
-            ].join(""));
-        }
-    }
+            // Use document.cookie
+            let cookieString = `${encodeURIComponent(key)}=${mergedOptions.raw ? stringValue : encodeURIComponent(stringValue)}`;
 
-    // key and possibly options given, get cookie...
-    options = value || {};
-    const decode = options.raw ? s => s : decodeURIComponent;
+            if (expiresDate)
+                cookieString += `; expires=${expiresDate.toUTCString()}`;
 
-    if (hasStorage && !options.force) {
-        key = cookiePrefix() + key;
+            cookieString += `; path=${pathForCookie}`;
 
-        let item = <any>window.sessionStorage.getItem(key) || window.localStorage.getItem(key);
-        if (item != null) {
-            item = JSON.parse(item);
-            if (item.exp && new Date(item.exp) < now) {
-                window.localStorage.removeItem(key);
-                return key.endsWith("/authToken") ? "Expired" : null;
-            }
+            if (mergedOptions.domain)
+                cookieString += `; domain=${mergedOptions.domain}`;
 
-            return decode(item.val);
+            if (mergedOptions.secure)
+                cookieString += `; secure`;
+
+            const sameSite = mergedOptions.sameSite || 'Lax';
+            if (sameSite === 'None')
+                if (!mergedOptions.secure) {
+                    console.warn("SameSite=None requires the Secure attribute. Cookie may be rejected or treated as Lax.");
+                    cookieString += `; SameSite=Lax`;
+                } else
+                    cookieString += `; SameSite=None`;
+            else
+                cookieString += `; SameSite=${sameSite}`;
+
+            if (IS_BROWSER)
+                document.cookie = cookieString;
+
+            return cookieString;
         }
     } else {
-        const parts = document.cookie.split("; ");
-        for (let i = 0, part; part = parts[i]; i++) {
-            const pair = part.split("=");
-            if (decodeURIComponent(pair[0]) === key) return decode(pair[1] || ""); // IE saves cookies with empty string as "c; ", e.g. without "=" as opposed to EOMB
+        // Get cookie
+        const readOptions: CookieGetOptions = (valueOrOptions as CookieGetOptions) || {};
+        const decode = readOptions.raw ? (s: string) => s : decodeURIComponent;
+
+        if (IS_BROWSER && hasStorage && !readOptions.force) {
+            const storageKey = currentGlobalPrefix + key;
+            let storedItemJson: string | null = null;
+            let itemSource: 'session' | 'local' | null = null;
+
+            try {
+                storedItemJson = window.sessionStorage.getItem(storageKey);
+                if (storedItemJson !== null)
+                    itemSource = 'session';
+                else {
+                    storedItemJson = window.localStorage.getItem(storageKey);
+                    if (storedItemJson !== null)
+                        itemSource = 'local';
+                }
+
+                if (storedItemJson !== null && itemSource !== null) {
+                    const item: { val: string; exp?: string } = JSON.parse(storedItemJson);
+
+                    if (item.exp && itemSource === 'local') {
+                        const expiryDate = new Date(item.exp);
+                        if (expiryDate < now) {
+                            window.localStorage.removeItem(storageKey);
+                            return "";
+                        }
+                    }
+
+                    return decode(item.val);
+                }
+            } catch (e) {
+                console.error(`Error parsing/reading stored item for key '${storageKey}':`, e);
+
+                if (itemSource === 'local' && storageKey)
+                    window.localStorage.removeItem(storageKey);
+                else if (itemSource === 'session' && storageKey)
+                    window.sessionStorage.removeItem(storageKey);
+
+                return "";
+            }
         }
+
+        if (IS_BROWSER && document.cookie) {
+            const cookies = document.cookie.split('; ');
+            for (const cookieStr of cookies) {
+                const [namePart, ...valueParts] = cookieStr.split('=');
+                if (decodeURIComponent(namePart.trim()) === key) {
+                    const cookieValue = valueParts.join('=');
+                    return decode(cookieValue);
+                }
+            }
+        }
+
+        return "";
     }
-    return null;
 }

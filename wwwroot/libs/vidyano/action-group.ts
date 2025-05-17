@@ -1,99 +1,150 @@
-import type { Action } from "./action.js"
-import type { ActionDefinition } from "./action-definition.js"
-import type { ISubjectDisposer, PropertyChangedArgs } from "./common/observable.js"
-import type { Service } from "./service.js"
-import { ServiceObject } from "./service-object.js"
+import type { Action } from "./action.js";
+import type { ActionDefinition } from "./action-definition.js";
+import type { ISubjectDisposer, PropertyChangedArgs } from "./common/observable.js";
+import type { Service } from "./service.js";
+import { ServiceObject } from "./service-object.js";
 
+/**
+ * Represents an action group action.
+ */
 interface IActionGroupAction {
     action: Action;
     observer: ISubjectDisposer;
 }
 
+/**
+ * Represents a group of related actions that share common visibility and execution state.
+ */
 export class ActionGroup extends ServiceObject {
-    private _actions: IActionGroupAction[] = [];
-    private _canExecute: boolean = false;
-    private _isVisible: boolean = false;
+    #actions: IActionGroupAction[] = [];
+    #canExecute: boolean = false;
+    #isVisible: boolean = false;
 
-    constructor(public service: Service, public definition: ActionDefinition) {
+    /**
+     * Initializes a new instance of the ActionGroup class.
+     * @param service - The associated service.
+     * @param definition - The action definition that describes this group.
+     */
+    constructor(service: Service, public definition: ActionDefinition) {
         super(service);
     }
 
-    addAction(action: Action) {
-        const index = this._actions.findIndex(a => a.action === action);
+    /**
+     * Adds an action to this group.
+     * @param action - The action to add to this group.
+     */
+    addAction(action: Action): void {
+        const index = this.#actions.findIndex(a => a.action === action);
         if (index >= 0)
             return;
 
-        this._actions.push({
+        this.#actions.push({
             action: action,
-            observer: action.propertyChanged.attach(this._actionPropertyChanged.bind(this))
+            observer: action.propertyChanged.attach(this.#actionPropertyChanged.bind(this))
         });
 
-        this._setCanExecute(this.canExecute || action.canExecute);
-        this._setIsVisible(this.isVisible || action.isVisible);
+        this.#setCanExecute(this.canExecute || action.canExecute);
+        this.#setIsVisible(this.isVisible || action.isVisible);
     }
 
-    removeAction(action: Action) {
-        const index = this._actions.findIndex(a => a.action === action);
+    /**
+     * Removes an action from this group.
+     * @param action - The action to remove from this group.
+     */
+    removeAction(action: Action): void {
+        const index = this.#actions.findIndex(a => a.action === action);
         if (index < 0)
             return;
 
-        const gAction = this._actions.splice(index, 1)[0];
+        const gAction = this.#actions.splice(index, 1)[0];
         gAction.observer();
     }
 
+    /**
+     * Gets all actions contained in this group.
+     */
     get actions(): Action[] {
-        return this._actions.map(a => a.action);
+        return this.#actions.map(a => a.action);
     }
 
+    /**
+     * Gets the name of this action group.
+     */
     get name(): string {
         return this.definition.name;
     }
 
+    /**
+     * Gets the display name of this action group.
+     */
     get displayName(): string {
         return this.definition.displayName;
     }
 
+    /**
+     * Gets whether any action in this group can be executed.
+     */
     get canExecute(): boolean {
-        return this._canExecute;
+        return this.#canExecute;
     }
 
-    private _setCanExecute(val: boolean) {
-        if (this._canExecute === val)
+    /**
+     * Sets the canExecute state for this action group.
+     */
+    #setCanExecute(val: boolean): void {
+        if (this.#canExecute === val)
             return;
 
-        this._canExecute = val;
+        this.#canExecute = val;
         this.notifyPropertyChanged("canExecute", val, !val);
     }
 
+    /**
+     * Gets whether this action group is visible.
+     */
     get isVisible(): boolean {
-        return this._isVisible;
+        return this.#isVisible;
     }
 
-    private _setIsVisible(val: boolean) {
-        if (this._isVisible === val)
+    /**
+     * Sets the visibility state for this action group.
+     */
+    #setIsVisible(val: boolean): void {
+        if (this.#isVisible === val)
             return;
 
-        this._isVisible = val;
+        this.#isVisible = val;
         this.notifyPropertyChanged("isVisible", val, !val);
     }
 
+    /**
+     * Gets whether this action group is pinned based on its first action.
+     */
     get isPinned(): boolean {
-        return this._actions[0] ? this._actions[0].action.isPinned : false;
+        return this.#actions[0] ? this.#actions[0].action.isPinned : false;
     }
 
+    /**
+     * Gets available options for this action group.
+     */
     get options(): string[] {
         return null;
     }
 
-    private _actionPropertyChanged(action: Action, detail: PropertyChangedArgs) {
+    /**
+     * Handles property changes on contained actions.
+     * @param action - The action that changed.
+     * @param detail - Details about the property that changed.
+     */
+    #actionPropertyChanged(action: Action, detail: PropertyChangedArgs): void {
         switch (detail.propertyName) {
             case "canExecute": {
-                this._setCanExecute(this._actions.some(a => a.action.canExecute));
+                this.#setCanExecute(this.#actions.some(a => a.action.canExecute));
                 break;
             }
 
             case "isVisible": {
-                this._setIsVisible(this._actions.some(a => a.action.isVisible));
+                this.#setIsVisible(this.#actions.some(a => a.action.isVisible));
                 break;
             }
         }

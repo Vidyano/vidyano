@@ -1,86 +1,101 @@
-import type * as Dto from "./typings/service.js"
-import type { KeyValuePair } from "./typings/common.js"
-import type { PersistentObject } from "./persistent-object.js"
-import type { PersistentObjectAttributeTab } from "./persistent-object-tab.js"
-import { Service } from "./service.js"
-import { ServiceObject } from "./service-object.js"
-import { CultureInfo } from "./cultures.js"
-import type { PersistentObjectAttributeGroup } from "./persistent-object-attribute-group.js"
-import type { PersistentObjectAttributeWithReference } from "./persistent-object-attribute-with-reference.js"
-import { Action } from "./action.js"
+import { Action } from "./action.js";
+import { CultureInfo } from "./cultures.js";
+import { _internal, PersistentObjectAttributeSymbols } from "./_internals.js";
+import { ServiceObject } from "./service-object.js";
+import { DataType } from "./service-data-type.js";
+import type { KeyValuePair } from "./typings/common.js";
+import type * as Dto from "./typings/service.js";
+import type { PersistentObject } from "./persistent-object.js";
+import type { PersistentObjectAttributeGroup } from "./persistent-object-attribute-group.js";
+import type { PersistentObjectAttributeTab } from "./persistent-object-tab.js";
+import type { PersistentObjectAttributeWithReference } from "./persistent-object-attribute-with-reference.js";
+import type { Service } from "./service.js";
 
 export type PersistentObjectAttributeOption = KeyValuePair<string, string>;
-export class PersistentObjectAttribute extends ServiceObject {
-    #input: HTMLInputElement;
-    #actions: Array<Action> & Record<string, Action>;
 
-    private _label: string;
-    private _isSystem: boolean;
-    private _lastParsedValue: string;
-    private _cachedValue: any;
-    private _serviceValue: string;
-    private _serviceOptions: string[];
-    private _displayValueSource: any;
-    private _displayValue: string;
-    private _rules: string;
-    private _validationError: string;
-    private _tab: PersistentObjectAttributeTab;
-    private _tabKey: string;
-    private _group: PersistentObjectAttributeGroup;
-    private _groupKey: string;
-    private _isRequired: boolean;
-    private _isReadOnly: boolean;
-    private _isValueChanged: boolean;
-    private _isSensitive: boolean;
-    private _visibility: Dto.PersistentObjectAttributeVisibility;
-    private _isVisible: boolean;
-    private _tag: any;
+/**
+ * Represents an attribute of a persistent object.
+ */
+export class PersistentObjectAttribute extends ServiceObject {
+    #actions: Array<Action> & Record<string, Action>;
+    #cachedValue: any;
+    readonly #column: number;
+    readonly #columnSpan: number;
+    #displayValue: string;
+    #displayValueSource: any;
+    #group: PersistentObjectAttributeGroup;
+    #groupKey: string;
+    readonly #id: string;
+    #input: HTMLInputElement;
+    #isReadOnly: boolean;
+    #isRequired: boolean;
+    readonly #isSensitive: boolean;
+    readonly #isSystem: boolean;
+    #isValueChanged: boolean;
+    #isVisible: boolean;
+    #label: string;
+    #lastParsedValue: string;
+    readonly #name: string;
+    #offset: number;
+    #options: string[] | PersistentObjectAttributeOption[];
+    #parent!: PersistentObject;
+    #refreshServiceValue: string;
+    #rules: string;
+    #serviceOptions: string[];
+    #serviceValue: string;
+    #tag: any;
+    #tab: PersistentObjectAttributeTab;
+    #tabKey: string;
+    readonly #toolTip: string;
+    #triggersRefresh: boolean;
+    readonly #type: string;
+    #typeHints: Record<string, string>;
+    #validationError: string;
+    #visibility: Dto.PersistentObjectAttributeVisibility;
 
     protected _shouldRefresh: boolean = false;
-    private _refreshServiceValue: string;
 
-    id: string;
-    name: string;
-    options: string[] | PersistentObjectAttributeOption[];
-    offset: number;
-    type: string;
-    toolTip: string;
-    typeHints: any;
-    disableSort: boolean;
-    triggersRefresh: boolean;
-    column: number;
-    columnSpan: number;
-
-    constructor(service: Service, attr: Dto.PersistentObjectAttribute, parent: PersistentObject);
-    constructor(service: Service, attr: Dto.PersistentObjectAttribute, public parent: PersistentObject) {
+    /**
+     * Initializes a new instance of the PersistentObjectAttribute class.
+     * 
+     * @param service - The service instance providing backend functionality.
+     * @param attr - The attribute data from the service.
+     * @param parent - The parent persistent object that owns this attribute.
+     */
+    constructor(service: Service, attr: Dto.PersistentObjectAttribute, parent: PersistentObject) {
         super(service);
 
-        this.id = attr.id;
-        this._isSystem = !!attr.isSystem;
-        this.name = attr.name;
-        this.type = attr.type;
-        this._label = attr.label;
-        this._serviceValue = attr.value !== undefined ? attr.value : null;
-        this._groupKey = attr.group;
-        this._tabKey = attr.tab;
-        this._isReadOnly = !!attr.isReadOnly;
-        this._isRequired = !!attr.isRequired;
-        this._isValueChanged = !!attr.isValueChanged;
-        this._isSensitive = !!attr.isSensitive;
-        this.offset = attr.offset || 0;
-        this.toolTip = attr.toolTip;
-        this._rules = attr.rules;
+        this[PersistentObjectAttributeSymbols.IsPersistentObjectAttribute] = true;
+        this[PersistentObjectAttributeSymbols.BackupServiceValue] = this.#backupServiceValue.bind(this);
+        this[PersistentObjectAttributeSymbols.RefreshFromResult] = this._refreshFromResult.bind(this);
+        this[PersistentObjectAttributeSymbols.ToServiceObject] = this._toServiceObject.bind(this);
+
+        this.#id = attr.id;
+        this.#parent = parent;
+        this.#isSystem = !!attr.isSystem;
+        this.#name = attr.name;
+        this.#type = attr.type;
+        this.#label = attr.label;
+        this.#serviceValue = attr.value !== undefined ? attr.value : null;
+        this.#groupKey = attr.group;
+        this.#tabKey = attr.tab;
+        this.#isReadOnly = !!attr.isReadOnly;
+        this.#isRequired = !!attr.isRequired;
+        this.#isValueChanged = !!attr.isValueChanged;
+        this.#isSensitive = !!attr.isSensitive;
+        this.#offset = attr.offset || 0;
+        this.#toolTip = attr.toolTip;
+        this.#rules = attr.rules;
         this.validationError = attr.validationError || null;
-        this.typeHints = attr.typeHints || {};
-        this.disableSort = !!attr.disableSort;
-        this.triggersRefresh = !!attr.triggersRefresh;
-        this.column = attr.column;
-        this.columnSpan = attr.columnSpan || 0;
+        this.#typeHints = attr.typeHints || {};
+        this.#triggersRefresh = !!attr.triggersRefresh;
+        this.#column = attr.column;
+        this.#columnSpan = attr.columnSpan || 0;
         this.visibility = attr.visibility;
-        this._tag = attr.tag;
+        this.#tag = attr.tag;
 
         if (this.type !== "Reference")
-            this._setOptions(attr.options);
+            this.options = attr.options;
 
         if (this.type === "BinaryFile") {
             const input = document?.createElement("input");
@@ -94,125 +109,242 @@ export class PersistentObjectAttribute extends ServiceObject {
         Action.addActions(this.service, this.parent, this.#actions, attr.actions || []);
     }
 
+    /**
+     * Gets the unique identifier.
+     */
+    get id(): string {
+        return this.#id;
+    }
+
+    /**
+     * Gets the name.
+     */
+    get name() {
+        return this.#name;
+    }
+
+    /**
+     * Gets the data type.
+     */
+    get type() {
+        return this.#type;
+    }
+
+    /**
+     * Gets or sets the label.
+     */
     get label(): string {
-        return this._label;
+        return this.#label;
     }
-
     set label(label: string) {
-        const oldLabel = this._label;
+        const oldLabel = this.#label;
         if (oldLabel !== label)
-            this.notifyPropertyChanged("label", this._label = label, oldLabel);
+            this.notifyPropertyChanged("label", this.#label = label, oldLabel);
     }
 
+    /**
+     * Gets the group key.
+     */
     get groupKey(): string {
-        return this._groupKey;
+        return this.#groupKey;
     }
 
+    /**
+     * Gets or sets the group.
+     */
     get group(): PersistentObjectAttributeGroup {
-        return this._group;
+        return this.#group;
     }
     set group(group: PersistentObjectAttributeGroup) {
-        const oldGroup = this._group;
-        this._group = group;
+        const oldGroup = this.#group;
+        this.#group = group;
 
-        this._groupKey = group ? group.key : null;
+        this.#groupKey = group ? group.key : null;
 
         this.notifyPropertyChanged("group", group, oldGroup);
     }
 
-    get tabKey(): string {
-        return this._tabKey;
+    /**
+     * Gets the column number.
+     */
+    get column(): number {
+        return this.#column;
     }
 
+    /**
+     * Gets the column span.
+     */
+    get columnSpan(): number {
+        return this.#columnSpan;
+    }
+
+    /**
+     * Gets the offset.
+     */
+    get offset() {
+        return this.#offset;
+    }
+
+    /**
+     * Gets the parent persistent object.
+     */
+    get parent(): PersistentObject {
+        return this.#parent;
+    }
+
+    /**
+     * Gets the tab key.
+     */
+    get tabKey(): string {
+        return this.#tabKey;
+    }
+
+    /**
+     * Gets or sets the tab.
+     */
     get tab(): PersistentObjectAttributeTab {
-        return this._tab;
+        return this.#tab;
     }
     set tab(tab: PersistentObjectAttributeTab) {
-        const oldTab = this._tab;
-        this._tab = tab;
+        const oldTab = this.#tab;
+        this.#tab = tab;
 
-        this._tabKey = tab ? tab.key : null;
+        this.#tabKey = tab ? tab.key : null;
 
         this.notifyPropertyChanged("tab", tab, oldTab);
     }
 
+    /**
+     * Gets whether the attribute is system-defined.
+     */
     get isSystem(): boolean {
-        return this._isSystem;
+        return this.#isSystem;
     }
 
+    /**
+     * Gets or sets the visibility.
+     */
     get visibility(): Dto.PersistentObjectAttributeVisibility {
-        return this._visibility;
+        return this.#visibility;
     }
-
     set visibility(visibility: Dto.PersistentObjectAttributeVisibility) {
-        if (this._visibility === visibility)
+        if (this.#visibility === visibility)
             return;
 
-        const oldIsVisible = this._isVisible;
+        const oldIsVisible = this.#isVisible;
         const newIsVisible = visibility.indexOf("Always") >= 0 || visibility.indexOf(this.parent.isNew ? "New" : "Read") >= 0;
         if (newIsVisible !== oldIsVisible)
-            this._isVisible = newIsVisible;
+            this.#isVisible = newIsVisible;
 
-        const oldVisibility = this._visibility;
-        this.notifyPropertyChanged("visibility", this._visibility = visibility, oldVisibility);
+        const oldVisibility = this.#visibility;
+        this.notifyPropertyChanged("visibility", this.#visibility = visibility, oldVisibility);
 
         if (newIsVisible !== oldIsVisible) {
-            this.notifyPropertyChanged("isVisible", this._isVisible, oldIsVisible);
+            this.notifyPropertyChanged("isVisible", this.#isVisible, oldIsVisible);
 
             if (typeof(oldVisibility) !== "undefined" && !this.parent.isBusy)
-                this.parent.refreshTabsAndGroups(this);
+                _internal(this.parent).refreshTabsAndGroups(this);
         }
     }
 
+    /**
+     * Gets the computed visibility status.
+     */
     get isVisible(): boolean {
-        return this._isVisible;
+        return this.#isVisible;
     }
 
+    /**
+     * Gets or sets the options for the attribute.
+     */
+    get options(): string[] | PersistentObjectAttributeOption[] {
+        return this.#options;
+    }
+    set options(options: string[]) {
+        const oldOptions = this.options ? this.options.slice() : undefined;
+
+        if (!options || options.length === 0) {
+            this.#options = this.#serviceOptions = options;
+            if (oldOptions && oldOptions.length > 0)
+                this.notifyPropertyChanged("options", this.options, oldOptions);
+
+            return;
+        }
+
+        this.#serviceOptions = <any[]>options.slice(0);
+        const keyValuePairOptionType = ["FlagsEnum", "KeyValueList"].indexOf(this.type) !== -1 || (this.type === "Reference" && (<PersistentObjectAttributeWithReference><any>this).selectInPlace);
+
+        if (!keyValuePairOptionType)
+            this.#options = options;
+        else {
+            this.#options = options.map(o => {
+                const optionSplit = o.splitWithTail("=", 2);
+                return {
+                    key: optionSplit[0],
+                    value: optionSplit[1]
+                };
+            });
+        }
+
+        this.notifyPropertyChanged("options", this.options, oldOptions);
+    }
+
+    /**
+     * Gets or sets the validation error.
+     */
     get validationError(): string {
-        return this._validationError;
+        return this.#validationError;
     }
-
     set validationError(error: string) {
-        const oldValidationError = this._validationError;
+        const oldValidationError = this.#validationError;
         if (oldValidationError !== error)
-            this.notifyPropertyChanged("validationError", this._validationError = error, oldValidationError);
+            this.notifyPropertyChanged("validationError", this.#validationError = error, oldValidationError);
     }
 
+    /**
+     * Gets the validation rules.
+     */
     get rules(): string {
-        return this._rules;
+        return this.#rules;
     }
-
-    private _setRules(rules: string) {
-        const oldRules = this._rules;
+    #setRules(rules: string) {
+        const oldRules = this.#rules;
         if (oldRules !== rules)
-            this.notifyPropertyChanged("rules", this._rules = rules, oldRules);
+            this.notifyPropertyChanged("rules", this.#rules = rules, oldRules);
     }
 
+    /**
+     * Gets or sets if the attribute value is required.
+     */
     get isRequired(): boolean {
-        return this._isRequired;
+        return this.#isRequired;
     }
-
-    private _setIsRequired(isRequired: boolean) {
-        const oldIsRequired = this._isRequired;
+    #setIsRequired(isRequired: boolean) {
+        const oldIsRequired = this.#isRequired;
         if (oldIsRequired !== isRequired)
-            this.notifyPropertyChanged("isRequired", this._isRequired = isRequired, oldIsRequired);
+            this.notifyPropertyChanged("isRequired", this.#isRequired = isRequired, oldIsRequired);
     }
 
+    /**
+     * Gets the read-only status.
+     */
     get isReadOnly(): boolean {
-        return this._isReadOnly;
+        return this.#isReadOnly;
     }
-
-    private _setIsReadOnly(isReadOnly: boolean) {
-        const oldisReadOnly = this._isReadOnly;
+    #setIsReadOnly(isReadOnly: boolean) {
+        const oldisReadOnly = this.#isReadOnly;
         if (oldisReadOnly !== isReadOnly)
-            this.notifyPropertyChanged("isReadOnly", this._isReadOnly = isReadOnly, oldisReadOnly);
+            this.notifyPropertyChanged("isReadOnly", this.#isReadOnly = isReadOnly, oldisReadOnly);
     }
 
+    /**
+     * Gets the formatted display value.
+     */
     get displayValue(): string {
-        if (this._displayValueSource === this._serviceValue)
-            return !String.isNullOrEmpty(this._displayValue) ? this._displayValue : "—";
+        if (this.#displayValueSource === this.#serviceValue)
+            return !String.isNullOrEmpty(this.#displayValue) ? this.#displayValue : "—";
         else
-            this._displayValueSource = this._serviceValue;
+            this.#displayValueSource = this.#serviceValue;
 
         let format = this.getTypeHint("DisplayFormat", "{0}");
 
@@ -243,7 +375,7 @@ export class PersistentObjectAttribute extends ServiceObject {
         else {
             const calculated = this.service.hooks.onGetAttributeDisplayValue(this, value);
             if (typeof calculated !== "undefined")
-                return (this._displayValue = calculated);
+                return (this.#displayValue = calculated);
         }
 
         if (format === "{0}") {
@@ -253,30 +385,62 @@ export class PersistentObjectAttribute extends ServiceObject {
                 format = "{0:" + CultureInfo.currentCulture.dateFormat.shortDatePattern + " " + CultureInfo.currentCulture.dateFormat.shortTimePattern + "}";
         }
 
-        return !String.isNullOrEmpty(this._displayValue = value != null ? String.format(format, value) : null) ? this._displayValue : "—";
+        return !String.isNullOrEmpty(this.#displayValue = value != null ? String.format(format, value) : null) ? this.#displayValue : "—";
     }
 
+    /**
+     * Gets the flag indicating if a refresh is needed.
+     */
     get shouldRefresh(): boolean {
         return this._shouldRefresh;
     }
 
-    get value(): any {
-        if (this._lastParsedValue !== this._serviceValue) {
-            this._lastParsedValue = this._serviceValue;
+    /**
+     * Gets the tool tip.
+     */
+    get toolTip(): string {
+        return this.#toolTip;
+    }
 
-            if (!this.parent.isBulkEdit || !!this._serviceValue)
-                this._cachedValue = Service.fromServiceString(this._serviceValue, this.type);
+    /**
+     * Gets the flag indicating if changing the attribute's value triggers a refresh.
+     */
+    get triggersRefresh(): boolean {
+        return this.#triggersRefresh;
+    }
+    #setTriggersRefresh(triggersRefresh: boolean) {
+        const oldTriggersRefresh = this.#triggersRefresh;
+        if (oldTriggersRefresh !== triggersRefresh)
+            this.notifyPropertyChanged("triggersRefresh", this.#triggersRefresh = triggersRefresh, oldTriggersRefresh);
+    }
+
+    /**
+     * Gets or sets the value.
+     */
+    get value(): any {
+        if (this.#lastParsedValue !== this.#serviceValue) {
+            this.#lastParsedValue = this.#serviceValue;
+
+            if (!this.parent.isBulkEdit || !!this.#serviceValue)
+                this.#cachedValue = DataType.fromServiceString(this.#serviceValue, this.type);
             else
-                this._cachedValue = null;
+                this.#cachedValue = null;
         }
 
-        return this._cachedValue;
+        return this.#cachedValue;
     }
 
     set value(val: any) {
         this.setValue(val).catch(() => {});
     }
 
+    /**
+     * Sets the value and handles necessary updates.
+     *
+     * @param val The new value.
+     * @param allowRefresh Optional flag to allow refresh.
+     * @returns A promise resolving to the updated value.
+     */
     async setValue(val: any, allowRefresh: boolean = true): Promise<any> {
         if (!this.parent.isEditing || this.parent.isFrozen || this.isReadOnly)
             return this.value;
@@ -293,26 +457,25 @@ export class PersistentObjectAttribute extends ServiceObject {
             }
         }
 
-        const newServiceValue = Service.toServiceString(val, this.type);
+        const newServiceValue = DataType.toServiceString(val, this.type);
 
         // If value is equal
-        if (this._cachedValue === val || (this._serviceValue == null && String.isNullOrEmpty(newServiceValue)) || this._serviceValue === newServiceValue) {
+        if (this.#cachedValue === val || (this.#serviceValue == null && String.isNullOrEmpty(newServiceValue)) || this.#serviceValue === newServiceValue) {
             if (allowRefresh && this._shouldRefresh)
-                await this._triggerAttributeRefresh();
+                await this.triggerRefresh();
         }
         else {
             const oldDisplayValue = this.displayValue;
-            const oldServiceValue = this._serviceValue;
-            this.notifyPropertyChanged("value", this._serviceValue = newServiceValue, oldServiceValue);
+            const oldServiceValue = this.#serviceValue;
+            this.notifyPropertyChanged("value", this.#serviceValue = newServiceValue, oldServiceValue);
             this.isValueChanged = true;
 
-            const newDisplayValue = this.displayValue;
-            if (oldDisplayValue !== newDisplayValue)
-                this.notifyPropertyChanged("displayValue", newDisplayValue, oldDisplayValue);
+            if (oldDisplayValue !== this.displayValue)
+                this.notifyPropertyChanged("displayValue", this.displayValue, oldDisplayValue);
 
             if (this.triggersRefresh) {
                 if (allowRefresh)
-                    await this._triggerAttributeRefresh();
+                    await this.triggerRefresh();
                 else
                     this._shouldRefresh = true;
             }
@@ -323,43 +486,72 @@ export class PersistentObjectAttribute extends ServiceObject {
         return this.value;
     }
 
+    /**
+     * Gets or sets the flag indicating if the value has changed.
+     */
     get isValueChanged(): boolean {
-        return this._isValueChanged;
+        return this.#isValueChanged;
     }
-
     set isValueChanged(isValueChanged: boolean) {
-        if (isValueChanged === this._isValueChanged)
+        if (isValueChanged === this.#isValueChanged)
             return;
 
-        const oldIsValueChanged = this._isValueChanged;
-        this.notifyPropertyChanged("isValueChanged", this._isValueChanged = isValueChanged, oldIsValueChanged);
+        const oldIsValueChanged = this.#isValueChanged;
+        this.notifyPropertyChanged("isValueChanged", this.#isValueChanged = isValueChanged, oldIsValueChanged);
     }
 
+    /**
+     * Gets the sensitivity flag.
+     */
     get isSensitive(): boolean {
-        return this._isSensitive;
+        return this.#isSensitive;
     }
 
+    /**
+     * Gets the input element associated with the attribute.
+     */
     get input(): HTMLInputElement {
         return this.#input;
     }
 
+    /**
+     * Gets the actions available for the attribute.
+     */
     get actions(): Array<Action> & Record<string, Action> {
         return this.#actions;
     }
-
-    private _setActions(actions: Array<Action> & Record<string, Action>) {
+    #setActions(actions: Array<Action> & Record<string, Action>) {
         const oldActions = this.#actions;
         this.notifyPropertyChanged("actions", this.#actions = actions, oldActions);
     }
 
+    /**
+     * Gets the associated tag.
+     */
     get tag(): any {
-        return this._tag;
+        return this.#tag;
     }
 
+    /**
+     * Gets the data type hints
+     */
+    get typeHints(): Record<string, string> {
+        return this.#typeHints;
+    }
+
+    /**
+     * Retrieves a type hint value.
+     *
+     * @param name The name of the type hint.
+     * @param defaultValue The default value if the hint is not present.
+     * @param typeHints Optional type hints to merge.
+     * @param ignoreCasing Whether to ignore casing for the name.
+     * @returns The type hint.
+     */
     getTypeHint(name: string, defaultValue?: string, typeHints?: any, ignoreCasing?: boolean): string {
         if (typeHints != null) {
             if (this.typeHints != null)
-                typeHints = Object.assign({...this.typeHints}, typeHints);
+                typeHints = Object.assign({ ...this.typeHints }, typeHints);
         }
         else
             typeHints = this.typeHints;
@@ -374,42 +566,85 @@ export class PersistentObjectAttribute extends ServiceObject {
         return defaultValue;
     }
 
-    _toServiceObject() {
-        const result = this.copyProperties(["id", "name", "label", "type", "isReadOnly", "triggersRefresh", "isRequired", "differsInBulkEditMode", "isValueChanged", "displayAttribute", "objectId", "visibility"]);
-        result.value = this._serviceValue;
+    /**
+     * Triggers a refresh for the attribute.
+     *
+     * @param immediate Optional flag to perform immediate refresh.
+     * @returns A promise that resolves when the refresh is complete.
+     */
+    triggerRefresh(immediate?: boolean): Promise<any> {
+        this._shouldRefresh = false;
+        return this.parent.triggerAttributeRefresh(this, immediate);
+    }
 
+    /**
+     * Converts the attribute to a service object representation.
+     *
+     * @param inheritedPropertyValues - Optional inherited property values to incorporate.
+     * @returns The service object representation ready for transmission.
+     */
+    protected _toServiceObject(inheritedPropertyValues?: Record<string, any>) {
+        const initialPropertyValues = {
+            id: this.id,
+            name: this.name,
+            label: this.label,
+            type: this.type,
+            isReadOnly: this.isReadOnly,
+            triggersRefresh: this.triggersRefresh,
+            isRequired: this.isRequired,
+            differsInBulkEditMode: this.parent.isBulkEdit && this.isValueChanged,
+            isValueChanged: this.isValueChanged,
+            visibility: this.visibility
+        };
+
+        const result = this._copyPropertiesFromValues(!inheritedPropertyValues ? initialPropertyValues : { ...initialPropertyValues, ...inheritedPropertyValues});
+
+        result.value = this.#serviceValue;
         result.actions = this.actions.map(a => a.name);
 
         if (this.options && this.options.length > 0 && this.isValueChanged)
             result.options = (<any[]>this.options).map(o => o ? (typeof (o) !== "string" ? o.key + "=" + o.value : o) : null);
         else
-            result.options = this._serviceOptions;
+            result.options = this.#serviceOptions;
 
         return result;
     }
 
-    _refreshFromResult(resultAttr: PersistentObjectAttribute, resultWins: boolean): boolean {
+    /**
+     * Refreshes the attribute from the service result.
+     *
+     * @param resultAttr - The result attribute data from the service.
+     * @param resultWins - Flag indicating if the result value takes precedence.
+     * @returns A flag indicating if visibility has changed.
+     */
+    protected _refreshFromResult(resultAttr: Dto.PersistentObjectAttribute, resultWins: boolean): boolean {
         let visibilityChanged = false;
 
         this.label = resultAttr.label;
 
-        this._setActions(resultAttr.actions);
-        this._setOptions(resultAttr._serviceOptions);
-        this._setIsReadOnly(resultAttr.isReadOnly);
-        this._setRules(resultAttr.rules);
-        this._setIsRequired(resultAttr.isRequired);
+        const newActions = <any>[];
+        Action.addActions(this.service, this.parent, newActions, resultAttr.actions || []);
+        this.#setActions(newActions);
+
+        if (this.type !== "Reference")
+            this.options = resultAttr.options;
+
+        this.#setIsReadOnly(resultAttr.isReadOnly);
+        this.#setRules(resultAttr.rules);
+        this.#setIsRequired(resultAttr.isRequired);
 
         if (this.visibility !== resultAttr.visibility) {
             this.visibility = resultAttr.visibility;
             visibilityChanged = true;
         }
 
-        if (resultWins || (this._serviceValue !== resultAttr._serviceValue && (this.isReadOnly || this._refreshServiceValue !== resultAttr._serviceValue))) {
+        const resultAttrValue = resultAttr.value !== undefined ? resultAttr.value : null;
+        if (resultWins || (this.#serviceValue !== resultAttrValue && (this.isReadOnly || this.#refreshServiceValue !== resultAttrValue))) {
             const oldDisplayValue = this.displayValue;
             const oldValue = this.value;
 
-            this._serviceValue = resultAttr._serviceValue;
-            this._lastParsedValue = undefined;
+            this.#serviceValue = resultAttrValue;
+            this.#lastParsedValue = undefined;
 
             this.notifyPropertyChanged("value", this.value, oldValue);
             this.notifyPropertyChanged("displayValue", this.displayValue, oldDisplayValue);
@@ -420,10 +655,10 @@ export class PersistentObjectAttribute extends ServiceObject {
             this.isValueChanged = resultAttr.isValueChanged;
         }
 
-        this._tag = resultAttr._tag;
-        this._refreshServiceValue = undefined;
+        this.#tag = resultAttr.tag;
+        this.#refreshServiceValue = undefined;
 
-        this.triggersRefresh = resultAttr.triggersRefresh;
+        this.#setTriggersRefresh(resultAttr.triggersRefresh);
         this.validationError = resultAttr.validationError || null;
 
         if (resultAttr.typeHints && Object.keys(resultAttr.typeHints).some(k => resultAttr.typeHints[k] !== this.typeHints[k])) {
@@ -435,43 +670,16 @@ export class PersistentObjectAttribute extends ServiceObject {
             }
 
             const oldTypeHints = this.typeHints;
-            this.notifyPropertyChanged("typeHints", this.typeHints = resultAttr.typeHints, oldTypeHints);
+            this.notifyPropertyChanged("typeHints", this.#typeHints = resultAttr.typeHints, oldTypeHints);
         }
 
         return visibilityChanged;
     }
 
-    _triggerAttributeRefresh(immediate?: boolean): Promise<any> {
-        this._shouldRefresh = false;
-        return this.parent._triggerAttributeRefresh(this, immediate);
-    }
-
-    protected _setOptions(options: string[]) {
-        const oldOptions = this.options ? this.options.slice() : undefined;
-
-        if (!options || options.length === 0) {
-            this.options = this._serviceOptions = options;
-            if (oldOptions && oldOptions.length > 0)
-                this.notifyPropertyChanged("options", this.options, oldOptions);
-
-            return;
-        }
-
-        this._serviceOptions = <any[]>options.slice(0);
-        const keyValuePairOptionType = ["FlagsEnum", "KeyValueList"].indexOf(this.type) !== -1 || (this.type === "Reference" && (<PersistentObjectAttributeWithReference><any>this).selectInPlace);
-
-        if (!keyValuePairOptionType)
-            this.options = options;
-        else {
-            this.options = options.map(o => {
-                const optionSplit = o.splitWithTail("=", 2);
-                return {
-                    key: optionSplit[0],
-                    value: optionSplit[1]
-                };
-            });
-        }
-
-        this.notifyPropertyChanged("options", this.options, oldOptions);
+    /**
+     * Backs up the service value.
+     */
+    #backupServiceValue() {
+        this.#refreshServiceValue = this.#serviceValue;
     }
 }

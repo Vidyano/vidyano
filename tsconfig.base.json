@@ -12,7 +12,6 @@
           "DOM",
           "DOM.Iterable"
       ],
-      "removeComments": true,
       "experimentalDecorators": true,
       "noEmitOnError": false,
       "rootDir": ".",

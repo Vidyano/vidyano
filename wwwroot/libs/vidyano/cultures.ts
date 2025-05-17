@@ -1,60 +1,126 @@
-import type { KeyValue } from "./typings/common.js"
-
+/**
+ * Represents culture-specific information, including number and date formatting.
+ */
 export class CultureInfo {
+    /**
+     * The current culture in use.
+     */
     static currentCulture: CultureInfo;
+
+    /**
+     * The invariant (culture-neutral) culture.
+     */
     static invariantCulture: CultureInfo;
+
+    /**
+     * Registered cultures by name.
+     */
     static cultures: Record<string, CultureInfo> = {};
 
+    /**
+     * Creates a new CultureInfo instance.
+     * @param name The culture name (e.g., "en-US").
+     * @param numberFormat Number formatting information.
+     * @param dateFormat Date formatting information.
+     */
     constructor(public name: string, public numberFormat: ICultureInfoNumberFormat, public dateFormat: ICultureInfoDateFormat) {
     }
 }
 
+/**
+ * Number formatting information for a culture.
+ */
 export interface ICultureInfoNumberFormat {
+    /** Symbol for Not-a-Number. */
     naNSymbol: string;
+    /** Symbol for negative sign. */
     negativeSign: string;
+    /** Symbol for positive sign. */
     positiveSign: string;
+    /** Text for negative infinity. */
     negativeInfinityText: string;
+    /** Text for positive infinity. */
     positiveInfinityText: string;
+    /** Symbol for percent. */
     percentSymbol: string;
-    percentGroupSizes: Array<number>;
+    /** Group sizes for percent values. */
+    percentGroupSizes: number[];
+    /** Decimal digits for percent values. */
     percentDecimalDigits: number;
+    /** Decimal separator for percent values. */
     percentDecimalSeparator: string;
+    /** Group separator for percent values. */
     percentGroupSeparator: string;
+    /** Pattern for positive percent values. */
     percentPositivePattern: string;
+    /** Pattern for negative percent values. */
     percentNegativePattern: string;
+    /** Symbol for currency. */
     currencySymbol: string;
-    currencyGroupSizes: Array<number>;
+    /** Group sizes for currency values. */
+    currencyGroupSizes: number[];
+    /** Decimal digits for currency values. */
     currencyDecimalDigits: number;
+    /** Decimal separator for currency values. */
     currencyDecimalSeparator: string;
+    /** Group separator for currency values. */
     currencyGroupSeparator: string;
+    /** Pattern for negative currency values. */
     currencyNegativePattern: string;
+    /** Pattern for positive currency values. */
     currencyPositivePattern: string;
-    numberGroupSizes: Array<number>;
+    /** Group sizes for number values. */
+    numberGroupSizes: number[];
+    /** Decimal digits for number values. */
     numberDecimalDigits: number;
+    /** Decimal separator for number values. */
     numberDecimalSeparator: string;
+    /** Group separator for number values. */
     numberGroupSeparator: string;
 }
 
+/**
+ * Date formatting information for a culture.
+ */
 export interface ICultureInfoDateFormat {
+    /** AM designator. */
     amDesignator: string;
+    /** PM designator. */
     pmDesignator: string;
+    /** Date separator. */
     dateSeparator: string;
+    /** Time separator. */
     timeSeparator: string;
+    /** GMT date/time pattern. */
     gmtDateTimePattern: string;
+    /** Universal date/time pattern. */
     universalDateTimePattern: string;
+    /** Sortable date/time pattern. */
     sortableDateTimePattern: string;
+    /** General date/time pattern. */
     dateTimePattern: string;
+    /** Long date pattern. */
     longDatePattern: string;
+    /** Short date pattern. */
     shortDatePattern: string;
+    /** Long time pattern. */
     longTimePattern: string;
+    /** Short time pattern. */
     shortTimePattern: string;
+    /** Year/month pattern. */
     yearMonthPattern: string;
+    /** First day of the week (0 = Sunday, 1 = Monday, ...). */
     firstDayOfWeek: number;
-    dayNames: Array<string>;
-    shortDayNames: Array<string>;
-    minimizedDayNames: Array<string>;
-    monthNames: Array<string>;
-    shortMonthNames: Array<string>;
+    /** Full day names. */
+    dayNames: string[];
+    /** Abbreviated day names. */
+    shortDayNames: string[];
+    /** Minimized day names. */
+    minimizedDayNames: string[];
+    /** Full month names. */
+    monthNames: string[];
+    /** Abbreviated month names. */
+    shortMonthNames: string[];
 }
 
 CultureInfo.cultures[""] = new CultureInfo("", { naNSymbol: "NaN", negativeSign: "-", positiveSign: "+", negativeInfinityText: "-Infinity", positiveInfinityText: "Infinity", percentSymbol: "%", percentGroupSizes: [3], percentDecimalDigits: 2, percentDecimalSeparator: ".", percentGroupSeparator: ",", percentPositivePattern: "{0} %", percentNegativePattern: "-{0} %", currencySymbol: "¤", currencyGroupSizes: [3], currencyDecimalDigits: 2, currencyDecimalSeparator: ".", currencyGroupSeparator: ",", currencyNegativePattern: "(${0})", currencyPositivePattern: "${0}", numberGroupSizes: [3], numberDecimalDigits: 2, numberDecimalSeparator: ".", numberGroupSeparator: "," }, { amDesignator: "AM", pmDesignator: "PM", dateSeparator: "/", timeSeparator: ":", gmtDateTimePattern: "ddd, dd MMM yyyy HH':'mm':'ss 'GMT'", universalDateTimePattern: "yyyy'-'MM'-'dd HH':'mm':'ss'Z'", sortableDateTimePattern: "yyyy'-'MM'-'dd'T'HH':'mm':'ss", dateTimePattern: "dddd, dd MMMM yyyy HH:mm:ss", longDatePattern: "dddd, dd MMMM yyyy", shortDatePattern: "MM/dd/yyyy", longTimePattern: "HH:mm:ss", shortTimePattern: "HH:mm", yearMonthPattern: "yyyy MMMM", firstDayOfWeek: 0, dayNames: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], shortDayNames: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], minimizedDayNames: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"], monthNames: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December", ""], shortMonthNames: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", ""] });

@@ -1,33 +1,83 @@
-import { Observable } from "./common/observable.js"
-import type { Query } from "./query.js"
+import { Observable } from "./common/observable.js";
+import type { Query } from "./query.js";
 
+/**
+ * Represents a chart associated with a query.
+ */
 export class QueryChart extends Observable<QueryChart> {
-    constructor(private _query: Query, private _label: string, private _name: string, private _options: any, private _type: string) {
+    #query: Query;
+    #label: string;
+    #name: string;
+    #options: any;
+    #type: string;
+
+    /**
+     * Initializes a new instance of the QueryChart class.
+     * @param query The parent query.
+     * @param label The chart label.
+     * @param name The chart name.
+     * @param options The chart options.
+     * @param type The chart type.
+     */
+    constructor(query: Query, label: string, name: string, options: any, type: string) {
         super();
+
+        this.#query = query;
+        this.#label = label;
+        this.#name = name;
+        this.#options = options;
+        this.#type = type;
     }
 
+    /**
+     * Gets the parent query.
+     */
     get query(): Query {
-        return this._query;
+        return this.#query;
     }
 
+    /**
+     * Gets the chart label.
+     */
     get label(): string {
-        return this._label;
+        return this.#label;
     }
 
+    /**
+     * Gets the chart name.
+     */
     get name(): string {
-        return this._name;
+        return this.#name;
     }
 
+    /**
+     * Gets the chart options.
+     */
     get options(): any {
-        return this._options;
+        return this.#options;
     }
 
+    /**
+     * Gets the chart type.
+     */
     get type(): string {
-        return this._type;
+        return this.#type;
     }
 
+    /**
+     * Executes the chart action with the given parameters.
+     * @param parameters The parameters for the chart action.
+     * @returns The parsed chart data.
+     */
     async execute(parameters: any = {}): Promise<any> {
-        const result = await this._query.service.executeAction("QueryFilter.Chart", this._query.parent, this._query, null, Object.assign(parameters, { name: this.name }));
+        const result = await this.#query.service.executeAction(
+            "QueryFilter.Chart",
+            this.#query.parent,
+            this.#query,
+            null,
+            Object.assign(parameters, { name: this.#name })
+        );
+
         return JSON.parse(result.getAttributeValue("Data"));
     }
 }
