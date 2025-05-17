@@ -5,7 +5,7 @@ import type { QueryResultItemValue } from "./query-result-item-value.js"
 import type { PersistentObject } from "./persistent-object.js"
 import { PersistentObjectAttribute } from "./persistent-object-attribute.js"
 import { DataType } from "./service-data-type.js"
-import { QueryResultItemSymbols } from "./_internals.js";
+import { _internal, QueryResultItemSymbols } from "./_internals.js";
 import type * as Dto from "./typings/service.js";
 
 /**
@@ -41,7 +41,7 @@ export class QueryResultItem extends ServiceObject {
 
         if (item.values) {
             const columnNames = query.columns.map(c => c.name);
-            this.#rawValues = item.values.filter(v => columnNames.indexOf(v.key) >= 0).map(v => service.hooks.onConstructQueryResultItemValue(this.service, this, v));
+            this.#rawValues = item.values.filter(v => columnNames.indexOf(v.key) >= 0).map(value => service.hooks.onConstructQueryResultItemValue(this.service, this, value));
         }
         else
             this.#rawValues = [];
@@ -189,7 +189,7 @@ export class QueryResultItem extends ServiceObject {
      */
     #toServiceObject(): Dto.QueryResultItem {
         const result: Dto.QueryResultItem = <any>this._copyPropertiesFromValues({ id: this.id });
-        result.values = this.#rawValues.map(v => v._toServiceObject());
+        result.values = this.#rawValues.map(value => _internal(value).toServiceObject());
 
         return result;
     }

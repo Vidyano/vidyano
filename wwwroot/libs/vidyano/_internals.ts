@@ -3,6 +3,7 @@ import type { PersistentObjectAttribute } from "./persistent-object-attribute";
 import type { Query } from "./query";
 import type { Dto } from "./vidyano";
 import type { QueryResultItem } from "./query-result-item";
+import type { QueryResultItemValue } from "./query-result-item-value";
 
 export const PersistentObjectSymbols = {
     Dto: Symbol("PersistentObject_Dto"),
@@ -22,6 +23,11 @@ export const PersistentObjectAttributeSymbols = {
 export const QueryResultItemSymbols = {
     IsQueryResultItem: Symbol("QueryResultItem_IsQueryResultItem"),
     ToServiceObject: Symbol("QueryResultItem_ToServiceObject"),
+};
+
+export const QueryResultItemValueSymbols = {
+    IsQueryResultItemValue: Symbol("QueryResultItemValue_IsQueryResultItemValue"),
+    ToServiceObject: Symbol("QueryResultItemValue_ToServiceObject"),
 };
 
 export const QuerySymbols = {
@@ -85,6 +91,13 @@ export type InternalQueryResultItem = QueryResultItem & {
     toServiceObject(): Dto.QueryResultItem;
 };
 
+export type InternalQueryResultItemValue = {
+    /**
+     * Converts the query result item value to a service object.
+     */
+    toServiceObject(): any;
+};
+
 export type InternalQuery = Query & {
 };
 
@@ -96,6 +109,7 @@ export function _internal(target: PersistentObject): InternalPersistentObject;
 export function _internal(target: PersistentObjectAttribute): InternalPersistentObjectAttribute;
 export function _internal(target: Query): InternalQuery;
 export function _internal(target: QueryResultItem): InternalQueryResultItem;
+export function _internal(target: QueryResultItemValue): InternalQueryResultItemValue;
 export function _internal(target: any) {
     if (target[InternalProxy])
         return target[InternalProxy];
@@ -160,6 +174,18 @@ export function _internal(target: any) {
                 }
             }
         }) as InternalQueryResultItem;
+    } else if (target[QueryResultItemValueSymbols.IsQueryResultItemValue]) {
+        return target[InternalProxy] = new Proxy(target, {
+            get: (obj, prop, receiver) => {
+                switch (prop) {
+                    case "toServiceObject":
+                        return (...args: any[]) => obj[QueryResultItemValueSymbols.ToServiceObject].apply(obj, args);
+
+                    default:
+                        return Reflect.get(obj, prop, receiver);
+                }
+            }
+        }) as InternalQueryResultItemValue;
     } else
         throw new Error("Invalid target");
 }
