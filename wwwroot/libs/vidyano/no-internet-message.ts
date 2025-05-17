@@ -1,6 +1,10 @@
-import type { KeyValue } from "./typings/common.js"
-
+/**
+ * Represents a localized message shown when there is no internet connection.
+ */
 export class NoInternetMessage {
+    /**
+     * A dictionary of language codes to NoInternetMessage instances.
+     */
     static messages: Record<string, NoInternetMessage> = Object.assign({}, ...[
         new NoInternetMessage("en", "Unable to connect to the server.", "Please check your internet connection settings and try again.", "Try again"),
         new NoInternetMessage("ar", "غير قادر على الاتصال بالخادم", "يرجى التحقق من إعدادات الاتصال بإنترنت ثم حاول مرة أخرى", "حاول مرة أخرى"),
@@ -40,6 +44,23 @@ export class NoInternetMessage {
         new NoInternetMessage("vi", "Không thể kết nối đến máy chủ", "Hãy kiểm tra cài đặt kết nối internet của bạn và thử lại", "Thử lại")
     ].map(m => ({ [m.language]: m })));
 
-    constructor(private language: string, public title: string, public message: string, public tryAgain: string) {
+    #language: string;
+
+    /**
+     * Initializes a new instance of the NoInternetMessage class.
+     * @param language The language code.
+     * @param title The title of the message.
+     * @param message The message body.
+     * @param tryAgain The label for the retry action.
+     */
+    constructor(language: string, public title: string, public message: string, public tryAgain: string) {
+        this.#language = language;
+    }
+
+    /**
+     * Gets the language code for this message.
+     */
+    get language(): string {
+        return this.#language;
     }
 }
