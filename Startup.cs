@@ -11,9 +11,7 @@ using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Operations.Backups;
 using Raven.Client.Exceptions;
 using Raven.Client.Exceptions.Database;
-using Raven.Client.ServerWide;
 using Raven.Client.ServerWide.Operations;
-using Raven.Embedded;
 using Vidyano.Service;
 using Vidyano.Service.RavenDB;
 using VidyanoWeb3.Service;
@@ -36,24 +34,6 @@ namespace VidyanoWeb3
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            EmbeddedServer.Instance.ServerProcessExited += (sender, e) =>
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Failed.");
-                Console.ResetColor();
-            };
-
-            Console.Write("Starting RavenDB embedded server...");
-
-            EmbeddedServer.Instance.StartServer(new ServerOptions
-            {
-                AcceptEula = true,
-                ServerUrl = "http://127.0.0.1:8081"
-            });
-
-            var ravenDBUri = EmbeddedServer.Instance.GetServerUriAsync().GetAwaiter().GetResult();
-            Console.WriteLine($"Done ({ravenDBUri})");
-
             services.AddVidyanoRavenDB(Configuration, options =>
             {
                 var settings = new DatabaseSettings();
