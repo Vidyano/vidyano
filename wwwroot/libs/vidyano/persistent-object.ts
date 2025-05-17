@@ -160,12 +160,7 @@ export class PersistentObject extends ServiceObjectWithActions {
                           .orderBy(attr => attr.offset)
                           .groupBy(attr => attr.groupKey)
                           .map(attributesByGroup => {
-                              const newGroup = this.service.hooks.onConstructPersistentObjectAttributeGroup(
-                                  service,
-                                  attributesByGroup.key,
-                                  attributesByGroup.value,
-                                  this
-                              );
+                              const newGroup = this.service.hooks.onConstructPersistentObjectAttributeGroup(service, attributesByGroup.key, attributesByGroup.value, this);
                               attributesByGroup.value.forEach(attr => (attr.group = newGroup));
 
                               return newGroup;
@@ -173,17 +168,7 @@ export class PersistentObject extends ServiceObjectWithActions {
                       groups.forEach((g, n) => (g.index = n));
 
                       const serviceTab = po.tabs[attributesByTab.key] || {};
-                      const newTab = this.service.hooks.onConstructPersistentObjectAttributeTab(
-                          service,
-                          groups,
-                          attributesByTab.key,
-                          serviceTab.id,
-                          serviceTab.name,
-                          serviceTab.layout,
-                          this,
-                          serviceTab.columnCount,
-                          !this.isHidden
-                      );
+                      const newTab = this.service.hooks.onConstructPersistentObjectAttributeTab(service, groups, attributesByTab.key, serviceTab.id, serviceTab.name, serviceTab.layout, this, serviceTab.columnCount, !this.isHidden);
                       attributesByTab.value.forEach(attr => (attr.tab = newTab));
 
                       return newTab;
@@ -734,17 +719,7 @@ export class PersistentObject extends ServiceObjectWithActions {
                 groups[0].index = 0;
     
                 const serviceTab = this.#lastResult.tabs[attr.tabKey];
-                attr.tab = tab = this.service.hooks.onConstructPersistentObjectAttributeTab(
-                    this.service,
-                    groups,
-                    attr.tabKey,
-                    serviceTab.id,
-                    serviceTab.name,
-                    serviceTab.layout,
-                    this,
-                    serviceTab.columnCount,
-                    !this.isHidden
-                );
+                attr.tab = tab = this.service.hooks.onConstructPersistentObjectAttributeTab(this.service, groups, attr.tabKey, serviceTab.id, serviceTab.name, serviceTab.layout, this, serviceTab.columnCount, !this.isHidden);
 
                 this.tabs.push(tab);
                 tabsAdded = true;
