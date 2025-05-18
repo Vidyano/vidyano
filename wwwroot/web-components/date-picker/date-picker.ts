@@ -1,6 +1,5 @@
 ﻿import * as Polymer from "../../libs/polymer/polymer.js"
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
-import moment from "moment"
 import { Button } from "../button/button.js"
 import { Popup } from "../popup/popup.js"
 import { WebComponent } from "../web-component/web-component.js"
@@ -8,7 +7,7 @@ import { WebComponent } from "../web-component/web-component.js"
 export interface IDatePickerCell {
     type: string;
     content?: string;
-    date?: moment.Moment;
+    date?: Date;
     monthOffset?: number;
     blocked?: boolean;
 }
@@ -31,10 +30,6 @@ export interface IDatePickerCell {
         selectedDate: {
             type: Object,
             notify: true
-        },
-        selectedDateMoment: {
-            type: Object,
-            computed: "_computeMoment(selectedDate)"
         },
         today: {
             type: Object,
@@ -80,8 +75,8 @@ export class DatePicker extends WebComponent {
 
     readonly cells: IDatePickerCell[]; private _setCells: (cells: IDatePickerCell[]) => void;
     readonly canFast: boolean; private _setCanFast: (canFast: boolean) => void;
-    readonly currentDate: moment.Moment; private _setCurrentDate: (date: moment.Moment) => void;
-    readonly today: moment.Moment; private _setToday: (date: moment.Moment) => void;
+    readonly currentDate: Date; private _setCurrentDate: (date: Date) => void;
+    readonly today: Date; private _setToday: (date: Date) => void;
     readonly header: string; private _setHeader: (header: string) => void;
     readonly deferredCellsUpdate: boolean; private _setDeferredCellsUpdate: (defer: boolean) => void;
     zoom: "days" | "months" | "years";
@@ -95,12 +90,107 @@ export class DatePicker extends WebComponent {
         super.connectedCallback();
 
         this.zoom = this.monthMode ? "months" : "days";
-        this._setToday(moment(new Date()));
-        this._setCurrentDate(moment(new Date()));
+        this._setToday(new Date());
+        this._setCurrentDate(new Date());
     }
 
     get isOpen(): boolean {
         return (<Popup>this.$.popup).open;
+    }
+
+    private _cloneDate(date: Date): Date | null {
+        return date ? new Date(date.getTime()) : null;
+    }
+
+    private _startOfMonth(date: Date): Date {
+        const newDate = this._cloneDate(date);
+        newDate.setDate(1);
+        newDate.setHours(0, 0, 0, 0);
+        return newDate;
+    }
+
+    private _startOfYear(date: Date): Date {
+        const newDate = this._cloneDate(date);
+        newDate.setMonth(0, 1); // Month is 0-indexed, day is 1-indexed
+        newDate.setHours(0, 0, 0, 0);
+        return newDate;
+    }
+
+    private _startOfWeek(date: Date, firstDayOfWeek: number): Date {
+        const newDate = this._cloneDate(date);
+        const day = newDate.getDay(); // 0 (Sunday) to 6 (Saturday)
+        let diff = day - firstDayOfWeek;
+        if (diff < 0) {
+            diff += 7;
+        }
+        newDate.setDate(newDate.getDate() - diff);
+        newDate.setHours(0, 0, 0, 0);
+        return newDate;
+    }
+
+    private _addDays(date: Date, days: number): Date {
+        const newDate = this._cloneDate(date);
+        newDate.setDate(newDate.getDate() + days);
+        return newDate;
+    }
+
+    private _addMonths(date: Date, months: number): Date {
+        const newDate = this._cloneDate(date);
+        newDate.setMonth(newDate.getMonth() + months);
+        return newDate;
+    }
+
+    private _addYears(date: Date, years: number): Date {
+        const newDate = this._cloneDate(date);
+        newDate.setFullYear(newDate.getFullYear() + years);
+        return newDate;
+    }
+
+    private _isSameDay(date1: Date, date2: Date): boolean {
+        if (!date1 || !date2) return false;
+        return date1.getFullYear() === date2.getFullYear() &&
+               date1.getMonth() === date2.getMonth() &&
+               date1.getDate() === date2.getDate();
+    }
+
+    private _isSameMonth(date1: Date, date2: Date): boolean {
+        if (!date1 || !date2) return false;
+        return date1.getFullYear() === date2.getFullYear() &&
+               date1.getMonth() === date2.getMonth();
+    }
+
+    private _isSameYear(date1: Date, date2: Date): boolean {
+        if (!date1 || !date2) return false;
+        return date1.getFullYear() === date2.getFullYear();
+    }
+    
+    private _normalizeDateByGranularity(date: Date, granularity: "day" | "month" | "year"): Date {
+        const d = new Date(date.getFullYear(), granularity === "year" ? 0 : date.getMonth(), granularity === "day" ? date.getDate() : 1);
+        d.setHours(0,0,0,0); // Normalize time part for comparisons
+        return d;
+    }
+
+    private _isBefore(date1: Date, date2: Date, granularity: "day" | "month" | "year"): boolean {
+        if (!date1 || !date2) return false;
+        const d1 = this._normalizeDateByGranularity(date1, granularity);
+        const d2 = this._normalizeDateByGranularity(date2, granularity);
+        return d1.getTime() < d2.getTime();
+    }
+
+    private _isAfter(date1: Date, date2: Date, granularity: "day" | "month" | "year"): boolean {
+        if (!date1 || !date2) return false;
+        const d1 = this._normalizeDateByGranularity(date1, granularity);
+        const d2 = this._normalizeDateByGranularity(date2, granularity);
+        return d1.getTime() > d2.getTime();
+    }
+
+    private _getMonthOffset(dateForCell: Date, currentDisplayMonthDate: Date): number {
+        if (dateForCell.getFullYear() < currentDisplayMonthDate.getFullYear()) return -1;
+        if (dateForCell.getFullYear() > currentDisplayMonthDate.getFullYear()) return 1;
+        // Same year, compare month
+        if (dateForCell.getMonth() < currentDisplayMonthDate.getMonth()) return -1;
+        if (dateForCell.getMonth() > currentDisplayMonthDate.getMonth()) return 1;
+        return 0; // Same month and year
     }
 
     private _zoomChanged(zoom: string) {
@@ -116,7 +206,7 @@ export class DatePicker extends WebComponent {
                 };
             });
 
-            cells.push(...Array.range(1, 42).map(d => {
+            cells.push(...Array.range(1, 42).map(() => {
                 return { type: "day" };
             }));
 
@@ -124,98 +214,104 @@ export class DatePicker extends WebComponent {
             this._setCanFast(true);
         }
         else {
-            this._setCells(Array.range(1, 12).map(d => {
+            this._setCells(Array.range(1, 12).map(() => {
                 return { type: zoom.substr(0, zoom.length - 1) };
             }));
             this._setCanFast(false);
         }
     }
 
-    private _render(cells: IDatePickerCell[], currentDate: moment.Moment, minDate: Date, maxDate: Date, deferredCellsUpdate: boolean) {
-        if (deferredCellsUpdate)
+    private _render(cells: IDatePickerCell[], currentDate: Date, minDate: Date, maxDate: Date, deferredCellsUpdate: boolean) {
+        if (deferredCellsUpdate || !currentDate)
             return;
 
-        const currentDateMoment = currentDate.clone();
+        const currentDateLocal = this._cloneDate(currentDate);
 
         if (this.zoom === "days") {
             if (cells.length !== 42 + 7)
                 return;
 
-            this._setHeader(`${Vidyano.CultureInfo.currentCulture.dateFormat.shortMonthNames[currentDateMoment.month()]} ${currentDateMoment.year()}`);
+            this._setHeader(`${Vidyano.CultureInfo.currentCulture.dateFormat.monthNames[currentDateLocal.getMonth()]} ${currentDateLocal.getFullYear()}`);
 
-            const loop = currentDateMoment.startOf("month").startOf(Vidyano.CultureInfo.currentCulture.dateFormat.firstDayOfWeek > 0 ? "isoWeek" : "week");
-            const end = loop.clone().add(6, "weeks");
+            let loop = this._startOfMonth(currentDateLocal);
+            loop = this._startOfWeek(loop, Vidyano.CultureInfo.currentCulture.dateFormat.firstDayOfWeek);
+            
+            const end = this._addDays(this._cloneDate(loop), 42); // 6 weeks * 7 days
 
             let index = 7; // Skip weekday cells
             do {
-                this.set(`cells.${index}.date`, loop.clone());
-                this.set(`cells.${index}.content`, loop.format("D"));
-                this.set(`cells.${index}.monthOffset`, loop.isSame(currentDate, "month") ? 0 : (loop.isBefore(currentDate) ? -1 : 1));
+                this.set(`cells.${index}.date`, this._cloneDate(loop));
+                this.set(`cells.${index}.content`, loop.getDate().toString());
+                this.set(`cells.${index}.monthOffset`, this._getMonthOffset(loop, currentDate));
                 this.set(`cells.${index}.blocked`, this._isBlocked(cells[index], minDate, maxDate));
 
                 index++;
-                loop.add(1, "days");
+                loop.setDate(loop.getDate() + 1);
             }
-            while (loop.isBefore(end));
+            while (loop.getTime() < end.getTime());
         }
         else if (this.zoom === "months") {
-            this._setHeader(`${currentDateMoment.year()}`);
+            this._setHeader(`${currentDateLocal.getFullYear()}`);
 
-            const loop = currentDateMoment.startOf("year");
-            const end = loop.clone().add(12, "months");
+            const loop = this._startOfYear(currentDateLocal);
+            const end = this._addYears(this._cloneDate(loop), 1); // 12 months
 
             let index = 0;
             do {
-                this.set(`cells.${index}.date`, loop.clone());
-                this.set(`cells.${index}.content`, Vidyano.CultureInfo.currentCulture.dateFormat.shortMonthNames[index]);
+                this.set(`cells.${index}.date`, this._cloneDate(loop));
+                this.set(`cells.${index}.content`, Vidyano.CultureInfo.currentCulture.dateFormat.shortMonthNames[loop.getMonth()]);
                 this.set(`cells.${index}.blocked`, this._isBlocked(cells[index], minDate, maxDate));
 
                 index++;
-                loop.add(1, "months");
+                loop.setMonth(loop.getMonth() + 1);
             }
-            while (loop.isBefore(end));
+            while (loop.getTime() < end.getTime());
         }
         else if (this.zoom === "years") {
-            const loop = currentDateMoment.startOf("year").subtract(6, "years");
-            const end = loop.clone().add(12, "years");
+            const loop = this._startOfYear(currentDateLocal);
+            loop.setFullYear(loop.getFullYear() - 6); // Start 6 years back
+
+            const end = this._addYears(this._cloneDate(loop), 12); // 12 years total
 
             let index = 0;
             do {
-                this.set(`cells.${index}.date`, loop.clone());
-                this.set(`cells.${index}.content`, loop.year());
+                this.set(`cells.${index}.date`, this._cloneDate(loop));
+                this.set(`cells.${index}.content`, loop.getFullYear().toString());
                 this.set(`cells.${index}.blocked`, this._isBlocked(cells[index], minDate, maxDate));
 
                 index++;
-                loop.add(1, "years");
+                loop.setFullYear(loop.getFullYear() + 1);
             }
-            while (loop.isBefore(end));
+            while (loop.getTime() < end.getTime());
 
-            this._setHeader(`${cells[0].date.year()} - ${cells[cells.length - 1].date.year()}`);
+            if (cells && cells.length > 0 && cells[0].date && cells[cells.length - 1].date) {
+                 this._setHeader(`${cells[0].date.getFullYear()} - ${cells[cells.length - 1].date.getFullYear()}`);
+            }
         }
     }
 
-    private _isDateSelected(zoom: string, date: moment.Moment, selectedDate: moment.Moment): boolean {
-        if (!this.ensureArgumentValues(arguments))
-            return undefined;
+    private _isDateSelected(zoom: string, date: Date, selectedDate: Date): boolean {
+        if (!this.ensureArgumentValues(arguments) || !date || !selectedDate)
+            return false;
 
         if (zoom === "days")
-            return date.isSame(selectedDate, "day");
+            return this._isSameDay(date, selectedDate);
         else if (zoom === "months" && this.monthMode)
-            return date.isSame(selectedDate, "month");
+            return this._isSameMonth(date, selectedDate);
 
         return false;
     }
 
-    private _isDateToday(zoom: string, date: moment.Moment, today: moment.Moment): boolean {
-        if (!this.ensureArgumentValues(arguments))
-            return undefined;
+    private _isDateToday(zoom: string, date: Date, today: Date): boolean {
+        if (!this.ensureArgumentValues(arguments) || !date || !today)
+            return false;
 
         if (zoom === "days")
-            return date.isSame(today, "day");
+            return this._isSameDay(date, today);
         else if (zoom === "months")
-            return date.isSame(today, "month");
+            return this._isSameMonth(date, today);
 
-        return date.isSame(today, "year");
+        return this._isSameYear(date, today);
     }
 
     private _isOtherMonth(monthOffset: number): boolean {
@@ -228,31 +324,29 @@ export class DatePicker extends WebComponent {
             return false;
 
         const granularity = this.zoom === "days" ? "day" : (this.zoom === "months" ? "month" : "year");
-        return (minDate && date.isBefore(minDate, granularity)) || (maxDate && date.isAfter(maxDate, granularity));
-    }
-
-    private _computeMoment(date: Date): moment.Moment {
-        return moment(date);
+        return (minDate && this._isBefore(date, minDate, granularity)) || (maxDate && this._isAfter(date, maxDate, granularity));
     }
 
     private _slow(e: Event) {
         const amount = parseInt((<Button>e.currentTarget).getAttribute("n"));
+        const newCurrentDate = this._cloneDate(this.currentDate);
 
         if (this.zoom === "days")
-            this.currentDate.add(amount, "months");
+            newCurrentDate.setMonth(newCurrentDate.getMonth() + amount);
         else if(this.zoom === "months")
-            this.currentDate.add(amount, "years");
+            newCurrentDate.setFullYear(newCurrentDate.getFullYear() + amount);
         else
-            this.currentDate.add(amount * 12, "years");
+            newCurrentDate.setFullYear(newCurrentDate.getFullYear() + amount * 12);
 
-        this._setCurrentDate(this.currentDate.clone());
-
+        this._setCurrentDate(newCurrentDate);
         e.stopPropagation();
     }
 
     private _fast(e: Event) {
         const amount = parseInt((<Button>e.currentTarget).getAttribute("n"));
-        this._setCurrentDate(this.currentDate.add(amount, "years").clone());
+        const newCurrentDate = this._cloneDate(this.currentDate);
+        newCurrentDate.setFullYear(newCurrentDate.getFullYear() + amount);
+        this._setCurrentDate(newCurrentDate);
 
         e.stopPropagation();
     }
@@ -277,41 +371,49 @@ export class DatePicker extends WebComponent {
         }
 
         if (this.zoom === "days") {
-            const newSelectedDate = moment(this.selectedDate || new Date());
+            const newSelectedDate = this.selectedDate ? this._cloneDate(this.selectedDate) : new Date();
             if (!this.selectedDate && this.newTime) {
-                const newTime = /(\d\d):(\d\d)(:(\d\d))?/.exec(this.newTime);
-                if (newTime[1] != null && newTime[2] != null) {
-                    newSelectedDate.hours(parseInt(newTime[1]));
-                    newSelectedDate.minutes(parseInt(newTime[2]));
-                    newSelectedDate.seconds(parseInt(newTime[4] || "0"));
+                const newTimeParts = /(\d\d):(\d\d)(:(\d\d))?/.exec(this.newTime);
+                if (newTimeParts && newTimeParts[1] != null && newTimeParts[2] != null) {
+                    newSelectedDate.setHours(parseInt(newTimeParts[1], 10));
+                    newSelectedDate.setMinutes(parseInt(newTimeParts[2], 10));
+                    newSelectedDate.setSeconds(parseInt(newTimeParts[4] || "0", 10));
                 }
             }
 
-            newSelectedDate.year(cell.date.year());
-            newSelectedDate.month(cell.date.month());
-            newSelectedDate.date(cell.date.date());
+            newSelectedDate.setFullYear(cell.date.getFullYear());
+            newSelectedDate.setMonth(cell.date.getMonth());
+            newSelectedDate.setDate(cell.date.getDate());
 
-            this.selectedDate = newSelectedDate.clone().toDate();
+            this.selectedDate = newSelectedDate;
 
-            if (cell.monthOffset !== 0)
-                this._setCurrentDate(this.currentDate.add(cell.monthOffset, "months").clone());
+            if (cell.monthOffset !== 0) {
+                const newCurrentDate = this._cloneDate(this.currentDate);
+                newCurrentDate.setMonth(newCurrentDate.getMonth() + cell.monthOffset);
+                this._setCurrentDate(newCurrentDate);
+            }
         }
         else if (this.zoom === "months") {
-            this._setCurrentDate(this.currentDate.clone().month(cell.date.month()));
+            const newCurrentDate = this._cloneDate(this.currentDate);
+            newCurrentDate.setMonth(cell.date.getMonth());
+            newCurrentDate.setFullYear(cell.date.getFullYear());
+            this._setCurrentDate(newCurrentDate);
 
             if (!this.monthMode)
                 this.zoom = "days";
             else {
-                const newSelectedDate = moment(this.selectedDate || new Date());
-                newSelectedDate.date(1);
-                newSelectedDate.month(cell.date.month());
-                newSelectedDate.year(cell.date.year());
+                const newSelectedDate = this.selectedDate ? this._cloneDate(this.selectedDate) : new Date();
+                newSelectedDate.setDate(1);
+                newSelectedDate.setMonth(cell.date.getMonth());
+                newSelectedDate.setFullYear(cell.date.getFullYear());
 
-                this.selectedDate = newSelectedDate.clone().toDate();
+                this.selectedDate = newSelectedDate;
             }
         }
         else if (this.zoom === "years") {
-            this._setCurrentDate(this.currentDate.year(cell.date.year()).clone());
+            const newCurrentDate = this._cloneDate(this.currentDate);
+            newCurrentDate.setFullYear(cell.date.getFullYear());
+            this._setCurrentDate(newCurrentDate);
             this.zoom = "months";
         }
 
@@ -319,7 +421,7 @@ export class DatePicker extends WebComponent {
     }
 
     private _opening() {
-        this._setCurrentDate(this.selectedDate ? moment(this.selectedDate) : moment(new Date()));
+        this._setCurrentDate(this.selectedDate ? this._cloneDate(this.selectedDate) : new Date());
         this.zoom = this.monthMode ? "months" : "days";
 
         this._setDeferredCellsUpdate(false);

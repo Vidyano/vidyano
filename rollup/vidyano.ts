@@ -1,6 +1,3 @@
-import * as moment from 'moment'
-export { moment }
-
 export * from "bignumber.js"
 
 export { Path } from "../wwwroot/libs/pathjs/pathjs.js";

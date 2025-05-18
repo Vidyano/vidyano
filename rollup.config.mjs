@@ -17,7 +17,6 @@ export default [
 			commonjs(),
 			vulcanize(),
 			replace({
-				"moment$1 as moment": "moment",
 				"vidyano-latest-version": pjson.version,
 				"process.env.NODE_ENV": "'production'",
 				preventAssignment: true
@@ -54,7 +53,6 @@ export default [
 				respectExternal: true
 			}),
 			replace({
-				"moment_d as moment": "moment",
 				preventAssignment: true
 			})
 		],
@@ -68,7 +66,6 @@ export default [
 			commonjs(),
 			vulcanize(),
 			replace({
-				"moment$1 as moment": "moment",
 				"vidyano-latest-version": pjson.version,
 				"process.env.NODE_ENV": "'production'",
 				preventAssignment: true
@@ -96,7 +93,6 @@ export default [
 				respectExternal: true
 			}),
 			replace({
-				"moment_d as moment": "moment",
 				preventAssignment: true
 			})
 		],

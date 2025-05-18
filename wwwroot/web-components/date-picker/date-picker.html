@@ -15,7 +15,7 @@
                 <template>
                     <dom-repeat items="[[cells]]" as="cell">
                         <template>
-                            <div class="cell layout horizontal center-center" type$="[[cell.type]]" is-selected$="[[_isDateSelected(zoom, cell.date, selectedDateMoment)]]" is-today$="[[_isDateToday(zoom, cell.date, today)]]" is-other$="[[_isOtherMonth(cell.monthOffset)]]" blocked$="[[cell.blocked]]" break$="[[cell.break]]" on-tap="_select">[[cell.content]]</div>
+                            <div class="cell layout horizontal center-center" type$="[[cell.type]]" is-selected$="[[_isDateSelected(zoom, cell.date, selectedDate)]]" is-today$="[[_isDateToday(zoom, cell.date, today)]]" is-other$="[[_isOtherMonth(cell.monthOffset)]]" blocked$="[[cell.blocked]]" break$="[[cell.break]]" on-tap="_select">[[cell.content]]</div>
                         </template>
                     </dom-repeat>
                 </template>
