@@ -120,7 +120,7 @@ if (Array.prototype["max"] === undefined) {
     });
 }
 
-if (Array.prototype["sum"] === undefined) {
+if (Array.prototype["remove"] === undefined) {
     Object.defineProperty(Array.prototype, "remove", {
         configurable: true,
         value: function remove<T>(s: T): boolean {
@@ -138,7 +138,7 @@ if (Array.prototype["sum"] === undefined) {
     });
 }
 
-if (Array.prototype["sum"] === undefined) {
+if (Array.prototype["removeAll"] === undefined) {
     Object.defineProperty(Array.prototype, "removeAll", {
         configurable: true,
         value: function removeAll<T>(f: (t: T) => boolean, thisObject?: any) {
