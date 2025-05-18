@@ -31,12 +31,10 @@ export abstract class ServiceObject extends Observable<ServiceObject> {
     /**
      * Copy properties from a dictionary of values to an object. 
      * @param values A dictionary of values to copy.
-     * @param includeNullValues Include null values in the result.
      * @param result The object to copy the properties to.
      * @returns The object with the properties copied.
      */
-    protected _copyPropertiesFromValues(values: { [key: string]: any }, includeNullValues?: boolean, result?: any): any {
-        result = result || {};
+    protected _copyPropertiesFromValues(values: { [key: string]: any }, result: any = {}): any {
         Object.keys(values).forEach(key => {
             const value = values[key];
             if (!value || (Array.isArray(value) && value.length === 0))
