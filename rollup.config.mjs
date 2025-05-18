@@ -3,7 +3,6 @@ import nodeResolve from '@rollup/plugin-node-resolve';
 import vulcanize from './rollup/vulcanize.js';
 import { dts } from "rollup-plugin-dts";
 import replace from "@rollup/plugin-replace";
-import cleanup from 'rollup-plugin-cleanup';
 import terser from '@rollup/plugin-terser';
 
 const pjson = require('./package.json');
@@ -23,9 +22,16 @@ export default [
 				"process.env.NODE_ENV": "'production'",
 				preventAssignment: true
 			}),
-			forRelease ? cleanup({
-				comments: "none"
-			}) : null
+			forRelease ? terser({
+				mangle: {
+					keep_classnames: true,
+				},
+  				compress: false,
+  				format: {
+					beautify: false,
+					comments: false,
+  				},
+			}) : null,
 		],
 		output: [{ file: 'vidyano.js' }, { file: "wwwroot/dist/vidyano.js" }],
 		watch: {
