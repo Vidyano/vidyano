@@ -778,28 +778,33 @@ export class Query extends ServiceObjectWithActions {
                     this.#setTotalItems(result.totalItems);
                 }
 
-                let added: [number, any[], number];
+                let notify: {
+                    index: number;
+                    removedItems: QueryResultItem[];
+                };
+
                 for (let n = 0; n < clonedQuery.top && (skip + n < result.totalItems); n++) {
                     const currentItem = this.items[skip + n];
                     if (currentItem == null) {
-                        const item = this.items[skip + n] = this.service.hooks.onConstructQueryResultItem(this.service, result.items[n], this);
-                        if (!added)
-                            added = [skip, [], 0];
+                        const newItem = result.items[n];
+                        const isSelected = this.selectAll.allSelected || (selectedItems && selectedItems[newItem.id]);
+                        
+                        this.items[skip + n] = this.service.hooks.onConstructQueryResultItem(this.service, newItem, this, isSelected);
+                        notify ||= {
+                            index: skip,
+                            removedItems: [],
+                        };
 
-                        added[1].push(currentItem);
-                        added[2]++;
-
-                        if (this.selectAll.allSelected || (selectedItems && selectedItems[item.id]))
-                            (<any>item)._isSelected = true;
+                        notify.removedItems.push(currentItem);
                     }
-                    else if (added) {
-                        this.notifyArrayChanged("items", added[0], added[1], added[2]);
-                        added = null;
+                    else if (notify) {
+                        this.notifyArrayChanged("items", notify.index, notify.removedItems, notify.removedItems.length);
+                        notify = null;
                     }
                 }
 
-                if (!!added)
-                    this.notifyArrayChanged("items", added[0], added[1], added[2]);
+                if (!!notify)
+                    this.notifyArrayChanged("items", notify.index, notify.removedItems, notify.removedItems.length);
 
                 this.#updateGroupingInfo(result.groupingInfo);
 
