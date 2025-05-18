@@ -3,6 +3,7 @@ import type { Action } from "./action.js"
 import type { PersistentObject } from "./persistent-object.js"
 import type { Query } from "./query.js"
 import type { PersistentObjectAttributeAsDetail } from "./persistent-object-attribute-as-detail.js"
+import { _internal } from "./_internals.js";
 
 /**
  * Manages a collection of query filters for a query.
@@ -149,7 +150,7 @@ export class QueryFilters extends Observable<QueryFilters> {
      * @param targetQuery The target query.
      */
     clone(targetQuery: Query): QueryFilters {
-        return new QueryFilters(targetQuery, targetQuery.service.hooks.onConstructPersistentObject(targetQuery.service, this.#filtersPO["_lastResult"]));
+        return new QueryFilters(targetQuery, targetQuery.service.hooks.onConstructPersistentObject(targetQuery.service, _internal(this.#filtersPO).dto));
     }
 
     /**
