@@ -6,6 +6,7 @@ import type { PersistentObjectAttributeGroup } from "./persistent-object-attribu
 import { ServiceObjectWithActions } from "./service-object-with-actions.js"
 import { PersistentObjectAttribute } from "./persistent-object-attribute.js"
 import { PersistentObjectAttributeAsDetail } from "./persistent-object-attribute-as-detail.js"
+import { PersistentObjectAttributeWithReference } from "./persistent-object-attribute-with-reference.js"
 import { PersistentObjectTab, PersistentObjectAttributeTab, PersistentObjectQueryTab } from "./persistent-object-tab.js"
 import { _internal, PersistentObjectSymbols } from "./_internals.js"
 
@@ -65,7 +66,7 @@ export class PersistentObject extends ServiceObjectWithActions {
     /**
      * The owner attribute with reference, if this object is referenced by an attribute.
      */
-    ownerAttributeWithReference: any; // Type would be PersistentObjectAttributeWithReference
+    ownerAttributeWithReference: PersistentObjectAttributeWithReference;
     
     /**
      * The owner persistent object, if this object belongs to another.
