@@ -188,9 +188,9 @@ export class QueryResultItem extends ServiceObject {
      * @returns The service object representation ready for transmission.
      */
     #toServiceObject(): Dto.QueryResultItem {
-        const result: Dto.QueryResultItem = <any>this._copyPropertiesFromValues({ id: this.id });
-        result.values = this.#rawValues.map(value => _internal(value).toServiceObject());
-
-        return result;
+        return this._copyPropertiesFromValues({
+            id: this.id,
+            values: this.#rawValues.map(value => _internal(value).toServiceObject()),
+        });
     }
 }
