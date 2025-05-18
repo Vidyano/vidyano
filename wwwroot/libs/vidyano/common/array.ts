@@ -158,7 +158,7 @@ if (Array.prototype["sum"] === undefined) {
         configurable: true,
         value: function sum<T>(this: T[], selector: (element: T) => number): number {
             if (!this.length)
-                return Infinity;
+                return 0;
 
             return this.slice(1).reduce((prev, element) => prev + selector(element), selector(this[0]));
         },
