@@ -662,15 +662,16 @@ export class PersistentObjectAttribute extends ServiceObject {
         this.validationError = resultAttr.validationError || null;
 
         if (resultAttr.typeHints && Object.keys(resultAttr.typeHints).some(k => resultAttr.typeHints[k] !== this.typeHints[k])) {
+            const newTypeHints = { ...resultAttr.typeHints };
             for (let name in this.typeHints) {
-                if (resultAttr.typeHints[name] != null)
+                if (newTypeHints[name] != null)
                     continue;
 
-                resultAttr.typeHints[name] = this.typeHints[name];
+                newTypeHints[name] = this.typeHints[name];
             }
 
             const oldTypeHints = this.typeHints;
-            this.notifyPropertyChanged("typeHints", this.#typeHints = resultAttr.typeHints, oldTypeHints);
+            this.notifyPropertyChanged("typeHints", this.#typeHints = newTypeHints, oldTypeHints);
         }
 
         return visibilityChanged;
