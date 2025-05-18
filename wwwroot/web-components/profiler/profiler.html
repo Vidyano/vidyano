@@ -67,7 +67,7 @@
         <div class="flex relative" hidden$="[[op_isNotNull(selectedEntry)]]">
             <vi-size-tracker size="{{timelineSize}}"></vi-size-tracker>
             <vi-scroller id="timelineScroller" class="fit" no-vertical>
-                <svg id="timeline" on-mousewheel="_onMousewheel">
+                <svg id="timeline" on-wheel="_onMousewheel">
                     <g class="xaxis"></g>
                 </svg>
             </vi-scroller>

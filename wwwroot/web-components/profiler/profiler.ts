@@ -1,4 +1,3 @@
-import * as d3 from "d3"
 import * as Vidyano from "../../libs/vidyano/vidyano.js"
 import * as Polymer from "../../libs/polymer/polymer.js"
 import { ISize } from "../size-tracker/size-tracker.js"
@@ -70,7 +69,6 @@ type FlattenedProfilerRequestEntry = {
 export class Profiler extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="profiler.html">`; }
 
-    private _boundMousehweel = this._onMousewheel.bind(this);
     readonly lastRequest: ProfilerRequest; private _setLastRequest: (request: Vidyano.Dto.ProfilerRequest) => void;
     readonly selectedRequest: ProfilerRequest; private _setSelectedRequest: (request: Vidyano.Dto.ProfilerRequest) => void;
     readonly hoveredEntry: Vidyano.Dto.ProfilerEntry; private _setHoveredEntry: (entry: Vidyano.Dto.ProfilerEntry) => void;
@@ -78,18 +76,6 @@ export class Profiler extends WebComponent {
     readonly zoom: number; private _setZoom: (value: number) => void;
     timelineSize: ISize;
     profiledRequests: ProfilerRequest[];
-
-    connectedCallback() {
-        super.connectedCallback();
-
-        this.$.timeline.addEventListener("DOMMouseScroll", this._boundMousehweel);
-    }
-
-    disconnectedCallback() {
-        super.disconnectedCallback();
-
-        this.$.timeline.removeEventListener("DOMMouseScroll", this._boundMousehweel);
-    }
 
     private _requestSQL(request: ProfilerRequest): string {
         return request.profiler.sql ? this._ms(request.profiler.sql.reduce((current, entry) => current + entry.elapsedMilliseconds, 0)) : "0ms";
@@ -120,20 +106,31 @@ export class Profiler extends WebComponent {
         return hasNPlusOne;
     }
 
-    private _onMousewheel(e: any) {
+    private _onMousewheel(e: WheelEvent) {
+        e.preventDefault();
+
         const scroller = <Scroller>this.$.timelineScroller;
+        if (!scroller)
+            return;
 
         const rect = scroller.getBoundingClientRect();
-        const offsetX = e.pageX - rect.left - window.pageXOffset;
-        const mousePctg = 1 / scroller.outerWidth * offsetX;
+        const offsetX = e.pageX - rect.left - (window.pageXOffset || document.documentElement.scrollLeft || 0);
+        const mousePctg = scroller.offsetWidth > 0 ? offsetX / scroller.offsetWidth : 0.5;
 
-        const isZoomIn = (e.wheelDelta || -e.detail) > 0;
-        const newZoom = Math.max(isZoomIn ? this.zoom * 1.1 : this.zoom / 1.1, 1);
-        const newInnerWidth = (this.timelineSize.width - 2) * newZoom;
+        if (e.deltaY === 0)
+            return;
 
-        this._setZoom(newZoom);
+        const isZoomIn = e.deltaY < 0;
+        const zoomFactor = 1.1;
+        const newZoom = Math.max(isZoomIn ? this.zoom * zoomFactor : this.zoom / zoomFactor, 1);
 
-        scroller.horizontalScrollOffset = (newInnerWidth - scroller.outerWidth) * mousePctg;
+        if (this.timelineSize && this.timelineSize.width > 0) {
+            const newInnerWidth = (this.timelineSize.width - 2) * newZoom;
+            this._setZoom(newZoom);
+
+            scroller.horizontalScrollOffset = scroller.offsetWidth > 0 ? (newInnerWidth - scroller.offsetWidth) * mousePctg : 0;
+        } else
+            this._setZoom(newZoom);
     }
 
     private _selectRequest(e: Polymer.Gestures.TapEvent) {
@@ -195,64 +192,201 @@ export class Profiler extends WebComponent {
     }
 
     private _renderRequestTimeline(request: ProfilerRequest, size: ISize, zoom: number) {
-        const width = (size.width - 2) * zoom; // Strip vi-scroller borders
+        const svg = this.$.timeline as unknown as SVGSVGElement;
+        if (!svg)
+            return;
+
+        let entriesGroup = svg.querySelector(".entries") as SVGGElement;
+        const xAxisGroup = svg.querySelector(".xaxis") as SVGGElement;
+
+        if (!request || !request.profiler || !size || !(typeof size.width === 'number' && size.width > 0) || !(typeof size.height === 'number' && size.height > 0)) {
+            if (entriesGroup) {
+                while (entriesGroup.firstChild)
+                    entriesGroup.removeChild(entriesGroup.firstChild);
+            }
+
+            if (xAxisGroup) {
+                while (xAxisGroup.firstChild)
+                    xAxisGroup.removeChild(xAxisGroup.firstChild);
+            }
+
+            svg.setAttribute("width", "0");
+            svg.setAttribute("height", "0");
+
+            return;
+        }
+
+        const currentZoom = (typeof zoom === 'number' && !isNaN(zoom) && isFinite(zoom)) ? Math.max(zoom, 1) : 1;
+        const currentSizeWidth = size.width;
+        
+        let totalDuration = 0;
+        if (request.profiler && typeof request.profiler.elapsedMilliseconds === 'number' && !isNaN(request.profiler.elapsedMilliseconds))
+            totalDuration = Math.max(request.profiler.elapsedMilliseconds, 0);
+
+        const availableWidth = currentSizeWidth - 2;
+        const renderWidth = availableWidth * currentZoom;
+
+        if (isNaN(renderWidth) || !isFinite(renderWidth) || renderWidth <=0) {
+            if (entriesGroup)
+                while (entriesGroup.firstChild) entriesGroup.removeChild(entriesGroup.firstChild);
+            
+            if (xAxisGroup)
+                while (xAxisGroup.firstChild) xAxisGroup.removeChild(xAxisGroup.firstChild);
+
+            svg.setAttribute("width", "0");
+            svg.setAttribute("height", "0");
+
+            return;
+        }
+
         const style = getComputedStyle(this);
-        const headerHeight = parseInt(style.getPropertyValue("--vi-profiler-header-height"));
         const entryHeight = parseInt(style.getPropertyValue("--vi-profiler-entry-height"));
-        const entryLevelGap = parseInt(style.getPropertyValue("--vi-profiler-entry-level-gap"));
-        const scale = d3.scaleLinear().domain([0, request.profiler.elapsedMilliseconds]).range([0, width]);
+        const entryLevelGap = parseInt(style.getPropertyValue("--vi-profiler-entry-level-gap")) ;
 
-        const svg = d3.select(this.$.timeline).
-            attr("width", width).
-            attr("height", size.height);
+        const xAxisLabelsHeight = 24;
+        const chartStartY = xAxisLabelsHeight;
 
-        // Render entries
-        let entriesGroup = svg.select(".entries");
-        if (entriesGroup.empty())
-            entriesGroup = svg.append("g").classed("entries", true);
+        svg.setAttribute("width", renderWidth.toString());
+        svg.setAttribute("height", size.height.toString());
 
-        const entryGroupSelection = entriesGroup.selectAll("g.entry").data(request.flattenedEntries || (request.flattenedEntries = this._flattenEntries(request.profiler.entries)));
-        const entryGroup = entryGroupSelection.enter()
-            .append("g")
-            .attr("class", e => this._computeEntryClassName(e.entry))
-            .on("click", (_, e) => this._setSelectedEntry(e.entry));
+        const scaleTime = (timeInput: number | undefined | null): number => {
+            const validTime = (typeof timeInput === 'number' && !isNaN(timeInput)) ? timeInput : 0;
+            if (totalDuration === 0)
+                return 0;
+            
+            const scaled = (validTime / totalDuration) * renderWidth;
+            return (isNaN(scaled) || !isFinite(scaled)) ? 0 : scaled;
+        };
 
-        entryGroup.append("rect")
-            .attr("x", e => scale(e.entry.started || 0))
-            .attr("y", e => size.height - (e.level * entryHeight) - (e.level * entryLevelGap))
-            .attr("width", e => e.entry.elapsedMilliseconds ? scale(e.entry.elapsedMilliseconds) : 1)
-            .attr("height", entryHeight);
+        const scaleDuration = (durationInput: number | undefined | null): number => {
+            const validDuration = (typeof durationInput === 'number' && !isNaN(durationInput)) ? Math.max(durationInput, 0) : 0;
+            
+            if (totalDuration === 0)
+                return validDuration > 0 ? 1 : 0;
+            
+            const scaled = (validDuration / totalDuration) * renderWidth;
+            const result = Math.max((isNaN(scaled) || !isFinite(scaled)) ? 0 : scaled, validDuration > 0 ? 1 : 0);
 
-        entryGroup
-            .append("foreignObject")
-            .attr("x", e => scale(e.entry.started || 0))
-            .attr("y", e => size.height - (e.level * entryHeight) - (e.level * entryLevelGap))
-            .attr("width", e => e.entry.elapsedMilliseconds ? scale(e.entry.elapsedMilliseconds) : 1)
-            .attr("height", entryHeight)
-            .html(e => `<div class="text" style="width: ${e.entry.elapsedMilliseconds ? scale(e.entry.elapsedMilliseconds) : 1}px;">` + e.entry.methodName + "</div>")
-            .on("mouseenter", (_, e) => this._setHoveredEntry(e.entry))
-            .on("mouseleave", (_, e) => this._setHoveredEntry(null));
+            return (isNaN(result) || !isFinite(result)) ? (validDuration > 0 ? 1 : 0) : result;
+        };
 
-        const entryGroupTransition = entryGroupSelection.transition().duration(0)
-            .attr("class", e => this._computeEntryClassName(e.entry));
+        if (xAxisGroup) {
+            while (xAxisGroup.firstChild)
+                xAxisGroup.removeChild(xAxisGroup.firstChild);
 
-        entryGroupTransition
-            .select("rect")
-            .attr("x", e => scale(e.entry.started || 0))
-            .attr("y", e => size.height - (e.level * entryHeight) - (e.level * entryLevelGap))
-            .attr("width", e => e.entry.elapsedMilliseconds ? scale(e.entry.elapsedMilliseconds) : 1)
-            .attr("height", entryHeight);
+            if (size.height > xAxisLabelsHeight && renderWidth > 0) { 
+                const maxTicks = 10;
+                const minPixelsPerTick = 60;
+                const tickInterval = getNiceTickInterval(totalDuration, maxTicks, minPixelsPerTick, renderWidth);
 
-        entryGroupTransition.select("foreignObject")
-            .attr("x", e => scale(e.entry.started || 0))
-            .attr("y", e => size.height - (e.level * entryHeight) - (e.level * entryLevelGap))
-            .attr("width", e => e.entry.elapsedMilliseconds ? scale(e.entry.elapsedMilliseconds) : 1)
-            .attr("height", entryHeight)
-            .select(".text")
-            .attr("style", e => `width: ${e.entry.elapsedMilliseconds ? scale(e.entry.elapsedMilliseconds) : 1}px;`)
-            .text(e => e.entry.methodName);
+                const tickValues: number[] = [];
+                if (totalDuration === 0) {
+                    tickValues.push(0);
+                } else if (tickInterval > 0) {
+                    for (let t = 0; ; t += tickInterval) {
+                        tickValues.push(t);
+                        if (t > totalDuration && tickValues.length > 1) {
+                            if (tickValues[tickValues.length-2] < totalDuration)
+                                tickValues[tickValues.length-1] = totalDuration;
+                            break;
+                        }
+                        if (t === 0 && totalDuration === 0) break;
+                        if (tickValues.length > maxTicks * 2) break;
+                        if (t >= totalDuration && t > 0) {
+                            if (tickValues[tickValues.length -1] !== totalDuration)
+                                tickValues[tickValues.length -1] = totalDuration;
+                            break;
+                        }
+                    }
+                    if (tickValues.length === 0 || tickValues[0] > 0) tickValues.unshift(0);
+                    if (tickInterval > 0 && tickValues[tickValues.length - 1] < totalDuration) tickValues.push(totalDuration);
+                }
+                const finalTicks = [...new Set(tickValues)].sort((a,b) => a-b);
 
-        entryGroupSelection.exit().remove();
+                finalTicks.forEach(tickValue => {
+                    const xPos = scaleTime(tickValue);
+
+                    const stripe = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    stripe.setAttribute("x1", xPos.toString());
+                    stripe.setAttribute("y1", chartStartY.toString()); 
+                    stripe.setAttribute("x2", xPos.toString());
+                    stripe.setAttribute("y2", size.height.toString()); 
+                    xAxisGroup.appendChild(stripe);
+
+                    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    label.setAttribute("x", xPos.toString());
+                    label.setAttribute("y", (xAxisLabelsHeight * 0.4).toString());
+                    label.setAttribute("text-anchor", "middle");
+                    label.setAttribute("dominant-baseline", "hanging"); 
+                    label.textContent = formatTickLabel(tickValue);
+                    xAxisGroup.appendChild(label);
+                });
+            }
+        }
+
+        if (!entriesGroup) {
+            entriesGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            entriesGroup.classList.add("entries");
+            if (xAxisGroup && xAxisGroup.nextSibling)
+                svg.insertBefore(entriesGroup, xAxisGroup.nextSibling);
+            else
+                svg.appendChild(entriesGroup);
+        } else {
+            while (entriesGroup.firstChild)
+                entriesGroup.removeChild(entriesGroup.firstChild);
+        }
+
+        const entriesData = request.flattenedEntries || (request.flattenedEntries = this._flattenEntries(request.profiler.entries));
+        if (!entriesData || size.height <= xAxisLabelsHeight) 
+            return;
+
+        entriesData.forEach(entryData => {
+            const { entry, level } = entryData;
+            const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            const entryDrawingAreaBottomAnchor = size.height - 15;
+
+            g.setAttribute("class", this._computeEntryClassName(entry));
+            if (this._computeEntryClassName(entry).includes("has-details"))
+                g.addEventListener("click", () => this._setSelectedEntry(entry));
+
+            const entryAreaBottom = size.height;
+            const yRectBottom = entryAreaBottom - ((level -1) * entryHeight + (level -1) * entryLevelGap);
+            const yStackHeightFromBottom = (level - 1) * (entryHeight + entryLevelGap);
+            const yRectTop = entryDrawingAreaBottomAnchor - yStackHeightFromBottom - entryHeight; 
+
+            const x = scaleTime(entry.started);
+            let w = scaleDuration(entry.elapsedMilliseconds);
+            if (isNaN(w) || !isFinite(w))
+                w = entry.elapsedMilliseconds > 0 ? 1 : 0;
+            const h = entryHeight;
+
+            if (yRectTop < chartStartY || yRectTop >= entryDrawingAreaBottomAnchor)
+                return;
+
+            const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            rect.setAttribute("x", x.toString());
+            rect.setAttribute("y", yRectTop.toString());
+            rect.setAttribute("width", w.toString());
+            rect.setAttribute("height", h.toString());
+            g.appendChild(rect);
+
+            const foreignObject = document.createElementNS("http://www.w3.org/2000/svg", "foreignObject");
+            foreignObject.setAttribute("x", x.toString());
+            foreignObject.setAttribute("y", yRectTop.toString());
+            foreignObject.setAttribute("width", w.toString());
+            foreignObject.setAttribute("height", h.toString());
+            
+            const textDiv = document.createElement("div");
+            textDiv.className = "text";
+            textDiv.style.width = `${w}px`;
+            textDiv.textContent = entry.methodName;
+            foreignObject.appendChild(textDiv);
+
+            foreignObject.addEventListener("mouseenter", () => this._setHoveredEntry(entry));
+            foreignObject.addEventListener("mouseleave", () => this._setHoveredEntry(null));
+            g.appendChild(foreignObject);
+            entriesGroup.appendChild(g);
+        });
     }
 
     private _flattenEntries(entries: Vidyano.Dto.ProfilerEntry[] = [], level: number = 1, flattenedEntries: FlattenedProfilerRequestEntry[] = []): FlattenedProfilerRequestEntry[] {
@@ -441,4 +575,51 @@ export class Profiler extends WebComponent {
 
         e.stopPropagation();
     }
+}
+
+function formatTickLabel(ms: number): string {
+    if (ms < 0)
+        ms = 0;
+
+    const MS_PER_SECOND = 1000;
+    const MS_PER_MINUTE = 60 * 1000;
+
+    if (ms < MS_PER_SECOND)
+        return `${Math.round(ms)}ms`;
+    
+    if (ms < MS_PER_MINUTE) {
+        const seconds = ms / MS_PER_SECOND;
+        return `${(seconds % 1 === 0) ? seconds.toFixed(0) : seconds.toFixed(1)}s`;
+    }
+    
+    const minutes = ms / MS_PER_MINUTE;
+    return `${(minutes % 1 === 0) ? minutes.toFixed(0) : minutes.toFixed(1)}m`;
+}
+
+function getNiceTickInterval(range: number, maxTicks: number, minPixelsPerTick: number = 50, renderWidth: number): number {
+    if (range <= 0)
+        return 1; // Default for non-positive range
+    
+    // Adjust maxTicks based on renderWidth to avoid overcrowding
+    const dynamicMaxTicks = Math.max(1, Math.min(maxTicks, Math.floor(renderWidth / minPixelsPerTick)));
+    maxTicks = Math.max(1, dynamicMaxTicks); // Ensure at least one tick
+
+    const tempInterval = range / maxTicks;
+    if (tempInterval <= 0) return Math.max(1, range); // Avoid zero or negative interval
+
+    const magnitude = Math.pow(10, Math.floor(Math.log10(tempInterval)));
+    const scaledInterval = tempInterval / magnitude;
+
+    let niceInterval: number;
+    if (scaledInterval > 5) {
+        niceInterval = 10 * magnitude;
+    } else if (scaledInterval > 2.5) { 
+        niceInterval = 5 * magnitude;
+    } else if (scaledInterval > 1.5) { 
+        niceInterval = 2 * magnitude;
+    } else {
+        niceInterval = 1 * magnitude;
+    }
+    
+    return Math.max(1, niceInterval); // Ensure interval is at least 1ms (or smallest unit like 0.1 if needed)
 }
