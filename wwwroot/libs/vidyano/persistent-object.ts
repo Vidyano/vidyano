@@ -18,14 +18,18 @@ export enum PersistentObjectLayoutMode {
 }
 
 /**
+ * Symbol used to backup the DTO of a persistent object.
+ * This is used to restore the state when canceling edits.
+ */
+const _dtoBackup = Symbol("PersistentObject_DtoBackup");
+
+/**
  * Handles the state and operations for persistent objects, including editing,
  * saving, refreshing data, and managing attributes and tabs.
  */
 export class PersistentObject extends ServiceObjectWithActions {
     readonly #isSystem: boolean;
-    #lastResult: Dto.PersistentObject;
     #lastUpdated: Date;
-    #lastResultBackup: Dto.PersistentObject;
     #securityToken: string;
     #isEditing: boolean = false;
     #isDirty: boolean = false;
@@ -187,7 +191,6 @@ export class PersistentObject extends ServiceObjectWithActions {
             ];
 
         this.#tag = po.tag;
-        this.#lastResult = po;
 
         if (this.isNew || this.stateBehavior.indexOf("OpenInEdit") >= 0 || this.stateBehavior.indexOf("StayInEdit") >= 0)
             this.beginEdit();
@@ -506,7 +509,7 @@ export class PersistentObject extends ServiceObjectWithActions {
      */
     beginEdit() {
         if (!this.isEditing) {
-            this.#lastResultBackup = this.#lastResult;
+            this[_dtoBackup] = this[PersistentObjectSymbols.Dto];
             this.#setIsEditing(true);
         }
     }
@@ -519,8 +522,8 @@ export class PersistentObject extends ServiceObjectWithActions {
             this.#setIsEditing(false);
             this.#setIsDirty(false);
 
-            const backup = this.#lastResultBackup;
-            this.#lastResultBackup = null;
+            const backup = this[_dtoBackup];
+            this[_dtoBackup] = null;
             this.#refreshFromResult(backup, true);
 
             if (!!this.notification)
@@ -609,8 +612,8 @@ export class PersistentObject extends ServiceObjectWithActions {
             result.parent = this.parent.toServiceObject();
         if (this.attributes)
             result.attributes = this.attributes.map(attr => _internal(attr).toServiceObject());
-        if (this.#lastResult.metadata != null)
-            result.metadata = this.#lastResult.metadata;
+        if (_internal(this).dto.metadata != null)
+            result.metadata = _internal(this).dto.metadata;
 
         return result;
     }
@@ -629,7 +632,7 @@ export class PersistentObject extends ServiceObjectWithActions {
         if (!this.isEditing && result.attributes.some(a => a.isValueChanged))
             this.beginEdit();
 
-        this.#lastResult = result;
+        this[PersistentObjectSymbols.Dto] = result;
 
         this.attributes.removeAll(attr => {
             if (!result.attributes.some(serviceAttr => serviceAttr.id === attr.id)) {
@@ -718,7 +721,7 @@ export class PersistentObject extends ServiceObjectWithActions {
                 const groups = [this.service.hooks.onConstructPersistentObjectAttributeGroup(this.service, attr.groupKey, [attr], this)];
                 groups[0].index = 0;
     
-                const serviceTab = this.#lastResult.tabs[attr.tabKey];
+                const serviceTab = _internal(this).dto.tabs[attr.tabKey];
                 attr.tab = tab = this.service.hooks.onConstructPersistentObjectAttributeTab(this.service, groups, attr.tabKey, serviceTab.id, serviceTab.name, serviceTab.layout, this, serviceTab.columnCount, !this.isHidden);
 
                 this.tabs.push(tab);
