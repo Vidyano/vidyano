@@ -435,6 +435,14 @@
       "IsClient": true,
       "IsSystem": true
     },
+    "Finish": {
+      "Value": {
+        "en": "Finish",
+        "nl": "Voltooien"
+      },
+      "IsClient": true,
+      "IsSystem": true
+    },
     "ForgotPassword": {
       "Value": {
         "en": "Forgot password?",
@@ -743,6 +751,7 @@
         "en": "Next",
         "nl": "Volgend"
       },
+      "IsClient": true,
       "IsSystem": true
     },
     "NextMonth": {
@@ -942,6 +951,7 @@
         "en": "Previous",
         "nl": "Vorig"
       },
+      "IsClient": true,
       "IsSystem": true
     },
     "ReferenceEmptyValue": {

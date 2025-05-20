@@ -1,8 +1,8 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import "components/action-button/action-button.js"
-import { App } from "components/app/app.js"
-import "components/overflow/overflow.js"
+import "components/action-button/action-button"
+import { App } from "components/app/app"
+import "components/overflow/overflow"
 import { WebComponent } from "components/web-component/web-component"
 
 @WebComponent.register({

@@ -1,7 +1,7 @@
 {
   "Websites": {
     "Default": {
-      "Type": 2,
+      "Type": 4,
       "Bindings": [
         "*"
       ]
@@ -13,7 +13,7 @@
       ]
     },
     "Test": {
-      "Type": 1,
+      "Type": 4,
       "Bindings": [
         "*/test"
       ]

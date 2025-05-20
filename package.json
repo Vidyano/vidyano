@@ -19,6 +19,7 @@
     "@polymer/iron-overlay-behavior": "3.0.3",
     "@polymer/paper-ripple": "3.0.2",
     "@polymer/polymer": "vidyano/polymer#vidyano",
+    "@rollup/plugin-alias": "^5.1.1",
     "@rollup/plugin-node-resolve": "15.2.1",
     "@rollup/plugin-replace": "^5.0.2",
     "@rollup/plugin-terser": "^0.4.4",

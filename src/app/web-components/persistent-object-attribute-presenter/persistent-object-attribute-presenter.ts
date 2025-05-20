@@ -11,7 +11,7 @@ import "components/persistent-object-attribute/attributes/persistent-object-attr
 import "components/persistent-object-attribute/attributes/persistent-object-attribute-drop-down/persistent-object-attribute-drop-down.js"
 import "components/persistent-object-attribute/attributes/persistent-object-attribute-flags-enum/persistent-object-attribute-flags-enum.js"
 import "components/persistent-object-attribute/attributes/persistent-object-attribute-icon/persistent-object-attribute-icon.js"
-import "components/ponents/persistent-object-attribute/attributes/persistent-object-attribute-image/persistent-object-attribute-image.js"
+import "components/persistent-object-attribute/attributes/persistent-object-attribute-image/persistent-object-attribute-image.js"
 import "components/persistent-object-attribute/attributes/persistent-object-attribute-key-value-list/persistent-object-attribute-key-value-list.js"
 import "components/persistent-object-attribute/attributes/persistent-object-attribute-multi-line-string/persistent-object-attribute-multi-line-string.js"
 import "components/persistent-object-attribute/attributes/persistent-object-attribute-multi-string/persistent-object-attribute-multi-string.js"
