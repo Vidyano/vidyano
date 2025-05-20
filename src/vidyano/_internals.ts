@@ -1,7 +1,8 @@
+import type * as Dto from "./typings/service";
 import type { PersistentObject } from "./persistent-object";
 import type { PersistentObjectAttribute } from "./persistent-object-attribute";
+import type { PersistentObjectAttributeWithReference } from "./persistent-object-attribute-with-reference";
 import type { Query } from "./query";
-import type { Dto, PersistentObjectAttributeWithReference } from ".";
 import type { QueryResultItem } from "./query-result-item";
 import type { QueryResultItemValue } from "./query-result-item-value";
 import type { QueryColumn } from "./query-column";
