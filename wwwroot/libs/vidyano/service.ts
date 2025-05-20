@@ -87,6 +87,7 @@ export type GetQueryOptions = {
 export class Service extends Observable<Service> {
     static #token: string;
 
+    readonly #useCookieStore: boolean;
     #lastAuthTokenUpdate: Date = new Date();
     #isUsingDefaultCredentials: boolean;
     #clientData: Dto.ClientData;
@@ -102,6 +103,7 @@ export class Service extends Observable<Service> {
     #profiledRequests: Dto.ProfilerRequest[];
     #queuedClientOperations: IClientOperation[] = [];
     #initial: PersistentObject;
+    #requestedLanguage: string;
 
     /**
      * Gets or sets a flag indicating whether to stay signed in.
@@ -147,9 +149,11 @@ export class Service extends Observable<Service> {
     constructor(public serviceUri: string, public hooks: ServiceHooks = new ServiceHooks(), public readonly isTransient: boolean = false) {
         super();
 
+        this.#useCookieStore = !isTransient && IS_BROWSER;
+
         _internal(this.hooks).setService(this);
 
-        if (!isTransient)
+        if (!isTransient && IS_BROWSER)
             this.staySignedIn = cookie("staySignedIn", { force: true }) === "true";
     }
 
@@ -186,7 +190,7 @@ export class Service extends Observable<Service> {
         const oldApplication = this.#application;
         this.notifyPropertyChanged("application", this.#application = application, oldApplication);
 
-        if (this.#application && this.#application.canProfile)
+        if (this.#application && this.#application.canProfile && IS_BROWSER)
             this.profile = !!Boolean.parse(cookie("profile"));
         else
             this.profile = false;
@@ -219,13 +223,16 @@ export class Service extends Observable<Service> {
      * This value is persisted in a cookie.
      */
     public get requestedLanguage(): string {
-        return cookie("requestedLanguage");
+        return this.#useCookieStore ? cookie("requestedLanguage") : (this.#requestedLanguage ?? "");
     }
     public set requestedLanguage(val: string) {
         if (this.requestedLanguage === val)
             return;
 
-        cookie("requestedLanguage", val);
+        if (this.#useCookieStore)
+            cookie("requestedLanguage", val);
+        else
+            this.#requestedLanguage = val;
     }
 
     /**
@@ -282,14 +289,14 @@ export class Service extends Observable<Service> {
      * Gets or sets the current user name.
      */
     public get userName(): string {
-        return !this.isTransient ? cookie("userName") : this.#userName;
+        return this.#useCookieStore ? cookie("userName") : this.#userName;
     }
     public set userName(val: string) {
         const oldUserName = this.userName;
         if (oldUserName === val)
             return;
 
-        if (!this.isTransient)
+        if (this.#useCookieStore)
             cookie("userName", val, { expires: this.staySignedIn ? 365 : 30 });
         else
             this.#userName = val;
@@ -315,10 +322,10 @@ export class Service extends Observable<Service> {
      * Gets or sets the authentication token.
      */
     public get authToken(): string {
-        return !this.isTransient ? cookie("authToken") : this.#authToken;
+        return this.#useCookieStore ? cookie("authToken") : this.#authToken;
     }
     public set authToken(val: string) {
-        if (!this.isTransient) {
+        if (this.#useCookieStore) {
             const oldAuthToken = this.authToken;
 
             if (this.staySignedIn)
@@ -355,8 +362,8 @@ export class Service extends Observable<Service> {
         if (this.#profile === val)
             return;
 
-        const currentProfileCookie = !!Boolean.parse(cookie("profile"));
-        if (currentProfileCookie !== val)
+        const currentProfileCookie = this.#useCookieStore ? !!Boolean.parse(cookie("profile")) : false;
+        if (this.#useCookieStore && currentProfileCookie !== val)
             cookie("profile", String(val));
 
         const oldValue = this.#profile;
@@ -435,8 +442,8 @@ export class Service extends Observable<Service> {
 
             Service.#token = undefined;
 
-            const returnUrl = cookie("returnUrl", { force: true }) || "";
-            if (returnUrl)
+            const returnUrl = IS_BROWSER ? cookie("returnUrl", { force: true }) || "" : "";
+            if (IS_BROWSER && returnUrl)
                 cookie("returnUrl", null, { force: true });
 
             this.hooks.onNavigate(returnUrl, true);
@@ -503,7 +510,7 @@ export class Service extends Observable<Service> {
 
         try {
             const application = await this.#getApplication(data);
-            if (application && this.isSignedIn && !this.isTransient) {
+            if (application && this.isSignedIn && this.#useCookieStore) {
                 const ssi = (typeof staySignedInOrCode === "boolean" && staySignedInOrCode) || (typeof staySignedIn === "boolean" && staySignedIn);
                 cookie("staySignedIn", (this.staySignedIn = ssi) ? "true" : null, { force: true, expires: 365 });
             }
