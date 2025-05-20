@@ -8,7 +8,9 @@ import terser from '@rollup/plugin-terser';
 const pjson = require('./package.json');
 const forRelease = process.env.NODE_ENV === 'production';
 
-export default [
+const build = process.env.BUILD;
+
+const full = [
 	{
 		input: './rollup/vidyano.ts',
 		external: ['String', "__decorate"],
@@ -32,7 +34,7 @@ export default [
   				},
 			}) : null,
 		],
-		output: [{ file: 'vidyano.js' }, { file: "wwwroot/dist/vidyano.js" }],
+		output: [ { file: "service/wwwroot/app.js" }],
 		watch: {
 			chokidar: {
 			  usePolling: true,
@@ -56,10 +58,13 @@ export default [
 				preventAssignment: true
 			})
 		],
-		output: [{ file: "vidyano.d.ts", format: "es" }, { file: "wwwroot/dist/vidyano.d.ts", format: "es" }],
-	},
+		output: [ { file: "service/wwwroot/app.d.ts", format: "es" }],
+	}
+];
+
+const base = [
 	{
-		input: 'wwwroot/libs/vidyano/vidyano.ts',
+		input: 'src/vidyano/vidyano.ts',
 		external: ['String', "__decorate"],
 		plugins: [
 			nodeResolve(),
@@ -69,10 +74,9 @@ export default [
 				"vidyano-latest-version": pjson.version,
 				"process.env.NODE_ENV": "'production'",
 				preventAssignment: true
-			}),
-			forRelease ? terser() : null,
+			})
 		],
-		output: [{ file: 'vidyano-base.js' }, { file: "wwwroot/dist/vidyano-base.js" }],
+		output: [ { file: "dist/vidyano.js" }],
 		watch: {
 			chokidar: {
 			  usePolling: true,
@@ -86,7 +90,7 @@ export default [
 		}
 	},
 	{
-		input: 'wwwroot/libs/vidyano/vidyano.ts',
+		input: 'src/vidyano/vidyano.ts',
 		external: ["tslib"],
 		plugins: [
 			dts({
@@ -96,6 +100,8 @@ export default [
 				preventAssignment: true
 			})
 		],
-		output: [{ file: "vidyano-base.d.ts", format: "es" }, { file: "wwwroot/dist/vidyano-base.d.ts", format: "es" }],
+		output: [ { file: "dist/vidyano.d.ts", format: "es" }],
 	}
 ];
+
+export default build === "full" ? full : base;

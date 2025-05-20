@@ -17,15 +17,22 @@
       "rootDir": ".",
       "types": [
           "qunit"
-      ]
+      ],
+      "baseUrl": "src",
+      "paths": {
+        "components/*": [ "app/web-components/*" ],
+        "libs/*": [ "app/libs/*" ],
+        "polymer": [ "app/libs/polymer/polymer" ],
+        "vidyano": [ "vidyano" ],
+      }
   },
   "exclude": [
       "wwwroot/dist"
   ],
   "include": [
-      "wwwroot/libs/vidyano/**/*.ts",
-      "wwwroot/test/**/*.ts",
-      "wwwroot/web-components/**/*.ts"
+      "src/core/**/*.ts",
+      "src/app/**/*.ts",
+      //"test/**/*.ts",
   ],
   "watchOptions": {
     "watchFile": "dynamicprioritypolling"
