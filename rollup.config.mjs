@@ -24,7 +24,7 @@ import terser from '@rollup/plugin-terser';
 export default 
 [
 	{
-		input: './src/index.ts',
+		input: './src/app/index.ts',
 		external: ['String', "__decorate"],
 		plugins: [
 			alias({ entries }),
@@ -60,7 +60,7 @@ export default
 		},
 	},
 	forRelease ? {
-		input: './src/index.ts',
+		input: './src/app/index.ts',
 		external: ["tslib"],
 		plugins: [
 			alias({ entries }),
