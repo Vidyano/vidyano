@@ -17,9 +17,9 @@ RUN apt-get update && \
   rm -rf /var/lib/apt/lists/*
 
 # Node.js installation for vscode user
-ARG NODE_VERSION="17"
+ARG NODE_VERSION="20" # <-- Changed from "17" to "20"
 RUN if [ "${NODE_VERSION}" != "none" ]; then \
-    su vscode -c "umask 0002 && . /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} 2>&1 && nvm alias default ${NODE_VERSION}"; \
+    su vscode -c "umask 0002 && . /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} && nvm alias default ${NODE_VERSION}"; \
     fi
 
 # RavenDB Installation
