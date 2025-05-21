@@ -1,0 +1,30 @@
+{
+  "PersistentObject": {
+    "$id": "PersistentObject:319c8373-3b21-3c4b-a0cb-fbacf6b54c2f",
+    "Id": "319c8373-3b21-3c4b-a0cb-fbacf6b54c2f",
+    "SchemaName": "Dev",
+    "Type": "ActionBarTest",
+    "Salt": "Fa3GY4---CyygwUXqA8Un1h3FzfD1s8og5Nluh3OeSOi-Vdt8UOvbg",
+    "IsReadOnly": true,
+    "Label": {
+      "en": "Action bar test",
+      "nl": ""
+    },
+    "Groups": [
+      {
+        "$id": "PersistentObjectAttributeGroup:0f80d452-7567-47ab-84ce-65a4cfe8d614",
+        "Id": "0f80d452-7567-47ab-84ce-65a4cfe8d614"
+      }
+    ],
+    "Tabs": [
+      {
+        "$id": "PersistentObjectAttributeTab:91258f92-3817-4cff-baa7-60b29be6bf38",
+        "Id": "91258f92-3817-4cff-baa7-60b29be6bf38"
+      }
+    ],
+    "Attributes": [],
+    "Queries": []
+  },
+  "Queries": [],
+  "Reports": []
+}

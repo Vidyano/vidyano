@@ -42,8 +42,8 @@
 	//    * If only using Remote - Containers with a local container, uncomment this line instead:
 	//      "mounts": [ "source=${env:HOME}${env:USERPROFILE}/.aspnet/https,target=/home/vscode/.aspnet/https,type=bind" ],
 
-	"postCreateCommand": "npm install && dotnet dev-certs https && dotnet build",
-	"postStartCommand": "start-ravendb.sh",
+	"postCreateCommand": "npm install && dotnet dev-certs https && dotnet build dev/Dev.csproj",
+	"postStartCommand": "setsid start-ravendb.sh",
 
 	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "vscode"

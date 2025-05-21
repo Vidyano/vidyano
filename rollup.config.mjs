@@ -48,7 +48,7 @@ export default
   				},
 			}) : null,
 		],
-		output: [ { file: "service/wwwroot/app.js" }],
+		output: [ { file: "dev/wwwroot/app.js" }],
 		watch: {
 			chokidar: {
 			  usePolling: true,
@@ -73,7 +73,7 @@ export default
 				preventAssignment: true
 			})
 		],
-		output: [ { file: "service/wwwroot/app.d.ts", format: "es" }],
+		output: [ { file: "dev/wwwroot/app.d.ts", format: "es" }],
 	},
 	{
 		input: 'src/vidyano/index.ts',

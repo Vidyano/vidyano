@@ -1,0 +1,92 @@
+{
+  "PersistentObject": {
+    "$id": "PersistentObject:8704c118-1431-3503-926b-c9b6cdf9f2f9",
+    "Id": "8704c118-1431-3503-926b-c9b6cdf9f2f9",
+    "SchemaName": "Dev",
+    "Type": "Shipper",
+    "Salt": "g0UN9Lz6sWjGeEsYroF7GCQdXzVPrGu58HiWBwruaPWcqLUYLqV-BQ",
+    "Breadcrumb": "{Name}",
+    "ContextProperty": "Shippers",
+    "Label": {
+      "en": "Shipper",
+      "nl": "Shipper"
+    },
+    "Groups": [
+      {
+        "$id": "PersistentObjectAttributeGroup:ab13a7b2-1f47-4b06-8f7d-c226d3a024e3",
+        "Id": "ab13a7b2-1f47-4b06-8f7d-c226d3a024e3"
+      }
+    ],
+    "Tabs": [
+      {
+        "$id": "PersistentObjectAttributeTab:21d8d4da-af38-4c1c-8a7d-1c209bcdd516",
+        "Id": "21d8d4da-af38-4c1c-8a7d-1c209bcdd516"
+      }
+    ],
+    "Attributes": [
+      {
+        "$id": "PersistentObjectAttribute:f0de6cd3-d485-363e-baa6-3a671da831a2",
+        "Id": "f0de6cd3-d485-363e-baa6-3a671da831a2",
+        "Offset": 10,
+        "Rules": "NotEmpty",
+        "Name": "Name",
+        "Label": {
+          "en": "Name",
+          "nl": "Name"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:ab13a7b2-1f47-4b06-8f7d-c226d3a024e3"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:21d8d4da-af38-4c1c-8a7d-1c209bcdd516"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:41035aee-6422-3804-ba6e-79e6e3f734ef",
+        "Id": "41035aee-6422-3804-ba6e-79e6e3f734ef",
+        "Offset": 20,
+        "Rules": "NotEmpty",
+        "Name": "Phone",
+        "Label": {
+          "en": "Phone",
+          "nl": "Phone"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:ab13a7b2-1f47-4b06-8f7d-c226d3a024e3"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:21d8d4da-af38-4c1c-8a7d-1c209bcdd516"
+        }
+      }
+    ],
+    "Queries": []
+  },
+  "Queries": [
+    {
+      "$id": "Query:3053b0bb-b2f4-40c7-9d9b-d89adbaa41e3",
+      "Id": "3053b0bb-b2f4-40c7-9d9b-d89adbaa41e3",
+      "Source": "Database.Shippers",
+      "AutoQuery": true,
+      "Name": "Shippers",
+      "Label": {
+        "en": "Shippers",
+        "nl": "Shippers"
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:8704c118-1431-3503-926b-c9b6cdf9f2f9"
+      },
+      "Columns": []
+    }
+  ],
+  "Reports": []
+}

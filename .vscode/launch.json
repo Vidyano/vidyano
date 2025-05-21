@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/bin/Debug/net6.0/VidyanoWeb3.dll",
+            "program": "${workspaceFolder}/service/bin/Debug/net6.0/Service.dll",
             "args": [],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
