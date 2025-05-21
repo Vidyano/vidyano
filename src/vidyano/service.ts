@@ -85,8 +85,6 @@ export type GetQueryOptions = {
  * Manages authentication, data fetching, and action execution.
  */
 export class Service extends Observable<Service> {
-    static #token: string;
-
     readonly #useCookieStore: boolean;
     #lastAuthTokenUpdate: Date = new Date();
     #isUsingDefaultCredentials: boolean;
@@ -155,17 +153,6 @@ export class Service extends Observable<Service> {
 
         if (!isTransient && IS_BROWSER)
             this.staySignedIn = cookie("staySignedIn", { force: true }) === "true";
-    }
-
-    /**
-     * Gets or sets the global service token.
-     * This is typically used for one-time token-based authentication.
-     */
-    public static get token(): string {
-        return Service.#token;
-    }
-    public static set token(token: string) {
-        Service.#token = token;
     }
 
     /**
@@ -409,7 +396,24 @@ export class Service extends Observable<Service> {
      * @param skipDefaultCredentialLogin If true, skips automatic login with default credentials. Defaults to false.
      * @returns A promise resolving to the Application instance if sign-in was successful, otherwise null or throws an error.
      */
-    public async initialize(skipDefaultCredentialLogin: boolean = false): Promise<Application> {
+    public async initialize(skipDefaultCredentialLogin?: boolean): Promise<Application>;
+    /**
+     * Initializes the service by fetching client data and signing in with a one-time sign-in token.
+     * Passing a token will always skip default credential login.
+     * @param oneTimeSignInToken The one-time sign-in token to use for authentication.
+     * @returns A promise resolving to the Application instance if sign-in was successful, otherwise null or throws an error.
+     */
+    public async initialize(oneTimeSignInToken: string): Promise<Application>;
+    public async initialize(arg?: boolean | string): Promise<Application> {
+        let skipDefaultCredentialLogin: boolean = false;
+        let oneTimeSignInToken: string = null;
+        if (typeof arg === "string") {
+            oneTimeSignInToken = arg;
+            skipDefaultCredentialLogin = true;
+        } else if (typeof arg === "boolean") {
+            skipDefaultCredentialLogin = arg;
+        }
+
         let url = "GetClientData?v=3";
         if (this.requestedLanguage)
             url = `${url}&lang=${this.requestedLanguage}`;
@@ -431,16 +435,14 @@ export class Service extends Observable<Service> {
         }
         this.#windowsAuthentication = this.#clientData.windowsAuthentication;
 
-        if (Service.#token) {
-            if (!Service.#token.startsWith("JWT:")) {
-                const tokenParts = Service.#token.split("/", 2);
+        if (oneTimeSignInToken) {
+            if (!oneTimeSignInToken.startsWith("JWT:")) {
+                const tokenParts = oneTimeSignInToken.split("/", 2);
 
                 this.userName = atob(tokenParts[0]);
                 this.authToken = tokenParts[1].replace("_", "/");
             } else
-                this.authToken = Service.#token;
-
-            Service.#token = undefined;
+                this.authToken = oneTimeSignInToken;
 
             const returnUrl = IS_BROWSER ? cookie("returnUrl", { force: true }) || "" : "";
             if (IS_BROWSER && returnUrl)

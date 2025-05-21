@@ -25,16 +25,17 @@ import "@polymer/iron-a11y-keys/iron-a11y-keys"
 import { IronA11yKeysElement } from "@polymer/iron-a11y-keys/iron-a11y-keys"
 import "@polymer/paper-ripple"
 
+let oneTimeSignInToken: string;
 const hashBangRe = /(.+)#!\/(.*)/;
 if (hashBangRe.test(document.location.href)) {
     const hashBangParts = hashBangRe.exec(document.location.href);
     if (hashBangParts[2].startsWith("SignInWithToken/")) {
         history.replaceState(null, null, hashBangParts[1]);
-        Vidyano.Service.token = hashBangParts[2].substr(16);
+        oneTimeSignInToken = hashBangParts[2].substr(16);
     }
     else if (hashBangParts[2].startsWith("SignInWithAuthorizationHeader/")) {
         history.replaceState(null, null, hashBangParts[1]);
-        Vidyano.Service.token = `JWT:${hashBangParts[2].substr(30)}`;
+        oneTimeSignInToken = `JWT:${hashBangParts[2].substr(30)}`;
     }
     else if (hashBangParts[2].startsWith("login_hint=")) {
         history.replaceState(null, null, hashBangParts[1]);
@@ -278,7 +279,15 @@ export abstract class AppBase extends WebComponent {
 
         this._setInitializing(true);
         try {
-            await this.service.initialize(skipDefaultCredentialLogin);
+            if (oneTimeSignInToken) {
+                const token = oneTimeSignInToken;
+                oneTimeSignInToken = null; // Immediately clear the token
+
+                await this.service.initialize(token);
+            }
+            else
+                await this.service.initialize(skipDefaultCredentialLogin);
+
             await this.hooks.onBeforeAppInitialized();
 
             this._initializeResolve(this.service.application);
