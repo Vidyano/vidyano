@@ -59,7 +59,7 @@ export default
 			warn(warning);
 		},
 	},
-	{
+	forRelease ? {
 		input: './src/index.ts',
 		external: ["tslib"],
 		plugins: [
@@ -72,7 +72,7 @@ export default
 			})
 		],
 		output: [ { file: "dev/wwwroot/app.d.ts", format: "es" }],
-	},
+	} : null,
 	{
 		input: 'src/vidyano/index.ts',
 		external: ['String', "__decorate"],
@@ -99,7 +99,7 @@ export default
 			warn(warning);
 		}
 	},
-	{
+	forRelease ? {
 		input: 'src/vidyano/index.ts',
 		external: ["tslib"],
 		plugins: [
@@ -112,5 +112,5 @@ export default
 			})
 		],
 		output: [ { file: "dist/vidyano.d.ts", format: "es" }],
-	}
-]
+	} : null,
+].filter(Boolean);
