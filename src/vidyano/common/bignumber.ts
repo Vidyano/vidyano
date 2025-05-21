@@ -15,14 +15,14 @@ declare global {
     }
 }
 
-BigNumber.prototype.format = Number.prototype.format = function Number$format(format) {
+(BigNumber.prototype as any).format = Number.prototype.format = function Number$format(format) {
     if (format == null || (format.length == 0) || (format == 'i')) {
         format = 'G';
     }
     return _netFormat(this, format, false);
 };
 
-BigNumber.prototype.localeFormat = Number.prototype.localeFormat = function Number$localeFormat(format) {
+(BigNumber.prototype as any).localeFormat = Number.prototype.localeFormat = function Number$localeFormat(format) {
     if (format == null || (format.length == 0) || (format == 'i')) {
         format = 'G';
     }

@@ -1,4 +1,5 @@
-export * from "bignumber.js"
+import * as BigNumber from "bignumber.js";
+export { BigNumber };
 
 export { Path } from "./app/libs/pathjs/pathjs";
 export * as Polymer from "./app/libs/polymer/polymer";
