@@ -159,8 +159,9 @@
                 padding-left: var(--theme-h2);
 
                 button#inverse {
-                    @include layout-horizontal();
-                    @include layout-center-center();
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
                     position: absolute;
                     top: 0;
                     left: 0;
@@ -200,7 +201,7 @@
                 }
 
                 vi-checkbox {
-                    @include layout-horizontal();
+                    display: flex;
                     line-height: var(--theme-h3);
                     height: var(--theme-h3);
                     padding: 0 var(--theme-h5);

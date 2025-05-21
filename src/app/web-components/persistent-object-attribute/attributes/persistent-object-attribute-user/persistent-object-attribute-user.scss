@@ -1,10 +1,12 @@
 @import "../../../_vars.scss";
 
 :host {
-    @include layout-horizontal();
+    display: flex;
 
     span {
-        @include flex();
+        flex: 1;
+        min-height: 0;
+        min-width: 0;
         overflow: hidden;
         white-space: nowrap;
     }

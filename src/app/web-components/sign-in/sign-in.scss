@@ -12,14 +12,16 @@
 }
 
 :host {
-    @include layout-horizontal();
-    @include layout-center-center();
+    display: flex;
+    align-items: center;
+    justify-content: center;
     @include noSelection();
     position: relative;
     --vi-sign-in-persistent-object-width-base: 400px;
 
     #background {
-        @include fit();
+        position: absolute;
+        inset: 0;
         background-repeat: no-repeat;
         background-size: cover;
         background-position: center center;
@@ -58,7 +60,8 @@
     }
 
     .dialog {
-        @include layout-vertical();
+        display: flex;
+        flex-direction: column;
         position: relative;
         background-color: white;
         box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0);
@@ -86,7 +89,9 @@
         }
 
         main {
-            @include flex();
+            flex: 1;
+            min-height: 0;
+            min-width: 0;
 
             section {
                 padding: 0 var(--theme-h2) var(--theme-h2) var(--theme-h2);
@@ -212,11 +217,12 @@
             }
 
             .brands {
-                @include layout-vertical();
-                @include layout-center();
+                display: flex;
+                flex-direction: column;
+                align-items: center;
 
                 .brand {
-                    @include layout-horizontal();
+                    display: flex;
                     line-height: var(--theme-h1);
                     width: 300px;
                     padding: 0;
@@ -226,7 +232,9 @@
                     }
 
                     span {
-                        @include flex();
+                        flex: 1;
+                        min-height: 0;
+                        min-width: 0;
                         border-left: 1px solid rgba(255, 255, 255, 0.1);
                         padding: 0 var(--theme-h5);
                     }
@@ -380,7 +388,8 @@
         }
 
         #sideHost {
-            @include fit();
+            position: absolute;
+            inset: 0;
         }
     }
 

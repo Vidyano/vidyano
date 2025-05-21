@@ -1,10 +1,11 @@
 @import "../_vars.scss";
 
 :host {
-    @include layout-horizontal();
+    display: flex;
 
     &[has-error] {
-        @include layout-center-center();
+        align-items: center;
+        justify-content: center;
         color: var(--theme-color-error);
         fill: var(--theme-color-error);
 
@@ -21,6 +22,8 @@
     }
 
     ::slotted(*) {
-        @include flex();
+        flex: 1;
+        min-height: 0;
+        min-width: 0;
     }
 }

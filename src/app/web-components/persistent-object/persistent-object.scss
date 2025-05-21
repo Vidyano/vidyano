@@ -1,7 +1,8 @@
 @import "../_vars.scss";
 
 :host {
-    @include layout-vertical-reverse();
+    display: flex;
+    flex-direction: column-reverse;
     --vi-persistent-object-master-width: 40%;
     --vi-persistent-object-master-min-width: 5%;
     --vi-persistent-object-master-max-width: 95%;
@@ -36,7 +37,8 @@
 
     vi-persistent-object-tab-presenter {
         > vi-query-items-presenter {
-            @include fit();
+            position: absolute;
+            inset: 0;
         }
     }
 
@@ -100,7 +102,9 @@
 
     &[layout-full-page] {
         .master {
-            @include flex();
+            flex: 1;
+            min-height: 0;
+            min-width: 0;
         }
 
         .detail {

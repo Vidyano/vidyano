@@ -44,7 +44,8 @@
                 border-color: var(--theme-color-error) !important;
 
                 &::before {
-                    @include fit();
+                    position: absolute;
+                    inset: 0;
                     content: " ";
                     opacity: 0.05;
                     background-color: var(--theme-color-error);

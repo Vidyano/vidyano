@@ -1,7 +1,7 @@
 @import "../_vars.scss";
 
 :host {
-    @include layout-horizontal();
+    display: flex;
     min-width: 20em;
     margin-bottom: 4px;
     height: var(--theme-h2);
@@ -18,7 +18,9 @@
     }
 
     label {
-        @include flex();
+        flex: 1;
+        min-height: 0;
+        min-width: 0;
         background-color: #f9f9f9;
         margin-left: var(--theme-h4);
         padding-left: var(--theme-h4);

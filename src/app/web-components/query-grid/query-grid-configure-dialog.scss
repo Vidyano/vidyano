@@ -2,13 +2,16 @@
 
 :host {
     main {
-        @include layout-vertical();
+        display: flex;
+        flex-direction: column;
         @include noSelection();
         padding: var(--theme-h4) 0 var(--theme-h4) var(--theme-h5);
         max-height: calc(80vh - (var(--theme-h1) + var(--theme-h5) * 2) - (var(--theme-h2) + var(--theme-h4) * 2)); // 80vh - header height - footer height (both defined on vi-app)
 
         > vi-scroller {
-            @include flex();
+            flex: 1;
+            min-height: 0;
+            min-width: 0;
             margin-top: var(--theme-h4);
         }
 

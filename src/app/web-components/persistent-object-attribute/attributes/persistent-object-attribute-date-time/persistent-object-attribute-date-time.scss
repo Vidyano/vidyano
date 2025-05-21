@@ -1,11 +1,11 @@
 @import "../../../_vars.scss";
 
 :host {
-    @include layout-horizontal();
+    display: flex;
 
     &[editing] {
         [slot="content"] {
-            @include layout-horizontal();
+            display: flex;
         }
 
         vi-masked-input {
@@ -20,7 +20,9 @@
             }
 
             &:last-of-type:not([hidden]), &[flex] {
-                @include flex();
+                flex: 1;
+                min-height: 0;
+                min-width: 0;
             }
         }
 

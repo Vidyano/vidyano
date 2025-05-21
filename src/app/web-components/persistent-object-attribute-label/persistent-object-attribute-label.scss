@@ -1,8 +1,8 @@
 @import "../_vars.scss";
 
 :host {
-    @include layout-horizontal();
-    @include layout-end();
+    display: flex;
+    align-items: flex-end;
     height: var(--theme-h2);
     box-sizing: border-box;
     overflow: hidden;

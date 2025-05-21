@@ -1,7 +1,7 @@
 @import "../persistent-object-attribute-boolean/persistent-object-attribute-boolean.scss";
 
 :host {
-    @include layout-horizontal();
+    display: flex;
 
     vi-select {
         border: none;

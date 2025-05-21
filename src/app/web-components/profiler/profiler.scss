@@ -1,7 +1,7 @@
 @import "../_vars.scss";
 
 :host {
-    @include layout-horizontal();
+    display: flex;
     background-color: #444;
     --vi-profiler-entry-height: var(--theme-h2);
     --vi-profiler-entry-level-gap: var(--theme-h5);
@@ -20,7 +20,9 @@
     }
 
     vi-popup {
-        @include flex();
+        flex: 1;
+        min-height: 0;
+        min-width: 0;
 
         [slot="header"] {
             color: white;
@@ -32,8 +34,9 @@
                 line-height: normal;
 
                 > div {
-                    @include layout-vertical();
-                    @include layout-center-justified();
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
                     margin-right: var(--theme-h3);
 
                     label {

@@ -14,8 +14,8 @@
 }
 
 :host {
-    @include layout-horizontal();
-    @include relative();
+    display: flex;
+    position: relative;
     overflow: hidden;
 
     &[initializing] {
@@ -27,8 +27,11 @@
     --persistent-object-attribute-as-detail--delete-width: var(--theme-h2);
 
     #table {
-        @include layout-vertical();
-        @include flex();
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+        min-width: 0;
         line-height: var(--theme-h2);
         overflow: hidden;
 
@@ -61,7 +64,9 @@
 
         #body {
             position: relative;
-            @include flex();
+            flex: 1;
+            min-height: 0;
+            min-width: 0;
 
             #data {
                 display: block;

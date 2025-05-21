@@ -1,8 +1,8 @@
 @import "../../../_vars.scss";
 
 :host {
-    @include layout-horizontal();
-    @include relative();
+    display: flex;
+    position: relative;
 
     input, vi-select::part(input) {
         color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
@@ -16,7 +16,7 @@
         overflow: hidden;
 
         a {
-            @include layout-horizontal();
+            display: flex;
             text-decoration: none;
             color: var(--vi-persistent-object-attribute-foreground, var(--color));
             fill: var(--vi-persistent-object-attribute-foreground, var(--color));

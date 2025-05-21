@@ -1,10 +1,12 @@
 @import "../_vars.scss";
 
 :host {
-    @include layout-horizontal();
+    display: flex;
 
     > vi-scroller {
-        @include flex();
+        flex: 1;
+        min-height: 0;
+        min-width: 0;
     }
 
     .groups {

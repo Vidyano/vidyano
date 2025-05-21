@@ -1,8 +1,9 @@
 @import "../vars.scss";
 
 :host {
-    @include layout-horizontal();
-    @include layout-center-center();
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: var(--color-error);
     fill: var(--color-error);
 

@@ -12,13 +12,15 @@
 
     .scroll-host {
         overflow: hidden;
-        @include layout-horizontal();
-        @include relative();
+        display: flex;
+        position: relative;
     }
 
     .wrapper {
-        @include flex();
-        @include relative();
+        flex: 1;
+        min-height: 0;
+        min-width: 0;
+        position: relative;
         overflow: auto;
         outline: none !important;
         -ms-overflow-style: none;
@@ -37,7 +39,8 @@
 
     &[no-horizontal]:not([no-vertical]) {
         .wrapper {
-            @include layout-vertical();
+            display: flex;
+            flex-direction: column;
 
             .content {
                 min-height: auto;
@@ -47,7 +50,7 @@
 
     &[no-vertical]:not([no-horizontal]) {
         .wrapper {
-            @include layout-horizontal();
+            display: flex;
             margin-right: 0;
             overflow-y: hidden;
         }
@@ -55,18 +58,22 @@
 
     &[no-vertical][no-horizontal] {
         .wrapper {
-            @include layout-horizontal();
+            display: flex;
             overflow: hidden;
             margin: 0 !important;
 
             .content {
-                @include flex();
-                @include layout-horizontal();
+                flex: 1;
+                min-height: 0;
+                min-width: 0;
+                display: flex;
                 min-height: initial;
                 min-width: initial;
 
                 > :not(vi-size-tracker) {
-                    @include flex();
+                    flex: 1;
+                    min-height: 0;
+                    min-width: 0;
                 }
             }
         }
@@ -219,7 +226,8 @@
         z-index: 0;
 
         > .scroll-shadow {
-            @include fit();
+            position: absolute;
+            inset: 0;
             box-shadow: 0 0 calc(var(--theme-h2) / 2) rgba(0,0,0,0.3);
             bottom: 0;
             border-radius: 100%;

@@ -1,7 +1,7 @@
 @import "../_vars.scss";
 
 :host {
-    @include layout-horizontal();
+    display: flex;
     height: var(--vi-popup-menu-item-height, var(--theme-h1));
     cursor: pointer;
     color: var(--color);
@@ -31,14 +31,15 @@
     }
 
     &:not([disabled]):hover > div::before {
-        @include fit();
+        position: absolute;
+        inset: 0;
         content: " ";
         background-color: var(--color);
         opacity: 0.1;
     }
 
     .actions {
-        @include layout-horizontal();
+        display: flex;
         padding-left: var(--theme-h5);
 
         ::slotted(*) {

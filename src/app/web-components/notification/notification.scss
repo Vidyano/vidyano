@@ -7,8 +7,8 @@
 }
 
 :host {
-    @include layout-horizontal();
-    @include layout-center();
+    display: flex;
+    align-items: center;
     height: var(--theme-h1);
     box-sizing: border-box;
     border-bottom-width: 2px;

@@ -2,7 +2,7 @@
 
 :host {
     @include noSelection();
-    @include layout-horizontal();
+    display: flex;
     line-height: normal;
 
     vi-checkbox {

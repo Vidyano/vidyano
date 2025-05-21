@@ -12,7 +12,9 @@
     }
 
     ::slotted(*) {
-        @include flex();
+        flex: 1;
+        min-height: 0;
+        min-width: 0;
     }
 
     vi-checkbox {
@@ -33,9 +35,11 @@
         }
 
         #developer {
-            @include fit();
-            @include layout-horizontal();
-            @include layout-center-center();
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             background-color: rgba(255, 255, 255, 0.3);
             border: 1px dashed var(--color-faint);
             cursor: pointer;

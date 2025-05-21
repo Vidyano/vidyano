@@ -11,7 +11,8 @@ $min-main-width: 400px;
     }
 
     main {
-        @include layout-vertical();
+        display: flex;
+        flex-direction: column;
         padding: 0;
 
         > h4 {
@@ -24,8 +25,11 @@ $min-main-width: 400px;
         }
 
         > vi-persistent-object-tab-presenter {
-            @include flex();
-            @include layout-vertical();
+            flex: 1;
+            min-height: 0;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
             padding: var(--theme-h5) 0;
 
             > vi-persistent-object-tab {

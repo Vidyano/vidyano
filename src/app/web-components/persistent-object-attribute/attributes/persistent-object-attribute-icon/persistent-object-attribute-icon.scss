@@ -1,8 +1,8 @@
 @import "../../../_vars.scss";
 
 :host {
-    @include layout-horizontal();
-    @include relative();
+    display: flex;
+    position: relative;
     outline: none;
 }
 

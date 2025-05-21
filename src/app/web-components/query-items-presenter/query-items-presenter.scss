@@ -1,11 +1,13 @@
 @import "../_vars.scss";
 
 :host {
-    @include layout-horizontal();
-    @include relative();
+    display: flex;
+    position: relative;
 
     > * {
-        @include flex();
+        flex: 1;
+        min-height: 0;
+        min-width: 0;
     }
 
     &:focus {
@@ -13,6 +15,8 @@
     }
 
     ::slotted(*) {
-        @include flex();
+        flex: 1;
+        min-height: 0;
+        min-width: 0;
     }
 }

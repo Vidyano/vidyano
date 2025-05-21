@@ -2,7 +2,7 @@
 
 :host {
     display: block;
-    @include relative();
+    position: relative;
 
     &:not([drag-over]) #dragOver {
         display: none;
@@ -16,13 +16,16 @@
     }
 
     #dragOver {
-        @include layout-horizontal();
-        @include layout-center-center();
-        @include fit();
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        inset: 0;
         z-index: 1;
 
         #overlay {
-            @include fit();
+            position: absolute;
+            inset: 0;
             background-color: rgba(255, 255, 255, 0.6);
             transform: translate3d(0, 0, 0);
         }

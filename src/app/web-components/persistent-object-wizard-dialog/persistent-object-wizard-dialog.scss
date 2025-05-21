@@ -22,13 +22,16 @@ $min-main-width: 400px;
     }
 
     main {
-        @include layout-vertical();
+        display: flex;
+        flex-direction: column;
         padding: 0;
         max-height: calc(80vh - (var(--theme-h1) + var(--theme-h5) * 2) - (var(--theme-h2) + var(--theme-h4) * 2)); // 80vh - header height - footer height (both defined on vi-app)
         min-height: calc(var(--theme-h2) * 3);
 
         > vi-persistent-object-tab-presenter {
-            @include flex();
+            flex: 1;
+            min-height: 0;
+            min-width: 0;
             min-height: calc(var(--theme-h2) * 3);
 
             > vi-persistent-object-tab {

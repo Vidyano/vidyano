@@ -4,8 +4,8 @@ $color: #FAFAFA;
 $backgroundColor: $blue-grey-900;
 
 :host {
-    @include layout-horizontal();
-    @include relative();
+    display: flex;
+    position: relative;
     @include noSelection();
     color: var(--vi-menu-color, $color);
     width: var(--vi-menu--expand-width, 17em);

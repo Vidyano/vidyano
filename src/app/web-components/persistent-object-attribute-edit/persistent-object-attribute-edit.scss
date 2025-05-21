@@ -1,14 +1,18 @@
 @import "../_vars.scss";
 
 :host {
-    @include layout-horizontal();
-    @include flex();
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
     line-height: var(--theme-h2);
 
     .box {
-        @include layout-horizontal();
-        @include layout-justified();
-        @include flex();
+        display: flex;
+        justify-content: space-between;
+        flex: 1;
+        min-height: 0;
+        min-width: 0;
         position: relative;
         background-color: white;
         line-height: calc(var(--theme-h2) - 2px);
@@ -34,7 +38,8 @@
             overflow: hidden;
 
             &::before {
-                @include fit();
+                position: absolute;
+                inset: 0;
                 content: " ";
                 opacity: 0.05;
                 background-color: var(--theme-color-error);
@@ -63,7 +68,9 @@
 
     .box {
         > ::slotted(*) {
-            @include flex();
+            flex: 1;
+            min-height: 0;
+            min-width: 0;
         }
 
         .extras {
@@ -145,7 +152,7 @@
             }
 
             &.left, &.right {
-                @include layout-horizontal;
+                display: flex;
             }
         }
     }

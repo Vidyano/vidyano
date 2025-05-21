@@ -9,7 +9,9 @@
     }
 
     label {
-        @include flex();
+        flex: 1;
+        min-height: 0;
+        min-width: 0;
         display: block;
         font-size: 15px;
         font-weight: 600;

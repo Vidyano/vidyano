@@ -1,11 +1,13 @@
 @import "../../../_vars.scss";
 
 :host {
-    @include layout-horizontal();
+    display: flex;
     overflow: hidden;
 
     vi-marked {
-        @include flex();
+        flex: 1;
+        min-height: 0;
+        min-width: 0;
         resize: none;
     }
 

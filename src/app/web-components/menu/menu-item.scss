@@ -4,7 +4,7 @@ $color: #FAFAFA;
 $backgroundColor: $blue-grey-900;
 
 :host {
-    @include relative();
+    position: relative;
     box-sizing: border-box;
 	display: block;
 	line-height: var(--theme-h2);
@@ -20,8 +20,8 @@ $backgroundColor: $blue-grey-900;
     }
 
     > .title {
-        @include layout-horizontal();
-        @include relative();
+        display: flex;
+        position: relative;
         padding-right: var(--theme-h5);
         text-decoration: none;
         color: var(--vi-menu-color, $color);

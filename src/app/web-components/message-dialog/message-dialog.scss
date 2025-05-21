@@ -4,13 +4,15 @@
     main {
         min-width: 17em;
         max-width: 70vw;
-        @include layout-horizontal();
+        display: flex;
 
         &:not([rich]) {
             padding: var(--theme-h4);
 
             pre {
-                @include flex();
+                flex: 1;
+                min-height: 0;
+                min-width: 0;
                 white-space: pre-wrap;
 
                 a {

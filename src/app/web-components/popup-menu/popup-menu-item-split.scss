@@ -1,7 +1,7 @@
 @import "popup-menu-item.scss";
 
 :host {
-    @include layout-horizontal();
+    display: flex;
 
     #split {
         height: var(--vi-popup-menu-item-height, var(--theme-h1));

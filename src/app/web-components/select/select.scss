@@ -3,22 +3,26 @@
 $border-color: #ddd;
 
 :host {
-    @include layout-horizontal();
+    display: flex;
     position: relative;
     border: 1px solid $border-color;
     outline: none !important;
 
     vi-popup {
-        @include flex();
+        flex: 1;
+        min-height: 0;
+        min-width: 0;
 
         #content {
             transform: translate(0, 1px);
         }
 
         [slot="header"] {
-            @include flex();
-            @include layout-horizontal();
-            @include relative();
+            flex: 1;
+            min-height: 0;
+            min-width: 0;
+            display: flex;
+            position: relative;
 
             .suggestions {
                 z-index: 1;

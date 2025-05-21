@@ -4,15 +4,15 @@
     height: var(--theme-h1);
     line-height: var(--theme-h1);
     @include noSelection();
-    @include layout-horizontal();
-    @include relative();
+    display: flex;
+    position: relative;
 
     .visibleContainer {
         overflow: hidden;
     }
 
     .visible {
-        @include layout-inline();
+        display: inline-flex;
         position: relative;
         gap: var(--vi-overflow-gap);
 
