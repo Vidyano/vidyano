@@ -176,4 +176,11 @@ export class Path {
         } else if (Path.routes.rescue !== null)
             Path.routes.rescue();
     }
+
+    static removeRootPath(path: string = ""): string {
+        if (path.startsWith(Path.routes.rootPath))
+            return path.substr(Path.routes.rootPath.length);
+
+        return path;
+    }
 }

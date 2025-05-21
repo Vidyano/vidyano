@@ -2,7 +2,6 @@ import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
 import { Dialog } from "components/dialog/dialog.js"
 import "components/notification/notification.js"
-import "components/persistent-object-tab-presenter/persistent-object-tab-presenter.js"
 import "./query-grid-filter-dialog-name.js"
 import { WebComponent } from "components/web-component/web-component.js"
 

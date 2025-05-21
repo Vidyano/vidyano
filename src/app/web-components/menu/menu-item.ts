@@ -6,7 +6,6 @@ import { App } from "components/app/app.js"
 import { AppCacheEntryPersistentObject } from "components/app-cache/app-cache-entry-persistent-object.js"
 import { AppCacheEntryQuery } from "components/app-cache/app-cache-entry-query.js"
 import * as IconRegister from "components/icon/icon-register.js"
-import { Menu } from "./menu.js"
 import { SelectReferenceDialog } from "components/select-reference-dialog/select-reference-dialog.js"
 import "components/scroller/scroller.js"
 import { ConfigurableWebComponent } from "components/web-component/web-component-configurable.js"
@@ -257,7 +256,7 @@ export class MenuItem extends ConfigurableWebComponent {
     private _onServiceBusSelect(sender: any, message: string, { name }: { name: string; }) {
         if (this.item.name === name) {
             this.findParent(e => {
-                if (e instanceof Menu)
+                if (e instanceof HTMLElement && (e as HTMLElement).matches("vi-menu"))
                     return true;
 
                 if (e instanceof MenuItem && !e.expand)

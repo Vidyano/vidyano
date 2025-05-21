@@ -1,7 +1,6 @@
 ﻿import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
 import { Path } from "libs/pathjs/pathjs.js"
-import { AppBase } from "components/app/app-base.js"
 import { AppRoute } from "components/app-route/app-route.js"
 import { AppServiceHooks } from "components/app-service-hooks/app-service-hooks.js"
 import { Dialog } from "components/dialog/dialog.js"
@@ -74,13 +73,13 @@ export class AppRoutePresenter extends WebComponent {
     }
 
     private _addRoute(appRoute: AppRoute, route: string) {
-        route = AppBase.removeRootPath(route);
+        route = Path.removeRootPath(route);
         if (this._routeMap[route])
             return;
 
         this._routeMap[route] = appRoute;
         Path.map(Path.routes.rootPath + route).to(() => {
-            Vidyano.ServiceBus.send(this, "path-changed", { path: AppBase.removeRootPath(Path.routes.current) });
+            Vidyano.ServiceBus.send(this, "path-changed", { path: Path.removeRootPath(Path.routes.current) });
         });
     }
 
@@ -96,7 +95,7 @@ export class AppRoutePresenter extends WebComponent {
                 return;
 
             const mappedPathRoute = path != null ? Path.match(Path.routes.rootPath + path, true) : null;
-            const newRoute = mappedPathRoute ? this._routeMap[AppBase.removeRootPath(mappedPathRoute.path)] : null;
+            const newRoute = mappedPathRoute ? this._routeMap[Path.removeRootPath(mappedPathRoute.path)] : null;
 
             if (!this.service.isSignedIn && !newRoute?.allowSignedOut) {
                 this.app.redirectToSignIn();

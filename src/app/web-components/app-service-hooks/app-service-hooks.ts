@@ -1,6 +1,6 @@
 ﻿import * as Vidyano from "vidyano"
 import { guid } from "libs/utils/guid.js"
-import { App } from "components/app/app.js"
+import { Path } from "libs/pathjs/pathjs.js"
 import { AppServiceHooksBase } from "./app-service-hooks-base.js"
 import { AppCacheEntryPersistentObject } from "components/app-cache/app-cache-entry-persistent-object.js"
 import { AppCacheEntryPersistentObjectFromAction } from "components/app-cache/app-cache-entry-persistent-object-from-action.js"
@@ -52,7 +52,7 @@ export class AppServiceHooks extends AppServiceHooksBase {
 
                 return;
             }
-            else if (!(this.app instanceof App))
+            else if (!('getUrlForPersistentObject' in this.app))
                 return;
 
             let path: string;
@@ -94,7 +94,7 @@ export class AppServiceHooks extends AppServiceHooksBase {
         if (parent instanceof Vidyano.PersistentObject) {
             const cacheEntry = <AppCacheEntryPersistentObjectFromAction>this.app.cachePing(new AppCacheEntryPersistentObjectFromAction(parent));
             if (cacheEntry instanceof AppCacheEntryPersistentObjectFromAction && cacheEntry.fromActionIdReturnPath) {
-                if (App.removeRootPath(this.app.getUrlForFromAction(cacheEntry.fromActionId)) === App.removeRootPath(this.app.path))
+                if (Path.removeRootPath(this.app.getUrlForFromAction(cacheEntry.fromActionId)) === Path.removeRootPath(this.app.path))
                     history.back();
             }
         }
@@ -168,10 +168,10 @@ export class AppServiceHooks extends AppServiceHooksBase {
             return;
         }
 
-        this.app.changePath("sign-in" + (keepUrl && this.app.path ? "/" + encodeURIComponent(App.removeRootPath(this.app.path).replace(/sign-in\/?/, "")).replace(/\./g, "%2E") : ""), true);
+        this.app.changePath("sign-in" + (keepUrl && this.app.path ? "/" + encodeURIComponent(Path.removeRootPath(this.app.path).replace(/sign-in\/?/, "")).replace(/\./g, "%2E") : ""), true);
     }
 
     onRedirectToSignOut(keepUrl: boolean) {
-        this.app.changePath("sign-out" + (keepUrl && this.app.path ? "/" + encodeURIComponent(App.removeRootPath(decodeURIComponent(this.app.path)).replace(/sign-in\/?/, "")).replace(/\./g, "%2E") : ""), true);
+        this.app.changePath("sign-out" + (keepUrl && this.app.path ? "/" + encodeURIComponent(Path.removeRootPath(decodeURIComponent(this.app.path)).replace(/sign-in\/?/, "")).replace(/\./g, "%2E") : ""), true);
     }
 }

@@ -1,10 +1,8 @@
 import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
 import { Path } from "libs/pathjs/pathjs.js"
-import { App } from "components/app/app.js"
 import { ActionButton } from "components/action-button/action-button.js"
 import { Popup } from "components/popup/popup.js"
-import { QueryGrid } from "./query-grid.js"
 import { QueryGridCell } from "./cell-templates/query-grid-cell.js"
 import "./cell-templates/query-grid-cell-boolean.js"
 import "./cell-templates/query-grid-cell-common-mark.js"
@@ -184,15 +182,15 @@ export class QueryGridRow extends WebComponent {
         }
 
         if (this.item.query.canRead && !this.item.query.asLookup) {
-            if (e.detail.sourceEvent && ((<KeyboardEvent>e.detail.sourceEvent).ctrlKey || (<KeyboardEvent>e.detail.sourceEvent).shiftKey) && this.app instanceof App) {
+            if (e.detail.sourceEvent && ((<KeyboardEvent>e.detail.sourceEvent).ctrlKey || (<KeyboardEvent>e.detail.sourceEvent).shiftKey) && 'getUrlForPersistentObject' in this.app) {
                 // Open in new window/tab
-                window.open(Path.routes.root + this.app.getUrlForPersistentObject(this.item.query.persistentObject.id, this.item.id));
+                window.open(Path.routes.root + (<any>this.app).getUrlForPersistentObject(this.item.query.persistentObject.id, this.item.id));
 
                 e.stopPropagation();
                 return;
             }
 
-            const grid = (this.getRootNode() as ShadowRoot).host as QueryGrid;
+            const grid = (this.getRootNode() as ShadowRoot).host as any;
             grid["_itemOpening"] = this.item;
             const po = await this.item.getPersistentObject();
             if (!po)
@@ -213,7 +211,7 @@ export class QueryGridRow extends WebComponent {
         if (this.item.getTypeHint("extraclass", "").split(" ").map(c => c.toUpperCase()).some(c => c === "DISABLED" || c === "READONLY"))
             return;
 
-        const grid = <QueryGrid>this.findParent(e => e instanceof QueryGrid);
+        const grid = <any>this.findParent(e => (e as HTMLElement).matches("vi-query-grid"));
         if (e.button !== 2 || e.shiftKey || e.ctrlKey || grid.asLookup)
             return true;
 

@@ -1,5 +1,5 @@
 import * as Vidyano from "vidyano"
-import { AppBase } from "components/app/app-base.js"
+import { Path } from "libs/pathjs/pathjs.js"
 import { App } from "components/app/app.js"
 import { AppRoute } from "components/app-route/app-route.js"
 import { PersistentObjectConfig } from "components/app/config/persistent-object-config.js"
@@ -73,7 +73,7 @@ export class AppServiceHooksBase extends Vidyano.ServiceHooks {
         if (!this.app || !this.app.service || !this.app.service.application || !this.app.service.application.analyticsKey)
             return;
 
-        path = AppBase.removeRootPath(path);
+        path = Path.removeRootPath(path);
         if (!path || path.startsWith("from-action"))
             return;
 
@@ -246,7 +246,7 @@ export class AppServiceHooksBase extends Vidyano.ServiceHooks {
 
     async onInitial(initial: Vidyano.PersistentObject) {
         const initialPath = `SignIn/${initial.type}`;
-        const currentPathWithoutRoot = AppBase.removeRootPath(this.app.path);
+        const currentPathWithoutRoot = Path.removeRootPath(this.app.path);
 
         if (!currentPathWithoutRoot.startsWith(initialPath)) {
             const returnPath = currentPathWithoutRoot && !currentPathWithoutRoot.startsWith("SignIn") ? currentPathWithoutRoot : "";
@@ -266,7 +266,7 @@ export class AppServiceHooksBase extends Vidyano.ServiceHooks {
     }
 
     onNavigate(path: string, replaceCurrent: boolean = false) {
-        this.app.changePath(AppBase.removeRootPath(path), replaceCurrent);
+        this.app.changePath(Path.removeRootPath(path), replaceCurrent);
     }
 
     async onRetryAction(retry: Vidyano.Dto.RetryAction): Promise<string> {

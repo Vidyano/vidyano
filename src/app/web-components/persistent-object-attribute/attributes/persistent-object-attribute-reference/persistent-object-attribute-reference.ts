@@ -1,7 +1,6 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import { Path } from "libs/pathjs/pathjs.js"
-import { App } from "components/app/app.js"
 import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute.js"
 import { SelectReferenceDialog } from "components/select-reference-dialog/select-reference-dialog.js"
 import { WebComponent } from "components/web-component/web-component.js"
@@ -175,8 +174,8 @@ export class PersistentObjectAttributeReference extends PersistentObjectAttribut
         if (hasReference && this.attribute.objectId !== this.objectId)
             this.objectId = this.attribute ? this.attribute.objectId : null;
 
-        if (this.app instanceof App && hasReference && this.attribute.lookup && this.attribute.lookup.canRead && this.attribute.objectId && this.app)
-            this.href = Path.routes.rootPath + this.app.getUrlForPersistentObject(this.attribute.lookup.persistentObject.id, this.attribute.objectId);
+        if (this.app && 'getUrlForPersistentObject' in this.app && hasReference && this.attribute.lookup && this.attribute.lookup.canRead && this.attribute.objectId)
+            this.href = Path.routes.rootPath + (<any>this.app).getUrlForPersistentObject(this.attribute.lookup.persistentObject.id, this.attribute.objectId);
         else
             this.href = null;
 
@@ -193,7 +192,7 @@ export class PersistentObjectAttributeReference extends PersistentObjectAttribut
     }
 
     private async _open(e: Event) {
-        if (!(this.app instanceof App) || this.attribute.parent.isNew || !this.attribute.lookup.canRead)
+        if (!this.app || !('getUrlForPersistentObject' in this.app) || this.attribute.parent.isNew || !this.attribute.lookup.canRead)
             return;
 
         e.preventDefault();

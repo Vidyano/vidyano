@@ -1,6 +1,7 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { App, AppBase } from "components/app/app.js"
+import { Path } from "libs/pathjs/pathjs.js"
+import { App } from "components/app/app.js"
 import { AppCacheEntryPersistentObject } from "components/app-cache/app-cache-entry-persistent-object.js"
 import { AppCacheEntryPersistentObjectFromAction } from "components/app-cache/app-cache-entry-persistent-object-from-action.js"
 import { AppRoute } from "components/app-route/app-route.js"
@@ -109,8 +110,8 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
 
     private async _deactivate(e: CustomEvent) {
         const route = <AppRoute>this.parentNode;
-        const currentPath = AppBase.removeRootPath(route.path);
-        const newPath = AppBase.removeRootPath(this.app.path);
+        const currentPath = Path.removeRootPath(route.path);
+        const newPath = Path.removeRootPath(this.app.path);
 
         if (this.persistentObject && this.persistentObject.isDirty && this.persistentObject.actions.some(a => a.name === "Save" || a.name === "EndEdit") && currentPath !== newPath) {
             e.preventDefault();

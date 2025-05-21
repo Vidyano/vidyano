@@ -1,7 +1,6 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import "components/action-bar/action-bar.js"
-import { App } from "components/app/app.js"
 import { AppCacheEntryPersistentObject } from "components/app-cache/app-cache-entry-persistent-object.js"
 import { Button } from "components/button/button.js"
 import "components/notification/notification.js"
@@ -129,7 +128,7 @@ export class PersistentObject extends WebComponent implements IPersistentObjectW
 
     private _persistentObjectChanged(persistentObject: Vidyano.PersistentObject, isConnected: boolean) {
         if (persistentObject && isConnected) {
-            this._cacheEntry = <AppCacheEntryPersistentObject>(<App>(this.app)).cache(new AppCacheEntryPersistentObject(this.persistentObject));
+            this._cacheEntry = <AppCacheEntryPersistentObject>(<any>this.app).cache(new AppCacheEntryPersistentObject(this.persistentObject));
 
             this.selectedMasterTab = this._cacheEntry.selectedMasterTab || this._computeMasterTabs(this.persistentObject, this.persistentObject.tabs)[0] || null;
             this.selectedDetailTab = this._cacheEntry.selectedDetailTab || this._computeDetailTabs(this.persistentObject, this.persistentObject.tabs)[0] || null;
