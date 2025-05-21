@@ -1,5 +1,3 @@
-@import "../../../_vars.scss";
-
 @mixin addStyle() {
     &.foot {
         height: var(--theme-h2);
@@ -82,7 +80,7 @@
 
     &[editing] {
         #table {
-            @include noSelection();
+            user-select: none;
 
             #head {
                 background-color: #F9F9F9;

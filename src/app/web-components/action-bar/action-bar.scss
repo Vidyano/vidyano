@@ -1,8 +1,6 @@
-@import "../_vars.scss";
-
 :host {
     display: flex;
-    @include noSelection();
+    user-select: none;
     height: var(--theme-h1);
     background-color: var(--vi-action-bar-background-color, #F9F9F9);
 

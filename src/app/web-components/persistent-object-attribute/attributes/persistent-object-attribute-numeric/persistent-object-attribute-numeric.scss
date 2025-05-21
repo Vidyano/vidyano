@@ -1,5 +1,3 @@
-@import "../../../_vars.scss";
-
 :host {
     display: flex;
 
@@ -12,7 +10,7 @@
         width: calc(var(--theme-h2) - 2px);
         text-align: center;
         cursor: default;
-        @include noSelection();
+        user-select: none;
 
         &:before, &:after {
             position: absolute;

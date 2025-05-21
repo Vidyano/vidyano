@@ -1,10 +1,8 @@
-@import "../_vars.scss";
-
 $border-color: #eee;
 
 :host {
     display: block;
-    @include noSelection();
+    user-select: none;
 
     &:hover vi-popup[open], vi-popup[hover] {
         [slot="header"] {

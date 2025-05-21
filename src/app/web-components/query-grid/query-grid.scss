@@ -1,11 +1,9 @@
-@import "../_vars.scss";
-
 :host {
     display: flex;
     flex-direction: column;
     position: relative;
     overflow: hidden;
-    @include noSelection();
+    user-select: none;
     --vi-query-grid-row-height: var(--theme-h2);
 
     &[initializing] {

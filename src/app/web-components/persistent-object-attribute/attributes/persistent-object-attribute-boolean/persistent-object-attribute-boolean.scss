@@ -1,7 +1,5 @@
-@import "../../../_vars.scss";
-
 :host {
-    @include noSelection();
+    user-select: none;
     display: flex;
     line-height: normal;
 

@@ -1,9 +1,7 @@
-@import "../_vars.scss";
-
 :host {
     height: var(--theme-h1);
     line-height: var(--theme-h1);
-    @include noSelection();
+    user-select: none;
     display: flex;
     position: relative;
 

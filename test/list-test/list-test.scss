@@ -1,19 +1,22 @@
-@import "../_vars.scss";
-
 :host {
-    @include layout-horizontal();
+    display: flex;
 
     .grid {
-        @include flex();
+        flex: 1;
+        min-width: 0;
+        min-height: 0;
         grid-template-columns: 1fr 1fr;
         grid-template-rows: 1fr;
 
         > div {
-            @include layout-vertical();
+            display: flex;
+            flex-direction: column;
             overflow: hidden;
 
             > label + * {
-                @include flex();
+                flex: 1;
+                min-width: 0;
+                min-height: 0;
             }
         }
 

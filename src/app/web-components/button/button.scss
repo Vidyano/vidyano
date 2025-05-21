@@ -1,5 +1,3 @@
-@import "../_vars.scss";
-
 @mixin colorizer($bgColor, $fgColor, $bgHoverColor) {
     background-color: $bgColor;
     color: $fgColor;

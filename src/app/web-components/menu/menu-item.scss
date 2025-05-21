@@ -1,7 +1,5 @@
-@import "../_vars.scss";
-
 $color: #FAFAFA;
-$backgroundColor: $blue-grey-900;
+$backgroundColor: var(--colors-blue-grey-900);
 
 :host {
     position: relative;

@@ -1,5 +1,3 @@
-@import "../_vars.scss";
-
 :host {
     position: fixed;
     z-index: 5000;
@@ -18,19 +16,19 @@
         box-shadow: 0 0 6px 1px rgba(0, 0, 0, .25);
 
         &.log-error {
-            background-color: var(--theme-color-error, $notification-error);
+            background-color: var(--theme-color-error);
         }
 
         &.log-warning {
-            background-color: var(--theme-color-warning, $notification-warning);
+            background-color: var(--theme-color-warning);
         }
 
         &.log-notice {
-            background-color: var(--theme-color-notice, $notification-notice);
+            background-color: var(--theme-color-notice);
         }
 
         &.log-ok {
-            background-color: var(--theme-color-ok, $notification-ok);
+            background-color: var(--theme-color-ok);
         }
     }
 }

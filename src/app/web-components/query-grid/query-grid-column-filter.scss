@@ -1,4 +1,4 @@
-@import "../_vars.scss";
+@use "../_vars.scss" as *;
 
 :host {
     position: relative;
@@ -99,7 +99,7 @@
     }
 
     #filterContentHost {
-        @include noSelection();
+        user-select: none;
 
         #filterContent {
             position: relative;

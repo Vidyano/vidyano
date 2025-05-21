@@ -1,4 +1,4 @@
-@import "../_vars.scss";
+@use "../_vars.scss" as *;
 
 @mixin color-notification($color) {
     border-bottom-color: rgba(0, 0, 0, 0.1);

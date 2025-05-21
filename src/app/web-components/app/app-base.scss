@@ -1,4 +1,4 @@
-@import "../_vars.scss";
+@use "../_vars.scss" as *;
 
 :host {
     @include default-variables();
@@ -65,7 +65,7 @@
     }
 
     &[is-tracking] {
-        @include noSelection();
+        user-select: none;
     }
 
     [dialog] {
@@ -77,7 +77,7 @@
         box-shadow: var(--theme-box-shadow);
 
         &[dragging] {
-            @include noSelection();
+            user-select: none;
             cursor: move !important;
         }
 

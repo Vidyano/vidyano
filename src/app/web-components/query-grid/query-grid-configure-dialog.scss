@@ -1,10 +1,8 @@
-@import "../_vars.scss";
-
 :host {
     main {
         display: flex;
         flex-direction: column;
-        @include noSelection();
+        user-select: none;
         padding: var(--theme-h4) 0 var(--theme-h4) var(--theme-h5);
         max-height: calc(80vh - (var(--theme-h1) + var(--theme-h5) * 2) - (var(--theme-h2) + var(--theme-h4) * 2)); // 80vh - header height - footer height (both defined on vi-app)
 

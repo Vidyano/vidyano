@@ -1,12 +1,10 @@
-@import "../_vars.scss";
-
 $color: #FAFAFA;
-$backgroundColor: $blue-grey-900;
+$backgroundColor: var(--colors-blue-grey-900);
 
 :host {
     display: flex;
     position: relative;
-    @include noSelection();
+    user-select: none;
     color: var(--vi-menu-color, $color);
     width: var(--vi-menu--expand-width, 17em);
     min-width: var(--vi-menu--expand-width, 17em);
