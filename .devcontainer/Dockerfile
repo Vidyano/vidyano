@@ -1,4 +1,8 @@
 ARG VARIANT="6.0-bullseye-slim"
+# Stage used to provide RavenDB binaries
+FROM ravendb/ravendb:5.4-latest AS raven-source
+
+ARG VARIANT
 FROM mcr.microsoft.com/vscode/devcontainers/dotnet:0-${VARIANT}
 
 # Switch to root for system-level installations
@@ -23,20 +27,13 @@ RUN if [ "${NODE_VERSION}" != "none" ]; then \
     fi
 
 # RavenDB Installation
-ARG RAVENDB_VERSION_MAJOR_MINOR="5.4"
 ENV RAVENDB_INSTALL_DIR="/opt/ravendb_server"
-ENV RAVENDB_DOWNLOAD_URL="https://hibernatingrhinos.com/downloads/RavenDB%20for%20Linux%20x64/${RAVENDB_VERSION_MAJOR_MINOR}"
 
-RUN echo "Installing RavenDB ${RAVENDB_VERSION_MAJOR_MINOR}..." && \
-    mkdir -p ${RAVENDB_INSTALL_DIR} && \
-    cd ${RAVENDB_INSTALL_DIR} && \
-    echo "Downloading RavenDB from ${RAVENDB_DOWNLOAD_URL}..." && \
-    wget --progress=bar:force -O ravendb.tar.bz2 "${RAVENDB_DOWNLOAD_URL}" && \
-    echo "Extracting RavenDB..." && \
-    tar -xjvf ravendb.tar.bz2 --strip-components=1 && \
-    rm ravendb.tar.bz2 && \
-    chown -R vscode:vscode ${RAVENDB_INSTALL_DIR} && \
-    echo "RavenDB installed in ${RAVENDB_INSTALL_DIR} and owned by vscode"
+# Copy RavenDB files from the official container image
+COPY --from=raven-source /opt/RavenDB ${RAVENDB_INSTALL_DIR}
+
+RUN chown -R vscode:vscode ${RAVENDB_INSTALL_DIR} && \
+    echo "RavenDB copied from ravendb/ravendb:5.4-latest to ${RAVENDB_INSTALL_DIR}"
 
 # Create a wrapper script for starting RavenDB
 # This script will be run by the 'vscode' user later in postCreateCommand
