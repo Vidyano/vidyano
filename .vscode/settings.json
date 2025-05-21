@@ -187,6 +187,7 @@
         "**/.localhistory/": true,
         "**/healthchecksdb": true,
         "**/MigrationBackup/": true,
+        "rollup": true,
         "src/vidyano/**/*.js": true,
         "src/app/**/*.d.ts": true,
         "src/app/**/*.js": true,
@@ -209,5 +210,6 @@
     ],
     "liveSassCompile.settings.generateMap": false,
     "liveSassCompile.settings.autoprefix": false,
-    "liveSassCompile.settings.watchOnLaunch": true
+    "liveSassCompile.settings.watchOnLaunch": true,
+    "liveSassCompile.settings.showOutputWindowOn": "Error"
 }
