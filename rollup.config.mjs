@@ -15,7 +15,6 @@ const entries = [
 const pjson = require('./package.json');
 const forRelease = process.env.NODE_ENV === 'production';
 
-import commonjs from 'rollup-plugin-commonjs';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import vulcanize from './rollup.vulcanize.js';
 import { dts } from "rollup-plugin-dts";
@@ -30,7 +29,6 @@ export default
 		plugins: [
 			alias({ entries }),
 			nodeResolve(),
-			commonjs(),
 			vulcanize(),
 			replace({
 				"vidyano-latest-version": pjson.version,
@@ -81,7 +79,6 @@ export default
 		plugins: [
     		alias({ entries }),
 			nodeResolve(),
-			commonjs(),
 			vulcanize(),
 			replace({
 				"vidyano-latest-version": pjson.version,
