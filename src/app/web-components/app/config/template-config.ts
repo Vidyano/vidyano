@@ -1,7 +1,7 @@
-import * as Polymer from "libs/polymer/polymer.js"
-import { WebComponent } from "components/web-component/web-component.js"
-import "./config.js"
-import { Config } from "./config.js"
+import * as Polymer from "libs/polymer/polymer"
+import { WebComponent } from "components/web-component/web-component"
+import "./config"
+import { Config } from "./config"
 
 @WebComponent.register({
     properties: {

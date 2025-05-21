@@ -1,8 +1,8 @@
 import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
-import { ISize } from "components/size-tracker/size-tracker.js"
-import { Scroller } from "components/scroller/scroller.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import { ISize } from "components/size-tracker/size-tracker"
+import { Scroller } from "components/scroller/scroller"
+import { WebComponent } from "components/web-component/web-component"
 
 type ProfilerRequest = Vidyano.Dto.ProfilerRequest & {
     hasNPlusOne: boolean;

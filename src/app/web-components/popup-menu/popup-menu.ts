@@ -1,11 +1,11 @@
 import * as Polymer from "polymer"
-import * as IconRegister from "components/icon/icon-register.js"
-import { Popup } from "components/popup/popup.js"
-import "./popup-menu-item.js"
-import "./popup-menu-item-separator.js"
-import "./popup-menu-item-split.js"
-import "./popup-menu-item-with-actions.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import * as IconRegister from "components/icon/icon-register"
+import { Popup } from "components/popup/popup"
+import "./popup-menu-item"
+import "./popup-menu-item-separator"
+import "./popup-menu-item-split"
+import "./popup-menu-item-with-actions"
+import { WebComponent } from "components/web-component/web-component"
 
 @WebComponent.register({
     properties: {

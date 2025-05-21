@@ -1,8 +1,8 @@
 ﻿import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
-import { App } from "components/app/app.js"
-import * as IconRegister from "components/icon/icon-register.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import { App } from "components/app/app"
+import * as IconRegister from "components/icon/icon-register"
+import { WebComponent } from "components/web-component/web-component"
 
 interface ILogEntryGroup {
     today: boolean;

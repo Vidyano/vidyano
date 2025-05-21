@@ -1,11 +1,11 @@
 import * as Polymer from "polymer"
-import "components/size-tracker/size-tracker.js"
-import { ISize } from "components/size-tracker/size-tracker.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import "components/size-tracker/size-tracker"
+import { ISize } from "components/size-tracker/size-tracker"
+import { WebComponent } from "components/web-component/web-component"
 import { autoUpdate, computePosition, flip, Middleware, MiddlewareState, Placement, shift, size} from '@floating-ui/dom'
 import { getContainingBlock, getWindow, isContainingBlock } from '@floating-ui/utils/dom';
 
-import { Scroller } from "components/scroller/scroller.js"
+import { Scroller } from "components/scroller/scroller"
 
 let _documentClosePopupListener: EventListener;
 document.addEventListener("mousedown", _documentClosePopupListener = e => {

@@ -1,7 +1,7 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { PersistentObjectAttributePresenter } from "components/persistent-object-attribute-presenter/persistent-object-attribute-presenter.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import { PersistentObjectAttributePresenter } from "components/persistent-object-attribute-presenter/persistent-object-attribute-presenter"
+import { WebComponent } from "components/web-component/web-component"
 
 @WebComponent.register({
     properties: {

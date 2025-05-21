@@ -1,7 +1,7 @@
 import * as Polymer from "polymer"
-import "components/popup/popup.js"
-import { Popup } from "components/popup/popup.js"
-import { WebComponent} from "components/web-component/web-component.js"
+import "components/popup/popup"
+import { Popup } from "components/popup/popup"
+import { WebComponent} from "components/web-component/web-component"
 
 export type OverflowType = "label" | "icon" | "icon-label";
 

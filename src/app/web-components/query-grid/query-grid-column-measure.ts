@@ -1,8 +1,8 @@
 import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
-import type { QueryGrid } from "./query-grid.js"
-import { ISize } from "components/size-tracker/size-tracker.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import type { QueryGrid } from "./query-grid"
+import { ISize } from "components/size-tracker/size-tracker"
+import { WebComponent } from "components/web-component/web-component"
 
 @WebComponent.register({
     properties: {

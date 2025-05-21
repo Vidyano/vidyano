@@ -1,12 +1,12 @@
 import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
-import "components/checkbox/checkbox.js"
-import "components/input-search/input-search.js"
-import { Popup } from "components/popup/popup.js"
-import { ISize } from "components/size-tracker/size-tracker.js"
-import { QueryGrid } from "./query-grid.js"
-import { QueryGridColumn } from "./query-grid-column.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import "components/checkbox/checkbox"
+import "components/input-search/input-search"
+import { Popup } from "components/popup/popup"
+import { ISize } from "components/size-tracker/size-tracker"
+import { QueryGrid } from "./query-grid"
+import { QueryGridColumn } from "./query-grid-column"
+import { WebComponent } from "components/web-component/web-component"
 
 export interface IQueryGridColumnFilterDistinct {
     type: string;

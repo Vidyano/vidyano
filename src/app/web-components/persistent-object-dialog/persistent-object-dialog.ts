@@ -1,12 +1,12 @@
 import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
-import { App } from "components/app/app.js"
-import { Button } from "components/button/button.js"
-import { Dialog } from "components/dialog/dialog.js"
-import "components/notification/notification.js"
-import "components/persistent-object-tab-presenter/persistent-object-tab-presenter.js"
-import { SizeTrackerEvent } from "components/size-tracker/size-tracker.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import { App } from "components/app/app"
+import { Button } from "components/button/button"
+import { Dialog } from "components/dialog/dialog"
+import "components/notification/notification"
+import "components/persistent-object-tab-presenter/persistent-object-tab-presenter"
+import { SizeTrackerEvent } from "components/size-tracker/size-tracker"
+import { WebComponent } from "components/web-component/web-component"
 
 export interface IPersistentObjectDialogOptions {
     noHeader?: boolean;

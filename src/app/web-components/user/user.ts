@@ -1,7 +1,7 @@
 import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
-import { App } from "components/app/app.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import { App } from "components/app/app"
+import { WebComponent } from "components/web-component/web-component"
 
 @WebComponent.register({
     properties: {

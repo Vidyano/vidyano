@@ -1,8 +1,8 @@
 import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
-import "components/popup-menu/popup-menu.js"
-import { PopupMenuItem } from "components/popup-menu/popup-menu-item.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import "components/popup-menu/popup-menu"
+import { PopupMenuItem } from "components/popup-menu/popup-menu-item"
+import { WebComponent } from "components/web-component/web-component"
 
 @WebComponent.register({
     properties: {

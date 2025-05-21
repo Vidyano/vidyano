@@ -1,12 +1,12 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import "components/action-bar/action-bar.js"
-import { AppCacheEntryPersistentObject } from "components/app-cache/app-cache-entry-persistent-object.js"
-import { Button } from "components/button/button.js"
-import "components/notification/notification.js"
-import "components/persistent-object-tab-bar/persistent-object-tab-bar.js"
-import "components/persistent-object-tab-presenter/persistent-object-tab-presenter.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import "components/action-bar/action-bar"
+import { AppCacheEntryPersistentObject } from "components/app-cache/app-cache-entry-persistent-object"
+import { Button } from "components/button/button"
+import "components/notification/notification"
+import "components/persistent-object-tab-bar/persistent-object-tab-bar"
+import "components/persistent-object-tab-presenter/persistent-object-tab-presenter"
+import { WebComponent } from "components/web-component/web-component"
 
 export interface IPersistentObjectWebComponent extends WebComponent {
     persistentObject: Vidyano.PersistentObject;

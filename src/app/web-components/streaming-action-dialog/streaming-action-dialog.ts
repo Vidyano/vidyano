@@ -1,8 +1,8 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { Dialog } from "components/dialog/dialog.js"
-import { Scroller } from "components/scroller/scroller.js";
-import { WebComponent } from "components/web-component/web-component.js"
+import { Dialog } from "components/dialog/dialog"
+import { Scroller } from "components/scroller/scroller";
+import { WebComponent } from "components/web-component/web-component"
 
 type StreamingActionDialogDetails = {
     backgroundColor: string;

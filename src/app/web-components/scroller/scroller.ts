@@ -1,7 +1,7 @@
 import * as Polymer from "polymer"
-import "components/size-tracker/size-tracker.js"
-import { ISize } from "components/size-tracker/size-tracker.js";
-import { WebComponent } from "components/web-component/web-component.js"
+import "components/size-tracker/size-tracker"
+import { ISize } from "components/size-tracker/size-tracker";
+import { WebComponent } from "components/web-component/web-component"
 
 @WebComponent.register({
     properties: {

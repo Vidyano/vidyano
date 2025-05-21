@@ -1,13 +1,13 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { Path } from "libs/pathjs/pathjs.js"
-import { App } from "components/app/app.js"
-import { AppCacheEntryPersistentObject } from "components/app-cache/app-cache-entry-persistent-object.js"
-import { AppCacheEntryPersistentObjectFromAction } from "components/app-cache/app-cache-entry-persistent-object-from-action.js"
-import { AppRoute } from "components/app-route/app-route.js"
-import "components/error/error.js"
-import { PersistentObject, IPersistentObjectWebComponent } from "components/persistent-object/persistent-object.js"
-import { ConfigurableWebComponent } from "components/web-component/web-component-configurable.js"
+import { Path } from "libs/pathjs/pathjs"
+import { App } from "components/app/app"
+import { AppCacheEntryPersistentObject } from "components/app-cache/app-cache-entry-persistent-object"
+import { AppCacheEntryPersistentObjectFromAction } from "components/app-cache/app-cache-entry-persistent-object-from-action"
+import { AppRoute } from "components/app-route/app-route"
+import "components/error/error"
+import { PersistentObject, IPersistentObjectWebComponent } from "components/persistent-object/persistent-object"
+import { ConfigurableWebComponent } from "components/web-component/web-component-configurable"
 
 interface IPersistentObjectPresenterRouteParameters {
     id: string;

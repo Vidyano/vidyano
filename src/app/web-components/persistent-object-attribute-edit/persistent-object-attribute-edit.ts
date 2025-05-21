@@ -1,8 +1,8 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import * as IconRegister from "components/icon/icon-register.js"
-import "components/persistent-object-attribute-validation-error/persistent-object-attribute-validation-error.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import * as IconRegister from "components/icon/icon-register"
+import "components/persistent-object-attribute-validation-error/persistent-object-attribute-validation-error"
+import { WebComponent } from "components/web-component/web-component"
 
 @WebComponent.register({
     properties: {

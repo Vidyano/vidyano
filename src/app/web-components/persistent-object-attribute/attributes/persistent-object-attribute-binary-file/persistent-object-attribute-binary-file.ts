@@ -1,8 +1,8 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import "components/button/button.js"
-import { WebComponent } from "components/web-component/web-component.js"
-import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute.js"
+import "components/button/button"
+import { WebComponent } from "components/web-component/web-component"
+import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute"
 
 @WebComponent.register({
     properties: {

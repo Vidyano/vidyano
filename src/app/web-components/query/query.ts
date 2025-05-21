@@ -1,10 +1,10 @@
 import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
-import "components/action-bar/action-bar.js"
-import { AppCacheEntryQuery } from "components/app-cache/app-cache-entry-query.js"
-import type { App } from "components/app/app.js"
-import "components/notification/notification.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import "components/action-bar/action-bar"
+import { AppCacheEntryQuery } from "components/app-cache/app-cache-entry-query"
+import type { App } from "components/app/app"
+import "components/notification/notification"
+import { WebComponent } from "components/web-component/web-component"
 
 @WebComponent.register({
     properties: {

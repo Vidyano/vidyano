@@ -1,9 +1,9 @@
 import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
-import { Dialog } from "components/dialog/dialog.js"
-import { IItemTapEventArgs } from "components/query-grid/query-grid-row.js"
-import "components/notification/notification.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import { Dialog } from "components/dialog/dialog"
+import { IItemTapEventArgs } from "components/query-grid/query-grid-row"
+import "components/notification/notification"
+import { WebComponent } from "components/web-component/web-component"
 
 @WebComponent.register({
     properties: {

@@ -1,7 +1,7 @@
 import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
-import * as IconRegister from "components/icon/icon-register.js"
-import { ConfigurableWebComponent } from "components/web-component/web-component-configurable.js"
+import * as IconRegister from "components/icon/icon-register"
+import { ConfigurableWebComponent } from "components/web-component/web-component-configurable"
 
 @ConfigurableWebComponent.register({
     properties: {

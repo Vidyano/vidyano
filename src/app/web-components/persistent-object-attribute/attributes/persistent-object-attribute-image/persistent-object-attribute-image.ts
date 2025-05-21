@@ -1,8 +1,8 @@
 import * as Polymer from "polymer"
-import "components/button/button.js"
-import { WebComponent } from "components/web-component/web-component.js"
-import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute.js"
-import { PersistentObjectAttributeImageDialog } from "./persistent-object-attribute-image-dialog.js"
+import "components/button/button"
+import { WebComponent } from "components/web-component/web-component"
+import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute"
+import { PersistentObjectAttributeImageDialog } from "./persistent-object-attribute-image-dialog"
 
 @WebComponent.register({
     properties: {

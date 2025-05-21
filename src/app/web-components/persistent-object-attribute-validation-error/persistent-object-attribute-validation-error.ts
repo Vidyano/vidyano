@@ -1,7 +1,7 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import "components/popup/popup.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import "components/popup/popup"
+import { WebComponent } from "components/web-component/web-component"
 
 @WebComponent.register({
     properties: {

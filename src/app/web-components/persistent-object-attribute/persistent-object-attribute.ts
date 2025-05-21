@@ -1,8 +1,8 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import "components/persistent-object-attribute-edit/persistent-object-attribute-edit.js"
-import type { Select } from "components/select/select.js";
-import { WebComponent } from "components/web-component/web-component.js"
+import "components/persistent-object-attribute-edit/persistent-object-attribute-edit"
+import type { Select } from "components/select/select";
+import { WebComponent } from "components/web-component/web-component"
 
 const styleElement = document.createElement("dom-module");
 styleElement.innerHTML = `<link rel="import" href="persistent-object-attribute-style-module.html">`;

@@ -1,10 +1,10 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { Dialog } from "components/dialog/dialog.js"
-import { QueryGridConfigureDialogColumn } from "./query-grid-configure-dialog-column.js"
-import { QueryGridUserSettings } from "./query-grid-user-settings.js"
-import { Sortable } from "components/sortable/sortable.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import { Dialog } from "components/dialog/dialog"
+import { QueryGridConfigureDialogColumn } from "./query-grid-configure-dialog-column"
+import { QueryGridUserSettings } from "./query-grid-user-settings"
+import { Sortable } from "components/sortable/sortable"
+import { WebComponent } from "components/web-component/web-component"
 
 @WebComponent.register({
     properties: {

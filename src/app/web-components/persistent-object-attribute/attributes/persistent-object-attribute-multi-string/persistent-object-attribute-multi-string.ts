@@ -1,11 +1,11 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute.js"
-import { PersistentObjectAttributeMultiStringItem } from "./persistent-object-attribute-multi-string-item.js"
-import { Sortable } from "components/sortable/sortable.js"
-import type { Tags } from "components/tags/tags.js"
-import "components/tags/tags.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute"
+import { PersistentObjectAttributeMultiStringItem } from "./persistent-object-attribute-multi-string-item"
+import { Sortable } from "components/sortable/sortable"
+import type { Tags } from "components/tags/tags"
+import "components/tags/tags"
+import { WebComponent } from "components/web-component/web-component"
 
 @WebComponent.register()
 export class PersistentObjectAttributeMultiStringItems extends Sortable {

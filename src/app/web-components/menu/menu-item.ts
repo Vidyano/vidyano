@@ -1,14 +1,14 @@
 import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
-import { Path } from "libs/pathjs/pathjs.js"
+import { Path } from "libs/pathjs/pathjs"
 import "@polymer/iron-collapse"
-import { App } from "components/app/app.js"
-import { AppCacheEntryPersistentObject } from "components/app-cache/app-cache-entry-persistent-object.js"
-import { AppCacheEntryQuery } from "components/app-cache/app-cache-entry-query.js"
-import * as IconRegister from "components/icon/icon-register.js"
-import { SelectReferenceDialog } from "components/select-reference-dialog/select-reference-dialog.js"
-import "components/scroller/scroller.js"
-import { ConfigurableWebComponent } from "components/web-component/web-component-configurable.js"
+import { App } from "components/app/app"
+import { AppCacheEntryPersistentObject } from "components/app-cache/app-cache-entry-persistent-object"
+import { AppCacheEntryQuery } from "components/app-cache/app-cache-entry-query"
+import * as IconRegister from "components/icon/icon-register"
+import { SelectReferenceDialog } from "components/select-reference-dialog/select-reference-dialog"
+import "components/scroller/scroller"
+import { ConfigurableWebComponent } from "components/web-component/web-component-configurable"
 
 @ConfigurableWebComponent.register({
     properties: {

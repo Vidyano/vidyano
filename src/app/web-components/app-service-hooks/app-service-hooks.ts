@@ -1,12 +1,12 @@
 ﻿import * as Vidyano from "vidyano"
-import { guid } from "libs/utils/guid.js"
-import { Path } from "libs/pathjs/pathjs.js"
-import { AppServiceHooksBase } from "./app-service-hooks-base.js"
-import { AppCacheEntryPersistentObject } from "components/app-cache/app-cache-entry-persistent-object.js"
-import { AppCacheEntryPersistentObjectFromAction } from "components/app-cache/app-cache-entry-persistent-object-from-action.js"
-import { AppCacheEntryQuery } from "components/app-cache/app-cache-entry-query.js"
-import { PersistentObjectDialog } from "components/persistent-object-dialog/persistent-object-dialog.js"
-import { PersistentObjectWizardDialog } from "components/persistent-object-wizard-dialog/persistent-object-wizard-dialog.js"
+import { guid } from "libs/utils/guid"
+import { Path } from "libs/pathjs/pathjs"
+import { AppServiceHooksBase } from "./app-service-hooks-base"
+import { AppCacheEntryPersistentObject } from "components/app-cache/app-cache-entry-persistent-object"
+import { AppCacheEntryPersistentObjectFromAction } from "components/app-cache/app-cache-entry-persistent-object-from-action"
+import { AppCacheEntryQuery } from "components/app-cache/app-cache-entry-query"
+import { PersistentObjectDialog } from "components/persistent-object-dialog/persistent-object-dialog"
+import { PersistentObjectWizardDialog } from "components/persistent-object-wizard-dialog/persistent-object-wizard-dialog"
 
 export class AppServiceHooks extends AppServiceHooksBase {
     onSessionExpired(): Promise<boolean> {

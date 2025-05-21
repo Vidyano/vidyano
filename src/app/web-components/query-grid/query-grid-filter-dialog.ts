@@ -1,9 +1,9 @@
 import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
-import { Dialog } from "components/dialog/dialog.js"
-import "components/notification/notification.js"
-import "./query-grid-filter-dialog-name.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import { Dialog } from "components/dialog/dialog"
+import "components/notification/notification"
+import "./query-grid-filter-dialog-name"
+import { WebComponent } from "components/web-component/web-component"
 
 @WebComponent.register({
     properties: {

@@ -1,9 +1,9 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { WebComponent } from "components/web-component/web-component.js"
-import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute.js"
-import "components/select/select.js"
-import "components/checkbox/checkbox.js"
+import { WebComponent } from "components/web-component/web-component"
+import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute"
+import "components/select/select"
+import "components/checkbox/checkbox"
 
 @WebComponent.register({
     properties: {

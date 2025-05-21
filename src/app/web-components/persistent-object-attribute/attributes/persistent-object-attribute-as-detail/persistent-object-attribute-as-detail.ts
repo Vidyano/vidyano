@@ -1,10 +1,10 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { Scroller } from "components/scroller/scroller.js"
-import { SelectReferenceDialog } from "components/select-reference-dialog/select-reference-dialog.js"
-import "./persistent-object-attribute-as-detail-row.js"
-import { WebComponent } from "components/web-component/web-component.js"
-import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute.js"
+import { Scroller } from "components/scroller/scroller"
+import { SelectReferenceDialog } from "components/select-reference-dialog/select-reference-dialog"
+import "./persistent-object-attribute-as-detail-row"
+import { WebComponent } from "components/web-component/web-component"
+import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute"
 
 @WebComponent.register({
     properties: {
@@ -190,7 +190,7 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
                     await this._finalizeAdd(po);
             }
             else {
-                const { PersistentObjectDialog } = await import("components/persistent-object-dialog/persistent-object-dialog.js");
+                const { PersistentObjectDialog } = await import("components/persistent-object-dialog/persistent-object-dialog");
                 this.app.showDialog(new PersistentObjectDialog(po, {
                     saveLabel: po.service.actionDefinitions["AddReference"].displayName,
                     save: (po, close) => {

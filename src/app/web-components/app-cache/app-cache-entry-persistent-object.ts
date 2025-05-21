@@ -1,5 +1,5 @@
 import * as Vidyano from "vidyano"
-import { AppCacheEntry } from "./app-cache-entry.js"
+import { AppCacheEntry } from "./app-cache-entry"
 
 export class AppCacheEntryPersistentObject extends AppCacheEntry {
     private _persistentObject: Vidyano.PersistentObject;

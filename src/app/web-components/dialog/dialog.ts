@@ -1,7 +1,7 @@
 import * as Polymer from "polymer"
-import { PopupMenu } from "components/popup-menu/popup-menu.js";
-import "components/size-tracker/size-tracker.js"
-import { IPosition, WebComponent } from "components/web-component/web-component.js"
+import { PopupMenu } from "components/popup-menu/popup-menu";
+import "components/size-tracker/size-tracker"
+import { IPosition, WebComponent } from "components/web-component/web-component"
 
 export interface IDialogOptions {
     omitStyle?: boolean

@@ -1,8 +1,8 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { PersistentObjectAttributeConfig } from "components/app/config/persistent-object-attribute-config.js"
-import { PersistentObjectAttributePresenter } from "components/persistent-object-attribute-presenter/persistent-object-attribute-presenter.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import { PersistentObjectAttributeConfig } from "components/app/config/persistent-object-attribute-config"
+import { PersistentObjectAttributePresenter } from "components/persistent-object-attribute-presenter/persistent-object-attribute-presenter"
+import { WebComponent } from "components/web-component/web-component"
 
 interface IPersistentObjectGroupItem {
     attribute: Vidyano.PersistentObjectAttribute;

@@ -1,9 +1,9 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import * as Keyboard from "components/utils/keyboard.js"
+import * as Keyboard from "components/utils/keyboard"
 import type { PersistentObjectTabPresenter } from '../persistent-object-tab-presenter/persistent-object-tab-presenter.js'
 import { ISize } from '../size-tracker/size-tracker.js'
-import { WebComponent } from "components/web-component/web-component.js"
+import { WebComponent } from "components/web-component/web-component"
 
 declare type Step = "username" | "password" | "twofactor" | "register" | "initial";
 

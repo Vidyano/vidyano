@@ -1,8 +1,8 @@
 ﻿import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { Button } from "components/button/button.js"
-import { Popup } from "components/popup/popup.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import { Button } from "components/button/button"
+import { Popup } from "components/popup/popup"
+import { WebComponent } from "components/web-component/web-component"
 
 export interface IDatePickerCell {
     type: string;

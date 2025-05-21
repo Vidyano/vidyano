@@ -1,8 +1,8 @@
 import * as Polymer from "polymer"
 import type * as Vidyano from "vidyano"
-import "./persistent-object-tab-bar-item.js"
-import { Popup } from "components/popup/popup.js"
-import { WebComponent, IObserveChainDisposer } from "components/web-component/web-component.js"
+import "./persistent-object-tab-bar-item"
+import { Popup } from "components/popup/popup"
+import { WebComponent, IObserveChainDisposer } from "components/web-component/web-component"
 
 @WebComponent.register({
     properties: {

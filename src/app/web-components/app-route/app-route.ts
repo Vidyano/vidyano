@@ -1,7 +1,7 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano";
-import { AppServiceHooks } from "components/app-service-hooks/app-service-hooks.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import { AppServiceHooks } from "components/app-service-hooks/app-service-hooks"
+import { WebComponent } from "components/web-component/web-component"
 
 export interface IAppRouteActivatedArgs {
     route: AppRoute;

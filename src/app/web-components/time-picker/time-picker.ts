@@ -1,7 +1,7 @@
 import * as Polymer from "polymer"
-import { Popup } from "components/popup/popup.js"
-import { WebComponent } from "components/web-component/web-component.js"
-import "components/icon/icon.js"
+import { Popup } from "components/popup/popup"
+import { WebComponent } from "components/web-component/web-component"
+import "components/icon/icon"
 
 @WebComponent.register({
     properties: {

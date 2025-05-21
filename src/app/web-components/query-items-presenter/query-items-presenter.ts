@@ -1,9 +1,9 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { AppServiceHooks } from "components/app-service-hooks/app-service-hooks.js"
-import { IFileDropDetails } from "components/file-drop/file-drop.js"
-import { QueryGrid } from "components/query-grid/query-grid.js"
-import { ConfigurableWebComponent } from "components/web-component/web-component-configurable.js"
+import { AppServiceHooks } from "components/app-service-hooks/app-service-hooks"
+import { IFileDropDetails } from "components/file-drop/file-drop"
+import { QueryGrid } from "components/query-grid/query-grid"
+import { ConfigurableWebComponent } from "components/web-component/web-component-configurable"
 
 @ConfigurableWebComponent.register({
     properties: {

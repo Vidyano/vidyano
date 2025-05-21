@@ -1,8 +1,8 @@
 import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
-import { WebComponent } from "components/web-component/web-component.js"
-import { Dialog } from "components/dialog/dialog.js"
-import type { ITranslatedString } from "./persistent-object-attribute-translated-string.js"
+import { WebComponent } from "components/web-component/web-component"
+import { Dialog } from "components/dialog/dialog"
+import type { ITranslatedString } from "./persistent-object-attribute-translated-string"
 
 @WebComponent.register({
     properties: {

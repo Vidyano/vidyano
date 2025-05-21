@@ -1,10 +1,10 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { Path } from "libs/pathjs/pathjs.js"
-import type { AppBase } from "components/app/app-base.js"
-import type { App } from "components/app/app.js"
-import * as IconRegister from "components/icon/icon-register.js"
-import * as Keyboard from "components/utils/keyboard.js"
+import { Path } from "libs/pathjs/pathjs"
+import type { AppBase } from "components/app/app-base"
+import type { App } from "components/app/app"
+import * as IconRegister from "components/icon/icon-register"
+import * as Keyboard from "components/utils/keyboard"
 import { IronA11yKeysElement } from "@polymer/iron-a11y-keys"
 
 Polymer.Settings.setLegacyUndefined(true);

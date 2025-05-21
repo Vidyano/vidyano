@@ -1,11 +1,11 @@
 ﻿import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
-import { Path } from "libs/pathjs/pathjs.js"
-import { AppRoute } from "components/app-route/app-route.js"
-import { AppServiceHooks } from "components/app-service-hooks/app-service-hooks.js"
-import { Dialog } from "components/dialog/dialog.js"
-import "components/error/error.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import { Path } from "libs/pathjs/pathjs"
+import { AppRoute } from "components/app-route/app-route"
+import { AppServiceHooks } from "components/app-service-hooks/app-service-hooks"
+import { Dialog } from "components/dialog/dialog"
+import "components/error/error"
+import { WebComponent } from "components/web-component/web-component"
 
 @WebComponent.register({
     properties: {

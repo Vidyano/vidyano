@@ -1,5 +1,5 @@
-import type { AppRoute } from "components/app-route/app-route.js"
-import type { Dialog } from "components/dialog/dialog.js"
+import type { AppRoute } from "components/app-route/app-route"
+import type { Dialog } from "components/dialog/dialog"
 
 export const Keys = {
     Backspace: "Backspace",

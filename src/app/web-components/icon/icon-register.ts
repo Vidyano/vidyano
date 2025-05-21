@@ -1,5 +1,5 @@
 import * as Polymer from "polymer"
-import type { Icon } from "./icon.js"
+import type { Icon } from "./icon"
 import DOMPurify from "dompurify";
 
 const icons: Record<string, Icon> = {};

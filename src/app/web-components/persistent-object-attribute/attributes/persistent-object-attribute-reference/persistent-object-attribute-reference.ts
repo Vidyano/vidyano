@@ -1,11 +1,11 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { Path } from "libs/pathjs/pathjs.js"
-import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute.js"
-import { SelectReferenceDialog } from "components/select-reference-dialog/select-reference-dialog.js"
-import { WebComponent } from "components/web-component/web-component.js"
-import type { Select } from "components/select/select.js"
-import "components/select/select.js"
+import { Path } from "libs/pathjs/pathjs"
+import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute"
+import { SelectReferenceDialog } from "components/select-reference-dialog/select-reference-dialog"
+import { WebComponent } from "components/web-component/web-component"
+import type { Select } from "components/select/select"
+import "components/select/select"
 
 @WebComponent.register({
     properties: {

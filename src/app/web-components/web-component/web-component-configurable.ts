@@ -1,6 +1,6 @@
-import { PopupMenuItemSplit } from "components/popup-menu/popup-menu-item-split.js"
-import { PopupMenuItem } from "components/popup-menu/popup-menu-item.js"
-import { WebComponent } from "./web-component.js"
+import { PopupMenuItemSplit } from "components/popup-menu/popup-menu-item-split"
+import { PopupMenuItem } from "components/popup-menu/popup-menu-item"
+import { WebComponent } from "./web-component"
 
 export interface IConfigurableAction {
     icon: string;

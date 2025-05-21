@@ -1,6 +1,6 @@
 import * as Polymer from "polymer"
-import { WebComponent } from "components/web-component/web-component.js"
-import * as IconRegister from "./icon-register.js"
+import { WebComponent } from "components/web-component/web-component"
+import * as IconRegister from "./icon-register"
 
 @WebComponent.register({
     properties: {

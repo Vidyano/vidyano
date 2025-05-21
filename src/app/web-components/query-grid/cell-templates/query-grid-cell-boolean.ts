@@ -1,8 +1,8 @@
 import * as Vidyano from "vidyano"
-import * as Polymer from "libs/polymer/polymer.js"
-import { QueryGridCell } from "./query-grid-cell.js"
-import { Icon } from "components/icon/icon.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import * as Polymer from "libs/polymer/polymer"
+import { QueryGridCell } from "./query-grid-cell"
+import { Icon } from "components/icon/icon"
+import { WebComponent } from "components/web-component/web-component"
 
 @WebComponent.register({
     properties: {

@@ -1,10 +1,10 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { ISize } from "components/size-tracker/size-tracker.js"
-import "components/persistent-object-group/persistent-object-group.js"
-import { PersistentObjectAttributePresenter } from "components/persistent-object-attribute-presenter/persistent-object-attribute-presenter.js"
-import "components/size-tracker/size-tracker.js"
-import { ConfigurableWebComponent } from "components/web-component/web-component-configurable.js"
+import { ISize } from "components/size-tracker/size-tracker"
+import "components/persistent-object-group/persistent-object-group"
+import { PersistentObjectAttributePresenter } from "components/persistent-object-attribute-presenter/persistent-object-attribute-presenter"
+import "components/size-tracker/size-tracker"
+import { ConfigurableWebComponent } from "components/web-component/web-component-configurable"
 
 @ConfigurableWebComponent.register({
     properties: {

@@ -1,10 +1,10 @@
 import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
-import "components/popup-menu/popup-menu.js"
-import { PopupMenu } from "components/popup-menu/popup-menu.js"
-import { QueryGridColumn } from "./query-grid-column.js"
-import "./query-grid-column-filter.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import "components/popup-menu/popup-menu"
+import { PopupMenu } from "components/popup-menu/popup-menu"
+import { QueryGridColumn } from "./query-grid-column"
+import "./query-grid-column-filter"
+import { WebComponent } from "components/web-component/web-component"
 
 let resizeObserver: ResizeObserver;
 resizeObserver = new ResizeObserver(allEntries => {

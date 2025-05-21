@@ -1,8 +1,8 @@
 import * as Polymer from "polymer"
-import * as IconRegister from "components/icon/icon-register.js"
-import { Popup } from "components/popup/popup.js"
-import { PopupMenu } from "./popup-menu.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import * as IconRegister from "components/icon/icon-register"
+import { Popup } from "components/popup/popup"
+import { PopupMenu } from "./popup-menu"
+import { WebComponent } from "components/web-component/web-component"
 
 @WebComponent.register({
     properties: {

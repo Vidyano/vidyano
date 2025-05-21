@@ -1,7 +1,7 @@
 import * as Polymer from "polymer"
-import { WebComponent } from "components/web-component/web-component.js"
-import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute.js"
-import "./persistent-object-attribute-flags-enum-flag.js"
+import { WebComponent } from "components/web-component/web-component"
+import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute"
+import "./persistent-object-attribute-flags-enum-flag"
 
 @WebComponent.register()
 export class PersistentObjectAttributeFlagsEnum extends PersistentObjectAttribute {

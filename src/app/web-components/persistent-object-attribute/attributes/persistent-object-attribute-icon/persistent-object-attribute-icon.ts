@@ -1,9 +1,9 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { Icon } from "components/icon/icon.js"
-import * as IconRegister from "components/icon/icon-register.js"
-import { WebComponent } from "components/web-component/web-component.js"
-import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute.js"
+import { Icon } from "components/icon/icon"
+import * as IconRegister from "components/icon/icon-register"
+import { WebComponent } from "components/web-component/web-component"
+import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute"
 
 @WebComponent.register({
     properties: {

@@ -1,8 +1,8 @@
 import "@polymer/iron-list"
 import { IronListElement } from "@polymer/iron-list"
 import * as Polymer from "polymer"
-import { Scroller } from "components/scroller/scroller.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import { Scroller } from "components/scroller/scroller"
+import { WebComponent } from "components/web-component/web-component"
 
 @WebComponent.register({
     properties: {

@@ -1,7 +1,7 @@
 import * as Polymer from "polymer"
-import * as Keyboard from "components/utils/keyboard.js"
-import type { Scroller } from "components/scroller/scroller.js"
-import { WebComponent } from "components/web-component/web-component.js"
+import * as Keyboard from "components/utils/keyboard"
+import type { Scroller } from "components/scroller/scroller"
+import { WebComponent } from "components/web-component/web-component"
 
 @WebComponent.register({
     properties: {

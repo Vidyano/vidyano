@@ -1,9 +1,9 @@
-import * as Polymer from "libs/polymer/polymer.js"
-import { QueryGridCell } from "./query-grid-cell.js"
-import { QueryGridCellDefault } from "./query-grid-cell-default.js"
-import { WebComponent } from "components/web-component/web-component.js"
-import { getMarkdown } from "components/marked/marked.js"
-import { Path } from "libs/pathjs/pathjs.js"
+import * as Polymer from "libs/polymer/polymer"
+import { QueryGridCell } from "./query-grid-cell"
+import { QueryGridCellDefault } from "./query-grid-cell-default"
+import { WebComponent } from "components/web-component/web-component"
+import { getMarkdown } from "components/marked/marked"
+import { Path } from "libs/pathjs/pathjs"
 
 @WebComponent.register({
     properties: {
