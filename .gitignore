@@ -353,6 +353,7 @@ dist/**/*.js
 dist/**/*.d.ts
 rollup
 
+src/app/index.js
 src/app/libs/**/*.js
 src/app/web-components/**/*.d.ts
 src/app/web-components/**/*.js
