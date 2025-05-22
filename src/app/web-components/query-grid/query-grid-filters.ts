@@ -79,7 +79,7 @@ interface IQueryFilter {
         "query.filters.filters",
         "query.filters.currentFilter"
     ]
-})
+}, "vi-query-grid-filters")
 export class QueryGridFilters extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-filters.html">` }
 

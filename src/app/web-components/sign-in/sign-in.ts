@@ -114,7 +114,7 @@ interface INotification {
         "register.isBusy",
         "initial.isBusy"
     ]
-})
+}, "vi-sign-in")
 export class SignIn extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="sign-in.html">`; }
 

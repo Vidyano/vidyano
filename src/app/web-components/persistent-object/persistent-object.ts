@@ -113,7 +113,7 @@ export interface IPersistentObjectWebComponent extends WebComponent {
         "tabselect": "_tabselect"
     },
     sensitive: true
-})
+}, "vi-persistent-object")
 export class PersistentObject extends WebComponent implements IPersistentObjectWebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object.html">` }
 
@@ -393,7 +393,7 @@ export class PersistentObject extends WebComponent implements IPersistentObjectW
         tab: Object,
         hideActionBar: Boolean
     }
-})
+}, "vi-persistent-object-details-content")
 export class PersistentObjectDetailsContent extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="vi-persistent-object-details-content.html">` }
 }
@@ -406,7 +406,7 @@ export class PersistentObjectDetailsContent extends WebComponent {
             notify: true
         }
     }
-})
+}, "vi-persistent-object-details-header")
 export class PersistentObjectDetailsHeader extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="vi-persistent-object-details-header.html">` }
 }

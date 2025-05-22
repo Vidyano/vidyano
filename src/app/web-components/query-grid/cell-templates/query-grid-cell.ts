@@ -49,7 +49,7 @@ resizeObserver = new ResizeObserver(allEntries => {
     observers: [
         "_queueMeasure(value, isConnected)"
     ]
-})
+}, "vi-query-grid-cell")
 export abstract class QueryGridCell extends WebComponent {
     #_observeOnConnected: boolean;
     #_lastMeasuredColumn: Vidyano.QueryColumn;

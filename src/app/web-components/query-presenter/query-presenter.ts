@@ -47,7 +47,7 @@ interface IQueryPresenterRouteParameters {
     forwardObservers: [
         "query.labelWithTotalItems"
     ]
-})
+}, "vi-query-presenter")
 export class QueryPresenter extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-presenter.html">`; }
 

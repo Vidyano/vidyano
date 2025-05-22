@@ -45,7 +45,7 @@ import { WebComponent } from "components/web-component/web-component"
         "vi-persistent-object-tab-inner-size-changed": "_tabInnerSizeChanged"
     },
     mediaQueryAttributes: true
-})
+}, "vi-persistent-object-wizard-dialog")
 export class PersistentObjectWizardDialog extends Dialog {
     static get template() { return Dialog.dialogTemplate(Polymer.html`<link rel="import" href="persistent-object-wizard-dialog.html">`); }
 

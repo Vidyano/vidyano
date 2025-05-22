@@ -22,7 +22,7 @@ import { ISize } from "components/size-tracker/size-tracker"
     observers: [
         "_showImage(headerSize, footerSize)"
     ]
-})
+}, "vi-persistent-object-attribute-image-dialog")
 export class PersistentObjectAttributeImageDialog extends Dialog {
     static get template() { return Dialog.dialogTemplate(Polymer.html`<link rel="import" href="persistent-object-attribute-image-dialog.html">`) }
 

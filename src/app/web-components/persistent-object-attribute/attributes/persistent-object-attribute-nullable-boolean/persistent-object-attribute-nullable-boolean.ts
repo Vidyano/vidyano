@@ -11,7 +11,7 @@ import "components/select/select"
             computed: "_computeBooleanOptions(attribute, translations)"
         }
     }
-})
+}, "vi-persistent-object-attribute-nullable-boolean")
 export class PersistentObjectAttributeNullableBoolean extends PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-nullable-boolean.html">`; }
 

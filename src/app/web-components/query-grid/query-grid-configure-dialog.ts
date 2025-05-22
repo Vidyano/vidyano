@@ -14,7 +14,7 @@ import { WebComponent } from "components/web-component/web-component"
         "distribute-columns": "_distributeColumns",
         "reorder-columns": "_reorderColumns"
     }
-})
+}, "vi-query-grid-configure-dialog")
 export class QueryGridConfigureDialog extends Dialog {
     static get template() { return Dialog.dialogTemplate(Polymer.html`<link rel="import" href="query-grid-configure-dialog.html">`); }
     private _elements: QueryGridConfigureDialogColumn[];
@@ -80,7 +80,7 @@ export class QueryGridConfigureDialog extends Dialog {
 }
 
 @WebComponent.register({
-})
+}, "vi-query-grid-configure-dialog-column-list")
 export class QueryGridConfigureDialogColumnList extends Sortable {
     protected _dragEnd() {
         this.fire("reorder-columns", {}, { bubbles: true });

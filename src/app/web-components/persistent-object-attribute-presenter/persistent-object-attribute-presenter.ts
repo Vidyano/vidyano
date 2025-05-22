@@ -157,7 +157,7 @@ document.addEventListener("keyup", e => {
         "attribute.validationError",
         "attribute.parent.isBulkEdit"
     ]
-})
+}, "vi-persistent-object-attribute-presenter")
 export class PersistentObjectAttributePresenter extends ConfigurableWebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-presenter.html">`; }
 

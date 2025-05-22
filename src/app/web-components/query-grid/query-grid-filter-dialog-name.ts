@@ -27,7 +27,7 @@ import { WebComponent } from "components/web-component/web-component"
         "_focusInput(grouping, isConnected)",
         "_updateAttributeValue(attribute, name, group, isConnected)",
     ]
-})
+}, "vi-query-grid-filter-dialog-name")
 export class QueryGridFilterDialogName extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-filter-dialog-name.html">` }
 

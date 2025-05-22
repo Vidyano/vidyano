@@ -18,7 +18,7 @@ import { WebComponent } from "components/web-component/web-component"
             value: "attr.columnSpan"
         }
     }
-})
+}, "vi-persistent-object-attribute-config")
 export class PersistentObjectAttributeConfig extends TemplateConfig<Vidyano.PersistentObjectAttribute> {
     private _calculateHeight: (attr: Vidyano.PersistentObjectAttribute) => number;
     private _calculateWidth: (attr: Vidyano.PersistentObjectAttribute) => number;

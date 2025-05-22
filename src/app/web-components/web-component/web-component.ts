@@ -446,8 +446,8 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
         });
     }
 
-    private static _register(element: CustomElementConstructor, info: IWebComponentRegistrationInfo = {}, prefix: string = "vi") {
-        const elementName = `${prefix}-${element.name.toKebabCase()}`;
+    private static _register(element: CustomElementConstructor, info: IWebComponentRegistrationInfo = {}, prefixOrElementName?: string ) {
+        const elementName = prefixOrElementName.includes("-") ? prefixOrElementName : `${prefixOrElementName}-${element.name.toKebabCase()}`;
         WebComponent._updateTemplateProperty(element, elementName);
 
         let baseProperties: IWebComponentProperties = {};
@@ -781,11 +781,25 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
 
     private static abstractRegistrations: { [key: string]: IWebComponentRegistrationInfo; } = {};
 
-    static register(infoOrTarget?: IWebComponentRegistrationInfo, prefix?: string): (obj: any) => void {
+    static register(prefixOrElementName: string): (obj: any) => void;
+    static register(info: IWebComponentRegistrationInfo, prefixOrElementName?: string): (obj: any) => void;
+    static register(): (obj: any) => void;
+    static register(firstArg?: IWebComponentRegistrationInfo | string, secondArg?: string): (obj: any) => void {
+        let registrationInfoFromArgs: IWebComponentRegistrationInfo | undefined;
+        let prefixOrElementNameFromArgs: string | undefined;
+
+        if (typeof firstArg === 'string') {
+            registrationInfoFromArgs = undefined;
+            prefixOrElementNameFromArgs = firstArg;
+        } else {
+            registrationInfoFromArgs = firstArg;
+            prefixOrElementNameFromArgs = secondArg;
+        }
+
         return (target: CustomElementConstructor) => {
             let currentProto = Object.getPrototypeOf(target);
             let info: IWebComponentRegistrationInfo = {};
-    
+
             while (currentProto && currentProto !== WebComponent) {
                 const baseInfo = WebComponent.abstractRegistrations[currentProto.name];
                 if (baseInfo)
@@ -794,7 +808,7 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
                 currentProto = Object.getPrototypeOf(currentProto);
             }
 
-            const targetInfo = <IWebComponentRegistrationInfo>infoOrTarget;
+            const targetInfo = <IWebComponentRegistrationInfo>registrationInfoFromArgs;
             if (targetInfo) {
                 if (targetInfo.properties)
                     info.properties = info.properties ? Vidyano.extend(info.properties, targetInfo.properties) : targetInfo.properties;
@@ -821,7 +835,7 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
                     info.serviceBusObservers = info.serviceBusObservers ? Vidyano.extend(info.serviceBusObservers, targetInfo.serviceBusObservers) : targetInfo.serviceBusObservers;
             }
             
-            return WebComponent._register(target, WebComponent._clone(info), prefix);
+            return WebComponent._register(target, WebComponent._clone(info), prefixOrElementNameFromArgs);
         };
     }
 

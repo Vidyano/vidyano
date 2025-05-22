@@ -17,7 +17,7 @@ import { WebComponent } from "components/web-component/web-component"
     observers: [
         "_hookIronListToScroller(parentScroller, isConnected)"
     ]
-})
+}, "vi-list")
 export class List extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="list.html">` }
 

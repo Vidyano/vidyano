@@ -45,7 +45,7 @@ import { ConfigurableWebComponent } from "components/web-component/web-component
         "tab.parent.isEditing",
         "tab.groups"
     ]
-})
+}, "vi-persistent-object-tab")
 export class PersistentObjectTab extends ConfigurableWebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-tab.html">`; }
 

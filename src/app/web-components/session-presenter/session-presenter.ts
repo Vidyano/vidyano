@@ -15,7 +15,7 @@ import { WebComponent } from "components/web-component/web-component"
     observers: [
         "_stamp(session, isConnected)"
     ]
-})
+}, "vi-session-presenter")
 export class SessionPresenter extends WebComponent {
     static get template() { return Polymer.html`<slot></slot>` }
 

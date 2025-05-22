@@ -41,7 +41,7 @@ import { ConfigurableWebComponent } from "components/web-component/web-component
         "file-dropped": "_onFileDropped",
         "vi:configure": "_configure"
     }
-})
+}, "vi-query-items-presenter")
 export class QueryItemsPresenter extends ConfigurableWebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-items-presenter.html">` }
 

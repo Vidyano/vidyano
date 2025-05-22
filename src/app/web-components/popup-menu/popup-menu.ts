@@ -46,7 +46,7 @@ import { WebComponent } from "components/web-component/web-component"
         "mousemove": "_mousemove",
         "tap": "_stopTap"
     }
-})
+}, "vi-popup-menu")
 export class PopupMenu extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="popup-menu.html">`; }
 

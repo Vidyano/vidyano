@@ -29,7 +29,7 @@ import "components/checkbox/checkbox"
             computed: "_computeShowEditable(editing, sensitive)"
         },
     }    
-})
+}, "vi-persistent-object-attribute-key-value-list")
 export class PersistentObjectAttributeKeyValueList extends PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-key-value-list.html">`; }
 

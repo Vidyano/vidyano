@@ -25,7 +25,7 @@ import { PersistentObjectTab } from "components/persistent-object-tab/persistent
     listeners: {
         "attribute-loaded": "_attributeLoaded"
     }
-})
+}, "vi-persistent-object-tab-presenter")
 export class PersistentObjectTabPresenter extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-tab-presenter.html">`; }
 

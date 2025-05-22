@@ -50,7 +50,7 @@ export interface IItemTapEventArgs {
     observers: [
         "_flush(offsets, visibleRange)"
     ]
-})
+}, "vi-query-grid-row")
 export class QueryGridRow extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-row.html">` }
 

@@ -40,7 +40,7 @@ import { WebComponent } from "components/web-component/web-component"
             notify: true
         }
     }
-})
+}, "vi-masked-input")
 export class MaskedInput extends WebComponent {
     static get template() {  return Polymer.html`<link rel="import" href="masked-input.html">` }
 

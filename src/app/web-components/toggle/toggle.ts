@@ -28,7 +28,7 @@ import { WebComponent } from "components/web-component/web-component"
     keybindings: {
         "space": "_keyToggle"
     }
-})
+}, "vi-toggle")
 export class Toggle extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="toggle.html">`; }
 

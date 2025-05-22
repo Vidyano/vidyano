@@ -93,7 +93,7 @@ resizeObserver = new ResizeObserver(allEntries => {
     observers: [
         "_queueMeasure(column, isConnected)"
     ]
-})
+}, "vi-query-grid-column-header")
 export class QueryGridColumnHeader extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-column-header.html">` }
 

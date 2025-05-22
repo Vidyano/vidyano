@@ -96,7 +96,7 @@ import { ConfigurableWebComponent } from "components/web-component/web-component
     serviceBusObservers: {
         "vi-menu-item:select": "_onServiceBusSelect"
     }
-})
+}, "vi-menu-item")
 export class MenuItem extends ConfigurableWebComponent {
     static get template() { return Polymer.html`<link rel="import" href="menu-item.html">`; }
 

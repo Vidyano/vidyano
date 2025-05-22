@@ -10,7 +10,7 @@ import { ProgramUnitConfig } from "./program-unit-config"
 import { QueryChartConfig } from "./query-chart-config"
 import { QueryConfig } from "./query-config"
 
-@WebComponent.register()
+@WebComponent.register("vi-app-config")
 export class AppConfig extends WebComponent {
     private _nodeObserver: Polymer.FlattenedNodesObserver;
     private _defaultAttributeConfig: PersistentObjectAttributeConfig;

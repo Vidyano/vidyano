@@ -56,7 +56,7 @@ interface IPersistentObjectGroupRow {
         "group.attributes",
         "_onAttributeVisibilityChanged(group.attributes.*.isVisible)"
     ]
-})
+}, "vi-persistent-object-group")
 export class PersistentObjectGroup extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-group.html">`; }
 

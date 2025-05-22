@@ -28,7 +28,7 @@ import { PersistentObjectAttribute } from "components/persistent-object-attribut
     forwardObservers: [
         "attribute.value"
     ]
-})
+}, "vi-persistent-object-attribute-flags-enum-flag")
 export class PersistentObjectAttributeFlagsEnumFlag extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-flags-enum-flag.html">`; }
 

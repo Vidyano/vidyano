@@ -130,7 +130,7 @@ import { WebComponent } from "components/web-component/web-component"
         "mouseleave": "_mouseleave",
         "scroll": "_trapEvent"
     }
-})
+}, "vi-scroller")
 export class Scroller extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="scroller.html">`; }
 

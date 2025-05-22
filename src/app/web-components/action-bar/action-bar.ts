@@ -39,7 +39,7 @@ import { WebComponent } from "components/web-component/web-component"
     forwardObservers: [
         "serviceObject.charts"
     ]
-})
+}, "vi-action-bar")
 export class ActionBar extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="action-bar.html">`; }
 

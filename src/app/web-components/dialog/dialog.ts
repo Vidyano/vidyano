@@ -28,7 +28,7 @@ export interface IDialogOptions {
         "esc": "_esc"
     },
     mediaQueryAttributes: true
-})
+}, "vi-dialog")
 export abstract class Dialog extends WebComponent {
     static dialogTemplate(innerTemplate: HTMLTemplateElement, options?: IDialogOptions) {
         const outerTemplate = Polymer.html`<link rel="import" href="dialog.html">`;

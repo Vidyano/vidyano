@@ -65,7 +65,7 @@ type FlattenedProfilerRequestEntry = {
     observers: [
         "_renderRequestTimeline(selectedRequest, timelineSize, zoom)"
     ]
-})
+}, "vi-profiler")
 export class Profiler extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="profiler.html">`; }
 

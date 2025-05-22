@@ -2,7 +2,7 @@ import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register()
+@WebComponent.register("vi-alert")
 export class Alert extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="alert.html">`; }
 

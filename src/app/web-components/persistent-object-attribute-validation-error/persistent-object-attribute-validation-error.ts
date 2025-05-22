@@ -20,7 +20,7 @@ import { WebComponent } from "components/web-component/web-component"
         "attribute.validationError",
         "attribute.isReadOnly"
     ]
-})
+}, "vi-persistent-object-attribute-validation-error")
 export class PersistentObjectAttributeValidationError extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-validation-error.html">` }
 

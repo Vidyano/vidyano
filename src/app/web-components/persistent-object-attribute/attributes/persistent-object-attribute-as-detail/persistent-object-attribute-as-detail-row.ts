@@ -36,7 +36,7 @@ import { WebComponent } from "components/web-component/web-component"
         "attribute-loaded": "_onAttributeLoaded",
     },
     sensitive: true
-})
+}, "vi-persistent-object-attribute-as-detail-row")
 export class PersistentObjectAttributeAsDetailRow extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-as-detail-row.html">`; }
 

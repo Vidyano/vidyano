@@ -69,7 +69,7 @@ type AuditPersistentObject = Vidyano.PersistentObject & {
         "_syncVerticalScrollOffset(verticalScrollOffset, persistentObject, isConnected)",
         "_syncFilter(filter, persistentObject, isConnected)"
     ]
-})
+}, "vi-audit")
 export class Audit extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="audit.html">`; }
 

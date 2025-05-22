@@ -24,7 +24,7 @@ import "components/checkbox/checkbox"
             computed: "_computeShowEditable(editing, sensitive)"
         },
     }
-})
+}, "vi-persistent-object-attribute-drop-down")
 export class PersistentObjectAttributeDropDown extends PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-drop-down.html">`; }
 

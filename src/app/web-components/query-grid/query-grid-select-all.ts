@@ -30,7 +30,7 @@ import { WebComponent } from "components/web-component/web-component"
     listeners: {
         "tap": "_toggle"
     }
-})
+}, "vi-query-grid-select-all")
 export class QueryGridSelectAll extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-select-all.html">` }
 

@@ -27,7 +27,7 @@ import { PersistentObjectAttribute } from "components/persistent-object-attribut
             readOnly: true
         }
     }    
-})
+}, "vi-persistent-object-attribute-numeric")
 export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-numeric.html">`; }
 

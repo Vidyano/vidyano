@@ -26,7 +26,7 @@ export interface ITranslatedString {
             computed: "_computeCanShowDialog(strings, multiline)"
         }
     }
-})
+}, "vi-persistent-object-attribute-translated-string")
 export class PersistentObjectAttributeTranslatedString extends PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-translated-string.html">`; }
 

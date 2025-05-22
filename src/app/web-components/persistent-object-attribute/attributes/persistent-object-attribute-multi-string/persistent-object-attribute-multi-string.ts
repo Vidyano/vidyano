@@ -7,7 +7,7 @@ import type { Tags } from "components/tags/tags"
 import "components/tags/tags"
 import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register()
+@WebComponent.register("vi-persistent-object-attribute-multi-string-items")
 export class PersistentObjectAttributeMultiStringItems extends Sortable {
     protected _dragEnd() {
         this.fire("reorder-strings", {}, { bubbles: true });
@@ -58,7 +58,7 @@ export class PersistentObjectAttributeMultiStringItems extends Sortable {
     forwardObservers: [
         "attribute.isReadOnly"
     ]
-})
+}, "vi-persistent-object-attribute-multi-string")
 export class PersistentObjectAttributeMultiString extends PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-multi-string.html">`; }
 

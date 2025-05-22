@@ -49,7 +49,7 @@ import { WebComponent } from "components/web-component/web-component"
         "attribute.validationError"
     ],
     sensitive: true
-})
+}, "vi-persistent-object-attribute-edit")
 export class PersistentObjectAttributeEdit extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-edit.html">`; }
 

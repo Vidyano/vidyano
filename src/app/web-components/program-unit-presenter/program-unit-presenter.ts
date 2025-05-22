@@ -22,7 +22,7 @@ interface IProgramUnitPresenterRouteParameters {
     listeners: {
         "app-route-activate": "_activate"
     }
-})
+}, "vi-program-unit-presenter")
 export class ProgramUnitPresenter extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="program-unit-presenter.html">`; }
 

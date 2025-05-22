@@ -5,7 +5,7 @@ import { WebComponent } from "components/web-component/web-component"
         key: String,
         value: String
     }
-})
+}, "vi-app-setting")
 export class AppSetting extends WebComponent {
     key: string;
     value: string;

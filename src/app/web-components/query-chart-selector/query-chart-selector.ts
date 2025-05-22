@@ -15,7 +15,7 @@ import { WebComponent } from "components/web-component/web-component"
         "query.charts",
         "query.currentChart"
     ]
-})
+}, "vi-query-chart-selector")
 export class QueryChartSelector extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-chart-selector.html">`; }
 

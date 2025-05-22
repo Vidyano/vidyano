@@ -187,7 +187,7 @@ const PHYSICAL_UPPER_LIMIT = 100000;
     serviceBusObservers: {
         "app-route:deactivate": "_onAppRouteDeactivate"
     }
-})
+}, "vi-query-grid")
 export class QueryGrid extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid.html">` }
 
@@ -705,7 +705,7 @@ export class QueryGrid extends WebComponent {
     }
 }
 
-@WebComponent.register()
+@WebComponent.register("vi-query-grid-sortable")
 class QueryGridSortable extends Sortable {
     static get template() { return Polymer.html`<style>:host { display: block; }</style><slot></slot>` }
 }

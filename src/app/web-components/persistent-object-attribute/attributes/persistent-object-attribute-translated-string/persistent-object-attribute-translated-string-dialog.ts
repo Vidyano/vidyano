@@ -17,7 +17,7 @@ import type { ITranslatedString } from "./persistent-object-attribute-translated
     keybindings: {
         "ctrl+s": "_keyboardOk"
     }
-})
+}, "vi-persistent-object-attribute-translated-string-dialog")
 export class PersistentObjectAttributeTranslatedStringDialog extends Dialog {
     static get template() { return Dialog.dialogTemplate(Polymer.html`<link rel="import" href="persistent-object-attribute-translated-string-dialog.html">`) }
 

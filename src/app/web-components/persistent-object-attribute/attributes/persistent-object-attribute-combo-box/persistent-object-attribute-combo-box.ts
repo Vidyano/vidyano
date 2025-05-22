@@ -21,7 +21,7 @@ import "components/select/select"
             computed: "_computeCanAdd(newValue, comboBoxOptions)"
         }
     }
-})
+}, "vi-persistent-object-attribute-combo-box")
 export class PersistentObjectAttributeComboBox extends PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-combo-box.html">`; }
 

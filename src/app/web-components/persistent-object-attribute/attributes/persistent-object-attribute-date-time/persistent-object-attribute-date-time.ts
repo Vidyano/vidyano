@@ -68,7 +68,7 @@ import '../../../date-picker/date-picker.js'
     forwardObservers: [
         "attribute.typeHints"
     ]
-})
+}, "vi-persistent-object-attribute-date-time")
 export class PersistentObjectAttributeDateTime extends PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-date-time.html">`; }
 

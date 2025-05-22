@@ -14,7 +14,7 @@ import { WebComponent } from "components/web-component/web-component"
             reflectToAttribute: true
         }
     }
-})
+}, "vi-query-grid-configure-dialog-column")
 export class QueryGridConfigureDialogColumn extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-configure-dialog-column.html">`; }
 

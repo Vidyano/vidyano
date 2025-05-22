@@ -50,7 +50,7 @@ const findNewLine = /\r?\n|\r/g;
         "serviceObject.notificationType",
         "serviceObject.notificationDuration"
     ]
-})
+}, "vi-notification")
 export class Notification extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="notification.html">` }
 

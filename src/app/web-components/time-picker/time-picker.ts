@@ -24,7 +24,7 @@ import "components/icon/icon"
             readOnly: true
         }
     }
-})
+}, "vi-time-picker")
 export class TimePicker extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="time-picker.html">`; }
 

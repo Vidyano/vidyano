@@ -59,7 +59,7 @@ import { PopupMenu } from "components/popup-menu/popup-menu"
     forwardObservers: [
         "service.profile"
     ]
-})
+}, "vi-app")
 export class App extends AppBase {
     static get template() {
         const baseTemplate = AppBase.template as HTMLTemplateElement;

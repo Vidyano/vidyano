@@ -24,7 +24,7 @@ export type OverflowType = "label" | "icon" | "icon-label";
             value: "label"
         }
     }
-})
+}, "vi-overflow")
 export class Overflow extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="overflow.html">` }
 

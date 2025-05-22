@@ -47,7 +47,7 @@ import { PersistentObjectAttribute } from "components/persistent-object-attribut
             computed: "_computeLinkTitle(attribute.displayValue, sensitive)"
         }
     },
-})
+}, "vi-persistent-object-attribute-string")
 export class PersistentObjectAttributeString extends PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-string.html">`; }
 

@@ -8,7 +8,7 @@ import { WebComponent } from "components/web-component/web-component"
     properties: {
         query: Object
     }
-})
+}, "vi-query-grid-grouping")
 export class QueryGridGrouping extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-grouping.html">` }
 

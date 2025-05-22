@@ -41,7 +41,7 @@ import { WebComponent } from "components/web-component/web-component"
         "query.label",
         "query.filters.currentFilter.name"
     ]
-})
+}, "vi-persistent-object-tab-bar-item")
 export class PersistentObjectTabBarItem extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-tab-bar-item.html">`; }
 

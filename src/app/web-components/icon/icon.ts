@@ -23,7 +23,7 @@ import * as IconRegister from "./icon-register"
     observers: [
         "_load(source, isConnected)"
     ]
-})
+}, "vi-icon")
 export class Icon extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="icon.html">`; }
 

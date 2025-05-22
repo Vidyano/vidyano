@@ -39,7 +39,7 @@ DOMPurify.addHook('uponSanitizeAttribute', (node, data) => {
     observers: [
         "_markdownChanged(markdown, breaks, gfm, addTags, forbidTags)"
     ]
-})
+}, "vi-marked")
 export class Marked extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="marked.html">` }
 

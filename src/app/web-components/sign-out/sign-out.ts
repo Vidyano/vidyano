@@ -7,7 +7,7 @@ import { WebComponent } from "components/web-component/web-component"
     listeners: {
         "app-route-activate": "_activate"
     }
-})
+}, "vi-sign-out")
 export class SignOut extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="sign-out.html">`; }
 

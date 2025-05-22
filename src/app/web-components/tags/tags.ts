@@ -17,7 +17,7 @@ import { WebComponent } from "components/web-component/web-component"
             value: true
         }
     }
-})
+}, "vi-tags")
 export class Tags extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="tags.html">` }
 

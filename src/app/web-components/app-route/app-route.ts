@@ -41,7 +41,7 @@ export interface IAppRouteDeactivateArgs {
     listeners: {
         "title-changed": "_titleChanged"
     }
-})
+}, "vi-app-route")
 export class AppRoute extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="app-route.html">`; }
 

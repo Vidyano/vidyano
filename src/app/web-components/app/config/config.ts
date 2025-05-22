@@ -11,7 +11,7 @@ import { WebComponent } from "components/web-component/web-component"
             reflectToAttribute: true
         }
     }
-})
+}, "vi-config")
 export class Config extends WebComponent {
     key: string;
 

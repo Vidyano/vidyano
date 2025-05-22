@@ -10,7 +10,7 @@ import { WebComponent } from "components/web-component/web-component"
         title: String,
         message: String
     }
-})
+}, "vi-error")
 export class Error extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="error.html">`; }
 }

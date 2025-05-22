@@ -36,7 +36,7 @@ import { WebComponent } from "components/web-component/web-component"
         "query.labelWithTotalItems",
         "query.filters.currentFilter.name"
     ]
-})
+}, "vi-query")
 export class Query extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query.html">`; }
 

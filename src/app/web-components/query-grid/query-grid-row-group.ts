@@ -21,7 +21,7 @@ import { WebComponent } from "components/web-component/web-component"
     listeners: {
         "tap": "_tap"
     }
-})
+}, "vi-query-grid-row-group")
 export class QueryGridRowGroup extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-row-group.html">` }
 

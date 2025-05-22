@@ -53,7 +53,7 @@ resizeObserver = new ResizeObserver(entries => {
             readOnly: true
         }
     }
-})
+}, "vi-size-tracker")
 export class SizeTracker extends WebComponent {
     private _resizeLast: ISize;
     private _isActive: boolean;

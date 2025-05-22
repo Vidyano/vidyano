@@ -14,7 +14,7 @@ import { Config } from "./config"
             reflectToAttribute: true
         }
     }
-})
+}, "vi-template-config")
 export abstract class TemplateConfig<T> extends WebComponent {
     private __template: HTMLTemplateElement;
     readonly hasTemplate: boolean; private _setHasTemplate: (val: boolean) => void;

@@ -12,7 +12,7 @@ import { WebComponent } from "components/web-component/web-component"
         }
     },
     mediaQueryAttributes: true
-})
+}, "vi-retry-action-dialog")
 export class RetryActionDialog extends Dialog {
     static get template() { return Dialog.dialogTemplate(Polymer.html`<link rel="import" href="retry-action-dialog.html">`); }
 

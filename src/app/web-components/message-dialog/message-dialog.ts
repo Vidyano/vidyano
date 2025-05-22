@@ -38,7 +38,7 @@ export interface IMessageDialogOptions {
         "right": "_keyboardNextAction",
         "left": "_keyboardPreviousAction"
     }
-})
+}, "vi-message-dialog")
 export class MessageDialog extends Dialog {
     static get template() { return Dialog.dialogTemplate(Polymer.html`<link rel="import" href="message-dialog.html">`) }
 

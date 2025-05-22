@@ -42,7 +42,7 @@ import { WebComponent } from "components/web-component/web-component"
             reflectToAttribute: true
         }
     }
-})
+}, "vi-query-config")
 export class QueryConfig extends TemplateConfig<Vidyano.Query> {
     name: string;
     id: string;

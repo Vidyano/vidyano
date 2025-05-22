@@ -22,7 +22,7 @@ import { Path } from "libs/pathjs/pathjs"
         }
     },
     sensitive: true
-})
+}, "vi-query-grid-cell-common-mark")
 export class QueryGridCellCommonMark extends QueryGridCellDefault {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-cell-common-mark.html">` }
 

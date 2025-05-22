@@ -7,7 +7,7 @@
             reflectToAttribute: true
         }
     }
-})
+}, "vi-connected-notifier")
 export class ConnectedNotifier extends WebComponent {
     private _wasAttached;
     oneTime: boolean;

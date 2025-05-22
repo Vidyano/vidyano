@@ -59,7 +59,7 @@ import "components/select/select"
     observers: [
         "_update(attribute.isReadOnly, sensitive, isConnected)"
     ]
-})
+}, "vi-persistent-object-attribute-reference")
 export class PersistentObjectAttributeReference extends PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-reference.html">`; }
 

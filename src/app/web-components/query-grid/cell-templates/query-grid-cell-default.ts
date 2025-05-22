@@ -20,7 +20,7 @@ import { WebComponent } from "components/web-component/web-component"
         }
     },
     sensitive: true
-})
+}, "vi-query-grid-cell-default")
 export class QueryGridCellDefault extends QueryGridCell {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-cell-default.html">` }
 

@@ -20,7 +20,7 @@ import { PersistentObjectAttribute } from "components/persistent-object-attribut
             computed: "_computeCanBrowseReference(readOnly)",
         }
     }
-})
+}, "vi-persistent-object-attribute-user")
 export class PersistentObjectAttributeUser extends PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-user.html">`; }
 

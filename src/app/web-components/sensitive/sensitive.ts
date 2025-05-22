@@ -9,7 +9,7 @@ import { WebComponent } from "components/web-component/web-component"
         }
     },
     sensitive: true
-})
+}, "vi-sensitive")
 export class Sensitive extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="sensitive.html">` }
 }

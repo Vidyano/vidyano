@@ -20,7 +20,7 @@ import { PersistentObjectAttribute } from "components/persistent-object-attribut
             computed: "_computeIsCheckbox(attribute, defaultInputtype)"
         }
     }
-})
+}, "vi-persistent-object-attribute-boolean")
 export class PersistentObjectAttributeBoolean extends PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-boolean.html">`; }
 

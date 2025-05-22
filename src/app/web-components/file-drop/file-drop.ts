@@ -21,7 +21,7 @@ export interface IFileDropDetails {
         "dragleave": "_dragLeave",
         "drop": "_drop"
     }
-})
+}, "vi-file-drop")
 export class FileDrop extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="file-drop.html">` }
 

@@ -71,7 +71,7 @@ export interface IQueryGridColumnFilterDistinct {
         "queryColumn.distincts",
         "queryColumn.query.isFiltering"
     ]
-})
+}, "vi-query-grid-column-filter")
 export class QueryGridColumnFilter extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-column-filter.html">` }
 

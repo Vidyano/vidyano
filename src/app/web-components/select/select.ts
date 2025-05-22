@@ -117,7 +117,7 @@ export interface ISelectItem {
     observers: [
         "_computeSuggestionFeedback(inputValue, suggestion, filtering)"
     ]
-})
+}, "vi-select")
 export class Select extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="select.html">` }
 
@@ -494,7 +494,7 @@ export class Select extends WebComponent {
     listeners: {
         "tap": "_onTap"
     }
-})
+}, "vi-select-option-item")
 export class SelectOptionItem extends WebComponent {
     item: ISelectItem;
 

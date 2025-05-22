@@ -15,7 +15,7 @@ import { WebComponent } from "components/web-component/web-component"
     forwardObservers: [
         "persistentObject.isBusy"
     ]
-})
+}, "vi-query-grid-filter-dialog")
 export class QueryGridFilterDialog extends Dialog {
     static get template() { return Dialog.dialogTemplate(Polymer.html`<link rel="import" href="query-grid-filter-dialog.html">`) }
 

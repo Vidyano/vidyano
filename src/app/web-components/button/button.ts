@@ -38,7 +38,7 @@ import { WebComponent } from "components/web-component/web-component"
     listeners: {
         "tap": "_tap"
     }
-})
+}, "vi-button")
 export class Button extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="button.html">`; }
 

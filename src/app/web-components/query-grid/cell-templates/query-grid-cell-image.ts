@@ -11,7 +11,7 @@ import { WebComponent } from "components/web-component/web-component"
         }
     },
     sensitive: true
-})
+}, "vi-query-grid-cell-image")
 export class QueryGridCellImage extends QueryGridCell {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-cell-image.html">` }
 

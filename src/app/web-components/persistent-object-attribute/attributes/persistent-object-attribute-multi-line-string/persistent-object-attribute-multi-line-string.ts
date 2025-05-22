@@ -7,7 +7,7 @@ import { PersistentObjectAttribute } from "components/persistent-object-attribut
     properties: {
         maxlength: Number
     }
-})
+}, "vi-persistent-object-attribute-multi-line-string")
 export class PersistentObjectAttributeMultiLineString extends PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-multi-line-string.html">`; }
 

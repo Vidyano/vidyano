@@ -11,7 +11,7 @@ import { WebComponent } from "components/web-component/web-component"
     observers: [
         "_updateColor(color, isConnected)"
     ]
-})
+}, "vi-spinner")
 export class Spinner extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="spinner.html">` }
 

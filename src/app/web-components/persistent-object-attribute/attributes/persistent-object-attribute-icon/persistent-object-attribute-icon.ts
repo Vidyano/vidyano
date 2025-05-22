@@ -12,7 +12,7 @@ import { PersistentObjectAttribute } from "components/persistent-object-attribut
             readOnly: true
         }
     }
-})
+}, "vi-persistent-object-attribute-icon")
 export class PersistentObjectAttributeIcon extends PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-icon.html">`; }
 

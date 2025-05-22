@@ -15,7 +15,7 @@ import { PersistentObjectAttribute } from "components/persistent-object-attribut
             computed: "_computeFileName(value)"
         }
     }
-})
+}, "vi-persistent-object-attribute-binary-file")
 export class PersistentObjectAttributeBinaryFile extends PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-binary-file.html">`; }
 

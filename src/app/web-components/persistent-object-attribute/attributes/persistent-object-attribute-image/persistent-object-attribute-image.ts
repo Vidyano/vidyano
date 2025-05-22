@@ -19,7 +19,7 @@ import { PersistentObjectAttributeImageDialog } from "./persistent-object-attrib
             computed: "_computeCanOpen(hasValue, sensitive)"
         }
     }
-})
+}, "vi-persistent-object-attribute-image")
 export class PersistentObjectAttributeImage extends PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-image.html">`; }
 

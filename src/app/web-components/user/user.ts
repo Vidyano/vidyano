@@ -49,7 +49,7 @@ import { WebComponent } from "components/web-component/web-component"
         "_signedInChanged(service.isUsingDefaultCredentials)"
     ],
     sensitive: true
-})
+}, "vi-user")
 export class User extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="user.html">`; }
 

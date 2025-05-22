@@ -6,7 +6,7 @@ import { WebComponent } from "components/web-component/web-component"
     properties: {
         type: String
     }
-})
+}, "vi-query-chart-config")
 export class QueryChartConfig extends TemplateConfig<Vidyano.QueryChart> {
     type: string;
 }

@@ -20,7 +20,7 @@ import { WebComponent } from "components/web-component/web-component"
             readOnly: true
         }
     }
-})
+}, "vi-app-route-presenter")
 export class AppRoutePresenter extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="app-route-presenter.html">`; }
 

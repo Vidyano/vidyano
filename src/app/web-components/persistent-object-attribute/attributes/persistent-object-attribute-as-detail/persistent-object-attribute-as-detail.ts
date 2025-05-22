@@ -63,7 +63,7 @@ import { PersistentObjectAttribute } from "components/persistent-object-attribut
     forwardObservers: [
         "attribute.objects.*.isDeleted"
     ]
-})
+}, "vi-persistent-object-attribute-as-detail")
 export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-as-detail.html">`; }
 

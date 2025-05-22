@@ -67,7 +67,7 @@ import "components/user/user"
     listeners: {
         "reset-filter": "_resetFilter"
     }
-})
+}, "vi-menu")
 export class Menu extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="menu.html">`; }
 

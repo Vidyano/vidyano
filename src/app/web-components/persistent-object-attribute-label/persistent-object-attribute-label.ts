@@ -54,7 +54,7 @@ import { WebComponent } from "components/web-component/web-component"
         "attribute.parent.isBulkEdit",
         "attribute.label"
     ]
-})
+}, "vi-persistent-object-attribute-label")
 export class PersistentObjectAttributeLabel extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-label.html">`; }
 

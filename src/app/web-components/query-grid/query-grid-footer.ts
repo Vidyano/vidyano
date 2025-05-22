@@ -8,7 +8,7 @@ import { WebComponent } from "components/web-component/web-component"
         item: Object,
         columns: Array
     }
-})
+}, "vi-query-grid-footer")
 export class QueryGridFooter extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-footer.html">` }
 

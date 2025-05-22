@@ -22,7 +22,7 @@ import * as Polymer from "polymer"
             reflectToAttribute: true
         }
     }
-})
+}, "vi-input-search")
 export class InputSearch extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="input-search.html">`; }
 

@@ -13,7 +13,7 @@ import { WebComponent } from "components/web-component/web-component"
             reflectToAttribute: true
         }
     }
-})
+}, "vi-persistent-object-tab-config")
 export class PersistentObjectTabConfig extends TemplateConfig<Vidyano.PersistentObjectTab> {
     id: string;
     name: string;

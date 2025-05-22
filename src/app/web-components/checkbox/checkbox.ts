@@ -36,7 +36,7 @@ import { WebComponent } from "components/web-component/web-component"
     keybindings: {
         "space": "_keyToggle"
     }
-})
+}, "vi-checkbox")
 export class Checkbox extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="checkbox.html">`; }
 

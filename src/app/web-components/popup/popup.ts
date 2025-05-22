@@ -105,7 +105,7 @@ const openPopups: Popup[] = [];
     listeners: {
         "tap": "_tap"
     }
-})
+}, "vi-popup")
 export class Popup extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="popup.html">` }
 

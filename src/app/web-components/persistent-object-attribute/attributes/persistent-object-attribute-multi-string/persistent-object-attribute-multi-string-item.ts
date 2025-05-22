@@ -26,7 +26,7 @@ import { WebComponent } from "components/web-component/web-component"
         placeholder: String,
         sensitive: Boolean
     }
-})
+}, "vi-persistent-object-attribute-multi-string-item")
 export class PersistentObjectAttributeMultiStringItem extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-multi-string-item.html">`; }
 

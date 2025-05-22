@@ -69,7 +69,7 @@ export interface IDatePickerCell {
     listeners: {
         "tap": "_catchTap"
     }
-})
+}, "vi-date-picker")
 export class DatePicker extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="date-picker.html">`; }
 

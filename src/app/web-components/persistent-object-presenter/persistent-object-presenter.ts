@@ -66,7 +66,7 @@ interface IPersistentObjectPresenterRouteParameters {
         "esc": "_cancelSave"
     },
     sensitive: true
-})
+}, "vi-persistent-object-presenter")
 export class PersistentObjectPresenter extends ConfigurableWebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-presenter.html">`; }
 

@@ -20,7 +20,7 @@ import { WebComponent, IObserveChainDisposer } from "components/web-component/we
     observers: [
         "_hookObservers(isConnected, tabs)"
     ]
-})
+}, "vi-persistent-object-tab-bar")
 export class PersistentObjectTabBar extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-tab-bar.html">`; }
 

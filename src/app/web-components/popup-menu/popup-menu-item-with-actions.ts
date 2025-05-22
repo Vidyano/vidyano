@@ -15,7 +15,7 @@ import { WebComponent } from "components/web-component/web-component"
     listeners: {
         "tap": "_onTap"
     }
-})
+}, "vi-popup-menu-item-with-actions")
 export class PopupMenuItemWithActions extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="popup-menu-item-with-actions.html">`; }
 

@@ -101,7 +101,7 @@ import { ConfigurableWebComponent } from "components/web-component/web-component
         "action.isVisible",
         "action.options"
     ]
-})
+}, "vi-action-button")
 export class ActionButton extends ConfigurableWebComponent {
     static get template() { return Polymer.html`<link rel="import" href="action-button.html">`; }
 

@@ -17,7 +17,7 @@ import { WebComponent } from "components/web-component/web-component"
             reflectToAttribute: true
         }
     }
-})
+}, "vi-persistent-object-config")
 export class PersistentObjectConfig extends TemplateConfig<Vidyano.PersistentObject> {
     id: string;
     type: string;

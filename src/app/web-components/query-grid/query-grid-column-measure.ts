@@ -13,7 +13,7 @@ import { WebComponent } from "components/web-component/web-component"
     observers: [
         "_report(grid, column, size)"
     ]
-})
+}, "vi-query-grid-column-measure")
 export class QueryGridColumnMeasure extends WebComponent {
     private _reported: boolean;
 
