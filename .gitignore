@@ -351,6 +351,7 @@ MigrationBackup/
 dev/wwwroot/**/app.*
 dist/**/*.js
 dist/**/*.d.ts
+dist/**/*.tgz
 rollup
 
 src/app/index.js

@@ -8,7 +8,7 @@ if (!version) {
     process.exit(1);
 }
 
-const subPackageDirs = ["vidyano", "vidyano-core"];
+const subPackageDirs = ["vidyano", "core"];
 const distDir = "dist";
 const rootDir = ".";
 

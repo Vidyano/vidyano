@@ -86,7 +86,7 @@ export default
 			}),
 			...productionPlugins,
 		],
-		output: [ { file: "dist/vidyano-core/index.js", format: "es" }],
+		output: [ { file: "dist/core/index.js", format: "es" }],
 		watch: {
 			chokidar: {
 			  usePolling: true,
@@ -111,6 +111,6 @@ export default
 				preventAssignment: true
 			})
 		],
-		output: [ { file: "dist/vidyano-core/index.d.ts", format: "es" }],
+		output: [ { file: "dist/core/index.d.ts", format: "es" }],
 	} : null,
 ].filter(Boolean);
