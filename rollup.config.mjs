@@ -23,7 +23,10 @@ import terser from '@rollup/plugin-terser';
 
 const productionPlugins = [
 	forRelease ? terser({
+		mangle: false,
+		compress: false,
 		format: {
+			beautify: false,
 			comments: false,
 		},
 	}) : null,
