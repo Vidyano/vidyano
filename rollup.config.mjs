@@ -21,6 +21,14 @@ import { dts } from "rollup-plugin-dts";
 import replace from "@rollup/plugin-replace";
 import terser from '@rollup/plugin-terser';
 
+const productionPlugins = [
+	forRelease ? terser({
+		format: {
+			comments: false,
+		},
+	}) : null,
+];
+
 export default 
 [
 	{
@@ -35,18 +43,9 @@ export default
 				"process.env.NODE_ENV": "'production'",
 				preventAssignment: true
 			}),
-			forRelease ? terser({
-				mangle: {
-					keep_classnames: true,
-				},
-  				compress: false,
-  				format: {
-					beautify: false,
-					comments: false,
-  				},
-			}) : null,
+			...productionPlugins,
 		],
-		output: [ { file: "dev/wwwroot/app.js" }],
+		output: [ { file: "dev/wwwroot/app.js", format: "es" }, { file: "dist/vidyano/index.js", format: "es" }],
 		watch: {
 			chokidar: {
 			  usePolling: true,
@@ -71,7 +70,7 @@ export default
 				preventAssignment: true
 			})
 		],
-		output: [ { file: "dev/wwwroot/app.d.ts", format: "es" }],
+		output: [ { file: "dev/wwwroot/app.d.ts", format: "es" }, { file: "dist/vidyano/index.d.ts", format: "es" }],
 	} : null,
 	{
 		input: 'src/vidyano/index.js',
@@ -84,9 +83,10 @@ export default
 				"vidyano-latest-version": pjson.version,
 				"process.env.NODE_ENV": "'production'",
 				preventAssignment: true
-			})
+			}),
+			...productionPlugins,
 		],
-		output: [ { file: "dist/vidyano.js" }],
+		output: [ { file: "dist/vidyano-core/index.js", format: "es" }],
 		watch: {
 			chokidar: {
 			  usePolling: true,
@@ -111,6 +111,6 @@ export default
 				preventAssignment: true
 			})
 		],
-		output: [ { file: "dist/vidyano.d.ts", format: "es" }],
+		output: [ { file: "dist/vidyano-core/index.d.ts", format: "es" }],
 	} : null,
 ].filter(Boolean);
