@@ -1,0 +1,17 @@
+{
+    "name": "vidyano",
+    "version": "1.0.0",
+    "description": "Use @vidyano/vidyano instead.",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Vidyano/vidyano.git"
+    },
+    "keywords": [
+        "vidyano"
+    ],
+    "homepage": "https://vidyano.com",
+    "license": "MIT",
+    "publishConfig": {
+        "access": "public"
+    }
+}
