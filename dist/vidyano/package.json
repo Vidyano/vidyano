@@ -12,6 +12,7 @@
     "type": "git",
     "url": "https://github.com/Vidyano/vidyano.git"
   },
+  "homepage": "https://vidyano.com",
   "license": "MIT",
   "publishConfig": {
     "access": "public"

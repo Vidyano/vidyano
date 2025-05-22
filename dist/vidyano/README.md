@@ -13,4 +13,3 @@ yarn add @vidyano/vidyano
 ```
 
 **Visit [vidyano.com](https://vidyano.com) for more information about the platform.**
-**Explore the source code on [GitHub](https://github.com/vidyano/vidyano).**
