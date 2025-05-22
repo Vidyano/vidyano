@@ -82,7 +82,7 @@ function execCommand(command, options) { // Modified to accept options
             await bumpVersion(packageJsonPath, version);
         }
 
-        await execCommand("npx sass src:src -q");
+        await execCommand("npx sass --no-source-map src:src -q");
 
         await execCommand("tsc --project tsconfig.es2020.json");
         await execCommand("npx rollup -c --environment NODE_ENV:production --bundleConfigAsCjs");

@@ -15,7 +15,7 @@
         {
             "type": "shell",
             "label": "sass: watch",
-            "command": "npx sass --watch src:src --poll",
+            "command": "npx sass --watch --no-source-map src:src --poll",
             "group": "build",
             "isBackground": true,
             "problemMatcher": [
