@@ -1,6 +1,3 @@
-import * as BigNumber from "bignumber.js";
-export { BigNumber };
-
 export { Path } from "./libs/pathjs/pathjs";
 export * as Polymer from "./libs/polymer/polymer";
 
@@ -141,3 +138,6 @@ export * from "./web-components/time-picker/time-picker"
 export * from "./web-components/toggle/toggle"
 export * from "./web-components/user/user"
 export * from "./web-components/utils/keyboard"
+
+import * as BigNumber from "bignumber.js";
+export { BigNumber };

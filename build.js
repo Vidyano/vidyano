@@ -38,11 +38,11 @@ async function bumpVersion(filePath, newVersion) {
     await fs.writeFile(filePath, JSON.stringify(packageData, null, 2) + "\n");
 }
 
-function execCommand(command, options) { // Modified to accept options
+function execCommand(command, options) {
     return new Promise((resolve, reject) => {
         const cwdInfo = options && options.cwd ? ` in ${options.cwd}` : '';
         console.log(`Executing: ${command}${cwdInfo}`);
-        const childProcess = exec(command, options); // Pass options to exec
+        const childProcess = exec(command, options);
 
         childProcess.stdout.pipe(process.stdout);
         childProcess.stderr.pipe(process.stderr);
@@ -90,6 +90,7 @@ function execCommand(command, options) { // Modified to accept options
         const vidyanoDistPath = path.join(distDir, "vidyano");
         try {
             await fs.rename(path.join(vidyanoDistPath, `index.js`), path.join(vidyanoDistPath, `index.es2020.js`));
+            await fs.rename(path.join(vidyanoDistPath, `index.min.js`), path.join(vidyanoDistPath, `index.es2020.min.js`));
             await fs.rename(path.join(vidyanoDistPath, `index.d.ts`), path.join(vidyanoDistPath, `index.es2020.d.ts`));
         } catch(err) {
             throw new Error(`Failed to rename ES2020 output files in ${vidyanoDistPath}: ${err.message}`);
@@ -97,13 +98,6 @@ function execCommand(command, options) { // Modified to accept options
 
         await execCommand("tsc --project tsconfig.json");
         await execCommand("npx rollup -c --environment NODE_ENV:production --bundleConfigAsCjs");
-
-        console.info("--- Running npm pack in dist subdirectories ---");
-        for (const subDir of subPackageDirs) {
-            const packageDistPath = path.join(distDir, subDir);
-            await execCommand("npm pack", { cwd: packageDistPath });
-            console.info(`Successfully packed ${packageDistPath}`);
-        }
 
         console.info("Build completed successfully!");
 

@@ -348,7 +348,7 @@ healthchecksdb
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
 
-dev/wwwroot/**/app.*
+dev/wwwroot/**/index.*
 dist/**/*.js
 dist/**/*.d.ts
 dist/**/*.tgz
