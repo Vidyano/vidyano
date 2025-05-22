@@ -9,30 +9,42 @@
                 "$tsc-watch"
             ],
             "group": "build",
-            "label": "ts-web-components"
+            "label": "typescript: watch",
+            "isBackground": true
+        },
+        {
+            "type": "shell",
+            "label": "sass: watch",
+            "command": "npx sass --watch src:src --poll",
+            "group": "build",
+            "isBackground": true,
+            "problemMatcher": [
+                {
+                    "owner": "sass-watch",
+                    "fileLocation": "relative",
+                    "pattern": {
+                        "regexp": "^(Error|Warn|Deprecation Warning):\\s*(.*)$",
+                        "message": 2
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": "^Sass is watching for changes",
+                        "endsPattern": "^(Sass is watching for changes|Compiled .+ to .+)"
+                    }
+                }
+            ]
         },
         {
             "type": "npm",
             "script": "dev",
             "group": "build",
             "problemMatcher": [],
-            "label": "npm: watch",
+            "label": "rollup: watch",
             "detail": "rollup -c -w",
-            "dependsOn":["ts-web-components"]
-        },
-        {
-            "type": "npm",
-            "script": "build",
-            "group": "build",
-            "problemMatcher": [],
-            "label": "npm: release",
-            "detail": "rollup -c",
-            "dependsOn":["ts-web-components"],
-            "options": {
-                "env": {
-                    "NODE_ENV": "production"
-                }
-            }
+            "dependsOn":[
+                "typescript: watch",
+                "sass: watch"
+            ]
         }
     ]
 }
