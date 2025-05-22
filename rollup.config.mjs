@@ -24,7 +24,7 @@ import terser from '@rollup/plugin-terser';
 export default 
 [
 	{
-		input: './src/app/index.ts',
+		input: './src/app/index.js',
 		external: ['String', "__decorate"],
 		plugins: [
 			alias({ entries }),
@@ -50,7 +50,7 @@ export default
 		watch: {
 			chokidar: {
 			  usePolling: true,
-			  interval: 5000
+			  interval: 500
 			}
 		}, onwarn(warning, warn) {
 			if (warning.code === 'THIS_IS_UNDEFINED')
@@ -60,7 +60,7 @@ export default
 		},
 	},
 	forRelease ? {
-		input: './src/app/index.ts',
+		input: './src/app/index.js',
 		external: ["tslib"],
 		plugins: [
 			alias({ entries }),
@@ -74,7 +74,7 @@ export default
 		output: [ { file: "dev/wwwroot/app.d.ts", format: "es" }],
 	} : null,
 	{
-		input: 'src/vidyano/index.ts',
+		input: 'src/vidyano/index.js',
 		external: ['String', "__decorate"],
 		plugins: [
     		alias({ entries }),
@@ -90,7 +90,7 @@ export default
 		watch: {
 			chokidar: {
 			  usePolling: true,
-			  interval: 5000
+			  interval: 500
 			}
 		}, onwarn(warning, warn) {
 			if (warning.code === 'THIS_IS_UNDEFINED')
@@ -100,7 +100,7 @@ export default
 		}
 	},
 	forRelease ? {
-		input: 'src/vidyano/index.ts',
+		input: 'src/vidyano/index.js',
 		external: ["tslib"],
 		plugins: [
 			alias({ entries }),

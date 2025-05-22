@@ -22,8 +22,9 @@ export default function vulcanize() {
     return {
         name: 'vulcanize',
         async load(jsInput) {
-            const index = jsInput.indexOf("web-components");
+            const index = jsInput.indexOf("src");
             if (index >= 0) {
+                this.addWatchFile(jsInput);
                 let js = (await fs.readFile(jsInput)).toString();
 
                 return await replaceAsync(js, htmlLink, async (_, href) => {
@@ -45,7 +46,7 @@ export default function vulcanize() {
             return null;
         },
         async transform(code, id) {
-            const index = id.indexOf("web-components");
+            const index = id.indexOf("src");
             if (index >= 0) {
                 const componentDir = path.dirname(id);
 
