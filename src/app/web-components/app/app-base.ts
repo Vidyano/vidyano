@@ -47,9 +47,8 @@ if (hashBangRe.test(document.location.href)) {
 
 window["Vidyano"] = Vidyano;
 
-const base = document.head.querySelector("base") as HTMLBaseElement;
-if (!base)
-    throw new Error("Document is missing base tag");
+const baseElement = document.head.querySelector("base") as HTMLBaseElement;
+const baseHref = baseElement?.href || `${document.location.origin}${document.location.pathname.replace(/[^/]*$/, "")}`;
 
 @WebComponent.registerAbstract({
     properties: {
@@ -62,7 +61,7 @@ if (!base)
             type: String,
             readOnly: true,
             value: () => {
-                return base.href;
+                return baseHref;
             }
         },
         path: {
@@ -71,13 +70,13 @@ if (!base)
             observer: "_pathChanged",
             value: () => {
                 const parser = document.createElement("a");
-                parser.href = base.href;
+                parser.href = baseHref;
 
                 Path.routes.rootPath = parser.pathname;
-                Path.root(base.href);
+                Path.root(baseHref);
                 Path.history.listen();
 
-                return document.location.toString().substr(base.href.length).replace(document.location.hash, "");
+                return document.location.toString().substr(baseHref.length).replace(document.location.hash, "");
             }
         },
         service: {
