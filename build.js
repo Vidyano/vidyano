@@ -85,19 +85,20 @@ function execCommand(command, options) {
         await execCommand("npx sass --no-source-map src:src -q");
 
         await execCommand("tsc --project tsconfig.es2020.json");
-        await execCommand("npx rollup -c --environment NODE_ENV:production --bundleConfigAsCjs");
+        await execCommand("npx rollup -c --environment NODE_ENV:production,GENERATE_DTS:false --bundleConfigAsCjs");
 
         const vidyanoDistPath = path.join(distDir, "vidyano");
         try {
             await fs.rename(path.join(vidyanoDistPath, `index.js`), path.join(vidyanoDistPath, `index.es2020.js`));
             await fs.rename(path.join(vidyanoDistPath, `index.min.js`), path.join(vidyanoDistPath, `index.es2020.min.js`));
-            await fs.rename(path.join(vidyanoDistPath, `index.d.ts`), path.join(vidyanoDistPath, `index.es2020.d.ts`));
         } catch(err) {
             throw new Error(`Failed to rename ES2020 output files in ${vidyanoDistPath}: ${err.message}`);
         }
 
         await execCommand("tsc --project tsconfig.json");
         await execCommand("npx rollup -c --environment NODE_ENV:production --bundleConfigAsCjs");
+
+        await fs.copyFile(path.join(vidyanoDistPath, `index.d.ts`), path.join(vidyanoDistPath, `index.es2020.d.ts`));
 
         console.info("Build completed successfully!");
 

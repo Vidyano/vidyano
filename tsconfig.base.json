@@ -5,8 +5,6 @@
       "allowSyntheticDefaultImports": true,
       "importHelpers": true,
       "moduleResolution": "node",
-      "declaration": true,
-      "declarationDir": "rollup",
       "lib": [
           "ES2022",
           "DOM",
