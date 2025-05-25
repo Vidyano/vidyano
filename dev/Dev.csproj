@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Vidyano.RavenDB" Version="6.0.20250521.5929" />
+    <PackageReference Include="Vidyano.SourceGenerators" Version="2.15.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
   </ItemGroup>
 
   <ItemGroup>

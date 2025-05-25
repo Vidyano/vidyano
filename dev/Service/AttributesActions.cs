@@ -7,13 +7,8 @@ using Dev.Service.Model;
 
 namespace Dev.Service
 {
-    public sealed class AttributesActions : PersistentObjectActionsReference<DevContext, Attributes>
+    public partial class AttributesActions
     {
-        public AttributesActions(DevContext context)
-            : base(context)
-        {
-        }
-
         public override void OnLoad(PersistentObject obj, PersistentObject parent)
         {
             base.OnLoad(obj, parent);
