@@ -43,6 +43,6 @@
   "scripts": {
     "dist": "node build.js",
     "build": "rollup -c --bundleConfigAsCjs",
-    "dev": "rollup -c -w --bundleConfigAsCjs"
+    "dev": "dotnet run --project dev/Dev.csproj"
   }
 }

@@ -35,12 +35,13 @@
             ]
         },
         {
-            "type": "npm",
-            "script": "dev",
-            "group": "build",
-            "problemMatcher": [],
+            "type": "shell",
             "label": "rollup: watch",
-            "detail": "rollup -c -w",
+            "command": "npx rollup -c -w --bundleConfigAsCjs",
+            "group": "build",
+            "isBackground": true,
+            "problemMatcher": [],
+            "detail": "rollup -c -w --bundleConfigAsCjs",
             "dependsOn":[
                 "typescript: watch",
                 "sass: watch"
