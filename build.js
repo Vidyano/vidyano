@@ -101,6 +101,15 @@ function execCommand(command, options) {
         await fs.copyFile(path.join(vidyanoDistPath, `index.d.ts`), path.join(vidyanoDistPath, `index.es2020.d.ts`));
 
         console.info("Build completed successfully!");
+        
+        console.info("\n--- Publishing packages --- ");
+
+        await execCommand("npm login");
+
+        for (const subDir of subPackageDirs) {
+            const publishDir = path.join(distDir, subDir);
+            await execCommand("npm publish", { cwd: publishDir });
+        }
 
     } catch (error) {
         console.error("------------------------------------");
