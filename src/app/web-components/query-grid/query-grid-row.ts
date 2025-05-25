@@ -45,7 +45,9 @@ export interface IItemTapEventArgs {
     ],
     listeners: {
         "tap": "_onTap",
-        "contextmenu": "_onContextmenu"
+        "contextmenu": "_onContextmenu",
+        "mouseenter": "_onMouseEnter",
+        "mouseleave": "_onMouseLeave"
     },
     observers: [
         "_flush(offsets, visibleRange)"
@@ -65,6 +67,10 @@ export class QueryGridRow extends WebComponent {
     columns: Vidyano.QueryColumn[];
     offsets: number[];
     visibleRange: [ left: number, right: number];
+
+    get cells(): QueryGridCell[] {
+        return (<HTMLSlotElement>this.$.columns)?.assignedElements().filter(c => c instanceof QueryGridCell) as QueryGridCell[] || [];
+    }
 
     private _columnsChanged(columns: Vidyano.QueryColumn[]) {
         const existingCells = <QueryGridCell[]>Array.from((<HTMLSlotElement>this.$.columns).assignedElements());
@@ -158,6 +164,20 @@ export class QueryGridRow extends WebComponent {
 
     private _preventOpen(e: Polymer.Gestures.TapEvent) {
         e.stopPropagation();
+    }
+
+    private _onMouseEnter() {
+        if (!(this.item instanceof Vidyano.QueryResultItem))
+            return;
+
+        this.cells.forEach(cell => cell.isRowHovered = true);
+    }
+
+    private _onMouseLeave() {
+        if (!(this.item instanceof Vidyano.QueryResultItem))
+            return;
+
+        this.cells.forEach(cell => cell.isRowHovered = false);
     }
 
     private async _onTap(e: Polymer.Gestures.TapEvent) {

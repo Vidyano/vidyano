@@ -27,4 +27,27 @@ namespace Dev.Service
             args.SetValue(nameof(Order.Freight), source.AsEnumerable().Sum(o => o.Freight));
         }
     }
+
+    public sealed class VOrderActions : PersistentObjectActionsReference<DevContext, Indexes.VOrder>
+    {
+        public VOrderActions(DevContext context)
+            : base(context)
+        {
+        }
+
+        public override void QueryExecuted(QueryExecutedArgs args)
+        {
+            base.QueryExecuted(args);
+
+            args.Items.Run(item =>
+            {
+                var discount = item.GetValue<decimal>("Discount");
+                if (discount > 0)
+                {
+                    item.GetFullValue("Discount").AddTypeHint("style", "\"background-color: #ffb3b3; color: black;\"");
+                    item.GetFullValue("Discount").AddTypeHint("hoverstyle", "\"background-color: #ff5b5b; color: white; \"");
+                }
+            });
+        }
+    }
 }

@@ -40,10 +40,6 @@ export class QueryGridCellBoolean extends QueryGridCell {
             if (this._textNode && this._textNode.nodeValue)
                 this._textNode.nodeValue = "";
         } else {
-            const foreground = this._getTypeHint(value.column, "foreground", null);
-            if (foreground !== this.#foreground.currentValue)
-                this.style.color = this.#foreground.currentValue = foreground || this.#foreground.originalValue || null;
-
             const displayValue: boolean = value.getValue();
             if (displayValue == null) {
                 if (this._icon) {

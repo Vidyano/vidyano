@@ -27,10 +27,7 @@ export class QueryGridCellDefault extends QueryGridCell {
     private _extraClass: string;
     #textNode: Text;
     #textNodeValue: string;
-    private _foreground: { currentValue?: any; originalValue?: any } = { currentValue: null };
     private _tag: { currentValue?: any; originalValue?: any } = { currentValue: null };
-    private _textAlign: { currentValue?: any; originalValue?: any } = { currentValue: null };
-    right: boolean;
     tag: boolean;
 
     protected _valueChanged(itemValue: Vidyano.QueryResultItemValue, oldValue: Vidyano.QueryResultItemValue) {
@@ -38,6 +35,7 @@ export class QueryGridCellDefault extends QueryGridCell {
 
         if (!itemValue) {
             this._clearCell();
+            this._clearTagTypeHint();
             return;
         }
 
@@ -86,19 +84,7 @@ export class QueryGridCellDefault extends QueryGridCell {
         else
             value = "";
 
-        const foreground = this._getTypeHint(itemValue.column, "foreground", null);
-        if (foreground !== this._foreground.currentValue)
-            this.style.color = this._foreground.currentValue = foreground || this._foreground.originalValue || null;
-
-        const textAlign = this._getTypeHint(itemValue.column, "horizontalcontentalignment", Vidyano.DataType.isNumericType(itemValue.column.type) ? "right" : null);
-        if (textAlign !== this._textAlign.currentValue)
-            this.style.textAlign = this._textAlign.currentValue = textAlign || this._textAlign.originalValue || null;
-
-        const tag = this._getTypeHint(itemValue.column, "tag", null);
-        if (tag !== this._tag.currentValue) {
-            this.style.setProperty("--tag-background", this._tag.currentValue = tag || this._tag.originalValue || null);
-            this.tag = !!tag;
-        }
+        this._applyTagTypeHint(itemValue);
 
         const extraClass = itemValue.column.getTypeHint("extraclass", undefined, value && itemValue.typeHints, true);
         if (extraClass !== this._extraClass) {
@@ -116,6 +102,34 @@ export class QueryGridCellDefault extends QueryGridCell {
     protected _clearCell() {
         if (this.#textNode && this.#textNodeValue !== "")
             this.#textNode.nodeValue = this.#textNodeValue = "";
+    }
+
+    private _applyTagTypeHint(itemValue: Vidyano.QueryResultItemValue) {
+        const tagHint = this._getTypeHint(itemValue.column, "tag", null);
+        if (tagHint !== this._tag.currentValue) {
+            if (this._tag.originalValue === undefined) this._tag.originalValue = this.style.getPropertyValue("--tag-background");
+            
+            if (tagHint)
+                this.style.setProperty("--tag-background", tagHint);
+            else if (this._tag.originalValue)
+                this.style.setProperty("--tag-background", this._tag.originalValue);
+            else
+                this.style.removeProperty("--tag-background");
+            
+            this._tag.currentValue = tagHint;
+        }
+        this.tag = !!tagHint;
+    }
+
+    private _clearTagTypeHint() {
+        if (this._tag.originalValue !== undefined) {
+            if (this._tag.originalValue)
+                this.style.setProperty("--tag-background", this._tag.originalValue);
+            else
+                this.style.removeProperty("--tag-background");
+            this._tag.currentValue = null;
+        }
+        this.tag = false;
     }
 
     protected _updateCell(value: string) {
