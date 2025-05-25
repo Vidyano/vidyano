@@ -131,7 +131,9 @@ export class Service extends Observable<Service> {
      * Gets or sets the environment version string sent to the backend.
      * @defaultValue "3"
      */
-    public environmentVersion: string = version.match(/^(\d+)/)?.[1] || "3";
+    // TEMPORARY: Change this back to version.match(/^(\d+)/)?.[1] || "3";
+    //            when the backend supports version to be greater than 3.
+    public environmentVersion: string = "3";
 
     /**
      * Gets or sets a flag indicating whether site data should be cleared on sign-out.
