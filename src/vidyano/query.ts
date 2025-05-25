@@ -890,7 +890,10 @@ export class Query extends ServiceObjectWithActions {
      * @returns The cloned query.
      */
     clone(asLookup: boolean = false): Query {
-        const cloned = this.service.hooks.onConstructQuery(this.service, this.#dto, this.parent, asLookup);
+        // Create a new DTO object based on the current state of the query.
+        const dto = Object.assign({}, this.#dto, this.#toServiceObject());
+        
+        const cloned = this.service.hooks.onConstructQuery(this.service, dto, this.parent, asLookup);
         cloned.#setOwnerAttributeWithReference(this.#ownerAttributeWithReference);
 
         return cloned;
