@@ -1,30 +1,9 @@
-ARG VARIANT="6.0-bullseye-slim"
 # Stage used to provide RavenDB binaries
 FROM ravendb/ravendb:5.4-latest AS raven-source
-
-ARG VARIANT
-FROM mcr.microsoft.com/vscode/devcontainers/dotnet:0-${VARIANT}
-
-# Switch to root for system-level installations
-USER root
-
-# Install Microsoft package repository
-RUN wget https://packages.microsoft.com/config/debian/11/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && \
-    dpkg -i packages-microsoft-prod.deb && \
-    rm packages-microsoft-prod.deb
-
-# Install system dependencies
-RUN apt-get update && \
-  apt-get install -y apt-transport-https bzip2 wget && \
-  apt-get update && \
-  apt-get install -y aspnetcore-runtime-6.0 && \
-  rm -rf /var/lib/apt/lists/*
+FROM mcr.microsoft.com/devcontainers/dotnet:1-8.0-bookworm
 
 # Node.js installation for vscode user
-ARG NODE_VERSION="20" # <-- Changed from "17" to "20"
-RUN if [ "${NODE_VERSION}" != "none" ]; then \
-    su vscode -c "umask 0002 && . /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} && nvm alias default ${NODE_VERSION}"; \
-    fi
+RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && nvm install --lts && nvm use --lts && npm install -g typescript" 2>&1
 
 # RavenDB Installation
 ENV RAVENDB_INSTALL_DIR="/opt/ravendb_server"
@@ -36,8 +15,6 @@ RUN chown -R vscode:vscode ${RAVENDB_INSTALL_DIR} && \
     echo "RavenDB copied from ravendb/ravendb:5.4-latest to ${RAVENDB_INSTALL_DIR}"
 
 # Create a wrapper script for starting RavenDB
-# This script will be run by the 'vscode' user later in postCreateCommand
-# So, paths like /home/vscode/ will resolve correctly to the vscode user's home
 RUN echo '#!/bin/bash' > /usr/local/bin/start-ravendb.sh && \
     echo 'echo "Creating RavenDB data and log directories..."' >> /usr/local/bin/start-ravendb.sh && \
     echo 'mkdir -p /home/vscode/ravendb_data /home/vscode/ravendb_logs' >> /usr/local/bin/start-ravendb.sh && \
@@ -54,8 +31,4 @@ RUN echo '#!/bin/bash' > /usr/local/bin/start-ravendb.sh && \
     echo 'echo "RavenDB server (unsecured - PrivateNetwork) process initiated on port 8081. Startup log: /home/vscode/ravendb_startup.log"' >> /usr/local/bin/start-ravendb.sh && \
     chmod +x /usr/local/bin/start-ravendb.sh
 
-# Switch to vscode user for subsequent commands and as the default user
 USER vscode
-
-# Install global npm packages as vscode user
-RUN npm install -g typescript
