@@ -629,9 +629,9 @@ export class PersistentObjectAttribute extends ServiceObject {
         if (this.type !== "Reference")
             this.options = resultAttr.options;
 
-        this.#setIsReadOnly(resultAttr.isReadOnly);
+        this.#setIsReadOnly(!!resultAttr.isReadOnly);
         this.#setRules(resultAttr.rules);
-        this.#setIsRequired(resultAttr.isRequired);
+        this.#setIsRequired(!!resultAttr.isRequired);
 
         if (this.visibility !== resultAttr.visibility) {
             this.visibility = resultAttr.visibility;
@@ -652,7 +652,7 @@ export class PersistentObjectAttribute extends ServiceObject {
             if (this.#input)
                 this.#input.value = null;
 
-            this.isValueChanged = resultAttr.isValueChanged;
+            this.isValueChanged = !!resultAttr.isValueChanged;
         }
 
         this.#tag = resultAttr.tag;
