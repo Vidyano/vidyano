@@ -386,11 +386,18 @@ export class Select extends WebComponent {
     }
 
     private _computeItemDisplayValue(displayValue: string, inputValue: string): string {
-        if (!displayValue || !inputValue)
+        if (!displayValue)
             return displayValue;
 
+        const escapedDisplayValue = this._escapeHTML(displayValue);
+
+        if (!inputValue)
+            return escapedDisplayValue;
+
+        inputValue = inputValue.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
         const exp = new RegExp(`(${inputValue})`, "gi");
-        return displayValue.replace(exp, "<span class='match'>$1</span>");
+
+        return escapedDisplayValue.replace(exp, "<span class='match'>$1</span>");
     }
     
     private _disabledChanged(newValue: boolean, oldValue: boolean) {
