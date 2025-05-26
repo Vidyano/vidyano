@@ -14,6 +14,8 @@ import { PersistentObjectAttributeWithReference } from "./persistent-object-attr
 import { _internal, QuerySymbols } from "./_internals.js"
 import { QuerySelectAll, IQuerySelectAll } from "./query-select-all.js";
 
+const clonedFrom = Symbol("clonedFrom");
+
 /**
  * Represents the options for sorting a query.
  */
@@ -183,6 +185,13 @@ export class Query extends ServiceObjectWithActions {
      */
     get isSystem(): boolean {
         return this.#isSystem;
+    }
+
+    /**
+     * Gets whether this query is a clone of another query.
+     */
+    get isClone(): boolean {
+        return !!this.#dto[clonedFrom];
     }
 
     /**
@@ -892,6 +901,7 @@ export class Query extends ServiceObjectWithActions {
     clone(asLookup: boolean = false): Query {
         // Create a new DTO object based on the current state of the query.
         const dto = Object.assign({}, this.#dto, this.#toServiceObject());
+        dto[clonedFrom] = this.#dto; // Mark the DTO as cloned from the original query DTO.
         
         const cloned = this.service.hooks.onConstructQuery(this.service, dto, this.parent, asLookup);
         cloned.#setOwnerAttributeWithReference(this.#ownerAttributeWithReference);

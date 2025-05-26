@@ -29,14 +29,18 @@ export class QueryFilters extends Observable<QueryFilters> {
         this.#filtersAsDetail = <PersistentObjectAttributeAsDetail>this.#filtersPO.attributes["Filters"];
         this.#computeFilters(true);
 
-        const defaultFilter = this.#filters.find(f => f.isDefault);
-        if (defaultFilter) {
-            this.#skipSearch = true;
-            try {
-                this.currentFilter = defaultFilter;
-            }
-            finally {
-                this.#skipSearch = false;
+        // Important: Do not trigger a search during filter initialization when cloning a query.
+        // Setting a filter overrides selected distincts and would normally trigger a search, which we want to avoid here.
+        if (!query.isClone) {
+            const defaultFilter = this.#filters.find(f => f.isDefault);
+            if (defaultFilter) {
+                this.#skipSearch = true;
+                try {
+                    this.currentFilter = defaultFilter;
+                }
+                finally {
+                    this.#skipSearch = false;
+                }
             }
         }
     }
