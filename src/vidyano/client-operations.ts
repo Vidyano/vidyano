@@ -39,6 +39,17 @@ export interface IOpenOperation extends IClientOperation {
  */
 export const ClientOperations = {
     /**
+     * Copies data to the clipboard and shows a notification.
+     * @param hooks The service hooks.
+     * @param data The data to copy to the clipboard.
+     * @param message Optional message to show after copying.
+     */
+    copyToClipboard: function (hooks: ServiceHooks, data: string, message?: string) {
+        navigator.clipboard.writeText(data);
+        hooks.onShowNotification(message || "Copied to clipboard!", "OK", 5_000);
+    },
+
+    /**
      * Enables Datadog RUM for the application.
      * @param hooks The service hooks.
      * @param applicationId The Datadog application ID.
