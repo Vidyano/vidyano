@@ -116,6 +116,7 @@ export interface ISubjectDisposer {
  */
 export class Subject<TSource, TDetail> {
     #observers: ((sender: TSource, detail: TDetail) => void)[] = [];
+    #weakObserverRegistry: FinalizationRegistry<number>;
 
     /**
      * Creates a new Subject instance.
@@ -126,17 +127,42 @@ export class Subject<TSource, TDetail> {
             for (const i in this.#observers)
                 this.#observers[i](source, detail);
         };
+
+        this.#weakObserverRegistry = new FinalizationRegistry<number>((observerId) => {
+            this.#detach(observerId);
+        });
     }
 
     /**
      * Attaches an observer to the subject.
      * @param {ISubjectObserver<TSource, TDetail>} observer - The observer function to attach.
+     * @param {{ weak?: boolean }} [options] - Optional settings. Set `weak` to true to attach the observer using a WeakRef.
      * @returns {ISubjectDisposer} A function that detaches the observer.
      */
-    attach(observer: ISubjectObserver<TSource, TDetail>): ISubjectDisposer {
+    attach(observer: ISubjectObserver<TSource, TDetail>, options?: { weak?: boolean }): ISubjectDisposer {
         const id = this.#observers.length;
-        this.#observers.push(observer);
 
+        if (options?.weak) {
+            const weak = new WeakRef(observer);
+
+            const wrapper = (sender: TSource, detail: TDetail) => {
+                const target = weak.deref();
+                if (target)
+                    target(sender, detail);
+                else
+                    this.#detach(id);
+            };
+
+            this.#weakObserverRegistry.register(observer, id, wrapper);
+            this.#observers[id] = wrapper;
+
+            return () => {
+                this.#weakObserverRegistry.unregister(wrapper);
+                this.#detach(id);
+            };
+        }
+
+        this.#observers.push(observer);
         return <ISubjectDisposer>this.#detach.bind(this, id);
     }
 
@@ -168,7 +194,7 @@ export interface ISubjectObserver<TSource, TDetail> {
 export class Observable<T> {
     #propertyChangedNotifier: ISubjectNotifier<T, PropertyChangedArgs>;
     #arrayChangedNotifier: ISubjectNotifier<T, ArrayChangedArgs>;
-    
+
     readonly propertyChanged: Subject<T, PropertyChangedArgs>;
     readonly arrayChanged: Subject<T, ArrayChangedArgs>;
 
