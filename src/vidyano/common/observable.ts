@@ -116,6 +116,7 @@ export interface ISubjectDisposer {
  */
 export class Subject<TSource, TDetail> {
     #observers: ((sender: TSource, detail: TDetail) => void)[] = [];
+    #weakObserverRegistry: FinalizationRegistry<number>;
 
     /**
      * Creates a new Subject instance.
@@ -126,6 +127,10 @@ export class Subject<TSource, TDetail> {
             for (const i in this.#observers)
                 this.#observers[i](source, detail);
         };
+
+        this.#weakObserverRegistry = new FinalizationRegistry<number>((observerId) => {
+            this.#detach(observerId);
+        });
     }
 
     /**
@@ -139,7 +144,6 @@ export class Subject<TSource, TDetail> {
 
         if (options?.weak) {
             const weak = new WeakRef(observer);
-            const registry = new FinalizationRegistry((id: number) => this.#detach(id));
 
             const wrapper = (sender: TSource, detail: TDetail) => {
                 const target = weak.deref();
@@ -149,11 +153,11 @@ export class Subject<TSource, TDetail> {
                     this.#detach(id);
             };
 
-            registry.register(observer, id, wrapper);
+            this.#weakObserverRegistry.register(observer, id, wrapper);
             this.#observers[id] = wrapper;
 
             return () => {
-                registry.unregister(wrapper);
+                this.#weakObserverRegistry.unregister(wrapper);
                 this.#detach(id);
             };
         }
@@ -190,7 +194,7 @@ export interface ISubjectObserver<TSource, TDetail> {
 export class Observable<T> {
     #propertyChangedNotifier: ISubjectNotifier<T, PropertyChangedArgs>;
     #arrayChangedNotifier: ISubjectNotifier<T, ArrayChangedArgs>;
-    
+
     readonly propertyChanged: Subject<T, PropertyChangedArgs>;
     readonly arrayChanged: Subject<T, ArrayChangedArgs>;
 
