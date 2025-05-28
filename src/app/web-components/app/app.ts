@@ -75,11 +75,18 @@ export class App extends AppBase {
     label: string;
     cacheSize: number;
 
-    constructor(hooks: AppServiceHooks = new AppServiceHooks()) {
+    constructor(hooks: AppServiceHooks) {
         super(hooks);
 
         if (!this.label)
             this.label = this.title;
+    }
+
+    async connectedCallback() {
+        if (!this.hooks && this.serviceHooks !== "deferred")
+            this.hooks = new AppServiceHooks();
+
+        super.connectedCallback();
     }
 
     protected _initPathRescue() {
