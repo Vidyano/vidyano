@@ -89,6 +89,17 @@ export class App extends AppBase {
         super.connectedCallback();
     }
 
+    get hooks(): AppServiceHooks {
+        return super.hooks as AppServiceHooks;
+    }
+
+    set hooks(value: AppServiceHooks) {
+        if (value && !(value instanceof AppServiceHooks))
+            throw new Error("App.hooks must be an instance of AppServiceHooks");
+        
+        super.hooks = value;
+    }
+
     protected _initPathRescue() {
         Path.rescue(() => {
             const path = App.removeRootPath(Path.routes.current);

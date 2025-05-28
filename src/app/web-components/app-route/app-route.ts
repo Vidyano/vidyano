@@ -64,30 +64,26 @@ export class AppRoute extends WebComponent {
     }
 
     async activate(parameters: { [key: string]: string } = {}): Promise<any> {
-        if (this.active && this.matchesParameters(parameters))
-            return;
+        if (!this.matchesParameters(parameters)) {
+            this._parameters = parameters;
 
-        this._parameters = parameters;
+            if (!this.preserveContent || !this._hasChildren) {
+                this._clearChildren();
 
-        if (this.preserveContent && this._hasChildren)
-            this.shadowRoot.querySelector("slot").assignedElements().forEach(this._fireActivate.bind(this));
-        else {
-            this._clearChildren();
+                const template = this.querySelector("template");
+                if (!template) {
+                    console.error(`Missing template on route "${this.path}"`);
+                    return;
+                }
 
-            const template = this.querySelector("template");
-            if (!template) {
-                console.error(`Missing template on route "${this.path}"`);
-                return;
+                template.setAttribute("slot", "none");
+
+                const templateClass = Polymer.Templatize.templatize(template);
+                const templateInstance = new templateClass({ app: this.app });
+                this.appendChild(templateInstance.root);
+
+                this._hasChildren = true;
             }
-
-            template.setAttribute("slot", "none");
-
-            const templateClass = Polymer.Templatize.templatize(template);
-            const templateInstance = new templateClass({ app: this.app });
-            this.appendChild(templateInstance.root);
-            this.shadowRoot.querySelector("slot").assignedElements().forEach(this._fireActivate.bind(this));
-
-            this._hasChildren = true;
         }
 
         this._setActive(true);
@@ -97,11 +93,6 @@ export class AppRoute extends WebComponent {
             document.title = this._documentTitle;
 
         (<AppServiceHooks>this.service.hooks).trackPageView(this.app.path);
-    }
-
-    private _fireActivate(target: WebComponent) {
-        if (target.fire)
-            target.fire("app-route-activate", { route: this, parameters: this._parameters }, { bubbles: true });
     }
 
     private _clearChildren() {
@@ -140,10 +131,28 @@ export class AppRoute extends WebComponent {
     private _activeChanged() {
         this.classList.toggle("active", this.active);
 
-        if (this.activate)
+        if (this.active) {
+            this.shadowRoot.querySelector("slot").assignedElements().forEach(c => {
+                c.dispatchEvent(new CustomEvent("app-route-activate", {
+                    bubbles: true,
+                    cancelable: true,
+                    detail: { route: this, parameters: this._parameters }
+                }));
+            });
+
             this.fire("app-route-activated", { route: this, parameters: this._parameters }, { bubbles: true });
-        else
+        }
+        else {
+            this.shadowRoot.querySelector("slot").assignedElements().forEach(c =>  {
+                c.dispatchEvent(new CustomEvent("app-route-deactivate", {
+                    bubbles: true,
+                    cancelable: true,
+                    detail: { route: this }
+                }));
+            });
+
             this.fire("app-route-deactivated", { route: this }, { bubbles: true });
+        }
     }
 
     private _titleChanged(e: CustomEvent) {

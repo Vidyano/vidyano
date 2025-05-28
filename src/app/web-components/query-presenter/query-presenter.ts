@@ -1,10 +1,13 @@
 import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
-import { AppCacheEntryQuery } from "components/app-cache/app-cache-entry-query"
 import { App } from "components/app/app"
+import { AppCacheEntryQuery } from "components/app-cache/app-cache-entry-query"
+import { AppServiceHooks } from "components/app-service-hooks/app-service-hooks"
 import { Query } from "components/query/query"
 import "components/query-items-presenter/query-items-presenter"
 import { WebComponent } from "components/web-component/web-component"
+
+const QueryPresenter_Activated = Symbol("QueryPresenter_Activated");
 
 interface IQueryPresenterRouteParameters {
     programUnitName: string;
@@ -42,7 +45,8 @@ interface IQueryPresenterRouteParameters {
         "_updateTitle(query.labelWithTotalItems)"
     ],
     listeners: {
-        "app-route-activate": "_activate"
+        "app-route-activate": "_activate",
+        "app-route-deactivate": "_deactivate"
     },
     forwardObservers: [
         "query.labelWithTotalItems"
@@ -66,6 +70,24 @@ export class QueryPresenter extends WebComponent {
         else {
             this.queryId = this.query = undefined;
             this.queryId = parameters.id;
+        }
+
+        if (this.query && this.app?.hooks instanceof AppServiceHooks) {
+            if (!this.query[QueryPresenter_Activated]) {
+                this.query[QueryPresenter_Activated] = true;
+                this.app.hooks.onQueryActivated(this.query, {
+                    presenter: this,
+                });
+            }
+        }
+    }
+
+    private async _deactivate(e: CustomEvent) {
+        if (this.query?.[QueryPresenter_Activated] && this.app.hooks instanceof AppServiceHooks) {
+            this.query[QueryPresenter_Activated] = false;
+            this.app.hooks.onQueryDeactivated(this.query, {
+                presenter: this,
+            });
         }
     }
 
@@ -106,6 +128,13 @@ export class QueryPresenter extends WebComponent {
     }
 
     private async _queryChanged(query: Vidyano.Query, oldQuery: Vidyano.Query) {
+        if (oldQuery?.[QueryPresenter_Activated] && this.app.hooks instanceof AppServiceHooks) {
+            oldQuery[QueryPresenter_Activated] = false;
+            this.app.hooks.onQueryDeactivated(oldQuery, {
+                presenter: this,
+            });
+        }
+
         if (this.isConnected && oldQuery)
             this.empty();
 
@@ -115,6 +144,13 @@ export class QueryPresenter extends WebComponent {
 
             if (this.query !== query)
                 return;
+
+            if (!query?.[QueryPresenter_Activated] && this.app.hooks instanceof AppServiceHooks) {
+                query[QueryPresenter_Activated] = true;
+                this.app.hooks.onQueryActivated(query, {
+                    presenter: this,
+                });
+            }
 
             this._renderQuery(query);
         }

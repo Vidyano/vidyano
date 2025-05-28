@@ -2,6 +2,7 @@ import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import { Path } from "libs/pathjs/pathjs"
 import { App } from "components/app/app"
+import { AppServiceHooks } from "components/app-service-hooks/app-service-hooks"
 import { AppCacheEntryPersistentObject } from "components/app-cache/app-cache-entry-persistent-object"
 import { AppCacheEntryPersistentObjectFromAction } from "components/app-cache/app-cache-entry-persistent-object-from-action"
 import { AppRoute } from "components/app-route/app-route"
@@ -14,6 +15,8 @@ interface IPersistentObjectPresenterRouteParameters {
     objectId: string;
     fromActionId: string;
 }
+
+const PersistentObjectPresenter_Activated = Symbol("PersistentObjectPresenter_Activated");
 
 @ConfigurableWebComponent.register({
     properties: {
@@ -106,6 +109,16 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
                 this.persistentObjectId = this._cacheEntry.id;
             }
         }
+
+        if (this.persistentObject && this.app?.hooks instanceof AppServiceHooks) {
+            if (!this.persistentObject[PersistentObjectPresenter_Activated]) {
+                this.persistentObject[PersistentObjectPresenter_Activated] = true;
+                this.app.hooks.onPersistentObjectActivated(this.persistentObject, {
+                    asDialog: false,
+                    presenter: this,
+                });
+            }
+        }
     }
 
     private async _deactivate(e: CustomEvent) {
@@ -113,10 +126,12 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
         const currentPath = Path.removeRootPath(route.path);
         const newPath = Path.removeRootPath(this.app.path);
 
+        let shouldDeactivate = true;
+
         if (this.persistentObject && this.persistentObject.isDirty && this.persistentObject.actions.some(a => a.name === "Save" || a.name === "EndEdit") && currentPath !== newPath) {
             e.preventDefault();
 
-            const result = await this.app.showMessageDialog( {
+            const result = await this.app.showMessageDialog({
                 title: this.service.getTranslatedMessage("PagesWithUnsavedChanges"),
                 noClose: true,
                 message: this.service.getTranslatedMessage("ConfirmLeavePage"),
@@ -142,6 +157,17 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
             else {
                 route.deactivator(false);
                 this.app.changePath(currentPath);
+                shouldDeactivate = false;
+            }
+        }
+
+        if (shouldDeactivate && this.persistentObject && this.app?.hooks instanceof AppServiceHooks) {
+            if (this.persistentObject[PersistentObjectPresenter_Activated]) {
+                this.persistentObject[PersistentObjectPresenter_Activated] = false;
+                this.app.hooks.onPersistentObjectDeactivated(this.persistentObject, {
+                    asDialog: false,
+                    presenter: this,
+                });
             }
         }
     }
@@ -178,10 +204,31 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
     private async _persistentObjectChanged(persistentObject: Vidyano.PersistentObject, oldPersistentObject: Vidyano.PersistentObject) {
         this._setError(null);
 
-        if (oldPersistentObject)
-            this.empty();
+        // Deactivate old persistent object if needed
+        if (oldPersistentObject && oldPersistentObject[PersistentObjectPresenter_Activated]) {
+            oldPersistentObject[PersistentObjectPresenter_Activated] = false;
+            if (this.app?.hooks instanceof AppServiceHooks) {
+                this.app.hooks.onPersistentObjectDeactivated(oldPersistentObject, {
+                    asDialog: false,
+                    presenter: this,
+                });
+            }
+        }
 
+        this.empty();
+
+        // Activate new persistent object if needed
         if (persistentObject) {
+            if (!persistentObject[PersistentObjectPresenter_Activated]) {
+                persistentObject[PersistentObjectPresenter_Activated] = true;
+                if (this.app?.hooks instanceof AppServiceHooks) {
+                    this.app.hooks.onPersistentObjectActivated(persistentObject, {
+                        asDialog: false,
+                        presenter: this,
+                    });
+                }
+            }
+
             const config = this.app.configuration.getPersistentObjectConfig(persistentObject);
             this._setTemplated(!!config && config.hasTemplate);
 
@@ -189,8 +236,9 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
                 this.appendChild(config.stamp(persistentObject, config.as || "persistentObject"));
                 this._setLoading(false);
             }
-            else
+            else {
                 this._renderPersistentObject(persistentObject);
+            }
         }
     }
 
@@ -200,6 +248,9 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
 
         this.fire("title-changed", { title: this.persistentObject.isBreadcrumbSensitive && this.isAppSensitive ? null : breadcrumb }, { bubbles: true });
     }
+
+
+    // _notifyServiceHooks removed: logic is now handled in _persistentObjectChanged
 
     private async _renderPersistentObject(persistentObject: Vidyano.PersistentObject) {
         if (persistentObject !== this.persistentObject)
