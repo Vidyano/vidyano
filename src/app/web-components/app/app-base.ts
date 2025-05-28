@@ -155,7 +155,8 @@ const baseHref = baseElement?.href || `${document.location.origin}${document.loc
             reflectToAttribute: true,
             readOnly: true,
             value: false
-        }
+        },
+        serviceHooks: String,
     },
     observers: [
         "_computeInitialService(uri, isConnected)",
@@ -177,6 +178,9 @@ const baseHref = baseElement?.href || `${document.location.origin}${document.loc
 export abstract class AppBase extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="app-base.html">`; }
 
+    #serviceHooksAwaiter: Promise<AppServiceHooksBase>;
+    #serviceHooksResolver: (hooks: AppServiceHooksBase) => void;
+
     private _keybindingRegistrations: { [key: string]: Keyboard.IKeybindingRegistration[]; } = {};
     private _activeDialogs: Dialog[] = [];
     private _updateAvailableSnoozeTimer: any;
@@ -193,6 +197,7 @@ export abstract class AppBase extends WebComponent {
     isTracking: boolean;
     sensitive: boolean;
     path: string;
+    serviceHooks: "deferred" | undefined;
 
     constructor(private _hooks?: AppServiceHooksBase) {
         super();
@@ -205,6 +210,12 @@ export abstract class AppBase extends WebComponent {
     }
 
     async connectedCallback() {
+        if (this.serviceHooks === "deferred") {
+            this.#serviceHooksAwaiter = new Promise<AppServiceHooksBase>(resolve => {
+                this.#serviceHooksResolver = resolve;
+            });
+        }
+
         window.addEventListener("storage", this._onSessionStorage.bind(this), false);
 
         Vidyano.ServiceBus.subscribe("path-changed", (sender, message, details) => {
@@ -230,6 +241,18 @@ export abstract class AppBase extends WebComponent {
 
     get hooks(): AppServiceHooksBase {
         return this._hooks;
+    }
+
+    set hooks(hooks: AppServiceHooksBase) {
+        if (this._hooks) {
+            console.warn("AppBase hooks cannot be altered.");
+            return;
+        }
+
+        this._hooks = hooks;
+
+        if (this.#serviceHooksResolver)
+            this.#serviceHooksResolver(this._hooks);
     }
 
     get activeElement(): Element {
@@ -270,7 +293,7 @@ export abstract class AppBase extends WebComponent {
         }
 
         if (!this._hooks)
-            this._hooks = new AppServiceHooksBase();
+            this._hooks = this.#serviceHooksAwaiter ? await this.#serviceHooksAwaiter : new AppServiceHooksBase();
 
         this._setService(new Vidyano.Service(uri, this.hooks));
         const path = AppBase.removeRootPath(document.location.pathname);

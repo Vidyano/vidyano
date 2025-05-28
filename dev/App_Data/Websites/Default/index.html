@@ -81,7 +81,30 @@
                 }
             }
         </script>
-        <script type="module" src="./index.js"></script>
+
+        <script type="module">
+            import { AppServiceHooks } from "./index.js";
+
+            class CustomServiceHooks extends AppServiceHooks {
+                onConstructPersistentObject() {
+                    const po = super.onConstructPersistentObject(...arguments);
+
+                    if (po.type === "Company") {
+                        po.propertyChanged.attach((sender, detail) => {
+                            if (detail.propertyName === "isEditing") {
+                                console.log("isEditing changed to: " + detail.newValue);
+                            }
+                        }, { weak: true })
+                    }
+
+                    return po;
+                }
+            }
+
+            window.app.hooks = new CustomServiceHooks();
+        </script>
+
+        <!-- <script type="module" src="./index.js"></script> -->
         <!-- <script type="module" src="./web3/web-components/app/app.js"></script>
         <script type="module" src="./web3/web-components/persistent-object-presenter/persistent-object-presenter.js"></script>
         <script type="module" src="./web3/web-components/query-presenter/query-presenter.js"></script>
@@ -111,7 +134,7 @@
         </style>
     </head>
     <body>
-        <vi-app label="Vidyano">
+        <vi-app label="Vidyano" service-hooks="deferred">
             <vi-session-presenter slot="menu-footer">
                 <template>
                     <vi-persistent-object-attribute-presenter no-label attribute="[[session.attributes.Reference]]"></vi-persistent-object-attribute-presenter>
