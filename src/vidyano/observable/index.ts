@@ -1,5 +1,6 @@
 import { ArrayChangedArgs, PropertyChangedArgs } from "./event-args.js";
 import { ISubjectNotifier, ISubjectObserver, Subject } from "./subject.js";
+import { forwardObserver, ForwardObservedCallback, IObserveChainDisposer } from "./forward-observer.js";
 
 /**
  * Represents an observable object that notifies observers about property and array changes.
@@ -42,6 +43,10 @@ export class Observable<T> {
     protected notifyArrayChanged(arrayPropertyName: string, index: number, removedItems: any[] = [], addedCount: number) {
         this.#arrayChangedNotifier.notify(<T><any>this, new ArrayChangedArgs(arrayPropertyName, index, removedItems, addedCount));
     }
+
+    static forward(source: Observable<any> | Array<any> | Record<string, any>, relativePath: string, currentPathPrefix: string, observer: ForwardObservedCallback, notifyInitialState: boolean = true): IObserveChainDisposer {
+        return forwardObserver(source, relativePath, currentPathPrefix, observer, notifyInitialState);
+    }
 }
 
 /**
@@ -54,3 +59,4 @@ export interface IPropertyChangedObserver<T> extends ISubjectObserver<T, Propert
 // Export all observable-related classes and interfaces from this module
 export * from "./event-args.js";
 export * from "./subject.js";
+export { ForwardObservedCallback, ForwardObservedPropertyChangedArgs, ForwardObservedArrayChangedArgs } from "./forward-observer.js";
