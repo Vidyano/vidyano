@@ -23,7 +23,8 @@ interface IProgramUnitPresenterRouteParameters {
         }
     },
     listeners: {
-        "app-route-activate": "_activate"
+        "app-route-activate": "_activate",
+        "app-route-deactivate": "_deactivate"
     }
 }, "vi-program-unit-presenter")
 export class ProgramUnitPresenter extends WebComponent {
@@ -42,6 +43,20 @@ export class ProgramUnitPresenter extends WebComponent {
         if (!this.programUnit) {
             e.preventDefault();
             this._setError(this.translateMessage("NotFound"));
+        } else if (!this.programUnit[ProgramUnitPresenter_Activated] && this.app?.hooks instanceof AppServiceHooks) {
+            this.programUnit[ProgramUnitPresenter_Activated] = true;
+            this.app.hooks.onProgramUnitActivated(this.programUnit, {
+                presenter: this,
+            });
+        }
+    }
+
+    private _deactivate(e: CustomEvent) {
+        if (this.programUnit?.[ProgramUnitPresenter_Activated] && this.app.hooks instanceof AppServiceHooks) {
+            this.programUnit[ProgramUnitPresenter_Activated] = false;
+            this.app.hooks.onProgramUnitDeactivated(this.programUnit, {
+                presenter: this,
+            });
         }
     }
 
