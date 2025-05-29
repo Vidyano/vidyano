@@ -292,77 +292,25 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
     }
 
     protected _forwardObservable(source: Vidyano.Observable<any> | Array<any>, path: string, pathPrefix: string, callback?: (path: string) => void): IObserveChainDisposer {
-        const paths = path.splitWithTail(".", 2);
-        const pathToNotify = pathPrefix ? pathPrefix + "." + paths[0] : paths[0];
-        const disposers: (() => void)[] = [];
-        let subDispose = null;
+        return Vidyano.Observable.forward(source, path, pathPrefix, (detail: Vidyano.ForwardObservedPropertyChangedArgs | Vidyano.ForwardObservedArrayChangedArgs) => {
+            if (detail instanceof Vidyano.ForwardObservedPropertyChangedArgs) {
+                this.notifyPath(detail.path, detail.newValue);
 
-        if (Array.isArray(source) && paths[0] === "*") {
-            (<any>source).forEach((item, idx) => {
-                disposers.push(this._forwardObservable(item, paths[1], pathPrefix + "." + idx, callback));
-            });
-        }
-        else if ((<Vidyano.Observable<any>>source).propertyChanged) {
-            const dispose = (<Vidyano.Observable<any>>source).propertyChanged.attach((sender, detail) => {
-                if (detail.propertyName === paths[0]) {
-                    if (subDispose) {
-                        subDispose();
-                        disposers.remove(subDispose);
-                    }
+                if (callback)
+                    callback(detail.path);
+            } else if (detail instanceof Vidyano.ForwardObservedArrayChangedArgs) {
+                this.notifySplices(detail.path, [{
+                    index: detail.index,
+                    removed: detail.removedItems,
+                    addedCount: detail.addedItemCount,
+                    object: detail.arrayInstance,
+                    type: "splice"
+                }]);
 
-                    const newValue = detail.newValue;
-                    if (newValue && paths.length === 2 && paths[1] !== "*") {
-                        subDispose = this._forwardObservable(newValue, paths[1], pathToNotify, callback);
-                        disposers.push(subDispose);
-                    }
-
-                    this.notifyPath(pathToNotify, newValue);
-                    if (callback)
-                        callback(pathToNotify);
-                }
-            });
-            disposers.push(dispose);
-
-            if (paths.length === 2) {
-                if (paths[1] !== "*") {
-                    const subSource = source[paths[0]];
-                    if (subSource) {
-                        subDispose = this._forwardObservable(subSource, paths[1], pathToNotify, callback);
-                        disposers.push(subDispose);
-                    }
-                }
-                else if (!!(<Vidyano.Observable<any>>source).arrayChanged) {
-                    const dispose = (<Vidyano.Observable<any>>source).arrayChanged.attach((sender, detail) => {
-                        if (detail.arrayPropertyName === paths[0]) {
-                            this.notifySplices(`${pathPrefix}.${paths[0]}`, [{
-                                index: detail.index,
-                                removed: detail.removedItems,
-                                addedCount: detail.addedItemCount,
-                                object: source,
-                                type: "splice"
-                            }]);
-
-                            if (callback)
-                                callback(pathToNotify);
-                        }
-                    });
-                    disposers.push(dispose);
-                }
-            } else if (paths.length === 1 && source[paths[0]] !== undefined && this.get(`${pathPrefix}.${paths[0]}`) !== source[paths[0]])
-                this.notifyPath(`${pathPrefix}.${paths[0]}`, source[paths[0]]);
-        }
-        else if (paths.length === 2) {
-            const subSource = source[paths[0]];
-            if (subSource) {
-                subDispose = this._forwardObservable(subSource, paths[1], pathToNotify, callback);
-                disposers.push(subDispose);
+                if (callback)
+                    callback(detail.path);
             }
-        }
-
-        return () => {
-            disposers.forEach(d => d());
-            disposers.splice(0, disposers.length);
-        };
+        }, true);
     }
 
     /**
