@@ -1,7 +1,7 @@
 import "../common/string.js";
 import { PropertyChangedArgs, ArrayChangedArgs } from "./event-args.js";
 import type { Subject } from "./subject.js";
-import type { Observable } from "./observable.js";
+import type { Observable } from "./index.js";
 
 /**
  * Disposer returned by {@link forwardObserver} to cancel all observers.
