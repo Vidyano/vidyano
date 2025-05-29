@@ -288,14 +288,16 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
     }
 
     protected _forwardObservable(source: Vidyano.Observable<any> | Array<any>, path: string, pathPrefix: string, callback?: (path: string) => void): Vidyano.ForwardObservedChainDisposer {
-        return Vidyano.Observable.forward(source, path, pathPrefix, (detail: Vidyano.ForwardObservedPropertyChangedArgs | Vidyano.ForwardObservedArrayChangedArgs) => {
+        return Vidyano.Observable.forward(source, path, (detail: Vidyano.ForwardObservedPropertyChangedArgs | Vidyano.ForwardObservedArrayChangedArgs) => {
             if (detail instanceof Vidyano.ForwardObservedPropertyChangedArgs) {
-                this.notifyPath(detail.path, detail.newValue);
+                const pathToNotify = !!pathPrefix ? `${pathPrefix}.${detail.path}` : detail.path;
+                this.notifyPath(pathToNotify, detail.newValue);
 
                 if (callback)
-                    callback(detail.path);
+                    callback(pathToNotify);
             } else if (detail instanceof Vidyano.ForwardObservedArrayChangedArgs) {
-                this.notifySplices(detail.path, [{
+                const pathToNotify = !!pathPrefix ? `${pathPrefix}.${detail.path}` : detail.path;
+                this.notifySplices(pathToNotify, [{
                     index: detail.index,
                     removed: detail.removedItems,
                     addedCount: detail.addedItemCount,
@@ -304,7 +306,7 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
                 }]);
 
                 if (callback)
-                    callback(detail.path);
+                    callback(pathToNotify);
             }
         }, true);
     }

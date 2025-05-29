@@ -44,8 +44,16 @@ export class Observable<T> {
         this.#arrayChangedNotifier.notify(<T><any>this, new ArrayChangedArgs(arrayPropertyName, index, removedItems, addedCount));
     }
 
-    static forward(source: Observable<any> | Array<any> | Record<string, any>, relativePath: string, currentPathPrefix: string, observer: ForwardObservedCallback, notifyInitialState: boolean = true): ForwardObservedChainDisposer {
-        return forwardObserver(source, relativePath, currentPathPrefix, observer, notifyInitialState);
+    /**
+     * Recursively forwards change notifications to a {@link ForwardObservedCallback} for an Observable, Array, or plain object property path.
+     * @param source The source object to observe, which can be an Observable, Array, or plain object.
+     * @param relativePath The relative path to the property to observe, e.g., "property.subProperty" or "*".
+     * @param observer The observer callback that will receive notifications about property changes.
+     * @param notifyInitialState Optional. If true (default), the observer will be called with the initial state of properties as they are encountered.
+     * @returns A disposer function that, when called, will cancel all observers and stop forwarding notifications.
+     */
+    static forward(source: Observable<any> | Array<any> | Record<string, any>, relativePath: string, observer: ForwardObservedCallback, notifyInitialState: boolean = true): ForwardObservedChainDisposer {
+        return forwardObserver(source, relativePath, observer, notifyInitialState);
     }
 }
 

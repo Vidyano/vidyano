@@ -93,7 +93,7 @@ function isObservableArraySourceCapable(obj: any): obj is IObservableSourceInter
  * @param notifyInitialState Optional. If true (default), the observer will be called with the initial state of properties as they are encountered.
  * @returns A disposer function that, when called, will cancel all observers and stop forwarding notifications.
  */
-export function forwardObserver(source: Observable<any> | Array<any> | Record<string, any>, relativePath: string, currentPathPrefix: string, observer: ForwardObservedCallback, notifyInitialState: boolean = true): ForwardObservedChainDisposer {
+function forwardObserverImpl(source: Observable<any> | Array<any> | Record<string, any>, relativePath: string, currentPathPrefix: string, observer: ForwardObservedCallback, notifyInitialState: boolean = true): ForwardObservedChainDisposer {
     // Base case: If source is not an object or array, no observation is possible.
     if (!source || (typeof source !== 'object' && !Array.isArray(source)))
         return () => {}; // Return a no-op disposer.
@@ -116,7 +116,7 @@ export function forwardObserver(source: Observable<any> | Array<any> | Record<st
             (source as any[]).forEach((item: any, idx: number) => {
                 // Recursively observe the 'remainingPathString' on each item.
                 const itemAbsolutePathPrefix = buildPathSegment(currentPathPrefix, idx);
-                disposers.push(forwardObserver(item, remainingPathString, itemAbsolutePathPrefix, observer, notifyInitialState));
+                disposers.push(forwardObserverImpl(item, remainingPathString, itemAbsolutePathPrefix, observer, notifyInitialState));
             });
         }
     }
@@ -138,7 +138,7 @@ export function forwardObserver(source: Observable<any> | Array<any> | Record<st
                 // If the new value exists and there's a remaining path to observe (and it's not an array wildcard path),
                 // start a new sub-chain observation.
                 if (newValue !== null && newValue !== undefined && remainingPathString && remainingPathString !== "*") {
-                    subChainDisposer = forwardObserver(newValue, remainingPathString, propertyAbsolutePath, observer, notifyInitialState);
+                    subChainDisposer = forwardObserverImpl(newValue, remainingPathString, propertyAbsolutePath, observer, notifyInitialState);
                     disposers.push(subChainDisposer);
                 }
 
@@ -155,7 +155,7 @@ export function forwardObserver(source: Observable<any> | Array<any> | Record<st
             if (remainingPathString) {
                 if (remainingPathString !== "*") { // Path like "prop.subProp"
                     // Recursively observe the sub-property on the current value.
-                    subChainDisposer = forwardObserver(currentPropertyValue, remainingPathString, propertyAbsolutePath, observer, notifyInitialState);
+                    subChainDisposer = forwardObserverImpl(currentPropertyValue, remainingPathString, propertyAbsolutePath, observer, notifyInitialState);
                     disposers.push(subChainDisposer);
                 }
                 else if (isObservableArraySourceCapable(source)) { // Path like "arrayProp.*"
@@ -195,7 +195,7 @@ export function forwardObserver(source: Observable<any> | Array<any> | Record<st
         if (remainingPathString) { // If there's a sub-path to observe:
             if (subSourceValue !== null && subSourceValue !== undefined) {
                 // Recursively observe the sub-property.
-                subChainDisposer = forwardObserver(subSourceValue, remainingPathString, propertyAbsolutePath, observer, notifyInitialState);
+                subChainDisposer = forwardObserverImpl(subSourceValue, remainingPathString, propertyAbsolutePath, observer, notifyInitialState);
                 disposers.push(subChainDisposer);
             }
         }
@@ -212,6 +212,18 @@ export function forwardObserver(source: Observable<any> | Array<any> | Record<st
         disposers.forEach(d => d());
         disposers.length = 0; // Clear the disposers array.
     };
+}
+
+/**
+ * Recursively forwards change notifications to a {@link ForwardObservedCallback} for an Observable, Array, or plain object property path.
+ * @param source The source object to observe, which can be an Observable, Array, or plain object.
+ * @param relativePath The relative path to the property to observe, e.g., "property.subProperty" or "*".
+ * @param observer The observer callback that will receive notifications about property changes.
+ * @param notifyInitialState Optional. If true (default), the observer will be called with the initial state of properties as they are encountered.
+ * @returns A disposer function that, when called, will cancel all observers and stop forwarding notifications.
+ */
+export function forwardObserver(source: Observable<any> | Array<any> | Record<string, any>, relativePath: string, observer: ForwardObservedCallback, notifyInitialState: boolean = true): ForwardObservedChainDisposer {
+    return forwardObserverImpl(source, relativePath, "", observer, notifyInitialState);
 }
 
 export default forwardObserver;
