@@ -72,23 +72,11 @@ export class QueryPresenter extends WebComponent {
             this.queryId = parameters.id;
         }
 
-        if (this.query && this.app?.hooks instanceof AppServiceHooks) {
-            if (!this.query[QueryPresenter_Activated]) {
-                this.query[QueryPresenter_Activated] = true;
-                this.app.hooks.onQueryActivated(this.query, {
-                    presenter: this,
-                });
-            }
-        }
+        this._activateQuery(this.query);
     }
 
     private async _deactivate(e: CustomEvent) {
-        if (this.query?.[QueryPresenter_Activated] && this.app.hooks instanceof AppServiceHooks) {
-            this.query[QueryPresenter_Activated] = false;
-            this.app.hooks.onQueryDeactivated(this.query, {
-                presenter: this,
-            });
-        }
+        this._deactivateQuery(this.query);
     }
 
     private _computeHasError(error: string): boolean {
@@ -128,12 +116,7 @@ export class QueryPresenter extends WebComponent {
     }
 
     private async _queryChanged(query: Vidyano.Query, oldQuery: Vidyano.Query) {
-        if (oldQuery?.[QueryPresenter_Activated] && this.app.hooks instanceof AppServiceHooks) {
-            oldQuery[QueryPresenter_Activated] = false;
-            this.app.hooks.onQueryDeactivated(oldQuery, {
-                presenter: this,
-            });
-        }
+        this._deactivateQuery(oldQuery);
 
         if (this.isConnected && oldQuery)
             this.empty();
@@ -142,14 +125,26 @@ export class QueryPresenter extends WebComponent {
             if(this.queryId !== query.id)
                 this.queryId = query.id;
 
-            if (!query[QueryPresenter_Activated] && this.app.hooks instanceof AppServiceHooks) {
-                query[QueryPresenter_Activated] = true;
-                this.app.hooks.onQueryActivated(query, {
-                    presenter: this,
-                });
-            }
-
+            this._activateQuery(query);
             this._renderQuery(query);
+        }
+    }
+
+    private _activateQuery(query: Vidyano.Query) {
+        if (query && !query[QueryPresenter_Activated] && this.app?.hooks instanceof AppServiceHooks) {
+            query[QueryPresenter_Activated] = true;
+            this.app.hooks.onQueryActivated(query, {
+                presenter: this,
+            });
+        }
+    }
+
+    private _deactivateQuery(query: Vidyano.Query) {
+        if (query?.[QueryPresenter_Activated] && this.app?.hooks instanceof AppServiceHooks) {
+            query[QueryPresenter_Activated] = false;
+            this.app.hooks.onQueryDeactivated(query, {
+                presenter: this,
+            });
         }
     }
 

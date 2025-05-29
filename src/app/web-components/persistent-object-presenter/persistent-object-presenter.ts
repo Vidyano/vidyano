@@ -110,15 +110,7 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
             }
         }
 
-        if (this.persistentObject && this.app?.hooks instanceof AppServiceHooks) {
-            if (!this.persistentObject[PersistentObjectPresenter_Activated]) {
-                this.persistentObject[PersistentObjectPresenter_Activated] = true;
-                this.app.hooks.onPersistentObjectActivated(this.persistentObject, {
-                    asDialog: false,
-                    presenter: this,
-                });
-            }
-        }
+        this._activatePersistentObject(this.persistentObject);
     }
 
     private async _deactivate(e: CustomEvent) {
@@ -161,15 +153,8 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
             }
         }
 
-        if (shouldDeactivate && this.persistentObject && this.app?.hooks instanceof AppServiceHooks) {
-            if (this.persistentObject[PersistentObjectPresenter_Activated]) {
-                this.persistentObject[PersistentObjectPresenter_Activated] = false;
-                this.app.hooks.onPersistentObjectDeactivated(this.persistentObject, {
-                    asDialog: false,
-                    presenter: this,
-                });
-            }
-        }
+        if (shouldDeactivate)
+            this._deactivatePersistentObject(this.persistentObject);
     }
 
     private async _updatePersistentObject(persistentObjectId: string, persistentObjectObjectId: string, isConnected: boolean) {
@@ -204,28 +189,12 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
     private async _persistentObjectChanged(persistentObject: Vidyano.PersistentObject, oldPersistentObject: Vidyano.PersistentObject) {
         this._setError(null);
 
-        if (oldPersistentObject?.[PersistentObjectPresenter_Activated]) {
-            oldPersistentObject[PersistentObjectPresenter_Activated] = false;
-            if (this.app?.hooks instanceof AppServiceHooks) {
-                this.app.hooks.onPersistentObjectDeactivated(oldPersistentObject, {
-                    asDialog: false,
-                    presenter: this,
-                });
-            }
-        }
+        this._deactivatePersistentObject(oldPersistentObject);
 
         this.empty();
 
         if (persistentObject) {
-            if (!persistentObject[PersistentObjectPresenter_Activated]) {
-                persistentObject[PersistentObjectPresenter_Activated] = true;
-                if (this.app?.hooks instanceof AppServiceHooks) {
-                    this.app.hooks.onPersistentObjectActivated(persistentObject, {
-                        asDialog: false,
-                        presenter: this,
-                    });
-                }
-            }
+            this._activatePersistentObject(persistentObject);
 
             const config = this.app.configuration.getPersistentObjectConfig(persistentObject);
             this._setTemplated(!!config && config.hasTemplate);
@@ -237,6 +206,26 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
             else {
                 this._renderPersistentObject(persistentObject);
             }
+        }
+    }
+
+    private _activatePersistentObject(persistentObject: Vidyano.PersistentObject) {
+        if (persistentObject && !persistentObject[PersistentObjectPresenter_Activated] && this.app?.hooks instanceof AppServiceHooks) {
+            persistentObject[PersistentObjectPresenter_Activated] = true;
+            this.app.hooks.onPersistentObjectActivated(persistentObject, {
+                asDialog: false,
+                presenter: this,
+            });
+        }
+    }
+
+    private _deactivatePersistentObject(persistentObject: Vidyano.PersistentObject) {
+        if (persistentObject?.[PersistentObjectPresenter_Activated] && this.app?.hooks instanceof AppServiceHooks) {
+            persistentObject[PersistentObjectPresenter_Activated] = false;
+            this.app.hooks.onPersistentObjectDeactivated(persistentObject, {
+                asDialog: false,
+                presenter: this,
+            });
         }
     }
 

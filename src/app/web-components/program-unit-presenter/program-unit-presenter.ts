@@ -40,47 +40,48 @@ export class ProgramUnitPresenter extends WebComponent {
             return;
 
         this._setProgramUnit(this.service.application.programUnits.find(pu => pu.name === parameters.programUnitName || pu.nameKebab === parameters.programUnitName));
-        if (!this.programUnit) {
+        if (this.programUnit)
+            this._activateProgramUnit(this.programUnit);
+        else {
             e.preventDefault();
             this._setError(this.translateMessage("NotFound"));
-        } else if (!this.programUnit[ProgramUnitPresenter_Activated] && this.app?.hooks instanceof AppServiceHooks) {
-            this.programUnit[ProgramUnitPresenter_Activated] = true;
-            this.app.hooks.onProgramUnitActivated(this.programUnit, {
-                presenter: this,
-            });
         }
     }
 
     private _deactivate(e: CustomEvent) {
-        if (this.programUnit?.[ProgramUnitPresenter_Activated] && this.app.hooks instanceof AppServiceHooks) {
-            this.programUnit[ProgramUnitPresenter_Activated] = false;
-            this.app.hooks.onProgramUnitDeactivated(this.programUnit, {
-                presenter: this,
-            });
-        }
+        if (this.programUnit)
+            this._deactivateProgramUnit(this.programUnit);
     }
 
     private _programUnitChanged(programUnit: Vidyano.ProgramUnit, oldProgramUnit: Vidyano.ProgramUnit) {
-        if (oldProgramUnit && oldProgramUnit[ProgramUnitPresenter_Activated] && this.app?.hooks instanceof AppServiceHooks) {
-            oldProgramUnit[ProgramUnitPresenter_Activated] = false;
-            this.app.hooks.onProgramUnitDeactivated(oldProgramUnit, { presenter: this });
-        }
-
-        if (oldProgramUnit)
+        if (oldProgramUnit) {
+            this._deactivateProgramUnit(oldProgramUnit);
             this.empty();
+        }
 
         this.fire("title-changed", { title: programUnit ? programUnit.title : null }, { bubbles: true });
 
         if (!programUnit)
             return;
 
-        if (!programUnit[ProgramUnitPresenter_Activated] && this.app?.hooks instanceof AppServiceHooks) {
-            programUnit[ProgramUnitPresenter_Activated] = true;
-            this.app.hooks.onProgramUnitActivated(programUnit, { presenter: this });
-        }
+        this._activateProgramUnit(programUnit);
 
         const config = this.app.configuration.getProgramUnitConfig(programUnit.name);
         if (!!config && config.hasTemplate)
             this.appendChild(config.stamp(programUnit, config.as || "programUnit"));
+    }
+
+    private _activateProgramUnit(programUnit: Vidyano.ProgramUnit) {
+        if (!programUnit[ProgramUnitPresenter_Activated] && this.app?.hooks instanceof AppServiceHooks) {
+            programUnit[ProgramUnitPresenter_Activated] = true;
+            this.app.hooks.onProgramUnitActivated(programUnit, { presenter: this });
+        }
+    }
+
+    private _deactivateProgramUnit(programUnit: Vidyano.ProgramUnit) {
+        if (programUnit[ProgramUnitPresenter_Activated] && this.app?.hooks instanceof AppServiceHooks) {
+            programUnit[ProgramUnitPresenter_Activated] = false;
+            this.app.hooks.onProgramUnitDeactivated(programUnit, { presenter: this });
+        }
     }
 }
