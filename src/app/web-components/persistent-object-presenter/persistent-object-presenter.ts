@@ -204,8 +204,7 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
     private async _persistentObjectChanged(persistentObject: Vidyano.PersistentObject, oldPersistentObject: Vidyano.PersistentObject) {
         this._setError(null);
 
-        // Deactivate old persistent object if needed
-        if (oldPersistentObject && oldPersistentObject[PersistentObjectPresenter_Activated]) {
+        if (oldPersistentObject?.[PersistentObjectPresenter_Activated]) {
             oldPersistentObject[PersistentObjectPresenter_Activated] = false;
             if (this.app?.hooks instanceof AppServiceHooks) {
                 this.app.hooks.onPersistentObjectDeactivated(oldPersistentObject, {
@@ -217,7 +216,6 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
 
         this.empty();
 
-        // Activate new persistent object if needed
         if (persistentObject) {
             if (!persistentObject[PersistentObjectPresenter_Activated]) {
                 persistentObject[PersistentObjectPresenter_Activated] = true;
@@ -248,9 +246,6 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
 
         this.fire("title-changed", { title: this.persistentObject.isBreadcrumbSensitive && this.isAppSensitive ? null : breadcrumb }, { bubbles: true });
     }
-
-
-    // _notifyServiceHooks removed: logic is now handled in _persistentObjectChanged
 
     private async _renderPersistentObject(persistentObject: Vidyano.PersistentObject) {
         if (persistentObject !== this.persistentObject)

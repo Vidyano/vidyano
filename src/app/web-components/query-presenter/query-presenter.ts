@@ -142,10 +142,7 @@ export class QueryPresenter extends WebComponent {
             if(this.queryId !== query.id)
                 this.queryId = query.id;
 
-            if (this.query !== query)
-                return;
-
-            if (!query?.[QueryPresenter_Activated] && this.app.hooks instanceof AppServiceHooks) {
+            if (!query[QueryPresenter_Activated] && this.app.hooks instanceof AppServiceHooks) {
                 query[QueryPresenter_Activated] = true;
                 this.app.hooks.onQueryActivated(query, {
                     presenter: this,
