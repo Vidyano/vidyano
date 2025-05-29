@@ -124,10 +124,6 @@ export interface IWebComponentRegistrationInfo {
     sensitive?: boolean;
 }
 
-export interface IObserveChainDisposer {
-    (): void;
-}
-
 export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerElement) {
     private _appChangedListener: EventListener;
     private _serviceChangedListener: EventListener;
@@ -291,7 +287,7 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
         return span.innerHTML;
     }
 
-    protected _forwardObservable(source: Vidyano.Observable<any> | Array<any>, path: string, pathPrefix: string, callback?: (path: string) => void): IObserveChainDisposer {
+    protected _forwardObservable(source: Vidyano.Observable<any> | Array<any>, path: string, pathPrefix: string, callback?: (path: string) => void): Vidyano.ForwardObservedChainDisposer {
         return Vidyano.Observable.forward(source, path, pathPrefix, (detail: Vidyano.ForwardObservedPropertyChangedArgs | Vidyano.ForwardObservedArrayChangedArgs) => {
             if (detail instanceof Vidyano.ForwardObservedPropertyChangedArgs) {
                 this.notifyPath(detail.path, detail.newValue);

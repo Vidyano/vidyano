@@ -6,9 +6,7 @@ import type { Observable } from "./index.js";
 /**
  * Disposer returned by {@link forwardObserver} to cancel all observers.
  */
-export interface IObserveChainDisposer {
-    (): void;
-}
+export type ForwardObservedChainDisposer = () => void;
 
 /**
  * Specialized PropertyChangedArgs for observer chain notifications, including path and owner.
@@ -95,7 +93,7 @@ function isObservableArraySourceCapable(obj: any): obj is IObservableSourceInter
  * @param notifyInitialState Optional. If true (default), the observer will be called with the initial state of properties as they are encountered.
  * @returns A disposer function that, when called, will cancel all observers and stop forwarding notifications.
  */
-export function forwardObserver(source: Observable<any> | Array<any> | Record<string, any>, relativePath: string, currentPathPrefix: string, observer: ForwardObservedCallback, notifyInitialState: boolean = true): IObserveChainDisposer {
+export function forwardObserver(source: Observable<any> | Array<any> | Record<string, any>, relativePath: string, currentPathPrefix: string, observer: ForwardObservedCallback, notifyInitialState: boolean = true): ForwardObservedChainDisposer {
     // Base case: If source is not an object or array, no observation is possible.
     if (!source || (typeof source !== 'object' && !Array.isArray(source)))
         return () => {}; // Return a no-op disposer.
@@ -110,7 +108,7 @@ export function forwardObserver(source: Observable<any> | Array<any> | Record<st
     const propertyAbsolutePath = buildPathSegment(currentPathPrefix, currentSegment);
 
     const disposers: (() => void)[] = []; // Stores cleanup functions for listeners.
-    let subChainDisposer: IObserveChainDisposer | null = null; // Disposer for a deeper observation chain.
+    let subChainDisposer: ForwardObservedChainDisposer | null = null; // Disposer for a deeper observation chain.
 
     // Case 1: Source is an array and path is like "*.childProperty"
     if (Array.isArray(source) && currentSegment === "*") {
