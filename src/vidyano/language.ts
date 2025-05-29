@@ -1,5 +1,5 @@
 import type * as Dto from "./typings/service.js";
-import { Observable } from "./common/observable.js";
+import { Observable } from "./observable";
 import type { ServiceObject } from "./service-object.js";
 
 /**

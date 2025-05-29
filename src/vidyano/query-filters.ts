@@ -1,4 +1,4 @@
-import { Observable } from "./common/observable.js"
+import { Observable } from "./observable"
 import type { Action } from "./action.js"
 import type { PersistentObject } from "./persistent-object.js"
 import type { Query } from "./query.js"

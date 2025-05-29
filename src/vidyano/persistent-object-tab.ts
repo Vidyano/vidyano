@@ -1,4 +1,4 @@
-import { Observable } from "./common/observable.js"
+import { Observable } from "./observable"
 import type { PersistentObject } from "./persistent-object.js"
 import type { PersistentObjectAttribute } from "./persistent-object-attribute.js"
 import type { PersistentObjectAttributeGroup } from "./persistent-object-attribute-group.js"

@@ -5,7 +5,7 @@ import { ServiceObject } from "./service-object.js"
 import type { Query } from "./query.js"
 import { PersistentObjectAttribute } from "./persistent-object-attribute.js"
 import type { PersistentObject } from "./persistent-object.js"
-import type { PropertyChangedArgs } from "./common/observable.js"
+import type { PropertyChangedArgs } from "./observable"
 import type { QueryResultItem } from "./query-result-item.js"
 import { QueryColumnSymbols } from "./_internals.js";
 

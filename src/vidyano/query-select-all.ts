@@ -1,4 +1,4 @@
-import { Observable, IPropertyChangedObserver } from "./common/observable.js"
+import { Observable, IPropertyChangedObserver } from "./observable"
 import type { Query } from "./query.js";
 
 /**

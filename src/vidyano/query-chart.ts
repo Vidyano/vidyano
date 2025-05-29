@@ -1,4 +1,4 @@
-import { Observable } from "./common/observable.js";
+import { Observable } from "./observable";
 import type { Query } from "./query.js";
 
 /**

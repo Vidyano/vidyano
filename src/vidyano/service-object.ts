@@ -1,4 +1,4 @@
-import { Observable } from "./common/observable.js"
+import { Observable } from "./observable"
 import type { Service } from "./service.js"
 
 export function nameof<TObject>(key: keyof TObject): string;
