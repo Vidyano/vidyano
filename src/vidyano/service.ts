@@ -1,6 +1,6 @@
 import { IS_BROWSER } from "./environment.js";
 import type * as Dto from "./typings/service.js";
-import { Observable } from "./common/observable.js";
+import { Observable } from "./observable";
 import "./common/array.js"; // NOTE: We need the side effect from this import
 import type { Application } from "./application.js";
 import type { IClientOperation } from "./client-operations.js";

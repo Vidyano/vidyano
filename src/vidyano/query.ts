@@ -1,5 +1,5 @@
 import type * as Dto from "./typings/service.js"
-import { ISubjectDisposer, PropertyChangedArgs } from "./common/observable.js"
+import { ISubjectDisposer, PropertyChangedArgs } from "./observable"
 import { QueryColumn, SortDirection } from "./query-column.js"
 import { QueryResultItem } from "./query-result-item.js"
 import type { Service } from "./service.js"

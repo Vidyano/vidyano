@@ -1,6 +1,6 @@
 import type { Action } from "./action.js";
 import type { ActionDefinition } from "./action-definition.js";
-import type { ISubjectDisposer, PropertyChangedArgs } from "./common/observable.js";
+import type { ISubjectDisposer, PropertyChangedArgs } from "./observable";
 import type { Service } from "./service.js";
 import { ServiceObject } from "./service-object.js";
 

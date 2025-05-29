@@ -1,4 +1,4 @@
-import { ISubjectDisposer, ISubjectNotifier, Subject } from "./observable.js"
+import { ISubjectDisposer, ISubjectNotifier, Subject } from "../observable"
 
 /**
  * Callback function to handle messages sent via the service bus.
