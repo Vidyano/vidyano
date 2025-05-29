@@ -2,6 +2,7 @@ import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import { Path } from "libs/pathjs/pathjs"
 import { App } from "components/app/app"
+import { AppServiceHooks } from "components/app-service-hooks/app-service-hooks"
 import { AppCacheEntryPersistentObject } from "components/app-cache/app-cache-entry-persistent-object"
 import { AppCacheEntryPersistentObjectFromAction } from "components/app-cache/app-cache-entry-persistent-object-from-action"
 import { AppRoute } from "components/app-route/app-route"
@@ -14,6 +15,8 @@ interface IPersistentObjectPresenterRouteParameters {
     objectId: string;
     fromActionId: string;
 }
+
+const PersistentObjectPresenter_Activated = Symbol("PersistentObjectPresenter_Activated");
 
 @ConfigurableWebComponent.register({
     properties: {
@@ -106,6 +109,8 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
                 this.persistentObjectId = this._cacheEntry.id;
             }
         }
+
+        this._activatePersistentObject(this.persistentObject);
     }
 
     private async _deactivate(e: CustomEvent) {
@@ -113,10 +118,12 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
         const currentPath = Path.removeRootPath(route.path);
         const newPath = Path.removeRootPath(this.app.path);
 
+        let shouldDeactivate = true;
+
         if (this.persistentObject && this.persistentObject.isDirty && this.persistentObject.actions.some(a => a.name === "Save" || a.name === "EndEdit") && currentPath !== newPath) {
             e.preventDefault();
 
-            const result = await this.app.showMessageDialog( {
+            const result = await this.app.showMessageDialog({
                 title: this.service.getTranslatedMessage("PagesWithUnsavedChanges"),
                 noClose: true,
                 message: this.service.getTranslatedMessage("ConfirmLeavePage"),
@@ -142,8 +149,12 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
             else {
                 route.deactivator(false);
                 this.app.changePath(currentPath);
+                shouldDeactivate = false;
             }
         }
+
+        if (shouldDeactivate)
+            this._deactivatePersistentObject(this.persistentObject);
     }
 
     private async _updatePersistentObject(persistentObjectId: string, persistentObjectObjectId: string, isConnected: boolean) {
@@ -178,10 +189,13 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
     private async _persistentObjectChanged(persistentObject: Vidyano.PersistentObject, oldPersistentObject: Vidyano.PersistentObject) {
         this._setError(null);
 
-        if (oldPersistentObject)
-            this.empty();
+        this._deactivatePersistentObject(oldPersistentObject);
+
+        this.empty();
 
         if (persistentObject) {
+            this._activatePersistentObject(persistentObject);
+
             const config = this.app.configuration.getPersistentObjectConfig(persistentObject);
             this._setTemplated(!!config && config.hasTemplate);
 
@@ -189,8 +203,29 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
                 this.appendChild(config.stamp(persistentObject, config.as || "persistentObject"));
                 this._setLoading(false);
             }
-            else
+            else {
                 this._renderPersistentObject(persistentObject);
+            }
+        }
+    }
+
+    private _activatePersistentObject(persistentObject: Vidyano.PersistentObject) {
+        if (persistentObject && !persistentObject[PersistentObjectPresenter_Activated] && this.app?.hooks instanceof AppServiceHooks) {
+            persistentObject[PersistentObjectPresenter_Activated] = true;
+            this.app.hooks.onPersistentObjectActivated(persistentObject, {
+                asDialog: false,
+                presenter: this,
+            });
+        }
+    }
+
+    private _deactivatePersistentObject(persistentObject: Vidyano.PersistentObject) {
+        if (persistentObject?.[PersistentObjectPresenter_Activated] && this.app?.hooks instanceof AppServiceHooks) {
+            persistentObject[PersistentObjectPresenter_Activated] = false;
+            this.app.hooks.onPersistentObjectDeactivated(persistentObject, {
+                asDialog: false,
+                presenter: this,
+            });
         }
     }
 

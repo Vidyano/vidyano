@@ -7,6 +7,9 @@ import { AppCacheEntryPersistentObjectFromAction } from "components/app-cache/ap
 import { AppCacheEntryQuery } from "components/app-cache/app-cache-entry-query"
 import { PersistentObjectDialog } from "components/persistent-object-dialog/persistent-object-dialog"
 import { PersistentObjectWizardDialog } from "components/persistent-object-wizard-dialog/persistent-object-wizard-dialog"
+import type { PersistentObjectPresenter } from "components/persistent-object-presenter/persistent-object-presenter"
+import type { ProgramUnitPresenter } from "components/program-unit-presenter/program-unit-presenter"
+import type { QueryPresenter } from "components/query-presenter/query-presenter"
 
 export class AppServiceHooks extends AppServiceHooksBase {
     onSessionExpired(): Promise<boolean> {
@@ -174,4 +177,71 @@ export class AppServiceHooks extends AppServiceHooksBase {
     onRedirectToSignOut(keepUrl: boolean) {
         this.app.changePath("sign-out" + (keepUrl && this.app.path ? "/" + encodeURIComponent(Path.removeRootPath(decodeURIComponent(this.app.path)).replace(/sign-in\/?/, "")).replace(/\./g, "%2E") : ""), true);
     }
+
+    /**
+     * Called when a persistent object is activated, e.g. when it is opened in a dialog or navigated to.
+     * @param persistentObject The persistent object that was activated.
+     * @param details Additional details about the activation, such as whether it was opened as a dialog or the presenter.
+     */
+    onPersistentObjectActivated(persistentObject: Vidyano.PersistentObject, details: PersistentObjectActivationDetails = {}): void {
+        // Noop
+    }
+
+    /**
+     * Called when a persistent object is deactivated, e.g. when the dialog is closed or navigated away from.
+     * @param persistentObject The persistent object that was deactivated.
+     * @param details Additional details about the deactivation, such as the presenter.
+     */
+    onPersistentObjectDeactivated(persistentObject: Vidyano.PersistentObject, details: PersistentObjectActivationDetails = {}): void {
+        // Noop
+    }
+
+    /**
+     * Called when a program unit is activated, e.g. when it is opened in a dialog or navigated to.
+     * @param programUnit The program unit that was activated.
+     * @param details Additional details about the activation, such as the presenter.
+     */
+    onProgramUnitActivated(programUnit: Vidyano.ProgramUnit, details: ProgramUnitActivationDetails = {}): void {
+        // Noop
+    }
+
+    /**
+     * Called when a program unit is deactivated, e.g. when the dialog is closed or navigated away from.
+     * @param programUnit The program unit that was deactivated.
+     * @param details Additional details about the deactivation, such as the presenter.
+     */
+    onProgramUnitDeactivated(programUnit: Vidyano.ProgramUnit, details: ProgramUnitActivationDetails = {}): void {
+        // Noop
+    }
+
+    /**
+     * Called when a query is activated, e.g. when it is opened in a dialog or navigated to.
+     * @param query The query that was activated.
+     * @param details Additional details about the activation, such as the presenter.
+     */
+    onQueryActivated(query: Vidyano.Query, details: QueryActivationDetails = {}): void {
+        // Noop
+    }
+
+    /**
+     * Called when a query is deactivated, e.g. when the dialog is closed or navigated away from.
+     * @param query The query that was deactivated.
+     * @param details Additional details about the deactivation, such as the presenter.
+     */
+    onQueryDeactivated(query: Vidyano.Query, details: QueryActivationDetails = {}): void {
+        // Noop
+    }
 }
+
+export type PersistentObjectActivationDetails = {
+    asDialog?: boolean;
+    presenter?: PersistentObjectPresenter;
+};
+
+export type ProgramUnitActivationDetails = {
+    presenter?: ProgramUnitPresenter;
+};
+
+export type QueryActivationDetails = {
+    presenter?: QueryPresenter;
+};
