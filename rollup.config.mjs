@@ -54,7 +54,7 @@ const configs = [
         watch: {
             chokidar: {
                 usePolling: true,
-                interval: 500
+                interval: 5000
             }
         }, onwarn(warning, warn) {
             if (warning.code === 'THIS_IS_UNDEFINED')
@@ -82,7 +82,7 @@ const configs = [
         watch: {
             chokidar: {
                 usePolling: true,
-                interval: 500
+                interval: 5000
             }
         }, onwarn(warning, warn) {
             if (warning.code === 'THIS_IS_UNDEFINED')
