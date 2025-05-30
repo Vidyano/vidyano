@@ -27,8 +27,8 @@ export interface IPersistentObjectWebComponent extends WebComponent {
         },
         masterTabs: {
             type: Array,
-            computed: "_computeMasterTabs(persistentObject, tabs)",
-            observer: "_masterTabsChanged"
+            observer: "_masterTabsChanged",
+            readOnly: true
         },
         hasMasterTabs: {
             type: Boolean,
@@ -42,8 +42,8 @@ export interface IPersistentObjectWebComponent extends WebComponent {
         },
         detailTabs: {
             type: Array,
-            computed: "_computeDetailTabs(persistentObject, tabs)",
-            observer: "_detailTabsChanged"
+            observer: "_detailTabsChanged",
+            readOnly: true
         },
         hasDetailTabs: {
             type: Boolean,
@@ -104,7 +104,7 @@ export interface IPersistentObjectWebComponent extends WebComponent {
         "_persistentObjectNotificationChanged(persistentObject.notification)"
     ],
     forwardObservers: [
-        "persistentObject.tabs.*.isVisible",
+        "_visibleTabsChanged(persistentObject.tabs.*.isVisible)",
         "persistentObject.breadcrumb",
         "persistentObject.notification",
         "persistentObject.isBusy"
@@ -121,17 +121,14 @@ export class PersistentObject extends WebComponent implements IPersistentObjectW
     persistentObject: Vidyano.PersistentObject;
     layout: string;
     masterWidth: string;
-    masterTabs: Vidyano.PersistentObjectTab[];
+    readonly masterTabs: Vidyano.PersistentObjectTab[]; private _setMasterTabs: (tabs: Vidyano.PersistentObjectTab[]) => void;
     selectedMasterTab: Vidyano.PersistentObjectTab;
-    detailTabs: Vidyano.PersistentObjectTab[];
+    readonly detailTabs: Vidyano.PersistentObjectTab[]; private _setDetailTabs: (tabs: Vidyano.PersistentObjectTab[]) => void;
     selectedDetailTab: Vidyano.PersistentObjectTab;
 
     private _persistentObjectChanged(persistentObject: Vidyano.PersistentObject, isConnected: boolean) {
         if (persistentObject && isConnected) {
             this._cacheEntry = <AppCacheEntryPersistentObject>(<any>this.app).cache(new AppCacheEntryPersistentObject(this.persistentObject));
-
-            this.selectedMasterTab = this._cacheEntry.selectedMasterTab || this._computeMasterTabs(this.persistentObject, this.persistentObject.tabs)[0] || null;
-            this.selectedDetailTab = this._cacheEntry.selectedDetailTab || this._computeDetailTabs(this.persistentObject, this.persistentObject.tabs)[0] || null;
 
             if (persistentObject.service.application.userSettings["PersistentObjectSettings"] &&
                 persistentObject.service.application.userSettings["PersistentObjectSettings"][this.persistentObject.id] &&
@@ -154,18 +151,27 @@ export class PersistentObject extends WebComponent implements IPersistentObjectW
         });
     }
 
-    private _computeMasterTabs(persistentObject: Vidyano.PersistentObject, tabs: Vidyano.PersistentObjectTab[]): Vidyano.PersistentObjectTab[] {
-        if (persistentObject.queryLayoutMode === Vidyano.PersistentObjectLayoutMode.FullPage)
-            return tabs.filter(t => t.isVisible);
+    private _visibleTabsChanged() {
+        if (!this.persistentObject?.tabs?.length)
+            return;
 
-        return tabs ? tabs.filter(t => t.isVisible && t.tabGroupIndex === 0) : [];
-    }
+        try {
+            if (this.persistentObject.queryLayoutMode === Vidyano.PersistentObjectLayoutMode.FullPage) {
+                this._setMasterTabs(this.persistentObject.tabs.filter(t => t.isVisible));
+                this._setDetailTabs([]);
+            }
 
-    private _computeDetailTabs(persistentObject: Vidyano.PersistentObject, tabs: Vidyano.PersistentObjectTab[]): Vidyano.PersistentObjectTab[] {
-        if (persistentObject.queryLayoutMode === Vidyano.PersistentObjectLayoutMode.FullPage)
-            return [];
+            this._setMasterTabs(this.persistentObject.tabs.filter(t => t.isVisible && t.tabGroupIndex === 0));
+            this._setDetailTabs(this.persistentObject.tabs.filter(t => t.isVisible && t.tabGroupIndex === 1));
 
-        return tabs ? tabs.filter(t => t.isVisible && t.tabGroupIndex === 1) : [];
+        }
+        finally {
+            if (this.persistentObject.tabs.indexOf(this.selectedMasterTab) < 0)
+                this.selectedMasterTab = this.masterTabs[0] || null;
+
+            if (this.persistentObject.tabs.indexOf(this.selectedDetailTab) < 0)
+                this.selectedDetailTab = this.detailTabs[0] || null;
+        }
     }
 
     private _detailTabsChanged() {
