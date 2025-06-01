@@ -62,20 +62,20 @@ export type InternalPersistentObject = PersistentObject & {
 
     /**
      * Prepares all attributes for a refresh by caching current service values.
-     * @param sender The attribute initiating the refresh.
+     * @param sender - The attribute initiating the refresh.
      */
     prepareAttributesForRefresh(sender: PersistentObjectAttribute): void;
 
     /**
      * Refreshes the object state from a new service result, merging changes.
-     * @param result The new data from the service.
-     * @param resultWins If true, the new data overrides current values.
+     * @param result - The new data from the service.
+     * @param resultWins - If true, the new data overrides current values.
      */
     refreshFromResult(po: PersistentObject | Dto.PersistentObjectDto, resultWins?: boolean): void;
 
     /**
      * Rebuilds the tabs and groups UI structure based on changed attributes.
-     * @param changedAttributes The attributes that have been modified.
+     * @param changedAttributes - The attributes that have been modified.
      */
     refreshTabsAndGroups(...changedAttributes: PersistentObjectAttribute[]): void;
 };
@@ -125,14 +125,14 @@ export type InternalQueryResultItemValue = {
 export type InternalQuery = Query & {
     /**
      * Notifies the query that an item selection has changed.
-     * @param item The query result item that has changed selection state.
-     * @param isSelected Indicates whether the item is now selected or not.
+     * @param item - The query result item that has changed selection state.
+     * @param isSelected - Indicates whether the item is now selected or not.
      */
     notifyItemSelectionChanged(item: QueryResultItem, isSelected: boolean): void;
 
     /**
      * Sets the owner attribute for the query, typically used for attributes with references.
-     * @param attribute The attribute that owns this query.
+     * @param attribute - The attribute that owns this query.
      */
     setOwnerAttributeWithReference(attribute: PersistentObjectAttributeWithReference): void;
 
@@ -151,7 +151,7 @@ export type InternalServiceHooks = ServiceHooks & {
 
 /**
  * Gets the internal proxy for the target.
- * @param target The target to get the internal proxy for.
+ * @param target - The target to get the internal proxy for.
  */
 export function _internal(target: PersistentObject): InternalPersistentObject;
 export function _internal(target: PersistentObjectAttribute): InternalPersistentObjectAttribute;

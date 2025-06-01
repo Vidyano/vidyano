@@ -15,10 +15,10 @@ export class ProgramUnitItem extends ServiceObject {
 
     /**
      * Initializes a new instance of the ProgramUnitItem class.
-     * @param service The service instance.
-     * @param unitItem The raw unit item data.
-     * @param path The path for this item.
-     * @param nameKebab The kebab-case name for this item.
+     * @param service - The service instance.
+     * @param unitItem - The raw unit item data.
+     * @param path - The path for this item.
+     * @param nameKebab - The kebab-case name for this item.
      */
     constructor(service: Service, unitItem: any, path?: string, nameKebab?: string) {
         super(service);
@@ -77,9 +77,9 @@ export class ProgramUnitItemGroup extends ProgramUnitItem {
 
     /**
      * Initializes a new instance of the ProgramUnitItemGroup class.
-     * @param service The service instance.
-     * @param unitItem The raw unit item data.
-     * @param items The items in this group.
+     * @param service - The service instance.
+     * @param unitItem - The raw unit item data.
+     * @param items - The items in this group.
      */
     constructor(service: Service, unitItem: any, items: ProgramUnitItem[]) {
         super(service, unitItem);
@@ -102,10 +102,10 @@ export class ProgramUnitItemQuery extends ProgramUnitItem {
 
     /**
      * Initializes a new instance of the ProgramUnitItemQuery class.
-     * @param service The service instance.
-     * @param routes The application routes.
-     * @param unitItem The raw unit item data.
-     * @param parent The parent program unit.
+     * @param service - The service instance.
+     * @param routes - The application routes.
+     * @param unitItem - The raw unit item data.
+     * @param parent - The parent program unit.
      */
     constructor(service: Service, routes: IRoutes, unitItem: any, parent: ProgramUnit) {
         super(service, unitItem, parent.path + ProgramUnitItemQuery._getPath(routes, unitItem.query));
@@ -138,10 +138,10 @@ export class ProgramUnitItemPersistentObject extends ProgramUnitItem {
 
     /**
      * Initializes a new instance of the ProgramUnitItemPersistentObject class.
-     * @param service The service instance.
-     * @param routes The application routes.
-     * @param unitItem The raw unit item data.
-     * @param parent The parent program unit.
+     * @param service - The service instance.
+     * @param routes - The application routes.
+     * @param unitItem - The raw unit item data.
+     * @param parent - The parent program unit.
      */
     constructor(service: Service, routes: IRoutes, unitItem: any, parent: ProgramUnit) {
         super(service, unitItem, parent.path + ProgramUnitItemPersistentObject._getPath(routes, unitItem.persistentObject, unitItem.objectId));
@@ -179,8 +179,8 @@ export class ProgramUnitItemPersistentObject extends ProgramUnitItem {
 export class ProgramUnitItemUrl extends ProgramUnitItem {
     /**
      * Initializes a new instance of the ProgramUnitItemUrl class.
-     * @param service The service instance.
-     * @param unitItem The raw unit item data.
+     * @param service - The service instance.
+     * @param unitItem - The raw unit item data.
      */
     constructor(service: Service, unitItem: any) {
         super(service, unitItem, unitItem.objectId);
@@ -193,8 +193,8 @@ export class ProgramUnitItemUrl extends ProgramUnitItem {
 export class ProgramUnitItemSeparator extends ProgramUnitItem {
     /**
      * Initializes a new instance of the ProgramUnitItemSeparator class.
-     * @param service The service instance.
-     * @param unitItem The raw unit item data.
+     * @param service - The service instance.
+     * @param unitItem - The raw unit item data.
      */
     constructor(service: Service, unitItem: any) {
         super(service, unitItem);

@@ -23,9 +23,9 @@ export class QueryResultItemValue extends ServiceObject {
     /**
      * Initializes a new instance of the QueryResultItemValue class.
      * 
-     * @param service The service instance to which this value belongs.
-     * @param item The parent QueryResultItem.
-     * @param value The raw value object from the service.
+     * @param service - The service instance to which this value belongs.
+     * @param item - The parent QueryResultItem.
+     * @param value - The raw value object from the service.
      */
     constructor(service: Service, item: QueryResultItem, value: any) {
         super(service);
@@ -93,9 +93,9 @@ export class QueryResultItemValue extends ServiceObject {
 
     /**
      * Gets the type hint for a given name, with an optional default value.
-     * @param name The name of the type hint to retrieve.
-     * @param defaultValue The default value to return if the type hint is not found.
-     * @param typeHints Optional type hints object to use instead of the instance's typeHints.
+     * @param name - The name of the type hint to retrieve.
+     * @param defaultValue - The default value to return if the type hint is not found.
+     * @param typeHints - Optional type hints object to use instead of the instance's typeHints.
      * @returns The type hint value or the default value if not found.
      */
     getTypeHint(name: string, defaultValue?: string, typeHints?: any): string {

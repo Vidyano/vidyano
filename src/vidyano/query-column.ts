@@ -50,9 +50,9 @@ export class QueryColumn extends ServiceObject {
 
     /**
      * Initializes a new instance of the QueryColumn class.
-     * @param service The service instance.
-     * @param col The column DTO or QueryColumn to copy from.
-     * @param query The parent query.
+     * @param service - The service instance.
+     * @param col - The column DTO or QueryColumn to copy from.
+     * @param query - The parent query.
      */
     constructor(service: Service, col: Dto.QueryColumnDto | any, public query: Query) {
         super(service);
@@ -236,10 +236,10 @@ export class QueryColumn extends ServiceObject {
 
     /**
      * Gets the type hint for a given name, with an optional default value.
-     * @param name The name of the type hint to retrieve.
-     * @param defaultValue The default value to return if the type hint is not found.
-     * @param typeHints Optional type hints object to use instead of the instance's typeHints.
-     * @param ignoreCasing Optional flag to ignore casing.
+     * @param name - The name of the type hint to retrieve.
+     * @param defaultValue - The default value to return if the type hint is not found.
+     * @param typeHints - Optional type hints object to use instead of the instance's typeHints.
+     * @param ignoreCasing - Optional flag to ignore casing.
      * @returns The type hint value or the default value if not found.
      */
     getTypeHint(name: string, defaultValue?: string, typeHints?: any, ignoreCasing?: boolean): string {
@@ -249,7 +249,7 @@ export class QueryColumn extends ServiceObject {
 
     /**
      * Refreshes the distinct values for the column, optionally with a search string.
-     * @param search Optional search string to filter distincts.
+     * @param search - Optional search string to filter distincts.
      * @returns A promise resolving to the distincts.
      */
     async refreshDistincts(search?: string): Promise<IQueryColumnDistincts> {
@@ -285,8 +285,8 @@ export class QueryColumn extends ServiceObject {
 
     /**
      * Sorts the query by this column.
-     * @param direction The sort direction.
-     * @param multiSort Whether to use multi-sort.
+     * @param direction - The sort direction.
+     * @param multiSort - Whether to use multi-sort.
      * @returns A promise resolving to the query result items.
      */
     async sort(direction: SortDirection, multiSort?: boolean): Promise<QueryResultItem[]> {
@@ -328,8 +328,8 @@ export class QueryColumn extends ServiceObject {
 
     /**
      * Handles property changes on the parent query.
-     * @param sender The query.
-     * @param args The property changed arguments.
+     * @param sender - The query.
+     * @param args - The property changed arguments.
      */
     #queryPropertyChanged(sender: Query, args: PropertyChangedArgs) {
         if (args.propertyName === "sortOptions") {

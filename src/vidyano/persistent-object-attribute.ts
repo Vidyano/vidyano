@@ -437,8 +437,8 @@ export class PersistentObjectAttribute extends ServiceObject {
     /**
      * Sets the value and handles necessary updates.
      *
-     * @param val The new value.
-     * @param allowRefresh Optional flag to allow refresh.
+     * @param val - The new value.
+     * @param allowRefresh - Optional flag to allow refresh.
      * @returns A promise resolving to the updated value.
      */
     async setValue(val: any, allowRefresh: boolean = true): Promise<any> {
@@ -542,10 +542,10 @@ export class PersistentObjectAttribute extends ServiceObject {
     /**
      * Retrieves a type hint value.
      *
-     * @param name The name of the type hint.
-     * @param defaultValue The default value if the hint is not present.
-     * @param typeHints Optional type hints to merge.
-     * @param ignoreCasing Whether to ignore casing for the name.
+     * @param name - The name of the type hint.
+     * @param defaultValue - The default value if the hint is not present.
+     * @param typeHints - Optional type hints to merge.
+     * @param ignoreCasing - Whether to ignore casing for the name.
      * @returns The type hint.
      */
     getTypeHint(name: string, defaultValue?: string, typeHints?: any, ignoreCasing?: boolean): string {
@@ -569,7 +569,7 @@ export class PersistentObjectAttribute extends ServiceObject {
     /**
      * Triggers a refresh for the attribute.
      *
-     * @param immediate Optional flag to perform immediate refresh.
+     * @param immediate - Optional flag to perform immediate refresh.
      * @returns A promise that resolves when the refresh is complete.
      */
     triggerRefresh(immediate?: boolean): Promise<any> {

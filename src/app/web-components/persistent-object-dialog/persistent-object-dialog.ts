@@ -191,8 +191,8 @@ export class PersistentObjectDialog extends Dialog {
 
     /**
      * Computes whether the navigation buttons should be shown.
-     * @param persistentObject The persistent object to compute the show navigation for.
-     * @param app The app instance.
+     * @param persistentObject - The persistent object to compute the show navigation for.
+     * @param app - The app instance.
      * @returns {boolean} True if the navigation buttons should be shown, false otherwise.
      */
     private _computeShowNavigation(persistentObject: Vidyano.PersistentObject, app: App): boolean {

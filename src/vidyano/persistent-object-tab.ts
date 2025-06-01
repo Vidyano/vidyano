@@ -21,12 +21,12 @@ export abstract class PersistentObjectTab extends Observable<PersistentObjectTab
 
     /**
      * Creates a new persistent object tab.
-     * @param service The service instance.
-     * @param name The name for the tab.
-     * @param label The label for the tab.
-     * @param target The target for the tab.
-     * @param parent The parent persistent object for the tab.
-     * @param isVisible Whether the tab is visible.
+     * @param service - The service instance.
+     * @param name - The name for the tab.
+     * @param label - The label for the tab.
+     * @param target - The target for the tab.
+     * @param parent - The parent persistent object for the tab.
+     * @param isVisible - Whether the tab is visible.
      */
     constructor(service: Service, name: string, label: string, target: ServiceObjectWithActions, parent?: PersistentObject, isVisible = true) {
         super();
@@ -100,15 +100,15 @@ export class PersistentObjectAttributeTab extends PersistentObjectTab {
 
     /**
      * Creates a new persistent object attribute tab.
-     * @param service The service instance.
-     * @param groups The attribute groups for the tab.
-     * @param key The key for the tab.
-     * @param id The id for the tab.
-     * @param name The name for the tab.
-     * @param layout The layout for the tab.
-     * @param po The persistent object for the tab.
-     * @param columnCount The amount of columns for the tab.
-     * @param isVisible Whether the tab is visible.
+     * @param service - The service instance.
+     * @param groups - The attribute groups for the tab.
+     * @param key - The key for the tab.
+     * @param id - The id for the tab.
+     * @param name - The name for the tab.
+     * @param layout - The layout for the tab.
+     * @param po - The persistent object for the tab.
+     * @param columnCount - The amount of columns for the tab.
+     * @param isVisible - Whether the tab is visible.
      */
     constructor(service: Service, groups: PersistentObjectAttributeGroup[], key: string, id: string, name: string, layout: any, po: PersistentObject, columnCount: number, isVisible: boolean) {
         super(service, name, String.isNullOrEmpty(key) ? po.label : key, po, po, isVisible);
@@ -221,8 +221,8 @@ export class PersistentObjectQueryTab extends PersistentObjectTab {
 
     /**
      * Creates a new persistent object query tab.
-     * @param service The service instance.
-     * @param query The query for the tab.
+     * @param service - The service instance.
+     * @param query - The query for the tab.
      */
     constructor(service: Service, query: Query) {
         super(service, query.name, query.label, query, query.parent, !query.isHidden);

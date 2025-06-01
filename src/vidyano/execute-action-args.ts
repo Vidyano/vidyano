@@ -77,12 +77,12 @@ export class ExecuteActionArgs {
 
     /**
      * Initializes a new instance of ExecuteActionArgs.
-     * @param service The service instance.
-     * @param action The full action name (with namespace).
-     * @param persistentObject The persistent object.
-     * @param query The query context.
-     * @param selectedItems The selected query result items.
-     * @param parameters Additional parameters.
+     * @param service - The service instance.
+     * @param action - The full action name (with namespace).
+     * @param persistentObject - The persistent object.
+     * @param query - The query context.
+     * @param selectedItems - The selected query result items.
+     * @param parameters - Additional parameters.
      */
     constructor(service: Service, action: string, persistentObject: PersistentObject, query: Query, selectedItems: QueryResultItem[], parameters: any) {
         this.#service = service;

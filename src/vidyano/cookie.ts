@@ -39,7 +39,7 @@ const hasStorage = ((): boolean => {
 /**
  * Normalizes a path string to ensure it starts and ends with a slash,
  * and collapses multiple consecutive slashes.
- * @param path The path string to normalize.
+ * @param path - The path string to normalize.
  * @returns Normalized path string.
  */
 function normalizePath(path: string | null | undefined): string {
@@ -59,7 +59,7 @@ function normalizePath(path: string | null | undefined): string {
 /**
  * Extracts a directory path from a full path string (e.g., URL pathname).
  * Ensures the path ends with a '/', suitable for use as a cookie path prefix.
- * @param fullPath The full path string.
+ * @param fullPath - The full path string.
  * @returns Normalized directory path.
  */
 function getDirectoryPath(fullPath: string): string {
@@ -100,7 +100,7 @@ function clearActualCookie(name: string, path: string, domain?: string): void {
 
 /**
  * Gets or sets the cookie prefix used for storage keys and default cookie paths.
- * @param prefix Optional prefix to set.
+ * @param prefix - Optional prefix to set.
  * @returns The current cookie prefix.
  */
 export function cookiePrefix(prefix?: string): string {
@@ -159,25 +159,25 @@ export interface CookieSetOptions {
 
 /**
  * Gets a cookie or storage value.
- * @param key The key for the cookie or storage.
- * @param options Optional settings for how to retrieve the value.
+ * @param key - The key for the cookie or storage.
+ * @param options - Optional settings for how to retrieve the value.
  * @returns The value string, or an empty string "" if not found/expired.
  */
 export function cookie(key: string, options?: CookieGetOptions): string;
 
 /**
  * Sets a cookie or storage value.
- * @param key The key for the cookie or storage.
- * @param value The value to set. Use `null` or `undefined` along with a past/negative `expires` to delete.
- * @param options Additional options for setting the cookie.
+ * @param key - The key for the cookie or storage.
+ * @param value - The value to set. Use `null` or `undefined` along with a past/negative `expires` to delete.
+ * @param options - Additional options for setting the cookie.
  * @returns For Web Storage: The prefixed key. For document.cookie: The full cookie string.
  */
 export function cookie(key: string, value: string | null | undefined, options?: CookieSetOptions): string;
 /**
  * Gets or sets a cookie or storage value.
- * @param key The key for the cookie or storage.
- * @param valueOrOptions Optional value to set or options for getting the value.
- * @param optionsForSet Optional settings for how to set the value.
+ * @param key - The key for the cookie or storage.
+ * @param valueOrOptions - Optional value to set or options for getting the value.
+ * @param optionsForSet - Optional settings for how to set the value.
  * @returns The value string, or an empty string "" if not found/expired, or the prefixed key/cookie string if setting.
  */
 export function cookie(key: string, valueOrOptions?: string | null | undefined | CookieGetOptions, optionsForSet?: CookieSetOptions): string {

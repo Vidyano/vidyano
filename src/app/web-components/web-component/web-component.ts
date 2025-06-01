@@ -313,7 +313,7 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
 
     /**
      * Forwards the service.language.messages to the translations property. Can be overridden to provide custom translations.
-     * @param messages The current service.language.messages
+     * @param messages - The current service.language.messages
      * @returns The translations to be used in the component
      */
     protected _computeTranslations(messages: Record<string, string>): Record<string, string> {

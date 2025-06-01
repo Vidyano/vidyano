@@ -12,9 +12,9 @@ export class ProgramUnit extends ProgramUnitItem {
 
     /**
      * Initializes a new instance of the ProgramUnit class.
-     * @param service The service instance.
-     * @param routes The application routes.
-     * @param unit The raw unit data.
+     * @param service - The service instance.
+     * @param routes - The application routes.
+     * @param unit - The raw unit data.
      */
     constructor(service: Service, routes: IRoutes, unit: any) {
         super(service, unit, unit.name.toKebabCase(), unit.name.toKebabCase());
@@ -94,8 +94,8 @@ export class ProgramUnit extends ProgramUnitItem {
 
     /**
      * Creates a program unit item based on the item data.
-     * @param routes The application routes.
-     * @param itemData The raw item data.
+     * @param routes - The application routes.
+     * @param itemData - The raw item data.
      * @returns The created ProgramUnitItem.
      */
     #createItem(routes: IRoutes, itemData: any): ProgramUnitItem {

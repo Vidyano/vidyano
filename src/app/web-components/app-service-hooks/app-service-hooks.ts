@@ -180,8 +180,8 @@ export class AppServiceHooks extends AppServiceHooksBase {
 
     /**
      * Called when a persistent object is activated, e.g. when it is opened in a dialog or navigated to.
-     * @param persistentObject The persistent object that was activated.
-     * @param details Additional details about the activation, such as whether it was opened as a dialog or the presenter.
+     * @param persistentObject - The persistent object that was activated.
+     * @param details - Additional details about the activation, such as whether it was opened as a dialog or the presenter.
      */
     onPersistentObjectActivated(persistentObject: Vidyano.PersistentObject, details: PersistentObjectActivationDetails = {}): void {
         // Noop
@@ -189,8 +189,8 @@ export class AppServiceHooks extends AppServiceHooksBase {
 
     /**
      * Called when a persistent object is deactivated, e.g. when the dialog is closed or navigated away from.
-     * @param persistentObject The persistent object that was deactivated.
-     * @param details Additional details about the deactivation, such as the presenter.
+     * @param persistentObject - The persistent object that was deactivated.
+     * @param details - Additional details about the deactivation, such as the presenter.
      */
     onPersistentObjectDeactivated(persistentObject: Vidyano.PersistentObject, details: PersistentObjectActivationDetails = {}): void {
         // Noop
@@ -198,8 +198,8 @@ export class AppServiceHooks extends AppServiceHooksBase {
 
     /**
      * Called when a program unit is activated, e.g. when it is opened in a dialog or navigated to.
-     * @param programUnit The program unit that was activated.
-     * @param details Additional details about the activation, such as the presenter.
+     * @param programUnit - The program unit that was activated.
+     * @param details - Additional details about the activation, such as the presenter.
      */
     onProgramUnitActivated(programUnit: Vidyano.ProgramUnit, details: ProgramUnitActivationDetails = {}): void {
         // Noop
@@ -207,8 +207,8 @@ export class AppServiceHooks extends AppServiceHooksBase {
 
     /**
      * Called when a program unit is deactivated, e.g. when the dialog is closed or navigated away from.
-     * @param programUnit The program unit that was deactivated.
-     * @param details Additional details about the deactivation, such as the presenter.
+     * @param programUnit - The program unit that was deactivated.
+     * @param details - Additional details about the deactivation, such as the presenter.
      */
     onProgramUnitDeactivated(programUnit: Vidyano.ProgramUnit, details: ProgramUnitActivationDetails = {}): void {
         // Noop
@@ -216,8 +216,8 @@ export class AppServiceHooks extends AppServiceHooksBase {
 
     /**
      * Called when a query is activated, e.g. when it is opened in a dialog or navigated to.
-     * @param query The query that was activated.
-     * @param details Additional details about the activation, such as the presenter.
+     * @param query - The query that was activated.
+     * @param details - Additional details about the activation, such as the presenter.
      */
     onQueryActivated(query: Vidyano.Query, details: QueryActivationDetails = {}): void {
         // Noop
@@ -225,8 +225,8 @@ export class AppServiceHooks extends AppServiceHooksBase {
 
     /**
      * Called when a query is deactivated, e.g. when the dialog is closed or navigated away from.
-     * @param query The query that was deactivated.
-     * @param details Additional details about the deactivation, such as the presenter.
+     * @param query - The query that was deactivated.
+     * @param details - Additional details about the deactivation, such as the presenter.
      */
     onQueryDeactivated(query: Vidyano.Query, details: QueryActivationDetails = {}): void {
         // Noop

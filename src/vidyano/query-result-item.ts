@@ -25,10 +25,10 @@ export class QueryResultItem extends ServiceObject {
     /**
      * Initializes a new instance of the QueryResultItem class.
      * 
-     * @param service The service instance to which this query result item belongs.
-     * @param item The raw item data from the query result.
-     * @param query The query that this result item is part of.
-     * @param isSelected Indicates whether this item is selected in the query result.
+     * @param service - The service instance to which this query result item belongs.
+     * @param item - The raw item data from the query result.
+     * @param query - The query that this result item is part of.
+     * @param isSelected - Indicates whether this item is selected in the query result.
      */
     constructor(service: Service, item: Dto.QueryResultItemDto, public query: Query, isSelected: boolean) {
         super(service);
@@ -124,7 +124,7 @@ export class QueryResultItem extends ServiceObject {
 
     /**
      * Gets the value for a given column name from the query result item.
-     * @param columnName The name of the column to retrieve the value for.
+     * @param columnName - The name of the column to retrieve the value for.
      * @returns The value for the specified column name, or undefined if not found.
      */
     getValue(columnName: string): any {
@@ -134,7 +134,7 @@ export class QueryResultItem extends ServiceObject {
     /**
      * Gets the full query result item value for a given key, including metadata.
      * If the value is not found, it returns null.
-     * @param columnName The name of the column to retrieve the value for.
+     * @param columnName - The name of the column to retrieve the value for.
      * @returns The full value object or null if not found.
      */
     getFullValue(columnName: string): QueryResultItemValue {
@@ -150,9 +150,9 @@ export class QueryResultItem extends ServiceObject {
 
     /**
      * Gets the type hint for a given name, with an optional default value.
-     * @param name The name of the type hint to retrieve.
-     * @param defaultValue The default value to return if the type hint is not found.
-     * @param typeHints Optional type hints object to use instead of the instance's typeHints.
+     * @param name - The name of the type hint to retrieve.
+     * @param defaultValue - The default value to return if the type hint is not found.
+     * @param typeHints - Optional type hints object to use instead of the instance's typeHints.
      * @returns The type hint value or the default value if not found.
      */
     getTypeHint(name: string, defaultValue?: string, typeHints?: any): string {
@@ -162,7 +162,7 @@ export class QueryResultItem extends ServiceObject {
 
     /**
      * Gets the persistent object associated with this query result item from the service.
-     * @param throwExceptions If true, exceptions will be thrown instead of being caught and returned as null.
+     * @param throwExceptions - If true, exceptions will be thrown instead of being caught and returned as null.
      * @returns A promise that resolves to the persistent object associated with this query result item.
      */
     getPersistentObject(throwExceptions?: boolean): Promise<PersistentObject> {

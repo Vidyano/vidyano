@@ -101,11 +101,11 @@ export class Query extends ServiceObjectWithActions {
 
     /**
      * Constructs a new Query instance.
-     * @param service The service instance.
-     * @param queryDto The query DTO containing the initial data.
-     * @param parent The parent persistent object, if any.
-     * @param asLookup Whether the query is used as a lookup.
-     * @param maxSelectedItems The maximum number of items that can be selected in the query.
+     * @param service - The service instance.
+     * @param queryDto - The query DTO containing the initial data.
+     * @param parent - The parent persistent object, if any.
+     * @param asLookup - Whether the query is used as a lookup.
+     * @param maxSelectedItems - The maximum number of items that can be selected in the query.
      */
     constructor(service: Service, queryDto: Dto.QueryDto, public parent?: PersistentObject, asLookup: boolean = false, maxSelectedItems?: number) {
         super(service, queryDto.actions, queryDto.actionLabels);
@@ -608,13 +608,13 @@ export class Query extends ServiceObjectWithActions {
 
     /**
      * Groups the query by the specified column or column name.
-     * @param column The column to group by.
+     * @param column - The column to group by.
      * @returns A promise that resolves to the grouped query result items.
      */
     async group(column: QueryColumn): Promise<QueryResultItem[]>;
     /**
      * Groups the query by the specified column name.
-     * @param by The name of the column to group by.
+     * @param by - The name of the column to group by.
      * @returns A promise that resolves to the grouped query result items.
      */
     async group(by: string): Promise<QueryResultItem[]>;
@@ -634,9 +634,9 @@ export class Query extends ServiceObjectWithActions {
 
     /**
      * Reorders items in the query.
-     * @param before The item before the moved item.
-     * @param item The item to move.
-     * @param after The item after the moved item.
+     * @param before - The item before the moved item.
+     * @param item - The item to move.
+     * @param after - The item after the moved item.
      * @returns A promise that resolves to the reordered query result items.
      */
     async reorder(before: QueryResultItem, item: QueryResultItem, after: QueryResultItem): Promise<QueryResultItem[]> {
@@ -658,7 +658,7 @@ export class Query extends ServiceObjectWithActions {
 
     /**
      * Gets the column with the specified name.
-     * @param name The name of the column.
+     * @param name - The name of the column.
      * @returns The query column with the specified name.
      */
     getColumn(name: string): QueryColumn {
@@ -674,7 +674,7 @@ export class Query extends ServiceObjectWithActions {
 
     /**
      * Gets the items by their indexes.
-     * @param indexes The indexes of the items to retrieve.
+     * @param indexes - The indexes of the items to retrieve.
      * @returns A promise that resolves to the query result items.
      */
     async getItemsByIndex(...indexes: number[]): Promise<QueryResultItem[]> {
@@ -707,9 +707,9 @@ export class Query extends ServiceObjectWithActions {
 
     /**
      * Gets a range of items from the query.
-     * @param start The starting index.
-     * @param length The number of items to retrieve.
-     * @param skipQueue Whether to skip the queue.
+     * @param start - The starting index.
+     * @param length - The number of items to retrieve.
+     * @param skipQueue - Whether to skip the queue.
      * @returns A promise that resolves to the query result items.
      */
     async getItems(start: number, length: number = this.pageSize, skipQueue: boolean = false): Promise<QueryResultItem[]> {
@@ -842,7 +842,7 @@ export class Query extends ServiceObjectWithActions {
 
     /**
      * Searches the query with optional options.
-     * @param options The search options.
+     * @param options - The search options.
      * @returns A promise that resolves to the query result items.
      */
     async search(options?: { delay?: number; throwExceptions?: boolean; keepSelection?: boolean }): Promise<QueryResultItem[]> {
@@ -895,7 +895,7 @@ export class Query extends ServiceObjectWithActions {
 
     /**
      * Clones the query.
-     * @param asLookup Whether to clone as a lookup query.
+     * @param asLookup - Whether to clone as a lookup query.
      * @returns The cloned query.
      */
     clone(asLookup: boolean = false): Query {
@@ -948,7 +948,7 @@ export class Query extends ServiceObjectWithActions {
 
     /**
      * Sets the result for the query.
-     * @param result The query result DTO.
+     * @param result - The query result DTO.
      */
     #setResult(result: Dto.QueryResultDto) {
         this.#lastResult = result;
@@ -989,8 +989,8 @@ export class Query extends ServiceObjectWithActions {
 
     /**
      * Handles property changes for the select all functionality.
-     * @param selectAll The select all instance.
-     * @param args The property changed arguments.
+     * @param selectAll - The select all instance.
+     * @param args - The property changed arguments.
      */
     #selectAllPropertyChanged(selectAll: QuerySelectAll, args: PropertyChangedArgs) {
         if (args.propertyName === "allSelected")
@@ -999,7 +999,7 @@ export class Query extends ServiceObjectWithActions {
 
     /**
      * Sets the sort options from the service.
-     * @param options The sort options as a string or an array of ISortOption.
+     * @param options - The sort options as a string or an array of ISortOption.
      */
     #setSortOptionsFromService(options: string | ISortOption[]) {
         let newSortOptions: ISortOption[];
@@ -1025,7 +1025,7 @@ export class Query extends ServiceObjectWithActions {
 
     /**
      * Sets the total number of items in the query.
-     * @param items The total number of items.
+     * @param items - The total number of items.
      */
     #setTotalItems(items: number) {
         if (this.#totalItems === items)
@@ -1041,7 +1041,7 @@ export class Query extends ServiceObjectWithActions {
 
     /**
      * Sets the items for the query.
-     * @param items The items to set.
+     * @param items - The items to set.
      */
     #setItems(items: QueryResultItem[]) {
         this.selectAll.inverse = this.selectAll.allSelected = false;
@@ -1054,9 +1054,9 @@ export class Query extends ServiceObjectWithActions {
 
     /**
      * Handles lazy loading of items in the query.
-     * @param target The target array of query result items.
-     * @param property The property to access (index or method).
-     * @param receiver The receiver of the property access.
+     * @param target - The target array of query result items.
+     * @param property - The property to access (index or method).
+     * @param receiver - The receiver of the property access.
      * @returns The item at the specified index or the result of the method call.
      */
     #getItemsLazy(target: QueryResultItem[], property: string | symbol, receiver: any) {
@@ -1142,7 +1142,7 @@ export class Query extends ServiceObjectWithActions {
     
     /**
      * Updates the columns of the query.
-     * @param newColumns The new columns to update.
+     * @param newColumns - The new columns to update.
      */
     #updateColumns(newColumns: any[] = []) {
         const oldColumns = this.columns ? this.columns.slice(0) : this.columns;
@@ -1190,7 +1190,7 @@ export class Query extends ServiceObjectWithActions {
 
     /**
      * Updates the grouping information for the query.
-     * @param groupingInfo The grouping information to update.
+     * @param groupingInfo - The grouping information to update.
      */
     #updateGroupingInfo(groupingInfo: Dto.QueryGroupingInfoDto) {
         if (!groupingInfo) {
@@ -1221,8 +1221,8 @@ export class Query extends ServiceObjectWithActions {
 
     /**
      * Handles property changes for query columns.
-     * @param sender The query column that changed.
-     * @param args The property changed arguments.
+     * @param sender - The query column that changed.
+     * @param args - The property changed arguments.
      */
     #queryColumnPropertyChanged(sender: QueryColumn, args: PropertyChangedArgs) {
         if (args.propertyName === "selectedDistincts")
@@ -1231,7 +1231,7 @@ export class Query extends ServiceObjectWithActions {
 
     /**
      * Notifies that the selection of an item has changed.
-     * @param item The item whose selection has changed.
+     * @param item - The item whose selection has changed.
      */
     #notifyItemSelectionChanged(item: QueryResultItem) {
         if (this.#isSelectionModifying)
@@ -1255,8 +1255,8 @@ export class Query extends ServiceObjectWithActions {
 
     /**
      * Updates the select all helper based on the current selection.
-     * @param item The item that was selected or deselected, if any.
-     * @param selectedItems The currently selected items, defaults to the current selection.
+     * @param item - The item that was selected or deselected, if any.
+     * @param selectedItems - The currently selected items, defaults to the current selection.
      */
     #updateSelectAll(item?: QueryResultItem, selectedItems: QueryResultItem[] = this.selectedItems) {
         if (this.selectAll.isAvailable) {

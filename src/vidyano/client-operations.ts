@@ -40,9 +40,9 @@ export interface IOpenOperation extends IClientOperation {
 export const ClientOperations = {
     /**
      * Copies data to the clipboard and shows a notification.
-     * @param hooks The service hooks.
-     * @param data The data to copy to the clipboard.
-     * @param message Optional message to show after copying.
+     * @param hooks - The service hooks.
+     * @param data - The data to copy to the clipboard.
+     * @param message - Optional message to show after copying.
      */
     copyToClipboard: function (hooks: ServiceHooks, data: string, message?: string) {
         navigator.clipboard.writeText(data);
@@ -51,13 +51,13 @@ export const ClientOperations = {
 
     /**
      * Enables Datadog RUM for the application.
-     * @param hooks The service hooks.
-     * @param applicationId The Datadog application ID.
-     * @param clientToken The Datadog client token.
-     * @param site The Datadog site (e.g., "datadoghq.com").
-     * @param service The name of the service.
-     * @param version Optional version of the application.
-     * @param environment Optional environment (e.g., "production", "development").
+     * @param hooks - The service hooks.
+     * @param applicationId - The Datadog application ID.
+     * @param clientToken - The Datadog client token.
+     * @param site - The Datadog site (e.g., "datadoghq.com").
+     * @param service - The name of the service.
+     * @param version - Optional version of the application.
+     * @param environment - Optional environment (e.g., "production", "development").
      */
     enableDatadog: function(hooks: ServiceHooks, applicationId: string, clientToken: string, site: string, service: string, version?: string, environment?: string) {
         const _enableDatadog = (h,o,u,n,d) => {
@@ -88,9 +88,9 @@ export const ClientOperations = {
 
     /**
      * Navigates to a given path.
-     * @param hooks The service hooks.
-     * @param path The path to navigate to.
-     * @param replaceCurrent Whether to replace the current history entry.
+     * @param hooks - The service hooks.
+     * @param path - The path to navigate to.
+     * @param replaceCurrent - Whether to replace the current history entry.
      */
     navigate: function (hooks: ServiceHooks, path: string, replaceCurrent?: boolean) {
         hooks.onNavigate(path, replaceCurrent);
@@ -98,8 +98,8 @@ export const ClientOperations = {
 
     /**
      * Opens a URL in a new browser tab.
-     * @param hooks The service hooks.
-     * @param url The URL to open.
+     * @param hooks - The service hooks.
+     * @param url - The URL to open.
      */
     openUrl: function (hooks: ServiceHooks, url: string) {
         if (!url.startsWith("http"))
@@ -113,9 +113,9 @@ export const ClientOperations = {
 
     /**
      * Notifies that an update is available and triggers the update handler.
-     * @param hooks The service hooks.
-     * @param path The path related to the update.
-     * @param replaceCurrent Whether to replace the current history entry.
+     * @param hooks - The service hooks.
+     * @param path - The path related to the update.
+     * @param replaceCurrent - Whether to replace the current history entry.
      */
     refreshForUpdate: function (hooks: ServiceHooks, path: string, replaceCurrent?: boolean) {
         hooks.onUpdateAvailable();
@@ -130,11 +130,11 @@ export const ClientOperations = {
     
     /**
      * Shows a message dialog to the user.
-     * @param hooks The service hooks.
-     * @param title The dialog title.
-     * @param message The dialog message.
-     * @param rich Whether the message is rich text.
-     * @param delay Delay in milliseconds before showing the dialog.
+     * @param hooks - The service hooks.
+     * @param title - The dialog title.
+     * @param message - The dialog message.
+     * @param rich - Whether the message is rich text.
+     * @param delay - Delay in milliseconds before showing the dialog.
      */
     showMessageBox: function(hooks: ServiceHooks, title: string, message: string, rich: boolean = false, delay: number = 0) {
         setTimeout(function () {

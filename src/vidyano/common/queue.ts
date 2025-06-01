@@ -14,21 +14,21 @@ interface IQueueEntry<T> {
     /**
      * A function to call when the promise resolves successfully.
      * This will be called with the result of the promise.
-     * @param result The result of the promise.
+     * @param result - The result of the promise.
      */
     resolve: (result: T) => void;
 
     /**
      * A function to call when the promise rejects with an error.
      * This will be called with the error that caused the rejection.
-     * @param error The error that caused the promise to reject.
+     * @param error - The error that caused the promise to reject.
      */
     reject: (error?: any) => void;
 
     /**
      * An optional function to notify about the status of the promise.
      * This can be used for logging or user notifications.
-     * @param message Optional message to notify about the promise status.
+     * @param message - Optional message to notify about the promise status.
      */
     notify?: (message?: any) => void;
 }
@@ -41,7 +41,7 @@ export interface IQueueAddOptions {
     /**
      * An optional function to notify about the status of the promise.
      * This can be used for logging or user notifications.
-     * @param message Optional message to notify about the promise status.
+     * @param message - Optional message to notify about the promise status.
      */
     notify?: (message?: any) => void;
 }

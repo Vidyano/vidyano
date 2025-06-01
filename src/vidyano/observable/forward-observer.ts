@@ -17,11 +17,11 @@ export class ForwardObservedPropertyChangedArgs extends PropertyChangedArgs {
 
     /**
      * Creates a new instance of ObserveChainPropertyChangedArgs.
-     * @param path The full path to the property that changed.
-     * @param propertyName The name of the property that changed.
-     * @param newValue The new value of the property.
-     * @param oldValue The old value of the property.
-     * @param propertyOwner The owner of the property that changed.
+     * @param path - The full path to the property that changed.
+     * @param propertyName - The name of the property that changed.
+     * @param newValue - The new value of the property.
+     * @param oldValue - The old value of the property.
+     * @param propertyOwner - The owner of the property that changed.
      */
     constructor(path: string, propertyName: string, newValue: any, oldValue: any, propertyOwner: any) {
         super(propertyName, newValue, oldValue);
@@ -39,12 +39,12 @@ export class ForwardObservedArrayChangedArgs extends ArrayChangedArgs {
 
     /**
      * Creates a new instance of ObserveChainArrayChangedArgs.
-     * @param path The full path to the array property that changed.
-     * @param arrayPropertyName The name of the array property that changed.
-     * @param index The index at which the change occurred.
-     * @param removedItems The items that were removed from the array.
-     * @param addedItemCount The number of items added to the array.
-     * @param arrayInstance The instance of the array that changed.
+     * @param path - The full path to the array property that changed.
+     * @param arrayPropertyName - The name of the array property that changed.
+     * @param index - The index at which the change occurred.
+     * @param removedItems - The items that were removed from the array.
+     * @param addedItemCount - The number of items added to the array.
+     * @param arrayInstance - The instance of the array that changed.
      */
     constructor(path: string, arrayPropertyName: string, index: number, removedItems: any[] | undefined, addedItemCount: number | undefined, arrayInstance: any[]) {
         super(arrayPropertyName, index, removedItems, addedItemCount);
@@ -86,10 +86,10 @@ function _isObservableArraySourceCapable(obj: any): obj is IObservableSourceInte
  * Notifies the observer about the initial value of a specific segment in the path.
  * This is typically called when `notifyInitialState` is true and the path traversal
  * for observation purposes ends at this segment.
- * @param observer The observer callback to notify.
- * @param currentValueSource The object/value from which 'segmentName' is accessed.
- * @param segmentName The name of the property segment being observed.
- * @param fullPathToSegment The complete path to this segment, used for notification.
+ * @param observer - The observer callback to notify.
+ * @param currentValueSource - The object/value from which 'segmentName' is accessed.
+ * @param segmentName - The name of the property segment being observed.
+ * @param fullPathToSegment - The complete path to this segment, used for notification.
  */
 function _notifyInitialValueForSegment(
     observer: ForwardObservedCallback,
@@ -121,12 +121,12 @@ function _notifyInitialValueForSegment(
 /**
  * Handles observation for paths like "arraySource[*].remainingPathForItems".
  * Iterates over array items and recursively calls forwardObserverImpl for each item's sub-path.
- * @param arraySource The array to observe.
- * @param remainingPathForItems The path to observe for each item in the array (e.g., "subProp.leaf").
- * @param currentPathPrefix The path prefix before the wildcard and index (e.g., "myArray" if path is "myArray.*").
- * @param observer The observer callback to notify about changes.
- * @param notifyInitialState If true, the observer will be notified with the initial state of each item.
- * @param effectiveOriginalSource The original source object from the initial call to forwardObserver.
+ * @param arraySource - The array to observe.
+ * @param remainingPathForItems - The path to observe for each item in the array (e.g., "subProp.leaf").
+ * @param currentPathPrefix - The path prefix before the wildcard and index (e.g., "myArray" if path is "myArray.*").
+ * @param observer - The observer callback to notify about changes.
+ * @param notifyInitialState - If true, the observer will be notified with the initial state of each item.
+ * @param effectiveOriginalSource - The original source object from the initial call to forwardObserver.
  * @returns An array of disposer functions for each item's observation.
  */
 function _observeArrayWildcardItems(
@@ -156,13 +156,13 @@ function _observeArrayWildcardItems(
 /**
  * Sets up listeners for an array property, typically when the path is "propertyName.*".
  * This handles attaching to `arrayChanged` events and notifying initial state of the array property.
- * @param arrayOwner The observable object that owns the array property.
- * @param arrayPropName The name of the array property (e.g., "items").
- * @param arrayValue The actual array value to observe.
- * @param arrayFullPath The full path to the array property (e.g., "obj.items").
- * @param observer The observer callback to notify about changes.
- * @param notifyInitialState If true, the observer will be notified with the initial state of the array property.
- * @param isInitialCall True if this is the initial setup, false if due to property change.
+ * @param arrayOwner - The observable object that owns the array property.
+ * @param arrayPropName - The name of the array property (e.g., "items").
+ * @param arrayValue - The actual array value to observe.
+ * @param arrayFullPath - The full path to the array property (e.g., "obj.items").
+ * @param observer - The observer callback to notify about changes.
+ * @param notifyInitialState - If true, the observer will be notified with the initial state of the array property.
+ * @param isInitialCall - True if this is the initial setup, false if due to property change.
  * @returns A disposer function that cleans up the listeners set up by this function.
  */
 function _setupArrayPropertyListeners(
@@ -220,13 +220,13 @@ function _setupArrayPropertyListeners(
 /**
  * Observes a specific property on an Observable source.
  * Manages sub-chain observation for nested properties and specialized observation for array properties.
- * @param observableSource The observable source object to observe.
- * @param propertyName The name of the property to observe on the observable source.
- * @param remainingPath The path relative to the property's value (e.g., "subProp.leaf").
- * @param propertyAbsolutePath The full path to this propertyName (e.g., "obj.propertyName").
- * @param observer The observer callback to notify about changes.
- * @param notifyInitialState If true, the observer will be notified with the initial state of the property.
- * @param effectiveOriginalSource The original source object from the initial call to forwardObserver.
+ * @param observableSource - The observable source object to observe.
+ * @param propertyName - The name of the property to observe on the observable source.
+ * @param remainingPath - The path relative to the property's value (e.g., "subProp.leaf").
+ * @param propertyAbsolutePath - The full path to this propertyName (e.g., "obj.propertyName").
+ * @param observer - The observer callback to notify about changes.
+ * @param notifyInitialState - If true, the observer will be notified with the initial state of the property.
+ * @param effectiveOriginalSource - The original source object from the initial call to forwardObserver.
  * @returns A disposer function that cleans up all observers and listeners set up by this function.
  */
 function _observeObservableProperty(
@@ -300,13 +300,13 @@ function _observeObservableProperty(
 /**
  * Observes a specific property on a plain JavaScript object.
  * If there's a remaining path, it recursively calls forwardObserverImpl.
- * @param plainObjectSource The plain object to observe.
- * @param propertyName The name of the property to observe on the plain object.
- * @param remainingPath The path relative to the property's value (e.g., "subProp.leaf").
- * @param propertyAbsolutePath The full path to this propertyName (e.g., "obj.propertyName").
- * @param observer The observer callback to notify about changes.
- * @param notifyInitialState If true, the observer will be notified with the initial state of the property.
- * @param effectiveOriginalSource The original source object from the initial call to forwardObserver.
+ * @param plainObjectSource - The plain object to observe.
+ * @param propertyName - The name of the property to observe on the plain object.
+ * @param remainingPath - The path relative to the property's value (e.g., "subProp.leaf").
+ * @param propertyAbsolutePath - The full path to this propertyName (e.g., "obj.propertyName").
+ * @param observer - The observer callback to notify about changes.
+ * @param notifyInitialState - If true, the observer will be notified with the initial state of the property.
+ * @param effectiveOriginalSource - The original source object from the initial call to forwardObserver.
  * @returns A disposer function that cleans up all observers and listeners set up by this function.
  */
 function _observePlainObjectProperty(
@@ -334,12 +334,12 @@ function _observePlainObjectProperty(
 
 /**
  * Core recursive implementation for {@link forwardObserver}.
- * @param source The current object/value in the path being observed.
- * @param relativePath The path segment(s) relative to the current source.
- * @param currentPathPrefix The absolute path accumulated so far, up to (but not including) the current relativePath.
- * @param observer The callback for change notifications.
- * @param notifyInitialState If true, send initial state notifications.
- * @param originalSource The very first source object from the initial call to {@link forwardObserver}.
+ * @param source - The current object/value in the path being observed.
+ * @param relativePath - The path segment(s) relative to the current source.
+ * @param currentPathPrefix - The absolute path accumulated so far, up to (but not including) the current relativePath.
+ * @param observer - The callback for change notifications.
+ * @param notifyInitialState - If true, send initial state notifications.
+ * @param originalSource - The very first source object from the initial call to {@link forwardObserver}.
  * @returns A disposer function to cancel observations set up by this call and its children.
  */
 function forwardObserverImpl(
@@ -442,10 +442,10 @@ function forwardObserverImpl(
 
 /**
  * Recursively forwards change notifications to a {@link ForwardObservedCallback} for an Observable, Array, or plain object property path.
- * @param source The source object to observe, which can be an Observable, Array, or plain object. Can be null or undefined.
- * @param relativePath The relative path to the property to observe, e.g., "property.subProperty" or "*".
- * @param observer The observer callback that will receive notifications about property changes.
- * @param notifyInitialState Optional. If set to true, the observer will be called with the initial state of properties as they are encountered.
+ * @param source - The source object to observe, which can be an Observable, Array, or plain object. Can be null or undefined.
+ * @param relativePath - The relative path to the property to observe, e.g., "property.subProperty" or "*".
+ * @param observer - The observer callback that will receive notifications about property changes.
+ * @param notifyInitialState - Optional. If set to true, the observer will be called with the initial state of properties as they are encountered.
  * @returns A disposer function that, when called, will cancel all observers and stop forwarding notifications.
  */
 export function forwardObserver(

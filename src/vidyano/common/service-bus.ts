@@ -3,9 +3,9 @@ import { ISubjectDisposer, ISubjectNotifier, Subject } from "../observable"
 /**
  * Callback function to handle messages sent via the service bus.
  * Use this to process messages broadcast across different parts of your app.
- * @param sender The originator of the message.
- * @param message The message content.
- * @param detail Extra data associated with the message.
+ * @param sender - The originator of the message.
+ * @param message - The message content.
+ * @param detail - Extra data associated with the message.
  */
 export type ServiceBusCallback = (sender: any, message: string, detail: any) => void;
 
@@ -24,25 +24,25 @@ export interface IServiceBus {
     /**
      * Sends a message on the service bus.
      * If the message contains a colon, the part before it defines the topic.
-     * @param message The message text or topic:message string.
-     * @param detail Optional extra data to accompany the message.
+     * @param message - The message text or topic:message string.
+     * @param detail - Optional extra data to accompany the message.
      */
     send(message: string, detail?: any): void;
     /**
      * Sends a message from a specified sender on the service bus.
      * If the message contains a colon, the part before it defines the topic.
-     * @param sender The sender of the message.
-     * @param message The message text or topic:message string.
-     * @param detail Optional extra data to accompany the message.
+     * @param sender - The sender of the message.
+     * @param message - The message text or topic:message string.
+     * @param detail - Optional extra data to accompany the message.
      */
     send(sender: any, message: string, detail?: any): void;
     /**
      * Subscribes to a message on the service bus.
      * You can subscribe to all messages in a topic using the "topic:*" syntax.
      * Optionally, the callback can be invoked immediately with the last message sent on that topic.
-     * @param message The message to listen for, possibly with a topic prefix.
-     * @param callback Function invoked when a matching message is sent.
-     * @param receiveLast If true, immediately receive the last sent message on that topic if available.
+     * @param message - The message to listen for, possibly with a topic prefix.
+     * @param callback - Function invoked when a matching message is sent.
+     * @param receiveLast - If true, immediately receive the last sent message on that topic if available.
      * @returns A disposer to cancel the subscription.
      */
     subscribe(message: string, callback: ServiceBusCallback, receiveLast?: boolean): ServiceBusSubscriptionDisposer;
@@ -82,7 +82,7 @@ class ServiceBusImpl implements IServiceBus {
      * Retrieves an existing topic or creates a new one if it doesn't exist.
      * A topic is used to group related messages. If no topic is specified,
      * a default topic (empty string) is used.
-     * @param topic The name of the topic.
+     * @param topic - The name of the topic.
      * @returns The topic instance with its notifier and subject.
      */
     #getTopic(topic: string = ""): IServiceBusTopic {
@@ -129,10 +129,10 @@ class ServiceBusImpl implements IServiceBus {
      * Subscribes to a specific message or topic.
      * The callback is called whenever a matching message is sent.
      * If receiveLast is true, the callback is also invoked with the last message on that topic.
-     * @param message The message to subscribe to. Can include a topic prefix, e.g. "topic:message".
+     * @param message - The message to subscribe to. Can include a topic prefix, e.g. "topic:message".
      *                Use "*" to match any message in the topic.
-     * @param callback Function to execute when a matching message is received.
-     * @param receiveLast If true, the callback is invoked immediately with the last message if available.
+     * @param callback - Function to execute when a matching message is received.
+     * @param receiveLast - If true, the callback is invoked immediately with the last message if available.
      * @returns A disposer to remove the subscription when no longer needed.
      */
     subscribe(message: string, callback: ServiceBusCallback, receiveLast?: boolean) {

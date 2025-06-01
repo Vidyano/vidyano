@@ -13,11 +13,11 @@ export class QueryChart extends Observable<QueryChart> {
 
     /**
      * Initializes a new instance of the QueryChart class.
-     * @param query The parent query.
-     * @param label The chart label.
-     * @param name The chart name.
-     * @param options The chart options.
-     * @param type The chart type.
+     * @param query - The parent query.
+     * @param label - The chart label.
+     * @param name - The chart name.
+     * @param options - The chart options.
+     * @param type - The chart type.
      */
     constructor(query: Query, label: string, name: string, options: any, type: string) {
         super();
@@ -66,7 +66,7 @@ export class QueryChart extends Observable<QueryChart> {
 
     /**
      * Executes the chart action with the given parameters.
-     * @param parameters The parameters for the chart action.
+     * @param parameters - The parameters for the chart action.
      * @returns The parsed chart data.
      */
     async execute(parameters: any = {}): Promise<any> {

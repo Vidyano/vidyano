@@ -16,10 +16,10 @@ export class PersistentObjectAttributeGroup extends Observable<PersistentObjectA
 
     /**
      * Creates a new instance of PersistentObjectAttributeGroup.
-     * @param service The service instance.
-     * @param key The key for the group.
-     * @param attributes The attributes in the group.
-     * @param parent The parent persistent object.
+     * @param service - The service instance.
+     * @param key - The key for the group.
+     * @param attributes - The attributes in the group.
+     * @param parent - The parent persistent object.
      */
     constructor(service: Service, key: string, attributes: PersistentObjectAttribute[], parent: PersistentObject) {
         super();

@@ -208,7 +208,7 @@ export class PersistentObject extends ServiceObjectWithActions {
     /**
      * Creates an attribute instance based on its properties, choosing between
      * standard, reference, or detail attribute types.
-     * @param attr The attribute DTO.
+     * @param attr - The attribute DTO.
      */
     #createPersistentObjectAttribute(attr: Dto.PersistentObjectAttributeDto): PersistentObjectAttribute {
         if ((<Dto.PersistentObjectAttributeWithReferenceDto>attr).displayAttribute || (<Dto.PersistentObjectAttributeWithReferenceDto>attr).objectId)
@@ -330,7 +330,7 @@ export class PersistentObject extends ServiceObjectWithActions {
 
     /**
      * Sets edit mode and notifies related actions.
-     * @param value Whether editing mode is enabled.
+     * @param value - Whether editing mode is enabled.
      */
     #setIsEditing(value: boolean) {
         this.#isEditing = value;
@@ -346,7 +346,7 @@ export class PersistentObject extends ServiceObjectWithActions {
 
     /**
      * Updates the breadcrumb value and notifies listeners when it changes.
-     * @param breadcrumb The new breadcrumb.
+     * @param breadcrumb - The new breadcrumb.
      */
     #setBreadcrumb(breadcrumb: string) {
         const oldBreadcrumb = this.#breadcrumb;
@@ -371,8 +371,8 @@ export class PersistentObject extends ServiceObjectWithActions {
 
     /**
      * Marks the object as having unsaved changes and alerts dependent actions.
-     * @param value The new dirty state.
-     * @param force Allows flagging as dirty even if not in edit mode.
+     * @param value - The new dirty state.
+     * @param force - Allows flagging as dirty even if not in edit mode.
      */
     #setIsDirty(value: boolean, force?: boolean) {
         if (value && (!this.isEditing && !force))
@@ -452,7 +452,7 @@ export class PersistentObject extends ServiceObjectWithActions {
 
     /**
      * Retrieves an attribute by name.
-     * @param name The attribute's name.
+     * @param name - The attribute's name.
      */
     getAttribute(name: string): PersistentObjectAttribute {
         return this.attributes[name];
@@ -460,7 +460,7 @@ export class PersistentObject extends ServiceObjectWithActions {
 
     /**
      * Gets the current value of a specified attribute.
-     * @param name The attribute's name.
+     * @param name - The attribute's name.
      */
     getAttributeValue<T = any>(name: string): T {
         const attr = this.attributes[name];
@@ -469,9 +469,9 @@ export class PersistentObject extends ServiceObjectWithActions {
 
     /**
      * Sets a new value for an attribute and optionally triggers a refresh.
-     * @param name The attribute's name.
-     * @param value The new value.
-     * @param allowRefresh If true, a refresh may follow the update.
+     * @param name - The attribute's name.
+     * @param value - The new value.
+     * @param allowRefresh - If true, a refresh may follow the update.
      */
     setAttributeValue(name: string, value: any, allowRefresh?: boolean): Promise<any> {
         const attr = <PersistentObjectAttribute>this.attributes[name];
@@ -490,7 +490,7 @@ export class PersistentObject extends ServiceObjectWithActions {
 
     /**
      * Sets the last update time and alerts listeners.
-     * @param lastUpdated The new timestamp.
+     * @param lastUpdated - The new timestamp.
      */
     #setLastUpdated(lastUpdated: Date) {
         const oldLastUpdated = this.#lastUpdated;
@@ -499,7 +499,7 @@ export class PersistentObject extends ServiceObjectWithActions {
 
     /**
      * Retrieves a query by name linked to this object.
-     * @param name The query's name.
+     * @param name - The query's name.
      */
     getQuery(name: string): Query {
         return this.queries[name];
@@ -537,7 +537,7 @@ export class PersistentObject extends ServiceObjectWithActions {
 
     /**
      * Saves changes, refreshes state, and handles post-save notifications.
-     * @param waitForOwnerQuery Optionally waits for the owner query to refresh.
+     * @param waitForOwnerQuery - Optionally waits for the owner query to refresh.
      */
     save(waitForOwnerQuery?: boolean): Promise<boolean> {
         return this.queueWork(async () => {
@@ -592,7 +592,7 @@ export class PersistentObject extends ServiceObjectWithActions {
 
     /**
      * Serializes the object into a service-friendly format.
-     * @param skipParent If true, parent data is excluded.
+     * @param skipParent - If true, parent data is excluded.
      */
     toServiceObject(skipParent: boolean = false): any {
         const result = this._copyPropertiesFromValues({
@@ -621,8 +621,8 @@ export class PersistentObject extends ServiceObjectWithActions {
 
     /**
      * Refreshes the object state from a new service result, merging changes.
-     * @param result The new data from the service.
-     * @param resultWins If true, the new data overrides current values.
+     * @param result - The new data from the service.
+     * @param resultWins - If true, the new data overrides current values.
      */
     #refreshFromResult(po: PersistentObject | Dto.PersistentObjectDto, resultWins: boolean = false) {
         const result = (po instanceof PersistentObject ? _internal(po).dto : po) as Dto.PersistentObjectDto;
@@ -700,7 +700,7 @@ export class PersistentObject extends ServiceObjectWithActions {
 
     /**
      * Rebuilds the tabs and groups UI structure based on changed attributes.
-     * @param changedAttributes The attributes that have been modified.
+     * @param changedAttributes - The attributes that have been modified.
      */
     #refreshTabsAndGroups(...changedAttributes: PersistentObjectAttribute[]) {
         // Track which tabs and groups need to be refreshed
@@ -828,8 +828,8 @@ export class PersistentObject extends ServiceObjectWithActions {
 
     /**
      * Refreshes a given attribute by re-querying the service.
-     * @param attr The attribute to refresh.
-     * @param immediate If set to true, performs the refresh immediately.
+     * @param attr - The attribute to refresh.
+     * @param immediate - If set to true, performs the refresh immediately.
      */
     triggerAttributeRefresh(attr: PersistentObjectAttribute, immediate?: boolean): Promise<boolean> {
         const attrValue = attr.value;
@@ -861,7 +861,7 @@ export class PersistentObject extends ServiceObjectWithActions {
 
     /**
      * Prepares all attributes for a refresh by caching current service values.
-     * @param sender The attribute initiating the refresh.
+     * @param sender - The attribute initiating the refresh.
      */
     #prepareAttributesForRefresh(sender: PersistentObjectAttribute) {
         for (const attribute of this.attributes) {

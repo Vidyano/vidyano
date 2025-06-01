@@ -30,8 +30,8 @@ export abstract class ServiceObject extends Observable<ServiceObject> {
 
     /**
      * Copy properties from a dictionary of values to an object. 
-     * @param values A dictionary of values to copy.
-     * @param result The object to copy the properties to.
+     * @param values - A dictionary of values to copy.
+     * @param result - The object to copy the properties to.
      * @returns The object with the properties copied.
      */
     protected _copyPropertiesFromValues(values: { [key: string]: any }, result: any = {}): any {

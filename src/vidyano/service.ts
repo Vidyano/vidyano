@@ -142,9 +142,9 @@ export class Service extends Observable<Service> {
 
     /**
      * Initializes a new instance of the Service class.
-     * @param serviceUri The base URI of the Vidyano service.
-     * @param hooks Optional service hooks for customizing behavior.
-     * @param isTransient Optional flag indicating if the service is transient (true) or uses cookies for state (false). Defaults to false.
+     * @param serviceUri - The base URI of the Vidyano service.
+     * @param hooks - Optional service hooks for customizing behavior.
+     * @param isTransient - Optional flag indicating if the service is transient (true) or uses cookies for state (false). Defaults to false.
      */
     constructor(public serviceUri: string, public hooks: ServiceHooks = new ServiceHooks(), public readonly isTransient: boolean = false) {
         super();
@@ -376,8 +376,8 @@ export class Service extends Observable<Service> {
 
     /**
      * Gets a translated message string for the given key, substituting parameters.
-     * @param key The key of the message to translate.
-     * @param params Optional parameters to substitute into the translated string.
+     * @param key - The key of the message to translate.
+     * @param params - Optional parameters to substitute into the translated string.
      * @returns The translated string, or the key if no translation is found.
      */
     public getTranslatedMessage(key: string, ...params: string[]): string {
@@ -386,7 +386,7 @@ export class Service extends Observable<Service> {
 
     /**
      * Gets the credential type required for the specified user name.
-     * @param userName The user name to check.
+     * @param userName - The user name to check.
      * @returns A promise resolving to the credential type information.
      */
     public async getCredentialType(userName: string) {
@@ -395,14 +395,14 @@ export class Service extends Observable<Service> {
 
     /**
      * Initializes the service by fetching client data and optionally attempting to sign in.
-     * @param skipDefaultCredentialLogin If true, skips automatic login with default credentials. Defaults to false.
+     * @param skipDefaultCredentialLogin - If true, skips automatic login with default credentials. Defaults to false.
      * @returns A promise resolving to the Application instance if sign-in was successful, otherwise null or throws an error.
      */
     public async initialize(skipDefaultCredentialLogin?: boolean): Promise<Application>;
     /**
      * Initializes the service by fetching client data and signing in with a one-time sign-in token.
      * Passing a token will always skip default credential login.
-     * @param oneTimeSignInToken The one-time sign-in token to use for authentication.
+     * @param oneTimeSignInToken - The one-time sign-in token to use for authentication.
      * @returns A promise resolving to the Application instance if sign-in was successful, otherwise null or throws an error.
      */
     public async initialize(oneTimeSignInToken: string): Promise<Application>;
@@ -473,7 +473,7 @@ export class Service extends Observable<Service> {
     /**
      * Initiates sign-in via an external authentication provider.
      * Redirects the browser to the provider's sign-in page.
-     * @param providerName The name of the external provider.
+     * @param providerName - The name of the external provider.
      */
     public signInExternal(providerName: string) {
         if (!this.providers[providerName] || !this.providers[providerName].requestUri)
@@ -487,18 +487,18 @@ export class Service extends Observable<Service> {
 
     /**
      * Signs in using user name and password credentials.
-     * @param userName The user name.
-     * @param password The password.
-     * @param staySignedIn Optional: A boolean indicating whether to stay signed in.
+     * @param userName - The user name.
+     * @param password - The password.
+     * @param staySignedIn - Optional: A boolean indicating whether to stay signed in.
      * @returns A promise resolving to the Application instance upon successful sign-in.
      */
     public async signInUsingCredentials(userName: string, password: string, staySignedIn?: boolean): Promise<Application>;
     /**
      * Signs in using user name, password, and a 2FA code.
-     * @param userName The user name.
-     * @param password The password.
-     * @param code The 2FA code.
-     * @param staySignedIn Optional: A boolean indicating whether to stay signed in.
+     * @param userName - The user name.
+     * @param password - The password.
+     * @param code - The 2FA code.
+     * @param staySignedIn - Optional: A boolean indicating whether to stay signed in.
      * @returns A promise resolving to the Application instance upon successful sign-in.
      */
     public async signInUsingCredentials(userName: string, password: string, code: string, staySignedIn?: boolean): Promise<Application>;
@@ -537,7 +537,7 @@ export class Service extends Observable<Service> {
 
     /**
      * Signs out the current user.
-     * @param skipAcs Optional flag to skip ACS (Access Control Service) sign-out. Defaults to false.
+     * @param skipAcs - Optional flag to skip ACS (Access Control Service) sign-out. Defaults to false.
      * @returns A promise resolving to true if sign-out was successful.
      */
     public async signOut(skipAcs?: boolean): Promise<boolean> {
@@ -584,11 +584,11 @@ export class Service extends Observable<Service> {
 
     /**
      * Retrieves a query definition and its initial data.
-     * @param id The ID of the query.
-     * @param optionsOrAsLookup Either an options object or a boolean indicating if the query is for lookup purposes.
-     * @param parent Optional parent persistent object if this is a detail query.
-     * @param textSearch Optional text search string.
-     * @param sortOptions Optional sort options string.
+     * @param id - The ID of the query.
+     * @param optionsOrAsLookup - Either an options object or a boolean indicating if the query is for lookup purposes.
+     * @param parent - Optional parent persistent object if this is a detail query.
+     * @param textSearch - Optional text search string.
+     * @param sortOptions - Optional sort options string.
      * @returns A promise resolving to the Query instance.
      */
     public async getQuery(id: string, optionsOrAsLookup?: boolean | GetQueryOptions, parent?: PersistentObject, textSearch?: string, sortOptions?: string): Promise<Query> {
@@ -623,10 +623,10 @@ export class Service extends Observable<Service> {
 
     /**
      * Retrieves a persistent object.
-     * @param parent Optional parent persistent object if this object is a detail.
-     * @param id The type ID of the persistent object.
-     * @param objectId Optional ID of an existing object to load.
-     * @param isNew Optional flag indicating if a new object should be created.
+     * @param parent - Optional parent persistent object if this object is a detail.
+     * @param id - The type ID of the persistent object.
+     * @param objectId - Optional ID of an existing object to load.
+     * @param isNew - Optional flag indicating if a new object should be created.
      * @returns A promise resolving to the PersistentObject instance.
      */
     public async getPersistentObject(parent: PersistentObject, id: string, objectId?: string, isNew?: boolean): Promise<PersistentObject> {
@@ -657,10 +657,10 @@ export class Service extends Observable<Service> {
 
     /**
      * Executes a query to retrieve or refresh its data.
-     * @param parent Optional parent persistent object if this is a detail query.
-     * @param query The query to execute.
-     * @param asLookup Optional flag indicating if the query is for lookup purposes. Defaults to false.
-     * @param throwExceptions Optional flag to throw exceptions instead of setting them as query notifications. Defaults to false.
+     * @param parent - Optional parent persistent object if this is a detail query.
+     * @param query - The query to execute.
+     * @param asLookup - Optional flag indicating if the query is for lookup purposes. Defaults to false.
+     * @param throwExceptions - Optional flag to throw exceptions instead of setting them as query notifications. Defaults to false.
      * @returns A promise resolving to the query result data.
      */
     public async executeQuery(parent: PersistentObject, query: Query, asLookup: boolean = false, throwExceptions?: boolean): Promise<Dto.QueryResultDto> {
@@ -713,12 +713,12 @@ export class Service extends Observable<Service> {
 
     /**
      * Executes an action on a persistent object or query.
-     * @param action The name of the action to execute.
-     * @param parent The parent persistent object (for object actions or context).
-     * @param query The query (for query actions).
-     * @param selectedItems An array of selected query result items (for query actions).
-     * @param parameters Optional parameters for the action.
-     * @param skipHooks Internal flag to skip hooks during retry.
+     * @param action - The name of the action to execute.
+     * @param parent - The parent persistent object (for object actions or context).
+     * @param query - The query (for query actions).
+     * @param selectedItems - An array of selected query result items (for query actions).
+     * @param parameters - Optional parameters for the action.
+     * @param skipHooks - Internal flag to skip hooks during retry.
      * @returns A promise resolving to the resulting PersistentObject, if any.
      */
     public async executeAction(action: string, parent: PersistentObject, query: Query, selectedItems: Array<QueryResultItem>, parameters?: any, skipHooks: boolean = false): Promise<PersistentObject> {
@@ -830,12 +830,12 @@ export class Service extends Observable<Service> {
 
     /**
      * Retrieves a data stream (e.g., a file download) associated with an action or object.
-     * @param obj The persistent object context for the stream.
-     * @param action The action that produces the stream.
-     * @param parent Optional parent persistent object.
-     * @param query Optional query context.
-     * @param selectedItems Optional selected items from a query.
-     * @param parameters Optional parameters for the stream action.
+     * @param obj - The persistent object context for the stream.
+     * @param action - The action that produces the stream.
+     * @param parent - Optional parent persistent object.
+     * @param query - Optional query context.
+     * @param selectedItems - Optional selected items from a query.
+     * @param parameters - Optional parameters for the stream action.
      * @returns A promise that resolves when the stream download is initiated.
      */
     public async getStream(obj: PersistentObject, action?: string, parent?: PersistentObject, query?: Query, selectedItems?: Array<QueryResultItem>, parameters?: any) {
@@ -886,8 +886,8 @@ export class Service extends Observable<Service> {
 
     /**
      * Retrieves data for a report.
-     * @param token The report token.
-     * @param options Optional filtering, sorting, and pagination options for the report.
+     * @param token - The report token.
+     * @param options - Optional filtering, sorting, and pagination options for the report.
      * @returns A promise resolving to an array of report data.
      */
     public async getReport(token: string, { filter = "", orderBy, top, skip, hideIds, hideType = true }: IReportOptions = {}): Promise<any[]> {
@@ -913,7 +913,7 @@ export class Service extends Observable<Service> {
 
     /**
      * Performs an instant search across the application.
-     * @param search The search term.
+     * @param search - The search term.
      * @returns A promise resolving to an array of instant search results.
      */
     public async getInstantSearch(search: string): Promise<IInstantSearchResult[]> {
@@ -936,7 +936,7 @@ export class Service extends Observable<Service> {
 
     /**
      * Initiates the "forgot password" process for a user.
-     * @param userName The user name for which to reset the password.
+     * @param userName - The user name for which to reset the password.
      * @returns A promise resolving to the result of the forgot password request.
      */
     public forgotPassword(userName: string): Promise<IForgotPassword> {
@@ -945,8 +945,8 @@ export class Service extends Observable<Service> {
 
     /**
      * Converts a string value from the service to its appropriate JavaScript type.
-     * @param value The string value from the service.
-     * @param typeName The Vidyano data type name (e.g., "String", "Int32", "DateTimeOffset").
+     * @param value - The string value from the service.
+     * @param typeName - The Vidyano data type name (e.g., "String", "Int32", "DateTimeOffset").
      * @returns The converted JavaScript value.
      */
     public static fromServiceString(value: string, typeName: string): any {
@@ -955,8 +955,8 @@ export class Service extends Observable<Service> {
 
     /**
      * Converts a JavaScript value to its string representation for the service.
-     * @param value The JavaScript value.
-     * @param typeName The Vidyano data type name.
+     * @param value - The JavaScript value.
+     * @param typeName - The Vidyano data type name.
      * @returns The string representation for the service.
      */
     public static toServiceString(value: any, typeName: string): string {
@@ -965,7 +965,7 @@ export class Service extends Observable<Service> {
 
     /**
      * Creates a new service URI for the specified method.
-     * @param method The method name to append to the service URI.
+     * @param method - The method name to append to the service URI.
      * @returns The complete service URI for the method.
      */
     #createUri(method: string): string {
@@ -978,8 +978,8 @@ export class Service extends Observable<Service> {
 
     /**
      * Creates a data object for service requests, including common properties.
-     * @param method The method name for which the data is being created.
-     * @param data Optional additional data to include in the request.
+     * @param method - The method name for which the data is being created.
+     * @param data - Optional additional data to include in the request.
      * @returns The complete data object ready for sending to the service.
      */
     #createData(method: string, data?: any): any {
@@ -1012,7 +1012,7 @@ export class Service extends Observable<Service> {
 
     /**
      * Fetches a request, handling rate limiting (HTTP 429) by retrying after a delay.
-     * @param request The request to fetch.
+     * @param request - The request to fetch.
      * @returns A promise resolving to the Response object.
      */
     async #fetch(request: Request): Promise<Response> {
@@ -1038,8 +1038,8 @@ export class Service extends Observable<Service> {
 
     /**
      * Fetches JSON data from the specified URL, handling errors and network issues.
-     * @param url The URL to fetch JSON data from.
-     * @param headers Optional headers to include in the request.
+     * @param url - The URL to fetch JSON data from.
+     * @param headers - Optional headers to include in the request.
      * @returns A promise resolving to the parsed JSON data.
      */
     async #getJSON(url: string, headers?: any): Promise<any> {
@@ -1061,8 +1061,8 @@ export class Service extends Observable<Service> {
 
     /**
      * Posts JSON data to the specified URL, handling authentication and profiling.
-     * @param url The URL to post JSON data to.
-     * @param data The data to post, which can include a FormData object for file uploads.
+     * @param url - The URL to post JSON data to.
+     * @param data - The data to post, which can include a FormData object for file uploads.
      * @returns A promise resolving to the response data from the server.
      */
     async #postJSON(url: string, data: any): Promise<any> {
@@ -1228,12 +1228,12 @@ export class Service extends Observable<Service> {
 
     /**
      * Processes the result of a JSON post request, handling profiling and client operations.
-     * @param data The data sent in the request.
-     * @param result The result received from the server.
-     * @param requestMethod The method used for the request.
-     * @param createdRequest The timestamp when the request was created.
-     * @param requestStart The start time of the request for profiling.
-     * @param elapsedMs Optional elapsed milliseconds for profiling.
+     * @param data - The data sent in the request.
+     * @param result - The result received from the server.
+     * @param requestMethod - The method used for the request.
+     * @param createdRequest - The timestamp when the request was created.
+     * @param requestStart - The start time of the request for profiling.
+     * @param elapsedMs - Optional elapsed milliseconds for profiling.
      */
     #postJSONProcess(data: any, result: any, requestMethod: string, createdRequest: Date, requestStart: number, elapsedMs: string) {
         if (this.profile && result.profiler) {
@@ -1280,7 +1280,7 @@ export class Service extends Observable<Service> {
 
     /**
      * Retrieves the application instance.
-     * @param data Optional data to pass to the service when retrieving the application.
+     * @param data - Optional data to pass to the service when retrieving the application.
      * @returns A promise resolving to the Application instance.
      */
     async #getApplication(data: any = this.#createData("")): Promise<Application> {

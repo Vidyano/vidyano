@@ -18,8 +18,8 @@ export class QueryFilters extends Observable<QueryFilters> {
 
     /**
      * Initializes a new instance of the QueryFilters class.
-     * @param query The parent query.
-     * @param filtersPO The persistent object containing filters.
+     * @param query - The parent query.
+     * @param filtersPO - The persistent object containing filters.
      */
     constructor(query: Query, filtersPO: PersistentObject) {
         super();
@@ -54,7 +54,7 @@ export class QueryFilters extends Observable<QueryFilters> {
 
     /**
      * Sets the filters and notifies listeners.
-     * @param filters The new filters array.
+     * @param filters - The new filters array.
      */
     #setFilters(filters: QueryFilter[]) {
         const oldFilters = this.#filters;
@@ -118,7 +118,7 @@ export class QueryFilters extends Observable<QueryFilters> {
 
     /**
      * Computes the filters from the details attribute.
-     * @param setDefaultFilter If true, sets the default filter.
+     * @param setDefaultFilter - If true, sets the default filter.
      */
     #computeFilters(setDefaultFilter?: boolean) {
         if (!this.#filtersAsDetail) {
@@ -151,7 +151,7 @@ export class QueryFilters extends Observable<QueryFilters> {
 
     /**
      * Clones the filters for a target query.
-     * @param targetQuery The target query.
+     * @param targetQuery - The target query.
      */
     clone(targetQuery: Query): QueryFilters {
         return new QueryFilters(targetQuery, targetQuery.service.hooks.onConstructPersistentObject(targetQuery.service, _internal(this.#filtersPO).dto));
@@ -159,7 +159,7 @@ export class QueryFilters extends Observable<QueryFilters> {
 
     /**
      * Gets a filter by name.
-     * @param name The filter name.
+     * @param name - The filter name.
      */
     getFilter(name: string): QueryFilter {
         return this.filters.find(f => f.name === name);
@@ -179,7 +179,7 @@ export class QueryFilters extends Observable<QueryFilters> {
 
     /**
      * Saves a filter.
-     * @param filter The filter to save.
+     * @param filter - The filter to save.
      */
     save(filter: QueryFilter = this.currentFilter): Promise<boolean> {
         if (!filter)
@@ -225,7 +225,7 @@ export class QueryFilters extends Observable<QueryFilters> {
 
     /**
      * Deletes a filter by name or instance.
-     * @param name The filter name or instance.
+     * @param name - The filter name or instance.
      */
     delete(name: string | QueryFilter): Promise<any> {
         const filter = typeof name === "string" ? this.getFilter(name) : name;
@@ -266,7 +266,7 @@ export class QueryFilter extends Observable<QueryFilter> {
 
     /**
      * Initializes a new instance of the QueryFilter class.
-     * @param persistentObject The persistent object for this filter.
+     * @param persistentObject - The persistent object for this filter.
      */
     constructor(persistentObject: PersistentObject) {
         super();

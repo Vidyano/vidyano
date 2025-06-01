@@ -19,9 +19,9 @@ export class CultureInfo {
 
     /**
      * Creates a new CultureInfo instance.
-     * @param name The culture name (e.g., "en-US").
-     * @param numberFormat Number formatting information.
-     * @param dateFormat Date formatting information.
+     * @param name - The culture name (e.g., "en-US").
+     * @param numberFormat - Number formatting information.
+     * @param dateFormat - Date formatting information.
      */
     constructor(public name: string, public numberFormat: ICultureInfoNumberFormat, public dateFormat: ICultureInfoDateFormat) {
     }

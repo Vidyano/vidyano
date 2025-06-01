@@ -48,10 +48,10 @@ export class NoInternetMessage {
 
     /**
      * Initializes a new instance of the NoInternetMessage class.
-     * @param language The language code.
-     * @param title The title of the message.
-     * @param message The message body.
-     * @param tryAgain The label for the retry action.
+     * @param language - The language code.
+     * @param title - The title of the message.
+     * @param message - The message body.
+     * @param tryAgain - The label for the retry action.
      */
     constructor(language: string, public title: string, public message: string, public tryAgain: string) {
         this.#language = language;

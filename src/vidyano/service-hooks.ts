@@ -52,7 +52,7 @@ export class ServiceHooks {
 
     /**
      * Allows custom data creation. This is the payload that is sent to the server.
-     * @param data The data.
+     * @param data - The data.
      */
     createData(data: any) {
         // Noop
@@ -60,7 +60,7 @@ export class ServiceHooks {
 
     /**
      * Handles fetch requests.
-     * @param request The request to fetch.
+     * @param request - The request to fetch.
      */
     onFetch(request: Request): Promise<Response> {
         return fetch(request);
@@ -68,9 +68,9 @@ export class ServiceHooks {
 
     /**
      * Tracks a custom event.
-     * @param name The event name.
-     * @param option The event option.
-     * @param owner The owner object.
+     * @param name - The event name.
+     * @param option - The event option.
+     * @param owner - The owner object.
      */
     trackEvent(name: string, option: string, owner: ServiceObjectWithActions) {
         // Noop
@@ -78,7 +78,7 @@ export class ServiceHooks {
 
     /**
      * Called during client initialization.
-     * @param clientData The client data received from the server.
+     * @param clientData - The client data received from the server.
      */
     onInitialize(clientData: Dto.ClientDataDto): Promise<Dto.ClientDataDto> {
         return Promise.resolve(clientData);
@@ -93,8 +93,8 @@ export class ServiceHooks {
 
     /**
      * Called to confirm an action.
-     * @param action The action.
-     * @param option The option index.
+     * @param action - The action.
+     * @param option - The option index.
      */
     onActionConfirmation(action: Action, option: number): Promise<boolean> {
         return Promise.resolve(true);
@@ -102,7 +102,7 @@ export class ServiceHooks {
 
     /**
      * Called to execute an action.
-     * @param args The execution arguments.
+     * @param args - The execution arguments.
      */
     onAction(args: ExecuteActionArgs): Promise<PersistentObject> {
         return Promise.resolve(null);
@@ -110,7 +110,7 @@ export class ServiceHooks {
 
     /**
      * Called when an action definition is not found.
-     * @param name The action name.
+     * @param name - The action name.
      */
     onActionDefinitionNotFound(name: string): ActionDefinition {
         console.error(`No action definition found for ${name}`);
@@ -119,9 +119,9 @@ export class ServiceHooks {
 
     /**
      * Called when a streaming action is executed.
-     * @param action The action.
-     * @param messages A function that returns an async generator for streaming messages.
-     * @param abort An optional abort function to cancel the streaming.
+     * @param action - The action.
+     * @param messages - A function that returns an async generator for streaming messages.
+     * @param abort - An optional abort function to cancel the streaming.
      */
     async onStreamingAction(action: string, messages: () => StreamingActionMessages, abort?: () => void) {
         // Noop
@@ -129,9 +129,9 @@ export class ServiceHooks {
 
     /**
      * Called to instruct the user interface to open a service object.
-     * @param obj The service object to open.
-     * @param replaceCurrent Whether to replace the current object.
-     * @param forceFromAction Whether to force opening from an action.
+     * @param obj - The service object to open.
+     * @param replaceCurrent - Whether to replace the current object.
+     * @param forceFromAction - Whether to force opening from an action.
      */
     onOpen(obj: ServiceObject, replaceCurrent: boolean = false, forceFromAction?: boolean) {
         // Noop
@@ -139,7 +139,7 @@ export class ServiceHooks {
 
     /**
      * Called to instruct the user interface to close a service object.
-     * @param obj The service object to close.
+     * @param obj - The service object to close.
      */
     onClose(obj: ServiceObject) {
         // Noop
@@ -147,7 +147,7 @@ export class ServiceHooks {
 
     /**
      * Called to construct an application object from the service data.
-     * @param application The application data.
+     * @param application - The application data.
      */
     onConstructApplication(application: Dto.GetApplicationResponse): Application {
         return new Application(this.#service, application);
@@ -155,8 +155,8 @@ export class ServiceHooks {
 
     /**
      * Called to construct a persistent object from the service data.
-     * @param service The service instance.
-     * @param po The persistent object data.
+     * @param service - The service instance.
+     * @param po - The persistent object data.
      */
     onConstructPersistentObject(service: Service, po: Dto.PersistentObjectDto): PersistentObject {
         return new PersistentObject(service, po);
@@ -164,15 +164,15 @@ export class ServiceHooks {
 
     /**
      * Called to construct a persistent object attribute tab.
-     * @param service The service instance.
-     * @param groups The attribute groups.
-     * @param key The tab key.
-     * @param id The tab ID.
-     * @param name The tab name.
-     * @param layout The tab layout.
-     * @param parent The parent persistent object.
-     * @param columnCount The number of columns in the layout.
-     * @param isVisible Whether the tab is visible.
+     * @param service - The service instance.
+     * @param groups - The attribute groups.
+     * @param key - The tab key.
+     * @param id - The tab ID.
+     * @param name - The tab name.
+     * @param layout - The tab layout.
+     * @param parent - The parent persistent object.
+     * @param columnCount - The number of columns in the layout.
+     * @param isVisible - Whether the tab is visible.
      */
     onConstructPersistentObjectAttributeTab(service: Service, groups: PersistentObjectAttributeGroup[], key: string, id: string, name: string, layout: any, parent: PersistentObject, columnCount: number, isVisible: boolean): PersistentObjectAttributeTab {
         return new PersistentObjectAttributeTab(service, groups, key, id, name, layout, parent, columnCount, isVisible);
@@ -180,8 +180,8 @@ export class ServiceHooks {
 
     /**
      * Called to construct a persistent object query tab.
-     * @param service The service instance.
-     * @param query The query data.
+     * @param service - The service instance.
+     * @param query - The query data.
      */
     onConstructPersistentObjectQueryTab(service: Service, query: Query): PersistentObjectQueryTab {
         return new PersistentObjectQueryTab(service, query);
@@ -189,10 +189,10 @@ export class ServiceHooks {
 
     /**
      * Called to construct a persistent object attribute group.
-     * @param service The service instance.
-     * @param key The group key.
-     * @param attributes The attributes in the group.
-     * @param parent The parent persistent object.
+     * @param service - The service instance.
+     * @param key - The group key.
+     * @param attributes - The attributes in the group.
+     * @param parent - The parent persistent object.
      */
     onConstructPersistentObjectAttributeGroup(service: Service, key: string, attributes: PersistentObjectAttribute[], parent: PersistentObject): PersistentObjectAttributeGroup {
         return new PersistentObjectAttributeGroup(service, key, attributes, parent);
@@ -200,9 +200,9 @@ export class ServiceHooks {
 
     /**
      * Called to construct a persistent object attribute.
-     * @param service The service instance.
-     * @param attr The attribute data.
-     * @param parent The parent persistent object.
+     * @param service - The service instance.
+     * @param attr - The attribute data.
+     * @param parent - The parent persistent object.
      */
     onConstructPersistentObjectAttribute(service: Service, attr: Dto.PersistentObjectAttributeDto, parent: PersistentObject): PersistentObjectAttribute {
         return new PersistentObjectAttribute(service, attr, parent);
@@ -210,9 +210,9 @@ export class ServiceHooks {
 
     /**
      * Called to construct a persistent object attribute with reference.
-     * @param service The service instance.
-     * @param attr The attribute data.
-     * @param parent The parent persistent object.
+     * @param service - The service instance.
+     * @param attr - The attribute data.
+     * @param parent - The parent persistent object.
      */
     onConstructPersistentObjectAttributeWithReference(service: Service, attr: any, parent: PersistentObject): PersistentObjectAttributeWithReference {
         return new PersistentObjectAttributeWithReference(service, attr, parent);
@@ -220,9 +220,9 @@ export class ServiceHooks {
 
     /**
      * Called to construct a persistent object attribute as detail.
-     * @param service The service instance.
-     * @param attr The attribute data.
-     * @param parent The parent persistent object.
+     * @param service - The service instance.
+     * @param attr - The attribute data.
+     * @param parent - The parent persistent object.
      */
     onConstructPersistentObjectAttributeAsDetail(service: Service, attr: any, parent: PersistentObject): PersistentObjectAttributeAsDetail {
         return new PersistentObjectAttributeAsDetail(service, attr, parent);
@@ -230,11 +230,11 @@ export class ServiceHooks {
 
     /**
      * Called to construct a query object.
-     * @param service The service instance.
-     * @param query The query data.
-     * @param parent The parent persistent object, if any.
-     * @param asLookup Whether the query is for a lookup.
-     * @param maxSelectedItems The maximum number of selected items allowed.
+     * @param service - The service instance.
+     * @param query - The query data.
+     * @param parent - The parent persistent object, if any.
+     * @param asLookup - Whether the query is for a lookup.
+     * @param maxSelectedItems - The maximum number of selected items allowed.
      */
     onConstructQuery(service: Service, query: any, parent?: PersistentObject, asLookup: boolean = false, maxSelectedItems?: number): Query {
         return new Query(service, query, parent, asLookup, maxSelectedItems);
@@ -242,10 +242,10 @@ export class ServiceHooks {
 
     /**
      * Called to construct a query result item.
-     * @param service The service instance.
-     * @param item The item data.
-     * @param query The query context.
-     * @param isSelected Whether the item is selected.
+     * @param service - The service instance.
+     * @param item - The item data.
+     * @param query - The query context.
+     * @param isSelected - Whether the item is selected.
      */
     onConstructQueryResultItem(service: Service, item: any, query: Query, isSelected: boolean = false): QueryResultItem {
         return new QueryResultItem(service, item, query, isSelected);
@@ -253,9 +253,9 @@ export class ServiceHooks {
 
     /**
      * Called to construct a query result item value.
-     * @param service The service instance.
-     * @param item The query result item.
-     * @param value The value of the item.
+     * @param service - The service instance.
+     * @param item - The query result item.
+     * @param value - The value of the item.
      */
     onConstructQueryResultItemValue(service: Service, item: QueryResultItem, value: any): QueryResultItemValue {
         return new QueryResultItemValue(service, item, value);
@@ -263,9 +263,9 @@ export class ServiceHooks {
 
     /**
      * Called to construct a query column.
-     * @param service The service instance.
-     * @param col The column data.
-     * @param query The query context.
+     * @param service - The service instance.
+     * @param col - The column data.
+     * @param query - The query context.
      */
     onConstructQueryColumn(service: Service, col: any, query: Query): QueryColumn {
         return new QueryColumn(service, col, query);
@@ -273,8 +273,8 @@ export class ServiceHooks {
 
     /**
      * Called to construct a service object.
-     * @param service The service instance.
-     * @param obj The service object data.
+     * @param service - The service instance.
+     * @param obj - The service object data.
      */
     onConstructAction(service: Service, action: Action): Action {
         return action;
@@ -282,9 +282,9 @@ export class ServiceHooks {
 
     /**
      * Called to sort persistent object tabs.
-     * @param parent The parent persistent object.
-     * @param attributeTabs The attribute tabs.
-     * @param queryTabs The query tabs.
+     * @param parent - The parent persistent object.
+     * @param attributeTabs - The attribute tabs.
+     * @param queryTabs - The query tabs.
      * @returns An array of sorted persistent object tabs.
      */
     onSortPersistentObjectTabs(parent: PersistentObject, attributeTabs: PersistentObjectAttributeTab[], queryTabs: PersistentObjectQueryTab[]): PersistentObjectTab[] {
@@ -293,10 +293,10 @@ export class ServiceHooks {
 
     /**
      * Called to let the user interface show a message dialog.
-     * @param title The dialog title.
-     * @param message The dialog message.
-     * @param rich Whether the message is rich text.
-     * @param actions The action buttons to display.
+     * @param title - The dialog title.
+     * @param message - The dialog message.
+     * @param rich - Whether the message is rich text.
+     * @param actions - The action buttons to display.
      */
     onMessageDialog(title: string, message: string, rich: boolean, ...actions: string[]): Promise<number> {
         return Promise.resolve(-1);
@@ -304,9 +304,9 @@ export class ServiceHooks {
 
     /**
      * Called to let the user interface show a notification.
-     * @param notification The notification message.
-     * @param type The type of notification.
-     * @param duration The duration in milliseconds to show the notification.
+     * @param notification - The notification message.
+     * @param type - The type of notification.
+     * @param duration - The duration in milliseconds to show the notification.
      */
     onShowNotification(notification: string, type: NotificationType, duration: number) {
         // Noop
@@ -314,7 +314,7 @@ export class ServiceHooks {
 
     /**
      * Called to let the user interface select a query result item.
-     * @param query The query context.
+     * @param query - The query context.
      * @returns A promise that resolves to an array of selected query result items.
      */
     onSelectReference(query: Query): Promise<QueryResultItem[]> {
@@ -323,8 +323,8 @@ export class ServiceHooks {
 
     /**
      * Called to let the user interface navigate to a specific path.
-     * @param path The path to navigate to.
-     * @param replaceCurrent Whether to replace the current history entry.
+     * @param path - The path to navigate to.
+     * @param replaceCurrent - Whether to replace the current history entry.
      */
     onNavigate(path: string, replaceCurrent: boolean = false) {
         // Noop
@@ -332,7 +332,7 @@ export class ServiceHooks {
 
     /**
      * Called to handle client operations.
-     * @param operation The client operation to handle.
+     * @param operation - The client operation to handle.
      */
     onClientOperation(operation: IClientOperation) {
         switch (operation.type) {
@@ -361,9 +361,9 @@ export class ServiceHooks {
 
     /**
      * Called when selected items actions are performed.
-     * @param query The query context.
-     * @param selectedItems The selected query result items.
-     * @param action The action arguments.
+     * @param query - The query context.
+     * @param selectedItems - The selected query result items.
+     * @param action - The action arguments.
      */
     onSelectedItemsActions(query: Query, selectedItems: QueryResultItem[], action: ISelectedItemsActionArgs) {
         // Noop
@@ -371,7 +371,7 @@ export class ServiceHooks {
 
     /**
      * Called when a persistent object is refreshed from a service result.
-     * @param po The persistent object that was refreshed.
+     * @param po - The persistent object that was refreshed.
      */
     onRefreshFromResult(po: PersistentObject) {
         // Noop
@@ -387,7 +387,7 @@ export class ServiceHooks {
 
     /**
      * Called when a retry action is requested.
-     * @param retry The retry action data.
+     * @param retry - The retry action data.
      */
     onRetryAction(retry: Dto.RetryActionDto): Promise<string> {
         return Promise.resolve(null);
@@ -395,8 +395,8 @@ export class ServiceHooks {
 
     /**
      * Called to get the display value of a persistent object attribute.
-     * @param attribute The persistent object attribute.
-     * @param value The value of the attribute.
+     * @param attribute - The persistent object attribute.
+     * @param value - The value of the attribute.
      * @returns The display value as a string.
      */
     onGetAttributeDisplayValue(attribute: PersistentObjectAttribute, value: any): string {
@@ -405,7 +405,7 @@ export class ServiceHooks {
 
     /**
      * Sets default translations for the specified languages.
-     * @param languages The languages to set default translations for.
+     * @param languages - The languages to set default translations for.
      */
     setDefaultTranslations(languages: Language[]) {
         languages.forEach(lang => {

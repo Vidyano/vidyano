@@ -11,8 +11,8 @@ export class Language extends Observable<ServiceObject> implements Dto.LanguageD
 
     /**
      * Initializes a new instance of the Language class.
-     * @param language The language DTO.
-     * @param culture The culture string.
+     * @param language - The language DTO.
+     * @param culture - The culture string.
      */
     constructor(language: Dto.LanguageDto, culture: string) {
         super();

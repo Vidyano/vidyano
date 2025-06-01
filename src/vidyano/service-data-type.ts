@@ -6,7 +6,7 @@ import BigNumber from "bignumber.js";
 export abstract class DataType {
     /**
      * Determines if the type is a date or time type.
-     * @param type The type string.
+     * @param type - The type string.
      */
     static isDateTimeType(type: string): boolean {
         return [
@@ -23,7 +23,7 @@ export abstract class DataType {
 
     /**
      * Determines if the type is a numeric type.
-     * @param type The type string.
+     * @param type - The type string.
      */
     static isNumericType(type: string): boolean {
         return [
@@ -54,7 +54,7 @@ export abstract class DataType {
 
     /**
      * Determines if the type is a boolean type.
-     * @param type The type string.
+     * @param type - The type string.
      */
     static isBooleanType(type: string): boolean {
         return [
@@ -126,8 +126,8 @@ export abstract class DataType {
 
     /**
      * Converts a service string value to a specific data type.
-     * @param value The value to convert.
-     * @param type The data type of the service string value.
+     * @param value - The value to convert.
+     * @param type - The data type of the service string value.
      */
     static fromServiceString(value: string, type: string): any {
         switch (type) {
@@ -227,8 +227,8 @@ export abstract class DataType {
 
     /**
      * Converts a value to a service string based on the specified data type.
-     * @param value The value to convert.
-     * @param type The data type of the service string value.
+     * @param value - The value to convert.
+     * @param type - The data type of the service string value.
      */
     static toServiceString(value: any, type: string): string {
         switch (type) {

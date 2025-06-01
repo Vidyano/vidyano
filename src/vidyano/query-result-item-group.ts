@@ -25,11 +25,11 @@ export class QueryResultItemGroup extends Observable<QueryResultItemGroup> imple
 
     /**
      * Initializes a new instance of the QueryResultItemGroup class.
-     * @param query The parent query.
-     * @param group The group DTO.
-     * @param start The start index.
-     * @param end The end index.
-     * @param notifier Callback to notify changes.
+     * @param query - The parent query.
+     * @param group - The group DTO.
+     * @param start - The start index.
+     * @param end - The end index.
+     * @param notifier - Callback to notify changes.
      */
     constructor(query: Query, group: Dto.QueryResultItemGroupDto, start: number, end: number, notifier: () => void) {
         super();

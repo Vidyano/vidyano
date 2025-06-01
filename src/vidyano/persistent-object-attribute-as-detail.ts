@@ -14,9 +14,9 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
 
     /**
      * Initializes a new instance of PersistentObjectAttributeAsDetail.
-     * @param service The service instance.
-     * @param attr The attribute data.
-     * @param parent The parent persistent object.
+     * @param service - The service instance.
+     * @param attr - The attribute data.
+     * @param parent - The parent persistent object.
      */
     constructor(service: Service, attr: Dto.PersistentObjectAttributeAsDetailDto, parent: PersistentObject) {
         super(service, attr, parent);
@@ -45,7 +45,7 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
 
     /**
      * Handles change events and triggers refresh if allowed.
-     * @param allowRefresh Indicates if refresh is allowed.
+     * @param allowRefresh - Indicates if refresh is allowed.
      */
     async onChanged(allowRefresh: boolean): Promise<any> {
         if (!this.parent.isEditing || this.isReadOnly)
@@ -84,7 +84,7 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
     }
     /**
      * Sets the detail objects and notifies a property change if they differ.
-     * @param objects The new set of detail objects.
+     * @param objects - The new set of detail objects.
      */
     #setObjects(objects: PersistentObject[]) {
         if (objects === this.#objects) {
