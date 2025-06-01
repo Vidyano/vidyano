@@ -98,7 +98,7 @@ if (process.env.NODE_ENV === 'production' && process.env.GENERATE_DTS !== 'false
     configs.push(...[
         {
             input: './src/app/index.js',
-            external: ["tslib"],
+            external: ["tslib", "bignumber.js"],
             plugins: [
                 alias({ entries }),
                 dts({ respectExternal: true })
@@ -106,7 +106,7 @@ if (process.env.NODE_ENV === 'production' && process.env.GENERATE_DTS !== 'false
             output: [{ file: "dev/wwwroot/index.d.ts", format: "es" }, { file: "dist/vidyano/index.d.ts", format: "es" }],
         }, {
             input: 'src/vidyano/index.js',
-            external: ["tslib"],
+            external: ["tslib", "bignumber.js"],
             plugins: [
                 alias({ entries }),
                 dts({ respectExternal: true })

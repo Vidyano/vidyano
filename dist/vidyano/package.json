@@ -16,5 +16,8 @@
   "license": "MIT",
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "bignumber.js": "^9.3.0"
   }
 }
