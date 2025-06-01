@@ -1,5 +1,5 @@
 // Enum type definitions
-type NotificationType = "" | "OK" | "Notice" | "Warning" | "Error";
+type NotificationTypeDto = "" | "OK" | "Notice" | "Warning" | "Error";
 
 // Request and Response DTOs
 export declare type RequestDto = {
@@ -194,7 +194,7 @@ export declare type PersistentObjectDto = Partial<{
     /**
      * Gets the notification type.
      */
-    notificationType: NotificationType;
+    notificationType: NotificationTypeDto;
 
     /**
      * Gets the notification duration.
@@ -438,7 +438,7 @@ export declare type QueryDto = Partial<{
     /**
      * Gets the notification type.
      */
-    notificationType: NotificationType;
+    notificationType: NotificationTypeDto;
 
     /**
      * Gets the notification duration.
@@ -533,7 +533,7 @@ export declare type QueryResultDto = {
     items: QueryResultItemDto[];
     notification?: string;
     notificationDuration?: number;
-    notificationType?: NotificationType;
+    notificationType?: NotificationTypeDto;
     pageSize?: number;
     skip?: number;
     sortOptions: string;
