@@ -22,7 +22,7 @@ export class PersistentObjectAttributeWithReference extends PersistentObjectAttr
      * @param attr - The attribute data transfer object.
      * @param parent - The parent persistent object.
      */
-    constructor(service: Service, attr: Dto.PersistentObjectAttributeWithReference, parent: PersistentObject) {
+    constructor(service: Service, attr: Dto.PersistentObjectAttributeWithReferenceDto, parent: PersistentObject) {
         super(service, attr, parent);
 
         if (attr.lookup) {
@@ -136,7 +136,7 @@ export class PersistentObjectAttributeWithReference extends PersistentObjectAttr
      * @param resultWins - Whether the result attribute takes precedence over local changes.
      * @returns True if the attribute's visibility changed.
      */
-    protected _refreshFromResult(resultAttr: Dto.PersistentObjectAttributeWithReference, resultWins: boolean): boolean {
+    protected _refreshFromResult(resultAttr: Dto.PersistentObjectAttributeWithReferenceDto, resultWins: boolean): boolean {
         if (resultWins || this.objectId !== resultAttr.objectId) {
             this.#objectId = resultAttr.objectId;
             this.isValueChanged = resultAttr.isValueChanged;

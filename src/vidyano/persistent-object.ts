@@ -111,7 +111,7 @@ export class PersistentObject extends ServiceObjectWithActions {
      * @param service - The service context providing hooks and actions.
      * @param po - The data representing the persistent object.
      */
-    constructor(service: Service, po: Dto.PersistentObject) {
+    constructor(service: Service, po: Dto.PersistentObjectDto) {
         super(service, po.actions?.map(a => a === "Edit" && po.isNew ? "Save" : a), po.actionLabels);
 
         this[PersistentObjectSymbols.Dto] = po;
@@ -210,11 +210,11 @@ export class PersistentObject extends ServiceObjectWithActions {
      * standard, reference, or detail attribute types.
      * @param attr The attribute DTO.
      */
-    #createPersistentObjectAttribute(attr: Dto.PersistentObjectAttribute): PersistentObjectAttribute {
-        if ((<Dto.PersistentObjectAttributeWithReference>attr).displayAttribute || (<Dto.PersistentObjectAttributeWithReference>attr).objectId)
+    #createPersistentObjectAttribute(attr: Dto.PersistentObjectAttributeDto): PersistentObjectAttribute {
+        if ((<Dto.PersistentObjectAttributeWithReferenceDto>attr).displayAttribute || (<Dto.PersistentObjectAttributeWithReferenceDto>attr).objectId)
             return this.service.hooks.onConstructPersistentObjectAttributeWithReference(this.service, attr, this);
 
-        if ((<Dto.PersistentObjectAttributeAsDetail>attr).objects || (<Dto.PersistentObjectAttributeAsDetail>attr).details)
+        if ((<Dto.PersistentObjectAttributeAsDetailDto>attr).objects || (<Dto.PersistentObjectAttributeAsDetailDto>attr).details)
             return this.service.hooks.onConstructPersistentObjectAttributeAsDetail(this.service, attr, this);
 
         return this.service.hooks.onConstructPersistentObjectAttribute(this.service, attr, this);
@@ -624,8 +624,8 @@ export class PersistentObject extends ServiceObjectWithActions {
      * @param result The new data from the service.
      * @param resultWins If true, the new data overrides current values.
      */
-    #refreshFromResult(po: PersistentObject | Dto.PersistentObject, resultWins: boolean = false) {
-        const result = (po instanceof PersistentObject ? _internal(po).dto : po) as Dto.PersistentObject;
+    #refreshFromResult(po: PersistentObject | Dto.PersistentObjectDto, resultWins: boolean = false) {
+        const result = (po instanceof PersistentObject ? _internal(po).dto : po) as Dto.PersistentObjectDto;
 
         const changedAttributes: PersistentObjectAttribute[] = [];
         let isDirty = false;

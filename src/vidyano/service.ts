@@ -31,7 +31,7 @@ export let version = "vidyano-latest-version";
 /**
  * Represents the type of notification.
  */
-export declare type NotificationType = Dto.NotificationType;
+export declare type NotificationType = "" | "OK" | "Notice" | "Warning" | "Error";
 
 /**
  * Options for retrieving a query.
@@ -88,17 +88,17 @@ export class Service extends Observable<Service> {
     readonly #useCookieStore: boolean;
     #lastAuthTokenUpdate: Date = new Date();
     #isUsingDefaultCredentials: boolean;
-    #clientData: Dto.ClientData;
+    #clientData: Dto.ClientDataDto;
     #language: Language;
     #languages: Language[];
     #windowsAuthentication: boolean;
-    #providers: { [name: string]: Dto.ProviderParameters };
+    #providers: { [name: string]: Dto.ProviderParametersDto };
     #isSignedIn: boolean;
     #application: Application;
     #userName: string;
     #authToken: string;
     #profile: boolean;
-    #profiledRequests: Dto.ProfilerRequest[];
+    #profiledRequests: Dto.ProfilerRequestDto[];
     #queuedClientOperations: IClientOperation[] = [];
     #initial: PersistentObject;
     #requestedLanguage: string;
@@ -263,7 +263,7 @@ export class Service extends Observable<Service> {
     /**
      * Gets a dictionary of external authentication providers and their parameters.
      */
-    public get providers(): { [name: string]: Dto.ProviderParameters } {
+    public get providers(): { [name: string]: Dto.ProviderParametersDto } {
         return this.#providers;
     }
 
@@ -367,10 +367,10 @@ export class Service extends Observable<Service> {
     /**
      * Gets the list of profiled requests, if profiling is enabled.
      */
-    public get profiledRequests(): Dto.ProfilerRequest[] {
+    public get profiledRequests(): Dto.ProfilerRequestDto[] {
         return this.#profiledRequests;
     }
-    #setProfiledRequests(requests: Dto.ProfilerRequest[]) {
+    #setProfiledRequests(requests: Dto.ProfilerRequestDto[]) {
         this.notifyPropertyChanged("profiledRequests", this.#profiledRequests = requests);
     }    
 
@@ -663,7 +663,7 @@ export class Service extends Observable<Service> {
      * @param throwExceptions Optional flag to throw exceptions instead of setting them as query notifications. Defaults to false.
      * @returns A promise resolving to the query result data.
      */
-    public async executeQuery(parent: PersistentObject, query: Query, asLookup: boolean = false, throwExceptions?: boolean): Promise<Dto.QueryResult> {
+    public async executeQuery(parent: PersistentObject, query: Query, asLookup: boolean = false, throwExceptions?: boolean): Promise<Dto.QueryResultDto> {
         const data = this.#createData("executeQuery");
         data.query = _internal(query).toServiceObject();
 
@@ -681,7 +681,7 @@ export class Service extends Observable<Service> {
             if (result.exception)
                 throw result.exception;
 
-            const queryResult = <Dto.QueryResult>result.result;
+            const queryResult = <Dto.QueryResultDto>result.result;
             if (queryResult.continuation) {
                 const wanted = <number>data.query.top || queryResult.pageSize;
 
@@ -693,7 +693,7 @@ export class Service extends Observable<Service> {
                     if (innerResult.exception)
                         throw innerResult.exception;
 
-                    const innerQueryResult = <Dto.QueryResult>innerResult.result;
+                    const innerQueryResult = <Dto.QueryResultDto>innerResult.result;
                     queryResult.items.push(...innerQueryResult.items);
                     queryResult.continuation = innerQueryResult.continuation;
                 }
@@ -1248,7 +1248,7 @@ export class Service extends Observable<Service> {
             if (elapsedMs)
                 result.profiler.elapsedMilliseconds = Service.fromServiceString(elapsedMs, "Int32");
 
-            const request: Dto.ProfilerRequest = {
+            const request: Dto.ProfilerRequestDto = {
                 when: createdRequest,
                 profiler: result.profiler,
                 transport: Math.round(requestEnd - requestStart - result.profiler.elapsedMilliseconds),

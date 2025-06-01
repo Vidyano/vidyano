@@ -18,7 +18,7 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
      * @param attr The attribute data.
      * @param parent The parent persistent object.
      */
-    constructor(service: Service, attr: Dto.PersistentObjectAttributeAsDetail, parent: PersistentObject) {
+    constructor(service: Service, attr: Dto.PersistentObjectAttributeAsDetailDto, parent: PersistentObject) {
         super(service, attr, parent);
 
         this.#details = attr.details ? this.service.hooks.onConstructQuery(service, attr.details, parent, false, 1) : null;
@@ -124,7 +124,7 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
     /**
      * @inheritdoc
      */
-    protected _refreshFromResult(resultAttr: Dto.PersistentObjectAttributeAsDetail, resultWins: boolean): boolean {
+    protected _refreshFromResult(resultAttr: Dto.PersistentObjectAttributeAsDetailDto, resultWins: boolean): boolean {
         const visibilityChanged = super._refreshFromResult(resultAttr, resultWins);
 
         if (this.objects != null && resultAttr.objects != null) {

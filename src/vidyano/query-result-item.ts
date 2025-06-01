@@ -30,7 +30,7 @@ export class QueryResultItem extends ServiceObject {
      * @param query The query that this result item is part of.
      * @param isSelected Indicates whether this item is selected in the query result.
      */
-    constructor(service: Service, item: Dto.QueryResultItem, public query: Query, isSelected: boolean) {
+    constructor(service: Service, item: Dto.QueryResultItemDto, public query: Query, isSelected: boolean) {
         super(service);
 
         this[QueryResultItemSymbols.IsQueryResultItem] = true;
@@ -187,7 +187,7 @@ export class QueryResultItem extends ServiceObject {
      * Converts the query result item to a service object representation.
      * @returns The service object representation ready for transmission.
      */
-    #toServiceObject(): Dto.QueryResultItem {
+    #toServiceObject(): Dto.QueryResultItemDto {
         return this._copyPropertiesFromValues({
             id: this.id,
             values: this.#rawValues.map(value => _internal(value).toServiceObject()),

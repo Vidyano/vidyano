@@ -19,7 +19,7 @@ export interface IQueryColumnDistincts {
     hasMore: boolean;
 }
 
-export type SortDirection = Dto.SortDirection;
+export type SortDirection = "" | "ASC" | "DESC";
 
 /**
  * Represents a column in a query, including metadata and filter/sort state.
@@ -54,7 +54,7 @@ export class QueryColumn extends ServiceObject {
      * @param col The column DTO or QueryColumn to copy from.
      * @param query The parent query.
      */
-    constructor(service: Service, col: Dto.QueryColumn | any, public query: Query) {
+    constructor(service: Service, col: Dto.QueryColumnDto | any, public query: Query) {
         super(service);
 
         this[QueryColumnSymbols.IsQueryColumn] = true;
@@ -219,8 +219,8 @@ export class QueryColumn extends ServiceObject {
      * Converts the column to a service object representation.
      * @returns The service object.
      */
-    #toServiceObject(): Dto.QueryColumn {
-        const serviceObject = <Dto.QueryColumn>this._copyPropertiesFromValues({
+    #toServiceObject(): Dto.QueryColumnDto {
+        const serviceObject = <Dto.QueryColumnDto>this._copyPropertiesFromValues({
             id: this.id,
             name: this.name,
             label: this.label,

@@ -39,8 +39,8 @@ export interface ISortOption {
  * @inheritdoc
  */
 export class Query extends ServiceObjectWithActions {
-    #dto: Dto.Query; // Used to store the original DTO object when cloning.
-    #lastResult: Dto.QueryResult;
+    #dto: Dto.QueryDto; // Used to store the original DTO object when cloning.
+    #lastResult: Dto.QueryResultDto;
     #asLookup: boolean;
     #isSelectionModifying: boolean;
     #totalItems: number;
@@ -107,7 +107,7 @@ export class Query extends ServiceObjectWithActions {
      * @param asLookup Whether the query is used as a lookup.
      * @param maxSelectedItems The maximum number of items that can be selected in the query.
      */
-    constructor(service: Service, queryDto: Dto.Query, public parent?: PersistentObject, asLookup: boolean = false, maxSelectedItems?: number) {
+    constructor(service: Service, queryDto: Dto.QueryDto, public parent?: PersistentObject, asLookup: boolean = false, maxSelectedItems?: number) {
         super(service, queryDto.actions, queryDto.actionLabels);
 
         this.#dto = queryDto;
@@ -950,7 +950,7 @@ export class Query extends ServiceObjectWithActions {
      * Sets the result for the query.
      * @param result The query result DTO.
      */
-    #setResult(result: Dto.QueryResult) {
+    #setResult(result: Dto.QueryResultDto) {
         this.#lastResult = result;
 
         this.#continuation = result.continuation;
@@ -1192,7 +1192,7 @@ export class Query extends ServiceObjectWithActions {
      * Updates the grouping information for the query.
      * @param groupingInfo The grouping information to update.
      */
-    #updateGroupingInfo(groupingInfo: Dto.QueryGroupingInfo) {
+    #updateGroupingInfo(groupingInfo: Dto.QueryGroupingInfoDto) {
         if (!groupingInfo) {
             this.#setGroupingInfo(null);
             return;

@@ -205,3 +205,5 @@ function _netFormat(value: number, format: string, useLocale: boolean) {
 
     return s;
 };
+
+export {};

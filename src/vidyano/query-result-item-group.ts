@@ -6,14 +6,14 @@ import type * as Dto from "./typings/service.js";
 /**
  * Extends the Dto.QueryGroupingInfo with an optional groups property.
  */
-export interface IQueryGroupingInfo extends Dto.QueryGroupingInfo {
+export interface IQueryGroupingInfo extends Dto.QueryGroupingInfoDto {
     groups?: QueryResultItemGroup[];
 }
 
 /**
  * Represents a group of query result items.
  */
-export class QueryResultItemGroup extends Observable<QueryResultItemGroup> implements Dto.QueryResultItemGroup {
+export class QueryResultItemGroup extends Observable<QueryResultItemGroup> implements Dto.QueryResultItemGroupDto {
     readonly query: Query;
     #name: string;
     #count: number;
@@ -31,7 +31,7 @@ export class QueryResultItemGroup extends Observable<QueryResultItemGroup> imple
      * @param end The end index.
      * @param notifier Callback to notify changes.
      */
-    constructor(query: Query, group: Dto.QueryResultItemGroup, start: number, end: number, notifier: () => void) {
+    constructor(query: Query, group: Dto.QueryResultItemGroupDto, start: number, end: number, notifier: () => void) {
         super();
 
         this.query = query;

@@ -472,7 +472,7 @@ export class SignIn extends WebComponent {
         } : null);
     }
 
-    private _getProviders(providers: { [name: string]: Vidyano.Dto.ProviderParameters }): { name: string; parameters: Vidyano.Dto.ProviderParameters; }[] {
+    private _getProviders(providers: { [name: string]: Vidyano.Dto.ProviderParametersDto }): { name: string; parameters: Vidyano.Dto.ProviderParametersDto; }[] {
         return Object.keys(providers).filter(key => key !== "Vidyano").map(key => {
             return {
                 key: key,

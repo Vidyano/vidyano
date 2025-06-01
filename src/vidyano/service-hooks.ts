@@ -80,7 +80,7 @@ export class ServiceHooks {
      * Called during client initialization.
      * @param clientData The client data received from the server.
      */
-    onInitialize(clientData: Dto.ClientData): Promise<Dto.ClientData> {
+    onInitialize(clientData: Dto.ClientDataDto): Promise<Dto.ClientDataDto> {
         return Promise.resolve(clientData);
     }
 
@@ -149,7 +149,7 @@ export class ServiceHooks {
      * Called to construct an application object from the service data.
      * @param application The application data.
      */
-    onConstructApplication(application: Dto.ApplicationResponse): Application {
+    onConstructApplication(application: Dto.GetApplicationResponse): Application {
         return new Application(this.#service, application);
     }
 
@@ -158,7 +158,7 @@ export class ServiceHooks {
      * @param service The service instance.
      * @param po The persistent object data.
      */
-    onConstructPersistentObject(service: Service, po: Dto.PersistentObject): PersistentObject {
+    onConstructPersistentObject(service: Service, po: Dto.PersistentObjectDto): PersistentObject {
         return new PersistentObject(service, po);
     }
 
@@ -204,7 +204,7 @@ export class ServiceHooks {
      * @param attr The attribute data.
      * @param parent The parent persistent object.
      */
-    onConstructPersistentObjectAttribute(service: Service, attr: Dto.PersistentObjectAttribute, parent: PersistentObject): PersistentObjectAttribute {
+    onConstructPersistentObjectAttribute(service: Service, attr: Dto.PersistentObjectAttributeDto, parent: PersistentObject): PersistentObjectAttribute {
         return new PersistentObjectAttribute(service, attr, parent);
     }
 
@@ -389,7 +389,7 @@ export class ServiceHooks {
      * Called when a retry action is requested.
      * @param retry The retry action data.
      */
-    onRetryAction(retry: Dto.RetryAction): Promise<string> {
+    onRetryAction(retry: Dto.RetryActionDto): Promise<string> {
         return Promise.resolve(null);
     }
 

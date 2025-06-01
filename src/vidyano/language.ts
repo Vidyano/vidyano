@@ -5,8 +5,8 @@ import type { ServiceObject } from "./service-object.js";
 /**
  * Represents a language with culture, name, default status, and messages.
  */
-export class Language extends Observable<ServiceObject> implements Dto.Language {
-    #language: Dto.Language;
+export class Language extends Observable<ServiceObject> implements Dto.LanguageDto {
+    #language: Dto.LanguageDto;
     #culture: string;
 
     /**
@@ -14,7 +14,7 @@ export class Language extends Observable<ServiceObject> implements Dto.Language 
      * @param language The language DTO.
      * @param culture The culture string.
      */
-    constructor(language: Dto.Language, culture: string) {
+    constructor(language: Dto.LanguageDto, culture: string) {
         super();
 
         this.#language = language;

@@ -119,7 +119,7 @@ export class AppServiceHooksBase extends Vidyano.ServiceHooks {
         return queryChartConfigs.find(c => c.type === type);
     }
 
-    onConstructApplication(application: Vidyano.Dto.ApplicationResponse): Vidyano.Application {
+    onConstructApplication(application: Vidyano.Dto.GetApplicationResponse): Vidyano.Application {
         const app = super.onConstructApplication(application);
         this.app.sensitive = app.hasSensitive && Boolean.parse(Vidyano.cookie("sensitive")) !== false;
 
@@ -269,7 +269,7 @@ export class AppServiceHooksBase extends Vidyano.ServiceHooks {
         this.app.changePath(Path.removeRootPath(path), replaceCurrent);
     }
 
-    async onRetryAction(retry: Vidyano.Dto.RetryAction): Promise<string> {
+    async onRetryAction(retry: Vidyano.Dto.RetryActionDto): Promise<string> {
         if (retry.persistentObject) {
             return this.app.showDialog(new RetryActionDialog(retry));
         }

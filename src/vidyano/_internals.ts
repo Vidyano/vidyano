@@ -58,7 +58,7 @@ export type InternalPersistentObject = PersistentObject & {
     /**
      * Gets the data transfer object for the persistent object.
      */
-    get dto(): Dto.PersistentObject;
+    get dto(): Dto.PersistentObjectDto;
 
     /**
      * Prepares all attributes for a refresh by caching current service values.
@@ -71,7 +71,7 @@ export type InternalPersistentObject = PersistentObject & {
      * @param result The new data from the service.
      * @param resultWins If true, the new data overrides current values.
      */
-    refreshFromResult(po: PersistentObject | Dto.PersistentObject, resultWins?: boolean): void;
+    refreshFromResult(po: PersistentObject | Dto.PersistentObjectDto, resultWins?: boolean): void;
 
     /**
      * Rebuilds the tabs and groups UI structure based on changed attributes.
@@ -93,26 +93,26 @@ export type InternalPersistentObjectAttribute = PersistentObjectAttribute & {
      * @param resultWins - Flag indicating if the result value takes precedence.
      * @returns A flag indicating if visibility has changed.
      */
-    refreshFromResult(attr: PersistentObjectAttribute | Dto.PersistentObjectAttribute, resultWins?: boolean): boolean;
+    refreshFromResult(attr: PersistentObjectAttribute | Dto.PersistentObjectAttributeDto, resultWins?: boolean): boolean;
 
     /**
      * Converts the attribute to a service object.
      */
-    toServiceObject(): Dto.PersistentObjectAttribute;
+    toServiceObject(): Dto.PersistentObjectAttributeDto;
 };
 
 export type InternalQueryColumn = QueryColumn & {
     /**
      * Converts the query column to a service object.
      */
-    toServiceObject(): Dto.QueryColumn;
+    toServiceObject(): Dto.QueryColumnDto;
 };
 
 export type InternalQueryResultItem = QueryResultItem & {
     /**
      * Converts the query result item to a service object.
      */
-    toServiceObject(): Dto.QueryResultItem;
+    toServiceObject(): Dto.QueryResultItemDto;
 };
 
 export type InternalQueryResultItemValue = {

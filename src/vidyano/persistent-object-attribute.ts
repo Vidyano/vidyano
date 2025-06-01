@@ -51,7 +51,7 @@ export class PersistentObjectAttribute extends ServiceObject {
     readonly #type: string;
     #typeHints: Record<string, string>;
     #validationError: string;
-    #visibility: Dto.PersistentObjectAttributeVisibility;
+    #visibility: Dto.PersistentObjectAttributeDto["visibility"];
 
     protected _shouldRefresh: boolean = false;
 
@@ -62,7 +62,7 @@ export class PersistentObjectAttribute extends ServiceObject {
      * @param attr - The attribute data from the service.
      * @param parent - The parent persistent object that owns this attribute.
      */
-    constructor(service: Service, attr: Dto.PersistentObjectAttribute, parent: PersistentObject) {
+    constructor(service: Service, attr: Dto.PersistentObjectAttributeDto, parent: PersistentObject) {
         super(service);
 
         this[PersistentObjectAttributeSymbols.IsPersistentObjectAttribute] = true;
@@ -224,10 +224,10 @@ export class PersistentObjectAttribute extends ServiceObject {
     /**
      * Gets or sets the visibility.
      */
-    get visibility(): Dto.PersistentObjectAttributeVisibility {
+    get visibility(): Dto.PersistentObjectAttributeDto["visibility"] {
         return this.#visibility;
     }
-    set visibility(visibility: Dto.PersistentObjectAttributeVisibility) {
+    set visibility(visibility: Dto.PersistentObjectAttributeDto["visibility"]) {
         if (this.#visibility === visibility)
             return;
 
@@ -617,7 +617,7 @@ export class PersistentObjectAttribute extends ServiceObject {
      * @param resultWins - Flag indicating if the result value takes precedence.
      * @returns A flag indicating if visibility has changed.
      */
-    protected _refreshFromResult(resultAttr: Dto.PersistentObjectAttribute, resultWins: boolean): boolean {
+    protected _refreshFromResult(resultAttr: Dto.PersistentObjectAttributeDto, resultWins: boolean): boolean {
         let visibilityChanged = false;
 
         this.label = resultAttr.label;

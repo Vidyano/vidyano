@@ -31,7 +31,7 @@ export class Application extends PersistentObject {
      * @param application - The application response data.
      * @param hasSensitive - Indicates if the application has sensitive data.
      */
-    constructor(service: Service, { application, hasSensitive }: Dto.ApplicationResponse) {
+    constructor(service: Service, { application, hasSensitive }: Dto.GetApplicationResponse) {
         super(service, application);
 
         this.#userId = this.getAttributeValue("UserId");

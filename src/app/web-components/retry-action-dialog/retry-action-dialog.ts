@@ -16,7 +16,7 @@ import { WebComponent } from "components/web-component/web-component"
 export class RetryActionDialog extends Dialog {
     static get template() { return Dialog.dialogTemplate(Polymer.html`<link rel="import" href="retry-action-dialog.html">`); }
 
-    constructor(public retry: Vidyano.Dto.RetryAction) {
+    constructor(public retry: Vidyano.Dto.RetryActionDto) {
         super();
 
         if (typeof retry.message === "undefined")

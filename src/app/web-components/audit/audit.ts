@@ -172,7 +172,7 @@ export class Audit extends WebComponent {
                 (<Vidyano.PersistentObjectAttributeWithReference>logEntry.obj.getAttribute("OutgoingDataReference")).getPersistentObject()
             ]);
 
-            logEntry.inData = this.service.hooks.onConstructPersistentObject(this.service, <Vidyano.Dto.PersistentObject>this._getInData(poIn).parent);
+            logEntry.inData = this.service.hooks.onConstructPersistentObject(this.service, <Vidyano.Dto.PersistentObjectDto>this._getInData(poIn).parent);
             logEntry.changes = logEntry.inData.attributes.filter(a => a.isValueChanged).map(a => {
                 return {
                     name: a.label,
@@ -180,7 +180,7 @@ export class Audit extends WebComponent {
                 };
             });
 
-            logEntry.outData = this.service.hooks.onConstructPersistentObject(this.service, <Vidyano.Dto.PersistentObject>this._getOutData(poOut).result);
+            logEntry.outData = this.service.hooks.onConstructPersistentObject(this.service, <Vidyano.Dto.PersistentObjectDto>this._getOutData(poOut).result);
 
             this.set(`groups.${this.groups.length - 1}.entries.${logEntry.entryIndex}.busy`, false);
         }

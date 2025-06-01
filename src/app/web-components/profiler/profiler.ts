@@ -4,7 +4,7 @@ import { ISize } from "components/size-tracker/size-tracker"
 import { Scroller } from "components/scroller/scroller"
 import { WebComponent } from "components/web-component/web-component"
 
-type ProfilerRequest = Vidyano.Dto.ProfilerRequest & {
+type ProfilerRequest = Vidyano.Dto.ProfilerRequestDto & {
     hasNPlusOne: boolean;
     parameters: {
         key: string;
@@ -14,7 +14,7 @@ type ProfilerRequest = Vidyano.Dto.ProfilerRequest & {
 }
 
 type FlattenedProfilerRequestEntry = {
-    entry: Vidyano.Dto.ProfilerEntry;
+    entry: Vidyano.Dto.ProfilerEntryDto;
     level: number;
 }
 
@@ -69,10 +69,10 @@ type FlattenedProfilerRequestEntry = {
 export class Profiler extends WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="profiler.html">`; }
 
-    readonly lastRequest: ProfilerRequest; private _setLastRequest: (request: Vidyano.Dto.ProfilerRequest) => void;
-    readonly selectedRequest: ProfilerRequest; private _setSelectedRequest: (request: Vidyano.Dto.ProfilerRequest) => void;
-    readonly hoveredEntry: Vidyano.Dto.ProfilerEntry; private _setHoveredEntry: (entry: Vidyano.Dto.ProfilerEntry) => void;
-    readonly selectedEntry: Vidyano.Dto.ProfilerEntry; private _setSelectedEntry: (entry: Vidyano.Dto.ProfilerEntry) => void;
+    readonly lastRequest: ProfilerRequest; private _setLastRequest: (request: Vidyano.Dto.ProfilerRequestDto) => void;
+    readonly selectedRequest: ProfilerRequest; private _setSelectedRequest: (request: Vidyano.Dto.ProfilerRequestDto) => void;
+    readonly hoveredEntry: Vidyano.Dto.ProfilerEntryDto; private _setHoveredEntry: (entry: Vidyano.Dto.ProfilerEntryDto) => void;
+    readonly selectedEntry: Vidyano.Dto.ProfilerEntryDto; private _setSelectedEntry: (entry: Vidyano.Dto.ProfilerEntryDto) => void;
     readonly zoom: number; private _setZoom: (value: number) => void;
     timelineSize: ISize;
     profiledRequests: ProfilerRequest[];
@@ -89,7 +89,7 @@ export class Profiler extends WebComponent {
         return request.hasNPlusOne || (request.profiler.exceptions && request.profiler.exceptions.length > 0);
     }
 
-    private _hasNPlusOne(request: Vidyano.Dto.ProfilerRequest, entries: Vidyano.Dto.ProfilerEntry[] = request.profiler.entries): boolean {
+    private _hasNPlusOne(request: Vidyano.Dto.ProfilerRequestDto, entries: Vidyano.Dto.ProfilerEntryDto[] = request.profiler.entries): boolean {
         if (!entries)
             return false;
 
@@ -389,7 +389,7 @@ export class Profiler extends WebComponent {
         });
     }
 
-    private _flattenEntries(entries: Vidyano.Dto.ProfilerEntry[] = [], level: number = 1, flattenedEntries: FlattenedProfilerRequestEntry[] = []): FlattenedProfilerRequestEntry[] {
+    private _flattenEntries(entries: Vidyano.Dto.ProfilerEntryDto[] = [], level: number = 1, flattenedEntries: FlattenedProfilerRequestEntry[] = []): FlattenedProfilerRequestEntry[] {
         entries.forEach(entry => {
             flattenedEntries.push({
                 entry: entry,
@@ -402,7 +402,7 @@ export class Profiler extends WebComponent {
         return flattenedEntries;
     }
 
-    private _computeEntryClassName(e: Vidyano.Dto.ProfilerEntry): string {
+    private _computeEntryClassName(e: Vidyano.Dto.ProfilerEntryDto): string {
         let className = "entry";
         let hasDetails = false;
 
@@ -442,7 +442,7 @@ export class Profiler extends WebComponent {
         return String.format(`{0:${Vidyano.CultureInfo.currentCulture.dateFormat.shortDatePattern} ${Vidyano.CultureInfo.currentCulture.dateFormat.shortTimePattern}}`, date);
     }
 
-    private _selectedEntryChanged(entry: Vidyano.Dto.ProfilerEntry) {
+    private _selectedEntryChanged(entry: Vidyano.Dto.ProfilerEntryDto) {
         const info = document.createDocumentFragment();
         this.empty(this.$.selectedEntryInfo);
 
