@@ -14,6 +14,7 @@ export interface WebComponentProperty {
 export interface WebComponentRegistrationInfo {
     properties?: Record<string, WebComponentProperty>;
     forwardObservers?: string[];
+    listeners?: { [eventName: string]: string };
     sensitive?: boolean;
 }
 
@@ -30,6 +31,7 @@ const COMPUTED_CONFIG_SYMBOL = Symbol.for("WebComponent.computedConfig");
 const OBSERVERS_CONFIG_SYMBOL = Symbol.for("WebComponent.observersConfig");
 const PROPERTY_OBSERVERS_CONFIG_SYMBOL = Symbol.for("WebComponent.propertyObserversConfig");
 const SENSITIVE_CONFIG_SYMBOL = Symbol.for("WebComponent.sensitiveConfig");
+const LISTENERS_CONFIG_SYMBOL = Symbol.for("WebComponent.listenersConfig");
 
 type WebComponentConstructor = typeof WebComponent & {
     properties?: Record<string, any>;
@@ -37,6 +39,7 @@ type WebComponentConstructor = typeof WebComponent & {
     [OBSERVERS_CONFIG_SYMBOL]?: StaticObserversConfig;
     [PROPERTY_OBSERVERS_CONFIG_SYMBOL]?: StaticPropertyObserversConfig;
     [SENSITIVE_CONFIG_SYMBOL]?: boolean;
+    [LISTENERS_CONFIG_SYMBOL]?: { [eventName: string]: string };
 };
 
 export abstract class WebComponent extends LitElement {
@@ -127,12 +130,37 @@ export abstract class WebComponent extends LitElement {
         this.#originalObserversConfig = ctor[OBSERVERS_CONFIG_SYMBOL] || {};
         this.#setupForwardersForRoots();
         this.#computeAllComputedProperties(true);
+
+        const listeners = ctor[LISTENERS_CONFIG_SYMBOL];
+        if (listeners) {
+            for (const eventName in listeners) {
+                const handlerName = listeners[eventName];
+                if (typeof (this as any)[handlerName] === 'function') {
+                    // Ensure the handler is bound correctly if it's not an arrow function
+                    // However, direct method reference should work if it uses `this` correctly.
+                    this.addEventListener(eventName, (this as any)[handlerName]);
+                } else {
+                    console.warn(`[${this.tagName.toLowerCase()}] Listener method '${handlerName}' for event '${eventName}' not found.`);
+                }
+            }
+        }
     }
 
     override disconnectedCallback() {
         super.disconnectedCallback();
         this.#disposeAllForwarders();
         this.#originalObserversConfig = undefined;
+
+        const ctor = this.constructor as WebComponentConstructor;
+        const listeners = ctor[LISTENERS_CONFIG_SYMBOL];
+        if (listeners) {
+            for (const eventName in listeners) {
+                const handlerName = listeners[eventName];
+                if (typeof (this as any)[handlerName] === 'function') {
+                    this.removeEventListener(eventName, (this as any)[handlerName]);
+                }
+            }
+        }
     }
 
     override willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
@@ -256,6 +284,7 @@ export abstract class WebComponent extends LitElement {
             const computedConfigForDecorator: Record<string, ComputedPropertyConfig> = {};
             const observersConfigForDecorator: StaticObserversConfig = {};
             const propertyObserversConfigForDecorator: Record<string, string> = {};
+            const listenersConfigForDecorator: { [eventName: string]: string } = {};
 
             if (config.properties) {
                 for (const propName in config.properties) {
@@ -377,6 +406,17 @@ export abstract class WebComponent extends LitElement {
                 };
             }
 
+            // --- Assign 'listeners' configuration ---
+            if (config.listeners && Object.keys(config.listeners).length > 0) {
+                const superListeners = superCtor?.[LISTENERS_CONFIG_SYMBOL] || {};
+                const existingOnTarget = (targetClass as WebComponentConstructor)[LISTENERS_CONFIG_SYMBOL] || {};
+                (targetClass as WebComponentConstructor)[LISTENERS_CONFIG_SYMBOL] = {
+                    ...superListeners,
+                    ...existingOnTarget,
+                    ...config.listeners // Direct assignment from config, assuming no complex merging needed for listeners yet
+                };
+            }
+
             // --- Assign 'sensitive' configuration ---
             if (config.hasOwnProperty('sensitive')) {
                 (targetClass as WebComponentConstructor)[SENSITIVE_CONFIG_SYMBOL] = config.sensitive;
@@ -480,7 +520,9 @@ class TestObject extends Observable<TestObject> {
         "test.firstName",
         "test.items.*.index",
     ],
-
+    listeners: {
+        "click": "_handleClick",
+    }
 }, "my-test")
 class Test extends WebComponent {
     declare fullName: string;
@@ -501,13 +543,6 @@ class Test extends WebComponent {
             console.log("Timeout 2: Replacing test object and adding item to new object");
             this.test = new TestObject("John", "Doe");
             this.test.addItem(new TestObjectItem(++this.n));
-
-            setInterval(() => {
-                if (this.test.items[0]) {
-                    console.log("Interval: Changing test.items[0].index");
-                    this.test.items[0].index = ++this.n;
-                }
-            }, 5000);
         }, 2000);
     }
 
@@ -532,5 +567,10 @@ class Test extends WebComponent {
     private _testChanged(newValue: TestObject, oldValue: TestObject | undefined): void {
         const oldFullName = oldValue ? `${oldValue.firstName} ${oldValue.lastName}` : "undefined";
         console.log(`Test object changed from "${oldFullName}" to "${newValue.firstName} ${newValue.lastName}"`);
+    }
+
+    private _handleClick(event: MouseEvent): void {
+        if (this.test.items[0])
+            this.test.items[0].index = ++this.n;
     }
 }
