@@ -286,7 +286,6 @@ export abstract class WebComponent extends LitElement {
             const computedConfigForDecorator: Record<string, ComputedPropertyConfig> = {};
             const observersConfigForDecorator: StaticObserversConfig = {};
             const propertyObserversConfigForDecorator: Record<string, string> = {};
-            const listenersConfigForDecorator: { [eventName: string]: string } = {};
 
             if (config.properties) {
                 for (const propName in config.properties) {
