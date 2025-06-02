@@ -1,0 +1,536 @@
+import { html, LitElement, PropertyValueMap } from "lit";
+import { Observable, ForwardObservedPropertyChangedArgs, ForwardObservedArrayChangedArgs } from "vidyano";
+
+type ForwardObservedDetail = ForwardObservedPropertyChangedArgs | ForwardObservedArrayChangedArgs;
+
+export interface WebComponentProperty {
+    type: ObjectConstructor | StringConstructor | BooleanConstructor | DateConstructor | NumberConstructor | ArrayConstructor;
+    reflectToAttribute?: boolean;
+    readOnly?: boolean;
+    computed?: string;
+    observer?: string;
+}
+
+export interface WebComponentRegistrationInfo {
+    properties?: Record<string, WebComponentProperty>;
+    forwardObservers?: string[];
+    sensitive?: boolean;
+}
+
+type ComputedPropertyConfig = {
+  dependencies: string[];
+  methodName: string;
+};
+
+type StaticObserversConfig = Record<string, string[]>;
+
+type StaticPropertyObserversConfig = Record<string, string>;
+
+const COMPUTED_CONFIG_SYMBOL = Symbol.for("WebComponent.computedConfig");
+const OBSERVERS_CONFIG_SYMBOL = Symbol.for("WebComponent.observersConfig");
+const PROPERTY_OBSERVERS_CONFIG_SYMBOL = Symbol.for("WebComponent.propertyObserversConfig");
+const SENSITIVE_CONFIG_SYMBOL = Symbol.for("WebComponent.sensitiveConfig");
+
+type WebComponentConstructor = typeof WebComponent & {
+    properties?: Record<string, any>;
+    [COMPUTED_CONFIG_SYMBOL]?: Record<string, ComputedPropertyConfig>;
+    [OBSERVERS_CONFIG_SYMBOL]?: StaticObserversConfig;
+    [PROPERTY_OBSERVERS_CONFIG_SYMBOL]?: StaticPropertyObserversConfig;
+    [SENSITIVE_CONFIG_SYMBOL]?: boolean;
+};
+
+export abstract class WebComponent extends LitElement {
+    #originalObserversConfig?: StaticObserversConfig;
+    #forwarderDisposers: Map<string, () => void> = new Map();
+    #dirtyForwardedPaths: Set<string> = new Set();
+
+    #setupForwardersForRoots(rootsToRebind?: Set<string>) {
+        const ctor = this.constructor as WebComponentConstructor;
+        if (!this.#originalObserversConfig) {
+            this.#originalObserversConfig = ctor[OBSERVERS_CONFIG_SYMBOL] || {};
+            if (Object.keys(this.#originalObserversConfig).length === 0) {
+                return;
+            }
+        }
+
+        const setupAll = !rootsToRebind || rootsToRebind.size === 0;
+        const pathsToDisposeAndRecreate: Set<string> = new Set();
+
+        for (const dependencies of Object.values(this.#originalObserversConfig)) {
+            for (const depPath of dependencies) {
+                const pathParts = depPath.split('.');
+                if (pathParts.length < 1)
+                    continue;
+
+                const rootPropertyKey = pathParts[0];
+                if (setupAll || rootsToRebind!.has(rootPropertyKey)) {
+                    pathsToDisposeAndRecreate.add(depPath);
+                }
+            }
+        }
+
+        for (const depPath of pathsToDisposeAndRecreate) {
+            const disposer = this.#forwarderDisposers.get(depPath);
+            if (typeof disposer === 'function') {
+                try {
+                    disposer();
+                } catch (error) {
+                    console.warn(`[${this.tagName.toLowerCase()}] Error disposing forwarder for '${depPath}':`, error);
+                }
+            }
+            this.#forwarderDisposers.delete(depPath);
+        }
+
+        for (const [observerIdentifier, dependencies] of Object.entries(this.#originalObserversConfig)) {
+            for (const depPath of dependencies) {
+                if (!pathsToDisposeAndRecreate.has(depPath))
+                    continue;
+
+                const pathParts = depPath.split('.');
+                const relativePathInSource = pathParts.slice(1).join('.');
+                const sourceObject = (this as any)[pathParts[0]];
+
+                if (sourceObject instanceof Observable || (Array.isArray(sourceObject) && relativePathInSource === "*")) {
+                    try {
+                        const disposer = Observable.forward(sourceObject, relativePathInSource, (detail: ForwardObservedDetail) => {
+                            if (typeof (this as any)[observerIdentifier] === 'function') {
+                                (this as any)[observerIdentifier](depPath, detail);
+                            }
+                            this.#dirtyForwardedPaths.add(depPath);
+                            this.requestUpdate();
+                        }, true);
+                        this.#forwarderDisposers.set(depPath, disposer);
+                    } catch (error) {
+                         console.warn(`[${this.tagName.toLowerCase()}] Error setting up forwarder for '${depPath}' on source:`, sourceObject, error);
+                    }
+                }
+            }
+        }
+    }
+
+    #disposeAllForwarders() {
+        for (const [depPath, disposer] of this.#forwarderDisposers) {
+            if (typeof disposer === 'function') {
+                try {
+                    disposer();
+                } catch (error) {
+                    console.warn(`[${this.tagName.toLowerCase()}] Error disposing forwarder for '${depPath}':`, error);
+                }
+            }
+        }
+        this.#forwarderDisposers.clear();
+    }
+
+    override connectedCallback() {
+        super.connectedCallback();
+        const ctor = this.constructor as WebComponentConstructor;
+        this.#originalObserversConfig = ctor[OBSERVERS_CONFIG_SYMBOL] || {};
+        this.#setupForwardersForRoots();
+        this.#computeAllComputedProperties(true);
+    }
+
+    override disconnectedCallback() {
+        super.disconnectedCallback();
+        this.#disposeAllForwarders();
+        this.#originalObserversConfig = undefined;
+    }
+
+    override willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
+        super.willUpdate?.(changedProperties);
+        const ctor = this.constructor as WebComponentConstructor;
+
+        if (this.#originalObserversConfig && Object.keys(this.#originalObserversConfig).length > 0) {
+            const observedRoots = new Set<string>();
+            Object.values(this.#originalObserversConfig).forEach(deps =>
+                deps.forEach(depPath => {
+                    const root = depPath.split('.')[0];
+                    if (root) observedRoots.add(root);
+                })
+            );
+
+            const changedRoots = new Set<string>();
+            for (const rootKey of observedRoots) {
+                if (changedProperties.has(rootKey)) {
+                    changedRoots.add(rootKey);
+                }
+            }
+
+            if (changedRoots.size > 0) {
+                this.#setupForwardersForRoots(changedRoots);
+            }
+        }
+
+        const computedConfig = ctor[COMPUTED_CONFIG_SYMBOL];
+        const propertyObservers = ctor[PROPERTY_OBSERVERS_CONFIG_SYMBOL];
+
+        if (computedConfig) {
+            for (const [prop, { dependencies, methodName }] of Object.entries(computedConfig)) {
+                const hasChangedTopLevelDep = dependencies.some(dep =>
+                    changedProperties.has(dep.split('.')[0]) || changedProperties.has(dep)
+                );
+                const hasChangedDeepDep = dependencies.some(dep => this.#dirtyForwardedPaths.has(dep));
+
+                if (hasChangedTopLevelDep || hasChangedDeepDep) {
+                    const args = dependencies.map(dep => this.#resolvePath(dep));
+                    if (typeof (this as any)[methodName] === "function") {
+                        const oldVal = (this as any)[prop];
+                        const computedValue = (this as any)[methodName](...args);
+                        if (oldVal !== computedValue) {
+                            (this as any)[prop] = computedValue;
+                            this.requestUpdate(prop as PropertyKey, oldVal);
+
+                            // If this computed property has an observer, call it.
+                            if (propertyObservers && propertyObservers[prop]) {
+                                const observerName = propertyObservers[prop];
+                                if (typeof (this as any)[observerName] === 'function') {
+                                    (this as any)[observerName](computedValue, oldVal);
+                                } else {
+                                    console.warn(`[${this.tagName.toLowerCase()}] Observer method '${observerName}' not found for computed property '${prop}'.`);
+                                }
+                            }
+                        }
+                    } else {
+                        console.warn(`[${this.tagName.toLowerCase()}] Compute method '${methodName}' not found for computed property '${prop}'.`);
+                    }
+                }
+            }
+        }
+        this.#dirtyForwardedPaths.clear();
+    }
+
+    override updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
+        super.updated?.(changedProperties);
+        const ctor = this.constructor as WebComponentConstructor;
+        const propertyObservers = ctor[PROPERTY_OBSERVERS_CONFIG_SYMBOL];
+        const computedConfig = ctor[COMPUTED_CONFIG_SYMBOL];
+
+        if (propertyObservers) {
+            for (const [prop, observerName] of Object.entries(propertyObservers)) {
+                // If this property is a computed property, its observer was already handled in willUpdate.
+                if (computedConfig && computedConfig.hasOwnProperty(prop))
+                    continue;
+
+                if (changedProperties.has(prop as PropertyKey)) {
+                    const oldValue = changedProperties.get(prop as PropertyKey);
+                    const newValue = (this as any)[prop];
+                    
+                    // Ensure value actually changed for non-computed properties before calling observer
+                    if (oldValue !== newValue) {
+                        if (typeof (this as any)[observerName] === 'function') {
+                            (this as any)[observerName](newValue, oldValue);
+                        } else {
+                            console.warn(`[${this.tagName.toLowerCase()}] Observer method '${observerName}' not found for property '${prop}'.`);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #resolvePath(path: string): any {
+        return path.split('.').reduce((obj, key) => obj?.[key], this);
+    }
+
+    #computeAllComputedProperties(isInitial: boolean = false) {
+        const ctor = this.constructor as WebComponentConstructor;
+        const computedConfig = ctor[COMPUTED_CONFIG_SYMBOL];
+        if (!computedConfig) return;
+
+        for (const [prop, { dependencies, methodName }] of Object.entries(computedConfig)) {
+            const args = dependencies.map(dep => this.#resolvePath(dep));
+            if (typeof (this as any)[methodName] === "function") {
+                const computedValue = (this as any)[methodName](...args);
+                (this as any)[prop] = computedValue;
+            } else {
+                console.warn(`[${this.tagName.toLowerCase()}] Compute method '${methodName}' not found for computed property '${prop}' during ${isInitial ? 'initial' : ''} computation.`);
+            }
+        }
+        if (isInitial) {
+            this.requestUpdate();
+        }
+    }
+
+    static register(config: WebComponentRegistrationInfo, tagName: string) {
+        return function <T extends typeof WebComponent>(targetClass: T): T | void {
+            const litPropertiesForStaticGetter: Record<string, any> = {};
+            const computedConfigForDecorator: Record<string, ComputedPropertyConfig> = {};
+            const observersConfigForDecorator: StaticObserversConfig = {};
+            const propertyObserversConfigForDecorator: Record<string, string> = {};
+
+            if (config.properties) {
+                for (const propName in config.properties) {
+                    const polyPropConfig = config.properties[propName];
+                    const litPropOptions: any = {
+                        type: polyPropConfig.type,
+                        reflect: !!polyPropConfig.reflectToAttribute,
+                    };
+
+                    if (polyPropConfig.readOnly || polyPropConfig.computed) {
+                        litPropOptions.noAccessor = true;
+                    }
+                    litPropertiesForStaticGetter[propName] = litPropOptions;
+
+                    if (polyPropConfig.computed) {
+                        const match = polyPropConfig.computed.match(/^([a-zA-Z0-9_]+)\((.*)\)$/);
+                        if (match) {
+                            const methodName = match[1];
+                            const depsString = match[2];
+                            const dependencies = depsString ? depsString.split(',').map(d => d.trim()).filter(d => d) : [];
+                            computedConfigForDecorator[propName] = { dependencies, methodName };
+                        } else {
+                            console.warn(`[${tagName}] Could not parse computed string for "${propName}": ${polyPropConfig.computed}`);
+                        }
+                    }
+                    if (polyPropConfig.observer) {
+                        propertyObserversConfigForDecorator[propName] = polyPropConfig.observer;
+                    }
+                }
+            }
+
+            // --- Handle Lit's static properties (remains string-keyed "properties") ---
+            const existingStaticPropertiesGetter = Object.getOwnPropertyDescriptor(targetClass, 'properties')?.get;
+            Object.defineProperty(targetClass, 'properties', {
+                get: () => {
+                    let superProps = {};
+                    if (existingStaticPropertiesGetter) { // If target already had a 'properties' getter
+                        superProps = existingStaticPropertiesGetter.call(targetClass) || {};
+                    } else { // Otherwise, look up the prototype chain
+                        const superClassConstructor = Object.getPrototypeOf(targetClass.prototype)?.constructor;
+                        if (superClassConstructor && superClassConstructor.hasOwnProperty('properties')) {
+                            const superDescriptor = Object.getOwnPropertyDescriptor(superClassConstructor, 'properties');
+                            if (superDescriptor?.get) {
+                                superProps = superDescriptor.get.call(superClassConstructor) || {};
+                            } else if (superDescriptor?.value) {
+                                superProps = superDescriptor.value || {};
+                            }
+                        }
+                    }
+                    return { ...superProps, ...litPropertiesForStaticGetter };
+                },
+                enumerable: true,
+                configurable: true,
+            });
+
+            const superCtor = Object.getPrototypeOf(targetClass.prototype)?.constructor as WebComponentConstructor | undefined;
+
+            // --- Merge and assign 'computed' configuration ---
+            if (Object.keys(computedConfigForDecorator).length > 0) {
+                const superComputed = superCtor?.[COMPUTED_CONFIG_SYMBOL] || {};
+                const existingOnTarget = (targetClass as WebComponentConstructor)[COMPUTED_CONFIG_SYMBOL] || {};
+                (targetClass as WebComponentConstructor)[COMPUTED_CONFIG_SYMBOL] = {
+                    ...superComputed,
+                    ...existingOnTarget,
+                    ...computedConfigForDecorator
+                };
+            }
+
+            // --- Parse and merge 'forwardObservers' ---
+            if (config.forwardObservers && Array.isArray(config.forwardObservers)) {
+                config.forwardObservers.forEach((observerString: string) => {
+                    const signatureMatch = observerString.match(/^([a-zA-Z0-9_]+)\((.*)\)$/);
+                    if (signatureMatch) {
+                        const methodName = signatureMatch[1];
+                        const depsString = signatureMatch[2];
+                        const dependencies = depsString?.split(',').map(d => d.trim()).filter(d => d && d !== 'undefined' && d !== 'null') || [];
+                        if (dependencies.length > 0) {
+                            observersConfigForDecorator[methodName] = [...(observersConfigForDecorator[methodName] || []), ...dependencies];
+                        } else if (depsString.trim() === '' && methodName) {
+                            if (!observersConfigForDecorator[methodName]) observersConfigForDecorator[methodName] = [];
+                            console.warn(`[${tagName}] Observer method "${methodName}" has no dependencies specified. It will not observe any changes.`, observerString);
+                        }
+                    } else if (observerString.includes('.') || !observerString.includes('(')) {
+                        const depPath = observerString.trim();
+                        if (depPath) {
+                            observersConfigForDecorator[depPath] = [...(observersConfigForDecorator[depPath] || []), depPath];
+                        }
+                    } else {
+                        console.warn(`[${tagName}] Could not parse observer string: "${observerString}". Expected format: "methodName(dependency1, dependency2, ...)" or "dependencyPath"`);
+                    }
+                });
+
+                if (Object.keys(observersConfigForDecorator).length > 0) {
+                    const finalObservers: StaticObserversConfig = { ...(superCtor?.[OBSERVERS_CONFIG_SYMBOL] || {}) };
+                    const existingOnTarget = (targetClass as WebComponentConstructor)[OBSERVERS_CONFIG_SYMBOL] || {};
+
+                    // Merge existing on target (could be from other decorators)
+                    for (const methodName in existingOnTarget) {
+                        const combinedDeps = new Set([...(finalObservers[methodName] || []), ...(existingOnTarget[methodName] || [])]);
+                        finalObservers[methodName] = Array.from(combinedDeps);
+                    }
+                    // Merge new from this decorator
+                    for (const methodName in observersConfigForDecorator) {
+                        const combinedDeps = new Set([...(finalObservers[methodName] || []), ...(observersConfigForDecorator[methodName] || [])]);
+                        finalObservers[methodName] = Array.from(combinedDeps);
+                    }
+                    (targetClass as WebComponentConstructor)[OBSERVERS_CONFIG_SYMBOL] = finalObservers;
+                }
+            }
+
+            // --- Merge and assign 'propertyObservers' configuration ---
+            if (Object.keys(propertyObserversConfigForDecorator).length > 0) {
+                const superPropObs = superCtor?.[PROPERTY_OBSERVERS_CONFIG_SYMBOL] || {};
+                const existingOnTarget = (targetClass as WebComponentConstructor)[PROPERTY_OBSERVERS_CONFIG_SYMBOL] || {};
+                (targetClass as WebComponentConstructor)[PROPERTY_OBSERVERS_CONFIG_SYMBOL] = {
+                    ...superPropObs,
+                    ...existingOnTarget,
+                    ...propertyObserversConfigForDecorator
+                };
+            }
+
+            // --- Assign 'sensitive' configuration ---
+            if (config.hasOwnProperty('sensitive')) {
+                (targetClass as WebComponentConstructor)[SENSITIVE_CONFIG_SYMBOL] = config.sensitive;
+            }
+
+            if (tagName && typeof tagName === 'string') {
+                if (!customElements.get(tagName)) {
+                    customElements.define(tagName, targetClass as unknown as CustomElementConstructor);
+                } else {
+                    console.warn(`[${tagName}] Element "${tagName}" is already defined. Skipping registration.`);
+                }
+            } else if (tagName) {
+                 console.warn(`[${tagName}] tagName was invalid (not a string). Element not registered.`);
+            }
+
+            return targetClass;
+        };
+    }
+}
+
+class TestObjectItem extends Observable<TestObjectItem> {
+    #index: number;
+
+    constructor(index: number) {
+        super();
+        this.#index = index;
+    }
+
+    get index(): number {
+        return this.#index;
+    }
+
+    set index(value: number) {
+        if (this.#index !== value) {
+            const oldValue = this.#index;
+            this.#index = value;
+            this.notifyPropertyChanged("index", value, oldValue);
+        }
+    }
+}
+
+class TestObject extends Observable<TestObject> {
+    #firstName: string;
+    #lastName: string;
+    #items: TestObjectItem[] = [];
+
+    constructor(firstName: string, lastName: string) {
+        super();
+        this.#firstName = firstName;
+        this.#lastName = lastName;
+    }
+
+    get firstName(): string {
+        return this.#firstName;
+    }
+
+    set firstName(value: string) {
+        if (this.#firstName !== value) {
+            const oldValue = this.#firstName;
+            this.#firstName = value;
+            this.notifyPropertyChanged("firstName", value, oldValue);
+        }
+    }
+
+    get lastName(): string {
+        return this.#lastName;
+    }
+
+    set lastName(value: string) {
+        if (this.#lastName !== value) {
+            const oldValue = this.#lastName;
+            this.#lastName = value;
+            this.notifyPropertyChanged("lastName", value, oldValue);
+        }
+    }
+
+    addItem(item: TestObjectItem): void {
+        const newIndex = this.#items.length;
+        this.#items.push(item);
+        this.notifyArrayChanged("items", newIndex, [], 1);
+    }
+
+    get items(): TestObjectItem[] {
+        return this.#items;
+    }
+}
+
+@WebComponent.register({
+    properties: {
+        fullName: {
+            type: String,
+            computed: "_computeFullName(test.firstName, test.lastName)",
+            observer: "_fullNameChanged",
+        },
+        test: {
+            type: Object,
+            observer: "_testChanged",
+        }
+    },
+    forwardObservers: [
+        "test.firstName",
+        "test.items.*.index",
+    ],
+
+}, "my-test")
+class Test extends WebComponent {
+    declare fullName: string;
+    test = new TestObject("Jane", "Smith");
+    n = 0;
+
+    override connectedCallback(): void {
+        super.connectedCallback();
+        console.log("Test component connected");
+
+        setTimeout(() => {
+            console.log("Timeout 1: Changing test.firstName and adding item");
+            this.test.firstName = (++this.n).toString();
+            this.test.addItem(new TestObjectItem(++this.n));
+        }, 1000);
+
+        setTimeout(() => {
+            console.log("Timeout 2: Replacing test object and adding item to new object");
+            this.test = new TestObject("John", "Doe");
+            this.test.addItem(new TestObjectItem(++this.n));
+
+            setInterval(() => {
+                if (this.test.items[0]) {
+                    console.log("Interval: Changing test.items[0].index");
+                    this.test.items[0].index = ++this.n;
+                }
+            }, 5000);
+        }, 2000);
+    }
+
+    protected override render() {
+        console.log("Test component rendering. FullName:", this.fullName, "Item Index:", this.test.items?.[0]?.index);
+        return html`<h1>Item Index: ${this.test.items?.[0]?.index}, FullName: ${this.fullName}!</h1>`;
+    }
+
+    private _computeFullName(firstName?: string, lastName?: string): string {
+        if (firstName === undefined || lastName === undefined) {
+            console.log(`Computing full name: returning "Loading..." (firstName: ${firstName}, lastName: ${lastName})`);
+            return "Loading...";
+        }
+        console.log(`Computing full name from "${firstName}" and "${lastName}"`);
+        return `${firstName} ${lastName}`;
+    }
+
+    private _fullNameChanged(newValue: string, oldValue: string): void {
+        console.log(`Full name changed from "${oldValue}" to "${newValue}"`);
+    }
+
+    private _testChanged(newValue: TestObject, oldValue: TestObject | undefined): void {
+        const oldFullName = oldValue ? `${oldValue.firstName} ${oldValue.lastName}` : "undefined";
+        console.log(`Test object changed from "${oldFullName}" to "${newValue.firstName} ${newValue.lastName}"`);
+    }
+}
