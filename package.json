@@ -1,6 +1,6 @@
 {
   "name": "vidyano",
-  "version": "4.0.0-pre.11",
+  "version": "4.0.0-pre.12",
   "description": "The Vidyano library contains all the web components for working with a Vidyano .NET backend.",
   "main": "wwwroot/dist/vidyano.js",
   "module": "wwwroot/dist/vidyano.js",
@@ -30,6 +30,7 @@
     "chokidar": "^3.5.3",
     "dompurify": "^3.0.6",
     "fast-glob": "^3.3.1",
+    "lit": "^3.3.0",
     "marked": "^15.0.7",
     "qunit": "2.20.0",
     "rollup": "^4.41.0",
