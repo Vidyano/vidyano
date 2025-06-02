@@ -143,7 +143,7 @@ export abstract class WebComponent extends LitElement {
                             this.requestUpdate(prop as PropertyKey, oldVal);
 
                             // If this computed property has an observer, call it.
-                            if (propertyObservers && propertyObservers[prop]) {
+                            if (propertyObservers?.[prop]) {
                                 const observerName = propertyObservers[prop];
                                 if (typeof this[observerName] === 'function') {
                                     this[observerName](computedValue, oldVal);
@@ -170,7 +170,7 @@ export abstract class WebComponent extends LitElement {
         if (propertyObservers) {
             for (const [prop, observerName] of Object.entries(propertyObservers)) {
                 // If this property is a computed property, its observer was already handled in willUpdate.
-                if (computedConfig && computedConfig.hasOwnProperty(prop))
+                if (computedConfig?.hasOwnProperty(prop))
                     continue;
 
                 if (changedProperties.has(prop as PropertyKey)) {
@@ -207,25 +207,38 @@ export abstract class WebComponent extends LitElement {
     }
 
     #setupForwardersForRoots(rootsToRebind?: Set<string>) {
-        if (Object.keys(this.#staticObserversConfig).length === 0)
+        const staticObserversConfig = this.#staticObserversConfig;
+        if (Object.keys(staticObserversConfig).length === 0)
             return;
 
+        // 1. Build pathsToObserversMap
+        const pathsToObserversMap = new Map<string, string[]>();
+        for (const [observerIdentifier, dependencies] of Object.entries(staticObserversConfig)) {
+            for (const depPath of dependencies) {
+                if (!pathsToObserversMap.has(depPath)) {
+                    pathsToObserversMap.set(depPath, []);
+                }
+                pathsToObserversMap.get(depPath)!.push(observerIdentifier);
+            }
+        }
+
+        // 2. Determine Paths for Forwarder Setup/Disposal
         const setupAll = !rootsToRebind || rootsToRebind.size === 0;
         const pathsToDisposeAndRecreate: Set<string> = new Set();
-
-        for (const dependencies of Object.values(this.#staticObserversConfig)) {
+        for (const dependencies of Object.values(staticObserversConfig)) {
             for (const depPath of dependencies) {
                 const pathParts = depPath.split('.');
                 if (pathParts.length < 1)
                     continue;
 
                 const rootPropertyKey = pathParts[0];
-                if (setupAll || rootsToRebind!.has(rootPropertyKey)) {
+                if (setupAll || rootsToRebind?.has(rootPropertyKey)) {
                     pathsToDisposeAndRecreate.add(depPath);
                 }
             }
         }
 
+        // 3. Dispose Old Forwarders
         for (const depPath of pathsToDisposeAndRecreate) {
             const disposer = this.#forwarderDisposers.get(depPath);
             if (typeof disposer === 'function') {
@@ -238,28 +251,31 @@ export abstract class WebComponent extends LitElement {
             this.#forwarderDisposers.delete(depPath);
         }
 
-        for (const [observerIdentifier, dependencies] of Object.entries(this.#staticObserversConfig)) {
-            for (const depPath of dependencies) {
-                if (!pathsToDisposeAndRecreate.has(depPath))
-                    continue;
+        // 4. Setup New Forwarders
+        for (const depPath of pathsToDisposeAndRecreate) {
+            const pathParts = depPath.split('.');
+            const rootPropertyKey = pathParts[0];
+            const relativePathInSource = pathParts.slice(1).join('.');
+            const sourceObject = this[rootPropertyKey];
 
-                const pathParts = depPath.split('.');
-                const relativePathInSource = pathParts.slice(1).join('.');
-                const sourceObject = this[pathParts[0]];
-
-                if (sourceObject instanceof Observable || (Array.isArray(sourceObject) && relativePathInSource === "*")) {
-                    try {
-                        const disposer = Observable.forward(sourceObject, relativePathInSource, (detail: ForwardObservedDetail) => {
-                            if (typeof this[observerIdentifier] === 'function') {
-                                this[observerIdentifier](depPath, detail);
+            if (sourceObject instanceof Observable || (Array.isArray(sourceObject) && relativePathInSource === "*")) {
+                try {
+                    const disposer = Observable.forward(sourceObject, relativePathInSource, (detail: ForwardObservedDetail) => {
+                        const observerIdentifiers = pathsToObserversMap.get(depPath);
+                        if (observerIdentifiers) {
+                            for (const observerIdentifier of observerIdentifiers) {
+                                const isPathBasedObserver = observerIdentifier === depPath;
+                                if (!isPathBasedObserver && typeof this[observerIdentifier] === 'function') {
+                                    this[observerIdentifier](depPath, detail, observerIdentifier);
+                                }
                             }
-                            this.#dirtyForwardedPaths.add(depPath);
-                            this.requestUpdate();
-                        }, true);
-                        this.#forwarderDisposers.set(depPath, disposer);
-                    } catch (error) {
-                         console.warn(`[${this.tagName.toLowerCase()}] Error setting up forwarder for '${depPath}' on source:`, sourceObject, error);
-                    }
+                        }
+                        this.#dirtyForwardedPaths.add(depPath);
+                        this.requestUpdate();
+                    }, true);
+                    this.#forwarderDisposers.set(depPath, disposer);
+                } catch (error) {
+                     console.warn(`[${this.tagName.toLowerCase()}] Error setting up forwarder for '${depPath}' on source:`, sourceObject, error);
                 }
             }
         }
@@ -328,7 +344,7 @@ export abstract class WebComponent extends LitElement {
                         superProps = existingStaticPropertiesGetter.call(targetClass) || {};
                     } else { // Otherwise, look up the prototype chain
                         const superClassConstructor = Object.getPrototypeOf(targetClass.prototype)?.constructor;
-                        if (superClassConstructor && superClassConstructor.hasOwnProperty('properties')) {
+                        if (superClassConstructor?.hasOwnProperty('properties')) {
                             const superDescriptor = Object.getOwnPropertyDescriptor(superClassConstructor, 'properties');
                             if (superDescriptor?.get) {
                                 superProps = superDescriptor.get.call(superClassConstructor) || {};
@@ -357,13 +373,13 @@ export abstract class WebComponent extends LitElement {
             }
 
             // --- Parse and merge 'forwardObservers' ---
-            if (config.forwardObservers && Array.isArray(config.forwardObservers)) {
+            if (Array.isArray(config.forwardObservers)) {
                 config.forwardObservers.forEach((observerString: string) => {
                     const signatureMatch = observerString.match(/^([a-zA-Z0-9_]+)\((.*)\)$/);
                     if (signatureMatch) {
                         const methodName = signatureMatch[1];
                         const depsString = signatureMatch[2];
-                        const dependencies = depsString?.split(',').map(d => d.trim()).filter(d => d && d !== 'undefined' && d !== 'null') || [];
+                        const dependencies = depsString?.split(',').map(d => d.trim()).filter(Boolean) || [];
                         if (dependencies.length > 0) {
                             observersConfigForDecorator[methodName] = [...(observersConfigForDecorator[methodName] || []), ...dependencies];
                         } else if (depsString.trim() === '' && methodName) {
