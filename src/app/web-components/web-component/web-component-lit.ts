@@ -23,6 +23,8 @@ type ComputedPropertyConfig = {
   methodName: string;
 };
 
+type StaticComputedConfig = Record<string, ComputedPropertyConfig>;
+
 type StaticObserversConfig = Record<string, string[]>;
 
 type StaticPropertyObserversConfig = Record<string, string>;
@@ -35,7 +37,7 @@ const LISTENERS_CONFIG_SYMBOL = Symbol.for("WebComponent.listenersConfig");
 
 type WebComponentConstructor = typeof WebComponent & {
     properties?: Record<string, any>;
-    [COMPUTED_CONFIG_SYMBOL]?: Record<string, ComputedPropertyConfig>;
+    [COMPUTED_CONFIG_SYMBOL]?: StaticComputedConfig;
     [OBSERVERS_CONFIG_SYMBOL]?: StaticObserversConfig;
     [PROPERTY_OBSERVERS_CONFIG_SYMBOL]?: StaticPropertyObserversConfig;
     [SENSITIVE_CONFIG_SYMBOL]?: boolean;
@@ -43,23 +45,173 @@ type WebComponentConstructor = typeof WebComponent & {
 };
 
 export abstract class WebComponent extends LitElement {
-    #originalObserversConfig?: StaticObserversConfig;
     #forwarderDisposers: Map<string, () => void> = new Map();
     #dirtyForwardedPaths: Set<string> = new Set();
 
-    #setupForwardersForRoots(rootsToRebind?: Set<string>) {
-        const ctor = this.constructor as WebComponentConstructor;
-        if (!this.#originalObserversConfig) {
-            this.#originalObserversConfig = ctor[OBSERVERS_CONFIG_SYMBOL] || {};
-            if (Object.keys(this.#originalObserversConfig).length === 0) {
-                return;
+    override connectedCallback() {
+        super.connectedCallback();
+
+        this.#setupForwardersForRoots();
+        
+        const computedConfig = this.#staticComputedConfig;
+        if (computedConfig) {
+            for (const [prop, { dependencies, methodName }] of Object.entries(computedConfig)) {
+                const args = dependencies.map(dep => this.#resolvePath(dep));
+                if (typeof (this as any)[methodName] === "function") {
+                    const computedValue = (this as any)[methodName](...args);
+                    (this as any)[prop] = computedValue;
+                } else {
+                    console.warn(`[${this.tagName.toLowerCase()}] Compute method '${methodName}' not found for computed property '${prop}' during initial computation.`);
+                }
+            }
+
+            this.requestUpdate();
+        }
+
+        const listeners = this.#staticListenersConfig;
+        if (listeners) {
+            for (const eventName in listeners) {
+                const handlerName = listeners[eventName];
+                if (typeof (this as any)[handlerName] === 'function') {
+                    this.addEventListener(eventName, (this as any)[handlerName]);
+                } else {
+                    console.warn(`[${this.tagName.toLowerCase()}] Listener method '${handlerName}' for event '${eventName}' not found.`);
+                }
             }
         }
+    }
+
+    override disconnectedCallback() {
+        super.disconnectedCallback();
+
+        this.#disposeAllForwarders();
+
+        const listeners = this.#staticListenersConfig;
+        if (listeners) {
+            for (const eventName in listeners) {
+                const handlerName = listeners[eventName];
+                if (typeof (this as any)[handlerName] === 'function') {
+                    this.removeEventListener(eventName, (this as any)[handlerName]);
+                }
+            }
+        }
+    }
+
+    override willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
+        super.willUpdate?.(changedProperties);
+
+        if (Object.keys(this.#staticObserversConfig).length > 0) {
+            const observedRoots = new Set<string>();
+            Object.values(this.#staticObserversConfig).forEach(deps =>
+                deps.forEach(depPath => {
+                    const root = depPath.split('.')[0];
+                    if (root) observedRoots.add(root);
+                })
+            );
+
+            const changedRoots = new Set<string>();
+            for (const rootKey of observedRoots) {
+                if (changedProperties.has(rootKey)) {
+                    changedRoots.add(rootKey);
+                }
+            }
+
+            if (changedRoots.size > 0) {
+                this.#setupForwardersForRoots(changedRoots);
+            }
+        }
+
+        const computedConfig = this.#staticComputedConfig;
+        const propertyObservers = this.#staticPropertyObserversConfig;
+
+        if (computedConfig) {
+            for (const [prop, { dependencies, methodName }] of Object.entries(computedConfig)) {
+                const hasChangedTopLevelDep = dependencies.some(dep =>
+                    changedProperties.has(dep.split('.')[0]) || changedProperties.has(dep)
+                );
+                const hasChangedDeepDep = dependencies.some(dep => this.#dirtyForwardedPaths.has(dep));
+
+                if (hasChangedTopLevelDep || hasChangedDeepDep) {
+                    const args = dependencies.map(dep => this.#resolvePath(dep));
+                    if (typeof (this as any)[methodName] === "function") {
+                        const oldVal = (this as any)[prop];
+                        const computedValue = (this as any)[methodName](...args);
+                        if (oldVal !== computedValue) {
+                            (this as any)[prop] = computedValue;
+                            this.requestUpdate(prop as PropertyKey, oldVal);
+
+                            // If this computed property has an observer, call it.
+                            if (propertyObservers && propertyObservers[prop]) {
+                                const observerName = propertyObservers[prop];
+                                if (typeof (this as any)[observerName] === 'function') {
+                                    (this as any)[observerName](computedValue, oldVal);
+                                } else {
+                                    console.warn(`[${this.tagName.toLowerCase()}] Observer method '${observerName}' not found for computed property '${prop}'.`);
+                                }
+                            }
+                        }
+                    } else {
+                        console.warn(`[${this.tagName.toLowerCase()}] Compute method '${methodName}' not found for computed property '${prop}'.`);
+                    }
+                }
+            }
+        }
+        this.#dirtyForwardedPaths.clear();
+    }
+
+    override updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
+        super.updated?.(changedProperties);
+
+        const propertyObservers = this.#staticPropertyObserversConfig;
+        const computedConfig = this.#staticComputedConfig;
+
+        if (propertyObservers) {
+            for (const [prop, observerName] of Object.entries(propertyObservers)) {
+                // If this property is a computed property, its observer was already handled in willUpdate.
+                if (computedConfig && computedConfig.hasOwnProperty(prop))
+                    continue;
+
+                if (changedProperties.has(prop as PropertyKey)) {
+                    const oldValue = changedProperties.get(prop as PropertyKey);
+                    const newValue = (this as any)[prop];
+                    
+                    // Ensure value actually changed for non-computed properties before calling observer
+                    if (oldValue !== newValue) {
+                        if (typeof (this as any)[observerName] === 'function') {
+                            (this as any)[observerName](newValue, oldValue);
+                        } else {
+                            console.warn(`[${this.tagName.toLowerCase()}] Observer method '${observerName}' not found for property '${prop}'.`);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    get #staticObserversConfig(): StaticObserversConfig {
+        return (this.constructor as WebComponentConstructor)[OBSERVERS_CONFIG_SYMBOL] || {};
+    }
+
+    get #staticComputedConfig(): StaticComputedConfig | undefined {
+        return (this.constructor as WebComponentConstructor)[COMPUTED_CONFIG_SYMBOL] || {};
+    }
+
+    get #staticPropertyObserversConfig(): StaticPropertyObserversConfig | undefined {
+        return (this.constructor as WebComponentConstructor)[PROPERTY_OBSERVERS_CONFIG_SYMBOL] || {};
+    }
+
+    get #staticListenersConfig(): { [eventName: string]: string } | undefined {
+        return (this.constructor as WebComponentConstructor)[LISTENERS_CONFIG_SYMBOL] || {};
+    }
+
+    #setupForwardersForRoots(rootsToRebind?: Set<string>) {
+        if (Object.keys(this.#staticObserversConfig).length === 0)
+            return;
 
         const setupAll = !rootsToRebind || rootsToRebind.size === 0;
         const pathsToDisposeAndRecreate: Set<string> = new Set();
 
-        for (const dependencies of Object.values(this.#originalObserversConfig)) {
+        for (const dependencies of Object.values(this.#staticObserversConfig)) {
             for (const depPath of dependencies) {
                 const pathParts = depPath.split('.');
                 if (pathParts.length < 1)
@@ -84,7 +236,7 @@ export abstract class WebComponent extends LitElement {
             this.#forwarderDisposers.delete(depPath);
         }
 
-        for (const [observerIdentifier, dependencies] of Object.entries(this.#originalObserversConfig)) {
+        for (const [observerIdentifier, dependencies] of Object.entries(this.#staticObserversConfig)) {
             for (const depPath of dependencies) {
                 if (!pathsToDisposeAndRecreate.has(depPath))
                     continue;
@@ -124,158 +276,8 @@ export abstract class WebComponent extends LitElement {
         this.#forwarderDisposers.clear();
     }
 
-    override connectedCallback() {
-        super.connectedCallback();
-        const ctor = this.constructor as WebComponentConstructor;
-        this.#originalObserversConfig = ctor[OBSERVERS_CONFIG_SYMBOL] || {};
-        this.#setupForwardersForRoots();
-        this.#computeAllComputedProperties(true);
-
-        const listeners = ctor[LISTENERS_CONFIG_SYMBOL];
-        if (listeners) {
-            for (const eventName in listeners) {
-                const handlerName = listeners[eventName];
-                if (typeof (this as any)[handlerName] === 'function') {
-                    // Ensure the handler is bound correctly if it's not an arrow function
-                    // However, direct method reference should work if it uses `this` correctly.
-                    this.addEventListener(eventName, (this as any)[handlerName]);
-                } else {
-                    console.warn(`[${this.tagName.toLowerCase()}] Listener method '${handlerName}' for event '${eventName}' not found.`);
-                }
-            }
-        }
-    }
-
-    override disconnectedCallback() {
-        super.disconnectedCallback();
-        this.#disposeAllForwarders();
-        this.#originalObserversConfig = undefined;
-
-        const ctor = this.constructor as WebComponentConstructor;
-        const listeners = ctor[LISTENERS_CONFIG_SYMBOL];
-        if (listeners) {
-            for (const eventName in listeners) {
-                const handlerName = listeners[eventName];
-                if (typeof (this as any)[handlerName] === 'function') {
-                    this.removeEventListener(eventName, (this as any)[handlerName]);
-                }
-            }
-        }
-    }
-
-    override willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-        super.willUpdate?.(changedProperties);
-        const ctor = this.constructor as WebComponentConstructor;
-
-        if (this.#originalObserversConfig && Object.keys(this.#originalObserversConfig).length > 0) {
-            const observedRoots = new Set<string>();
-            Object.values(this.#originalObserversConfig).forEach(deps =>
-                deps.forEach(depPath => {
-                    const root = depPath.split('.')[0];
-                    if (root) observedRoots.add(root);
-                })
-            );
-
-            const changedRoots = new Set<string>();
-            for (const rootKey of observedRoots) {
-                if (changedProperties.has(rootKey)) {
-                    changedRoots.add(rootKey);
-                }
-            }
-
-            if (changedRoots.size > 0) {
-                this.#setupForwardersForRoots(changedRoots);
-            }
-        }
-
-        const computedConfig = ctor[COMPUTED_CONFIG_SYMBOL];
-        const propertyObservers = ctor[PROPERTY_OBSERVERS_CONFIG_SYMBOL];
-
-        if (computedConfig) {
-            for (const [prop, { dependencies, methodName }] of Object.entries(computedConfig)) {
-                const hasChangedTopLevelDep = dependencies.some(dep =>
-                    changedProperties.has(dep.split('.')[0]) || changedProperties.has(dep)
-                );
-                const hasChangedDeepDep = dependencies.some(dep => this.#dirtyForwardedPaths.has(dep));
-
-                if (hasChangedTopLevelDep || hasChangedDeepDep) {
-                    const args = dependencies.map(dep => this.#resolvePath(dep));
-                    if (typeof (this as any)[methodName] === "function") {
-                        const oldVal = (this as any)[prop];
-                        const computedValue = (this as any)[methodName](...args);
-                        if (oldVal !== computedValue) {
-                            (this as any)[prop] = computedValue;
-                            this.requestUpdate(prop as PropertyKey, oldVal);
-
-                            // If this computed property has an observer, call it.
-                            if (propertyObservers && propertyObservers[prop]) {
-                                const observerName = propertyObservers[prop];
-                                if (typeof (this as any)[observerName] === 'function') {
-                                    (this as any)[observerName](computedValue, oldVal);
-                                } else {
-                                    console.warn(`[${this.tagName.toLowerCase()}] Observer method '${observerName}' not found for computed property '${prop}'.`);
-                                }
-                            }
-                        }
-                    } else {
-                        console.warn(`[${this.tagName.toLowerCase()}] Compute method '${methodName}' not found for computed property '${prop}'.`);
-                    }
-                }
-            }
-        }
-        this.#dirtyForwardedPaths.clear();
-    }
-
-    override updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-        super.updated?.(changedProperties);
-        const ctor = this.constructor as WebComponentConstructor;
-        const propertyObservers = ctor[PROPERTY_OBSERVERS_CONFIG_SYMBOL];
-        const computedConfig = ctor[COMPUTED_CONFIG_SYMBOL];
-
-        if (propertyObservers) {
-            for (const [prop, observerName] of Object.entries(propertyObservers)) {
-                // If this property is a computed property, its observer was already handled in willUpdate.
-                if (computedConfig && computedConfig.hasOwnProperty(prop))
-                    continue;
-
-                if (changedProperties.has(prop as PropertyKey)) {
-                    const oldValue = changedProperties.get(prop as PropertyKey);
-                    const newValue = (this as any)[prop];
-                    
-                    // Ensure value actually changed for non-computed properties before calling observer
-                    if (oldValue !== newValue) {
-                        if (typeof (this as any)[observerName] === 'function') {
-                            (this as any)[observerName](newValue, oldValue);
-                        } else {
-                            console.warn(`[${this.tagName.toLowerCase()}] Observer method '${observerName}' not found for property '${prop}'.`);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     #resolvePath(path: string): any {
         return path.split('.').reduce((obj, key) => obj?.[key], this);
-    }
-
-    #computeAllComputedProperties(isInitial: boolean = false) {
-        const ctor = this.constructor as WebComponentConstructor;
-        const computedConfig = ctor[COMPUTED_CONFIG_SYMBOL];
-        if (!computedConfig) return;
-
-        for (const [prop, { dependencies, methodName }] of Object.entries(computedConfig)) {
-            const args = dependencies.map(dep => this.#resolvePath(dep));
-            if (typeof (this as any)[methodName] === "function") {
-                const computedValue = (this as any)[methodName](...args);
-                (this as any)[prop] = computedValue;
-            } else {
-                console.warn(`[${this.tagName.toLowerCase()}] Compute method '${methodName}' not found for computed property '${prop}' during ${isInitial ? 'initial' : ''} computation.`);
-            }
-        }
-        if (isInitial) {
-            this.requestUpdate();
-        }
     }
 
     static register(config: WebComponentRegistrationInfo, tagName: string) {
