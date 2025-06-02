@@ -29,6 +29,8 @@ type StaticObserversConfig = Record<string, string[]>;
 
 type StaticPropertyObserversConfig = Record<string, string>;
 
+type StaticListenersConfig = Record<string, string>;
+
 const COMPUTED_CONFIG_SYMBOL = Symbol.for("WebComponent.computedConfig");
 const OBSERVERS_CONFIG_SYMBOL = Symbol.for("WebComponent.observersConfig");
 const PROPERTY_OBSERVERS_CONFIG_SYMBOL = Symbol.for("WebComponent.propertyObserversConfig");
@@ -36,12 +38,12 @@ const SENSITIVE_CONFIG_SYMBOL = Symbol.for("WebComponent.sensitiveConfig");
 const LISTENERS_CONFIG_SYMBOL = Symbol.for("WebComponent.listenersConfig");
 
 type WebComponentConstructor = typeof WebComponent & {
-    properties?: Record<string, any>;
+    properties?: Record<string, WebComponentProperty>;
     [COMPUTED_CONFIG_SYMBOL]?: StaticComputedConfig;
     [OBSERVERS_CONFIG_SYMBOL]?: StaticObserversConfig;
     [PROPERTY_OBSERVERS_CONFIG_SYMBOL]?: StaticPropertyObserversConfig;
     [SENSITIVE_CONFIG_SYMBOL]?: boolean;
-    [LISTENERS_CONFIG_SYMBOL]?: { [eventName: string]: string };
+    [LISTENERS_CONFIG_SYMBOL]?: StaticListenersConfig;
 };
 
 export abstract class WebComponent extends LitElement {
@@ -57,9 +59,9 @@ export abstract class WebComponent extends LitElement {
         if (computedConfig) {
             for (const [prop, { dependencies, methodName }] of Object.entries(computedConfig)) {
                 const args = dependencies.map(dep => this.#resolvePath(dep));
-                if (typeof (this as any)[methodName] === "function") {
-                    const computedValue = (this as any)[methodName](...args);
-                    (this as any)[prop] = computedValue;
+                if (typeof this[methodName] === "function") {
+                    const computedValue = this[methodName](...args);
+                    this[prop] = computedValue;
                 } else {
                     console.warn(`[${this.tagName.toLowerCase()}] Compute method '${methodName}' not found for computed property '${prop}' during initial computation.`);
                 }
@@ -72,8 +74,8 @@ export abstract class WebComponent extends LitElement {
         if (listeners) {
             for (const eventName in listeners) {
                 const handlerName = listeners[eventName];
-                if (typeof (this as any)[handlerName] === 'function') {
-                    this.addEventListener(eventName, (this as any)[handlerName]);
+                if (typeof this[handlerName] === 'function') {
+                    this.addEventListener(eventName, this[handlerName]);
                 } else {
                     console.warn(`[${this.tagName.toLowerCase()}] Listener method '${handlerName}' for event '${eventName}' not found.`);
                 }
@@ -90,8 +92,8 @@ export abstract class WebComponent extends LitElement {
         if (listeners) {
             for (const eventName in listeners) {
                 const handlerName = listeners[eventName];
-                if (typeof (this as any)[handlerName] === 'function') {
-                    this.removeEventListener(eventName, (this as any)[handlerName]);
+                if (typeof this[handlerName] === 'function') {
+                    this.removeEventListener(eventName, this[handlerName]);
                 }
             }
         }
@@ -133,18 +135,18 @@ export abstract class WebComponent extends LitElement {
 
                 if (hasChangedTopLevelDep || hasChangedDeepDep) {
                     const args = dependencies.map(dep => this.#resolvePath(dep));
-                    if (typeof (this as any)[methodName] === "function") {
-                        const oldVal = (this as any)[prop];
-                        const computedValue = (this as any)[methodName](...args);
+                    if (typeof this[methodName] === "function") {
+                        const oldVal = this[prop];
+                        const computedValue = this[methodName](...args);
                         if (oldVal !== computedValue) {
-                            (this as any)[prop] = computedValue;
+                            this[prop] = computedValue;
                             this.requestUpdate(prop as PropertyKey, oldVal);
 
                             // If this computed property has an observer, call it.
                             if (propertyObservers && propertyObservers[prop]) {
                                 const observerName = propertyObservers[prop];
-                                if (typeof (this as any)[observerName] === 'function') {
-                                    (this as any)[observerName](computedValue, oldVal);
+                                if (typeof this[observerName] === 'function') {
+                                    this[observerName](computedValue, oldVal);
                                 } else {
                                     console.warn(`[${this.tagName.toLowerCase()}] Observer method '${observerName}' not found for computed property '${prop}'.`);
                                 }
@@ -173,12 +175,12 @@ export abstract class WebComponent extends LitElement {
 
                 if (changedProperties.has(prop as PropertyKey)) {
                     const oldValue = changedProperties.get(prop as PropertyKey);
-                    const newValue = (this as any)[prop];
+                    const newValue = this[prop];
                     
                     // Ensure value actually changed for non-computed properties before calling observer
                     if (oldValue !== newValue) {
-                        if (typeof (this as any)[observerName] === 'function') {
-                            (this as any)[observerName](newValue, oldValue);
+                        if (typeof this[observerName] === 'function') {
+                            this[observerName](newValue, oldValue);
                         } else {
                             console.warn(`[${this.tagName.toLowerCase()}] Observer method '${observerName}' not found for property '${prop}'.`);
                         }
@@ -192,15 +194,15 @@ export abstract class WebComponent extends LitElement {
         return (this.constructor as WebComponentConstructor)[OBSERVERS_CONFIG_SYMBOL] || {};
     }
 
-    get #staticComputedConfig(): StaticComputedConfig | undefined {
+    get #staticComputedConfig(): StaticComputedConfig {
         return (this.constructor as WebComponentConstructor)[COMPUTED_CONFIG_SYMBOL] || {};
     }
 
-    get #staticPropertyObserversConfig(): StaticPropertyObserversConfig | undefined {
+    get #staticPropertyObserversConfig(): StaticPropertyObserversConfig {
         return (this.constructor as WebComponentConstructor)[PROPERTY_OBSERVERS_CONFIG_SYMBOL] || {};
     }
 
-    get #staticListenersConfig(): { [eventName: string]: string } | undefined {
+    get #staticListenersConfig(): StaticListenersConfig {
         return (this.constructor as WebComponentConstructor)[LISTENERS_CONFIG_SYMBOL] || {};
     }
 
@@ -243,13 +245,13 @@ export abstract class WebComponent extends LitElement {
 
                 const pathParts = depPath.split('.');
                 const relativePathInSource = pathParts.slice(1).join('.');
-                const sourceObject = (this as any)[pathParts[0]];
+                const sourceObject = this[pathParts[0]];
 
                 if (sourceObject instanceof Observable || (Array.isArray(sourceObject) && relativePathInSource === "*")) {
                     try {
                         const disposer = Observable.forward(sourceObject, relativePathInSource, (detail: ForwardObservedDetail) => {
-                            if (typeof (this as any)[observerIdentifier] === 'function') {
-                                (this as any)[observerIdentifier](depPath, detail);
+                            if (typeof this[observerIdentifier] === 'function') {
+                                this[observerIdentifier](depPath, detail);
                             }
                             this.#dirtyForwardedPaths.add(depPath);
                             this.requestUpdate();
@@ -571,7 +573,11 @@ class Test extends WebComponent {
     }
 
     private _handleClick(event: MouseEvent): void {
-        if (this.test.items[0])
+        if (this.test.items[0]) {
             this.test.items[0].index = ++this.n;
+            if (this.n % 2 === 0) {
+                this.test.firstName = `Even ${this.n}`;
+            }
+        }
     }
 }
