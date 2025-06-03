@@ -1,5 +1,6 @@
+import { AppBase } from "components/app/app";
 import { html, LitElement, PropertyValueMap } from "lit";
-import { Observable, ForwardObservedPropertyChangedArgs, ForwardObservedArrayChangedArgs } from "vidyano";
+import { Observable, ForwardObservedPropertyChangedArgs, ForwardObservedArrayChangedArgs, Service } from "vidyano";
 
 type ForwardObservedDetail = ForwardObservedPropertyChangedArgs | ForwardObservedArrayChangedArgs;
 
@@ -58,10 +59,21 @@ type WebComponentConstructor = typeof WebComponent & {
 };
 
 export abstract class WebComponent extends LitElement {
+    static properties = {
+        app: { type: Object, noAccessor: true },
+        service: { type: Object, noAccessor: true },
+        translations: { type: Object, computed: "_computeTranslations(service.language.messages)" },
+    };
+
     #forwarderDisposers: Map<string, () => void> = new Map();
     #dirtyForwardedPaths: Set<string> = new Set();
 
     override connectedCallback() {
+        if (!this.app)
+            this.#listenForApp();
+        else if (!this.app.service)
+            this.#listenForService(this.app);
+
         super.connectedCallback();
 
         this.#setupForwardersForRoots();
@@ -108,6 +120,27 @@ export abstract class WebComponent extends LitElement {
                 }
             }
         }
+
+        const appChangeListener = Symbol.for("WebComponent.appChangeListener");
+        if (this[appChangeListener]) {
+            window.removeEventListener("app-changed", this[appChangeListener]);
+            this[appChangeListener] = null;
+        }
+
+        const serviceChangeListener = Symbol.for("WebComponent.serviceChangeListener");
+        if (this[serviceChangeListener]) {
+            this.app.removeEventListener("service-changed", this[serviceChangeListener]);
+            this[serviceChangeListener] = null;
+        }
+    }
+
+    get app(): AppBase {
+        // @ts-ignore
+        return window.app;
+    }
+
+    get service(): Service {
+        return this.app?.service;
     }
 
     override willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
@@ -307,6 +340,34 @@ export abstract class WebComponent extends LitElement {
 
     #resolvePath(path: string): any {
         return path.split('.').reduce((obj, key) => obj?.[key], this);
+    }
+
+    #listenForApp() {
+        const appChangeListener = Symbol.for("WebComponent.appChangeListener");
+        window.addEventListener("app-changed", this[appChangeListener] = (e: CustomEvent) => {
+            window.removeEventListener("app-changed", this[appChangeListener]);
+            this[appChangeListener] = null;
+
+            // @ts-ignore
+            this.requestUpdate("app", window.app);
+
+            if (!this.app.service)
+                this.#listenForService(this.app);
+        });
+    }
+
+    #listenForService(app: AppBase) {
+        const serviceChangeListener = Symbol.for("WebComponent.serviceChangeListener");
+        app.addEventListener("service-changed", this[serviceChangeListener] = (e: CustomEvent) => {
+            app.removeEventListener("service-changed", this[serviceChangeListener]);
+            this[serviceChangeListener] = null;
+            
+            this.requestUpdate("service", app.service);
+        });
+    }
+
+    private _computeTranslations(messages: Record<string, string> | undefined) {
+        console.warn(`Computing translations: ${JSON.stringify(messages)}`);
     }
 
     static register(config: WebComponentRegistrationInfo, tagName: string) {
