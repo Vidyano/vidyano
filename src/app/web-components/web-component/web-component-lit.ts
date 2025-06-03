@@ -570,8 +570,6 @@ export abstract class WebComponent extends LitElement {
                 configurable: true,
             });
 
-            const superCtor = Object.getPrototypeOf(targetClass.prototype)?.constructor as WebComponentConstructor | undefined;
-
             // --- Merge and assign 'computed' configuration ---
             if (Object.keys(computedConfigForDecorator).length > 0) {
                 const inheritedComputed = collectFromInheritanceChain<StaticComputedConfig>(COMPUTED_CONFIG_SYMBOL);
