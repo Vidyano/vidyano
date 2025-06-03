@@ -292,7 +292,7 @@ export abstract class WebComponent extends LitElement {
             const relativePathInSource = pathParts.slice(1).join('.');
             const sourceObject = this[rootPropertyKey];
 
-            if (sourceObject instanceof Observable || (Array.isArray(sourceObject) && relativePathInSource === "*")) {
+            if (sourceObject instanceof Observable || Array.isArray(sourceObject)) {
                 try {
                     const disposer = Observable.forward(sourceObject, relativePathInSource, (detail: ForwardObservedDetail) => {
                         const observerIdentifiers = pathsToObserversMap.get(depPath);
