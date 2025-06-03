@@ -20,8 +20,8 @@ export interface WebComponentRegistrationInfo {
 }
 
 type ComputedPropertyConfig = {
-  dependencies: string[];
-  methodName: string;
+    dependencies: string[];
+    methodName?: string; // When undefined, the value is forwarded from the first dependency
 };
 
 type StaticComputedConfig = Record<string, ComputedPropertyConfig>;
@@ -62,7 +62,7 @@ export abstract class WebComponent extends LitElement {
     static properties = {
         app: { type: Object, noAccessor: true },
         service: { type: Object, noAccessor: true },
-        translations: { type: Object, computed: "_computeTranslations(service.language.messages)" },
+        translations: { type: Object, computed: "service.language.messages" },
     };
 
     #forwarderDisposers: Map<string, () => void> = new Map();
@@ -82,7 +82,9 @@ export abstract class WebComponent extends LitElement {
         if (computedConfig) {
             for (const [prop, { dependencies, methodName }] of Object.entries(computedConfig)) {
                 const args = dependencies.map(dep => this.#resolvePath(dep));
-                if (typeof this[methodName] === "function") {
+                if (!methodName) {
+                    this[prop] = args[0];
+                } else if (typeof this[methodName] === "function") {
                     const computedValue = this[methodName](...args);
                     this[prop] = computedValue;
                 } else {
@@ -179,25 +181,30 @@ export abstract class WebComponent extends LitElement {
 
                 if (hasChangedTopLevelDep || hasChangedDeepDep) {
                     const args = dependencies.map(dep => this.#resolvePath(dep));
-                    if (typeof this[methodName] === "function") {
-                        const oldVal = this[prop];
-                        const computedValue = this[methodName](...args);
-                        if (oldVal !== computedValue) {
-                            this[prop] = computedValue;
-                            this.requestUpdate(prop as PropertyKey, oldVal);
-
-                            // If this computed property has an observer, call it.
-                            if (propertyObservers?.[prop]) {
-                                const observerName = propertyObservers[prop];
-                                if (typeof this[observerName] === 'function') {
-                                    this[observerName](computedValue, oldVal);
-                                } else {
-                                    console.warn(`[${this.tagName.toLowerCase()}] Observer method '${observerName}' not found for computed property '${prop}'.`);
-                                }
-                            }
-                        }
+                    const oldVal = this[prop];
+                    let computedValue: any;
+                    if (!methodName) {
+                        computedValue = args[0];
+                    } else if (typeof this[methodName] === "function") {
+                        computedValue = this[methodName](...args);
                     } else {
                         console.warn(`[${this.tagName.toLowerCase()}] Compute method '${methodName}' not found for computed property '${prop}'.`);
+                        continue;
+                    }
+
+                    if (oldVal !== computedValue) {
+                        this[prop] = computedValue;
+                        this.requestUpdate(prop as PropertyKey, oldVal);
+
+                        // If this computed property has an observer, call it.
+                        if (propertyObservers?.[prop]) {
+                            const observerName = propertyObservers[prop];
+                            if (typeof this[observerName] === 'function') {
+                                this[observerName](computedValue, oldVal);
+                            } else {
+                                console.warn(`[${this.tagName.toLowerCase()}] Observer method '${observerName}' not found for computed property '${prop}'.`);
+                            }
+                        }
                     }
                 }
             }
@@ -432,7 +439,12 @@ export abstract class WebComponent extends LitElement {
                             const { methodName, args } = parsed;
                             computed[propName] = { dependencies: args, methodName };
                         } else {
-                            console.warn(`[${tagName}] Could not parse computed string for "${propName}": ${propConfig.computed}`);
+                            const path = propConfig.computed.trim();
+                            if (path) {
+                                computed[propName] = { dependencies: [path] };
+                            } else {
+                                console.warn(`[${tagName}] Could not parse computed string for "${propName}": ${propConfig.computed}`);
+                            }
                         }
                     }
                     
@@ -467,7 +479,12 @@ export abstract class WebComponent extends LitElement {
                             const { methodName, args } = parsed;
                             computedConfigForDecorator[propName] = { dependencies: args, methodName };
                         } else {
-                            console.warn(`[${tagName}] Could not parse computed string for "${propName}": ${polyPropConfig.computed}`);
+                            const path = polyPropConfig.computed.trim();
+                            if (path) {
+                                computedConfigForDecorator[propName] = { dependencies: [path] };
+                            } else {
+                                console.warn(`[${tagName}] Could not parse computed string for "${propName}": ${polyPropConfig.computed}`);
+                            }
                         }
                     }
                     if (polyPropConfig.observer) {
