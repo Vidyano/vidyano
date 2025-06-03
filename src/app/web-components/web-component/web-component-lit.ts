@@ -38,6 +38,13 @@ const PROPERTY_OBSERVERS_CONFIG_SYMBOL = Symbol.for("WebComponent.propertyObserv
 const SENSITIVE_CONFIG_SYMBOL = Symbol.for("WebComponent.sensitiveConfig");
 const LISTENERS_CONFIG_SYMBOL = Symbol.for("WebComponent.listenersConfig");
 
+/**
+ * Parses a method signature string of the form "methodName(arg1, arg2, ...)".
+ * Returns an object with the method name and an array of argument names.
+ * If the signature is invalid, returns null.
+ * @param signature The method signature string to parse.
+ * @returns An object with methodName and args, or null if parsing fails.
+ */
 function parseMethodSignature(signature: string): { methodName: string; args: string[] } | null {
     const match = signature.match(/^([a-zA-Z0-9_]+)\((.*)\)$/);
     if (!match)
@@ -58,6 +65,9 @@ type WebComponentConstructor = typeof WebComponent & {
     [LISTENERS_CONFIG_SYMBOL]?: StaticListenersConfig;
 };
 
+/**
+ * Base class for all lit-based web components in a Vidyano application.
+ */
 export abstract class WebComponent extends LitElement {
     static properties = {
         app: { type: Object, noAccessor: true },
@@ -66,6 +76,7 @@ export abstract class WebComponent extends LitElement {
     };
 
     #forwarderDisposers: Map<string, () => void> = new Map();
+
     #dirtyForwardedPaths: Set<string> = new Set();
 
     override connectedCallback() {
@@ -77,51 +88,15 @@ export abstract class WebComponent extends LitElement {
         super.connectedCallback();
 
         this.#setupForwardersForRoots();
-        
-        const computedConfig = this.#staticComputedConfig;
-        if (computedConfig) {
-            for (const [prop, { dependencies, methodName }] of Object.entries(computedConfig)) {
-                const args = dependencies.map(dep => this.#resolvePath(dep));
-                if (!methodName) {
-                    this[prop] = args[0];
-                } else if (typeof this[methodName] === "function") {
-                    const computedValue = this[methodName](...args);
-                    this[prop] = computedValue;
-                } else {
-                    console.warn(`[${this.tagName.toLowerCase()}] Compute method '${methodName}' not found for computed property '${prop}' during initial computation.`);
-                }
-            }
-
-            this.requestUpdate();
-        }
-
-        const listeners = this.#staticListenersConfig;
-        if (listeners) {
-            for (const eventName in listeners) {
-                const handlerName = listeners[eventName];
-                if (typeof this[handlerName] === 'function') {
-                    this.addEventListener(eventName, this[handlerName]);
-                } else {
-                    console.warn(`[${this.tagName.toLowerCase()}] Listener method '${handlerName}' for event '${eventName}' not found.`);
-                }
-            }
-        }
+        this.#updateComputedProperties();
+        this.#registerConfiguredListeners();
     }
 
     override disconnectedCallback() {
         super.disconnectedCallback();
 
-        this.#disposeAllForwarders();
-
-        const listeners = this.#staticListenersConfig;
-        if (listeners) {
-            for (const eventName in listeners) {
-                const handlerName = listeners[eventName];
-                if (typeof this[handlerName] === 'function') {
-                    this.removeEventListener(eventName, this[handlerName]);
-                }
-            }
-        }
+        this.#disposeForwarders();
+        this.#unregisterConfiguredListeners();
 
         const appChangeListener = Symbol.for("WebComponent.appChangeListener");
         if (this[appChangeListener]) {
@@ -136,16 +111,29 @@ export abstract class WebComponent extends LitElement {
         }
     }
 
+    /**
+     * Gets the global app instance.
+     */
     get app(): AppBase {
         return window.app;
     }
 
+    /**
+     * Gets the Vidyano service instance associated with the app.
+     */
     get service(): Service {
         return this.app?.service;
     }
 
+    /**
+     * Gets the translations from the service's client-side language messages.
+     */
+    get translations(): Record<string, string> {
+        return this.service?.language?.messages || {};
+    }
+
     override willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-        super.willUpdate?.(changedProperties);
+        super.willUpdate(changedProperties);
 
         if (Object.keys(this.#staticObserversConfig).length > 0) {
             const observedRoots = new Set<string>();
@@ -168,51 +156,12 @@ export abstract class WebComponent extends LitElement {
             }
         }
 
-        const computedConfig = this.#staticComputedConfig;
-        const propertyObservers = this.#staticPropertyObserversConfig;
-
-        if (computedConfig) {
-            for (const [prop, { dependencies, methodName }] of Object.entries(computedConfig)) {
-                const hasChangedTopLevelDep = dependencies.some(dep =>
-                    changedProperties.has(dep.split('.')[0]) || changedProperties.has(dep)
-                );
-                const hasChangedDeepDep = dependencies.some(dep => this.#dirtyForwardedPaths.has(dep));
-
-                if (hasChangedTopLevelDep || hasChangedDeepDep) {
-                    const args = dependencies.map(dep => this.#resolvePath(dep));
-                    const oldVal = this[prop];
-                    let computedValue: any;
-                    if (!methodName) {
-                        computedValue = args[0];
-                    } else if (typeof this[methodName] === "function") {
-                        computedValue = this[methodName](...args);
-                    } else {
-                        console.warn(`[${this.tagName.toLowerCase()}] Compute method '${methodName}' not found for computed property '${prop}'.`);
-                        continue;
-                    }
-
-                    if (oldVal !== computedValue) {
-                        this[prop] = computedValue;
-                        this.requestUpdate(prop as PropertyKey, oldVal);
-
-                        // If this computed property has an observer, call it.
-                        if (propertyObservers?.[prop]) {
-                            const observerName = propertyObservers[prop];
-                            if (typeof this[observerName] === 'function') {
-                                this[observerName](computedValue, oldVal);
-                            } else {
-                                console.warn(`[${this.tagName.toLowerCase()}] Observer method '${observerName}' not found for computed property '${prop}'.`);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        this.#updateComputedProperties(changedProperties);
         this.#dirtyForwardedPaths.clear();
     }
 
     override updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-        super.updated?.(changedProperties);
+        super.updated(changedProperties);
 
         const propertyObservers = this.#staticPropertyObserversConfig;
         const computedConfig = this.#staticComputedConfig;
@@ -256,6 +205,10 @@ export abstract class WebComponent extends LitElement {
         return (this.constructor as WebComponentConstructor)[LISTENERS_CONFIG_SYMBOL] || {};
     }
 
+    /**
+     * Sets up forwarders for the specified root properties, or all if none specified.
+     * @param rootsToRebind Optional set of root property names to rebind forwarders for.
+     */
     #setupForwardersForRoots(rootsToRebind?: Set<string>) {
         const staticObserversConfig = this.#staticObserversConfig;
         if (Object.keys(staticObserversConfig).length === 0)
@@ -265,9 +218,8 @@ export abstract class WebComponent extends LitElement {
         const pathsToObserversMap = new Map<string, string[]>();
         for (const [observerIdentifier, dependencies] of Object.entries(staticObserversConfig)) {
             for (const depPath of dependencies) {
-                if (!pathsToObserversMap.has(depPath)) {
+                if (!pathsToObserversMap.has(depPath))
                     pathsToObserversMap.set(depPath, []);
-                }
                 pathsToObserversMap.get(depPath)!.push(observerIdentifier);
             }
         }
@@ -277,31 +229,22 @@ export abstract class WebComponent extends LitElement {
         const pathsToDisposeAndRecreate: Set<string> = new Set();
         for (const dependencies of Object.values(staticObserversConfig)) {
             for (const depPath of dependencies) {
-                const pathParts = depPath.split('.');
-                if (pathParts.length < 1)
-                    continue;
-
-                const rootPropertyKey = pathParts[0];
-                if (setupAll || rootsToRebind?.has(rootPropertyKey)) {
+                const rootKey = depPath.split('.')[0];
+                if (setupAll || (rootsToRebind && rootsToRebind.has(rootKey))) {
                     pathsToDisposeAndRecreate.add(depPath);
                 }
             }
         }
 
-        // 3. Dispose Old Forwarders
+        // 3. Dispose Old Forwarders (only those that will be recreated)
+        this.#disposeForwarders(pathsToDisposeAndRecreate);
+
+        // 4. Remove disposed paths from #forwarderDisposers to prevent memory leaks
         for (const depPath of pathsToDisposeAndRecreate) {
-            const disposer = this.#forwarderDisposers.get(depPath);
-            if (typeof disposer === 'function') {
-                try {
-                    disposer();
-                } catch (error) {
-                    console.warn(`[${this.tagName.toLowerCase()}] Error disposing forwarder for '${depPath}':`, error);
-                }
-            }
             this.#forwarderDisposers.delete(depPath);
         }
 
-        // 4. Setup New Forwarders
+        // 5. Setup New Forwarders
         for (const depPath of pathsToDisposeAndRecreate) {
             const pathParts = depPath.split('.');
             const rootPropertyKey = pathParts[0];
@@ -314,9 +257,10 @@ export abstract class WebComponent extends LitElement {
                         const observerIdentifiers = pathsToObserversMap.get(depPath);
                         if (observerIdentifiers) {
                             for (const observerIdentifier of observerIdentifiers) {
-                                const isPathBasedObserver = observerIdentifier === depPath;
-                                if (!isPathBasedObserver && typeof this[observerIdentifier] === 'function') {
-                                    this[observerIdentifier](depPath, detail, observerIdentifier);
+                                if (typeof this[observerIdentifier] === "function") {
+                                    this[observerIdentifier](detail);
+                                } else if (!observerIdentifier.includes('.')) {
+                                    console.warn(`[${this.tagName.toLowerCase()}] Observer method '${observerIdentifier}' not found for path '${depPath}'.`);
                                 }
                             }
                         }
@@ -325,14 +269,78 @@ export abstract class WebComponent extends LitElement {
                     }, true);
                     this.#forwarderDisposers.set(depPath, disposer);
                 } catch (error) {
-                     console.warn(`[${this.tagName.toLowerCase()}] Error setting up forwarder for '${depPath}' on source:`, sourceObject, error);
+                    console.warn(`[${this.tagName.toLowerCase()}] Error setting up forwarder for '${depPath}' on source:`, sourceObject, error);
                 }
             }
         }
     }
 
-    #disposeAllForwarders() {
-        for (const [depPath, disposer] of this.#forwarderDisposers) {
+    /**
+     * Computes and updates all computed properties.
+     * @param changedProperties Optionally, only update properties whose dependencies have changed.
+     *                         If omitted, all computed properties are updated (e.g., during initial connect).
+     */
+    #updateComputedProperties(changedProperties?: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
+        const computedConfig = this.#staticComputedConfig;
+        const propertyObservers = this.#staticPropertyObserversConfig;
+
+        if (!computedConfig)
+            return;
+
+        for (const [prop, { dependencies, methodName }] of Object.entries(computedConfig)) {
+            let shouldUpdate = false;
+
+            if (!changedProperties) {
+                // Initial run: always update
+                shouldUpdate = true;
+            } else {
+                // Only update if dependencies changed
+                const hasChangedTopLevelDep = dependencies.some(dep =>
+                    changedProperties.has(dep.split('.')[0]) || changedProperties.has(dep)
+                );
+                const hasChangedDeepDep = dependencies.some(dep => this.#dirtyForwardedPaths.has(dep));
+                shouldUpdate = hasChangedTopLevelDep || hasChangedDeepDep;
+            }
+
+            if (shouldUpdate) {
+                const args = dependencies.map(dep => this.#resolvePath(dep));
+                const oldVal = this[prop];
+                let computedValue: any;
+                if (!methodName) {
+                    computedValue = args[0];
+                } else if (typeof this[methodName] === "function") {
+                    computedValue = this[methodName](...args);
+                } else {
+                    console.warn(`[${this.tagName.toLowerCase()}] Compute method '${methodName}' not found for computed property '${prop}'.`);
+                    continue;
+                }
+
+                if (oldVal !== computedValue) {
+                    this[prop] = computedValue;
+                    this.requestUpdate(prop as PropertyKey, oldVal);
+
+                    // If this computed property has an observer, call it.
+                    if (propertyObservers?.[prop]) {
+                        const observerName = propertyObservers[prop];
+                        if (typeof this[observerName] === 'function') {
+                            this[observerName](computedValue, oldVal);
+                        } else {
+                            console.warn(`[${this.tagName.toLowerCase()}] Observer method '${observerName}' not found for property '${prop}'.`);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Disposes forwarders for the specified dependency paths, or all if none specified.
+     * @param depPaths Optional iterable of dependency paths to dispose forwarders for. If not provided, disposes all forwarders.
+     */
+    #disposeForwarders(depPaths?: Iterable<string>) {
+        const paths = depPaths ? Array.from(depPaths) : Array.from(this.#forwarderDisposers.keys());
+        for (const depPath of paths) {
+            const disposer = this.#forwarderDisposers.get(depPath);
             if (typeof disposer === 'function') {
                 try {
                     disposer();
@@ -340,14 +348,22 @@ export abstract class WebComponent extends LitElement {
                     console.warn(`[${this.tagName.toLowerCase()}] Error disposing forwarder for '${depPath}':`, error);
                 }
             }
+            this.#forwarderDisposers.delete(depPath);
         }
-        this.#forwarderDisposers.clear();
     }
 
+    /**
+     * Resolves a dot-separated path string to a value starting from this instance.
+     * @param path Dot-separated property path (e.g., "test.firstName").
+     * @returns The resolved value or undefined.
+     */
     #resolvePath(path: string): any {
         return path.split('.').reduce((obj, key) => obj?.[key], this);
     }
 
+    /**
+     * Listens for the global "app-changed" event and updates the app property.
+     */
     #listenForApp() {
         const appChangeListener = Symbol.for("WebComponent.appChangeListener");
         window.addEventListener("app-changed", this[appChangeListener] = (e: CustomEvent) => {
@@ -361,20 +377,59 @@ export abstract class WebComponent extends LitElement {
         });
     }
 
+    /**
+     * Listens for the "service-changed" event on the given app and updates the service property.
+     * @param app The AppBase instance to listen on.
+     */
     #listenForService(app: AppBase) {
         const serviceChangeListener = Symbol.for("WebComponent.serviceChangeListener");
         app.addEventListener("service-changed", this[serviceChangeListener] = (e: CustomEvent) => {
             app.removeEventListener("service-changed", this[serviceChangeListener]);
             this[serviceChangeListener] = null;
-            
+
             this.requestUpdate("service", app.service);
         });
     }
 
-    private _computeTranslations(messages: Record<string, string>) {
-        return messages;
+    /**
+     * Registers event listeners defined in the static listeners config.
+     */
+    #registerConfiguredListeners() {
+        const listeners = this.#staticListenersConfig;
+        if (!listeners)
+            return;
+
+        for (const eventName in listeners) {
+            const handlerName = listeners[eventName];
+            if (typeof this[handlerName] === "function") {
+                this.addEventListener(eventName, this[handlerName]);
+            } else {
+                console.warn(`[${this.tagName.toLowerCase()}] Listener method '${handlerName}' for event '${eventName}' not found.`);
+            }
+        }
     }
 
+    /**
+     * Unregisters event listeners defined in the static listeners config.
+     */
+    #unregisterConfiguredListeners() {
+        const listeners = this.#staticListenersConfig;
+        if (!listeners)
+            return;
+
+        for (const eventName in listeners) {
+            const handlerName = listeners[eventName];
+            if (typeof this[handlerName] === "function")
+                this.removeEventListener(eventName, this[handlerName]);
+        }
+    }
+
+    /**
+     * Registers a web component class with the specified configuration and tag name.
+     * @param config The registration configuration object.
+     * @param tagName The custom element tag name to register.
+     * @returns A decorator function for the web component class.
+     */
     static register(config: WebComponentRegistrationInfo, tagName: string) {
         return function <T extends typeof WebComponent>(targetClass: T): T | void {
             const litPropertiesForStaticGetter: Record<string, any> = {};
@@ -699,7 +754,7 @@ class TestObject extends Observable<TestObject> {
     }
 }, "my-test")
 class Test extends WebComponent {
-    declare fullName: string;
+    declare readonly fullName: string;
     test = new TestObject("Jane", "Smith");
     n = 0;
 
@@ -731,7 +786,7 @@ class Test extends WebComponent {
             return "Loading...";
         }
         console.log(`Computing full name from "${firstName}" and "${lastName}"`);
-        return `${firstName} ${lastName}`;
+        return `${this.translations.UserName}: ${firstName} ${lastName}`;
     }
 
     private _fullNameChanged(newValue: string, oldValue: string): void {
