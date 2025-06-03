@@ -37,6 +37,17 @@ const PROPERTY_OBSERVERS_CONFIG_SYMBOL = Symbol.for("WebComponent.propertyObserv
 const SENSITIVE_CONFIG_SYMBOL = Symbol.for("WebComponent.sensitiveConfig");
 const LISTENERS_CONFIG_SYMBOL = Symbol.for("WebComponent.listenersConfig");
 
+function parseMethodSignature(signature: string): { methodName: string; args: string[] } | null {
+    const match = signature.match(/^([a-zA-Z0-9_]+)\((.*)\)$/);
+    if (!match)
+        return null;
+
+    const [, methodName, argsString] = match;
+    const args = argsString ? argsString.split(',').map(d => d.trim()).filter(Boolean) : [];
+
+    return { methodName, args };
+}
+
 type WebComponentConstructor = typeof WebComponent & {
     properties?: Record<string, WebComponentProperty>;
     [COMPUTED_CONFIG_SYMBOL]?: StaticComputedConfig;
@@ -319,12 +330,10 @@ export abstract class WebComponent extends LitElement {
                     litPropertiesForStaticGetter[propName] = litPropOptions;
 
                     if (polyPropConfig.computed) {
-                        const match = polyPropConfig.computed.match(/^([a-zA-Z0-9_]+)\((.*)\)$/);
-                        if (match) {
-                            const methodName = match[1];
-                            const depsString = match[2];
-                            const dependencies = depsString ? depsString.split(',').map(d => d.trim()).filter(d => d) : [];
-                            computedConfigForDecorator[propName] = { dependencies, methodName };
+                        const parsed = parseMethodSignature(polyPropConfig.computed);
+                        if (parsed) {
+                            const { methodName, args } = parsed;
+                            computedConfigForDecorator[propName] = { dependencies: args, methodName };
                         } else {
                             console.warn(`[${tagName}] Could not parse computed string for "${propName}": ${polyPropConfig.computed}`);
                         }
@@ -375,24 +384,23 @@ export abstract class WebComponent extends LitElement {
             // --- Parse and merge 'forwardObservers' ---
             if (Array.isArray(config.forwardObservers)) {
                 config.forwardObservers.forEach((observerString: string) => {
-                    const signatureMatch = observerString.match(/^([a-zA-Z0-9_]+)\((.*)\)$/);
-                    if (signatureMatch) {
-                        const methodName = signatureMatch[1];
-                        const depsString = signatureMatch[2];
-                        const dependencies = depsString?.split(',').map(d => d.trim()).filter(Boolean) || [];
-                        if (dependencies.length > 0) {
-                            observersConfigForDecorator[methodName] = [...(observersConfigForDecorator[methodName] || []), ...dependencies];
-                        } else if (depsString.trim() === '' && methodName) {
-                            if (!observersConfigForDecorator[methodName]) observersConfigForDecorator[methodName] = [];
+                    const parsed = parseMethodSignature(observerString);
+                    if (parsed) {
+                        const { methodName, args } = parsed;
+                        if (args.length > 0) {
+                            observersConfigForDecorator[methodName] = [...(observersConfigForDecorator[methodName] || []), ...args];
+                        } else {
+                            if (!observersConfigForDecorator[methodName])
+                                observersConfigForDecorator[methodName] = [];
+
                             console.warn(`[${tagName}] Observer method "${methodName}" has no dependencies specified. It will not observe any changes.`, observerString);
                         }
                     } else if (observerString.includes('.') || !observerString.includes('(')) {
                         const depPath = observerString.trim();
-                        if (depPath) {
+                        if (depPath)
                             observersConfigForDecorator[depPath] = [...(observersConfigForDecorator[depPath] || []), depPath];
-                        }
                     } else {
-                        console.warn(`[${tagName}] Could not parse observer string: "${observerString}". Expected format: "methodName(dependency1, dependency2, ...)" or "dependencyPath"`);
+                        console.warn(`[${tagName}] Could not parse observer string: "${observerString}". Expected format: "methodName(dependency1, dependency2,...)" or "dependencyPath"`);
                     }
                 });
 
