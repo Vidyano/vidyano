@@ -137,7 +137,6 @@ export abstract class WebComponent extends LitElement {
     }
 
     get app(): AppBase {
-        // @ts-ignore
         return window.app;
     }
 
@@ -355,7 +354,6 @@ export abstract class WebComponent extends LitElement {
             window.removeEventListener("app-changed", this[appChangeListener]);
             this[appChangeListener] = null;
 
-            // @ts-ignore
             this.requestUpdate("app", window.app);
 
             if (!this.app.service)

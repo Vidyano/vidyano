@@ -45,7 +45,14 @@ if (hashBangRe.test(document.location.href)) {
         history.replaceState(null, null, `${hashBangParts[1]}${hashBangParts[2]}`);
 }
 
-window["Vidyano"] = Vidyano;
+declare global {
+    interface Window {
+        app: AppBase;
+        Vidyano: typeof Vidyano;
+    }
+}
+
+window.Vidyano = Vidyano;
 
 const baseElement = document.head.querySelector("base") as HTMLBaseElement;
 const baseHref = baseElement?.href || `${document.location.origin}${document.location.pathname.replace(/[^/]*$/, "")}`;
@@ -202,7 +209,7 @@ export abstract class AppBase extends WebComponent {
     constructor(private _hooks?: AppServiceHooksBase) {
         super();
         
-        window["app"] = this;
+        window.app = this;
         window.dispatchEvent(new CustomEvent("app-changed", { detail: { value: this }}));
 
         if (!this.uri && document.location.hash)
