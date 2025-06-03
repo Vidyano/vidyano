@@ -5,17 +5,58 @@ import { Observable, ForwardObservedPropertyChangedArgs, ForwardObservedArrayCha
 type ForwardObservedDetail = ForwardObservedPropertyChangedArgs | ForwardObservedArrayChangedArgs;
 
 export interface WebComponentProperty {
+    /**
+     * The type of the property.
+     * Can be one of the following constructors: Object, String, Boolean, Date, Number, Array.
+     * This is used by LitElement to determine how to handle the property.
+     */
     type: ObjectConstructor | StringConstructor | BooleanConstructor | DateConstructor | NumberConstructor | ArrayConstructor;
+
+    /**
+     * Indicates if the property should be reflected to the HTML attribute.
+     * If true, changes to the property will update the corresponding attribute on the element.
+     */
     reflectToAttribute?: boolean;
-    readOnly?: boolean;
+
+    /**
+     * Indicates if the property is read-only.
+     * If true, the property cannot be set directly and is typically computed or derived.
+     */
+    readOnly?: boolean
+
+    /**
+     *  Computed properties can be either:
+     *  - A path string (e.g., "user.firstName") to observe property changes,
+     *  - Or a function signature (e.g., "myObserver(user.firstName, user.lastName)") to call a method when dependencies change.
+     */;
     computed?: string;
+
+    /**
+     * Observer method to call when the property changes.
+     * The method should accept two parameters: the new value and the old value.
+     */
     observer?: string;
 }
 
 export interface WebComponentRegistrationInfo {
+    /**
+     * The properties of the web component.
+     */
     properties?: Record<string, WebComponentProperty>;
+
+    /**
+     * An array of observer strings to forward changes to.
+     * Each string can be a method signature (e.g., "myObserver(user.firstName, user.lastName)") or a simple path (e.g., "user.firstName").
+     * In case of a simple path, the requestUpdate will be called with the path as the first argument.
+     */
     forwardObservers?: string[];
+
+    /**
+     * A map of event names to handler method names.
+     * The handler methods should be defined in the web component class.
+     */
     listeners?: { [eventName: string]: string };
+
     sensitive?: boolean;
 }
 
@@ -546,7 +587,7 @@ export abstract class WebComponent extends LitElement {
                 }
             }
 
-            // --- Handle Lit's static properties (remains string-keyed "properties") ---
+            // Handle Lit's static properties (remains string-keyed "properties")
             const existingStaticPropertiesGetter = Object.getOwnPropertyDescriptor(targetClass, 'properties')?.get;
             Object.defineProperty(targetClass, 'properties', {
                 get: () => {
@@ -570,7 +611,7 @@ export abstract class WebComponent extends LitElement {
                 configurable: true,
             });
 
-            // --- Merge and assign 'computed' configuration ---
+            // Merge and assign 'computed' configuration
             if (Object.keys(computedConfigForDecorator).length > 0) {
                 const inheritedComputed = collectFromInheritanceChain<StaticComputedConfig>(COMPUTED_CONFIG_SYMBOL);
                 (targetClass as WebComponentConstructor)[COMPUTED_CONFIG_SYMBOL] = {
@@ -579,7 +620,7 @@ export abstract class WebComponent extends LitElement {
                 };
             }
 
-            // --- Parse and merge 'forwardObservers' ---
+            // Parse and merge 'forwardObservers'
             if (Array.isArray(config.forwardObservers)) {
                 config.forwardObservers.forEach((observerString: string) => {
                     const parsed = parseMethodSignature(observerString);
@@ -626,7 +667,7 @@ export abstract class WebComponent extends LitElement {
                 }
             }
 
-            // --- Merge and assign 'propertyObservers' configuration ---
+            // Merge and assign 'propertyObservers' configuration
             if (Object.keys(propertyObserversConfigForDecorator).length > 0) {
                 const inheritedPropObs = collectFromInheritanceChain<StaticPropertyObserversConfig>(PROPERTY_OBSERVERS_CONFIG_SYMBOL);
                 (targetClass as WebComponentConstructor)[PROPERTY_OBSERVERS_CONFIG_SYMBOL] = {
@@ -635,7 +676,7 @@ export abstract class WebComponent extends LitElement {
                 };
             }
 
-            // --- Assign 'listeners' configuration ---
+            // Assign 'listeners' configuration
             if (config.listeners && Object.keys(config.listeners).length > 0) {
                 const inheritedListeners = collectFromInheritanceChain<StaticListenersConfig>(LISTENERS_CONFIG_SYMBOL);
                 (targetClass as WebComponentConstructor)[LISTENERS_CONFIG_SYMBOL] = {
@@ -644,7 +685,7 @@ export abstract class WebComponent extends LitElement {
                 };
             }
 
-            // --- Assign 'sensitive' configuration ---
+            // Assign 'sensitive' configuration
             if (config.hasOwnProperty('sensitive')) {
                 (targetClass as WebComponentConstructor)[SENSITIVE_CONFIG_SYMBOL] = config.sensitive;
             }
