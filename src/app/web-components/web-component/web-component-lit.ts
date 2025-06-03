@@ -366,8 +366,8 @@ export abstract class WebComponent extends LitElement {
         });
     }
 
-    private _computeTranslations(messages: Record<string, string> | undefined) {
-        console.warn(`Computing translations: ${JSON.stringify(messages)}`);
+    private _computeTranslations(messages: Record<string, string>) {
+        return messages;
     }
 
     static register(config: WebComponentRegistrationInfo, tagName: string) {
@@ -376,6 +376,77 @@ export abstract class WebComponent extends LitElement {
             const computedConfigForDecorator: Record<string, ComputedPropertyConfig> = {};
             const observersConfigForDecorator: StaticObserversConfig = {};
             const propertyObserversConfigForDecorator: Record<string, string> = {};
+
+            // Helper function to walk inheritance chain and collect configurations
+            const collectFromInheritanceChain = <T>(symbolKey: symbol, merger?: (accumulated: T, current: T) => T): T => {
+                let currentCtor = targetClass;
+                let result = {} as T;
+                
+                while (currentCtor && currentCtor.prototype !== LitElement.prototype) {
+                    const config = (currentCtor as WebComponentConstructor)[symbolKey];
+                    if (config) {
+                        if (merger) {
+                            result = merger(result, config);
+                        } else {
+                            result = { ...config, ...result } as T; // Derived class takes precedence
+                        }
+                    }
+                    currentCtor = Object.getPrototypeOf(currentCtor.prototype)?.constructor;
+                }
+                
+                return result;
+            };
+
+            // First, extract computed properties from the entire inheritance chain
+            const extractComputedFromStaticProperties = (ctor: typeof WebComponent) => {
+                const computed: Record<string, ComputedPropertyConfig> = {};
+                const propertyObservers: Record<string, string> = {};
+                
+                // Walk up the prototype chain to collect all static properties
+                let currentCtor = ctor;
+                const allProperties: Record<string, any> = {};
+                
+                while (currentCtor && currentCtor.prototype !== LitElement.prototype) {
+                    const propsDescriptor = Object.getOwnPropertyDescriptor(currentCtor, 'properties');
+                    let currentProps: Record<string, any> = {};
+                    
+                    if (propsDescriptor?.get) {
+                        currentProps = propsDescriptor.get.call(currentCtor) || {};
+                    } else if (propsDescriptor?.value) {
+                        currentProps = propsDescriptor.value || {};
+                    }
+                    
+                    // Merge properties (derived class properties take precedence)
+                    Object.assign(allProperties, currentProps, allProperties);
+                    
+                    currentCtor = Object.getPrototypeOf(currentCtor.prototype)?.constructor;
+                }
+                
+                // Process all collected properties for computed and observers
+                for (const propName in allProperties) {
+                    const propConfig = allProperties[propName];
+                    
+                    if (propConfig.computed) {
+                        const parsed = parseMethodSignature(propConfig.computed);
+                        if (parsed) {
+                            const { methodName, args } = parsed;
+                            computed[propName] = { dependencies: args, methodName };
+                        } else {
+                            console.warn(`[${tagName}] Could not parse computed string for "${propName}": ${propConfig.computed}`);
+                        }
+                    }
+                    
+                    if (propConfig.observer) {
+                        propertyObservers[propName] = propConfig.observer;
+                    }
+                }
+                
+                return { computed, propertyObservers };
+            };
+
+            const inheritedComputedAndObservers = extractComputedFromStaticProperties(targetClass);
+            Object.assign(computedConfigForDecorator, inheritedComputedAndObservers.computed);
+            Object.assign(propertyObserversConfigForDecorator, inheritedComputedAndObservers.propertyObservers);
 
             if (config.properties) {
                 for (const propName in config.properties) {
@@ -433,11 +504,9 @@ export abstract class WebComponent extends LitElement {
 
             // --- Merge and assign 'computed' configuration ---
             if (Object.keys(computedConfigForDecorator).length > 0) {
-                const superComputed = superCtor?.[COMPUTED_CONFIG_SYMBOL] || {};
-                const existingOnTarget = (targetClass as WebComponentConstructor)[COMPUTED_CONFIG_SYMBOL] || {};
+                const inheritedComputed = collectFromInheritanceChain<StaticComputedConfig>(COMPUTED_CONFIG_SYMBOL);
                 (targetClass as WebComponentConstructor)[COMPUTED_CONFIG_SYMBOL] = {
-                    ...superComputed,
-                    ...existingOnTarget,
+                    ...inheritedComputed,
                     ...computedConfigForDecorator
                 };
             }
@@ -466,15 +535,21 @@ export abstract class WebComponent extends LitElement {
                 });
 
                 if (Object.keys(observersConfigForDecorator).length > 0) {
-                    const finalObservers: StaticObserversConfig = { ...(superCtor?.[OBSERVERS_CONFIG_SYMBOL] || {}) };
-                    const existingOnTarget = (targetClass as WebComponentConstructor)[OBSERVERS_CONFIG_SYMBOL] || {};
+                    // Collect observers from entire inheritance chain
+                    const inheritedObservers = collectFromInheritanceChain<StaticObserversConfig>(
+                        OBSERVERS_CONFIG_SYMBOL,
+                        (accumulated, current) => {
+                            const merged = { ...accumulated };
+                            for (const methodName in current) {
+                                const combinedDeps = new Set([...(merged[methodName] || []), ...(current[methodName] || [])]);
+                                merged[methodName] = Array.from(combinedDeps);
+                            }
+                            return merged;
+                        }
+                    );
 
-                    // Merge existing on target (could be from other decorators)
-                    for (const methodName in existingOnTarget) {
-                        const combinedDeps = new Set([...(finalObservers[methodName] || []), ...(existingOnTarget[methodName] || [])]);
-                        finalObservers[methodName] = Array.from(combinedDeps);
-                    }
                     // Merge new from this decorator
+                    const finalObservers = { ...inheritedObservers };
                     for (const methodName in observersConfigForDecorator) {
                         const combinedDeps = new Set([...(finalObservers[methodName] || []), ...(observersConfigForDecorator[methodName] || [])]);
                         finalObservers[methodName] = Array.from(combinedDeps);
@@ -485,23 +560,19 @@ export abstract class WebComponent extends LitElement {
 
             // --- Merge and assign 'propertyObservers' configuration ---
             if (Object.keys(propertyObserversConfigForDecorator).length > 0) {
-                const superPropObs = superCtor?.[PROPERTY_OBSERVERS_CONFIG_SYMBOL] || {};
-                const existingOnTarget = (targetClass as WebComponentConstructor)[PROPERTY_OBSERVERS_CONFIG_SYMBOL] || {};
+                const inheritedPropObs = collectFromInheritanceChain<StaticPropertyObserversConfig>(PROPERTY_OBSERVERS_CONFIG_SYMBOL);
                 (targetClass as WebComponentConstructor)[PROPERTY_OBSERVERS_CONFIG_SYMBOL] = {
-                    ...superPropObs,
-                    ...existingOnTarget,
+                    ...inheritedPropObs,
                     ...propertyObserversConfigForDecorator
                 };
             }
 
             // --- Assign 'listeners' configuration ---
             if (config.listeners && Object.keys(config.listeners).length > 0) {
-                const superListeners = superCtor?.[LISTENERS_CONFIG_SYMBOL] || {};
-                const existingOnTarget = (targetClass as WebComponentConstructor)[LISTENERS_CONFIG_SYMBOL] || {};
+                const inheritedListeners = collectFromInheritanceChain<StaticListenersConfig>(LISTENERS_CONFIG_SYMBOL);
                 (targetClass as WebComponentConstructor)[LISTENERS_CONFIG_SYMBOL] = {
-                    ...superListeners,
-                    ...existingOnTarget,
-                    ...config.listeners // Direct assignment from config, assuming no complex merging needed for listeners yet
+                    ...inheritedListeners,
+                    ...config.listeners // Current config takes precedence
                 };
             }
 
