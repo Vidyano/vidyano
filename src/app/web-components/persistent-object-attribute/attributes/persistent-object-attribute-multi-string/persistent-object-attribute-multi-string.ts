@@ -128,7 +128,7 @@ export class PersistentObjectAttributeMultiString extends PersistentObjectAttrib
     /// Tags specific code
 
     private _computeIsTags(attribute: Vidyano.PersistentObjectAttribute): boolean {
-        return attribute && attribute.getTypeHint("inputtype", undefined, undefined, true) === "tags";
+        return attribute && attribute.getTypeHint("inputtype", undefined, undefined) === "tags";
     }
 
     protected _valueChanged(newValue: any, oldValue: any) {

@@ -212,11 +212,11 @@ export class PersistentObjectAttributeReference extends PersistentObjectAttribut
     }
 
     private _computeInputType(attribute: Vidyano.PersistentObjectAttributeWithReference): string {
-        return attribute && attribute.getTypeHint("inputtype", "default", undefined, true);
+        return attribute && attribute.getTypeHint("inputtype", "default", undefined);
     }
 
     private _computeOrientation(attribute: Vidyano.PersistentObjectAttributeWithReference): string {
-        return attribute && attribute.getTypeHint("orientation", "vertical", undefined, true);
+        return attribute && attribute.getTypeHint("orientation", "vertical", undefined);
     }
 
     private _computeCanOpenSelect(isReadOnly: boolean, options: string[]): boolean {

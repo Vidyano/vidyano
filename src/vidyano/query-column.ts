@@ -242,7 +242,7 @@ export class QueryColumn extends ServiceObject {
      * @param ignoreCasing - Optional flag to ignore casing.
      * @returns The type hint value or the default value if not found.
      */
-    getTypeHint(name: string, defaultValue?: string, typeHints?: any, ignoreCasing?: boolean): string {
+    getTypeHint(name: string, defaultValue?: string, typeHints?: any): string {
         // Use the PersistentObjectAttribute's getTypeHint method to ensure consistent behavior.
         return PersistentObjectAttribute.prototype.getTypeHint.apply(this, arguments);
     }

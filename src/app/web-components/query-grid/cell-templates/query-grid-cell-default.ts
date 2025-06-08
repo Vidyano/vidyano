@@ -86,7 +86,7 @@ export class QueryGridCellDefault extends QueryGridCell {
 
         this._applyTagTypeHint(itemValue);
 
-        const extraClass = itemValue.column.getTypeHint("extraclass", undefined, value && itemValue.typeHints, true);
+        const extraClass = itemValue.column.getTypeHint("extraclass", undefined, value && itemValue.typeHints);
         if (extraClass !== this._extraClass) {
             if (!String.isNullOrEmpty(this._extraClass))
                 this.classList.remove(...this._extraClass.split(" "));

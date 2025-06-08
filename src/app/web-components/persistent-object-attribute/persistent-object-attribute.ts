@@ -158,7 +158,7 @@ export abstract class PersistentObjectAttribute extends WebComponent {
     }
 
     private _computePlaceholder(attribute: Vidyano.PersistentObjectAttribute): string {
-        return attribute ? this.attribute.getTypeHint("placeholder", "", void 0, true) : "";
+        return attribute ? this.attribute.getTypeHint("placeholder", "", void 0) : "";
     }
 
     private _computeOptions(options: string[] | Vidyano.PersistentObjectAttributeOption[], isRequired: boolean, type: string): string[] | Vidyano.PersistentObjectAttributeOption[] {
@@ -179,7 +179,7 @@ export abstract class PersistentObjectAttribute extends WebComponent {
     }
 
     private _updateForeground(isEditing: boolean, isReadOnly: boolean) {
-        const foreground = this.attribute.getTypeHint("foreground", null, true);
+        const foreground = this.attribute.getTypeHint("foreground", null);
 
         if ((!isEditing || isReadOnly) && foreground) {
             this.updateStyles({

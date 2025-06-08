@@ -448,7 +448,7 @@ export class PersistentObjectAttribute extends ServiceObject {
         this.validationError = null;
 
         if (val && typeof val === "string") {
-            const charactercasing = this.getTypeHint("charactercasing", "", undefined, true);
+            const charactercasing = this.getTypeHint("charactercasing", "");
             if (charactercasing) {
                 if (charactercasing.toUpperCase() === "LOWER")
                     val = (<string>val).toLowerCase();
@@ -548,17 +548,22 @@ export class PersistentObjectAttribute extends ServiceObject {
      * @param ignoreCasing - Whether to ignore casing for the name.
      * @returns The type hint.
      */
-    getTypeHint(name: string, defaultValue?: string, typeHints?: any, ignoreCasing?: boolean): string {
+    getTypeHint(name: string, defaultValue?: string, typeHints?: any): string {
         if (typeHints != null) {
-            if (this.typeHints != null)
-                typeHints = Object.assign({ ...this.typeHints }, typeHints);
+            // Merge provided type hints with existing ones, giving precedence to provided ones.
+            typeHints = { ...this.typeHints, ...typeHints };
         }
-        else
+        else {
+            // Use the existing type hints if none are provided.
             typeHints = this.typeHints;
+        }
 
         if (typeHints != null) {
-            const typeHint = typeHints[ignoreCasing ? name : name.toLowerCase()];
+            let typeHint = typeHints[name];
+            if (typeHint != null)
+                return typeHint;
 
+            typeHint = typeHints[name.toLowerCase()];
             if (typeHint != null)
                 return typeHint;
         }

@@ -322,7 +322,7 @@ export abstract class QueryGridCell extends WebComponent {
     }
 
     protected _getTypeHint(column: Vidyano.QueryColumn, name: string, defaultValue?: string): string {
-        return column.getTypeHint(name, defaultValue, this.#typeHints, true);
+        return column.getTypeHint(name, defaultValue, this.#typeHints);
     }
 
     static registerCellType(type: string, constructor: QueryGridCellConstructor) {

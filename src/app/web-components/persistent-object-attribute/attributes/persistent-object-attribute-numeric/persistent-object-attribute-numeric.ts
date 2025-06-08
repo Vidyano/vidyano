@@ -50,14 +50,14 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
             this._isNullable = (numericSynonyms[this.attribute.type] || this.attribute.type).startsWith("Nullable") && !this.attribute.parent.isBulkEdit;
             this._decimalSeparator = Vidyano.CultureInfo.currentCulture.numberFormat.numberDecimalSeparator;
 
-            const displayFormat = this.attribute.getTypeHint("displayformat", null, null, true);
+            const displayFormat = this.attribute.getTypeHint("displayformat", null, null);
             if (displayFormat) {
                 const groups = /^([^{]*)({.+?})(.*)$/.exec(displayFormat);
                 this.unitBefore = groups[1];
                 this.unitAfter = groups[3];
             }
 
-            const inputtype = this.attribute.getTypeHint("inputtype", null, null, true);
+            const inputtype = this.attribute.getTypeHint("inputtype", null, null);
             if (inputtype)
                 this._setInputtype(inputtype);
         }

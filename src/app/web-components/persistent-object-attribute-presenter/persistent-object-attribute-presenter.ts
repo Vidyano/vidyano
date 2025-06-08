@@ -235,7 +235,7 @@ export class PersistentObjectAttributePresenter extends ConfigurableWebComponent
 
         this._setLoading(true);
 
-        const nolabel = attribute.getTypeHint("nolabel", undefined, undefined, true);
+        const nolabel = attribute.getTypeHint("nolabel", undefined, undefined);
         if (nolabel !== undefined)
             this.noLabel = nolabel === "true";
 
@@ -330,7 +330,7 @@ export class PersistentObjectAttributePresenter extends ConfigurableWebComponent
     }
 
     private _computeNonEdit(attribute: Vidyano.PersistentObjectAttribute) {
-        return attribute?.getTypeHint("nonedit", "false", undefined, true) === "true";
+        return attribute?.getTypeHint("nonedit", "false", undefined) === "true";
     }
 
     private _nonEditChanged(nonEdit: boolean) {

@@ -38,15 +38,15 @@ export class PersistentObjectAttributeDropDown extends PersistentObjectAttribute
     }
 
     private _computeInputType(attribute: Vidyano.PersistentObjectAttribute): string {
-        return attribute && attribute.getTypeHint("inputtype", "select", undefined, true)?.toLowerCase();
+        return attribute && attribute.getTypeHint("inputtype", "select", undefined)?.toLowerCase();
     }
 
     private _computeOrientation(attribute: Vidyano.PersistentObjectAttribute): string {
-        return attribute && attribute.getTypeHint("orientation", "vertical", undefined, true);
+        return attribute && attribute.getTypeHint("orientation", "vertical", undefined);
     }
 
     private _computeGroupSeparator(attribute: Vidyano.PersistentObjectAttribute): string {
-        return attribute && attribute.getTypeHint("groupseparator", null, undefined, true);
+        return attribute && attribute.getTypeHint("groupseparator", null, undefined);
     }
 
     private _optionLabel(option: string): string {

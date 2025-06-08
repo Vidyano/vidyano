@@ -46,7 +46,7 @@ export class PersistentObjectAttributeBoolean extends PersistentObjectAttribute 
     }
 
     private _computeIsCheckbox(attribute: Vidyano.PersistentObjectAttribute, defaultInputtype: string): boolean {
-        return attribute.getTypeHint("inputtype", defaultInputtype, undefined, true) === "checkbox";
+        return attribute.getTypeHint("inputtype", defaultInputtype, undefined) === "checkbox";
     }
 }
 
