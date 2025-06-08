@@ -156,19 +156,25 @@ export class PersistentObject extends WebComponent implements IPersistentObjectW
             return;
 
         try {
+            // If the persistent object is in full page layout, we only show the master tabs
             if (this.persistentObject.queryLayoutMode === Vidyano.PersistentObjectLayoutMode.FullPage) {
                 this._setMasterTabs(this.persistentObject.tabs.filter(t => t.isVisible));
                 this._setDetailTabs([]);
+
+                return;
             }
 
+            // If the persistent object is in master-detail layout, we show the master and detail tabs
             this._setMasterTabs(this.persistentObject.tabs.filter(t => t.isVisible && t.tabGroupIndex === 0));
             this._setDetailTabs(this.persistentObject.tabs.filter(t => t.isVisible && t.tabGroupIndex === 1));
 
         }
         finally {
+            // If we don't have an active valid master tab, we select the first one
             if (this.persistentObject.tabs.indexOf(this.selectedMasterTab) < 0)
                 this.selectedMasterTab = this.masterTabs[0] || null;
 
+            // If we don't have an active valid detail tab, we select the first one
             if (this.persistentObject.tabs.indexOf(this.selectedDetailTab) < 0)
                 this.selectedDetailTab = this.detailTabs[0] || null;
         }
