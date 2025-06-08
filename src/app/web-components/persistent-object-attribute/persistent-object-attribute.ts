@@ -89,13 +89,14 @@ styleElement.register("vi-persistent-object-attribute-style-module");
         "attribute.isReadOnly",
         "attribute.isSensitive",
         "attribute.options",
+        "attribute.typeHints",
         "attribute.validationError",
         "attribute.parent.isFrozen",
         "_editingChanged(attribute.parent.isEditing)",
         "_attributeValueChanged(attribute.value)"
     ],
     observers: [
-        "_updateForegroundDataTypeHint(attribute, editing, readOnly)"
+        "_updateForeground(editing, readOnly, attribute.typeHints)"
     ],
     sensitive: true
 })
@@ -177,7 +178,7 @@ export abstract class PersistentObjectAttribute extends WebComponent {
         return [{ key: null, value: "" }].concat((<Vidyano.PersistentObjectAttributeOption[]>options));
     }
 
-    private _updateForegroundDataTypeHint(attribute: Vidyano.PersistentObjectAttribute, isEditing: boolean, isReadOnly: boolean) {
+    private _updateForeground(isEditing: boolean, isReadOnly: boolean) {
         const foreground = this.attribute.getTypeHint("foreground", null, true);
 
         if ((!isEditing || isReadOnly) && foreground) {
