@@ -710,74 +710,86 @@ export class PersistentObject extends ServiceObjectWithActions {
         let tabsRemoved = false;
         let tabsAdded = false;
     
-        changedAttributes.forEach(attr => {
-            let tab = <PersistentObjectAttributeTab>this.tabs.find(t => t instanceof PersistentObjectAttributeTab && t.key === attr.tabKey);
+        changedAttributes.forEach(attr => {           
+            // Find the attribute's tab and group based on its keys.
+            const tab = <PersistentObjectAttributeTab>this.tabs.find(t => t instanceof PersistentObjectAttributeTab && t.key === attr.tabKey);
+            const group = tab?.groups.find(g => g.key === attr.groupKey);
+
+            // Attribute removal logic:
+            if (!this.attributes.hasOwnProperty(attr.name)) {
+                if (group) {
+                    // Remove attribute from the group
+                    group.attributes.remove(attr);
+                    delete group.attributes[attr.name];
+                    tabGroupAttributesChanged.add(group);
     
-            if (!tab) {
-                // Skip invisible attributes when creating new tabs
+                    // Remove attribute from the tab's flat list
+                    tab.attributes.remove(attr);
+                    delete tab.attributes[attr.name];
+    
+                    // If the group is now empty, remove it from the tab
+                    if (group.attributes.length === 0) {
+                        tab.groups.remove(group);
+                        tabGroupsChanged.add(tab);
+    
+                        // Re-index remaining groups
+                        tab.groups.forEach((g, n) => (g.index = n));
+    
+                        // If the tab is now empty, remove the tab itself
+                        if (tab.groups.length === 0) {
+                            this.tabs.remove(tab);
+                            tabsRemoved = true;
+                        }
+                    }
+                }
+
+                return;
+            }
+
+            // Attribute addition or update logic:           
+            let currentTab = tab;
+            if (!currentTab) {
+                // If the attribute is not visible, don't create a new tab for it.
                 if (!attr.isVisible)
                     return;
     
                 // Create a new group and tab for this attribute
-                const groups = [this.service.hooks.onConstructPersistentObjectAttributeGroup(this.service, attr.groupKey, [attr], this)];
-                groups[0].index = 0;
+                const newGroup = this.service.hooks.onConstructPersistentObjectAttributeGroup(this.service, attr.groupKey, [], this);
+                const groups = [newGroup];
     
-                const serviceTab = _internal(this).dto.tabs[attr.tabKey];
-                attr.tab = tab = this.service.hooks.onConstructPersistentObjectAttributeTab(this.service, groups, attr.tabKey, serviceTab.id, serviceTab.name, serviceTab.layout, this, serviceTab.columnCount, !this.isHidden);
-
-                this.tabs.push(tab);
+                const serviceTab = _internal(this).dto.tabs[attr.tabKey] || {};
+                currentTab = this.service.hooks.onConstructPersistentObjectAttributeTab(this.service, groups, attr.tabKey, serviceTab.id, serviceTab.name, serviceTab.layout, this, serviceTab.columnCount, !this.isHidden);
+                attr.tab = currentTab;
+                
+                this.tabs.push(currentTab);
                 tabsAdded = true;
-                return;
             }
-    
-            // Process existing tab
-            let group = tab.groups.find(g => g.key === attr.groupKey);
-            if (!group && attr.isVisible) {
-                // If the group does not exist, create a new one
-                group = this.service.hooks.onConstructPersistentObjectAttributeGroup(this.service, attr.groupKey, [attr], this);
-                tab.groups.push(group);
+            
+            let currentGroup = currentTab.groups.find(g => g.key === attr.groupKey);
+            if (!currentGroup) {
+                // If the attribute is not visible, don't create a new group for it.
+                if (!attr.isVisible)
+                    return;
 
-                // Sort groups by minimum offset of attributes
-                tab.groups.sort((g1, g2) => g1.attributes.min(a => a.offset) - g2.attributes.min(a => a.offset));
-                tab.groups.forEach((g, n) => (g.index = n));
-    
-                tabGroupsChanged.add(tab);
-            } else if (attr.isVisible && attr.parent) {
-                // Add attribute to existing group
-                if (group.attributes.indexOf(attr) < 0) {
-                    group.attributes.push(attr);
-                    tabGroupAttributesChanged.add(group);
-    
-                    tab.attributes.push(attr);
-    
-                    // Add to lookup dictionaries for faster access
-                    tab.attributes[attr.name] = group.attributes[attr.name] = attr;
-                    group.attributes.sort((x, y) => x.offset - y.offset);
-                }
-            } else if (group) {
-                // Remove attribute from group
-                group.attributes.remove(attr);
-                delete group.attributes[attr.name];
-    
-                tab.attributes.remove(attr);
-                delete tab.attributes[attr.name];
-    
-                // Handle empty group or tab cases
-                if (group.attributes.length === 0) {
-                    tab.groups.remove(group);
-                    tabGroupsChanged.add(tab);
-    
-                    if (tab.groups.length === 0) {
-                        // Remove empty tab
-                        this.tabs.remove(tab);
-                        tabsRemoved = true;
-                        return;
-                    } else {
-                        // Reindex remaining groups
-                        tab.groups.forEach((g, n) => (g.index = n));
-                    }
-                } else
-                    tabGroupAttributesChanged.add(group);
+                // Create a new group since it doesn't exist in the tab.
+                currentGroup = this.service.hooks.onConstructPersistentObjectAttributeGroup(this.service, attr.groupKey, [], this);
+                currentTab.groups.push(currentGroup);
+
+                // Sort groups by minimum offset of attributes to maintain order
+                currentTab.groups.sort((g1, g2) => (g1.attributes.min(a => a.offset) || 0) - (g2.attributes.min(a => a.offset) || 0));
+                currentTab.groups.forEach((g, n) => (g.index = n));
+                tabGroupsChanged.add(currentTab);
+            }
+
+            // Add the attribute to the group if it's not already there.
+            if (attr.isVisible && currentGroup.attributes.indexOf(attr) < 0) {
+                currentGroup.attributes.push(attr);
+                currentGroup.attributes.sort((x, y) => x.offset - y.offset);
+                currentGroup.attributes[attr.name] = attr;
+                tabGroupAttributesChanged.add(currentGroup);
+
+                currentTab.attributes.push(attr);
+                currentTab.attributes[attr.name] = attr;
             }
         });
     
