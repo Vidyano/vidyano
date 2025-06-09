@@ -82,7 +82,7 @@ export abstract class WebComponentLit extends LitElement {
         return this.service?.language?.messages || {};
     }
 
-    override willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
+    override willUpdate(changedProperties: PropertyValueMap<any>) {
         // The ObserverController handles computed properties, observers, and side-effects,
         // returning the complete set of properties that have changed.
         const totalChangedProps = this[OBSERVER_CONTROLLER_SYMBOL]?.onWillUpdate(changedProperties);
