@@ -174,8 +174,25 @@ export abstract class WebComponent extends LitElement {
     }
 
     override willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-        super.willUpdate(changedProperties);
+        // This map will accumulate all properties that have changed during this update cycle,
+        // mapping each property to its value *before* the cycle began.
+        const totalChangedProps = new Map(changedProperties.entries());
+    
+        // This map holds the set of properties that changed in the *previous* pass,
+        // which will be the input for the *current* pass.
+        let changedInLastPass = new Map(changedProperties.entries());
 
+        // CAPTURE AND CLEAR: Capture the dirty paths for this update cycle only, then clear the instance set.
+        const dirtyPathsForThisUpdate = new Set(this.#dirtyForwardedPaths);
+        this.#dirtyForwardedPaths.clear();
+    
+        let iteration = 0;
+        const MAX_ITERATIONS = 10; // Safety break for infinite loops.
+
+        const lastComplexObserverArgs = new Map<string, any[]>();
+        let isFirstIteration = true;
+    
+        // Re-bind forwarders if a root object was part of the initial change.
         if (Object.keys(this.#staticObserversConfig).length > 0) {
             const observedRoots = new Set<string>();
             Object.values(this.#staticObserversConfig).forEach(deps =>
@@ -184,87 +201,115 @@ export abstract class WebComponent extends LitElement {
                     if (root) observedRoots.add(root);
                 })
             );
-
+    
             const changedRoots = new Set<string>();
             for (const rootKey of observedRoots) {
                 if (changedProperties.has(rootKey)) {
                     changedRoots.add(rootKey);
                 }
             }
-
+    
             if (changedRoots.size > 0) {
                 this.#setupForwardersForRoots(changedRoots);
             }
         }
+    
+        // The loop must run if there are changed properties OR if it's the first
+        // iteration and the update was triggered by deep ("dirty") path changes.
+        while ((changedInLastPass.size > 0 || (isFirstIteration && dirtyPathsForThisUpdate.size > 0)) && iteration < MAX_ITERATIONS) {
+            isFirstIteration = false;
+            iteration++;
 
-        const propertyObservers = this.#staticPropertyObserversConfig;
-        const computedConfig = this.#staticComputedConfig;
+            const changesToProcessThisPass = new Map(changedInLastPass.entries());
+            changedInLastPass.clear(); // Reset for detecting new changes in this pass.
+    
+            // STEP 1: Compute derived properties based on the changes from the last pass.
+            // Pass the local 'dirtyPathsForThisUpdate' set.
+            const changedComputedPropsMap = this.#updateComputedProperties(changesToProcessThisPass, dirtyPathsForThisUpdate);
+            for (const [prop, oldVal] of changedComputedPropsMap.entries()) {
+                if (!totalChangedProps.has(prop)) {
+                    totalChangedProps.set(prop, oldVal);
+                }
+            }
+    
+            // The set of changes that should trigger observers in this pass.
+            const allChangesToObserve = new Map([...changesToProcessThisPass.entries(), ...changedComputedPropsMap.entries()]);
+            if (allChangesToObserve.size === 0 && dirtyPathsForThisUpdate.size === 0) // Also check dirty paths
+                continue;
 
-        if (propertyObservers) {
-            for (const [prop, observerName] of Object.entries(propertyObservers)) {
-                // If this property is a computed property, its observer is handled inside #updateComputedProperties.
-                if (computedConfig?.hasOwnProperty(prop))
-                    continue;
-
-                if (changedProperties.has(prop as PropertyKey)) {
-                    const oldValue = changedProperties.get(prop as PropertyKey);
-                    const newValue = this[prop];
-                    
-                    // Ensure value actually changed for non-computed properties before calling observer
-                    if (oldValue !== newValue) {
-                        if (typeof this[observerName] === 'function') {
-                            this[observerName](newValue, oldValue);
-                        } else {
-                            console.warn(`[${this.tagName.toLowerCase()}] Observer method '${observerName}' not found for property '${prop}'.`);
+            // Take a snapshot of all property values before running observers to detect side-effects.
+            const allPropKeys = Array.from((this.constructor as typeof LitElement).elementProperties.keys());
+            const stateBeforeObservers = new Map(allPropKeys.map(p => [p, this[p]]));
+    
+            // STEP 2: Call single-property observers.
+            const propertyObservers = this.#staticPropertyObserversConfig;
+            if (propertyObservers) {
+                for (const [prop, oldVal] of allChangesToObserve.entries()) {
+                    const observerName = propertyObservers[prop as string];
+                    if (observerName && typeof this[observerName] === "function") {
+                        const newVal = this[prop as string];
+                        if (newVal !== oldVal) {
+                            this[observerName](newVal, oldVal);
                         }
                     }
                 }
             }
-        }
+    
+            // STEP 3: Call complex (multi-property) observers.
+            const observersConfig = this.#staticObserversConfig;
+            if (observersConfig) {
+                const observersToCall = new Set<string>();
+                const allChangedKeys = new Set(allChangesToObserve.keys());
+    
+                for (const [observerIdentifier, dependencies] of Object.entries(observersConfig)) {
+                    if (typeof this[observerIdentifier] !== "function")
+                        continue;
+    
+                    const hasChangedDep = dependencies.some(dep => {
+                        const rootDep = dep.split('.')[0];
+                        return (
+                            allChangedKeys.has(dep) ||
+                            allChangedKeys.has(rootDep) ||
+                            dirtyPathsForThisUpdate.has(dep) // Check against the local set
+                        );
+                    });
+    
+                    if (hasChangedDep) {
+                        observersToCall.add(observerIdentifier);
+                    }
+                }
+    
+                for (const observerIdentifier of observersToCall) {
+                    const dependencies = observersConfig[observerIdentifier];
+                    const newArgs = dependencies.map(d => this.#resolvePath(d));
 
-        const changedComputedProps = this.#updateComputedProperties(changedProperties);
+                    const oldArgs = lastComplexObserverArgs.get(observerIdentifier);
+                    if (oldArgs && oldArgs.length === newArgs.length && oldArgs.every((v, i) => v === newArgs[i])) {
+                        continue; // Skip redundant call.
+                    }
 
-        const observersConfig = this.#staticObserversConfig;
-        if (observersConfig) {
-            // Use a Set to ensure we don't call the same observer multiple times in one update cycle.
-            const observersToCall = new Set<string>();
-
-            for (const [observerIdentifier, dependencies] of Object.entries(observersConfig)) {
-                // We only handle method-style observers here.
-                // Simple paths (e.g., "someObject.someProp") are not functions and only serve to trigger updates via the forwarder.
-                if (typeof this[observerIdentifier] !== "function")
-                    continue;
-
-                // Check if any of this observer's dependencies have changed.
-                const hasChangedDep = dependencies.some(dep => {
-                    const rootDep = dep.split('.')[0];
-                    return (
-                        changedProperties.has(dep as PropertyKey) || // The dependency itself is present in `changedProperties` (e.g., a direct property change).
-                        changedProperties.has(rootDep as PropertyKey) || // The root property of a nested dependency path is present in `changedProperties` (e.g., the entire object was replaced).
-                        this.#dirtyForwardedPaths.has(dep) || // The dependency is present in `#dirtyForwardedPaths`, indicating a deep path was notified by a forwarder.
-                        changedComputedProps.has(dep) // The dependency is present in `changedComputedProps`, indicating a computed property has changed.
-                    );
-                });
-
-                if (hasChangedDep) {
-                    observersToCall.add(observerIdentifier);
+                    lastComplexObserverArgs.set(observerIdentifier, newArgs);
+                    this[observerIdentifier](...newArgs);
                 }
             }
-
-            // Now, call the unique observers that need to be fired.
-            for (const observerIdentifier of observersToCall) {
-                const dependencies = observersConfig[observerIdentifier];
-                const args = dependencies.map(d => this.#resolvePath(d));
-                this[observerIdentifier](...args);
+    
+            // STEP 4: Detect side-effects from observers and queue them for the next pass.
+            for (const propKey of allPropKeys) {
+                const valBefore = stateBeforeObservers.get(propKey);
+                const valAfter = this[propKey];
+                if (valAfter !== valBefore && !totalChangedProps.has(propKey)) {
+                    totalChangedProps.set(propKey, valBefore);
+                    changedInLastPass.set(propKey, valBefore);
+                }
             }
         }
-    }
-
-    override updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-        super.updated(changedProperties);
-
-        // Clear the dirty paths at the end of the update cycle.
-        this.#dirtyForwardedPaths.clear();
+    
+        if (iteration >= MAX_ITERATIONS) {
+            console.warn(`[${this.tagName.toLowerCase()}] Maximum update loops reached. Component properties may be unstable.`);
+        }
+    
+        // Finally, call super.willUpdate with the complete set of changes.
+        super.willUpdate(totalChangedProps);
     }
 
     get #staticObserversConfig(): StaticObserversConfig {
@@ -292,64 +337,34 @@ export abstract class WebComponent extends LitElement {
         if (Object.keys(staticObserversConfig).length === 0)
             return;
 
-        // 1. Build pathsToObserversMap
-        const pathsToObserversMap = new Map<string, string[]>();
-        for (const [observerIdentifier, dependencies] of Object.entries(staticObserversConfig)) {
-            for (const depPath of dependencies) {
-                if (!pathsToObserversMap.has(depPath))
-                    pathsToObserversMap.set(depPath, []);
-                pathsToObserversMap.get(depPath)!.push(observerIdentifier);
-            }
-        }
+        const allDependencies = new Set<string>();
+        Object.values(staticObserversConfig).forEach(deps => deps.forEach(dep => allDependencies.add(dep)));
 
-        // 2. Determine Paths for Forwarder Setup/Disposal
         const setupAll = !rootsToRebind || rootsToRebind.size === 0;
-        const pathsToDisposeAndRecreate: Set<string> = new Set();
-        for (const dependencies of Object.values(staticObserversConfig)) {
-            for (const depPath of dependencies) {
-                const rootKey = depPath.split('.')[0];
-                if (setupAll || (rootsToRebind && rootsToRebind.has(rootKey))) {
-                    pathsToDisposeAndRecreate.add(depPath);
-                }
+        const pathsToRebind = new Set<string>();
+        for (const depPath of allDependencies) {
+            const rootKey = depPath.split('.')[0];
+            if (setupAll || (rootsToRebind && rootsToRebind.has(rootKey))) {
+                pathsToRebind.add(depPath);
             }
         }
 
-        // 3. Dispose Old Forwarders (only those that will be recreated)
-        this.#disposeForwarders(pathsToDisposeAndRecreate);
+        this.#disposeForwarders(pathsToRebind);
 
-        // 4. Remove disposed paths from #forwarderDisposers to prevent memory leaks
-        for (const depPath of pathsToDisposeAndRecreate) {
-            this.#forwarderDisposers.delete(depPath);
-        }
-
-        // 5. Setup New Forwarders
-        for (const depPath of pathsToDisposeAndRecreate) {
+        for (const depPath of pathsToRebind) {
             const pathParts = depPath.split('.');
             const rootPropertyKey = pathParts[0];
             const relativePathInSource = pathParts.slice(1).join('.');
             const sourceObject = this[rootPropertyKey];
 
             try {
+                // The forwarder's only job is to mark a deep path as dirty and request a new update cycle.
+                // The ordered logic in `willUpdate` will then handle all observer calls correctly.
                 const disposer = Observable.forward(sourceObject, relativePathInSource, (detail: ForwardObservedDetail) => {
-                    const observerIdentifiers = pathsToObserversMap.get(depPath);
-                    if (observerIdentifiers) {
-                        for (const observerIdentifier of observerIdentifiers) {
-                            if (typeof this[observerIdentifier] === "function") {
-                                const deps = staticObserversConfig[observerIdentifier];
-                                if (deps?.length) {
-                                    const args = deps.map(d => this.#resolvePath(d));
-                                    this[observerIdentifier](...args);
-                                } else {
-                                    this[observerIdentifier](detail);
-                                }
-                            } else if (!observerIdentifier.includes('.')) {
-                                console.warn(`[${this.tagName.toLowerCase()}] Observer method '${observerIdentifier}' not found for path '${depPath}'.`);
-                            }
-                        }
-                    }
                     this.#dirtyForwardedPaths.add(depPath);
                     this.requestUpdate();
                 }, true);
+
                 this.#forwarderDisposers.set(depPath, disposer);
             } catch (error) {
                 console.warn(`[${this.tagName.toLowerCase()}] Error setting up forwarder for '${depPath}' on source:`, sourceObject, error);
@@ -361,28 +376,29 @@ export abstract class WebComponent extends LitElement {
      * Computes and updates all computed properties.
      * @param changedProperties Optionally, only update properties whose dependencies have changed.
      *                         If omitted, all computed properties are updated (e.g., during initial connect).
+     * @returns A Map of changed computed properties to their old values.
      */
-    #updateComputedProperties(changedProperties?: PropertyValueMap<any> | Map<PropertyKey, unknown>): Set<string> {
+    #updateComputedProperties(changedProperties?: PropertyValueMap<any> | Map<PropertyKey, unknown>, dirtyPaths?: Set<string>): Map<string, any> {
         const computedConfig = this.#staticComputedConfig;
-        const propertyObservers = this.#staticPropertyObserversConfig;
-        const changedComputedProps = new Set<string>();
+        const changedComputedProps = new Map<string, any>();
 
         if (!computedConfig)
             return changedComputedProps;
+
+        const changedKeys = changedProperties ? new Set(changedProperties.keys()) : null;
 
         for (const [prop, { dependencies, methodName }] of Object.entries(computedConfig)) {
             let shouldUpdate = false;
 
             if (!changedProperties) {
-                // Initial run: always update
-                shouldUpdate = true;
+                shouldUpdate = true; // Initial run: always update
             } else {
-                // Only update if dependencies changed
-                const hasChangedTopLevelDep = dependencies.some(dep =>
-                    changedProperties.has(dep.split('.')[0]) || changedProperties.has(dep)
+                // Update if a dependency (or its root) has changed directly, or if a deep path has changed.
+                shouldUpdate = dependencies.some(dep =>
+                    changedKeys.has(dep) ||
+                    changedKeys.has(dep.split('.')[0]) ||
+                    (dirtyPaths && dirtyPaths.has(dep)) // Check against the passed-in set
                 );
-                const hasChangedDeepDep = dependencies.some(dep => this.#dirtyForwardedPaths.has(dep));
-                shouldUpdate = hasChangedTopLevelDep || hasChangedDeepDep;
             }
 
             if (shouldUpdate) {
@@ -400,18 +416,7 @@ export abstract class WebComponent extends LitElement {
 
                 if (oldVal !== computedValue) {
                     this[prop] = computedValue;
-                    changedComputedProps.add(prop);
-                    this.requestUpdate(prop as PropertyKey, oldVal);
-
-                    // If this computed property has an observer, call it.
-                    if (propertyObservers?.[prop]) {
-                        const observerName = propertyObservers[prop];
-                        if (typeof this[observerName] === 'function') {
-                            this[observerName](computedValue, oldVal);
-                        } else {
-                            console.warn(`[${this.tagName.toLowerCase()}] Observer method '${observerName}' not found for property '${prop}'.`);
-                        }
-                    }
+                    changedComputedProps.set(prop, oldVal);
                 }
             }
         }
@@ -827,6 +832,10 @@ class TestObject extends Observable<TestObject> {
         test: {
             type: Object,
             observer: "_testChanged",
+        },
+        testNew: {
+            type: String,
+            observer: "_testNewChanged",
         }
     },
     observers: [
@@ -842,6 +851,7 @@ class Test extends WebComponent {
     declare readonly fullName: string;
     test = new TestObject("Jane", "Smith");
     n = 0;
+    testNew: string;
 
     override connectedCallback(): void {
         super.connectedCallback();
@@ -880,6 +890,12 @@ class Test extends WebComponent {
 
     private _fullNameOrTestChanged(fullName: string, test: TestObject): void {
         console.warn(`Full name or test changed. FullName: "${fullName}", Test: "${test?.firstName} ${test?.lastName}"`);
+
+        this.testNew = `FullName: ${fullName}, Test: ${test?.firstName} ${test?.lastName}`;
+    }
+
+    private _testNewChanged(newValue: string, oldValue: string | undefined): void {
+        console.log(`Test new value changed from "${oldValue}" to "${newValue}"`);
     }
 
     private _testChanged(newValue: TestObject, oldValue: TestObject | undefined): void {
