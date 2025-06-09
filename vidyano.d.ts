@@ -11600,7 +11600,6 @@ type FlattenedProfilerRequestEntry = {
 };
 declare class Profiler extends WebComponent {
     static get template(): HTMLTemplateElement;
-    private _boundMousehweel;
     readonly lastRequest: ProfilerRequest;
     private _setLastRequest;
     readonly selectedRequest: ProfilerRequest;
@@ -11613,8 +11612,6 @@ declare class Profiler extends WebComponent {
     private _setZoom;
     timelineSize: ISize;
     profiledRequests: ProfilerRequest[];
-    connectedCallback(): void;
-    disconnectedCallback(): void;
     private _requestSQL;
     private _requestSharpSQL;
     private _requestHasWarnings;
