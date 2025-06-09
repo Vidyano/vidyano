@@ -5,6 +5,7 @@ export * as Vidyano from "../vidyano/index";
 
 export * from "./web-components/web-component/web-component-configurable"
 export * from "./web-components/web-component/web-component"
+export * from "./web-components/web-component/web-component-lit"
 
 export * from "./web-components/app/style-modules/flex-layout"
 export * from "./web-components/app/style-modules/reset-css"
