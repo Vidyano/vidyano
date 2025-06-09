@@ -1,11 +1,11 @@
 import { PropertyDeclaration } from "lit";
 import type { WebComponentLit } from "./web-component-lit";
 
-const COMPUTED_CONFIG_SYMBOL = Symbol.for("WebComponent.computedConfig");
-const OBSERVERS_CONFIG_SYMBOL = Symbol.for("WebComponent.observersConfig");
-const PROPERTY_OBSERVERS_CONFIG_SYMBOL = Symbol.for("WebComponent.propertyObserversConfig");
-const SENSITIVE_CONFIG_SYMBOL = Symbol.for("WebComponent.sensitiveConfig");
-const LISTENERS_CONFIG_SYMBOL = Symbol.for("WebComponent.listenersConfig");
+const COMPUTED_CONFIG_SYMBOL = Symbol("WebComponent.computedConfig");
+const OBSERVERS_CONFIG_SYMBOL = Symbol("WebComponent.observersConfig");
+const PROPERTY_OBSERVERS_CONFIG_SYMBOL = Symbol("WebComponent.propertyObserversConfig");
+const SENSITIVE_CONFIG_SYMBOL = Symbol("WebComponent.sensitiveConfig");
+const LISTENERS_CONFIG_SYMBOL = Symbol("WebComponent.listenersConfig");
 
 /**
  * Parses a method signature string of the form "methodName(arg1, arg2, ...)".
