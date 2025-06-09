@@ -16,7 +16,7 @@
     </template>
 </dom-if>
 <vi-app-config>
-    <vi-persistent-object-attribute-config type="CommonMark" height="3"></vi-persistent-object-attribute-config>
+    <vi-persistent-object-attribute-config type="CommonMark" height="attr.getTypeHint('height', 3)"></vi-persistent-object-attribute-config>
     <vi-persistent-object-attribute-config type="Reference" height="attr.selectInPlace && ['radio', 'chip'].indexOf(attr.getTypeHint('inputtype', '', undefined, true)) >= 0 ? 0 : 1"></vi-persistent-object-attribute-config>
     <vi-persistent-object-attribute-config type="DropDown" height="['radio', 'chip'].indexOf(attr.getTypeHint('inputtype', '', undefined, true)) >= 0 ? 0 : 1"></vi-persistent-object-attribute-config>
     <vi-persistent-object-attribute-config type="KeyValueList" height="['radio', 'chip'].indexOf(attr.getTypeHint('inputtype', '', undefined, true)) >= 0 ? 0 : 1"></vi-persistent-object-attribute-config>
