@@ -12,6 +12,7 @@
   "devDependencies": {
     "@floating-ui/dom": "^1.7.0",
     "@microsoft/fetch-event-source": "^2.0.1",
+    "@playwright/test": "^1.52.0",
     "@polymer/iron-a11y-keys": "3.0.1",
     "@polymer/iron-collapse": "3.0.1",
     "@polymer/iron-list": "3.1.0",
@@ -32,6 +33,7 @@
     "fast-glob": "^3.3.1",
     "lit": "^3.3.0",
     "marked": "^15.0.7",
+    "playwright": "^1.52.0",
     "qunit": "2.20.0",
     "rollup": "^4.41.0",
     "rollup-plugin-cleanup": "^3.2.1",

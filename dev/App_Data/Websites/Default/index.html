@@ -2,122 +2,7 @@
 <html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-        <script>
-            // Fix for loading floating-ui during development using importmap
-            window["process"] = {
-                "env": {
-                    "NODE_ENV": "development"
-                }
-            }
-        </script>
-        <script type="importmap">
-            {
-                "imports": {
-                    "tslib": "./web3/libs/modules/tslib/tslib.es6.js",
-                    "bignumber.js": "./web3/libs/modules/bignumber.js/bignumber.mjs",
-                    "@polymer/polymer": "./web3/libs/modules/@polymer/polymer/polymer-element.js",
-                    "@polymer/polymer/lib/": "./web3/libs/modules/@polymer/polymer/lib/",
-                    "@polymer/iron-a11y-keys/iron-a11y-keys": "./web3/libs/modules/@polymer/iron-a11y-keys/iron-a11y-keys.js",
-                    "@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js": "./web3/libs/modules/@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js",
-                    "@polymer/iron-collapse": "./web3/libs/modules/@polymer/iron-collapse/iron-collapse.js",
-                    "@polymer/iron-collapse/": "./web3/libs/modules/@polymer/iron-collapse/",
-                    "@polymer/iron-list": "./web3/libs/modules/@polymer/iron-list/iron-list.js",
-                    "@polymer/iron-resizable-behavior/iron-resizable-behavior.js": "./web3/libs/modules/@polymer/iron-resizable-behavior/iron-resizable-behavior.js",
-                    "@polymer/iron-scroll-target-behavior/iron-scroll-target-behavior.js": "./web3/libs/modules/@polymer/iron-scroll-target-behavior/iron-scroll-target-behavior.js",
-                    "@polymer/iron-overlay-behavior": "./web3/libs/modules/@polymer/iron-overlay-behavior/iron-overlay-behavior.js",
-                    "@polymer/iron-overlay-behavior/iron-focusables-helper": "./web3/libs/modules/@polymer/iron-overlay-behavior/iron-focusables-helper.js",
-                    "@polymer/iron-fit-behavior": "./web3/libs/modules/@polymer/iron-fit-behavior/iron-fit-behavior.js",
-                    "@polymer/iron-fit-behavior/": "./web3/libs/modules/@polymer/iron-fit-behavior/",
-                    "@polymer/iron-media-query": "./web3/libs/modules/@polymer/iron-media-query/iron-media-query.js",
-                    "@polymer/polymer/polymer-legacy.js": "./web3/libs/modules/@polymer/polymer/polymer-legacy.js",
-                    "@polymer/paper-ripple": "./web3/libs/modules/@polymer/paper-ripple/paper-ripple.js",
-                    "marked": "./web3/libs/modules/marked/lib/marked.esm.js",
-                    "dompurify": "./web3/libs/modules/dompurify/dist/purify.es.js",
-                    "@webcomponents/shadycss/entrypoints/apply-shim.js": "./web3/libs/modules/@webcomponents/shadycss/entrypoints/apply-shim.js",
-                    "@webcomponents/shadycss/entrypoints/custom-style-interface.js": "./web3/libs/modules/@webcomponents/shadycss/entrypoints/custom-style-interface.js",
-                    "@floating-ui/core": "./web3/libs/modules/@floating-ui/core/dist/floating-ui.core.esm.js",
-                    "@floating-ui/dom": "./web3/libs/modules/@floating-ui/dom/dist/floating-ui.dom.esm.js",
-                    "@floating-ui/utils": "./web3/libs/modules/@floating-ui/utils/dist/floating-ui.utils.esm.js",
-                    "@floating-ui/utils/dom": "./web3/libs/modules/@floating-ui/utils/dom/dist/floating-ui.utils.dom.esm.js",
-                    "@microsoft/fetch-event-source": "./web3/libs/modules/@microsoft/fetch-event-source/lib/esm/index.js",
-                    "@microsoft/fetch-event-source/lib/esm/fetch": "./web3/libs/modules/@microsoft/fetch-event-source/lib/esm/fetch.js",
-                    "@microsoft/fetch-event-source/lib/esm/parse": "./web3/libs/modules/@microsoft/fetch-event-source/lib/esm/parse.js",
-                    "moment": "./web3/libs/modules/moment/dist/moment.js",
-                    "sortablejs": "./web3/libs/modules/sortablejs/modular/sortable.esm.js",
-                    "d3": "./web3/libs/modules/d3/src/index.js",
-                    "d3-array": "./web3/libs/modules/d3-array/src/index.js",
-                    "d3-axis": "./web3/libs/modules/d3-axis/src/index.js",
-                    "d3-brush": "./web3/libs/modules/d3-brush/src/index.js",
-                    "d3-chord": "./web3/libs/modules/d3-chord/src/index.js",
-                    "d3-color": "./web3/libs/modules/d3-color/src/index.js",
-                    "d3-contour": "./web3/libs/modules/d3-contour/src/index.js",
-                    "d3-delaunay": "./web3/libs/modules/d3-delaunay/src/index.js",
-                    "d3-dispatch": "./web3/libs/modules/d3-dispatch/src/index.js",
-                    "d3-drag": "./web3/libs/modules/d3-drag/src/index.js",
-                    "d3-dsv": "./web3/libs/modules/d3-dsv/src/index.js",
-                    "d3-ease": "./web3/libs/modules/d3-ease/src/index.js",
-                    "d3-fetch": "./web3/libs/modules/d3-fetch/src/index.js",
-                    "d3-force": "./web3/libs/modules/d3-force/src/index.js",
-                    "d3-format": "./web3/libs/modules/d3-format/src/index.js",
-                    "d3-geo": "./web3/libs/modules/d3-geo/src/index.js",
-                    "d3-hierarchy": "./web3/libs/modules/d3-hierarchy/src/index.js",
-                    "d3-interpolate": "./web3/libs/modules/d3-interpolate/src/index.js",
-                    "d3-path": "./web3/libs/modules/d3-path/src/index.js",
-                    "d3-polygon": "./web3/libs/modules/d3-polygon/src/index.js",
-                    "d3-quadtree": "./web3/libs/modules/d3-quadtree/src/index.js",
-                    "d3-random": "./web3/libs/modules/d3-random/src/index.js",
-                    "d3-scale": "./web3/libs/modules/d3-scale/src/index.js",
-                    "d3-scale-chromatic": "./web3/libs/modules/d3-scale-chromatic/src/index.js",
-                    "d3-selection": "./web3/libs/modules/d3-selection/src/index.js",
-                    "d3-shape": "./web3/libs/modules/d3-shape/src/index.js",
-                    "d3-time": "./web3/libs/modules/d3-time/src/index.js",
-                    "d3-time-format": "./web3/libs/modules/d3-time-format/src/index.js",
-                    "d3-timer": "./web3/libs/modules/d3-timer/src/index.js",
-                    "d3-transition": "./web3/libs/modules/d3-transition/src/index.js",
-                    "d3-zoom": "./web3/libs/modules/d3-zoom/src/index.js",
-                    "internmap": "./web3/libs/modules/internmap/src/index.js",
-                    "delaunator": "./web3/libs/modules/delaunator/index.js",
-                    "robust-predicates": "./web3/libs/modules/robust-predicates/index.js"
-                }
-            }
-        </script>
-
-        <script type="module">
-            import { AppServiceHooks } from "./index.js";
-
-            class CustomServiceHooks extends AppServiceHooks {
-                onConstructPersistentObject() {
-                    const po = super.onConstructPersistentObject(...arguments);
-
-                    if (po.type === "Company") {
-                        po.propertyChanged.attach((sender, detail) => {
-                            if (detail.propertyName === "isEditing") {
-                                console.log("isEditing changed to: " + detail.newValue);
-                            }
-                        }, { weak: true })
-                    }
-
-                    return po;
-                }
-            }
-
-            window.app.hooks = new CustomServiceHooks();
-        </script>
-
-        <!-- <script type="module" src="./index.js"></script> -->
-        <!-- <script type="module" src="./web3/web-components/app/app.js"></script>
-        <script type="module" src="./web3/web-components/persistent-object-presenter/persistent-object-presenter.js"></script>
-        <script type="module" src="./web3/web-components/query-presenter/query-presenter.js"></script>
-        <script type="module" src="./web3/web-components/program-unit-presenter/program-unit-presenter.js"></script> -->
-        
-        <!-- Test -->
-        <!-- <script type="module" src="./web3/test/action-bar-test/action-bar-test.js"></script>
-        <script type="module" src="./web3/test/dialog/dialog-test.js"></script>
-        <script type="module" src="./web3/test/list-test/list-test.js"></script>
-        <script type="module" src="./web3/test/notification-test/notification-test.js"></script>
-        <script type="module" src="./web3/test/popup-menu-test/popup-menu-test.js"></script>
-        <script type="module" src="./web3/test/query-grid-test/query-grid-test.js"></script> -->
-        <!-- End Test -->
+        <script type="module" src="./index.js"></script>
         
         <link href="//fonts.googleapis.com/css?family=Open+Sans:400,300,600,700,800" rel="stylesheet" type="text/css">
         <style>
@@ -134,7 +19,7 @@
         </style>
     </head>
     <body>
-        <vi-app label="Vidyano" service-hooks="deferred">
+        <vi-app label="Vidyano">
             <vi-session-presenter slot="menu-footer">
                 <template>
                     <vi-persistent-object-attribute-presenter no-label attribute="[[session.attributes.Reference]]"></vi-persistent-object-attribute-presenter>

@@ -1,4 +1,3 @@
-import "components/web-component/web-component-lit";
 import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
 import { Path } from "libs/pathjs/pathjs"

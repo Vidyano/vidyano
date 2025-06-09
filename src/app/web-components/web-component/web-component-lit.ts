@@ -78,7 +78,7 @@ function parseMethodSignature(signature: string): { methodName: string; args: st
     return { methodName, args };
 }
 
-type WebComponentConstructor = typeof WebComponent & {
+type WebComponentConstructor = typeof WebComponentLit & {
     properties?: Record<string, WebComponentProperty>;
     [COMPUTED_CONFIG_SYMBOL]?: StaticComputedConfig;
     [OBSERVERS_CONFIG_SYMBOL]?: StaticObserversConfig;
@@ -90,7 +90,7 @@ type WebComponentConstructor = typeof WebComponent & {
 /**
  * Base class for all lit-based web components in a Vidyano application.
  */
-export abstract class WebComponent extends LitElement {
+export abstract class WebComponentLit extends LitElement {
     static properties = {
         app: { type: Object, noAccessor: true },
         service: { type: Object, noAccessor: true },
@@ -503,7 +503,7 @@ export abstract class WebComponent extends LitElement {
      * @returns A decorator function for the web component class.
      */
     static register(config: WebComponentRegistrationInfo, tagName: string) {
-        return function <T extends typeof WebComponent>(targetClass: T): T | void {
+        return function <T extends typeof WebComponentLit>(targetClass: T): T | void {
             const litPropertiesForStaticGetter: Record<string, any> = {};
             const computedConfigForDecorator: Record<string, ComputedPropertyConfig> = {};
             const observersConfigForDecorator: StaticObserversConfig = {};
@@ -530,7 +530,7 @@ export abstract class WebComponent extends LitElement {
             };
 
             // First, extract computed properties from the entire inheritance chain
-            const extractComputedFromStaticProperties = (ctor: typeof WebComponent) => {
+            const extractComputedFromStaticProperties = (ctor: typeof WebComponentLit) => {
                 const computed: Record<string, ComputedPropertyConfig> = {};
                 const propertyObservers: Record<string, string> = {};
                 
@@ -730,155 +730,3 @@ export abstract class WebComponent extends LitElement {
     }
 }
 
-class TestObjectItem extends Observable<TestObjectItem> {
-    #index: number;
-
-    constructor(index: number) {
-        super();
-        this.#index = index;
-    }
-
-    get index(): number {
-        return this.#index;
-    }
-
-    set index(value: number) {
-        if (this.#index !== value) {
-            const oldValue = this.#index;
-            this.#index = value;
-            this.notifyPropertyChanged("index", value, oldValue);
-        }
-    }
-}
-
-class TestObject extends Observable<TestObject> {
-    #firstName: string;
-    #lastName: string;
-    #items: TestObjectItem[] = [];
-
-    constructor(firstName: string, lastName: string) {
-        super();
-        this.#firstName = firstName;
-        this.#lastName = lastName;
-    }
-
-    get firstName(): string {
-        return this.#firstName;
-    }
-
-    set firstName(value: string) {
-        if (this.#firstName !== value) {
-            const oldValue = this.#firstName;
-            this.#firstName = value;
-            this.notifyPropertyChanged("firstName", value, oldValue);
-        }
-    }
-
-    get lastName(): string {
-        return this.#lastName;
-    }
-
-    set lastName(value: string) {
-        if (this.#lastName !== value) {
-            const oldValue = this.#lastName;
-            this.#lastName = value;
-            this.notifyPropertyChanged("lastName", value, oldValue);
-        }
-    }
-
-    addItem(item: TestObjectItem): void {
-        const newIndex = this.#items.length;
-        this.#items.push(item);
-        this.notifyArrayChanged("items", newIndex, [], 1);
-    }
-
-    get items(): TestObjectItem[] {
-        return this.#items;
-    }
-}
-
-@WebComponent.register({
-    properties: {
-        fullName: {
-            type: String,
-            computed: "_computeFullName(test.firstName, test.lastName)",
-            observer: "_fullNameChanged",
-        },
-        test: {
-            type: Object,
-            observer: "_testChanged",
-        },
-        testNew: {
-            type: String,
-            observer: "_testNewChanged",
-        }
-    },
-    observers: [
-        "test.firstName",
-        "test.items.*.index",
-        "_fullNameOrTestChanged(fullName, test)",
-    ],
-    listeners: {
-        "click": "_handleClick",
-    }
-}, "my-test")
-class Test extends WebComponent {
-    declare readonly fullName: string;
-    test = new TestObject("Jane", "Smith");
-    n = 0;
-    testNew: string;
-
-    override connectedCallback(): void {
-        super.connectedCallback();
-        console.log("Test component connected");
-
-        setTimeout(() => {
-            console.log("Timeout 1: Changing test.firstName and adding item");
-            this.test.firstName = (++this.n).toString();
-            this.test.addItem(new TestObjectItem(++this.n));
-        }, 1000);
-
-        setTimeout(() => {
-            console.log("Timeout 2: Replacing test object and adding item to new object");
-            this.test = new TestObject("John", "Doe");
-            this.test.addItem(new TestObjectItem(++this.n));
-        }, 2000);
-    }
-
-    protected override render() {
-        console.error("Test component rendering. FullName:", this.fullName, "Item Index:", this.test.items?.[0]?.index);
-        return html`<h1>Item Index: ${this.test.items?.[0]?.index}, FullName: ${this.fullName}!</h1>`;
-    }
-
-    private _computeFullName(firstName?: string, lastName?: string): string {
-        if (firstName === undefined || lastName === undefined) {
-            console.log(`Computing full name: returning "Loading..." (firstName: ${firstName}, lastName: ${lastName})`);
-            return "Loading...";
-        }
-        console.log(`Computing full name from "${firstName}" and "${lastName}"`);
-        return `${this.translations.UserName}: ${firstName} ${lastName}`;
-    }
-
-    private _fullNameChanged(newValue: string, oldValue: string): void {
-        console.log(`Full name changed from "${oldValue}" to "${newValue}"`);
-    }
-
-    private _fullNameOrTestChanged(fullName: string, test: TestObject): void {
-        console.warn(`Full name or test changed. FullName: "${fullName}", Test: "${test?.firstName} ${test?.lastName}"`);
-
-        this.testNew = `FullName: ${fullName}, Test: ${test?.firstName} ${test?.lastName}`;
-    }
-
-    private _testNewChanged(newValue: string, oldValue: string | undefined): void {
-        console.log(`Test new value changed from "${oldValue}" to "${newValue}"`);
-    }
-
-    private _testChanged(newValue: TestObject, oldValue: TestObject | undefined): void {
-        const oldFullName = oldValue ? `${oldValue.firstName} ${oldValue.lastName}` : "undefined";
-        console.log(`Test object changed from "${oldFullName}" to "${newValue.firstName} ${newValue.lastName}"`);
-    }
-
-    private _handleClick(event: MouseEvent): void {
-        this.test = new TestObject(`${++this.n}`, this.test.lastName);
-    }
-}
