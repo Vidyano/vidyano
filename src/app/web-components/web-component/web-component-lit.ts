@@ -1,94 +1,13 @@
 import { AppBase } from "components/app/app";
-import { LitElement, PropertyValueMap, PropertyDeclaration } from "lit";
+import { LitElement, PropertyValueMap } from "lit";
 import { Observable, ForwardObservedPropertyChangedArgs, ForwardObservedArrayChangedArgs, Service } from "vidyano";
 import { ListenerController } from "./listener-controller";
+import type { WebComponentRegistrationInfo } from "./web-component-registration";
+import { getComputedConfig, getObserversConfig, getPropertyObserversConfig, registerWebComponent } from "./web-component-registration";
 
 type ForwardObservedDetail = ForwardObservedPropertyChangedArgs | ForwardObservedArrayChangedArgs;
 
-export interface WebComponentProperty<T = unknown> extends PropertyDeclaration<T> {
-    /**
-     *  Computed properties can be either:
-     *  - A path string (e.g., "user.firstName") to observe property changes,
-     *  - Or a function signature (e.g., "myObserver(user.firstName, user.lastName)") to call a method when dependencies change.
-     */
-    computed?: string;
-
-    /**
-     * Observer method to call when the property changes.
-     * The method should accept two parameters: the new value and the old value.
-     */
-    observer?: string;
-}
-
-export interface WebComponentRegistrationInfo {
-    /**
-     * The properties of the web component.
-     */
-    properties?: Record<string, WebComponentProperty>;
-
-    /**
-     * An array of observer strings to forward changes to.
-     * Each string can be a method signature (e.g., "myObserver(user.firstName, user.lastName)") or a simple path (e.g., "user.firstName").
-     * In case of a simple path, the requestUpdate will be called with the path as the first argument.
-     */
-    observers?: string[];
-
-    /**
-     * A map of event names to handler method names.
-     * The handler methods should be defined in the web component class.
-     */
-    listeners?: { [eventName: string]: string };
-
-    sensitive?: boolean;
-}
-
-type ComputedPropertyConfig = {
-    dependencies: string[];
-    methodName?: string; // When undefined, the value is forwarded from the first dependency
-};
-
-type StaticComputedConfig = Record<string, ComputedPropertyConfig>;
-
-type StaticObserversConfig = Record<string, string[]>;
-
-type StaticPropertyObserversConfig = Record<string, string>;
-
-type StaticListenersConfig = Record<string, string>;
-
-const COMPUTED_CONFIG_SYMBOL = Symbol.for("WebComponent.computedConfig");
-const OBSERVERS_CONFIG_SYMBOL = Symbol.for("WebComponent.observersConfig");
-const PROPERTY_OBSERVERS_CONFIG_SYMBOL = Symbol.for("WebComponent.propertyObserversConfig");
-const SENSITIVE_CONFIG_SYMBOL = Symbol.for("WebComponent.sensitiveConfig");
-const LISTENERS_CONFIG_SYMBOL = Symbol.for("WebComponent.listenersConfig");
-
 const LISTENER_CONTROLLER_SYMBOL = Symbol("WebComponent.listenerController");
-
-/**
- * Parses a method signature string of the form "methodName(arg1, arg2, ...)".
- * Returns an object with the method name and an array of argument names.
- * If the signature is invalid, returns null.
- * @param signature The method signature string to parse.
- * @returns An object with methodName and args, or null if parsing fails.
- */
-function parseMethodSignature(signature: string): { methodName: string; args: string[] } | null {
-    const match = signature.match(/^([a-zA-Z0-9_]+)\((.*)\)$/);
-    if (!match)
-        return null;
-
-    const [, methodName, argsString] = match;
-    const args = argsString ? argsString.split(',').map(d => d.trim()).filter(Boolean) : [];
-
-    return { methodName, args };
-}
-
-type WebComponentConstructor = typeof WebComponentLit & {
-    properties?: Record<string, WebComponentProperty>;
-    [COMPUTED_CONFIG_SYMBOL]?: StaticComputedConfig;
-    [OBSERVERS_CONFIG_SYMBOL]?: StaticObserversConfig;
-    [PROPERTY_OBSERVERS_CONFIG_SYMBOL]?: StaticPropertyObserversConfig;
-    [SENSITIVE_CONFIG_SYMBOL]?: boolean;
-    [LISTENERS_CONFIG_SYMBOL]?: StaticListenersConfig;
-};
 
 /**
  * Base class for all lit-based web components in a Vidyano application.
@@ -107,7 +26,7 @@ export abstract class WebComponentLit extends LitElement {
     constructor() {
         super();
 
-        this[LISTENER_CONTROLLER_SYMBOL] = new ListenerController(this, (this.constructor as WebComponentConstructor)[LISTENERS_CONFIG_SYMBOL] || {});
+        this[LISTENER_CONTROLLER_SYMBOL] = new ListenerController(this);
     }
 
     override connectedCallback() {
@@ -180,10 +99,12 @@ export abstract class WebComponentLit extends LitElement {
         const lastComplexObserverArgs = new Map<string, any[]>();
         let isFirstIteration = true;
     
+        const observersConfig = getObserversConfig(this);
+
         // Re-bind forwarders if a root object was part of the initial change.
-        if (Object.keys(this.#staticObserversConfig).length > 0) {
+        if (Object.keys(observersConfig).length > 0) {
             const observedRoots = new Set<string>();
-            Object.values(this.#staticObserversConfig).forEach(deps =>
+            Object.values(observersConfig).forEach(deps =>
                 deps.forEach(depPath => {
                     const root = depPath.split('.')[0];
                     if (root) observedRoots.add(root);
@@ -230,7 +151,7 @@ export abstract class WebComponentLit extends LitElement {
             const stateBeforeObservers = new Map(allPropKeys.map(p => [p, this[p]]));
     
             // STEP 2: Call single-property observers.
-            const propertyObservers = this.#staticPropertyObserversConfig;
+            const propertyObservers = getPropertyObserversConfig(this);
             if (propertyObservers) {
                 for (const [prop, oldVal] of allChangesToObserve.entries()) {
                     const observerName = propertyObservers[prop as string];
@@ -244,7 +165,7 @@ export abstract class WebComponentLit extends LitElement {
             }
     
             // STEP 3: Call complex (multi-property) observers.
-            const observersConfig = this.#staticObserversConfig;
+            const observersConfig = getObserversConfig(this);
             if (observersConfig) {
                 const observersToCall = new Set<string>();
                 const allChangedKeys = new Set(allChangesToObserve.keys());
@@ -300,24 +221,12 @@ export abstract class WebComponentLit extends LitElement {
         super.willUpdate(totalChangedProps);
     }
 
-    get #staticObserversConfig(): StaticObserversConfig {
-        return (this.constructor as WebComponentConstructor)[OBSERVERS_CONFIG_SYMBOL] || {};
-    }
-
-    get #staticComputedConfig(): StaticComputedConfig {
-        return (this.constructor as WebComponentConstructor)[COMPUTED_CONFIG_SYMBOL] || {};
-    }
-
-    get #staticPropertyObserversConfig(): StaticPropertyObserversConfig {
-        return (this.constructor as WebComponentConstructor)[PROPERTY_OBSERVERS_CONFIG_SYMBOL] || {};
-    }
-
     /**
      * Sets up forwarders for the specified root properties, or all if none specified.
      * @param rootsToRebind Optional set of root property names to rebind forwarders for.
      */
     #setupForwardersForRoots(rootsToRebind?: Set<string>) {
-        const staticObserversConfig = this.#staticObserversConfig;
+        const staticObserversConfig = getObserversConfig(this);
         if (Object.keys(staticObserversConfig).length === 0)
             return;
 
@@ -363,7 +272,7 @@ export abstract class WebComponentLit extends LitElement {
      * @returns A Map of changed computed properties to their old values.
      */
     #updateComputedProperties(changedProperties?: PropertyValueMap<any> | Map<PropertyKey, unknown>, dirtyPaths?: Set<string>): Map<string, any> {
-        const computedConfig = this.#staticComputedConfig;
+        const computedConfig = getComputedConfig(this);
         const changedComputedProps = new Map<string, any>();
 
         if (!computedConfig)
@@ -459,10 +368,8 @@ export abstract class WebComponentLit extends LitElement {
     #listenForService(app: AppBase) {
         const serviceChangeListener = Symbol.for("WebComponent.serviceChangeListener");
         app.addEventListener("service-changed", this[serviceChangeListener] = (e: CustomEvent) => {
-            app.removeEventListener("service-changed", this[serviceChangeListener]);
-            this[serviceChangeListener] = null;
-
-            this.requestUpdate("service", app.service);
+            // No direct update to 'this.service', willUpdate handles computed 'service'
+            this.requestUpdate();
         });
     }
 
@@ -474,228 +381,7 @@ export abstract class WebComponentLit extends LitElement {
      */
     static register(config: WebComponentRegistrationInfo, tagName: string) {
         return function <T extends typeof WebComponentLit>(targetClass: T): T | void {
-            const litPropertiesForStaticGetter: Record<string, any> = {};
-            const computedConfigForDecorator: Record<string, ComputedPropertyConfig> = {};
-            const observersConfigForDecorator: StaticObserversConfig = {};
-            const propertyObserversConfigForDecorator: Record<string, string> = {};
-
-            // Helper function to walk inheritance chain and collect configurations
-            const collectFromInheritanceChain = <T>(symbolKey: symbol, merger?: (accumulated: T, current: T) => T): T => {
-                let currentCtor = targetClass;
-                let result = {} as T;
-                
-                while (currentCtor && currentCtor.prototype !== LitElement.prototype) {
-                    const config = (currentCtor as WebComponentConstructor)[symbolKey];
-                    if (config) {
-                        if (merger) {
-                            result = merger(result, config);
-                        } else {
-                            result = { ...config, ...result } as T; // Derived class takes precedence
-                        }
-                    }
-                    currentCtor = Object.getPrototypeOf(currentCtor.prototype)?.constructor;
-                }
-                
-                return result;
-            };
-
-            // First, extract computed properties from the entire inheritance chain
-            const extractComputedFromStaticProperties = (ctor: typeof WebComponentLit) => {
-                const computed: Record<string, ComputedPropertyConfig> = {};
-                const propertyObservers: Record<string, string> = {};
-                
-                // Walk up the prototype chain to collect all static properties
-                let currentCtor = ctor;
-                const allProperties: Record<string, any> = {};
-                
-                while (currentCtor && currentCtor.prototype !== LitElement.prototype) {
-                    const propsDescriptor = Object.getOwnPropertyDescriptor(currentCtor, 'properties');
-                    let currentProps: Record<string, any> = {};
-                    
-                    if (propsDescriptor?.get) {
-                        currentProps = propsDescriptor.get.call(currentCtor) || {};
-                    } else if (propsDescriptor?.value) {
-                        currentProps = propsDescriptor.value || {};
-                    }
-                    
-                    // Merge properties (derived class properties take precedence)
-                    Object.assign(allProperties, currentProps, allProperties);
-                    
-                    currentCtor = Object.getPrototypeOf(currentCtor.prototype)?.constructor;
-                }
-                
-                // Process all collected properties for computed and observers
-                for (const propName in allProperties) {
-                    const propConfig = allProperties[propName];
-                    
-                    if (propConfig.computed) {
-                        const parsed = parseMethodSignature(propConfig.computed);
-                        if (parsed) {
-                            const { methodName, args } = parsed;
-                            computed[propName] = { dependencies: args, methodName };
-                        } else {
-                            const path = propConfig.computed.trim();
-                            if (path) {
-                                computed[propName] = { dependencies: [path] };
-                            } else {
-                                console.warn(`[${tagName}] Could not parse computed string for "${propName}": ${propConfig.computed}`);
-                            }
-                        }
-                    }
-                    
-                    if (propConfig.observer) {
-                        propertyObservers[propName] = propConfig.observer;
-                    }
-                }
-                
-                return { computed, propertyObservers };
-            };
-
-            const inheritedComputedAndObservers = extractComputedFromStaticProperties(targetClass);
-            Object.assign(computedConfigForDecorator, inheritedComputedAndObservers.computed);
-            Object.assign(propertyObserversConfigForDecorator, inheritedComputedAndObservers.propertyObservers);
-
-            if (config.properties) {
-                for (const propName in config.properties) {
-                    const propConfig = config.properties[propName];
-                    const { computed, observer, ...litPropConfig } = propConfig;
-
-                    litPropertiesForStaticGetter[propName] = { ...litPropConfig };
-
-                    if (typeof computed === "string") {
-                        const parsed = parseMethodSignature(computed);
-                        if (parsed) {
-                            const { methodName, args } = parsed;
-                            computedConfigForDecorator[propName] = { dependencies: args, methodName };
-                        } else {
-                            const path = computed.trim();
-                            if (path) {
-                                computedConfigForDecorator[propName] = { dependencies: [path] };
-                            } else {
-                                console.warn(`[${tagName}] Could not parse computed string for "${propName}": ${computed}`);
-                            }
-                        }
-                    }
-                    if (observer) {
-                        propertyObserversConfigForDecorator[propName] = observer;
-                    }
-                }
-            }
-
-            // Handle Lit's static properties (remains string-keyed "properties")
-            const existingStaticPropertiesGetter = Object.getOwnPropertyDescriptor(targetClass, 'properties')?.get;
-            Object.defineProperty(targetClass, 'properties', {
-                get: () => {
-                    let superProps = {};
-                    if (existingStaticPropertiesGetter) { // If target already had a 'properties' getter
-                        superProps = existingStaticPropertiesGetter.call(targetClass) || {};
-                    } else { // Otherwise, look up the prototype chain
-                        const superClassConstructor = Object.getPrototypeOf(targetClass.prototype)?.constructor;
-                        if (superClassConstructor?.hasOwnProperty('properties')) {
-                            const superDescriptor = Object.getOwnPropertyDescriptor(superClassConstructor, 'properties');
-                            if (superDescriptor?.get) {
-                                superProps = superDescriptor.get.call(superClassConstructor) || {};
-                            } else if (superDescriptor?.value) {
-                                superProps = superDescriptor.value || {};
-                            }
-                        }
-                    }
-                    return { ...superProps, ...litPropertiesForStaticGetter };
-                },
-                enumerable: true,
-                configurable: true,
-            });
-
-            // Merge and assign 'computed' configuration
-            if (Object.keys(computedConfigForDecorator).length > 0) {
-                const inheritedComputed = collectFromInheritanceChain<StaticComputedConfig>(COMPUTED_CONFIG_SYMBOL);
-                (targetClass as WebComponentConstructor)[COMPUTED_CONFIG_SYMBOL] = {
-                    ...inheritedComputed,
-                    ...computedConfigForDecorator
-                };
-            }
-
-            // Parse and merge 'observers'
-            if (Array.isArray(config.observers)) {
-                config.observers.forEach((observerString: string) => {
-                    const parsed = parseMethodSignature(observerString);
-                    if (parsed) {
-                        const { methodName, args } = parsed;
-                        if (args.length > 0) {
-                            observersConfigForDecorator[methodName] = [...(observersConfigForDecorator[methodName] || []), ...args];
-                        } else {
-                            if (!observersConfigForDecorator[methodName])
-                                observersConfigForDecorator[methodName] = [];
-
-                            console.warn(`[${tagName}] Observer method "${methodName}" has no dependencies specified. It will not observe any changes.`, observerString);
-                        }
-                    } else if (observerString.includes('.') || !observerString.includes('(')) {
-                        const depPath = observerString.trim();
-                        if (depPath)
-                            observersConfigForDecorator[depPath] = [...(observersConfigForDecorator[depPath] || []), depPath];
-                    } else {
-                        console.warn(`[${tagName}] Could not parse observer string: "${observerString}". Expected format: "methodName(dependency1, dependency2,...)" or "dependencyPath"`);
-                    }
-                });
-
-                if (Object.keys(observersConfigForDecorator).length > 0) {
-                    // Collect observers from entire inheritance chain
-                    const inheritedObservers = collectFromInheritanceChain<StaticObserversConfig>(
-                        OBSERVERS_CONFIG_SYMBOL,
-                        (accumulated, current) => {
-                            const merged = { ...accumulated };
-                            for (const methodName in current) {
-                                const combinedDeps = new Set([...(merged[methodName] || []), ...(current[methodName] || [])]);
-                                merged[methodName] = Array.from(combinedDeps);
-                            }
-                            return merged;
-                        }
-                    );
-
-                    // Merge new from this decorator
-                    const finalObservers = { ...inheritedObservers };
-                    for (const methodName in observersConfigForDecorator) {
-                        const combinedDeps = new Set([...(finalObservers[methodName] || []), ...(observersConfigForDecorator[methodName] || [])]);
-                        finalObservers[methodName] = Array.from(combinedDeps);
-                    }
-                    (targetClass as WebComponentConstructor)[OBSERVERS_CONFIG_SYMBOL] = finalObservers;
-                }
-            }
-
-            // Merge and assign 'propertyObservers' configuration
-            if (Object.keys(propertyObserversConfigForDecorator).length > 0) {
-                const inheritedPropObs = collectFromInheritanceChain<StaticPropertyObserversConfig>(PROPERTY_OBSERVERS_CONFIG_SYMBOL);
-                (targetClass as WebComponentConstructor)[PROPERTY_OBSERVERS_CONFIG_SYMBOL] = {
-                    ...inheritedPropObs,
-                    ...propertyObserversConfigForDecorator
-                };
-            }
-
-            // Assign 'listeners' configuration
-            if (config.listeners && Object.keys(config.listeners).length > 0) {
-                const inheritedListeners = collectFromInheritanceChain<StaticListenersConfig>(LISTENERS_CONFIG_SYMBOL);
-                (targetClass as WebComponentConstructor)[LISTENERS_CONFIG_SYMBOL] = {
-                    ...inheritedListeners,
-                    ...config.listeners // Current config takes precedence
-                };
-            }
-
-            // Assign 'sensitive' configuration
-            if (config.hasOwnProperty('sensitive')) {
-                (targetClass as WebComponentConstructor)[SENSITIVE_CONFIG_SYMBOL] = config.sensitive;
-            }
-
-            if (tagName && typeof tagName === 'string') {
-                if (!customElements.get(tagName)) {
-                    customElements.define(tagName, targetClass as unknown as CustomElementConstructor);
-                } else {
-                    console.warn(`[${tagName}] Element "${tagName}" is already defined. Skipping registration.`);
-                }
-            } else if (tagName) {
-                 console.warn(`[${tagName}] tagName was invalid (not a string). Element not registered.`);
-            }
-
-            return targetClass;
+            return registerWebComponent(config, tagName, targetClass);
         };
     }
 }
