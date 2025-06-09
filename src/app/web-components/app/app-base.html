@@ -17,15 +17,15 @@
 </dom-if>
 <vi-app-config>
     <vi-persistent-object-attribute-config type="CommonMark" height="attr.getTypeHint('height', 3)"></vi-persistent-object-attribute-config>
-    <vi-persistent-object-attribute-config type="Reference" height="attr.selectInPlace && ['radio', 'chip'].indexOf(attr.getTypeHint('inputtype', '', undefined, true)) >= 0 ? 0 : 1"></vi-persistent-object-attribute-config>
-    <vi-persistent-object-attribute-config type="DropDown" height="['radio', 'chip'].indexOf(attr.getTypeHint('inputtype', '', undefined, true)) >= 0 ? 0 : 1"></vi-persistent-object-attribute-config>
-    <vi-persistent-object-attribute-config type="KeyValueList" height="['radio', 'chip'].indexOf(attr.getTypeHint('inputtype', '', undefined, true)) >= 0 ? 0 : 1"></vi-persistent-object-attribute-config>
-    <vi-persistent-object-attribute-config type="Enum" height="['radio', 'chip'].indexOf(attr.getTypeHint('inputtype', '', undefined, true)) >= 0 ? 0 : 1"></vi-persistent-object-attribute-config>
-    <vi-persistent-object-attribute-config type="MultiLineString" height="attr.getTypeHint('height', 3, undefined, true)"></vi-persistent-object-attribute-config>
-    <vi-persistent-object-attribute-config type="MultiString" height="attr.getTypeHint('height', 3, undefined, true)"></vi-persistent-object-attribute-config>
-    <vi-persistent-object-attribute-config type="Image" height="attr.getTypeHint('height', 2, undefined, true)"></vi-persistent-object-attribute-config>
-    <vi-persistent-object-attribute-config type="TranslatedString" height="attr.getTypeHint('MultiLine') == 'True' ? 3 : 1"></vi-persistent-object-attribute-config>
-    <vi-persistent-object-attribute-config type="AsDetail" height="attr.getTypeHint('height', 'auto', undefined, true) == 'auto' ? 0 : 6"></vi-persistent-object-attribute-config>
+    <vi-persistent-object-attribute-config type="Reference" height="attr.selectInPlace && ['radio', 'chip'].indexOf(attr.getTypeHint('inputtype', '')) >= 0 ? 0 : 1"></vi-persistent-object-attribute-config>
+    <vi-persistent-object-attribute-config type="DropDown" height="['radio', 'chip'].indexOf(attr.getTypeHint('inputtype', '')) >= 0 ? 0 : 1"></vi-persistent-object-attribute-config>
+    <vi-persistent-object-attribute-config type="KeyValueList" height="['radio', 'chip'].indexOf(attr.getTypeHint('inputtype', '')) >= 0 ? 0 : 1"></vi-persistent-object-attribute-config>
+    <vi-persistent-object-attribute-config type="Enum" height="['radio', 'chip'].indexOf(attr.getTypeHint('inputtype', '')) >= 0 ? 0 : 1"></vi-persistent-object-attribute-config>
+    <vi-persistent-object-attribute-config type="MultiLineString" height="attr.getTypeHint('height', 3)"></vi-persistent-object-attribute-config>
+    <vi-persistent-object-attribute-config type="MultiString" height="attr.getTypeHint('height', 3)"></vi-persistent-object-attribute-config>
+    <vi-persistent-object-attribute-config type="Image" height="attr.getTypeHint('height', 2)"></vi-persistent-object-attribute-config>
+    <vi-persistent-object-attribute-config type="TranslatedString" height="Boolean.parse(attr.getTypeHint('MultiLine')) ? 3 : 1"></vi-persistent-object-attribute-config>
+    <vi-persistent-object-attribute-config type="AsDetail" height="attr.getTypeHint('height', 'auto') == 'auto' ? 0 : 6"></vi-persistent-object-attribute-config>
     <vi-persistent-object-tab-config type="Vidyano.GlobalSearch" name="">
         <template is="dom-template">
             <style is="custom-style">
