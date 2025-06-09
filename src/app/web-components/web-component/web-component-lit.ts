@@ -4,7 +4,7 @@ import { Service } from "vidyano";
 import { WebComponentObserverController } from "./web-component-observer-controller";
 import { WebComponentListenerController } from "./web-component-listener-controller";
 import { WebComponentRegistrationInfo } from "./web-component-registration";
-import { registerWebComponent, getListenersConfig } from "./web-component-registration";
+import { registerWebComponent, getListenersConfig, getComputedConfig, getPropertyObserversConfig, getObserversConfig } from "./web-component-registration";
 
 const LISTENER_CONTROLLER_SYMBOL = Symbol("WebComponent.listenerController");
 const OBSERVER_CONTROLLER_SYMBOL = Symbol("WebComponent.observerController");
@@ -30,7 +30,11 @@ export abstract class WebComponentLit extends LitElement {
             this.addController(this[LISTENER_CONTROLLER_SYMBOL] = new WebComponentListenerController(this));
         }
 
-        this[OBSERVER_CONTROLLER_SYMBOL] = new WebComponentObserverController(this);
+        if (Object.keys(getComputedConfig(this)).length > 0 ||
+            Object.keys(getPropertyObserversConfig(this)).length > 0 ||
+            Object.keys(getObserversConfig(this)).length > 0) {
+            this[OBSERVER_CONTROLLER_SYMBOL] = new WebComponentObserverController(this);
+        }
     }
 
     override connectedCallback() {
@@ -81,7 +85,7 @@ export abstract class WebComponentLit extends LitElement {
     override willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
         // The ObserverController handles computed properties, observers, and side-effects,
         // returning the complete set of properties that have changed.
-        const totalChangedProps = this[OBSERVER_CONTROLLER_SYMBOL].onWillUpdate(changedProperties);
+        const totalChangedProps = this[OBSERVER_CONTROLLER_SYMBOL]?.onWillUpdate(changedProperties);
 
         // Finally, call super.willUpdate with the complete set of changes.
         super.willUpdate(totalChangedProps);
