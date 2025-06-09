@@ -1,34 +1,15 @@
 import { AppBase } from "components/app/app";
-import { html, LitElement, PropertyValueMap } from "lit";
+import { html, LitElement, PropertyValueMap, PropertyDeclaration } from "lit";
 import { Observable, ForwardObservedPropertyChangedArgs, ForwardObservedArrayChangedArgs, Service } from "vidyano";
 
 type ForwardObservedDetail = ForwardObservedPropertyChangedArgs | ForwardObservedArrayChangedArgs;
 
-export interface WebComponentProperty {
-    /**
-     * The type of the property.
-     * Can be one of the following constructors: Object, String, Boolean, Date, Number, Array.
-     * This is used by LitElement to determine how to handle the property.
-     */
-    type: ObjectConstructor | StringConstructor | BooleanConstructor | DateConstructor | NumberConstructor | ArrayConstructor;
-
-    /**
-     * Indicates if the property should be reflected to the HTML attribute.
-     * If true, changes to the property will update the corresponding attribute on the element.
-     */
-    reflectToAttribute?: boolean;
-
-    /**
-     * Indicates if the property is read-only.
-     * If true, the property cannot be set directly and is typically computed or derived.
-     */
-    readOnly?: boolean
-
+export interface WebComponentProperty<T = unknown> extends PropertyDeclaration<T> {
     /**
      *  Computed properties can be either:
      *  - A path string (e.g., "user.firstName") to observe property changes,
      *  - Or a function signature (e.g., "myObserver(user.firstName, user.lastName)") to call a method when dependencies change.
-     */;
+     */
     computed?: string;
 
     /**
@@ -606,33 +587,27 @@ export abstract class WebComponent extends LitElement {
 
             if (config.properties) {
                 for (const propName in config.properties) {
-                    const polyPropConfig = config.properties[propName];
-                    const litPropOptions: any = {
-                        type: polyPropConfig.type,
-                        reflect: !!polyPropConfig.reflectToAttribute,
-                    };
+                    const propConfig = config.properties[propName];
+                    const { computed, observer, ...litPropConfig } = propConfig;
 
-                    if (polyPropConfig.readOnly || polyPropConfig.computed) {
-                        litPropOptions.noAccessor = true;
-                    }
-                    litPropertiesForStaticGetter[propName] = litPropOptions;
+                    litPropertiesForStaticGetter[propName] = { ...litPropConfig };
 
-                    if (polyPropConfig.computed) {
-                        const parsed = parseMethodSignature(polyPropConfig.computed);
+                    if (typeof computed === "string") {
+                        const parsed = parseMethodSignature(computed);
                         if (parsed) {
                             const { methodName, args } = parsed;
                             computedConfigForDecorator[propName] = { dependencies: args, methodName };
                         } else {
-                            const path = polyPropConfig.computed.trim();
+                            const path = computed.trim();
                             if (path) {
                                 computedConfigForDecorator[propName] = { dependencies: [path] };
                             } else {
-                                console.warn(`[${tagName}] Could not parse computed string for "${propName}": ${polyPropConfig.computed}`);
+                                console.warn(`[${tagName}] Could not parse computed string for "${propName}": ${computed}`);
                             }
                         }
                     }
-                    if (polyPropConfig.observer) {
-                        propertyObserversConfigForDecorator[propName] = polyPropConfig.observer;
+                    if (observer) {
+                        propertyObserversConfigForDecorator[propName] = observer;
                     }
                 }
             }
