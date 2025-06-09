@@ -4,7 +4,7 @@ import { Service } from "vidyano";
 import { WebComponentObserverController } from "./web-component-observer-controller";
 import { WebComponentListenerController } from "./web-component-listener-controller";
 import { WebComponentRegistrationInfo } from "./web-component-registration";
-import { registerWebComponent } from "./web-component-registration";
+import { registerWebComponent, getListenersConfig } from "./web-component-registration";
 
 const LISTENER_CONTROLLER_SYMBOL = Symbol("WebComponent.listenerController");
 const OBSERVER_CONTROLLER_SYMBOL = Symbol("WebComponent.observerController");
@@ -25,7 +25,11 @@ export abstract class WebComponentLit extends LitElement {
     constructor() {
         super();
 
-        this[LISTENER_CONTROLLER_SYMBOL] = new WebComponentListenerController(this);
+        const listenerConfig = getListenersConfig(this);
+        if (Object.keys(listenerConfig).length > 0) {
+            this.addController(this[LISTENER_CONTROLLER_SYMBOL] = new WebComponentListenerController(this));
+        }
+
         this[OBSERVER_CONTROLLER_SYMBOL] = new WebComponentObserverController(this);
     }
 

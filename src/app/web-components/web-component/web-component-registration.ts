@@ -30,10 +30,10 @@ type ComputedPropertyConfig = {
     methodName?: string; // When undefined, the value is forwarded from the first dependency
 };
 
-type ComputedConfig = Record<string, ComputedPropertyConfig>;
-type ObserversConfig = Record<string, string[]>;
-type PropertyObserversConfig = Record<string, string>;
-type ListenersConfig = Record<string, string>;
+export type ComputedConfig = Record<string, ComputedPropertyConfig>;
+export type ObserversConfig = Record<string, string[]>;
+export type PropertyObserversConfig = Record<string, string>;
+export type ListenersConfig = Record<string, string>;
 
 type WebComponentConstructor = typeof WebComponentLit & {
     properties?: Record<string, WebComponentProperty>;

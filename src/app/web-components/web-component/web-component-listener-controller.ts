@@ -1,8 +1,6 @@
 import { ReactiveController } from "lit";
 import type { WebComponentLit } from "./web-component-lit";
-import { getListenersConfig } from "./web-component-registration";
-
-type StaticListenersConfig = Record<string, string>;
+import { getListenersConfig, ListenersConfig } from "./web-component-registration";
 
 /**
  * A Reactive Controller that manages adding and removing event listeners
@@ -10,7 +8,7 @@ type StaticListenersConfig = Record<string, string>;
  */
 export class WebComponentListenerController implements ReactiveController {
     private host: WebComponentLit;
-    private listeners: StaticListenersConfig;
+    private listeners: ListenersConfig;
 
     // We must store the bound handlers to ensure we can remove the exact same function reference.
     private boundHandlers: Map<string, EventListener> = new Map();
