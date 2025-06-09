@@ -161,10 +161,10 @@ export function registerWebComponent<T extends typeof WebComponentLit>(config: W
             }
         }
     }
-    (targetClass as WebComponentConstructor)[OBSERVERS_CONFIG_SYMBOL] = finalObserversConfig;
     
-    // Handle sensitive flag inheritance: parentClass always wins.
-    (targetClass as WebComponentConstructor)[SENSITIVE_CONFIG_SYMBOL] = inheritedSensitive !== undefined ? inheritedSensitive : config.sensitive;
+    (targetClass as WebComponentConstructor)[OBSERVERS_CONFIG_SYMBOL] = finalObserversConfig;
+
+    (targetClass as WebComponentConstructor)[SENSITIVE_CONFIG_SYMBOL] = config.sensitive !== undefined ? config.sensitive : inheritedSensitive;
 
     // Register the custom element.
     if (window.customElements.get(tagName)) {
