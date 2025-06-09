@@ -31,9 +31,11 @@ const terserMinify = terser({
     },
 });
 
+const isDevelopment = process.env.NODE_ENV !== 'production';
+
 const configs = [
     {
-        input: './src/app/index.js',
+        input: isDevelopment ? './tests/components/index.js' : './src/app/index.js',
         external: ['String', "__decorate"],
         plugins: [
             alias({ entries }),
@@ -94,7 +96,7 @@ const configs = [
 ];
 
 // Add TypeScript definitions generation for production build
-if (process.env.NODE_ENV === 'production' && process.env.GENERATE_DTS !== 'false') {
+if (!isDevelopment && process.env.GENERATE_DTS !== 'false') {
     configs.push(...[
         {
             input: './src/app/index.js',

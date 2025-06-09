@@ -365,3 +365,7 @@ test/**/*.d.ts
 test/**/*.js
 test/**/*.css
 test/**/*.css.map
+tests/**/*.js
+
+playwright-report/index.html
+test-results/

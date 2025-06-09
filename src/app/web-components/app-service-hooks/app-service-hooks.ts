@@ -1,6 +1,7 @@
 ﻿import * as Vidyano from "vidyano"
 import { guid } from "libs/utils/guid"
 import { Path } from "libs/pathjs/pathjs"
+import type { App } from "components/app/app"
 import { AppServiceHooksBase } from "./app-service-hooks-base"
 import { AppCacheEntryPersistentObject } from "components/app-cache/app-cache-entry-persistent-object"
 import { AppCacheEntryPersistentObjectFromAction } from "components/app-cache/app-cache-entry-persistent-object-from-action"
@@ -12,6 +13,10 @@ import type { ProgramUnitPresenter } from "components/program-unit-presenter/pro
 import type { QueryPresenter } from "components/query-presenter/query-presenter"
 
 export class AppServiceHooks extends AppServiceHooksBase {
+    get app(): App {
+        return <App>super.app;
+    }
+
     onSessionExpired(): Promise<boolean> {
         this.app.redirectToSignIn();
         return Promise.resolve(false);

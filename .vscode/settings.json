@@ -197,6 +197,7 @@
         "test/**/*.js": true,
         "test/**/*.css": true,
         "test/**/*.css.map": true,
+        "tests/**/*.js": true,
         "**/data": true
     },
     "liveSassCompile.settings.formats": [

@@ -25,12 +25,12 @@
       }
   },
   "exclude": [
-      "wwwroot/dist"
+      "wwwroot/dist",
   ],
   "include": [
       "src/core/**/*.ts",
       "src/app/**/*.ts",
-      //"test/**/*.ts",
+      "tests/components/**/*.ts",
   ],
   "watchOptions": {
     "watchFile": "dynamicprioritypolling"
