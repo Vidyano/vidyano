@@ -1,8 +1,9 @@
+@use "sass:color";
 @use "../_vars.scss" as *;
 
 $footerHeight: var(--theme-h1);
 $background-color: #2b3940;
-$border-color: mix(white, $background-color, 7.5%);
+$border-color: color.mix(white, $background-color, 7.5%);
 
 :host {
     display: block;

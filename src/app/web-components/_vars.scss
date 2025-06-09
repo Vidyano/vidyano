@@ -1,4 +1,5 @@
-@import "_colors.scss";
+@use "sass:color";
+@use "_colors.scss" as *;
 
 $notification-error: #a80511;
 $notification-warning: #e5a300;
@@ -19,7 +20,7 @@ $notification-ok: #339f7b;
 
     --theme-foreground: #333;
     --theme-light-border: #ddd;
-    --theme-dark-border: darken(#EAEAEA, 15%);
+    --theme-dark-border: color.adjust(#EAEAEA, $lightness: -15%);
     --theme-read-only: #f7f7f7;
 
     --theme-box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.5);
@@ -38,8 +39,8 @@ $notification-ok: #339f7b;
     }
 
     &[disabled] {
-        fill: fadeout(white, 50%);
-        color: fadeout(white, 50%);
+        fill: color.adjust(white, $alpha: -0.5);
+        color: color.adjust(white, $alpha: -0.5);
     }
 
     @include color-button-animations();
@@ -62,7 +63,7 @@ $notification-ok: #339f7b;
 
     &[disabled] {
         fill: var(--color-faint);
-        color: fadeout(black, 50%);
+        color: color.adjust(black, $alpha: -0.5);
     }
 
     @include color-button-animations();
@@ -77,12 +78,12 @@ $notification-ok: #339f7b;
     }
 
     &:active {
-        background-color: darken($color, 10%);
+        background-color: color.adjust($color, $lightness: -10%);
     }
 
     &[disabled] {
-        fill: fadeout(white, 50%);
-        color: fadeout(white, 50%);
+        fill: color.adjust(white, $alpha: -0.5);
+        color: color.adjust(white, $alpha: -0.5);
     }
 
     @include color-button-animations();

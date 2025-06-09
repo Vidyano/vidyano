@@ -1,3 +1,5 @@
+@use "sass:color";
+
 @mixin colorizer($bgColor, $fgColor, $bgHoverColor) {
     background-color: $bgColor;
     color: $fgColor;
@@ -9,9 +11,9 @@
     }
 
     &[disabled] {
-        background-color: fadeout($bgColor, 50%) !important;
-        fill: fadeout($fgColor, 50%) !important;
-        color: fadeout($fgColor, 50%) !important;
+        background-color: color.adjust($bgColor, $alpha: -0.5) !important;
+        fill: color.adjust($fgColor, $alpha: -0.5) !important;
+        color: color.adjust($fgColor, $alpha: -0.5) !important;
     }
 }
 
@@ -128,31 +130,31 @@
 
     &[type="light-monochrome"] {
         &:not([inverse]) {
-            @include colorizer(#f0f0f0, white, lighten(#f0f0f0, 10%));
+            @include colorizer(#f0f0f0, white, color.adjust(#f0f0f0, $lightness: 10%));
         }
 
         &[inverse] {
-            @include colorizer(transparent, #f0f0f0, fadeout(#f0f0f0, 90%));
+            @include colorizer(transparent, #f0f0f0, color.adjust(#f0f0f0, $alpha: -0.9));
         }
     }
 
     &[type="danger"] {
         &:not([inverse]) {
-            @include colorizer(#FF4136, white, lighten(#FF4136, 10%));
+            @include colorizer(#FF4136, white, color.adjust(#FF4136, $lightness: 10%));
         }
 
         &[inverse] {
-            @include colorizer(transparent, #FF4136, fadeout(#FF4136, 90%));
+            @include colorizer(transparent, #FF4136, color.adjust(#FF4136, $alpha: -0.9));
         }
     }
 
     &[type="safe"] {
         &:not([inverse]) {
-            @include colorizer(#3D9970, white, lighten(#3D9970, 10%));
+            @include colorizer(#3D9970, white, color.adjust(#3D9970, $lightness: 10%));
         }
 
         &[inverse] {
-            @include colorizer(transparent, #3D9970, fadeout(#3D9970, 90%));
+            @include colorizer(transparent, #3D9970, color.adjust(#3D9970, $alpha: -0.9));
         }
     }
 
@@ -185,31 +187,31 @@ vi-popup[open] > [toggle] vi-button[slot="header"] {
 
     &[type="light-monochrome"] {
         &:not([inverse]) {
-            background-color: lighten(#f0f0f0, 10%);
+            background-color: color.adjust(#f0f0f0, $lightness: 10%);
         }
 
         &[inverse] {
-            background-color: fadeout(#f0f0f0, 90%);
+            background-color: color.adjust(#f0f0f0, $alpha: -0.9);
         }
     }
 
     &[type="danger"] {
         &:not([inverse]) {
-            background-color: lighten(#FF4136, 10%);
+            background-color: color.adjust(#FF4136, $lightness: 10%);
         }
 
         &[inverse] {
-            background-color: fadeout(#FF4136, 90%);
+            background-color: color.adjust(#FF4136, $alpha: -0.9);
         }
     }
 
     &[type="safe"] {
         &:not([inverse]) {
-            background-color: lighten(#3D9970, 10%);
+            background-color: color.adjust(#3D9970, $lightness: 10%);
         }
 
         &[inverse] {
-            background-color: fadeout(#3D9970, 90%);
+            background-color: color.adjust(#3D9970, $alpha: -0.9);
         }
     }
 }
