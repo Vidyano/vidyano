@@ -49,7 +49,7 @@ export interface WebComponentRegistrationInfo {
      * Each string can be a method signature (e.g., "myObserver(user.firstName, user.lastName)") or a simple path (e.g., "user.firstName").
      * In case of a simple path, the requestUpdate will be called with the path as the first argument.
      */
-    forwardObservers?: string[];
+    observers?: string[];
 
     /**
      * A map of event names to handler method names.
@@ -197,19 +197,12 @@ export abstract class WebComponent extends LitElement {
             }
         }
 
-        this.#updateComputedProperties(changedProperties);
-        this.#dirtyForwardedPaths.clear();
-    }
-
-    override updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-        super.updated(changedProperties);
-
         const propertyObservers = this.#staticPropertyObserversConfig;
         const computedConfig = this.#staticComputedConfig;
 
         if (propertyObservers) {
             for (const [prop, observerName] of Object.entries(propertyObservers)) {
-                // If this property is a computed property, its observer was already handled in willUpdate.
+                // If this property is a computed property, its observer is handled inside #updateComputedProperties.
                 if (computedConfig?.hasOwnProperty(prop))
                     continue;
 
@@ -228,6 +221,50 @@ export abstract class WebComponent extends LitElement {
                 }
             }
         }
+
+        const changedComputedProps = this.#updateComputedProperties(changedProperties);
+
+        const observersConfig = this.#staticObserversConfig;
+        if (observersConfig) {
+            // Use a Set to ensure we don't call the same observer multiple times in one update cycle.
+            const observersToCall = new Set<string>();
+
+            for (const [observerIdentifier, dependencies] of Object.entries(observersConfig)) {
+                // We only handle method-style observers here.
+                // Simple paths (e.g., "someObject.someProp") are not functions and only serve to trigger updates via the forwarder.
+                if (typeof this[observerIdentifier] !== "function")
+                    continue;
+
+                // Check if any of this observer's dependencies have changed.
+                const hasChangedDep = dependencies.some(dep => {
+                    const rootDep = dep.split('.')[0];
+                    return (
+                        changedProperties.has(dep as PropertyKey) || // The dependency itself is present in `changedProperties` (e.g., a direct property change).
+                        changedProperties.has(rootDep as PropertyKey) || // The root property of a nested dependency path is present in `changedProperties` (e.g., the entire object was replaced).
+                        this.#dirtyForwardedPaths.has(dep) || // The dependency is present in `#dirtyForwardedPaths`, indicating a deep path was notified by a forwarder.
+                        changedComputedProps.has(dep) // The dependency is present in `changedComputedProps`, indicating a computed property has changed.
+                    );
+                });
+
+                if (hasChangedDep) {
+                    observersToCall.add(observerIdentifier);
+                }
+            }
+
+            // Now, call the unique observers that need to be fired.
+            for (const observerIdentifier of observersToCall) {
+                const dependencies = observersConfig[observerIdentifier];
+                const args = dependencies.map(d => this.#resolvePath(d));
+                this[observerIdentifier](...args);
+            }
+        }
+    }
+
+    override updated(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
+        super.updated(changedProperties);
+
+        // Clear the dirty paths at the end of the update cycle.
+        this.#dirtyForwardedPaths.clear();
     }
 
     get #staticObserversConfig(): StaticObserversConfig {
@@ -292,26 +329,30 @@ export abstract class WebComponent extends LitElement {
             const relativePathInSource = pathParts.slice(1).join('.');
             const sourceObject = this[rootPropertyKey];
 
-            if (sourceObject instanceof Observable || Array.isArray(sourceObject)) {
-                try {
-                    const disposer = Observable.forward(sourceObject, relativePathInSource, (detail: ForwardObservedDetail) => {
-                        const observerIdentifiers = pathsToObserversMap.get(depPath);
-                        if (observerIdentifiers) {
-                            for (const observerIdentifier of observerIdentifiers) {
-                                if (typeof this[observerIdentifier] === "function") {
+            try {
+                const disposer = Observable.forward(sourceObject, relativePathInSource, (detail: ForwardObservedDetail) => {
+                    const observerIdentifiers = pathsToObserversMap.get(depPath);
+                    if (observerIdentifiers) {
+                        for (const observerIdentifier of observerIdentifiers) {
+                            if (typeof this[observerIdentifier] === "function") {
+                                const deps = staticObserversConfig[observerIdentifier];
+                                if (deps?.length) {
+                                    const args = deps.map(d => this.#resolvePath(d));
+                                    this[observerIdentifier](...args);
+                                } else {
                                     this[observerIdentifier](detail);
-                                } else if (!observerIdentifier.includes('.')) {
-                                    console.warn(`[${this.tagName.toLowerCase()}] Observer method '${observerIdentifier}' not found for path '${depPath}'.`);
                                 }
+                            } else if (!observerIdentifier.includes('.')) {
+                                console.warn(`[${this.tagName.toLowerCase()}] Observer method '${observerIdentifier}' not found for path '${depPath}'.`);
                             }
                         }
-                        this.#dirtyForwardedPaths.add(depPath);
-                        this.requestUpdate();
-                    }, true);
-                    this.#forwarderDisposers.set(depPath, disposer);
-                } catch (error) {
-                    console.warn(`[${this.tagName.toLowerCase()}] Error setting up forwarder for '${depPath}' on source:`, sourceObject, error);
-                }
+                    }
+                    this.#dirtyForwardedPaths.add(depPath);
+                    this.requestUpdate();
+                }, true);
+                this.#forwarderDisposers.set(depPath, disposer);
+            } catch (error) {
+                console.warn(`[${this.tagName.toLowerCase()}] Error setting up forwarder for '${depPath}' on source:`, sourceObject, error);
             }
         }
     }
@@ -321,12 +362,13 @@ export abstract class WebComponent extends LitElement {
      * @param changedProperties Optionally, only update properties whose dependencies have changed.
      *                         If omitted, all computed properties are updated (e.g., during initial connect).
      */
-    #updateComputedProperties(changedProperties?: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
+    #updateComputedProperties(changedProperties?: PropertyValueMap<any> | Map<PropertyKey, unknown>): Set<string> {
         const computedConfig = this.#staticComputedConfig;
         const propertyObservers = this.#staticPropertyObserversConfig;
+        const changedComputedProps = new Set<string>();
 
         if (!computedConfig)
-            return;
+            return changedComputedProps;
 
         for (const [prop, { dependencies, methodName }] of Object.entries(computedConfig)) {
             let shouldUpdate = false;
@@ -358,6 +400,7 @@ export abstract class WebComponent extends LitElement {
 
                 if (oldVal !== computedValue) {
                     this[prop] = computedValue;
+                    changedComputedProps.add(prop);
                     this.requestUpdate(prop as PropertyKey, oldVal);
 
                     // If this computed property has an observer, call it.
@@ -372,6 +415,8 @@ export abstract class WebComponent extends LitElement {
                 }
             }
         }
+
+        return changedComputedProps;
     }
 
     /**
@@ -395,7 +440,7 @@ export abstract class WebComponent extends LitElement {
 
     /**
      * Resolves a dot-separated path string to a value starting from this instance.
-     * @param path Dot-separated property path (e.g., "test.firstName").
+     * @param path Dot-separated property path (e.g., "someObject.someProp").
      * @returns The resolved value or undefined.
      */
     #resolvePath(path: string): any {
@@ -620,9 +665,9 @@ export abstract class WebComponent extends LitElement {
                 };
             }
 
-            // Parse and merge 'forwardObservers'
-            if (Array.isArray(config.forwardObservers)) {
-                config.forwardObservers.forEach((observerString: string) => {
+            // Parse and merge 'observers'
+            if (Array.isArray(config.observers)) {
+                config.observers.forEach((observerString: string) => {
                     const parsed = parseMethodSignature(observerString);
                     if (parsed) {
                         const { methodName, args } = parsed;
@@ -784,9 +829,10 @@ class TestObject extends Observable<TestObject> {
             observer: "_testChanged",
         }
     },
-    forwardObservers: [
+    observers: [
         "test.firstName",
         "test.items.*.index",
+        "_fullNameOrTestChanged(fullName, test)",
     ],
     listeners: {
         "click": "_handleClick",
@@ -815,7 +861,7 @@ class Test extends WebComponent {
     }
 
     protected override render() {
-        console.log("Test component rendering. FullName:", this.fullName, "Item Index:", this.test.items?.[0]?.index);
+        console.error("Test component rendering. FullName:", this.fullName, "Item Index:", this.test.items?.[0]?.index);
         return html`<h1>Item Index: ${this.test.items?.[0]?.index}, FullName: ${this.fullName}!</h1>`;
     }
 
@@ -832,17 +878,16 @@ class Test extends WebComponent {
         console.log(`Full name changed from "${oldValue}" to "${newValue}"`);
     }
 
+    private _fullNameOrTestChanged(fullName: string, test: TestObject): void {
+        console.warn(`Full name or test changed. FullName: "${fullName}", Test: "${test?.firstName} ${test?.lastName}"`);
+    }
+
     private _testChanged(newValue: TestObject, oldValue: TestObject | undefined): void {
         const oldFullName = oldValue ? `${oldValue.firstName} ${oldValue.lastName}` : "undefined";
         console.log(`Test object changed from "${oldFullName}" to "${newValue.firstName} ${newValue.lastName}"`);
     }
 
     private _handleClick(event: MouseEvent): void {
-        if (this.test.items[0]) {
-            this.test.items[0].index = ++this.n;
-            if (this.n % 2 === 0) {
-                this.test.firstName = `Even ${this.n}`;
-            }
-        }
+        this.test = new TestObject(`${++this.n}`, this.test.lastName);
     }
 }
