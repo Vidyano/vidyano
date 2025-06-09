@@ -9,6 +9,9 @@ import { registerWebComponent } from "./web-component-registration";
 const LISTENER_CONTROLLER_SYMBOL = Symbol("WebComponent.listenerController");
 const OBSERVER_CONTROLLER_SYMBOL = Symbol("WebComponent.observerController");
 
+const APP_CHANGE_LISTENER_SYMBOL = Symbol("WebComponent.appChangeListener");
+const SERVICE_CHANGE_LISTENER_SYMBOL = Symbol("WebComponent.serviceChangeListener");
+
 /**
  * Base class for all lit-based web components in a Vidyano application.
  */
@@ -27,8 +30,9 @@ export abstract class WebComponentLit extends LitElement {
     }
 
     override connectedCallback() {
-        if (!this.app)
+        if (!this.app) {
             this.#listenForApp();
+        }
         else if (!this.app.service)
             this.#listenForService(this.app);
 
@@ -38,16 +42,14 @@ export abstract class WebComponentLit extends LitElement {
     override disconnectedCallback() {
         super.disconnectedCallback();
 
-        const appChangeListener = Symbol.for("WebComponent.appChangeListener");
-        if (this[appChangeListener]) {
-            window.removeEventListener("app-changed", this[appChangeListener]);
-            this[appChangeListener] = null;
+        if (this[APP_CHANGE_LISTENER_SYMBOL]) {
+            window.removeEventListener("app-changed", this[APP_CHANGE_LISTENER_SYMBOL]);
+            this[APP_CHANGE_LISTENER_SYMBOL] = null;
         }
 
-        const serviceChangeListener = Symbol.for("WebComponent.serviceChangeListener");
-        if (this[serviceChangeListener]) {
-            this.app.removeEventListener("service-changed", this[serviceChangeListener]);
-            this[serviceChangeListener] = null;
+        if (this[SERVICE_CHANGE_LISTENER_SYMBOL]) {
+            this.app.removeEventListener("service-changed", this[SERVICE_CHANGE_LISTENER_SYMBOL]);
+            this[SERVICE_CHANGE_LISTENER_SYMBOL] = null;
         }
     }
 
@@ -85,10 +87,9 @@ export abstract class WebComponentLit extends LitElement {
      * Listens for the global "app-changed" event and updates the app property.
      */
     #listenForApp() {
-        const appChangeListener = Symbol.for("WebComponent.appChangeListener");
-        window.addEventListener("app-changed", this[appChangeListener] = (e: CustomEvent) => {
-            window.removeEventListener("app-changed", this[appChangeListener]);
-            this[appChangeListener] = null;
+        window.addEventListener("app-changed", this[APP_CHANGE_LISTENER_SYMBOL] = (e: CustomEvent) => {
+            window.removeEventListener("app-changed", this[APP_CHANGE_LISTENER_SYMBOL]);
+            this[APP_CHANGE_LISTENER_SYMBOL] = null;
 
             this.requestUpdate("app", window.app);
 
@@ -102,10 +103,11 @@ export abstract class WebComponentLit extends LitElement {
      * @param app The AppBase instance to listen on.
      */
     #listenForService(app: AppBase) {
-        const serviceChangeListener = Symbol.for("WebComponent.serviceChangeListener");
-        app.addEventListener("service-changed", this[serviceChangeListener] = (e: CustomEvent) => {
-            // No direct update to 'this.service', willUpdate handles computed 'service'
-            this.requestUpdate();
+        app.addEventListener("service-changed", this[SERVICE_CHANGE_LISTENER_SYMBOL] = (e: CustomEvent) => {
+            app.removeEventListener("service-changed", this[SERVICE_CHANGE_LISTENER_SYMBOL]);
+            this[SERVICE_CHANGE_LISTENER_SYMBOL] = null;
+
+            this.requestUpdate("service", app.service);
         });
     }
 
