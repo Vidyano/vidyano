@@ -31,11 +31,8 @@ type ComputedPropertyConfig = {
 };
 
 type ComputedConfig = Record<string, ComputedPropertyConfig>;
-
 type ObserversConfig = Record<string, string[]>;
-
 type PropertyObserversConfig = Record<string, string>;
-
 type ListenersConfig = Record<string, string>;
 
 type WebComponentConstructor = typeof WebComponentLit & {
@@ -112,72 +109,69 @@ export function getSensitiveConfig(component: WebComponentLit): boolean {
  * @returns The web component class or void.
  */
 export function registerWebComponent<T extends typeof WebComponentLit>(config: WebComponentRegistrationInfo, tagName: string, targetClass: T): T | void {
-    if (config.properties) {
-        const computedConfig: ComputedConfig = {};
-        const propertyObserversConfig: PropertyObserversConfig = {};
+    const parentClass = Object.getPrototypeOf(targetClass) as WebComponentConstructor;
 
+    const inheritedComputedConfig = parentClass[COMPUTED_CONFIG_SYMBOL] || {};
+    const inheritedPropertyObserversConfig = parentClass[PROPERTY_OBSERVERS_CONFIG_SYMBOL] || {};
+    const inheritedObserversConfig = parentClass[OBSERVERS_CONFIG_SYMBOL] || {};
+    const inheritedListenersConfig = parentClass[LISTENERS_CONFIG_SYMBOL] || {};
+    const inheritedSensitive = parentClass[SENSITIVE_CONFIG_SYMBOL];
+
+    // Process the new configuration for the current class.
+    const newComputedConfig: ComputedConfig = {};
+    const newPropertyObserversConfig: PropertyObserversConfig = {};
+
+    if (config.properties) {
         for (const [name, propConfig] of Object.entries(config.properties)) {
             if (propConfig.computed) {
                 const parsed = parseMethodSignature(propConfig.computed);
-                if (parsed) {
-                    computedConfig[name] = {
-                        dependencies: parsed.args,
-                        methodName: parsed.methodName
-                    };
-                } else {
-                    // Simple path forwarding
-                    computedConfig[name] = {
-                        dependencies: [propConfig.computed]
-                    };
-                }
+                newComputedConfig[name] = parsed ? { dependencies: parsed.args, methodName: parsed.methodName } : { dependencies: [propConfig.computed] };
             }
-
             if (propConfig.observer) {
-                propertyObserversConfig[name] = propConfig.observer;
+                newPropertyObserversConfig[name] = propConfig.observer;
             }
         }
+    }
 
-        if (Object.keys(computedConfig).length > 0)
-            (targetClass as WebComponentConstructor)[COMPUTED_CONFIG_SYMBOL] = computedConfig;
+    // Merge new configs with inherited configs. Child-specific config wins.
+    (targetClass as WebComponentConstructor)[COMPUTED_CONFIG_SYMBOL] = { ...inheritedComputedConfig, ...newComputedConfig };
+    (targetClass as WebComponentConstructor)[PROPERTY_OBSERVERS_CONFIG_SYMBOL] = { ...inheritedPropertyObserversConfig, ...newPropertyObserversConfig };
+    (targetClass as WebComponentConstructor)[LISTENERS_CONFIG_SYMBOL] = { ...inheritedListenersConfig, ...(config.listeners || {}) };
 
-        if (Object.keys(propertyObserversConfig).length > 0)
-            (targetClass as WebComponentConstructor)[PROPERTY_OBSERVERS_CONFIG_SYMBOL] = propertyObserversConfig;
-
-        // Merge with existing static properties, Lit @property decorator defines this
+    // Merge new properties with inherited ones, overriding as necessary.
+    const { properties: newProperties, ...restConfig } = config;
+    if (newProperties) {
         targetClass.properties = {
             ...targetClass.properties,
-            ...config.properties
+            ...newProperties
         };
     }
-
+    
+    // Merge observers to combine dependencies.
+    const finalObserversConfig: ObserversConfig = { ...inheritedObserversConfig };
     if (config.observers) {
-        const observersConfig: ObserversConfig = {};
         for (const observer of config.observers) {
             const parsed = parseMethodSignature(observer);
-            if (parsed)
-                observersConfig[parsed.methodName] = parsed.args;
-            else
-                console.warn(`Invalid observer signature: ${observer}. It should be like "methodName(dep1, dep2)".`);
+            if (parsed) {
+                const existingDeps = finalObserversConfig[parsed.methodName] || [];
+                const combinedDeps = new Set([...existingDeps, ...parsed.args]);
+                finalObserversConfig[parsed.methodName] = Array.from(combinedDeps);
+            } else {
+                console.warn(`[${tagName}] Invalid observer signature: ${observer}. Must be "methodName(dep1, dep2)".`);
+            }
         }
-
-        if (Object.keys(observersConfig).length > 0)
-            (targetClass as WebComponentConstructor)[OBSERVERS_CONFIG_SYMBOL] = observersConfig;
     }
+    (targetClass as WebComponentConstructor)[OBSERVERS_CONFIG_SYMBOL] = finalObserversConfig;
+    
+    // Handle sensitive flag inheritance: parentClass always wins.
+    (targetClass as WebComponentConstructor)[SENSITIVE_CONFIG_SYMBOL] = inheritedSensitive !== undefined ? inheritedSensitive : config.sensitive;
 
-    if (config.listeners)
-        (targetClass as WebComponentConstructor)[LISTENERS_CONFIG_SYMBOL] = config.listeners;
-
-    if (config.sensitive !== undefined)
-        (targetClass as WebComponentConstructor)[SENSITIVE_CONFIG_SYMBOL] = config.sensitive;
-
-    // Lit's customElement decorator will define the custom element
-    // This is typically done by @customElement(tagName) on the class
-    // Ensure this function is called in a context where that decorator can work,
-    // or call customElements.define(tagName, targetClass) directly if needed.
-    if (window.customElements.get(tagName))
+    // Register the custom element.
+    if (window.customElements.get(tagName)) {
         console.warn(`Custom element ${tagName} is already defined.`);
-    else
+    } else {
         window.customElements.define(tagName, targetClass as unknown as CustomElementConstructor);
+    }
 
     return targetClass;
 }
