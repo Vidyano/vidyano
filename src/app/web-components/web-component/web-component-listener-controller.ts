@@ -8,7 +8,7 @@ type StaticListenersConfig = Record<string, string>;
  * A Reactive Controller that manages adding and removing event listeners
  * based on a declarative configuration.
  */
-export class ListenerController implements ReactiveController {
+export class WebComponentListenerController implements ReactiveController {
     private host: WebComponentLit;
     private listeners: StaticListenersConfig;
 
