@@ -1,6 +1,7 @@
 import { AppBase } from "components/app/app";
-import { html, LitElement, PropertyValueMap, PropertyDeclaration } from "lit";
+import { LitElement, PropertyValueMap, PropertyDeclaration } from "lit";
 import { Observable, ForwardObservedPropertyChangedArgs, ForwardObservedArrayChangedArgs, Service } from "vidyano";
+import { ListenerController } from "./listener-controller";
 
 type ForwardObservedDetail = ForwardObservedPropertyChangedArgs | ForwardObservedArrayChangedArgs;
 
@@ -60,6 +61,8 @@ const PROPERTY_OBSERVERS_CONFIG_SYMBOL = Symbol.for("WebComponent.propertyObserv
 const SENSITIVE_CONFIG_SYMBOL = Symbol.for("WebComponent.sensitiveConfig");
 const LISTENERS_CONFIG_SYMBOL = Symbol.for("WebComponent.listenersConfig");
 
+const LISTENER_CONTROLLER_SYMBOL = Symbol("WebComponent.listenerController");
+
 /**
  * Parses a method signature string of the form "methodName(arg1, arg2, ...)".
  * Returns an object with the method name and an array of argument names.
@@ -101,6 +104,12 @@ export abstract class WebComponentLit extends LitElement {
 
     #dirtyForwardedPaths: Set<string> = new Set();
 
+    constructor() {
+        super();
+
+        this[LISTENER_CONTROLLER_SYMBOL] = new ListenerController(this, (this.constructor as WebComponentConstructor)[LISTENERS_CONFIG_SYMBOL] || {});
+    }
+
     override connectedCallback() {
         if (!this.app)
             this.#listenForApp();
@@ -111,14 +120,12 @@ export abstract class WebComponentLit extends LitElement {
 
         this.#setupForwardersForRoots();
         this.#updateComputedProperties();
-        this.#registerConfiguredListeners();
     }
 
     override disconnectedCallback() {
         super.disconnectedCallback();
 
         this.#disposeForwarders();
-        this.#unregisterConfiguredListeners();
 
         const appChangeListener = Symbol.for("WebComponent.appChangeListener");
         if (this[appChangeListener]) {
@@ -305,10 +312,6 @@ export abstract class WebComponentLit extends LitElement {
         return (this.constructor as WebComponentConstructor)[PROPERTY_OBSERVERS_CONFIG_SYMBOL] || {};
     }
 
-    get #staticListenersConfig(): StaticListenersConfig {
-        return (this.constructor as WebComponentConstructor)[LISTENERS_CONFIG_SYMBOL] || {};
-    }
-
     /**
      * Sets up forwarders for the specified root properties, or all if none specified.
      * @param rootsToRebind Optional set of root property names to rebind forwarders for.
@@ -461,39 +464,6 @@ export abstract class WebComponentLit extends LitElement {
 
             this.requestUpdate("service", app.service);
         });
-    }
-
-    /**
-     * Registers event listeners defined in the static listeners config.
-     */
-    #registerConfiguredListeners() {
-        const listeners = this.#staticListenersConfig;
-        if (!listeners)
-            return;
-
-        for (const eventName in listeners) {
-            const handlerName = listeners[eventName];
-            if (typeof this[handlerName] === "function") {
-                this.addEventListener(eventName, this[handlerName]);
-            } else {
-                console.warn(`[${this.tagName.toLowerCase()}] Listener method '${handlerName}' for event '${eventName}' not found.`);
-            }
-        }
-    }
-
-    /**
-     * Unregisters event listeners defined in the static listeners config.
-     */
-    #unregisterConfiguredListeners() {
-        const listeners = this.#staticListenersConfig;
-        if (!listeners)
-            return;
-
-        for (const eventName in listeners) {
-            const handlerName = listeners[eventName];
-            if (typeof this[handlerName] === "function")
-                this.removeEventListener(eventName, this[handlerName]);
-        }
     }
 
     /**
@@ -729,4 +699,3 @@ export abstract class WebComponentLit extends LitElement {
         };
     }
 }
-
