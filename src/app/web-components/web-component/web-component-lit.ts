@@ -85,7 +85,7 @@ export abstract class WebComponentLit extends LitElement {
     override willUpdate(changedProperties: PropertyValueMap<any>) {
         // The ObserverController handles computed properties, observers, and side-effects,
         // returning the complete set of properties that have changed.
-        const totalChangedProps = this[OBSERVER_CONTROLLER_SYMBOL]?.onWillUpdate(changedProperties);
+        const totalChangedProps = this[OBSERVER_CONTROLLER_SYMBOL]?.onWillUpdate(changedProperties) ?? changedProperties;
 
         // Finally, call super.willUpdate with the complete set of changes.
         super.willUpdate(totalChangedProps);
