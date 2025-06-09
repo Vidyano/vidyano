@@ -25,6 +25,7 @@
     "@rollup/plugin-replace": "^5.0.2",
     "@rollup/plugin-terser": "^0.4.4",
     "@types/dompurify": "^3.0.3",
+    "@types/node": "^22.15.30",
     "@types/qunit": "2.19.6",
     "@vitest/coverage-v8": "^3.1.4",
     "bignumber.js": "^9.3.0",
