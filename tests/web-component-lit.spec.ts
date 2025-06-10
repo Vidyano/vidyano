@@ -1,7 +1,7 @@
 import { test, expect, Page, Locator } from '@playwright/test';
 
 async function setupComponentTest(page: Page, componentTag: string) {
-    await page.addScriptTag({ path: "/workspaces/VidyanoWeb3/dev/wwwroot/index.js", type: 'module' });
+    await page.addScriptTag({ path: "dev/wwwroot/index.js", type: 'module' });
 
     await page.setContent(`
     <!DOCTYPE html>
