@@ -26,6 +26,8 @@ export class WebComponentObserverController implements ReactiveController {
 
     #forwarderDisposers: Map<string, () => void> = new Map();
     #dirtyForwardedPaths: Set<string> = new Set();
+    #pendingComputedTokens: Map<string, number> = new Map();
+    #tokenCounter = 0;
 
     constructor(host: WebComponentLit) {
         this.#host = host;
@@ -482,8 +484,26 @@ export class WebComponentObserverController implements ReactiveController {
             if (shouldUpdate) {
                 const oldValue = this.#host[prop];
                 const newValue = this.#computePropertyValue(dependencies, methodName);
-                
-                if (oldValue !== newValue) {
+
+                if (newValue instanceof Promise) {
+                    const token = ++this.#tokenCounter;
+                    this.#pendingComputedTokens.set(prop, token);
+                    newValue.then(resolved => {
+                        if (this.#pendingComputedTokens.get(prop) !== token)
+                            return;
+
+                        this.#pendingComputedTokens.delete(prop);
+
+                        const currentValue = this.#host[prop];
+                        if (currentValue !== resolved) {
+                            this.#host[prop] = resolved;
+                            this.#host.requestUpdate(prop, currentValue);
+                        }
+                    }).catch(e => {
+                        console.error(`[${this.#host.tagName.toLowerCase()}] Error computing '${String(prop)}':`, e);
+                    });
+                }
+                else if (oldValue !== newValue) {
                     this.#host[prop] = newValue;
                     changedComputedProps.set(prop, oldValue);
                 }
