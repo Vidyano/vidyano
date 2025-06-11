@@ -16,10 +16,19 @@
                 height: 100vh;
                 overflow: hidden;
             }
+
+            vi-query-grid-gallery::part(grid) {
+                background: red;
+            }
         </style>
     </head>
     <body>
         <vi-app label="Vidyano">
+            <vi-query-config query="[[photos]]">
+                <template>
+                    <vi-query-grid-gallery query="[[query]]" max-image-size="200"></vi-query-grid-gallery>
+                </template>
+            </vi-query-config>
             <vi-session-presenter slot="menu-footer">
                 <template>
                     <vi-persistent-object-attribute-presenter no-label attribute="[[session.attributes.Reference]]"></vi-persistent-object-attribute-presenter>
