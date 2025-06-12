@@ -41,18 +41,36 @@ type GalleryRowItem = {
 };
 
 /**
+ * Represents an individual image item in the gallery.
+ */
+export type ImageItemMap = {
+    date: string;
+    image: string;
+    thumbnail: string;
+    label?: string;
+};
+
+/**
  * A web component that displays a gallery of photos grouped by day and month,
  * with responsive layout and lazy image loading.
  */
 @WebComponentLit.register({
     properties: {
-        items: {
-            type: Array
+        query: {
+            type: Object
         },
         size: {
             type: Number,
             reflect: true,
             attribute: "size"
+        },
+        map: {
+            type: Object,
+            computed: "_computeMap(_map)"
+        },
+        _map: {
+            type: String,
+            attribute: "map"
         },
         _rows: {
             state: true
@@ -197,8 +215,6 @@ export class QueryGridGallery extends WebComponentLit {
             display: block;
         }
     `];
-
-    size = 175; // Preferred size (in pixels) for gallery images.
     
     private _visibleRowIndexes: Set<number> = new Set();    
     private _viewerActive = false;
@@ -214,34 +230,39 @@ export class QueryGridGallery extends WebComponentLit {
     private _selectionMode = false;
     private _lastSelectedIndex: number | null = null;
 
+    map: ImageItemMap;
+    query: Vidyano.Query;
+    size = 175; // Preferred size (in pixels) for gallery images.
+
     /**
-     * The list of photo items to display in the gallery.
-     * For demo purposes, this is auto-generated with random dates and ids.
+     * Computes the mapping of item properties based on the provided map string.
+     * @param map The JSON string representing the mapping of item properties.
+     * @returns An object mapping item properties to their respective keys.
      */
-    items = (() => {
-        // Generate 200+ items over 4 months, 1-15 per day
-        const items = [];
-        const startDate = new Date("2025-03-01T08:00:00Z");
-        let id = 1;
-        for (let d = 0; d < 122; d++) { // ~4 months
-            const day = new Date(startDate);
-            day.setUTCDate(day.getUTCDate() + d);
-            const numPhotos = Math.floor(Math.random() * 15) + 1; // 1-15 photos
-            for (let p = 0; p < numPhotos; p++) {
-                // Spread photos throughout the day
-                const hour = 7 + Math.floor(Math.random() * 12); // 7:00 to 18:00
-                const minute = Math.floor(Math.random() * 60);
-                const photoDate = new Date(day);
-                photoDate.setUTCHours(hour, minute, 0, 0);
-                items.push({
-                    id: ((id - 1) % 60) + 1, // id cycles from 1 to 60
-                    getValue: () => photoDate.toISOString()
-                });
-                id++;
-            }
+    private _computeMap(map: string): ImageItemMap {
+        const defaults = {
+            date: "date",
+            image: "image",
+            thumbnail: "thumbnail",
+            label: "label"
+        };
+
+        if (!map)
+            return defaults;
+
+        try {
+            const parsedMap = JSON.parse(map);
+            return {
+                date: parsedMap.date || defaults.date,
+                image: parsedMap.image || defaults.image,
+                thumbnail: parsedMap.thumbnail || defaults.thumbnail,
+                label: parsedMap.label || defaults.label
+            };
+        } catch (e) {
+            console.error("Invalid map format:", e);
+            return defaults;
         }
-        return items;
-    })();
+    }
 
     /**
      * Calculates the layout of the gallery based on the container width and items.
@@ -249,7 +270,7 @@ export class QueryGridGallery extends WebComponentLit {
      */
     private _calculateLayout() {
         const scroller = this.shadowRoot?.querySelector('vi-scroller') as HTMLElement;
-        if (!scroller || scroller.offsetWidth === 0 || !this.items || this.items.length === 0) {
+        if (!scroller || scroller.offsetWidth === 0 || !this.query?.items?.length || !this.map) {
             this._rows = [];
             this._visibleRowIndexes.clear();
             return;
@@ -282,12 +303,15 @@ export class QueryGridGallery extends WebComponentLit {
             : actualImageSize;
 
         const groups = new Map<string, any[]>();
-        const sortedItems = [...this.items].sort((a, b) => new Date(b.getValue()).getTime() - new Date(a.getValue()).getTime());
+        
+        const sortedItems = [...this.query.items].sort((a, b) => (b.values[this.map.date] as Date).getTime() - (a.values[this.map.date] as Date).getTime());
         this._sortedItems = sortedItems;
 
         for (const item of sortedItems) {
-            const dateStr = new Date(item.getValue()).toISOString().slice(0, 10);
-            if (!groups.has(dateStr)) groups.set(dateStr, []);
+            const dateStr = item.values[this.map.date].toISOString().slice(0, 10);
+            if (!groups.has(dateStr))
+                groups.set(dateStr, []);
+
             groups.get(dateStr).push(item);
         }
 
@@ -583,13 +607,11 @@ export class QueryGridGallery extends WebComponentLit {
                     <div class="day-block">
                         ${block.needsHeader !== false ? html`<div class="day-block-header">${String.format(`{0:${Vidyano.CultureInfo.currentCulture.dateFormat.shortDatePattern}}`, block.date)}</div>` : ''}
                         <div class="photos-container">
-                            ${block.photos.map(photoItem => html`
-                                <div class="gallery-photo${this._selectedItems.has(photoItem) ? ' selected' : ''}"
-                                     style="width: ${block.actualImageSize}px; height: ${block.actualImageSize}px;"
-                                     @click=${(e: MouseEvent) => this._handlePhotoClick(photoItem, e)}
-                                     role="button" tabindex="0" aria-label="View image ${photoItem.id}">
-                                    <input type="checkbox" class="selection-checkbox" .checked=${this._selectedItems.has(photoItem)} @click=${(e: MouseEvent) => this._handleCheckboxClick(photoItem, e)}>
-                                    <vi-query-grid-gallery-lazy-image src="https://i.pravatar.cc/150?img=${photoItem.id}" alt="Image ${photoItem.id}"></vi-query-grid-gallery-lazy-image>
+                            ${block.photos.map((item: Vidyano.QueryResultItem) => html`
+                                <div class="gallery-photo${this._selectedItems.has(item) ? ' selected' : ''}" style="width: ${block.actualImageSize}px; height: ${block.actualImageSize}px;"
+                                     @click=${(e: MouseEvent) => this._handlePhotoClick(item, e)} role="button" tabindex="0" aria-label="${item.values[this.map.label]}">
+                                    <input type="checkbox" class="selection-checkbox" .checked=${this._selectedItems.has(item)} @click=${(e: MouseEvent) => this._handleCheckboxClick(item, e)}>
+                                    <vi-query-grid-gallery-lazy-image .src=${item.values[this.map.thumbnail]} alt="${item.values[this.map.label]}"></vi-query-grid-gallery-lazy-image>
                                 </div>
                             `)}
                         </div>
@@ -620,6 +642,7 @@ export class QueryGridGallery extends WebComponentLit {
 
             <vi-query-grid-gallery-image-viewer
                 .items=${this._sortedItems}
+                .map=${this.map}
                 .currentIndex=${this._viewerCurrentIndex}
                 ?open=${this._viewerActive}
                 @close=${this._handleViewerClose}

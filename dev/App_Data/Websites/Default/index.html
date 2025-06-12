@@ -16,17 +16,13 @@
                 height: 100vh;
                 overflow: hidden;
             }
-
-            vi-query-grid-gallery::part(grid) {
-                background: red;
-            }
         </style>
     </head>
     <body>
         <vi-app label="Vidyano">
-            <vi-query-config query="[[photos]]">
+            <vi-query-config query="[[photos]]" name="Images">
                 <template>
-                    <vi-query-grid-gallery query="[[query]]" max-image-size="200"></vi-query-grid-gallery>
+                    <vi-query-grid-gallery query="[[query]]" size="200" map='{ "image": "FullUrl", "thumbnail": "ThumbUrl", "date": "TakenOn" }'></vi-query-grid-gallery>
                 </template>
             </vi-query-config>
             <vi-session-presenter slot="menu-footer">

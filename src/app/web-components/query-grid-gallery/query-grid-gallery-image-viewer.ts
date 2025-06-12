@@ -1,6 +1,8 @@
 import { html, css } from "lit";
 import { query } from "lit/decorators.js";
+import type { ImageItemMap } from "./query-grid-gallery"
 import { WebComponentLit } from "components/web-component/web-component-lit";
+import * as Vidyano from "vidyano";
 
 /**
  * A web component that uses a native <dialog> element to display a single photo
@@ -13,6 +15,9 @@ import { WebComponentLit } from "components/web-component/web-component-lit";
         },
         currentIndex: {
             type: Number
+        },
+        map: {
+            type: Object
         },
         open: {
             type: Boolean
@@ -113,8 +118,9 @@ export class QueryGridGalleryImageViewer extends WebComponentLit {
         .nav-button svg, .close-button svg { width: 24px; height: 24px; }
     `;
 
-    items: any[] = [];
+    items: Vidyano.QueryResultItem[] = [];
     currentIndex: number | null = null;
+    map: ImageItemMap;
     open: boolean = false;
     
     private _isLoading = false;
@@ -193,7 +199,7 @@ export class QueryGridGalleryImageViewer extends WebComponentLit {
 
     render() {
         const currentItem = this.currentIndex !== null ? this.items[this.currentIndex] : null;
-        const imageUrl = currentItem ? `https://i.pravatar.cc/1200?img=${currentItem.id}` : '';
+        const imageUrl = currentItem ? currentItem.values[this.map?.image] : '';
         const showPrev = currentItem && this.currentIndex > 0;
         const showNext = currentItem && this.currentIndex < this.items.length - 1;
 

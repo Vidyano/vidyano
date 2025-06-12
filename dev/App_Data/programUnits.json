@@ -321,6 +321,17 @@
             "nl": "Large employees"
           },
           "Name": "LargeEmployees"
+        },
+        {
+          "Offset": 60,
+          "Title": {
+            "en": "Images",
+            "nl": ""
+          },
+          "Name": "Images",
+          "Query": {
+            "$ref": "Query:4eedc392-c969-49d5-a320-029c335d46bc"
+          }
         }
       ]
     }
