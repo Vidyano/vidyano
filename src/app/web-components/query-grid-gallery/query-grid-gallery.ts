@@ -66,6 +66,12 @@ type GalleryRowItem = {
         _viewerCurrentIndex: {
             state: true
         },
+        _selectionMode: {
+            state: true
+        },
+        _selectedItems: {
+            state: true
+        },
     },
 }, "vi-query-grid-gallery")
 export class QueryGridGallery extends WebComponentLit {
@@ -137,11 +143,58 @@ export class QueryGridGallery extends WebComponentLit {
             background: #f9f9f9;
             cursor: pointer;
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            position: relative;
         }
 
         .gallery-photo:hover {
             transform: scale(1.03);
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .gallery-photo.selected {
+            outline: 2px solid var(--vi-accent-color, #0078d4);
+        }
+
+        .selection-checkbox {
+            appearance: none;
+            -webkit-appearance: none;
+            margin: 0;
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: none; /* Hidden by default */
+            cursor: pointer;
+            
+            /* Style for the unchecked ring */
+            background-color: rgba(255, 255, 255, 0.6);
+            border: 2px solid white;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+
+            transition: all 0.2s ease-in-out;
+        }
+
+        /* Add a subtle hover effect on the checkbox itself */
+        .selection-checkbox:hover {
+            transform: scale(1.1);
+        }
+
+        .selection-checkbox:checked {
+            background-color: var(--vi-accent-color, #0078d4);
+            border-color: var(--vi-accent-color, #0078d4);
+            
+            /* SVG checkmark icon */
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3e%3cpath d='M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z'/%3e%3c/svg%3e");
+            background-size: 70%;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        :host(.selection-mode) .selection-checkbox,
+        .gallery-photo:hover .selection-checkbox {
+            display: block;
         }
     `];
 
@@ -157,6 +210,9 @@ export class QueryGridGallery extends WebComponentLit {
     private _rows: (MonthHeaderRowItem | GalleryRowItem)[] = []; // The computed rows to render, including month headers and gallery rows.
     private _resizeDebounceTimer: number;
     private _sortedItems: any[] = [];
+    private _selectedItems: Set<any> = new Set();
+    private _selectionMode = false;
+    private _lastSelectedIndex: number | null = null;
 
     /**
      * The list of photo items to display in the gallery.
@@ -414,6 +470,7 @@ export class QueryGridGallery extends WebComponentLit {
                 rootMargin: "400px 0px 400px 0px" // Pre-load rows further out to ensure smooth scrolling
             });
         }
+        window.addEventListener('keydown', this._handleKeyDown);
         this._calculateLayout();
     }
     
@@ -426,6 +483,7 @@ export class QueryGridGallery extends WebComponentLit {
         this._resizeObserver?.disconnect();
         this._intersectionObserver?.disconnect();
         this._rowIntersectionObserver?.disconnect();
+        window.removeEventListener('keydown', this._handleKeyDown);
         clearTimeout(this._resizeDebounceTimer);
     }
 
@@ -462,6 +520,54 @@ export class QueryGridGallery extends WebComponentLit {
     private _handleViewerPrevious = () => { if (this._viewerCurrentIndex > 0) this._viewerCurrentIndex--; }
     private _handleViewerNext = () => { if (this._viewerCurrentIndex < this._sortedItems.length - 1) this._viewerCurrentIndex++; }
 
+    private _handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+            this._clearSelection();
+        }
+    }
+
+    private _toggleSelect(item: any, shiftKey: boolean) {
+        const index = this._sortedItems.indexOf(item);
+        const newSelectedItems = new Set(this._selectedItems);
+
+        if (shiftKey && this._lastSelectedIndex !== null) {
+            const start = Math.min(this._lastSelectedIndex, index);
+            const end = Math.max(this._lastSelectedIndex, index);
+            for (let i = start; i <= end; i++)
+                newSelectedItems.add(this._sortedItems[i]);
+        } else {
+            if (newSelectedItems.has(item))
+                newSelectedItems.delete(item);
+            else
+                newSelectedItems.add(item);
+            this._lastSelectedIndex = index;
+        }
+
+        this._selectedItems = newSelectedItems;
+        this._selectionMode = this._selectedItems.size > 0;
+        this.classList.toggle('selection-mode', this._selectionMode);
+    }
+
+    private _clearSelection() {
+        this._selectedItems = new Set();
+        this._selectionMode = false;
+        this._lastSelectedIndex = null;
+        this.classList.remove('selection-mode');
+    }
+
+    private _handlePhotoClick(item: any, e: MouseEvent) {
+        if (this._selectionMode) {
+            this._toggleSelect(item, e.shiftKey);
+        } else {
+            this._openImageViewer(item);
+        }
+    }
+
+    private _handleCheckboxClick(item: any, e: MouseEvent) {
+        e.stopPropagation();
+        this._toggleSelect(item, e.shiftKey);
+    }
+
 
     private _renderRowContent(item: MonthHeaderRowItem | GalleryRowItem) {
         // Generate month headers
@@ -478,10 +584,11 @@ export class QueryGridGallery extends WebComponentLit {
                         ${block.needsHeader !== false ? html`<div class="day-block-header">${String.format(`{0:${Vidyano.CultureInfo.currentCulture.dateFormat.shortDatePattern}}`, block.date)}</div>` : ''}
                         <div class="photos-container">
                             ${block.photos.map(photoItem => html`
-                                <div class="gallery-photo"
+                                <div class="gallery-photo${this._selectedItems.has(photoItem) ? ' selected' : ''}"
                                      style="width: ${block.actualImageSize}px; height: ${block.actualImageSize}px;"
-                                     @click=${() => this._openImageViewer(photoItem)}
+                                     @click=${(e: MouseEvent) => this._handlePhotoClick(photoItem, e)}
                                      role="button" tabindex="0" aria-label="View image ${photoItem.id}">
+                                    <input type="checkbox" class="selection-checkbox" .checked=${this._selectedItems.has(photoItem)} @click=${(e: MouseEvent) => this._handleCheckboxClick(photoItem, e)}>
                                     <vi-query-grid-gallery-lazy-image src="https://i.pravatar.cc/150?img=${photoItem.id}" alt="Image ${photoItem.id}"></vi-query-grid-gallery-lazy-image>
                                 </div>
                             `)}
