@@ -5,6 +5,7 @@
     "SchemaName": "Dev",
     "Type": "Image",
     "Salt": "LGLZy48Qv9Gp4V0V7IqAmXEvEd9BgnkSHtyizlsEsGKESJ3lI-LPmQ",
+    "SortOptions": "TakenOn DESC",
     "IsReadOnly": true,
     "Groups": [
       {

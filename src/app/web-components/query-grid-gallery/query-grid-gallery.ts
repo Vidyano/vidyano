@@ -225,7 +225,6 @@ export class QueryGridGallery extends WebComponentLit {
     private _resizeObserver: ResizeObserver;
     private _rows: (MonthHeaderRowItem | GalleryRowItem)[] = []; // The computed rows to render, including month headers and gallery rows.
     private _resizeDebounceTimer: number;
-    private _sortedItems: any[] = [];
     private _selectedItems: Set<any> = new Set();
     private _selectionMode = false;
     private _lastSelectedIndex: number | null = null;
@@ -304,10 +303,7 @@ export class QueryGridGallery extends WebComponentLit {
 
         const groups = new Map<string, any[]>();
         
-        const sortedItems = [...this.query.items].sort((a, b) => (b.values[this.map.date] as Date).getTime() - (a.values[this.map.date] as Date).getTime());
-        this._sortedItems = sortedItems;
-
-        for (const item of sortedItems) {
+        for (const item of this.query.items) {
             const dateStr = item.values[this.map.date].toISOString().slice(0, 10);
             if (!groups.has(dateStr))
                 groups.set(dateStr, []);
@@ -511,6 +507,37 @@ export class QueryGridGallery extends WebComponentLit {
         clearTimeout(this._resizeDebounceTimer);
     }
 
+    private _handleKeyDown = (event: KeyboardEvent) => {
+        // TODO: Implement keyboard handling logic
+        // For example, closing viewer on Escape, navigating images with arrows,
+        // or handling selection-related keyboard shortcuts.
+        if (event.key === "Escape") {
+            if (this._viewerActive) {
+                this._closeImageViewer();
+            } else if (this._selectionMode) {
+                this._clearSelection();
+            }
+        }
+    };
+
+    private _onScroll = (event: Event) => {
+        // This method is called when the scroller scrolls.
+        // It can be used for custom scroll-based logic if needed,
+        // though row visibility is primarily handled by IntersectionObserver.
+    };
+
+    private _renderRow = (item: MonthHeaderRowItem | GalleryRowItem, index: number) => {
+        const isVisible = this._visibleRowIndexes.has(index);
+        const style = `min-height: ${item.rowHeight}px;`; // Apply min-height for placeholder effect
+
+        if (!isVisible) {
+            // Render a placeholder if the row is not yet marked as visible
+            return html`<div class="row-placeholder" data-index=${index} style=${style}></div>`;
+        }
+
+        return this._renderRowContent(item); // Actual row content rendering
+    };
+
     /**
      * Called when component properties are updated.
      * Recalculates layout and ensures lazy images and virtual rows are observed for loading.
@@ -533,32 +560,29 @@ export class QueryGridGallery extends WebComponentLit {
     }
 
     private _openImageViewer(photoToOpen: any) {
-        const index = this._sortedItems.findIndex(item => item === photoToOpen);
-        if (index > -1) {
+        if (!this.query.items || this.query.items.length === 0) return;
+
+        const index = this.query.items.findIndex(item => item === photoToOpen);
+        if (index !== -1) {
             this._viewerCurrentIndex = index;
             this._viewerActive = true;
         }
     }
 
-    private _handleViewerClose = () => { this._viewerActive = false; }
+    private _closeImageViewer = () => { this._viewerActive = false; this._viewerCurrentIndex = null; }
+    private _handleViewerNext = () => { if (this._viewerCurrentIndex < this.query.items.length - 1) this._viewerCurrentIndex++; }
     private _handleViewerPrevious = () => { if (this._viewerCurrentIndex > 0) this._viewerCurrentIndex--; }
-    private _handleViewerNext = () => { if (this._viewerCurrentIndex < this._sortedItems.length - 1) this._viewerCurrentIndex++; }
 
-    private _handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
-            this._clearSelection();
-        }
-    }
-
-    private _toggleSelect(item: any, shiftKey: boolean) {
-        const index = this._sortedItems.indexOf(item);
+    private _toggleSelection(item: any, event?: MouseEvent) {
         const newSelectedItems = new Set(this._selectedItems);
+        const index = this.query.items.indexOf(item);
 
-        if (shiftKey && this._lastSelectedIndex !== null) {
+        if (event?.shiftKey && this._lastSelectedIndex !== null && index !== -1) {
             const start = Math.min(this._lastSelectedIndex, index);
             const end = Math.max(this._lastSelectedIndex, index);
-            for (let i = start; i <= end; i++)
-                newSelectedItems.add(this._sortedItems[i]);
+            for (let i = start; i <= end; i++) {
+                newSelectedItems.add(this.query.items[i]);
+            }
         } else {
             if (newSelectedItems.has(item))
                 newSelectedItems.delete(item);
@@ -581,7 +605,7 @@ export class QueryGridGallery extends WebComponentLit {
 
     private _handlePhotoClick(item: any, e: MouseEvent) {
         if (this._selectionMode) {
-            this._toggleSelect(item, e.shiftKey);
+            this._toggleSelection(item, e);
         } else {
             this._openImageViewer(item);
         }
@@ -589,7 +613,7 @@ export class QueryGridGallery extends WebComponentLit {
 
     private _handleCheckboxClick(item: any, e: MouseEvent) {
         e.stopPropagation();
-        this._toggleSelect(item, e.shiftKey);
+        this._toggleSelection(item, e);
     }
 
 
@@ -626,26 +650,18 @@ export class QueryGridGallery extends WebComponentLit {
      */
     render() {
         return html`
-            <vi-scroller no-horizontal>
-                <div class="gallery-container">
-                    ${this._rows.map((item, index) => {
-                        if (this._visibleRowIndexes.has(index)) {
-                            // Row is visible, render its full content.
-                            return this._renderRowContent(item);
-                        } else {
-                            // Row is not visible, render a placeholder to maintain scroll position.
-                            return html`<div class="row-placeholder" data-index=${index} style="height: ${item.rowHeight}px;"></div>`;
-                        }
-                    })}
+            <vi-scroller @scroll=${this._onScroll}>
+                <div class="gallery-container" style="padding-bottom: ${this._rows.length > 0 ? '16px' : '0'}">
+                    ${this._rows.map((item, index) => this._renderRow(item, index))}
                 </div>
             </vi-scroller>
 
             <vi-query-grid-gallery-image-viewer
-                .items=${this._sortedItems}
+                .items=${this.query?.items}
                 .map=${this.map}
                 .currentIndex=${this._viewerCurrentIndex}
                 ?open=${this._viewerActive}
-                @close=${this._handleViewerClose}
+                @close=${this._closeImageViewer}
                 @navigate-previous=${this._handleViewerPrevious}
                 @navigate-next=${this._handleViewerNext}
             ></vi-query-grid-gallery-image-viewer>
