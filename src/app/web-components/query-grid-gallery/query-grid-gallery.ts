@@ -600,30 +600,44 @@ export class QueryGridGallery extends WebComponentLit {
     private _handleViewerNext = () => { if (this._viewerCurrentIndex < this.query.items.length - 1) this._viewerCurrentIndex++; }
     private _handleViewerPrevious = () => { if (this._viewerCurrentIndex > 0) this._viewerCurrentIndex--; }
 
-    private _toggleSelection(item: any, event?: MouseEvent) {
-        const newSelectedItems = new Set(this._selectedItems);
-        const index = this.query.items.indexOf(item);
+    private _toggleSelection(item: Vidyano.QueryResultItem, event?: MouseEvent) {
+        if (!this.query || !this.query.items) return;
+        const itemIndexInQuery = this.query.items.indexOf(item);
+        if (itemIndexInQuery === -1) return;
 
-        if (event?.shiftKey && this._lastSelectedIndex !== null && index !== -1) {
-            const start = Math.min(this._lastSelectedIndex, index);
-            const end = Math.max(this._lastSelectedIndex, index);
-            for (let i = start; i <= end; i++) {
-                newSelectedItems.add(this.query.items[i]);
-            }
+        if (event?.shiftKey && this._lastSelectedIndex !== null && this._lastSelectedIndex >= 0 && this._lastSelectedIndex < this.query.items.length) {
+            const anchorIndex = this._lastSelectedIndex;
+            const currentIndex = itemIndexInQuery;
+
+            const start = Math.min(anchorIndex, currentIndex);
+            const end = Math.max(anchorIndex, currentIndex);
+
+            // query.selectRange selects items from start up to and including end
+            this.query.selectRange(start, end);
+            // The anchor (_lastSelectedIndex) does not change on a shift-click.
         } else {
-            if (newSelectedItems.has(item))
-                newSelectedItems.delete(item);
-            else
-                newSelectedItems.add(item);
-            this._lastSelectedIndex = index;
+            // Directly toggle isSelected; QueryResultItem will notify the Query,
+            // which then updates its selectedItems and notifies listeners.
+            item.isSelected = !item.isSelected;
+            // Update _lastSelectedIndex to the current item for non-shift clicks or initial clicks.
+            this._lastSelectedIndex = itemIndexInQuery;
         }
 
-        this._selectedItems = newSelectedItems;
+        // Sync local component state from the query's authoritative selection state
+        // Ensure query.selectedItems is not null before creating a Set
+        this._selectedItems = new Set(this.query.selectedItems || []);
         this._selectionMode = this._selectedItems.size > 0;
         this.classList.toggle('selection-mode', this._selectionMode);
     }
 
     private _clearSelection() {
+        if (this.query) {
+            // Use the setter for query.selectedItems, which handles unselecting all items
+            // and notifying listeners.
+            this.query.selectedItems = [];
+        }
+
+        // Sync local component state
         this._selectedItems = new Set();
         this._selectionMode = false;
         this._lastSelectedIndex = null;
