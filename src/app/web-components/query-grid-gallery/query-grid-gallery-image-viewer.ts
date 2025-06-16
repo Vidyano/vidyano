@@ -1,8 +1,9 @@
-import { html, css } from "lit";
+import { html, unsafeCSS } from "lit";
 import { query } from "lit/decorators.js";
 import type { ImageItemMap } from "./query-grid-gallery"
 import { WebComponentLit } from "components/web-component/web-component-lit";
 import * as Vidyano from "vidyano";
+import styles from "./query-grid-gallery-image-viewer.css";
 
 /**
  * A web component that uses a native <dialog> element to display a single photo
@@ -33,90 +34,7 @@ import * as Vidyano from "vidyano";
     }
 }, "vi-query-grid-gallery-image-viewer")
 export class QueryGridGalleryImageViewer extends WebComponentLit {
-    static styles = css`
-        :host {
-            display: contents;
-        }
-
-        dialog {
-            background: transparent;
-            border: none;
-            padding: 0;
-            max-width: 100vw;
-            max-height: 100vh;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        dialog::backdrop {
-            background-color: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(2px);
-        }
-
-        .dialog-content {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            user-select: none;
-        }
-
-        .image-container {
-            position: relative;
-            max-width: 90vw;
-            max-height: 90vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        img {
-            display: block;
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            border-radius: 4px;
-        }
-
-        .nav-button, .close-button {
-            position: absolute;
-            background: rgba(30, 30, 30, 0.6);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            cursor: pointer;
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            -webkit-tap-highlight-color: transparent;
-            outline: none;
-            /* Fade-in/out behavior */
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: 1; /* Ensure buttons are on top */
-        }
-
-        /* Show buttons when active */
-        dialog.controls-visible .nav-button,
-        dialog.controls-visible .close-button {
-            opacity: 1;
-        }
-
-        .nav-button:hover, .close-button:hover { background: rgba(0, 0, 0, 0.8); }
-
-        /* Position nav buttons safely inside the viewport */
-        .nav-button.prev { left: 24px; top: 50%; transform: translateY(-50%); }
-        .nav-button.next { right: 24px; top: 50%; transform: translateY(-50%); }
-
-        /* Position close button in the top-right corner of the screen */
-        .close-button { top: 24px; right: 24px; }
-
-        .nav-button svg, .close-button svg { width: 24px; height: 24px; }
-    `;
+    static styles = unsafeCSS(styles);
 
     items: Vidyano.QueryResultItem[] = [];
     currentIndex: number | null = null;

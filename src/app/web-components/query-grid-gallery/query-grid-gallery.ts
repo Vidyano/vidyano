@@ -1,9 +1,10 @@
 import * as Vidyano from "vidyano"
-import { html, css } from "lit";
+import { html, unsafeCSS } from "lit";
 import { WebComponentLit } from "components/web-component/web-component-lit";
 import type { QueryGridGalleryLazyImage } from "./query-grid-gallery-lazy-image";
 import "./query-grid-gallery-lazy-image";
 import "./query-grid-gallery-image-viewer";
+import styles from "./query-grid-gallery.css"
 
 /**
  * Represents a block of photos for a single day in the gallery.
@@ -98,128 +99,7 @@ export type ImageItemMap = {
     }
 }, "vi-query-grid-gallery")
 export class QueryGridGallery extends WebComponentLit {
-    static styles = [css`
-        :host {
-            display: block;
-            height: 100%;
-        }
-
-        vi-scroller {
-            width: 100%;
-            height: 100%;
-            display: flex;
-        }
-
-        .gallery-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px 24px;
-            padding: 16px;
-        }
-
-        .month-header {
-            font-size: 1.6em;
-            font-weight: 500;
-            color: var(--theme-foreground);
-            padding-left: 4px;
-            padding-top: 20px;
-        }
-        .month-header.first-month {
-            padding-top: 0;
-        }
-
-        .gallery-row {
-            display: flex;
-            flex-direction: row;
-            gap: 16px;
-            align-items: flex-start;
-        }
-
-        .day-block {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        .day-block-header {
-            font-weight: bold;
-            background-color: #f0f0f0;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.9em;
-            text-align: left;
-            white-space: nowrap;
-        }
-
-        .photos-container {
-            display: flex;
-            flex-direction: row;
-            gap: 16px;
-        }
-
-        .gallery-photo {
-            flex-shrink: 0;
-            box-sizing: border-box;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            overflow: hidden;
-            background: #f9f9f9;
-            cursor: pointer;
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            position: relative;
-        }
-
-        .gallery-photo:hover {
-            transform: scale(1.03);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .gallery-photo.selected {
-            outline: 2px solid var(--theme-color);
-        }
-
-        .selection-checkbox {
-            appearance: none;
-            -webkit-appearance: none;
-            margin: 0;
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: none; /* Hidden by default */
-            cursor: pointer;
-            
-            /* Style for the unchecked ring */
-            background-color: rgba(255, 255, 255, 0.6);
-            border: 2px solid white;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.25);
-
-            transition: all 0.2s ease-in-out;
-        }
-
-        /* Add a subtle hover effect on the checkbox itself */
-        .selection-checkbox:hover {
-            transform: scale(1.1);
-        }
-
-        .selection-checkbox:checked {
-            background-color: var(--theme-color);
-            border-color: var(--theme-color);
-            
-            /* SVG checkmark icon */
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3e%3cpath d='M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z'/%3e%3c/svg%3e");
-            background-size: 70%;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
-
-        :host(.selection-mode) .selection-checkbox,
-        .gallery-photo:hover .selection-checkbox {
-            display: block;
-        }
-    `];
+    static styles = unsafeCSS(styles);
     
     private _visibleRowIndexes: Set<number> = new Set();    
     private _viewerActive = false;

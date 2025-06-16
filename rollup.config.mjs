@@ -21,6 +21,7 @@ import vulcanize from './rollup.vulcanize.js';
 import { dts } from "rollup-plugin-dts";
 import replace from "@rollup/plugin-replace";
 import terser from '@rollup/plugin-terser';
+import postcss from 'rollup-plugin-postcss';
 
 const terserMinify = terser({
     mangle: false,
@@ -40,6 +41,11 @@ const configs = [
         plugins: [
             alias({ entries }),
             nodeResolve(),
+            postcss({
+                extensions: ['.css'],
+                inject: false,
+                modules: false
+            }),
             vulcanize(),
             replace({
                 "vidyano-latest-version": pjson.version,

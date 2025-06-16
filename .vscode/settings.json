@@ -189,7 +189,7 @@
         "**/MigrationBackup/": true,
         "rollup": true,
         "src/vidyano/**/*.js": true,
-        "src/app/**/*.d.ts": true,
+        "src/app/web-components/*.d.ts": true,
         "src/app/**/*.js": true,
         "src/app/**/*.css": true,
         "src/app/**/*.css.map": true,

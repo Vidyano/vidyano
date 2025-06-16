@@ -1,6 +1,7 @@
-import { html, css } from "lit";
+import { html, unsafeCSS } from "lit";
 import { property } from "lit/decorators.js";
 import { WebComponentLit } from "components/web-component/web-component-lit";
+import styles from "./query-grid-gallery-lazy-image.css";
 
 /**
  * A web component for lazy-loading images in the gallery.
@@ -14,27 +15,7 @@ import { WebComponentLit } from "components/web-component/web-component-lit";
     }
 }, "vi-query-grid-gallery-lazy-image")
 export class QueryGridGalleryLazyImage extends WebComponentLit {
-    static styles = css`
-        :host {
-            display: block;
-            width: 100%;
-            height: 100%;
-            background-color: #e9e9e9;
-        }
-
-        img {
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0;
-            transition: opacity 0.4s ease-in-out;
-        }
-
-        img.loaded {
-            opacity: 1;
-        }
-    `;
+    static styles = unsafeCSS(styles);
 
     @property({ type: String })
     src: string;
