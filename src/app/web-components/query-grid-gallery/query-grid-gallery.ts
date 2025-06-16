@@ -72,6 +72,11 @@ export type ImageItemMap = {
             type: String,
             attribute: "map"
         },
+        _items: {
+            type: Array,
+            computed: "query.items",
+            state: true
+        },
         _rows: {
             state: true
         },
@@ -90,7 +95,7 @@ export type ImageItemMap = {
         _selectedItems: {
             state: true
         },
-    },
+    }
 }, "vi-query-grid-gallery")
 export class QueryGridGallery extends WebComponentLit {
     static styles = [css`
@@ -228,6 +233,7 @@ export class QueryGridGallery extends WebComponentLit {
     private _selectedItems: Set<any> = new Set();
     private _selectionMode = false;
     private _lastSelectedIndex: number | null = null;
+    private _items: Vidyano.QueryResultItem[];
 
     map: ImageItemMap;
     query: Vidyano.Query;
@@ -270,7 +276,7 @@ export class QueryGridGallery extends WebComponentLit {
      */
     private _calculateLayout() {
         const scroller = this.shadowRoot?.querySelector('vi-scroller') as HTMLElement;
-        if (!scroller || scroller.offsetWidth === 0 || !this.query?.items?.length || !this.map) {
+        if (!scroller || scroller.offsetWidth === 0 || !this._items?.some(Boolean) || !this.map) {
             this._rows = [];
             this._visibleRowIndexes.clear();
             return;
@@ -302,14 +308,12 @@ export class QueryGridGallery extends WebComponentLit {
             : actualImageSize;
 
         let rowsToSet: (MonthHeaderRowItem | GalleryRowItem)[] = [];
-        const items = this.query.items;
-
         let performDateGrouping = this.map.date !== null;
 
         if (performDateGrouping) {
             // If date grouping is requested, check if all items have valid dates.
             // If any item has an invalid/undefined date, disable grouping for the entire gallery.
-            for (const item of items) {
+            for (const item of this._items) {
                 const dateValue = item.values[this.map.date as string];
                 if (!(dateValue && typeof dateValue.toISOString === 'function')) {
                     performDateGrouping = false; // Found an item that prevents date grouping
@@ -324,11 +328,11 @@ export class QueryGridGallery extends WebComponentLit {
             const finalRowsNoDate: GalleryRowItem[] = [];
             let currentPhotosInRow: any[] = [];
 
-            for (let i = 0; i < items.length; i++) {
-                const item = items[i];
+            for (let i = 0; i < this._items.length; i++) {
+                const item = this._items[i];
                 currentPhotosInRow.push(item);
 
-                if (currentPhotosInRow.length === estimatedPhotosPerRow || i === items.length - 1) {
+                if (currentPhotosInRow.length === estimatedPhotosPerRow || i === this._items.length - 1) {
                     if (currentPhotosInRow.length > 0) {
                         const dayBlock: DayBlock = {
                             date: new Date(0), // Dummy date, not used
@@ -350,7 +354,7 @@ export class QueryGridGallery extends WebComponentLit {
             // MODE 2: Date grouping is active, and all items have been verified to have valid dates.
             // this.map.date is guaranteed to be a string here.
             const datedItemsMap = new Map<string, any[]>();
-            for (const item of items) {
+            for (const item of this._items) {
                 // All items here are guaranteed to have a valid date for this.map.date
                 const dateValue = item.values[this.map.date as string] as Date;
                 const dateStr = dateValue.toISOString().slice(0, 10);
@@ -571,7 +575,13 @@ export class QueryGridGallery extends WebComponentLit {
      */
     updated(changedProps: Map<string, any>) {
         super.updated?.(changedProps);
-        if (changedProps.has('items') || changedProps.has('size')) {
+        if (changedProps.has('_items') || changedProps.has('size')) {
+            if (changedProps.has('_items')) {
+                const scroller = this.shadowRoot?.querySelector('vi-scroller') as any;
+                if (scroller)
+                    scroller.verticalScrollOffset = 0;
+            }
+
             Promise.resolve().then(() => this._calculateLayout());
         }
 
@@ -587,9 +597,9 @@ export class QueryGridGallery extends WebComponentLit {
     }
 
     private _openImageViewer(photoToOpen: any) {
-        if (!this.query.items || this.query.items.length === 0) return;
+        if (!this._items || this._items.length === 0) return;
 
-        const index = this.query.items.findIndex(item => item === photoToOpen);
+        const index = this._items.findIndex(item => item === photoToOpen);
         if (index !== -1) {
             this._viewerCurrentIndex = index;
             this._viewerActive = true;
@@ -597,15 +607,15 @@ export class QueryGridGallery extends WebComponentLit {
     }
 
     private _closeImageViewer = () => { this._viewerActive = false; this._viewerCurrentIndex = null; }
-    private _handleViewerNext = () => { if (this._viewerCurrentIndex < this.query.items.length - 1) this._viewerCurrentIndex++; }
+    private _handleViewerNext = () => { if (this._viewerCurrentIndex < this._items.length - 1) this._viewerCurrentIndex++; }
     private _handleViewerPrevious = () => { if (this._viewerCurrentIndex > 0) this._viewerCurrentIndex--; }
 
     private _toggleSelection(item: Vidyano.QueryResultItem, event?: MouseEvent) {
-        if (!this.query || !this.query.items) return;
-        const itemIndexInQuery = this.query.items.indexOf(item);
+        if (!this.query || !this._items) return;
+        const itemIndexInQuery = this._items.indexOf(item);
         if (itemIndexInQuery === -1) return;
 
-        if (event?.shiftKey && this._lastSelectedIndex !== null && this._lastSelectedIndex >= 0 && this._lastSelectedIndex < this.query.items.length) {
+        if (event?.shiftKey && this._lastSelectedIndex !== null && this._lastSelectedIndex >= 0 && this._lastSelectedIndex < this._items.length) {
             const anchorIndex = this._lastSelectedIndex;
             const currentIndex = itemIndexInQuery;
 
@@ -698,7 +708,7 @@ export class QueryGridGallery extends WebComponentLit {
             </vi-scroller>
 
             <vi-query-grid-gallery-image-viewer
-                .items=${this.query?.items}
+                .items=${this._items}
                 .map=${this.map}
                 .currentIndex=${this._viewerCurrentIndex}
                 ?open=${this._viewerActive}
