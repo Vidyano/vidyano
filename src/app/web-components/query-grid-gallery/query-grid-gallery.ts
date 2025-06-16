@@ -162,13 +162,17 @@ export class QueryGridGallery extends WebComponentLit {
             return;
         }
 
-        const MONTH_HEADER_HEIGHT = 46;
-        const MONTH_HEADER_FIRST_HEIGHT = 26;
-        const DAY_BLOCK_HEADER_WITH_GAP_HEIGHT = 38;
+        const computedStyle = getComputedStyle(this);
+        const getCssVar = (name: string) => parseInt(computedStyle.getPropertyValue(name));
 
-        const horizontalPadding = 16 * 2;
+        const MONTH_HEADER_HEIGHT = getCssVar('--query-grid-gallery-month-header-height');
+        const MONTH_HEADER_FIRST_HEIGHT = getCssVar('--query-grid-gallery-month-header-first-height');
+        const DAY_BLOCK_HEADER_WITH_GAP_HEIGHT = getCssVar('--query-grid-gallery-day-block-header-with-gap-height');
+        const gap = getCssVar('--query-grid-gallery-gap');
+        const padding = getCssVar('--query-grid-gallery-padding');
+
+        const horizontalPadding = padding * 2;
         const availableWidth = scroller.offsetWidth - horizontalPadding;
-        const gap = 16;
         const preferredSize = this.size;
 
         const estimatedPhotosPerRow = Math.max(1, Math.floor((availableWidth + gap) / (preferredSize + gap)));

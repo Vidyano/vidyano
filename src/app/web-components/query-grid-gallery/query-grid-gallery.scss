@@ -1,4 +1,13 @@
 :host {
+    --query-grid-gallery-month-header-height: 46px;
+    --query-grid-gallery-month-header-first-height: 26px;
+    --query-grid-gallery-day-block-header-with-gap-height: 38px;
+    --query-grid-gallery-gap: 16px;
+    --query-grid-gallery-padding: 16px;
+    --query-grid-gallery-container-gap-vertical: 12px;
+    --query-grid-gallery-container-gap-horizontal: 24px;
+    --query-grid-gallery-day-block-gap: 12px;
+
     display: block;
     height: 100%;
 }
@@ -16,8 +25,8 @@ vi-scroller {
 .gallery-container {
     display: flex;
     flex-direction: column;
-    gap: 12px 24px;
-    padding: 16px;
+    gap: var(--query-grid-gallery-container-gap-vertical) var(--query-grid-gallery-container-gap-horizontal);
+    padding: var(--query-grid-gallery-padding);
 }
 
 .month-header {
@@ -35,14 +44,14 @@ vi-scroller {
 .gallery-row {
     display: flex;
     flex-direction: row;
-    gap: 16px;
+    gap: var(--query-grid-gallery-gap);
     align-items: flex-start;
 }
 
 .day-block {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: var(--query-grid-gallery-day-block-gap);
 
     .day-block-header {
         font-weight: bold;
@@ -57,7 +66,7 @@ vi-scroller {
     .photos-container {
         display: flex;
         flex-direction: row;
-        gap: 16px;
+        gap: var(--query-grid-gallery-gap);
     }
 }
 
