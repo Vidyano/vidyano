@@ -44,7 +44,7 @@ type GalleryRowItem = {
  * Represents an individual image item in the gallery.
  */
 export type ImageItemMap = {
-    date: string;
+    date: string | null;
     image: string;
     thumbnail: string;
     label?: string;
@@ -223,7 +223,7 @@ export class QueryGridGallery extends WebComponentLit {
     private _intersectionObserver: IntersectionObserver;
     private _rowIntersectionObserver: IntersectionObserver;
     private _resizeObserver: ResizeObserver;
-    private _rows: (MonthHeaderRowItem | GalleryRowItem)[] = []; // The computed rows to render, including month headers and gallery rows.
+    private _rows: (MonthHeaderRowItem | GalleryRowItem)[] = [];
     private _resizeDebounceTimer: number;
     private _selectedItems: Set<any> = new Set();
     private _selectionMode = false;
@@ -239,11 +239,11 @@ export class QueryGridGallery extends WebComponentLit {
      * @returns An object mapping item properties to their respective keys.
      */
     private _computeMap(map: string): ImageItemMap {
-        const defaults = {
-            date: "date",
+        const defaults: ImageItemMap = {
+            date: null,
             image: "image",
             thumbnail: "thumbnail",
-            label: "label"
+            label: null
         };
 
         if (!map)
@@ -252,7 +252,7 @@ export class QueryGridGallery extends WebComponentLit {
         try {
             const parsedMap = JSON.parse(map);
             return {
-                date: parsedMap.date || defaults.date,
+                date: parsedMap.hasOwnProperty('date') ? parsedMap.date : defaults.date,
                 image: parsedMap.image || defaults.image,
                 thumbnail: parsedMap.thumbnail || defaults.thumbnail,
                 label: parsedMap.label || defaults.label
@@ -266,6 +266,7 @@ export class QueryGridGallery extends WebComponentLit {
     /**
      * Calculates the layout of the gallery based on the container width and items.
      * Groups photos by day and month, and determines optimal image size and row structure.
+     * If this.map.date is null, it will display all images in rows without date/month grouping.
      */
     private _calculateLayout() {
         const scroller = this.shadowRoot?.querySelector('vi-scroller') as HTMLElement;
@@ -275,10 +276,9 @@ export class QueryGridGallery extends WebComponentLit {
             return;
         }
 
-        // Estimated heights for virtualization placeholders
-        const MONTH_HEADER_HEIGHT = 46; // Estimated: font-size: 1.6em (~26px) + padding-top: 20px
-        const MONTH_HEADER_FIRST_HEIGHT = 26; // padding-top: 0
-        const DAY_BLOCK_HEADER_WITH_GAP_HEIGHT = 38; // Estimated: 26px for header + 12px gap
+        const MONTH_HEADER_HEIGHT = 46;
+        const MONTH_HEADER_FIRST_HEIGHT = 26;
+        const DAY_BLOCK_HEADER_WITH_GAP_HEIGHT = 38;
 
         const horizontalPadding = 16 * 2;
         const availableWidth = scroller.offsetWidth - horizontalPadding;
@@ -301,143 +301,179 @@ export class QueryGridGallery extends WebComponentLit {
             ? actualImageSize + Math.floor(remainingSpace / estimatedPhotosPerRow)
             : actualImageSize;
 
-        const groups = new Map<string, any[]>();
-        
-        for (const item of this.query.items) {
-            const dateStr = item.values[this.map.date].toISOString().slice(0, 10);
-            if (!groups.has(dateStr))
-                groups.set(dateStr, []);
+        let rowsToSet: (MonthHeaderRowItem | GalleryRowItem)[] = [];
+        const items = this.query.items;
 
-            groups.get(dateStr).push(item);
+        let performDateGrouping = this.map.date !== null;
+
+        if (performDateGrouping) {
+            // If date grouping is requested, check if all items have valid dates.
+            // If any item has an invalid/undefined date, disable grouping for the entire gallery.
+            for (const item of items) {
+                const dateValue = item.values[this.map.date as string];
+                if (!(dateValue && typeof dateValue.toISOString === 'function')) {
+                    performDateGrouping = false; // Found an item that prevents date grouping
+                    break;
+                }
+            }
         }
 
-        const finalRows: (MonthHeaderRowItem | GalleryRowItem)[] = [];
-        let currentRow: GalleryRow = [];
-        let currentWidth = 0;
-        let lastRowLastDate: Date | null = null;
-        let lastProcessedMonth: { month: number; year: number } | null = null;
-        let firstMonthHeaderAdded = false;
+        if (!performDateGrouping) {
+            // MODE 1: No date grouping for the entire gallery.
+            // This occurs if this.map.date was null, or if an item had an invalid/undefined date.
+            const finalRowsNoDate: GalleryRowItem[] = [];
+            let currentPhotosInRow: any[] = [];
 
-        for (const [dateStr, photosInDay] of groups.entries()) {
-            const date = new Date(dateStr + 'T00:00:00');
-            const currentMonth = date.getMonth();
-            const currentYear = date.getFullYear();
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                currentPhotosInRow.push(item);
 
-            // Check if we have started a new month
-            if (lastProcessedMonth === null || lastProcessedMonth.month !== currentMonth || lastProcessedMonth.year !== currentYear) {
-                // If there's a gallery row being built, finalize it first
-                if (currentRow.length > 0) {
-                    const hasHeaders = currentRow.some(b => b.needsHeader);
-                    const rowHeight = finalImageSize + (hasHeaders ? DAY_BLOCK_HEADER_WITH_GAP_HEIGHT : 0);
-                    finalRows.push({ type: 'gallery', row: currentRow, rowHeight });
-                    lastRowLastDate = currentRow[currentRow.length - 1].date;
-                    currentRow = [];
-                    currentWidth = 0;
+                if (currentPhotosInRow.length === estimatedPhotosPerRow || i === items.length - 1) {
+                    if (currentPhotosInRow.length > 0) {
+                        const dayBlock: DayBlock = {
+                            date: new Date(0), // Dummy date, not used
+                            photos: [...currentPhotosInRow],
+                            actualImageSize: finalImageSize,
+                            needsHeader: false
+                        };
+                        finalRowsNoDate.push({
+                            type: 'gallery',
+                            row: [dayBlock],
+                            rowHeight: finalImageSize
+                        });
+                        currentPhotosInRow = [];
+                    }
                 }
-
-                // Add the new month header
-                const rowHeight = !firstMonthHeaderAdded ? MONTH_HEADER_FIRST_HEIGHT : MONTH_HEADER_HEIGHT;
-                finalRows.push({ type: 'month', month: currentMonth, year: currentYear, isFirst: !firstMonthHeaderAdded, rowHeight });
-                firstMonthHeaderAdded = true;
-                lastProcessedMonth = { month: currentMonth, year: currentYear };
-                lastRowLastDate = null; // After a month header, the next day block must get a header
+            }
+            rowsToSet = finalRowsNoDate;
+        } else {
+            // MODE 2: Date grouping is active, and all items have been verified to have valid dates.
+            // this.map.date is guaranteed to be a string here.
+            const datedItemsMap = new Map<string, any[]>();
+            for (const item of items) {
+                // All items here are guaranteed to have a valid date for this.map.date
+                const dateValue = item.values[this.map.date as string] as Date;
+                const dateStr = dateValue.toISOString().slice(0, 10);
+                if (!datedItemsMap.has(dateStr))
+                    datedItemsMap.set(dateStr, []);
+                datedItemsMap.get(dateStr)!.push(item);
             }
 
-            for (let i = 0; i < photosInDay.length; i++) {
-                const photo = photosInDay[i];
-                const isNewBlock = !currentRow.find(b => b.date.getTime() === date.getTime());
+            const finalRowsWithDate: (MonthHeaderRowItem | GalleryRowItem)[] = [];
+            let currentRow: GalleryRow = [];
+            let currentWidth = 0;
+            let lastRowLastDate: Date | null = null;
+            let lastProcessedMonth: { month: number; year: number } | null = null;
+            let firstMonthHeaderAdded = false;
 
-                // Check if we need to start a new row because a new day block won't fit well
-                if (isNewBlock && currentRow.length > 0) {
-                    const currentRowHasHeaders = currentRow.some(block => block.needsHeader);
-                    if (!currentRowHasHeaders) {
-                        const remainingWidth = availableWidth - currentWidth;
-                        const maxPossiblePhotos = Math.floor((remainingWidth + gap) / (finalImageSize + gap));
-                        if (maxPossiblePhotos < estimatedPhotosPerRow / 2) {
-                            const hasHeaders = currentRow.some(b => b.needsHeader);
-                            const rowHeight = finalImageSize + (hasHeaders ? DAY_BLOCK_HEADER_WITH_GAP_HEIGHT : 0);
-                            finalRows.push({ type: 'gallery', row: currentRow, rowHeight });
-                            lastRowLastDate = currentRow[currentRow.length - 1].date;
-                            currentRow = [];
-                            currentWidth = 0;
-                        } else {
-                            currentRow.forEach(block => { block.needsHeader = true; });
+            for (const [dateStr, photosInDay] of datedItemsMap.entries()) {
+                const date = new Date(dateStr + 'T00:00:00');
+                const currentMonth = date.getMonth();
+                const currentYear = date.getFullYear();
+
+                if (lastProcessedMonth === null || lastProcessedMonth.month !== currentMonth || lastProcessedMonth.year !== currentYear) {
+                    if (currentRow.length > 0) {
+                        const hasHeaders = currentRow.some(b => b.needsHeader);
+                        const rowHeight = finalImageSize + (hasHeaders ? DAY_BLOCK_HEADER_WITH_GAP_HEIGHT : 0);
+                        finalRowsWithDate.push({ type: 'gallery', row: currentRow, rowHeight });
+                        lastRowLastDate = currentRow[currentRow.length - 1].date;
+                        currentRow = [];
+                        currentWidth = 0;
+                    }
+                    const rowHeight = !firstMonthHeaderAdded ? MONTH_HEADER_FIRST_HEIGHT : MONTH_HEADER_HEIGHT;
+                    finalRowsWithDate.push({ type: 'month', month: currentMonth, year: currentYear, isFirst: !firstMonthHeaderAdded, rowHeight });
+                    firstMonthHeaderAdded = true;
+                    lastProcessedMonth = { month: currentMonth, year: currentYear };
+                    lastRowLastDate = null;
+                }
+
+                for (let i = 0; i < photosInDay.length; i++) {
+                    const photo = photosInDay[i];
+                    const isNewBlock = !currentRow.find(b => b.date.getTime() === date.getTime());
+
+                    if (isNewBlock && currentRow.length > 0) {
+                        const currentRowHasHeaders = currentRow.some(block => block.needsHeader);
+                        if (!currentRowHasHeaders) {
+                            const remainingWidthInCurrentRow = availableWidth - currentWidth;
+                            const maxPhotosInRemainingSpace = Math.floor((remainingWidthInCurrentRow + gap) / (finalImageSize + gap));
+                            if (maxPhotosInRemainingSpace < estimatedPhotosPerRow / 2) {
+                                const hasHeaders = currentRow.some(b => b.needsHeader);
+                                const rowHeight = finalImageSize + (hasHeaders ? DAY_BLOCK_HEADER_WITH_GAP_HEIGHT : 0);
+                                finalRowsWithDate.push({ type: 'gallery', row: currentRow, rowHeight });
+                                lastRowLastDate = currentRow[currentRow.length - 1].date;
+                                currentRow = [];
+                                currentWidth = 0;
+                            } else {
+                                currentRow.forEach(block => { block.needsHeader = true; });
+                            }
                         }
                     }
-                }
 
-                const neededWidth = (isNewBlock ? (currentRow.length > 0 ? gap : 0) : gap) + finalImageSize;
-
-                if (currentWidth > 0 && currentWidth + neededWidth > availableWidth) {
-                    const hasHeaders = currentRow.some(b => b.needsHeader);
-                    const rowHeight = finalImageSize + (hasHeaders ? DAY_BLOCK_HEADER_WITH_GAP_HEIGHT : 0);
-                    finalRows.push({ type: 'gallery', row: currentRow, rowHeight });
-                    lastRowLastDate = currentRow[currentRow.length - 1].date;
-                    currentRow = [];
-                    currentWidth = 0;
-                }
-
-                let blockForThisDay = currentRow.find(b => b.date.getTime() === date.getTime());
-                if (!blockForThisDay) {
-                    let needsHeader: boolean;
-                    if (currentRow.length === 0) {
-                        needsHeader = !lastRowLastDate || date.getTime() !== lastRowLastDate.getTime();
-                    } else {
-                        needsHeader = currentRow.some(block => block.needsHeader);
+                    const neededWidth = (isNewBlock ? (currentRow.length > 0 ? gap : 0) : gap) + finalImageSize;
+                    if (currentWidth > 0 && currentWidth + neededWidth > availableWidth) {
+                        const hasHeaders = currentRow.some(b => b.needsHeader);
+                        const rowHeight = finalImageSize + (hasHeaders ? DAY_BLOCK_HEADER_WITH_GAP_HEIGHT : 0);
+                        finalRowsWithDate.push({ type: 'gallery', row: currentRow, rowHeight });
+                        lastRowLastDate = currentRow[currentRow.length - 1].date;
+                        currentRow = [];
+                        currentWidth = 0;
                     }
-                    
-                    blockForThisDay = { date, photos: [], needsHeader };
-                    currentRow.push(blockForThisDay);
-                    if (currentRow.length > 1) {
+
+                    let blockForThisDay = currentRow.find(b => b.date.getTime() === date.getTime());
+                    if (!blockForThisDay) {
+                        let needsHeader: boolean;
+                        if (currentRow.length === 0) {
+                            needsHeader = !lastRowLastDate || date.getTime() !== lastRowLastDate.getTime();
+                        } else {
+                            needsHeader = currentRow.some(block => block.needsHeader);
+                        }
+                        blockForThisDay = { date, photos: [], needsHeader };
+                        currentRow.push(blockForThisDay);
+                        if (currentRow.length > 1) {
+                            currentWidth += gap;
+                        }
+                    } else {
                         currentWidth += gap;
                     }
-                } else {
-                    currentWidth += gap;
+                    blockForThisDay.photos.push(photo);
+                    currentWidth += finalImageSize;
                 }
-
-                blockForThisDay.photos.push(photo);
-                currentWidth += finalImageSize;
             }
+
+            if (currentRow.length > 0) {
+                const hasHeaders = currentRow.some(b => b.needsHeader);
+                const rowHeight = finalImageSize + (hasHeaders ? DAY_BLOCK_HEADER_WITH_GAP_HEIGHT : 0);
+                finalRowsWithDate.push({ type: 'gallery', row: currentRow, rowHeight });
+            }
+
+            rowsToSet = finalRowsWithDate.map(item => {
+                if (item.type === 'month') {
+                    return item;
+                }
+                return {
+                    ...item,
+                    row: item.row.map(block => ({
+                        ...block,
+                        actualImageSize: finalImageSize
+                    }))
+                };
+            });
         }
 
-        if (currentRow.length > 0) {
-            const hasHeaders = currentRow.some(b => b.needsHeader);
-            const rowHeight = finalImageSize + (hasHeaders ? DAY_BLOCK_HEADER_WITH_GAP_HEIGHT : 0);
-            finalRows.push({ type: 'gallery', row: currentRow, rowHeight });
-        }
-
-        // Map the final rows, adding the calculated `finalImageSize` to each gallery block.
-        const mappedRows = finalRows.map(item => {
-            if (item.type === 'month') {
-                return item;
-            }
-            return {
-                ...item,
-                row: item.row.map(block => ({
-                    ...block,
-                    actualImageSize: finalImageSize
-                }))
-            };
-        });
-
-        // Determine which rows are initially visible to prevent a flash of placeholders.
         const initiallyVisibleIndexes = new Set<number>();
         const viewportHeight = scroller.offsetHeight;
-        // Use a buffer similar to the intersection observer's rootMargin to pre-render rows just outside the viewport.
-        const buffer = 400; // Matches the vertical rootMargin of the row observer
+        const buffer = 400;
         let cumulativeHeight = 0;
-        for (let i = 0; i < mappedRows.length; i++) {
+        for (let i = 0; i < rowsToSet.length; i++) {
             if (cumulativeHeight < viewportHeight + buffer) {
                 initiallyVisibleIndexes.add(i);
-                cumulativeHeight += mappedRows[i].rowHeight;
+                cumulativeHeight += rowsToSet[i].rowHeight;
             } else {
                 break;
             }
         }
 
-        // Set both state properties together. This causes a single render
-        // with the initially visible rows already populated, avoiding a flicker.
-        this._rows = mappedRows;
+        this._rows = rowsToSet;
         this._visibleRowIndexes = initiallyVisibleIndexes;
     }
 
@@ -508,9 +544,6 @@ export class QueryGridGallery extends WebComponentLit {
     }
 
     private _handleKeyDown = (event: KeyboardEvent) => {
-        // TODO: Implement keyboard handling logic
-        // For example, closing viewer on Escape, navigating images with arrows,
-        // or handling selection-related keyboard shortcuts.
         if (event.key === "Escape") {
             if (this._viewerActive) {
                 this._closeImageViewer();
@@ -518,12 +551,6 @@ export class QueryGridGallery extends WebComponentLit {
                 this._clearSelection();
             }
         }
-    };
-
-    private _onScroll = (event: Event) => {
-        // This method is called when the scroller scrolls.
-        // It can be used for custom scroll-based logic if needed,
-        // though row visibility is primarily handled by IntersectionObserver.
     };
 
     private _renderRow = (item: MonthHeaderRowItem | GalleryRowItem, index: number) => {
@@ -650,7 +677,7 @@ export class QueryGridGallery extends WebComponentLit {
      */
     render() {
         return html`
-            <vi-scroller @scroll=${this._onScroll}>
+            <vi-scroller>
                 <div class="gallery-container" style="padding-bottom: ${this._rows.length > 0 ? '16px' : '0'}">
                     ${this._rows.map((item, index) => this._renderRow(item, index))}
                 </div>
