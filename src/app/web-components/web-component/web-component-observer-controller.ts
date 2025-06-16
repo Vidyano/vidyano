@@ -1,7 +1,7 @@
 import { ReactiveController, PropertyValueMap } from "lit";
 import { Observable, ForwardObservedPropertyChangedArgs, ForwardObservedArrayChangedArgs } from "vidyano";
 import type { WebComponentLit } from "./web-component-lit";
-import { getComputedConfig, getObserversConfig, getPropertyObserversConfig } from "./web-component-registration";
+import { ComputedConfig, getComputedConfig, getObserversConfig, getPropertyObserversConfig } from "./web-component-registration";
 
 type ForwardObservedDetail = ForwardObservedPropertyChangedArgs | ForwardObservedArrayChangedArgs;
 
@@ -397,9 +397,12 @@ export class WebComponentObserverController implements ReactiveController {
      */
     #setupForwardersForRoots(rootsToRebind?: Set<string>) {
         const staticObserversConfig = getObserversConfig(this.#host);
-        if (Object.keys(staticObserversConfig).length === 0) return;
+        const staticComputedConfig = getComputedConfig(this.#host);
 
-        const pathsToRebind = this.#determinePathsToRebind(staticObserversConfig, rootsToRebind);
+        if (Object.keys(staticObserversConfig).length === 0 && Object.keys(staticComputedConfig).length === 0)
+            return;
+
+        const pathsToRebind = this.#determinePathsToRebind(staticObserversConfig, staticComputedConfig, rootsToRebind);
         this.#disposeForwarders(pathsToRebind);
         this.#createForwarders(pathsToRebind);
     }
@@ -408,17 +411,23 @@ export class WebComponentObserverController implements ReactiveController {
      * Analyzes observer configurations to determine which specific dependency paths
      * require an active forwarder.
      * @param observersConfig The complete observer configuration.
+     * @param computedConfig The computed properties configuration.
      * @param rootsToRebind An optional set of roots to scope the rebinding to.
      * @returns A Set of full dependency paths (e.g., "app.user.name") that need a forwarder.
      */
-    #determinePathsToRebind(observersConfig: Record<string, string[]>, rootsToRebind?: Set<string>): Set<string> {
+    #determinePathsToRebind(observersConfig: Record<string, string[]>, computedConfig: ComputedConfig, rootsToRebind?: Set<string>): Set<string> {
         const allDependencies = new Set<string>();
         Object.values(observersConfig).forEach(deps => deps.forEach(dep => allDependencies.add(dep)));
+        Object.values(computedConfig).forEach(deps => deps.dependencies.forEach(dep => allDependencies.add(dep)));
 
         const setupAll = !rootsToRebind || rootsToRebind.size === 0;
         const pathsToRebind = new Set<string>();
         
         for (const depPath of allDependencies) {
+            // Forwarders are only for deep paths. Simple properties are handled by Lit.
+            if (!depPath.includes('.'))
+                continue;
+
             const rootKey = depPath.split('.')[0];
             if (setupAll || (rootsToRebind && rootsToRebind.has(rootKey))) {
                 pathsToRebind.add(depPath);
