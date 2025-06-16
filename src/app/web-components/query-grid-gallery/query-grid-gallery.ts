@@ -120,7 +120,7 @@ export class QueryGridGallery extends WebComponentLit {
         .month-header {
             font-size: 1.6em;
             font-weight: 500;
-            color: var(--vi-foreground-color, #333);
+            color: var(--theme-foreground);
             padding-left: 4px;
             padding-top: 20px;
         }
@@ -175,7 +175,7 @@ export class QueryGridGallery extends WebComponentLit {
         }
 
         .gallery-photo.selected {
-            outline: 2px solid var(--vi-accent-color, #0078d4);
+            outline: 2px solid var(--theme-color);
         }
 
         .selection-checkbox {
@@ -205,8 +205,8 @@ export class QueryGridGallery extends WebComponentLit {
         }
 
         .selection-checkbox:checked {
-            background-color: var(--vi-accent-color, #0078d4);
-            border-color: var(--vi-accent-color, #0078d4);
+            background-color: var(--theme-color);
+            border-color: var(--theme-color);
             
             /* SVG checkmark icon */
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3e%3cpath d='M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z'/%3e%3c/svg%3e");
