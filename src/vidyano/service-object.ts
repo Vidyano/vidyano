@@ -37,7 +37,7 @@ export abstract class ServiceObject extends Observable<ServiceObject> {
     protected _copyPropertiesFromValues(values: { [key: string]: any }, result: any = {}): any {
         Object.keys(values).forEach(key => {
             const value = values[key];
-            if (!value || (Array.isArray(value) && value.length === 0))
+            if (value == null || (Array.isArray(value) && value.length === 0))
                 return;
 
             result[key] = value;
