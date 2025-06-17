@@ -1,5 +1,6 @@
 import * as Vidyano from "vidyano"
 import { html, unsafeCSS } from "lit";
+import type { Scroller } from "components/scroller/scroller";
 import { WebComponentLit } from "components/web-component/web-component-lit";
 import type { QueryGridGalleryLazyImage } from "./query-grid-gallery-lazy-image";
 import "./query-grid-gallery-lazy-image";
@@ -461,7 +462,7 @@ export class QueryGridGallery extends WebComponentLit {
         super.updated?.(changedProps);
         if (changedProps.has('_items') || changedProps.has('size')) {
             if (changedProps.has('_items')) {
-                const scroller = this.shadowRoot?.querySelector('vi-scroller') as any;
+                const scroller = this.shadowRoot?.querySelector('vi-scroller') as Scroller;
                 if (scroller)
                     scroller.verticalScrollOffset = 0;
             }
