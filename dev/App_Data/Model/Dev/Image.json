@@ -95,7 +95,7 @@
       "Name": "Images",
       "Label": {
         "en": "Images",
-        "nl": ""
+        "nl": "Afbeeldingen"
       },
       "PersistentObject": {
         "$ref": "PersistentObject:f3baf277-6ccf-34b7-ba0e-5c036bc8c7de"
