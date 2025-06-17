@@ -1,0 +1,107 @@
+{
+  "PersistentObject": {
+    "$id": "PersistentObject:f3baf277-6ccf-34b7-ba0e-5c036bc8c7de",
+    "Id": "f3baf277-6ccf-34b7-ba0e-5c036bc8c7de",
+    "SchemaName": "Dev",
+    "Type": "Image",
+    "Salt": "LGLZy48Qv9Gp4V0V7IqAmXEvEd9BgnkSHtyizlsEsGKESJ3lI-LPmQ",
+    "SortOptions": "TakenOn DESC",
+    "Groups": [
+      {
+        "$id": "PersistentObjectAttributeGroup:9f23fe4c-5ecd-4c2d-bae4-851e407c3a21",
+        "Id": "9f23fe4c-5ecd-4c2d-bae4-851e407c3a21"
+      }
+    ],
+    "Tabs": [
+      {
+        "$id": "PersistentObjectAttributeTab:45dee4d5-860f-4374-81b0-a223ae1127d6",
+        "Id": "45dee4d5-860f-4374-81b0-a223ae1127d6"
+      }
+    ],
+    "Attributes": [
+      {
+        "$id": "PersistentObjectAttribute:a7084e80-3101-34e5-bf35-0dfa304c385c",
+        "Id": "a7084e80-3101-34e5-bf35-0dfa304c385c",
+        "Offset": 10,
+        "Name": "FullUrl",
+        "Label": {
+          "en": "Full url",
+          "nl": "Full url"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:9f23fe4c-5ecd-4c2d-bae4-851e407c3a21"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:45dee4d5-860f-4374-81b0-a223ae1127d6"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:38f97fd4-9d40-3c15-8c6f-879bf87c5e1d",
+        "Id": "38f97fd4-9d40-3c15-8c6f-879bf87c5e1d",
+        "Offset": 30,
+        "Name": "TakenOn",
+        "Label": {
+          "en": "Taken On",
+          "nl": "Date takenb"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:DateTime"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:9f23fe4c-5ecd-4c2d-bae4-851e407c3a21"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:45dee4d5-860f-4374-81b0-a223ae1127d6"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:3d5e3ebd-b225-3cd9-be40-cd0da712c0f9",
+        "Id": "3d5e3ebd-b225-3cd9-be40-cd0da712c0f9",
+        "Offset": 20,
+        "Name": "ThumbUrl",
+        "Label": {
+          "en": "Thumb url",
+          "nl": "Thumb url"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:9f23fe4c-5ecd-4c2d-bae4-851e407c3a21"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:45dee4d5-860f-4374-81b0-a223ae1127d6"
+        }
+      }
+    ],
+    "Queries": []
+  },
+  "Queries": [
+    {
+      "$id": "Query:4eedc392-c969-49d5-a320-029c335d46bc",
+      "Id": "4eedc392-c969-49d5-a320-029c335d46bc",
+      "Source": "Custom.Images",
+      "AutoQuery": true,
+      "PageSize": 0,
+      "Name": "Images",
+      "Label": {
+        "en": "Images",
+        "nl": "Afbeeldingen"
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:f3baf277-6ccf-34b7-ba0e-5c036bc8c7de"
+      },
+      "Columns": []
+    }
+  ],
+  "Reports": []
+}

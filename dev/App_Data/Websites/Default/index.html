@@ -20,6 +20,11 @@
     </head>
     <body>
         <vi-app label="Vidyano">
+            <vi-query-config query="[[photos]]" name="Images">
+                <template>
+                    <vi-query-grid-gallery query="[[query]]" size="200" map='{ "image": "FullUrl", "thumbnail": "ThumbUrl" }'></vi-query-grid-gallery>
+                </template>
+            </vi-query-config>
             <vi-session-presenter slot="menu-footer">
                 <template>
                     <vi-persistent-object-attribute-presenter no-label attribute="[[session.attributes.Reference]]"></vi-persistent-object-attribute-presenter>

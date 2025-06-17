@@ -3,6 +3,7 @@ import * as Vidyano from "vidyano"
 import { AppServiceHooks } from "components/app-service-hooks/app-service-hooks"
 import { IFileDropDetails } from "components/file-drop/file-drop"
 import { QueryGrid } from "components/query-grid/query-grid"
+import "components/query-grid-gallery/query-grid-gallery"
 import { ConfigurableWebComponent } from "components/web-component/web-component-configurable"
 
 @ConfigurableWebComponent.register({

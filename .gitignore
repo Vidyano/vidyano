@@ -369,3 +369,5 @@ tests/**/*.js
 
 playwright-report/index.html
 test-results/
+
+patch
