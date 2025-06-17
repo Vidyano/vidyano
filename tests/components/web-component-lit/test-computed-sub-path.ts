@@ -1,0 +1,65 @@
+import { WebComponentLit } from "../../../src/app/web-components/web-component/web-component-lit.js";
+import { Observable } from "../../../src/vidyano/observable/index.js";
+import { html } from "lit";
+
+export class QuerySource extends Observable<QuerySource> {
+    private _items: string[] = [];
+
+    get items(): string[] {
+        return this._items;
+    }
+
+    set items(value: string[]) {
+        if (this._items === value)
+            return;
+
+        const oldValue = this._items;
+        this._items = value;
+        this.notifyPropertyChanged("items", this._items, oldValue);
+    }
+
+    constructor(initialItems: string[]) {
+        super();
+        this._items = initialItems;
+    }
+
+    addItem(item: string) {
+        const oldItems = [...this._items];
+        this._items.push(item);
+        this.notifyArrayChanged("items", oldItems.length, [], 1);
+        this.notifyPropertyChanged("items", this._items, oldItems); // Also notify that 'items' array instance itself might be considered "changed" by some observers
+    }
+}
+
+@WebComponentLit.register({
+    properties: {
+        query: {
+            type: Object
+        },
+        items: {
+            type: Array,
+            computed: "query.items"
+        }
+    }
+}, "test-computed-sub-path")
+export class TestComputedSubPath extends WebComponentLit {
+    query: QuerySource;
+    readonly items: string[];
+
+    constructor() {
+        super();
+        this.query = new QuerySource(["initial1", "initial2"]);
+    }
+
+    render() {
+        return html`
+            <p>Tests computed property based on an Observable object's property.</p>
+            <div id="query-items">${this.query?.items?.join(", ")}</div>
+            <div id="component-items">${this.items?.join(", ")}</div>
+        `;
+    }
+
+    resetQuerySource() {
+        this.query = new QuerySource(["brandnew1", "brandnew2"]);
+    }
+}

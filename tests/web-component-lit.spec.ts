@@ -318,3 +318,49 @@ test('TestEventListeners: host and child element event listeners', async ({ page
     expect(state.buttonClickCount).toBe(1);
     expect(state.lastMessageFromEvent).toBe('Host click handler invoked');
 });
+
+test('TestComputedSubPath: items computed from query.items sub-path', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-computed-sub-path');
+    await expect(component).toBeVisible();
+
+    // --- Initial state verification ---
+    await expect(component.locator('#component-items')).toContainText('initial1, initial2');
+    let compItems = await component.evaluate(node => (node as any).items);
+    expect(compItems).toEqual(["initial1", "initial2"]);
+
+    let queryItems = await component.evaluate(node => (node as any).query.items);
+    expect(queryItems).toEqual(["initial1", "initial2"]);
+
+    // --- Act: Change query.items to a new array instance ---
+    await component.evaluate(node => { (node as any).query.items = ["new1", "new2", "new3"]; });
+    await expect(component.locator('#component-items')).toContainText('new1, new2, new3'); // Wait for re-render
+    
+    compItems = await component.evaluate(node => (node as any).items);
+    expect(compItems).toEqual(["new1", "new2", "new3"]);
+    queryItems = await component.evaluate(node => (node as any).query.items);
+    expect(queryItems).toEqual(["new1", "new2", "new3"]);
+
+    // --- Act: Mutate query.items by adding an item (push) ---
+    // This requires the QuerySource to correctly notify about array changes for the computed property to pick it up.
+    await component.evaluate(node => {
+        const inst = node as any;
+        inst.query.addItem("added4");
+    });
+    
+    await expect(component.locator('#component-items')).toContainText('new1, new2, new3, added4');
+
+    compItems = await component.evaluate(node => (node as any).items);
+    expect(compItems).toEqual(["new1", "new2", "new3", "added4"]);
+    queryItems = await component.evaluate(node => (node as any).query.items);
+    expect(queryItems).toEqual(["new1", "new2", "new3", "added4"]);
+
+    // --- Act: Change the entire query object instance ---
+    await component.evaluate(node => {
+        (node as any).resetQuerySource();
+    });
+    await expect(component.locator('#component-items')).toContainText('brandnew1, brandnew2');
+    compItems = await component.evaluate(node => (node as any).items);
+    expect(compItems).toEqual(["brandnew1", "brandnew2"]);
+    queryItems = await component.evaluate(node => (node as any).query.items);
+    expect(queryItems).toEqual(["brandnew1", "brandnew2"]);
+});
