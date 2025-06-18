@@ -1,4 +1,4 @@
-import type * as Dto from "./typings/service.js"
+import * as Dto from "./typings/service.js"
 import type { Action } from "./action.js"
 import type { Query } from "./query.js"
 import type { Service } from "./service.js"
@@ -10,13 +10,7 @@ import { PersistentObjectAttributeWithReference } from "./persistent-object-attr
 import { PersistentObjectTab, PersistentObjectAttributeTab, PersistentObjectQueryTab } from "./persistent-object-tab.js"
 import { _internal, PersistentObjectSymbols } from "./_internals.js"
 
-/**
- * Defines available layout modes when displaying persistent objects.
- */
-export enum PersistentObjectLayoutMode {
-    FullPage,
-    MasterDetail
-}
+export { PersistentObjectLayoutMode, PersistentObjectStateBehavior } from "./typings/service.js";
 
 /**
  * Symbol used to backup the DTO of a persistent object.
@@ -48,7 +42,7 @@ export class PersistentObject extends ServiceObjectWithActions {
     #objectId: string;
     readonly #isHidden: boolean;
     readonly #isReadOnly: boolean;
-    readonly #queryLayoutMode: PersistentObjectLayoutMode;
+    readonly #queryLayoutMode: Dto.PersistentObjectLayoutMode;
     readonly #newOptions: string;
     #stateBehavior: string;
     readonly #dialogSaveAction: Action;
@@ -126,7 +120,7 @@ export class PersistentObject extends ServiceObjectWithActions {
         this.#label = po.label;
         this.#forceFromAction = po.forceFromAction;
         this.#fullTypeName = po.fullTypeName;
-        this.#queryLayoutMode = po.queryLayoutMode === "FullPage" ? PersistentObjectLayoutMode.FullPage : PersistentObjectLayoutMode.MasterDetail;
+        this.#queryLayoutMode = po.queryLayoutMode;
         this.#objectId = po.objectId;
         this.#breadcrumb = po.breadcrumb;
         this.#isBreadcrumbSensitive = po.isBreadcrumbSensitive;
@@ -303,7 +297,7 @@ export class PersistentObject extends ServiceObjectWithActions {
     /**
      * Gets the way in which this persistent object is rendered together with its detail queries.
      */
-    get queryLayoutMode(): PersistentObjectLayoutMode {
+    get queryLayoutMode(): Dto.PersistentObjectLayoutMode {
         return this.#queryLayoutMode;
     }
 

@@ -1,5 +1,9 @@
-// Enum type definitions
-type NotificationTypeDto = "" | "OK" | "Notice" | "Warning" | "Error";
+// Union type definitions
+
+export type NotificationType = "" | "OK" | "Notice" | "Warning" | "Error";
+export type PersistentObjectLayoutMode = "Application" | "MasterDetail" | "FullPage";
+export type PersistentObjectStateBehavior = "None" | "OpenInEdit" | "StayInEdit" | "AsDialog";
+export type PersistentObjectAttributeVisibility = "Always" | "Read" | "New" | "Never" | "Query" | "Read, Query" | "Read, New" | "Query, New";
 
 // Request and Response DTOs
 export declare type RequestDto = {
@@ -194,7 +198,7 @@ export declare type PersistentObjectDto = Partial<{
     /**
      * Gets the notification type.
      */
-    notificationType: NotificationTypeDto;
+    notificationType: NotificationType;
 
     /**
      * Gets the notification duration.
@@ -219,7 +223,7 @@ export declare type PersistentObjectDto = Partial<{
     /**
      * Indicates the way in which this persistent object is rendered together with its detail queries.
      */
-    queryLayoutMode: "Application" | "MasterDetail" | "FullPage";
+    queryLayoutMode: PersistentObjectLayoutMode;
 
     /**
      * The names of the queries that should be refreshed when an action on this persistent object is executed.
@@ -234,7 +238,7 @@ export declare type PersistentObjectDto = Partial<{
     /**
      * Gets a set of extra options that influence the state of the persistent object.
      */
-    stateBehavior: "None" | "OpenInEdit" | "StayInEdit" | "AsDialog";
+    stateBehavior: PersistentObjectStateBehavior;
 
     /**
      * Gets the tab information for the persistent object.
@@ -255,7 +259,7 @@ export declare type PersistentObjectAttributeDto = {
     /*
      * Gets the actions that should be invoked directly on the attribute.
      */
-    actions: string[];
+    actions?: string[];
     id?: string;
     column?: number;
     name: string;
@@ -271,7 +275,7 @@ export declare type PersistentObjectAttributeDto = {
     isValueChanged?: boolean;
     offset?: number;
     rules?: string;
-    visibility?: "Always" | "Read" | "New" | "Never" | "Query" | "Read, Query" | "Read, New" | "Query, New";
+    visibility?: PersistentObjectAttributeVisibility;
     toolTip?: string;
     columnSpan?: number;
     typeHints?: Record<string, string>;
@@ -438,7 +442,7 @@ export declare type QueryDto = Partial<{
     /**
      * Gets the notification type.
      */
-    notificationType: NotificationTypeDto;
+    notificationType: NotificationType;
 
     /**
      * Gets the notification duration.
@@ -533,7 +537,7 @@ export declare type QueryResultDto = {
     items: QueryResultItemDto[];
     notification?: string;
     notificationDuration?: number;
-    notificationType?: NotificationTypeDto;
+    notificationType?: NotificationType;
     pageSize?: number;
     skip?: number;
     sortOptions: string;

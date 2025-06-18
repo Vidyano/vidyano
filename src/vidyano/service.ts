@@ -23,15 +23,12 @@ import { sleep } from "./common/sleep.js";
 import { fetchEventSource, EventSourceMessage } from "@microsoft/fetch-event-source";
 import { _internal } from "./_internals.js";
 
+export { NotificationType } from "./typings/service.js";
+
 /**
  * The current version of the Vidyano client.
  */
 export let version = "vidyano-latest-version";
-
-/**
- * Represents the type of notification.
- */
-export declare type NotificationType = "" | "OK" | "Notice" | "Warning" | "Error";
 
 /**
  * Options for retrieving a query.
@@ -1355,7 +1352,7 @@ export interface IForgotPassword {
     /**
      * The type of notification (e.g., "Info", "Error").
      */
-    notificationType: NotificationType;
+    notificationType: Dto.NotificationType;
 
     /**
      * The duration in milliseconds for which the notification should be displayed.
