@@ -102,7 +102,7 @@ const configs = [
 ];
 
 // Add TypeScript definitions generation for production build
-if (!isDevelopment && process.env.GENERATE_DTS !== 'false') {
+if (!isDevelopment) {
     configs.push(...[
         {
             input: './src/app/index.js',

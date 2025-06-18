@@ -1,8 +1,41 @@
 {
-  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "declaration": true,
-    "declarationDir": "rollup",
-    "target": "ES2022",
+      "target": "ES2022",
+      "module": "ESNext",
+      "declaration": true,
+      "declarationDir": "rollup",
+      "useDefineForClassFields": false,
+      "allowSyntheticDefaultImports": true,
+      "importHelpers": true,
+      "moduleResolution": "node",
+      "lib": [
+          "ES2022",
+          "DOM",
+          "DOM.Iterable"
+      ],
+      "experimentalDecorators": true,
+      "noEmitOnError": false,
+      "rootDir": ".",
+      "types": [
+          "qunit"
+      ],
+      "baseUrl": "src",
+      "paths": {
+        "components/*": [ "app/web-components/*" ],
+        "libs/*": [ "app/libs/*" ],
+        "polymer": [ "app/libs/polymer/polymer" ],
+        "vidyano": [ "vidyano" ],
+      }
+  },
+  "exclude": [
+      "wwwroot/dist",
+  ],
+  "include": [
+      "src/core/**/*.ts",
+      "src/app/**/*.ts",
+      "tests/components/**/*.ts",
+  ],
+  "watchOptions": {
+    "watchFile": "dynamicprioritypolling"
   }
 }
