@@ -65,6 +65,7 @@ export abstract class WebComponentLit extends LitElement {
      * Gets the global app instance.
      */
     get app(): AppBase {
+        // @ts-ignore window.app is set but not typed
         return window.app;
     }
 
@@ -99,6 +100,7 @@ export abstract class WebComponentLit extends LitElement {
             window.removeEventListener("app-changed", this[APP_CHANGE_LISTENER_SYMBOL]);
             this[APP_CHANGE_LISTENER_SYMBOL] = null;
 
+            // @ts-ignore window.app is set but not typed
             this.requestUpdate("app", window.app);
 
             if (!this.app.service)

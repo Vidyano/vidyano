@@ -47,7 +47,6 @@ if (hashBangRe.test(document.location.href)) {
 
 declare global {
     interface Window {
-        app: AppBase;
         Vidyano: typeof Vidyano;
     }
 }
@@ -209,6 +208,7 @@ export abstract class AppBase extends WebComponent {
     constructor(private _hooks?: AppServiceHooksBase) {
         super();
         
+        // @ts-ignore window.app is set but not typed
         window.app = this;
         window.dispatchEvent(new CustomEvent("app-changed", { detail: { value: this }}));
 
