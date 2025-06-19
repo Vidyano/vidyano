@@ -106,7 +106,7 @@ if (!isDevelopment) {
     configs.push(...[
         {
             input: './src/app/index.js',
-            external: ["tslib", "bignumber.js"],
+            external: ["tslib", "bignumber.js", "lit"],
             plugins: [
                 alias({ entries }),
                 dts({ respectExternal: true })
