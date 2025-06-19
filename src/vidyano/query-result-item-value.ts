@@ -16,7 +16,7 @@ export class QueryResultItemValue extends ServiceObject {
     #valueParsed: boolean = false;
     #key: string;
     #rawValue: string;
-    #typeHints: any;
+    #typeHints: Record<string | symbol, any>;
     #persistentObjectId: string;
     #objectId: string;
 
@@ -39,7 +39,7 @@ export class QueryResultItemValue extends ServiceObject {
         this.#rawValue = value.value;
         this.#persistentObjectId = value.persistentObjectId;
         this.#objectId = value.objectId;
-        this.#typeHints = value.typeHints;
+        this.#typeHints = value.typeHints || {};
     }
 
     /**
@@ -73,7 +73,7 @@ export class QueryResultItemValue extends ServiceObject {
     /**
      * Gets the type hints for this value.
      */
-    get typeHints(): any {
+    get typeHints(): Record<string | symbol, any> {
         return this.#typeHints;
     }
 

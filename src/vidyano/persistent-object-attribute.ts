@@ -49,7 +49,7 @@ export class PersistentObjectAttribute extends ServiceObject {
     readonly #toolTip: string;
     #triggersRefresh: boolean;
     readonly #type: string;
-    #typeHints: Record<string, string>;
+    #typeHints: Record<string | symbol, any>;
     #validationError: string;
     #visibility: Dto.PersistentObjectAttributeDto["visibility"];
 
@@ -535,7 +535,7 @@ export class PersistentObjectAttribute extends ServiceObject {
     /**
      * Gets the data type hints
      */
-    get typeHints(): Record<string, string> {
+    get typeHints(): Record<string | symbol, any> {
         return this.#typeHints;
     }
 
