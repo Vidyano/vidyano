@@ -392,8 +392,9 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
         });
     }
 
-    private static _register(element: CustomElementConstructor, info: IWebComponentRegistrationInfo = {}, prefixOrElementName?: string ) {
-        const elementName = prefixOrElementName.includes("-") ? prefixOrElementName : `${prefixOrElementName}-${element.name.toKebabCase()}`;
+    private static _register(element: CustomElementConstructor, info: IWebComponentRegistrationInfo = {}, prefixOrElementName: string = "") {
+        const needsSuffix = prefixOrElementName && !prefixOrElementName.includes("-");
+        const elementName = needsSuffix ? `${prefixOrElementName}-${element.name.toKebabCase()}` : prefixOrElementName;
         WebComponent._updateTemplateProperty(element, elementName);
 
         let baseProperties: IWebComponentProperties = {};
@@ -720,7 +721,8 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
             element.prototype[`op_${fn}`] = Operations.prototype[fn];
         }
 
-        window.customElements.define(elementName, element);
+        if (!!elementName)
+            window.customElements.define(elementName, element);
 
         return element;
     }
@@ -728,7 +730,7 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
     private static abstractRegistrations: { [key: string]: IWebComponentRegistrationInfo; } = {};
 
     static register(prefixOrElementName: string): (obj: any) => void;
-    static register(info: IWebComponentRegistrationInfo, prefixOrElementName?: string): (obj: any) => void;
+    static register(info: IWebComponentRegistrationInfo, prefixOrElementName: string): (obj: any) => void;
     static register(): (obj: any) => void;
     static register(firstArg?: IWebComponentRegistrationInfo | string, secondArg?: string): (obj: any) => void {
         let registrationInfoFromArgs: IWebComponentRegistrationInfo | undefined;
