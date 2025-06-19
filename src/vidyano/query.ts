@@ -176,8 +176,8 @@ export class Query extends ServiceObjectWithActions {
             this.#lastUpdated = new Date();
         }
 
-        if (queryDto instanceof Query && queryDto.groupingInfo)
-            this.#setGroupingInfo({ groupedBy: queryDto.groupingInfo.groupedBy });
+        if (!!queryDto.groupedBy)
+            this.#setGroupingInfo({ groupedBy: queryDto.groupedBy });
     }
 
     /**
@@ -935,8 +935,7 @@ export class Query extends ServiceObjectWithActions {
         }
 
         result["sortOptions"] = this.sortOptions ? this.sortOptions.filter(option => option.direction !== "").map(option => `${option.name}${option.direction === "DESC" ? " " + option.direction : ""}`).join("; ") : "";
-        if (this.groupingInfo && this.groupingInfo.groupedBy)
-            result["groupedBy"] = this.groupingInfo.groupedBy;
+        result["groupedBy"] = this.groupingInfo?.groupedBy;
 
         if (this.persistentObject)
             result.persistentObject = this.persistentObject.toServiceObject();
