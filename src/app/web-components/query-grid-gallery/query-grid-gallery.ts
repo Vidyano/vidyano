@@ -1,7 +1,7 @@
 import * as Vidyano from "vidyano"
 import { html, unsafeCSS } from "lit";
 import type { Scroller } from "components/scroller/scroller";
-import { WebComponentLit } from "components/web-component/web-component-lit";
+import { property, WebComponentLit } from "components/web-component/web-component-lit";
 import type { QueryGridGalleryLazyImage } from "./query-grid-gallery-lazy-image";
 import "./query-grid-gallery-lazy-image";
 import "./query-grid-gallery-image-viewer";
@@ -56,69 +56,29 @@ export type ImageItemMap = {
  * A web component that displays a gallery of photos grouped by day and month,
  * with responsive layout and lazy image loading.
  */
-@WebComponentLit.register({
-    properties: {
-        query: {
-            type: Object
-        },
-        size: {
-            type: Number,
-            reflect: true,
-            attribute: "size"
-        },
-        map: {
-            type: Object,
-            computed: "_computeMap(_map)"
-        },
-        _map: {
-            type: String,
-            attribute: "map"
-        },
-        _items: {
-            type: Array,
-            computed: "query.items",
-            state: true
-        },
-        _rows: {
-            state: true
-        },
-        _visibleRowIndexes: {
-            state: true
-        },
-        _viewerActive: {
-            state: true
-        },
-        _viewerCurrentIndex: {
-            state: true
-        },
-        _selectionMode: {
-            state: true
-        },
-        _selectedItems: {
-            state: true
-        },
-    }
-}, "vi-query-grid-gallery")
 export class QueryGridGallery extends WebComponentLit {
     static styles = unsafeCSS(styles);
     
-    private _visibleRowIndexes: Set<number> = new Set();    
-    private _viewerActive = false;
-    private _viewerCurrentIndex: number | null = null;
+    @property({ type: Array, computed: "query.items", state: true }) private _items: Vidyano.QueryResultItem[];
+    @property({ type: String, attribute: "map" }) private declare map: string;
+    @property({ type: Array, state: true }) private _rows: (MonthHeaderRowItem | GalleryRowItem)[] = [];
+    @property({ type: Array, state: true }) private _selectedItems: Set<any> = new Set();
+    @property({ type: Boolean, state: true }) private _selectionMode = false;
+    @property({ type: Object, state: true }) private _visibleRowIndexes: Set<number> = new Set();
+    @property({ type: Boolean, state: true }) private _viewerActive = false;
+    @property({ type: Number, state: true }) private _viewerCurrentIndex: number | null = null;
 
-    private _intersectionObserver: IntersectionObserver;
-    private _rowIntersectionObserver: IntersectionObserver;
-    private _resizeObserver: ResizeObserver;
-    private _rows: (MonthHeaderRowItem | GalleryRowItem)[] = [];
-    private _resizeDebounceTimer: number;
-    private _selectedItems: Set<any> = new Set();
-    private _selectionMode = false;
-    private _lastSelectedIndex: number | null = null;
-    private _items: Vidyano.QueryResultItem[];
 
-    map: ImageItemMap;
-    query: Vidyano.Query;
-    size = 175; // Preferred size (in pixels) for gallery images.
+    @property({ type: Object, computed: "_computeMap(map)", state: true }) private _map: ImageItemMap;
+    @property({ type: Object }) query: Vidyano.Query;
+    @property({ type: Number, reflect: true, attribute: "size" }) size = 175; // Preferred size (in pixels) for gallery images.
+
+    #lastSelectedIndex: number | null = null;
+
+    #intersectionObserver: IntersectionObserver;
+    #rowIntersectionObserver: IntersectionObserver;
+    #resizeObserver: ResizeObserver;
+    #resizeDebounceTimer: number;
 
     /**
      * Computes the mapping of item properties based on the provided map string.
@@ -157,7 +117,7 @@ export class QueryGridGallery extends WebComponentLit {
      */
     private _calculateLayout() {
         const scroller = this.shadowRoot?.querySelector('vi-scroller') as HTMLElement;
-        if (!scroller || scroller.offsetWidth === 0 || !this._items?.some(Boolean) || !this.map) {
+        if (!scroller || scroller.offsetWidth === 0 || !this._items?.some(Boolean) || !this._map) {
             this._rows = [];
             this._visibleRowIndexes.clear();
             return;
@@ -193,13 +153,13 @@ export class QueryGridGallery extends WebComponentLit {
             : actualImageSize;
 
         let rowsToSet: (MonthHeaderRowItem | GalleryRowItem)[] = [];
-        let performDateGrouping = this.map.date !== null;
+        let performDateGrouping = this._map.date !== null;
 
         if (performDateGrouping) {
             // If date grouping is requested, check if all items have valid dates.
             // If any item has an invalid/undefined date, disable grouping for the entire gallery.
             for (const item of this._items) {
-                const dateValue = item.values[this.map.date as string];
+                const dateValue = item.values[this._map.date as string];
                 if (!(dateValue && typeof dateValue.toISOString === 'function')) {
                     performDateGrouping = false; // Found an item that prevents date grouping
                     break;
@@ -241,7 +201,7 @@ export class QueryGridGallery extends WebComponentLit {
             const datedItemsMap = new Map<string, any[]>();
             for (const item of this._items) {
                 // All items here are guaranteed to have a valid date for this.map.date
-                const dateValue = item.values[this.map.date as string] as Date;
+                const dateValue = item.values[this._map.date as string] as Date;
                 const dateStr = dateValue.toISOString().slice(0, 10);
                 if (!datedItemsMap.has(dateStr))
                     datedItemsMap.set(dateStr, []);
@@ -371,15 +331,15 @@ export class QueryGridGallery extends WebComponentLit {
      * Sets up resize and intersection observers for responsive layout and lazy loading.
      */
     firstUpdated() {
-        this._resizeObserver = new ResizeObserver(() => {
-            clearTimeout(this._resizeDebounceTimer);
-            this._resizeDebounceTimer = window.setTimeout(() => this._calculateLayout(), 200);
+        this.#resizeObserver = new ResizeObserver(() => {
+            clearTimeout(this.#resizeDebounceTimer);
+            this.#resizeDebounceTimer = window.setTimeout(() => this._calculateLayout(), 200);
         });
         const scroller = this.shadowRoot?.querySelector('vi-scroller') as HTMLElement;
         if (scroller) {
-            this._resizeObserver.observe(scroller);
+            this.#resizeObserver.observe(scroller);
 
-            this._intersectionObserver = new IntersectionObserver((entries, observer) => {
+            this.#intersectionObserver = new IntersectionObserver((entries, observer) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         const lazyImage = entry.target as QueryGridGalleryLazyImage;
@@ -392,7 +352,7 @@ export class QueryGridGallery extends WebComponentLit {
                 rootMargin: "200px 0px 200px 0px" // Pre-load images 200px before and after they enter the viewport
             });
             
-            this._rowIntersectionObserver = new IntersectionObserver((entries, observer) => {
+            this.#rowIntersectionObserver = new IntersectionObserver((entries, observer) => {
                 const newVisibleIndexes = new Set(this._visibleRowIndexes);
                 let changed = false;
                 entries.forEach(entry => {
@@ -425,11 +385,11 @@ export class QueryGridGallery extends WebComponentLit {
      */
     disconnectedCallback() {
         super.disconnectedCallback();
-        this._resizeObserver?.disconnect();
-        this._intersectionObserver?.disconnect();
-        this._rowIntersectionObserver?.disconnect();
+        this.#resizeObserver?.disconnect();
+        this.#intersectionObserver?.disconnect();
+        this.#rowIntersectionObserver?.disconnect();
         window.removeEventListener('keydown', this._handleKeyDown);
-        clearTimeout(this._resizeDebounceTimer);
+        clearTimeout(this.#resizeDebounceTimer);
     }
 
     private _handleKeyDown = (event: KeyboardEvent) => {
@@ -470,14 +430,14 @@ export class QueryGridGallery extends WebComponentLit {
             Promise.resolve().then(() => this._calculateLayout());
         }
 
-        if (this._rowIntersectionObserver) {
+        if (this.#rowIntersectionObserver) {
             const placeholders = this.shadowRoot?.querySelectorAll('.row-placeholder');
-            placeholders?.forEach(p => this._rowIntersectionObserver.observe(p));
+            placeholders?.forEach(p => this.#rowIntersectionObserver.observe(p));
         }
 
-        if (this._intersectionObserver) {
+        if (this.#intersectionObserver) {
             const lazyImages = this.shadowRoot?.querySelectorAll('vi-query-grid-gallery-lazy-image');
-            lazyImages?.forEach(img => this._intersectionObserver.observe(img));
+            lazyImages?.forEach(img => this.#intersectionObserver.observe(img));
         }
     }
 
@@ -500,8 +460,8 @@ export class QueryGridGallery extends WebComponentLit {
         const itemIndexInQuery = this._items.indexOf(item);
         if (itemIndexInQuery === -1) return;
 
-        if (event?.shiftKey && this._lastSelectedIndex !== null && this._lastSelectedIndex >= 0 && this._lastSelectedIndex < this._items.length) {
-            const anchorIndex = this._lastSelectedIndex;
+        if (event?.shiftKey && this.#lastSelectedIndex !== null && this.#lastSelectedIndex >= 0 && this.#lastSelectedIndex < this._items.length) {
+            const anchorIndex = this.#lastSelectedIndex;
             const currentIndex = itemIndexInQuery;
 
             const start = Math.min(anchorIndex, currentIndex);
@@ -515,7 +475,7 @@ export class QueryGridGallery extends WebComponentLit {
             // which then updates its selectedItems and notifies listeners.
             item.isSelected = !item.isSelected;
             // Update _lastSelectedIndex to the current item for non-shift clicks or initial clicks.
-            this._lastSelectedIndex = itemIndexInQuery;
+            this.#lastSelectedIndex = itemIndexInQuery;
         }
 
         // Sync local component state from the query's authoritative selection state
@@ -535,7 +495,7 @@ export class QueryGridGallery extends WebComponentLit {
         // Sync local component state
         this._selectedItems = new Set();
         this._selectionMode = false;
-        this._lastSelectedIndex = null;
+        this.#lastSelectedIndex = null;
         this.classList.remove('selection-mode');
     }
 
@@ -569,9 +529,9 @@ export class QueryGridGallery extends WebComponentLit {
                         <div class="photos-container">
                             ${block.photos.map((item: Vidyano.QueryResultItem) => html`
                                 <div class="gallery-photo${this._selectedItems.has(item) ? ' selected' : ''}" style="width: ${block.actualImageSize}px; height: ${block.actualImageSize}px;"
-                                     @click=${(e: MouseEvent) => this._handlePhotoClick(item, e)} role="button" tabindex="0" aria-label="${item.values[this.map.label]}">
+                                     @click=${(e: MouseEvent) => this._handlePhotoClick(item, e)} role="button" tabindex="0" aria-label="${item.values[this._map.label]}">
                                     <input type="checkbox" class="selection-checkbox" .checked=${this._selectedItems.has(item)} @click=${(e: MouseEvent) => this._handleCheckboxClick(item, e)}>
-                                    <vi-query-grid-gallery-lazy-image .src=${item.values[this.map.thumbnail]} alt="${item.values[this.map.label]}"></vi-query-grid-gallery-lazy-image>
+                                    <vi-query-grid-gallery-lazy-image .src=${item.values[this._map.thumbnail]} alt="${item.values[this._map.label]}"></vi-query-grid-gallery-lazy-image>
                                 </div>
                             `)}
                         </div>
@@ -594,7 +554,7 @@ export class QueryGridGallery extends WebComponentLit {
 
             <vi-query-grid-gallery-image-viewer
                 .items=${this._items}
-                .map=${this.map}
+                .map=${this._map}
                 .currentIndex=${this._viewerCurrentIndex}
                 ?open=${this._viewerActive}
                 @close=${this._closeImageViewer}
@@ -604,3 +564,5 @@ export class QueryGridGallery extends WebComponentLit {
         `;
     }
 }
+
+customElements.define("vi-query-grid-gallery", QueryGridGallery);

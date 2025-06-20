@@ -7,23 +7,12 @@ import styles from "./query-grid-gallery-lazy-image.css";
  * A web component for lazy-loading images in the gallery.
  * The image is only loaded when it enters the viewport.
  */
-@WebComponentLit.register({
-    properties: {
-        src: { type: String },
-        alt: { type: String },
-        _isLoaded: { state: true }
-    }
-}, "vi-query-grid-gallery-lazy-image")
 export class QueryGridGalleryLazyImage extends WebComponentLit {
     static styles = unsafeCSS(styles);
 
-    @property({ type: String })
-    src: string;
-
-    @property({ type: String })
-    alt: string;
-
-    private _isLoaded = false;
+    @property({ type: String }) src: string;
+    @property({ type: String }) alt: string;
+    @property({ type: Boolean, state: true }) private _isLoaded = false;
 
     /**
      * Loads the image when it enters the viewport.
@@ -47,3 +36,5 @@ export class QueryGridGalleryLazyImage extends WebComponentLit {
         return html`<img .src=${this._isLoaded ? this.src : ""}  alt=${this.alt}  class=${this._isLoaded ? 'loaded' : ''}>`;
     }
 }
+
+customElements.define("vi-query-grid-gallery-lazy-image", QueryGridGalleryLazyImage);

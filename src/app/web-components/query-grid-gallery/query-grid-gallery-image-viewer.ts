@@ -1,7 +1,7 @@
 import { html, unsafeCSS } from "lit";
 import { query } from "lit/decorators.js";
 import type { ImageItemMap } from "./query-grid-gallery"
-import { WebComponentLit } from "components/web-component/web-component-lit";
+import { property, WebComponentLit } from "components/web-component/web-component-lit";
 import * as Vidyano from "vidyano";
 import styles from "./query-grid-gallery-image-viewer.css";
 
@@ -9,40 +9,15 @@ import styles from "./query-grid-gallery-image-viewer.css";
  * A web component that uses a native <dialog> element to display a single photo
  * in a full-screen overlay, with navigation controls.
  */
-@WebComponentLit.register({
-    properties: {
-        items: {
-            type: Array
-        },
-        currentIndex: {
-            type: Number
-        },
-        map: {
-            type: Object
-        },
-        open: {
-            type: Boolean
-        },
-        _isLoading: {
-            type: Boolean,
-            state: true
-        },
-        _controlsVisible: {
-            type: Boolean,
-            state: true
-        }
-    }
-}, "vi-query-grid-gallery-image-viewer")
 export class QueryGridGalleryImageViewer extends WebComponentLit {
     static styles = unsafeCSS(styles);
 
-    items: Vidyano.QueryResultItem[] = [];
-    currentIndex: number | null = null;
-    map: ImageItemMap;
-    open: boolean = false;
-    
-    private _isLoading = false;
-    private _controlsVisible = false;
+    @property({ type: Array }) items: Vidyano.QueryResultItem[] = [];
+    @property({ type: Number }) currentIndex: number | null = null;
+    @property({ type: Object }) map: ImageItemMap;
+    @property({ type: Boolean }) open: boolean = false;
+    @property({ type: Boolean, state: true }) private _isLoading = false;
+    @property({ type: Boolean, state: true }) private _controlsVisible = false;
 
     @query('dialog')
     private _dialog: HTMLDialogElement;
@@ -157,3 +132,5 @@ export class QueryGridGalleryImageViewer extends WebComponentLit {
         `;
     }
 }
+
+customElements.define("vi-query-grid-gallery-image-viewer", QueryGridGalleryImageViewer);
