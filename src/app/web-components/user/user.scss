@@ -74,9 +74,3 @@ $border-color: color.mix(white, $background-color, 7.5%);
         }
     }
 }
-
-:host-context([is-signed-in]) {
-    vi-button {
-        cursor: pointer;
-    }
-}

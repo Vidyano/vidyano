@@ -19,6 +19,7 @@
         > vi-persistent-object-attribute-presenter {
             height: var(--theme-h2);
             line-height: var(--theme-h2);
+            overflow: hidden;
 
             &[soft-edit-only] {
                 display: none !important;
@@ -95,8 +96,15 @@
     }
 }
 
-:host-context(vi-persistent-object-attribute-as-detail:not([editing])) {
+:host(:not([editing])) {
     .column:not(:last-of-type) {
         border-right: 1px solid var(--theme-light-border);
     }
+}
+
+vi-persistent-object-attribute-boolean {
+    border: 1px solid var(--theme-light-border);
+    margin: 0 1px;
+    padding: 0 var(--theme-h5);
+    line-height: var(--theme-h2);
 }

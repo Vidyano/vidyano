@@ -105,10 +105,3 @@
         z-index: 10;
     }
 }
-
-
-:host-context([has-grouping]) {
-    [part="groupspacer"] {
-        display: block;
-    }
-}

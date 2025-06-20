@@ -7,7 +7,10 @@ import { WebComponent } from "components/web-component/web-component"
     properties: {
         serviceObject: Object,
         columns: Array,
-        editing: Boolean,
+        editing: {
+            type: Boolean,
+            reflectToAttribute: true,
+        },
         canDelete: Boolean,
         frozen: {
             type: Boolean,
