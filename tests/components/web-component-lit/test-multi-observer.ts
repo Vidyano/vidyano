@@ -1,17 +1,12 @@
-import { WebComponentLit } from "../../../src/app/web-components/web-component/web-component-lit.js";
 import { html } from "lit";
+import { WebComponentLit } from "../../../src/app/web-components/web-component/web-component-lit.js";
+import { observer, property } from "../../../src/app/web-components/web-component/web-component-decorators.js";
 
-@WebComponentLit.register({
-    properties: {
-        counter: { type: Number },
-        doubled: { type: Number, computed: "_doubleCounter(counter)" }
-    },
-    observers: [
-        "_counterOrDoubledChanged(counter, doubled)"
-    ]
-}, "test-multi-observer")
 class TestMultiObserver extends WebComponentLit {
+    @property({ type: Number })
     declare counter: number;
+
+    @property({ type: Number, computed: "_doubleCounter(counter)" })
     declare readonly doubled: number;
 
     // Public properties for testing
@@ -37,6 +32,7 @@ class TestMultiObserver extends WebComponentLit {
         return counter * 2;
     }
 
+    @observer("counter", "doubled")
     private _counterOrDoubledChanged(counter: number, doubled: number): void {
         this.counterOrDoubledChangedCallCount++;
         this.counterOrDoubledChangedLastArgs = { counter, doubled };
@@ -44,3 +40,5 @@ class TestMultiObserver extends WebComponentLit {
 }
 
 export { TestMultiObserver };
+
+customElements.define("test-multi-observer", TestMultiObserver);

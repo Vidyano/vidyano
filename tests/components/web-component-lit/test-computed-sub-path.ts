@@ -1,4 +1,5 @@
 import { WebComponentLit } from "../../../src/app/web-components/web-component/web-component-lit.js";
+import { property } from "../../../src/app/web-components/web-component/web-component-decorators.js";
 import { Observable } from "../../../src/vidyano/observable/index.js";
 import { html } from "lit";
 
@@ -31,19 +32,11 @@ export class QuerySource extends Observable<QuerySource> {
     }
 }
 
-@WebComponentLit.register({
-    properties: {
-        query: {
-            type: Object
-        },
-        items: {
-            type: Array,
-            computed: "query.items"
-        }
-    }
-}, "test-computed-sub-path")
 export class TestComputedSubPath extends WebComponentLit {
+    @property({ type: Object })
     query: QuerySource;
+
+    @property({ type: Array, computed: "query.items" })
     readonly items: string[];
 
     constructor() {
@@ -63,3 +56,5 @@ export class TestComputedSubPath extends WebComponentLit {
         this.query = new QuerySource(["brandnew1", "brandnew2"]);
     }
 }
+
+customElements.define("test-computed-sub-path", TestComputedSubPath);

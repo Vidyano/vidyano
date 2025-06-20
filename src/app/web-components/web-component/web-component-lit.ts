@@ -6,6 +6,8 @@ import { WebComponentListenerController } from "./web-component-listener-control
 import { WebComponentRegistrationInfo } from "./web-component-registration";
 import { registerWebComponent, getListenersConfig, getComputedConfig, getPropertyObserversConfig, getObserversConfig } from "./web-component-registration";
 
+export { property, listener, observer } from "./web-component-decorators";
+
 const LISTENER_CONTROLLER_SYMBOL = Symbol("WebComponent.listenerController");
 const OBSERVER_CONTROLLER_SYMBOL = Symbol("WebComponent.observerController");
 
@@ -129,7 +131,26 @@ export abstract class WebComponentLit extends LitElement {
      */
     static register(config: WebComponentRegistrationInfo, tagName: string) {
         return function <T extends typeof WebComponentLit>(targetClass: T): T | void {
-            return registerWebComponent(config, tagName, targetClass);
+            const registrationInfo = registerWebComponent(config, tagName, targetClass);
+            if (!registrationInfo)
+                return;
+
+            originalDefine.call(window.customElements, registrationInfo.tagName, registrationInfo.targetClass as unknown as CustomElementConstructor);
+            return targetClass;
         };
     }
 }
+
+const originalDefine = customElements.define;
+customElements.define = function (name, constructor, options) {
+    if (constructor.prototype instanceof WebComponentLit) {
+        const registrationInfo = registerWebComponent({}, name, constructor as any);
+        if (!registrationInfo)
+            return;
+
+        originalDefine.call(this, registrationInfo.tagName, registrationInfo.targetClass as unknown as CustomElementConstructor, options);
+        return;
+    }
+
+    return originalDefine.call(this, name, constructor, options);
+};

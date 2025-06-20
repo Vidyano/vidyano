@@ -1,14 +1,12 @@
 import { WebComponentLit } from "../../../src/app/web-components/web-component/web-component-lit.js";
+import { property } from "../../../src/app/web-components/web-component/web-component-decorators.js";
 import { html } from "lit";
 
-@WebComponentLit.register({
-    properties: {
-        inputValue: { type: String },
-        computedAsyncValue: { type: String, computed: "_computeAsyncValue(inputValue)" }
-    }
-}, "test-async-computed")
 class TestAsyncComputed extends WebComponentLit {
+    @property({ type: String })
     declare inputValue: string;
+
+    @property({ type: String, computed: "_computeAsyncValue(inputValue)" })
     declare readonly computedAsyncValue: string;
 
     constructor() {
@@ -39,3 +37,5 @@ class TestAsyncComputed extends WebComponentLit {
 }
 
 export { TestAsyncComputed };
+
+customElements.define("test-async-computed", TestAsyncComputed);

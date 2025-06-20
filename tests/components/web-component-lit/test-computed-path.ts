@@ -1,14 +1,12 @@
 import { WebComponentLit } from "../../../src/app/web-components/web-component/web-component-lit.js";
+import { property } from "../../../src/app/web-components/web-component/web-component-decorators.js";
 import { html } from "lit";
 
-@WebComponentLit.register({
-    properties: {
-        sourceObject: { type: Object },
-        derivedValue: { type: String, computed: "sourceObject.data" }
-    }
-}, "test-computed-path")
 class TestComputedPath extends WebComponentLit {
+    @property({ type: Object })
     declare sourceObject: { data: string };
+
+    @property({ type: String, computed: "sourceObject.data" })
     declare readonly derivedValue: string;
 
     constructor() {
@@ -27,3 +25,5 @@ class TestComputedPath extends WebComponentLit {
 
 // Export the class for type checking in tests if needed, though Playwright works on the registered element.
 export { TestComputedPath };
+
+customElements.define("test-computed-path", TestComputedPath);

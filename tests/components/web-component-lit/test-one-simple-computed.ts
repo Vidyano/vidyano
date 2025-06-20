@@ -1,16 +1,15 @@
-import { WebComponentLit } from "../../../src/app/web-components/web-component/web-component-lit.js";
 import { html } from "lit";
+import { WebComponentLit } from "../../../src/app/web-components/web-component/web-component-lit.js";
+import { property } from "../../../src/app/web-components/web-component/web-component-decorators.js";
 
-@WebComponentLit.register({
-    properties: {
-        firstName: { type: String, observer: "_firstNameChanged" },
-        lastName: { type: String },
-        fullName: { type: String, computed: "_computeFullName(firstName, lastName)" }
-    }
-}, "test-one-simple-computed")
 class TestOneSimpleComputed extends WebComponentLit {
+    @property({ type: String, observer: "_firstNameChanged" })
     declare firstName: string;
+
+    @property({ type: String })
     declare lastName: string;
+
+    @property({ type: String, computed: "_computeFullName(firstName, lastName)" })
     declare readonly fullName: string;
 
     // Public properties for testing
@@ -19,7 +18,6 @@ class TestOneSimpleComputed extends WebComponentLit {
     computeFullNameCallCount: number = 0;
     computeFullNameLastArgs: { firstName?: string, lastName?: string } | undefined;
     computeFullNameLastResult: string | undefined;
-
 
     constructor() {
         super();
@@ -57,3 +55,5 @@ class TestOneSimpleComputed extends WebComponentLit {
         this.firstNameChangedLastArgs = { newValue, oldValue };
     }
 }
+
+customElements.define("test-one-simple-computed", TestOneSimpleComputed);

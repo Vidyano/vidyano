@@ -1,15 +1,9 @@
-import { WebComponentLit } from "../../../src/app/web-components/web-component/web-component-lit.js";
 import { html } from "lit";
+import { WebComponentLit } from "../../../src/app/web-components/web-component/web-component-lit.js";
+import { listener, property } from "../../../src/app/web-components/web-component/web-component-decorators.js";
 
-@WebComponentLit.register({
-    properties: {
-        message: { type: String }
-    },
-    listeners: {
-        "click": "_handleHostClick" // Listener for the host element
-    }
-}, "test-event-listeners")
 class TestEventListeners extends WebComponentLit {
+    @property({ type: String })
     declare message: string;
 
     // Public properties for testing
@@ -31,6 +25,7 @@ class TestEventListeners extends WebComponentLit {
         `;
     }
 
+    @listener("click")
     _handleHostClick(e: Event) { // Renamed to be non-private as it's part of the public API via listeners
         // Prevent host click from firing if the click originated from the button
         if (e.target === this) {
@@ -47,3 +42,5 @@ class TestEventListeners extends WebComponentLit {
 }
 
 export { TestEventListeners };
+
+customElements.define("test-event-listeners", TestEventListeners);

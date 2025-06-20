@@ -1,11 +1,11 @@
 import { PropertyDeclaration } from "lit";
 import type { WebComponentLit } from "./web-component-lit";
 
-const COMPUTED_CONFIG_SYMBOL = Symbol("WebComponent.computedConfig");
-const OBSERVERS_CONFIG_SYMBOL = Symbol("WebComponent.observersConfig");
-const PROPERTY_OBSERVERS_CONFIG_SYMBOL = Symbol("WebComponent.propertyObserversConfig");
-const SENSITIVE_CONFIG_SYMBOL = Symbol("WebComponent.sensitiveConfig");
-const LISTENERS_CONFIG_SYMBOL = Symbol("WebComponent.listenersConfig");
+export const COMPUTED_CONFIG_SYMBOL = Symbol("WebComponent.computedConfig");
+export const OBSERVERS_CONFIG_SYMBOL = Symbol("WebComponent.observersConfig");
+export const PROPERTY_OBSERVERS_CONFIG_SYMBOL = Symbol("WebComponent.propertyObserversConfig");
+export const SENSITIVE_CONFIG_SYMBOL = Symbol("WebComponent.sensitiveConfig");
+export const LISTENERS_CONFIG_SYMBOL = Symbol("WebComponent.listenersConfig");
 
 /**
  * Parses a method signature string of the form "methodName(arg1, arg2, ...)".
@@ -14,7 +14,7 @@ const LISTENERS_CONFIG_SYMBOL = Symbol("WebComponent.listenersConfig");
  * @param signature The method signature string to parse.
  * @returns An object with methodName and args, or null if parsing fails.
  */
-function parseMethodSignature(signature: string): { methodName: string; args: string[] } | null {
+export function parseMethodSignature(signature: string): { methodName: string; args: string[] } | null {
     const match = signature.match(/^([a-zA-Z0-9_]+)\((.*)\)$/);
     if (!match)
         return null;
@@ -101,14 +101,35 @@ export function getSensitiveConfig(component: WebComponentLit): boolean {
     return (component.constructor as WebComponentConstructor)[SENSITIVE_CONFIG_SYMBOL];
 }
 
+export type WebComponentRegistration = { tagName: string, targetClass: typeof WebComponentLit };
+
 /**
  * Registers a web component class with the specified configuration and tag name.
- * @param config The registration configuration object.
- * @param tagName The custom element tag name to register.
+ * Overload: If the first parameter is a string, it is treated as the tagName and config defaults to {}.
+ * @param config The registration configuration object or the tag name as a string.
+ * @param tagName The custom element tag name to register (if config is provided).
  * @param targetClass The web component class to register.
  * @returns The web component class or void.
  */
-export function registerWebComponent<T extends typeof WebComponentLit>(config: WebComponentRegistrationInfo, tagName: string, targetClass: T): T | void {
+export function registerWebComponent<T extends typeof WebComponentLit>(tagName: string, targetClass: T): WebComponentRegistration | undefined;
+export function registerWebComponent<T extends typeof WebComponentLit>(config: WebComponentRegistrationInfo, tagName: string, targetClass: T): WebComponentRegistration | undefined;
+export function registerWebComponent<T extends typeof WebComponentLit>(configOrTag: WebComponentRegistrationInfo | string, tagNameOrClass: string | T, maybeClass?: T): WebComponentRegistration | undefined {
+    let config: WebComponentRegistrationInfo;
+    let tagName: string;
+    let targetClass: T;
+
+    if (typeof configOrTag === "string") {
+        // Overload: (tagName, targetClass)
+        config = {};
+        tagName = configOrTag;
+        targetClass = tagNameOrClass as T;
+    } else {
+        // (config, tagName, targetClass)
+        config = configOrTag;
+        tagName = tagNameOrClass as string;
+        targetClass = maybeClass!;
+    }
+
     const parentClass = Object.getPrototypeOf(targetClass) as WebComponentConstructor;
 
     const inheritedComputedConfig = parentClass[COMPUTED_CONFIG_SYMBOL] || {};
@@ -117,9 +138,13 @@ export function registerWebComponent<T extends typeof WebComponentLit>(config: W
     const inheritedListenersConfig = parentClass[LISTENERS_CONFIG_SYMBOL] || {};
     const inheritedSensitive = parentClass[SENSITIVE_CONFIG_SYMBOL];
 
-    // Process the new configuration for the current class.
-    const newComputedConfig: ComputedConfig = {};
-    const newPropertyObserversConfig: PropertyObserversConfig = {};
+    // Process the decorated configurations from the target class.
+    const decoratedComputedConfig = targetClass[COMPUTED_CONFIG_SYMBOL] || {};
+    const decoratedPropertyObserversConfig = targetClass[PROPERTY_OBSERVERS_CONFIG_SYMBOL] || {};
+    const decoratedObserversConfig = targetClass[OBSERVERS_CONFIG_SYMBOL] || {};
+    const decoratedListenersConfig = targetClass[LISTENERS_CONFIG_SYMBOL] || {};
+    const newComputedConfig: ComputedConfig = { ...decoratedComputedConfig };
+    const newPropertyObserversConfig: PropertyObserversConfig = { ...decoratedPropertyObserversConfig };
 
     if (config.properties) {
         for (const [name, propConfig] of Object.entries(config.properties)) {
@@ -133,10 +158,10 @@ export function registerWebComponent<T extends typeof WebComponentLit>(config: W
         }
     }
 
-    // Merge new configs with inherited configs. Child-specific config wins.
+    // Merge new configs with inherited configs and decorator-provided configs. Child-specific config wins.
     (targetClass as WebComponentConstructor)[COMPUTED_CONFIG_SYMBOL] = { ...inheritedComputedConfig, ...newComputedConfig };
     (targetClass as WebComponentConstructor)[PROPERTY_OBSERVERS_CONFIG_SYMBOL] = { ...inheritedPropertyObserversConfig, ...newPropertyObserversConfig };
-    (targetClass as WebComponentConstructor)[LISTENERS_CONFIG_SYMBOL] = { ...inheritedListenersConfig, ...(config.listeners || {}) };
+    (targetClass as WebComponentConstructor)[LISTENERS_CONFIG_SYMBOL] = { ...inheritedListenersConfig, ...decoratedListenersConfig, ...(config.listeners || {}) };
 
     // Merge new properties with inherited ones, overriding as necessary.
     const { properties: newProperties, ...restConfig } = config;
@@ -148,7 +173,7 @@ export function registerWebComponent<T extends typeof WebComponentLit>(config: W
     }
     
     // Merge observers to combine dependencies.
-    const finalObserversConfig: ObserversConfig = { ...inheritedObserversConfig };
+    const finalObserversConfig: ObserversConfig = { ...inheritedObserversConfig, ...decoratedObserversConfig };
     if (config.observers) {
         for (const observer of config.observers) {
             const parsed = parseMethodSignature(observer);
@@ -167,11 +192,9 @@ export function registerWebComponent<T extends typeof WebComponentLit>(config: W
     (targetClass as WebComponentConstructor)[SENSITIVE_CONFIG_SYMBOL] = config.sensitive !== undefined ? config.sensitive : inheritedSensitive;
 
     // Register the custom element.
-    if (window.customElements.get(tagName)) {
-        console.warn(`Custom element ${tagName} is already defined.`);
-    } else {
-        window.customElements.define(tagName, targetClass as unknown as CustomElementConstructor);
-    }
+    if (!window.customElements.get(tagName))
+        return { tagName, targetClass };
 
-    return targetClass;
+    console.warn(`Custom element ${tagName} is already defined.`);
+    return undefined;
 }
