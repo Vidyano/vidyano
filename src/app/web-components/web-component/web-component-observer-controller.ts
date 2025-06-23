@@ -36,7 +36,6 @@ export class WebComponentObserverController implements ReactiveController {
 
     hostConnected(): void {
         this.#setupForwardersForRoots();
-        this.#updateComputedProperties();
     }
 
     hostDisconnected(): void {

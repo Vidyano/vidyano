@@ -46,7 +46,7 @@ test('TestOneSimpleComputed: lifecycle and computed/observer flow', async ({ pag
     expect(state.firstName).toBe("Jane");
     expect(state.lastName).toBe("Doe");
     expect(state.fullName).toBe("Jane Doe");
-    expect(state.computeFullNameCallCount).toBe(2); // Initial + connected
+    expect(state.computeFullNameCallCount).toBe(1);
     expect(state.computeFullNameLastArgs).toEqual({ firstName: "Jane", lastName: "Doe" });
     expect(state.computeFullNameLastResult).toBe("Jane Doe");
     expect(state.firstNameChangedCallCount).toBe(1);
@@ -54,36 +54,34 @@ test('TestOneSimpleComputed: lifecycle and computed/observer flow', async ({ pag
 
     // --- Act: Change firstName property ---
     await component.evaluate(node => { (node as any).firstName = 'John'; });
-    await expect(component.locator('strong')).toContainText('Computed Full Name: John Doe'); // Wait for re-render
+    await expect(component.locator('strong')).toContainText('Computed Full Name: John Doe');
     state = await getSimpleComputedComponentState(component);
 
     expect(state.firstName).toBe("John");
     expect(state.lastName).toBe("Doe");
     expect(state.fullName).toBe("John Doe");
-    expect(state.computeFullNameCallCount).toBe(3); // Previous 2 + 1 for this change
+    expect(state.computeFullNameCallCount).toBe(2);
     expect(state.computeFullNameLastArgs).toEqual({ firstName: "John", lastName: "Doe" });
     expect(state.computeFullNameLastResult).toBe("John Doe");
-    expect(state.firstNameChangedCallCount).toBe(2); // Previous 1 + 1 for this change
+    expect(state.firstNameChangedCallCount).toBe(2);
     expect(state.firstNameChangedLastArgs).toEqual({ newValue: "John", oldValue: "Jane" });
 
     // --- Act: Change lastName property ---
     await component.evaluate(node => { (node as any).lastName = 'Smith'; });
-    await expect(component.locator('strong')).toContainText('Computed Full Name: John Smith'); // Wait for re-render
+    await expect(component.locator('strong')).toContainText('Computed Full Name: John Smith');
     state = await getSimpleComputedComponentState(component);
 
     expect(state.firstName).toBe("John");
     expect(state.lastName).toBe("Smith");
     expect(state.fullName).toBe("John Smith");
-    expect(state.computeFullNameCallCount).toBe(4); // Previous 3 + 1 for this change
+    expect(state.computeFullNameCallCount).toBe(3);
     expect(state.computeFullNameLastArgs).toEqual({ firstName: "John", lastName: "Smith" });
     expect(state.computeFullNameLastResult).toBe("John Smith");
-    expect(state.firstNameChangedCallCount).toBe(2); // No change to firstName, so count remains 2
-    
-    // No lastName observer, so firstNameChangedLastArgs remains from previous change
+    expect(state.firstNameChangedCallCount).toBe(2);
     expect(state.firstNameChangedLastArgs).toEqual({ newValue: "John", oldValue: "Jane" });
 
     // Final check on rendered output
-    await expect(component.locator('strong')).toContainText('Computed Full Name: John Smith'); // Wait for re-render
+    await expect(component.locator('strong')).toContainText('Computed Full Name: John Smith');
 });
 
 test('TestComputedPath: computed property with path string', async ({ page }) => {
