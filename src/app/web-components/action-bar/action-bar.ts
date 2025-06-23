@@ -1,62 +1,37 @@
-import * as Polymer from "polymer"
-import * as Vidyano from "vidyano"
-import "components/action-button/action-button"
-import { App } from "components/app/app"
-import "components/overflow/overflow"
-import { WebComponent } from "components/web-component/web-component"
+import { html, unsafeCSS } from "lit";
+import { repeat } from "lit/directives/repeat.js";
+import * as Vidyano from "vidyano";
+import { WebComponentLit, property } from "components/web-component/web-component-lit.js";
+import type { App } from "components/app/app.js";
+import "components/action-button/action-button.js";
+import "components/overflow/overflow.js";
+import "components/input-search/input-search.js";
+import "components/query-chart-selector/query-chart-selector.js";
+import styles from "./action-bar.css";
 
-@WebComponent.register({
-    properties:
-    {
-        serviceObject: Object,
-        pinnedActions: {
-            type: Array,
-            computed: "_computePinnedActions(serviceObject)"
-        },
-        unpinnedActions: {
-            type: Array,
-            computed: "_computeUnpinnedActions(serviceObject)"
-        },
-        hasCharts: {
-            type: Boolean,
-            computed: "_computeHasCharts(serviceObject.charts, app)",
-            value: false
-        },
-        canSearch: {
-            type: Boolean,
-            computed: "_computeCanSearch(serviceObject)"
-        },
-        noActions: {
-            type: Boolean,
-            reflectToAttribute: true,
-            computed: "_computeNoActions(pinnedActions, unpinnedActions)"
-        },
-        accent: {
-            type: Boolean,
-            reflectToAttribute: true
-        },
-    },
-    forwardObservers: [
-        "serviceObject.charts"
-    ]
-}, "vi-action-bar")
-export class ActionBar extends WebComponent {
-    static get template() { return Polymer.html`<link rel="import" href="action-bar.html">`; }
+export class ActionBar extends WebComponentLit {
+    static styles = unsafeCSS(styles);
 
+    @property({ type: Object })
     serviceObject: Vidyano.ServiceObjectWithActions;
-    pinnedActions: Vidyano.Action[];
-    unpinnedActions: Vidyano.Action[];
+
+    @property({ computed: "_computePinnedActions(serviceObject, serviceObject.actions.*.isPinned)" })
+    pinnedActions: (Vidyano.Action | Vidyano.ActionGroup)[];
+
+    @property({ computed: "_computeUnpinnedActions(serviceObject, serviceObject.actions.*.isPinned)" })
+    unpinnedActions: (Vidyano.Action | Vidyano.ActionGroup)[];
+
+    @property({ type: Boolean, computed: "_computeHasCharts(serviceObject.charts, app)" })
+    hasCharts: boolean = false;
+
+    @property({ type: Boolean, computed: "_computeCanSearch(serviceObject)" })
     canSearch: boolean;
 
-    private _setHasCharts: (val: boolean) => void;
+    @property({ type: Boolean, reflect: true, computed: "_computeNoActions(pinnedActions, unpinnedActions, serviceObject.actions.*.isVisible)" })
+    noActions: boolean;
 
-    filterActions(actions: Vidyano.Action[], pinned: boolean): Vidyano.Action[] {
-        return actions.filter(a => a.isPinned === pinned);
-    }
-
-    private _computeHasCharts(charts: Vidyano.QueryChart[], app: App): boolean {
-        return !!charts && !!charts.find(c => !!this.app.configuration.getQueryChartConfig(c.type));
-    }
+    @property({ type: Boolean, reflect: true })
+    accent: boolean;
 
     private _search() {
         if (!this.canSearch)
@@ -66,17 +41,17 @@ export class ActionBar extends WebComponent {
         query.search();
     }
 
-    private _computePinnedActions(): (Vidyano.Action | Vidyano.ActionGroup)[] {
-        return this.serviceObject && this.serviceObject.actions ? Array.from(this._transformActionsWithGroups(this.serviceObject.actions.filter(action => action.isPinned))) : [];
+    private _computePinnedActions(serviceObject: Vidyano.ServiceObjectWithActions): (Vidyano.Action | Vidyano.ActionGroup)[] {
+        return this.memoize(this.pinnedActions, serviceObject?.actions ? Array.from(this._transformActionsWithGroups(serviceObject.actions.filter(action => action.isPinned))) : undefined);
     }
 
-    private _computeUnpinnedActions(): (Vidyano.Action | Vidyano.ActionGroup)[] {
-        return this.serviceObject && this.serviceObject.actions ? Array.from(this._transformActionsWithGroups(this.serviceObject.actions.filter(action => !action.isPinned))) : [];
+    private _computeUnpinnedActions(serviceObject: Vidyano.ServiceObjectWithActions): (Vidyano.Action | Vidyano.ActionGroup)[] {
+        return this.memoize(this.unpinnedActions, serviceObject?.actions ? Array.from(this._transformActionsWithGroups(serviceObject.actions.filter(action => !action.isPinned))) : undefined);
     }
 
     private *_transformActionsWithGroups(actions: Vidyano.Action[]): IterableIterator<Vidyano.Action | Vidyano.ActionGroup> {
         const actionGroups: { [name: string]: Vidyano.ActionGroup } = {};
-        for (let i=0; i<actions.length; i++) {
+        for (let i = 0; i < actions.length; i++) {
             const action = actions[i];
             if (!action.group) {
                 yield action;
@@ -88,15 +63,44 @@ export class ActionBar extends WebComponent {
         }
     }
 
+    private _computeHasCharts(charts: Vidyano.QueryChart[], app: App): boolean {
+        return !!charts && !!charts.find(c => !!app?.configuration.getQueryChartConfig(c.type));
+    }
+
     private _computeCanSearch(serviceObject: Vidyano.ServiceObjectWithActions): boolean {
         return serviceObject instanceof Vidyano.Query && (<Vidyano.Query>serviceObject).actions["Filter"] != null;
     }
 
-    private _computeNoActions(pinnedActions: Vidyano.Action[], unpinnedActions: Vidyano.Action[]): boolean {
+    private _computeNoActions(pinnedActions: (Vidyano.Action | Vidyano.ActionGroup)[], unpinnedActions: (Vidyano.Action | Vidyano.ActionGroup)[]): boolean {
         const actions = (pinnedActions || []).concat(unpinnedActions || []);
         if (actions.length === 0)
             return true;
 
-        return !actions.filter(a => a.isVisible).length;
+        return !actions.some(a => a.isVisible);
+    }
+
+    render() {
+        return html`
+            <vi-overflow>
+                ${repeat(this.unpinnedActions ?? [], (action) => action.name, (action) => html`
+                    <vi-action-button .action=${action} inverse></vi-action-button>
+                `)}
+            </vi-overflow>
+            ${repeat(this.pinnedActions ?? [], (action) => action.name, (action) => html`
+                <vi-action-button .action=${action} no-label inverse></vi-action-button>
+            `)}
+            ${this.hasCharts ? html`<vi-query-chart-selector .query=${this.serviceObject}></vi-query-chart-selector>` : ""}
+            ${this.canSearch ? html`
+                <div class="search">
+                    <vi-input-search
+                        .value=${(this.serviceObject as Vidyano.Query).textSearch}
+                        @value-changed=${(e: CustomEvent) => (this.serviceObject as Vidyano.Query).textSearch = e.detail.value}
+                        @search=${this._search}
+                    ></vi-input-search>
+                </div>
+            `: ""}
+        `;
     }
 }
+
+customElements.define("vi-action-bar", ActionBar);
