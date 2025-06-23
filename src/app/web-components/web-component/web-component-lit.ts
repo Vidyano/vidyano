@@ -94,6 +94,61 @@ export abstract class WebComponentLit extends LitElement {
         super.willUpdate(totalChangedProps);
     }
 
+        /**
+     * A shallow comparer for arrays. It checks if two arrays have the same length
+     * and if all their elements are strictly equal (===).
+     * @param a The first array.
+     * @param b The second array.
+     * @returns True if the arrays are shallowly equal, false otherwise.
+     */
+    #shallowComparer(a: any, b: any): boolean {
+        if (Array.isArray(a) && Array.isArray(b)) {
+            if (a.length !== b.length) return false;
+
+            for (let i = 0; i < a.length; i++) {
+                if (a[i] !== b[i]) return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Memoizes a value by comparing it to the previous value, preventing unnecessary
+     * updates for computed properties that return new array or object instances.
+     *
+     * This method should be used in computed property functions. It compares the
+     * newly computed value with the previously stored value. If they are the same
+     * (based on the comparer), it returns the old instance, preventing Lit
+     * from detecting a change and re-rendering.
+     *
+     * @param oldValue The previous value of the property.
+     * @param newValue The newly computed value.
+     * @param comparer An optional function to compare the old and new values. Defaults to a shallow array comparer.
+     * @returns The `newValue` if it's different from the `oldValue`, otherwise the `oldValue`.
+     */
+    protected memoize<T>(oldValue: T, newValue: T, comparer: (a: T, b: T) => boolean = this.#shallowComparer): T {
+        // If the old and new values are strictly equal, return the old value immediately.
+        if (oldValue === newValue)
+            return oldValue;
+
+        const oldValueIsUndefined = oldValue === undefined;
+        const newValueIsUndefined = newValue === undefined;
+
+        // If one value is undefined and the other is not, return newValue immediately.
+        if (oldValueIsUndefined !== newValueIsUndefined)
+            return newValue;
+
+        // If both are undefined, or both are defined, proceed with the comparer.
+        if (comparer(oldValue, newValue)) {
+            return oldValue;
+        }
+
+        return newValue;
+    }
+
     /**
      * Listens for the global "app-changed" event and updates the app property.
      */
