@@ -364,3 +364,121 @@ test('TestComputedSubPath: items computed from query.items sub-path', async ({ p
     queryItems = await component.evaluate(node => (node as any).query.items);
     expect(queryItems).toEqual(["brandnew1", "brandnew2"]);
 });
+
+async function getComputedObservablePathComponentState(component: Locator) {
+    return component.evaluate(node => {
+        const inst = node as any;
+        return {
+            serviceObjectIsBusy: inst.serviceObject?.isBusy,
+            loading: inst.loading
+        };
+    });
+}
+
+test('TestComputedObservablePath: computed from observable sub-property', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-computed-observable-path');
+    await expect(component).toBeVisible();
+
+    // --- Initial state verification (serviceObject is undefined) ---
+    await expect(component.locator('#loading-state')).toContainText(''); // Default for boolean if path undefined
+    let state = await getComputedObservablePathComponentState(component);
+    expect(state.serviceObjectIsBusy).toBeUndefined();
+    expect(state.loading).toBeUndefined();
+
+    // --- Act: Initialize serviceObject with isBusy = true ---
+    await component.evaluate((node: any) => node.initializeServiceObject(true));
+    await expect(component.locator('#service-busy')).toContainText('true');
+    await expect(component.locator('#loading-state')).toContainText('true');
+    state = await getComputedObservablePathComponentState(component);
+    expect(state.serviceObjectIsBusy).toBe(true);
+    expect(state.loading).toBe(true);
+
+    // --- Act: Change serviceObject.isBusy to false ---
+    await component.evaluate((node: any) => node.updateServiceIsBusy(false));
+    await expect(component.locator('#service-busy')).toContainText('false');
+    await expect(component.locator('#loading-state')).toContainText('false');
+    state = await getComputedObservablePathComponentState(component);
+    expect(state.serviceObjectIsBusy).toBe(false);
+    expect(state.loading).toBe(false);
+
+    // --- Act: Change serviceObject.isBusy back to true ---
+    await component.evaluate((node: any) => node.updateServiceIsBusy(true));
+    await expect(component.locator('#service-busy')).toContainText('true');
+    await expect(component.locator('#loading-state')).toContainText('true');
+    state = await getComputedObservablePathComponentState(component);
+    expect(state.serviceObjectIsBusy).toBe(true);
+    expect(state.loading).toBe(true);
+
+    // --- Act: Clear serviceObject (set to undefined) ---
+    await component.evaluate((node: any) => node.clearServiceObject());
+    await expect(component.locator('#service-busy')).toContainText('N/A');
+    await expect(component.locator('#loading-state')).toContainText(''); // Should revert to default
+    state = await getComputedObservablePathComponentState(component);
+    expect(state.serviceObjectIsBusy).toBeUndefined();
+    expect(state.loading).toBeUndefined();
+
+    // --- Act: Initialize serviceObject again with isBusy = false ---
+    await component.evaluate((node: any) => node.initializeServiceObject(false));
+    await expect(component.locator('#service-busy')).toContainText('false');
+    await expect(component.locator('#loading-state')).toContainText('false');
+    state = await getComputedObservablePathComponentState(component);
+    expect(state.serviceObjectIsBusy).toBe(false);
+    expect(state.loading).toBe(false);
+});
+
+async function getComputedObservablePathWithInitialNullComponentState(component: Locator) {
+    return component.evaluate(node => {
+        const inst = node as any;
+        return {
+            serviceObjectIsBusy: inst.serviceObject?.isBusy,
+            loading: inst.loading,
+            serviceObject: inst.serviceObject
+        };
+    });
+}
+
+test('TestComputedObservablePathWithInitialNull: computed from initially null observable sub-property', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-computed-observable-path');
+    await expect(component).toBeVisible();
+
+    // --- Initial state verification (serviceObject is undefined) ---
+    await expect(component.locator('#loading-state')).toContainText(''); // Default for boolean if path undefined
+    let state = await getComputedObservablePathWithInitialNullComponentState(component);
+    expect(state.serviceObject).toBeUndefined();
+    expect(state.serviceObjectIsBusy).toBeUndefined();
+    expect(state.loading).toBeUndefined();
+
+    // --- Act: Initialize serviceObject with isBusy = true ---
+    await component.evaluate((node: any) => node.initializeServiceObject(true));
+    await expect(component.locator('#service-busy')).toContainText('true');
+    await expect(component.locator('#loading-state')).toContainText('true');
+    state = await getComputedObservablePathWithInitialNullComponentState(component);
+    expect(state.serviceObject).not.toBeUndefined();
+    expect(state.serviceObjectIsBusy).toBe(true);
+    expect(state.loading).toBe(true);
+
+    // --- Act: Change serviceObject.isBusy to false ---
+    await component.evaluate((node: any) => node.updateServiceIsBusy(false));
+    await expect(component.locator('#service-busy')).toContainText('false');
+    await expect(component.locator('#loading-state')).toContainText('false');
+    state = await getComputedObservablePathWithInitialNullComponentState(component);
+    expect(state.serviceObjectIsBusy).toBe(false);
+    expect(state.loading).toBe(false);
+
+    // --- Act: Clear serviceObject (set to undefined) ---
+    await component.evaluate((node: any) => node.clearServiceObject());
+    await expect(component.locator('#service-busy')).toContainText('N/A');
+    await expect(component.locator('#loading-state')).toContainText(''); // Should revert to default
+    state = await getComputedObservablePathWithInitialNullComponentState(component);
+    expect(state.serviceObject).toBeUndefined();
+    expect(state.serviceObjectIsBusy).toBeUndefined();
+    expect(state.loading).toBeUndefined();
+
+    // --- Act: Initialize serviceObject again with isBusy = false ---
+    await component.evaluate((node: any) => node.initializeServiceObject(false));
+    await expect(component.locator('#service-busy')).toContainText('false');
+    await expect(component.locator('#loading-state')).toContainText('false');
+    state = await getComputedObservablePathWithInitialNullComponentState(component);
+    expect(state.serviceObjectIsBusy).toBe(false);
+    expect(state.loading).toBe(false);
+});

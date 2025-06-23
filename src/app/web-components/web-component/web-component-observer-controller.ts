@@ -84,9 +84,12 @@ export class WebComponentObserverController implements ReactiveController {
      */
     #rebindForwardersIfNeeded(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
         const observersConfig = getObserversConfig(this.#host);
-        if (Object.keys(observersConfig).length === 0) return;
+        const computedConfig = getComputedConfig(this.#host);
 
-        const observedRoots = this.#extractObservedRoots(observersConfig);
+        if (Object.keys(observersConfig).length === 0 && Object.keys(computedConfig).length === 0)
+            return;
+
+        const observedRoots = this.#extractObservedRoots(observersConfig, computedConfig);
         const changedRoots = this.#findChangedRoots(observedRoots, changedProperties);
 
         if (changedRoots.size > 0) {
@@ -100,14 +103,22 @@ export class WebComponentObserverController implements ReactiveController {
      * @param observersConfig The complete observer configuration for the component.
      * @returns A Set of unique root property names.
      */
-    #extractObservedRoots(observersConfig: Record<string, string[]>): Set<string> {
+    #extractObservedRoots(observersConfig: Record<string, string[]>, computedConfig: ComputedConfig): Set<string> {
         const observedRoots = new Set<string>();
+
         Object.values(observersConfig).forEach(deps =>
             deps.forEach(depPath => {
                 const root = depPath.split('.')[0];
                 if (root) observedRoots.add(root);
             })
         );
+
+        Object.values(computedConfig).forEach(config => {
+            config.dependencies.forEach(depPath => {
+                const root = depPath.split('.')[0];
+                if (root) observedRoots.add(root);
+            })
+        });
 
         return observedRoots;
     }
