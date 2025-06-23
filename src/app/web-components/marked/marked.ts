@@ -1,7 +1,8 @@
-import * as Polymer from "polymer"
-import { WebComponent } from "components/web-component/web-component"
-import { marked } from "marked"
-import DOMPurify from "dompurify"
+import { css, html } from "lit";
+import { unsafeHTML } from "lit/directives/unsafe-html.js";
+import { WebComponentLit, property } from "components/web-component/web-component-lit";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
 
 DOMPurify.addHook("afterSanitizeAttributes", function (node) {
     // set all elements owning target to target=_blank
@@ -16,47 +17,60 @@ DOMPurify.addHook('uponSanitizeAttribute', (node, data) => {
         data.forceKeepAttr = true;
 });
 
-@WebComponent.register({
-    properties: {
-        addTags: {
-            type: String,
-            value: null
-        },
-        forbidTags: {
-            type: String,
-            value: null
-        },
-        breaks: {
-            type: Boolean,
-            value: true
-        },
-        gfm: {
-            type: Boolean,
-            value: true
-        },
-        markdown: String
-    },
-    observers: [
-        "_markdownChanged(markdown, breaks, gfm, addTags, forbidTags)"
-    ]
-}, "vi-marked")
-export class Marked extends WebComponent {
-    static get template() { return Polymer.html`<link rel="import" href="marked.html">` }
+export class Marked extends WebComponentLit {
+    static styles = [css`:host { display: block; }`];
 
-    private async _markdownChanged(markdown: string, breaks: boolean, gfm: boolean, addTags: string, forbidTags: string) {
-        this.innerHTML = getMarkdown(markdown, { breaks, gfm, addTags, forbidTags });
+    @property({ type: String })
+    addTags: string | null = null;
+
+    @property({ type: String })
+    forbidTags: string | null = null;
+
+    @property({ type: Boolean })
+    breaks: boolean = true;
+
+    @property({ type: Boolean })
+    gfm: boolean = true;
+
+    @property({ type: String })
+    markdown: string;
+
+    createRenderRoot() {
+        return this;
+    }
+
+    render() {
+        if (!this.markdown)
+            return html``;
+
+        return unsafeHTML(getMarkdown(this.markdown, {
+            breaks: this.breaks,
+            gfm: this.gfm,
+            addTags: this.addTags,
+            forbidTags: this.forbidTags
+        }));
     }
 }
 
+/**
+ * Converts markdown to HTML using marked and sanitizes it with DOMPurify.
+ * @param markdown - The markdown string to convert.
+ * @param options - Optional settings for the conversion.
+ * @param options.breaks - Whether to enable line breaks in the output (default: true if not specified).
+ * @param options.gfm - Whether to enable GitHub Flavored Markdown (default: true if not specified).
+ * @param options.addTags - Comma-separated list of additional tags to allow in the output (default: none).
+ * @param options.forbidTags - Comma-separated list of tags to forbid in the output (default: none).
+ * @return Sanitized HTML string.
+ */
 export function getMarkdown(markdown: string, options?: {
     breaks?: boolean;
     gfm?: boolean;
-    addTags?: string;
-    forbidTags?: string;
+    addTags?: string | null;
+    forbidTags?: string | null;
 }) {
     const html = marked(markdown, {
-        breaks: options?.breaks !== false ? true : false,
-        gfm: options?.gfm !== false ? true : false,
+        breaks: options?.breaks ?? true,
+        gfm: options?.gfm ?? true,
         async: false
     });
 
@@ -67,3 +81,5 @@ export function getMarkdown(markdown: string, options?: {
 
     return sanitized;
 }
+
+customElements.define("vi-marked", Marked);
