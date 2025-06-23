@@ -143,38 +143,48 @@ export class WebComponentObserverController implements ReactiveController {
     /**
      * Runs the main reactive update loop until the component's state stabilizes.
      *
-     * This loop iteratively:
-     * 1. Calculates computed properties based on recent changes.
-     * 2. Executes observers (both single-property and complex).
-     * 3. Detects side effects (properties changed by observers).
+     * The first pass is initiated by either Lit's initial `changedProperties` or by
+     * deep-path changes captured in `context.dirtyPathsForThisUpdate`. Subsequent passes
+     * run only if the previous pass generated new property changes (from computed properties
+     * or observer side effects).
      *
-     * The loop continues as long as there are new changes in each pass, ensuring that
-     * all cascading effects are resolved before rendering. It includes a safety break
-     * to prevent infinite loops.
+     * Each pass in the loop:
+     * 1. Calculates computed properties based on the changes from the previous pass (or initial triggers).
+     * 2. Executes all relevant observers for those changes.
+     * 3. Detects any side effects (properties changed by observers).
+     *
+     * This iterative process ensures that all cascading effects are fully resolved before
+     * the component renders. It includes a safety break to prevent infinite loops.
      *
      * @param context The context for the current update cycle.
      * @returns The final, consolidated map of all properties that changed, including initial,
      * computed, and side-effect changes.
      */
     #executeUpdateLoop(context: UpdateContext): Map<PropertyKey, unknown> {
-        // Clear instance-level dirty paths now that we've captured them for this update cycle.
         this.#dirtyForwardedPaths.clear();
 
         let changedInLastPass = new Map(context.totalChangedProps.entries());
         let iteration = 0;
-        let isFirstIteration = true;
 
-        while (this.#shouldContinueLoop(changedInLastPass, isFirstIteration, context.dirtyPathsForThisUpdate) && 
-               iteration < MAX_ITERATIONS) {
-            
-            isFirstIteration = false;
+        // The first iteration is special: it runs if there are initial changes OR dirty paths.
+        // Subsequent iterations only run if the last pass produced more changes.
+        let shouldRunFirstPass = changedInLastPass.size > 0 || context.dirtyPathsForThisUpdate.size > 0;
+
+        while ((shouldRunFirstPass || changedInLastPass.size > 0) && iteration < MAX_ITERATIONS) {
             iteration++;
 
             const passResult = this.#executeUpdatePass(
-                changedInLastPass, 
-                context.dirtyPathsForThisUpdate, 
+                changedInLastPass,
+                context.dirtyPathsForThisUpdate,
                 context.lastComplexObserverArgs
             );
+
+            // The dirty paths have served their purpose of initiating the first-pass reaction.
+            // Clear them so they don't cause re-runs in the next iteration.
+            if (shouldRunFirstPass) {
+                context.dirtyPathsForThisUpdate.clear();
+                shouldRunFirstPass = false;
+            }
 
             this.#mergeChangedProperties(context.totalChangedProps, passResult.changedProperties);
             this.#mergeChangedProperties(context.totalChangedProps, passResult.sideEffectChanges);

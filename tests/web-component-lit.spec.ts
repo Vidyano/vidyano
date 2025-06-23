@@ -480,3 +480,44 @@ test('TestComputedObservablePathWithInitialNull: computed from initially null ob
     expect(state.serviceObjectIsBusy).toBe(false);
     expect(state.loading).toBe(false);
 });
+
+test('TestComputedDerivedObject: stability with new object instances', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-computed-derived-object');
+    await expect(component).toBeVisible();
+
+    async function getState(component: Locator) {
+        return component.evaluate(node => {
+            const inst = node as any;
+            return {
+                sourceValue: inst.source.value,
+                derivedValue: inst.derivedObject.value,
+                computeCallCount: inst.computeCallCount
+            };
+        });
+    }
+
+    // --- Initial state verification ---
+    await expect(component.locator('#derived-value')).toContainText('initial');
+    let state = await getState(component);
+
+    // Initial values should be set correctly
+    expect(state.computeCallCount).toBe(1);
+    expect(state.derivedValue).toBe('initial');
+    const initialCallCount = state.computeCallCount;
+
+    // --- Act: Trigger a change on the deep path ---
+    await component.evaluate(node => (node as any).updateSourceValue("updated"));
+
+    // Wait for the render to complete.
+    await expect(component.locator('#derived-value')).toContainText('updated');
+
+    // --- Verification ---
+    state = await getState(component);
+
+    expect(state.sourceValue).toBe("updated");
+    expect(state.derivedValue).toBe("updated");
+
+    // The MOST IMPORTANT check:
+    // The computation should only be called ONCE more.
+    expect(state.computeCallCount).toBe(initialCallCount + 1);
+});
