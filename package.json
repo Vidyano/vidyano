@@ -35,6 +35,7 @@
     "lit": "^3.3.0",
     "marked": "^15.0.12",
     "playwright": "^1.53.1",
+    "postcss-host": "^2.0.1",
     "qunit": "2.20.0",
     "rollup": "^4.44.0",
     "rollup-plugin-cleanup": "^3.2.1",

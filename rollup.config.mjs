@@ -22,6 +22,7 @@ import { dts } from "rollup-plugin-dts";
 import replace from "@rollup/plugin-replace";
 import terser from '@rollup/plugin-terser';
 import postcss from 'rollup-plugin-postcss';
+import postcssHost from 'postcss-host';
 
 const terserMinify = terser({
     mangle: false,
@@ -44,7 +45,8 @@ const configs = [
             postcss({
                 extensions: ['.css'],
                 inject: false,
-                modules: false
+                modules: false,
+                plugins: [postcssHost]
             }),
             vulcanize(),
             replace({
