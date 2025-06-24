@@ -183,6 +183,7 @@ export abstract class WebComponentLit extends LitElement {
      * @param config The registration configuration object.
      * @param tagName The custom element tag name to register.
      * @returns A decorator function for the web component class.
+     * @deprecated Use decorators and register the web component using customElements.define instead.
      */
     static register(config: WebComponentRegistrationInfo, tagName: string) {
         return function <T extends typeof WebComponentLit>(targetClass: T): T | void {
