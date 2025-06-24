@@ -14,7 +14,8 @@
 	"extensions": [
 		"ms-dotnettools.csharp",
 		"npxms.hide-gitignored",
-		"coenraads.bracket-pair-colorizer"
+		"coenraads.bracket-pair-colorizer",
+		"idered.npm"
 	],
 	"forwardPorts": [5000, 5001, 8081],
 
