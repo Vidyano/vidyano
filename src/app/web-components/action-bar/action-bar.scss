@@ -3,17 +3,17 @@
     user-select: none;
     height: var(--theme-h1);
     background-color: var(--vi-action-bar-background-color, #F9F9F9);
-}
 
-:host([accent]) {
-    --color: var(--theme-accent-color);
-    --color-light: var(--theme-accent-color-light);
-    --color-lighter: var(--theme-accent-color-lighter);
-    --color-dark: var(--theme-accent-color-dark);
-    --color-darker: var(--theme-accent-color-darker);
-    --color-faint: var(--theme-accent-color-faint);
-    --color-semi-faint: var(--theme-accent-color-semi-faint);
-    --color-rgb: var(--theme-accent-color-rgb);
+    &[accent] {
+        --color: var(--theme-accent-color);
+        --color-light: var(--theme-accent-color-light);
+        --color-lighter: var(--theme-accent-color-lighter);
+        --color-dark: var(--theme-accent-color-dark);
+        --color-darker: var(--theme-accent-color-darker);
+        --color-faint: var(--theme-accent-color-faint);
+        --color-semi-faint: var(--theme-accent-color-semi-faint);
+        --color-rgb: var(--theme-accent-color-rgb);
+    }
 }
 
 vi-overflow {
