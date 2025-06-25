@@ -204,7 +204,7 @@ export abstract class WebComponentLit<TTranslations extends Record<string, any> 
      * @deprecated Use decorators and register the web component using customElements.define instead.
      */
     static register(config: WebComponentRegistrationInfo, tagName: string) {
-        return function <T extends typeof WebComponentLit>(targetClass: T): T | void {
+        return function <T extends typeof WebComponentLit<any>>(targetClass: T): T | void {
             const registrationInfo = registerWebComponent(config, tagName, targetClass);
             if (!registrationInfo)
                 return;
