@@ -4,28 +4,46 @@ import { Service } from "vidyano";
 import { WebComponentObserverController } from "./web-component-observer-controller";
 import { WebComponentListenerController } from "./web-component-listener-controller";
 import { WebComponentRegistrationInfo } from "./web-component-registration";
+import { WebComponentTranslationController } from "./web-component-translation-controller";
 import { registerWebComponent, getListenersConfig, getComputedConfig, getPropertyObserversConfig, getObserversConfig } from "./web-component-registration";
 
 export { property, listener, observer } from "./web-component-decorators";
 
 const LISTENER_CONTROLLER_SYMBOL = Symbol("WebComponent.listenerController");
 const OBSERVER_CONTROLLER_SYMBOL = Symbol("WebComponent.observerController");
+const TRANSLATION_CONTROLLER_SYMBOL = Symbol("WebComponent.translationController");
 
 const APP_CHANGE_LISTENER_SYMBOL = Symbol("WebComponent.appChangeListener");
 const SERVICE_CHANGE_LISTENER_SYMBOL = Symbol("WebComponent.serviceChangeListener");
 
+// A mapped type to get the shape of the specific translations.
+type Translations<T> = { [K in keyof T]: string };
+
+/**
+ * This `type` alias uses an intersection to merge the specific keys from `Translations<T>`
+ * with a general `Record<string, string>` for the global keys.
+ */
+export type TypedTranslations<T> = Translations<T> & Record<string, string>;
+
 /**
  * Base class for all lit-based web components in a Vidyano application.
  */
-export abstract class WebComponentLit extends LitElement {
+export abstract class WebComponentLit<TTranslations extends Record<string, any> = {}> extends LitElement {
     static properties = {
         app: { type: Object, noAccessor: true },
         service: { type: Object, noAccessor: true },
         translations: { type: Object, computed: "service.language.messages" },
     };
 
-    constructor() {
+    /**
+     * Creates a new instance of the WebComponentLit class.
+     * @param translations - Optional translations object that contains key-value pairs for translations.
+     */
+    constructor(translations?: TTranslations) {
         super();
+
+        if (translations)
+            this[TRANSLATION_CONTROLLER_SYMBOL] = new WebComponentTranslationController(this, translations);
 
         const listenerConfig = getListenersConfig(this);
         if (Object.keys(listenerConfig).length > 0) {
@@ -81,8 +99,8 @@ export abstract class WebComponentLit extends LitElement {
     /**
      * Gets the translations from the service's client-side language messages.
      */
-    get translations(): Record<string, string> {
-        return this.service?.language?.messages || {};
+    get translations(): TypedTranslations<TTranslations> {
+        return this[TRANSLATION_CONTROLLER_SYMBOL]?.translations || this.service?.language?.messages || {};
     }
 
     override willUpdate(changedProperties: PropertyValueMap<any>) {
@@ -94,7 +112,7 @@ export abstract class WebComponentLit extends LitElement {
         super.willUpdate(totalChangedProps);
     }
 
-        /**
+    /**
      * A shallow comparer for arrays. It checks if two arrays have the same length
      * and if all their elements are strictly equal (===).
      * @param a The first array.
