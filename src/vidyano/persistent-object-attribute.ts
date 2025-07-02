@@ -87,7 +87,7 @@ export class PersistentObjectAttribute extends ServiceObject {
         this.#toolTip = attr.toolTip;
         this.#rules = attr.rules;
         this.validationError = attr.validationError || null;
-        this.#typeHints = attr.typeHints || {};
+        this.#typeHints = attr.typeHints;
         this.#triggersRefresh = !!attr.triggersRefresh;
         this.#column = attr.column;
         this.#columnSpan = attr.columnSpan || 0;
@@ -536,7 +536,7 @@ export class PersistentObjectAttribute extends ServiceObject {
      * Gets the data type hints
      */
     get typeHints(): Record<string | symbol, any> {
-        return this.#typeHints;
+        return this.#typeHints ?? (this.#typeHints = {});
     }
 
     /**
@@ -549,23 +549,16 @@ export class PersistentObjectAttribute extends ServiceObject {
      * @returns The type hint.
      */
     getTypeHint(name: string, defaultValue?: string, typeHints?: any): string {
-        if (typeHints != null) {
-            // Merge provided type hints with existing ones, giving precedence to provided ones.
-            typeHints = { ...this.typeHints, ...typeHints };
-        }
-        else {
-            // Use the existing type hints if none are provided.
-            typeHints = this.typeHints;
-        }
+        const mergedTypeHints = typeHints ? { ...this.typeHints, ...typeHints } : this.typeHints;
 
-        if (typeHints != null) {
-            let typeHint = typeHints[name];
+        if (mergedTypeHints) {
+            let typeHint = mergedTypeHints[name];
             if (typeHint != null)
-                return typeHint;
+            return typeHint;
 
-            typeHint = typeHints[name.toLowerCase()];
+            typeHint = mergedTypeHints[name.toLowerCase()];
             if (typeHint != null)
-                return typeHint;
+            return typeHint;
         }
 
         return defaultValue;
@@ -668,8 +661,8 @@ export class PersistentObjectAttribute extends ServiceObject {
 
         if (resultAttr.typeHints && Object.keys(resultAttr.typeHints).some(k => resultAttr.typeHints[k] !== this.typeHints[k])) {
             const newTypeHints = { ...resultAttr.typeHints };
-            for (let name in this.typeHints) {
-                if (newTypeHints[name] != null)
+            for (const name in this.typeHints) {
+                if (Object.prototype.hasOwnProperty.call(newTypeHints, name))
                     continue;
 
                 newTypeHints[name] = this.typeHints[name];

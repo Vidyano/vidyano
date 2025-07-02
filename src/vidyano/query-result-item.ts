@@ -18,9 +18,8 @@ export class QueryResultItem extends ServiceObject {
     #values: any;
     #tag: any;
     #isSelected: boolean;
-
     #rawValues: QueryResultItemValue[];
-    #typeHints: any;
+    #typeHints: Record<string | symbol, any>;
 
     /**
      * Initializes a new instance of the QueryResultItem class.
@@ -118,8 +117,8 @@ export class QueryResultItem extends ServiceObject {
     /**
      * Gets the type hints for this query result item.
      */
-    get typeHints(): any {
-        return this.#typeHints;
+    get typeHints(): Record<string | symbol, any> {
+        return this.#typeHints ?? (this.#typeHints = {});
     }
 
     /**
