@@ -137,6 +137,8 @@ export class PersistentObjectAttributeWithReference extends PersistentObjectAttr
      * @returns True if the attribute's visibility changed.
      */
     protected _refreshFromResult(resultAttr: Dto.PersistentObjectAttributeWithReferenceDto, resultWins: boolean): boolean {
+        const { objectId, isValueChanged, displayAttribute, canAddNewReference, selectInPlace } = this;
+
         if (resultWins || this.objectId !== resultAttr.objectId) {
             this.#objectId = resultAttr.objectId;
             this.isValueChanged = resultAttr.isValueChanged;
@@ -147,6 +149,20 @@ export class PersistentObjectAttributeWithReference extends PersistentObjectAttr
         this.#displayAttribute = resultAttr.displayAttribute;
         this.#canAddNewReference = resultAttr.canAddNewReference;
         this.#selectInPlace = resultAttr.selectInPlace;
+
+        // Notify property changes if any of the relevant properties have changed
+        const propertyChanges: Array<[string, any, any]> = [
+            ["objectId", this.#objectId, objectId],
+            ["isValueChanged", resultAttr.isValueChanged, isValueChanged],
+            ["displayAttribute", this.#displayAttribute, displayAttribute],
+            ["canAddNewReference", this.#canAddNewReference, canAddNewReference],
+            ["selectInPlace", this.#selectInPlace, selectInPlace]
+        ];
+
+        for (const [prop, newValue, oldValue] of propertyChanges) {
+            if (newValue !== oldValue)
+                this.notifyPropertyChanged(prop, newValue, oldValue);
+        }
 
         return visibilityChanged;
     }
