@@ -54,7 +54,7 @@ export const ServiceHooksSymbols = {
 // Internal proxy symbol for accessing internal methods.
 const InternalProxy = Symbol("InternalProxy");
 
-export type InternalPersistentObject = PersistentObject & {
+export type InternalPersistentObject = {
     /**
      * Gets the data transfer object for the persistent object.
      */
@@ -80,7 +80,7 @@ export type InternalPersistentObject = PersistentObject & {
     refreshTabsAndGroups(...changedAttributes: PersistentObjectAttribute[]): void;
 };
 
-export type InternalPersistentObjectAttribute = PersistentObjectAttribute & {
+export type InternalPersistentObjectAttribute = {
     /**
      * Backs up the service value.
      */
@@ -101,14 +101,14 @@ export type InternalPersistentObjectAttribute = PersistentObjectAttribute & {
     toServiceObject(): Dto.PersistentObjectAttributeDto;
 };
 
-export type InternalQueryColumn = QueryColumn & {
+export type InternalQueryColumn = {
     /**
      * Converts the query column to a service object.
      */
     toServiceObject(): Dto.QueryColumnDto;
 };
 
-export type InternalQueryResultItem = QueryResultItem & {
+export type InternalQueryResultItem = {
     /**
      * Converts the query result item to a service object.
      */
@@ -122,7 +122,7 @@ export type InternalQueryResultItemValue = {
     toServiceObject(): any;
 };
 
-export type InternalQuery = Query & {
+export type InternalQuery = {
     /**
      * Notifies the query that an item selection has changed.
      * @param item - The query result item that has changed selection state.
@@ -142,7 +142,7 @@ export type InternalQuery = Query & {
     toServiceObject(): any;
 };
 
-export type InternalServiceHooks = ServiceHooks & {
+export type InternalServiceHooks = {
     /**
      * Sets the service instance for the hooks.
      */
