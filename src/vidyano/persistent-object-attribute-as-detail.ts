@@ -127,21 +127,19 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
     protected _refreshFromResult(resultAttr: Dto.PersistentObjectAttributeAsDetailDto, resultWins: boolean): boolean {
         const visibilityChanged = super._refreshFromResult(resultAttr, resultWins);
 
-        if (this.objects != null && resultAttr.objects != null) {
-            if (resultAttr.objects) {
-                this.#objects = resultAttr.objects.map(po => {
-                    const detailObj = this.service.hooks.onConstructPersistentObject(this.service, po);
-                    detailObj.parent = this.parent;
-                    detailObj.ownerDetailAttribute = this;
+        if (resultAttr.objects != null) {
+            const newObjects = resultAttr.objects.map(po => {
+                const detailObj = this.service.hooks.onConstructPersistentObject(this.service, po);
+                detailObj.parent = this.parent;
+                detailObj.ownerDetailAttribute = this;
 
-                    if (this.parent.isEditing)
-                        detailObj.beginEdit();
-    
-                    return detailObj;
-                });
-            }
-            else
-                this.#setObjects([]);
+                if (this.parent.isEditing)
+                    detailObj.beginEdit();
+
+                return detailObj;
+            });
+
+            this.#setObjects(newObjects);
         }
 
         return visibilityChanged;
