@@ -52,7 +52,8 @@ import { WebComponent } from "components/web-component/web-component"
         "attribute.value",
         "attribute.validationError",
         "attribute.parent.isBulkEdit",
-        "attribute.label"
+        "attribute.label",
+        "attribute.toolTip",
     ]
 }, "vi-persistent-object-attribute-label")
 export class PersistentObjectAttributeLabel extends WebComponent {

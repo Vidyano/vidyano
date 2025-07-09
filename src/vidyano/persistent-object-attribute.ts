@@ -46,7 +46,7 @@ export class PersistentObjectAttribute extends ServiceObject {
     #tag: any;
     #tab: PersistentObjectAttributeTab;
     #tabKey: string;
-    readonly #toolTip: string;
+    #toolTip: string;
     #triggersRefresh: boolean;
     readonly #type: string;
     #typeHints: Record<string | symbol, any>;
@@ -84,7 +84,7 @@ export class PersistentObjectAttribute extends ServiceObject {
         this.#isValueChanged = !!attr.isValueChanged;
         this.#isSensitive = !!attr.isSensitive;
         this.#offset = attr.offset || 0;
-        this.#toolTip = attr.toolTip;
+        this.#toolTip = attr.toolTip || "";
         this.#rules = attr.rules;
         this.validationError = attr.validationError || null;
         this.#typeHints = attr.typeHints;
@@ -401,6 +401,13 @@ export class PersistentObjectAttribute extends ServiceObject {
     get toolTip(): string {
         return this.#toolTip;
     }
+    #setToolTip(toolTip: string) {
+        if (this.#toolTip === toolTip)
+            return;
+
+        const oldToolTip = this.#toolTip;
+        this.notifyPropertyChanged("toolTip", this.#toolTip = toolTip || "", oldToolTip);
+    }
 
     /**
      * Gets the flag indicating if changing the attribute's value triggers a refresh.
@@ -630,6 +637,7 @@ export class PersistentObjectAttribute extends ServiceObject {
         this.#setIsReadOnly(!!resultAttr.isReadOnly);
         this.#setRules(resultAttr.rules);
         this.#setIsRequired(!!resultAttr.isRequired);
+        this.#setToolTip(resultAttr.toolTip);
 
         if (this.visibility !== resultAttr.visibility) {
             this.visibility = resultAttr.visibility;
@@ -660,7 +668,8 @@ export class PersistentObjectAttribute extends ServiceObject {
         this.validationError = resultAttr.validationError || null;
 
         if (resultAttr.typeHints && Object.keys(resultAttr.typeHints).some(k => resultAttr.typeHints[k] !== this.typeHints[k])) {
-            const newTypeHints = { ...resultAttr.typeHints };
+            const { tooltip, ToolTip, ...otherHints } = resultAttr.typeHints;
+            const newTypeHints = { ...otherHints };
             for (const name in this.typeHints) {
                 if (Object.prototype.hasOwnProperty.call(newTypeHints, name))
                     continue;
