@@ -637,7 +637,9 @@ export class PersistentObjectAttribute extends ServiceObject {
         this.#setIsReadOnly(!!resultAttr.isReadOnly);
         this.#setRules(resultAttr.rules);
         this.#setIsRequired(!!resultAttr.isRequired);
-        this.#setToolTip(resultAttr.toolTip);
+
+        if (resultAttr.toolTip != null)
+            this.#setToolTip(resultAttr.toolTip);
 
         if (this.visibility !== resultAttr.visibility) {
             this.visibility = resultAttr.visibility;
