@@ -1,6 +1,6 @@
 {
   "name": "@vidyano/core",
-  "version": "4.0.0-pre.30",
+  "version": "4.0.0-pre.31",
   "description": "The Vidyano core client library without the full application shell.",
   "main": "index.js",
   "module": "index.js",
