@@ -668,8 +668,7 @@ export class PersistentObjectAttribute extends ServiceObject {
         this.validationError = resultAttr.validationError || null;
 
         if (resultAttr.typeHints && Object.keys(resultAttr.typeHints).some(k => resultAttr.typeHints[k] !== this.typeHints[k])) {
-            const { tooltip, ToolTip, ...otherHints } = resultAttr.typeHints;
-            const newTypeHints = { ...otherHints };
+            const newTypeHints = { ...resultAttr.typeHints };
             for (const name in this.typeHints) {
                 if (Object.prototype.hasOwnProperty.call(newTypeHints, name))
                     continue;
