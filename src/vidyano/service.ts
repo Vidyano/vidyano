@@ -1315,7 +1315,8 @@ export class Service extends Observable<Service> {
             const newMessages = { ...this.language.messages };
             clientMessagesQuery.items.forEach(msg => newMessages[msg.getValue("Key")] = msg.getValue("Value"));
 
-            this.notifyPropertyChanged("language.messages", this.language.messages = newMessages, this.language.messages);
+            const oldMessages = this.language.messages;
+            this.notifyPropertyChanged("language.messages", this.language.messages = newMessages, oldMessages);
         }
 
         Object.keys(this.actionDefinitions).forEach(name => this.language.messages[`Action_${name}`] = this.actionDefinitions[name].displayName);
