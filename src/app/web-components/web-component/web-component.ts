@@ -308,7 +308,7 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
                 if (callback)
                     callback(pathToNotify);
             }
-        }, true);
+        }, false);
     }
 
     /**
