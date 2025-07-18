@@ -390,6 +390,14 @@
 
             vi-query-grid-row {
                 grid-template-columns: repeat(3, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+            
+                &::part(groupspacer) {
+                    display: block;
+                }
+
+                &::part(filter) {
+                    display: none;
+                }
             }
         }
 
