@@ -177,7 +177,7 @@ export class Query extends ServiceObjectWithActions {
         }
 
         if (!!queryDto.groupedBy)
-            this.#setGroupingInfo({ groupedBy: queryDto.groupedBy });
+            this.#setGroupingInfo({ groupedBy: queryDto.groupedBy, groups: [] });
     }
 
     /**
@@ -1197,25 +1197,31 @@ export class Query extends ServiceObjectWithActions {
             return;
         }
 
-        const currentGroupingInfo = this.groupingInfo;
-        if (groupingInfo) {
-            let start = 0;
-            const notifier = () => this.#setLastUpdated(new Date());
-            this.#setGroupingInfo({
-                groupedBy: groupingInfo.groupedBy,
-                groups: groupingInfo.groups.map(g => new QueryResultItemGroup(this, g, start, (start = start + g.count) - 1, notifier))
-            });
+        // Preserve UI state by remembering which groups are currently collapsed.
+        const oldCollapsedStates = new Map<string, boolean>();
+        if (this.groupingInfo?.groups?.length) {
+            for (const group of this.groupingInfo.groups.filter(g => g.isCollapsed))
+                oldCollapsedStates.set(group.name, true);
         }
-        else
-            this.#setGroupingInfo(null);
 
-        if (currentGroupingInfo) {
-            currentGroupingInfo.groups.forEach(oldGroup => {
-                const newGroup = this.groupingInfo.groups.find(g => g.name === oldGroup.name);
-                if (newGroup)
-                    newGroup.isCollapsed = oldGroup.isCollapsed;
-            });
-        }
+        // Calculates the running start index for each group's items.
+        let start = 0;
+
+        // Callback for group items to notify the query of state changes (e.g., collapse/expand).
+        const notifier = () => this.#setLastUpdated(new Date());
+        
+        const newGroups = (groupingInfo.groups || []).map(g => {
+            const group = new QueryResultItemGroup(this, g, start, (start = start + g.count) - 1, notifier);
+            if (oldCollapsedStates.has(group.name)) {
+                group.isCollapsed = true;
+            }
+            return group;
+        });
+
+        this.#setGroupingInfo({
+            groupedBy: groupingInfo.groupedBy,
+            groups: newGroups
+        });
     }
 
     /**
