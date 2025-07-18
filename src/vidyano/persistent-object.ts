@@ -653,6 +653,7 @@ export class PersistentObject extends ServiceObjectWithActions {
             if (!this.attributes.some(a => a.id === serviceAttr.id)) {
                 const attr = this.#createPersistentObjectAttribute(serviceAttr);
                 this.attributes.push(attr);
+                this.attributes[attr.name] = attr;
                 changedAttributes.push(attr);
 
                 if (attr.isValueChanged)
