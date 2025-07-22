@@ -130,6 +130,13 @@ export class PersistentObject extends WebComponent implements IPersistentObjectW
         if (persistentObject && isConnected) {
             this._cacheEntry = <AppCacheEntryPersistentObject>(<any>this.app).cache(new AppCacheEntryPersistentObject(this.persistentObject));
 
+            // Restore selected tabs from cache
+            if (this._cacheEntry.selectedMasterTab && this.persistentObject.tabs.indexOf(this._cacheEntry.selectedMasterTab) >= 0)
+                this.selectedMasterTab = this._cacheEntry.selectedMasterTab;
+            
+            if (this._cacheEntry.selectedDetailTab && this.persistentObject.tabs.indexOf(this._cacheEntry.selectedDetailTab) >= 0)
+                this.selectedDetailTab = this._cacheEntry.selectedDetailTab;
+
             if (persistentObject.service.application.userSettings["PersistentObjectSettings"] &&
                 persistentObject.service.application.userSettings["PersistentObjectSettings"][this.persistentObject.id] &&
                 persistentObject.service.application.userSettings["PersistentObjectSettings"][this.persistentObject.id]["master-detail"]) {
