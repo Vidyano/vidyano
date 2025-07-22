@@ -168,6 +168,9 @@ export class Query extends ServiceObjectWithActions {
 
         this.#tag = queryDto.tag;
 
+        if (!!queryDto.groupedBy)
+            this.#setGroupingInfo({ groupedBy: queryDto.groupedBy });
+
         if (queryDto.result)
             this.#setResult(queryDto.result);
         else {
@@ -175,9 +178,6 @@ export class Query extends ServiceObjectWithActions {
             this.#labelWithTotalItems = this.label;
             this.#lastUpdated = new Date();
         }
-
-        if (!!queryDto.groupedBy)
-            this.#setGroupingInfo({ groupedBy: queryDto.groupedBy, groups: [] });
     }
 
     /**
