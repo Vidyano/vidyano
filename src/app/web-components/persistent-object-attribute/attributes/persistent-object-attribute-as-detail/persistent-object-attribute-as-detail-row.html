@@ -17,7 +17,7 @@
                                 <vi-persistent-object-attribute-validation-error attribute="[[_attributeForColumn(serviceObject, column)]]"></vi-persistent-object-attribute-validation-error>
                                 <vi-sensitive disabled="[[!sensitive]]">
                                     <div class="value-box flex">
-                                        <span class="value">[[_displayValue(serviceObject, column, fullEdit, serviceObject.lastUpdated)]]</span>
+                                        <vi-persistent-object-attribute-as-detail-cell attribute="[[_attributeForColumn(serviceObject, column)]]"></vi-persistent-object-attribute-as-detail-cell>
                                     </div>
                                 </vi-sensitive>
                             </div>
@@ -28,7 +28,7 @@
             <dom-if if="[[!editing]]">
                 <template>
                     <vi-sensitive disabled="[[!sensitive]]">
-                        <span class="flex">[[_displayValue(serviceObject, column, serviceObject.lastUpdated)]]</span>
+                        <vi-persistent-object-attribute-as-detail-cell attribute="[[_attributeForColumn(serviceObject, column)]]"></vi-persistent-object-attribute-as-detail-cell>
                     </vi-sensitive>
                 </template>
             </dom-if>

@@ -52,12 +52,6 @@
                 }
             }
         }
-
-        span {
-            padding: 0 var(--theme-h5);
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
     }
 
     &:not([full-edit]):not([read-only]):not([frozen]) {

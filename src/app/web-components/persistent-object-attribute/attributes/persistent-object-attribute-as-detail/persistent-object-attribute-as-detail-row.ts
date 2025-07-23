@@ -2,6 +2,7 @@ import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import { PersistentObjectAttributePresenter } from "components/persistent-object-attribute-presenter/persistent-object-attribute-presenter"
 import { WebComponent } from "components/web-component/web-component"
+import "./persistent-object-attribute-as-detail-cell"
 
 @WebComponent.register({
     properties: {
@@ -52,11 +53,6 @@ export class PersistentObjectAttributeAsDetailRow extends WebComponent {
 
     private _attributeForColumn(obj: Vidyano.PersistentObject, column: Vidyano.QueryColumn): Vidyano.PersistentObjectAttribute {
         return obj.attributes[column.name];
-    }
-
-    private _displayValue(obj: Vidyano.PersistentObject, column: Vidyano.QueryColumn): string {
-        const attr = this._attributeForColumn(obj, column);
-        return attr && attr.displayValue || "";
     }
 
     private _computeSoftEdit(serviceObject: Vidyano.PersistentObject): boolean {
