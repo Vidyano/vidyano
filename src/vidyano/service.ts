@@ -472,7 +472,10 @@ export class Service extends Observable<Service> {
      * Redirects the browser to the provider's sign-in page.
      * @param providerName - The name of the external provider.
      */
-    public signInExternal(providerName: string) {
+    public async signInExternal(providerName: string) {
+        if (!this.#clientData)
+            await this.initialize(true);
+
         if (!this.providers[providerName] || !this.providers[providerName].requestUri)
             throw "Provider not found or not flagged for external authentication.";
 
@@ -500,6 +503,9 @@ export class Service extends Observable<Service> {
      */
     public async signInUsingCredentials(userName: string, password: string, code: string, staySignedIn?: boolean): Promise<Application>;
     public async signInUsingCredentials(userName: string, password: string, staySignedInOrCode?: string | boolean, staySignedIn?: boolean): Promise<Application> {
+        if (!this.#clientData)
+            await this.initialize(true);
+
         this.userName = userName;
 
         const data = this.#createData("getApplication");
@@ -526,7 +532,13 @@ export class Service extends Observable<Service> {
      * Signs in using default credentials, if available (e.g., Windows Authentication or pre-configured user).
      * @returns A promise resolving to the Application instance upon successful sign-in.
      */
-    public signInUsingDefaultCredentials(): Promise<Application> {
+    public async signInUsingDefaultCredentials(): Promise<Application> {
+        if (!this.#clientData) {
+            // Initialize and let it handle the default credential login
+            return this.initialize(false);
+        }
+
+        // If already initialized, proceed with sign in
         this.userName = this.defaultUserName;
 
         return this.#getApplication();
