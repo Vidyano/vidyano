@@ -1,6 +1,6 @@
 import { html } from "lit";
-import { WebComponentLit } from "../../../src/app/web-components/web-component/web-component-lit.js";
-import { property } from "../../../src/app/web-components/web-component/web-component-decorators.js";
+import { WebComponentLit } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
+import { property } from "../../../src/vidyano/web-components/web-component/web-component-decorators.js";
 
 class TestOneSimpleComputed extends WebComponentLit {
     @property({ type: String, observer: "_firstNameChanged" })

@@ -1,6 +1,6 @@
 import { html } from "lit";
-import { WebComponentLit } from "../../../src/app/web-components/web-component/web-component-lit.js";
-import { observer, property } from "../../../src/app/web-components/web-component/web-component-decorators.js";
+import { WebComponentLit } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
+import { observer, property } from "../../../src/vidyano/web-components/web-component/web-component-decorators.js";
 
 class TestMultiObserver extends WebComponentLit {
     @property({ type: Number })

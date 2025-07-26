@@ -1,5 +1,5 @@
-import { WebComponentLit } from "../../../src/app/web-components/web-component/web-component-lit.js";
-import { property } from "../../../src/app/web-components/web-component/web-component-decorators.js";
+import { WebComponentLit } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
+import { property } from "../../../src/vidyano/web-components/web-component/web-component-decorators.js";
 import { html } from "lit";
 import { Observable } from "../../../src/core/observable/index.js";
 

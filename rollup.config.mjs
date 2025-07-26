@@ -5,9 +5,9 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const entries = [
-    { find: 'components', replacement: path.resolve(__dirname, 'src/app/web-components') },
-    { find: 'libs', replacement: path.resolve(__dirname, 'src/app/libs') },
-    { find: 'polymer', replacement: path.resolve(__dirname, 'src/app/libs/polymer/polymer') },
+    { find: 'components', replacement: path.resolve(__dirname, 'src/vidyano/web-components') },
+    { find: 'libs', replacement: path.resolve(__dirname, 'src/vidyano/libs') },
+    { find: 'polymer', replacement: path.resolve(__dirname, 'src/vidyano/libs/polymer/polymer') },
     { find: 'vidyano', replacement: path.resolve(__dirname, 'src/core') },
 ];
 /* End of alias code */
@@ -37,7 +37,7 @@ const isDevelopment = process.env.NODE_ENV !== 'production';
 
 const configs = [
     {
-        input: isDevelopment ? './tests/components/index.js' : './src/app/index.js',
+        input: isDevelopment ? './tests/components/index.js' : './src/vidyano/index.js',
         external: ['String', "__decorate"],
         plugins: [
             alias({ entries }),
@@ -107,7 +107,7 @@ const configs = [
 if (!isDevelopment) {
     configs.push(...[
         {
-            input: './src/app/index.js',
+            input: './src/vidyano/index.js',
             external: ["tslib", "bignumber.js", "lit"],
             plugins: [
                 alias({ entries }),

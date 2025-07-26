@@ -354,12 +354,12 @@ dist/**/*.d.ts
 dist/**/*.tgz
 rollup
 
-src/app/index.js
-src/app/libs/**/*.js
-src/app/web-components/**/*.d.ts
-src/app/web-components/**/*.js
-src/app/web-components/**/*.css
-src/app/web-components/**/*.css.map
+src/vidyano/index.js
+src/vidyano/libs/**/*.js
+src/vidyano/web-components/**/*.d.ts
+src/vidyano/web-components/**/*.js
+src/vidyano/web-components/**/*.css
+src/vidyano/web-components/**/*.css.map
 src/core/**/*.js
 test/**/*.d.ts
 test/**/*.js

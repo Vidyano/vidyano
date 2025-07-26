@@ -21,9 +21,9 @@
       ],
       "baseUrl": "src",
       "paths": {
-        "components/*": [ "app/web-components/*" ],
-        "libs/*": [ "app/libs/*" ],
-        "polymer": [ "app/libs/polymer/polymer" ],
+        "components/*": [ "vidyano/web-components/*" ],
+        "libs/*": [ "vidyano/libs/*" ],
+        "polymer": [ "vidyano/libs/polymer/polymer" ],
         "vidyano": [ "core" ],
       }
   },
@@ -32,7 +32,7 @@
   ],
   "include": [
       "src/core/**/*.ts",
-      "src/app/**/*.ts",
+      "src/vidyano/**/*.ts",
       "tests/components/**/*.ts",
   ],
   "watchOptions": {
