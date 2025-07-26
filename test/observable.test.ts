@@ -8,7 +8,7 @@ import {
     ForwardObservedChainDisposer,
     Subject,
     ISubjectObserver
-} from "../src/vidyano/observable";
+} from "../src/core/observable";
 
 // Helper observable classes for tests
 class TestObservableItem extends Observable<{ id: string; data: string }> {

@@ -8,7 +8,7 @@ const entries = [
     { find: 'components', replacement: path.resolve(__dirname, 'src/app/web-components') },
     { find: 'libs', replacement: path.resolve(__dirname, 'src/app/libs') },
     { find: 'polymer', replacement: path.resolve(__dirname, 'src/app/libs/polymer/polymer') },
-    { find: 'vidyano', replacement: path.resolve(__dirname, 'src/vidyano') },
+    { find: 'vidyano', replacement: path.resolve(__dirname, 'src/core') },
 ];
 /* End of alias code */
 
@@ -73,7 +73,7 @@ const configs = [
             warn(warning);
         },
     }, {
-        input: 'src/vidyano/index.js',
+        input: 'src/core/index.js',
         external: ['String', "__decorate"],
         plugins: [
             alias({ entries }),
@@ -115,7 +115,7 @@ if (!isDevelopment) {
             ],
             output: [{ file: "dev/wwwroot/index.d.ts", format: "es" }, { file: "dist/vidyano/index.d.ts", format: "es" }],
         }, {
-            input: 'src/vidyano/index.js',
+            input: 'src/core/index.js',
             external: ["tslib", "bignumber.js"],
             plugins: [
                 alias({ entries }),

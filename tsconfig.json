@@ -24,7 +24,7 @@
         "components/*": [ "app/web-components/*" ],
         "libs/*": [ "app/libs/*" ],
         "polymer": [ "app/libs/polymer/polymer" ],
-        "vidyano": [ "vidyano" ],
+        "vidyano": [ "core" ],
       }
   },
   "exclude": [

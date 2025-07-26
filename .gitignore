@@ -360,7 +360,7 @@ src/app/web-components/**/*.d.ts
 src/app/web-components/**/*.js
 src/app/web-components/**/*.css
 src/app/web-components/**/*.css.map
-src/vidyano/**/*.js
+src/core/**/*.js
 test/**/*.d.ts
 test/**/*.js
 test/**/*.css

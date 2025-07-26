@@ -1,6 +1,6 @@
 import { WebComponentLit } from "../../../src/app/web-components/web-component/web-component-lit.js";
 import { property } from "../../../src/app/web-components/web-component/web-component-decorators.js";
-import { Observable } from "../../../src/vidyano/observable/index.js";
+import { Observable } from "../../../src/core/observable/index.js";
 import { html } from "lit";
 
 export class QuerySource extends Observable<QuerySource> {

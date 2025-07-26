@@ -188,7 +188,7 @@
         "**/healthchecksdb": true,
         "**/MigrationBackup/": true,
         "rollup": true,
-        "src/vidyano/**/*.js": true,
+        "src/core/**/*.js": true,
         "src/app/web-components/*.d.ts": true,
         "src/app/**/*.js": true,
         "src/app/**/*.css": true,
