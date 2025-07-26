@@ -1,5 +1,3 @@
-import "vidyano/common/array"
-
 export class PathRoutes {
     current: string = null;
     previous: PathRoute = null;
