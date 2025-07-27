@@ -386,7 +386,7 @@ export class Service extends Observable<Service> {
      * @returns A promise resolving to the credential type information.
      */
     public async getCredentialType(userName: string) {
-        return this.#postJSON("authenticate/GetCredentialType", { userName: userName });
+        return this.#postJSON(this.#createUri("authenticate/GetCredentialType"), { userName: userName });
     }
 
     /**
