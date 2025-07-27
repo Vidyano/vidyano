@@ -1,7 +1,7 @@
 export { Path } from "./libs/pathjs/pathjs";
 export * as Polymer from "./libs/polymer/polymer";
 
-export * as Vidyano from "../vidyano/index";
+export * as Vidyano from "../core";
 
 export * from "./web-components/web-component/web-component-configurable"
 export * from "./web-components/web-component/web-component"
