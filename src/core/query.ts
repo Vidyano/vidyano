@@ -110,11 +110,13 @@ export class Query extends ServiceObjectWithActions {
     constructor(service: Service, queryDto: Dto.QueryDto, public parent?: PersistentObject, asLookup: boolean = false, maxSelectedItems?: number) {
         super(service, queryDto.actions, queryDto.actionLabels);
 
-        this.#dto = queryDto;
         this[QuerySymbols.IsQuery] = true;
         this[QuerySymbols.NotifyItemSelectionChanged] = this.#notifyItemSelectionChanged.bind(this);
         this[QuerySymbols.SetOwnerAttributeWithReference] = this.#setOwnerAttributeWithReference.bind(this);
         this[QuerySymbols.ToServiceObject] = this.#toServiceObject.bind(this);
+
+        const { result, ...dtoWithoutResult } = queryDto;
+        this.#dto = dtoWithoutResult;
 
         this.#asLookup = asLookup;
         this.#isSystem = !!queryDto.isSystem;
@@ -126,7 +128,6 @@ export class Query extends ServiceObjectWithActions {
         this.#canRead = !!queryDto.canRead;
         this.#isHidden = queryDto.isHidden;
         this.#label = queryDto.label;
-        this.setNotification(queryDto.notification, queryDto.notificationType, queryDto.notificationDuration);
         this.#offset = queryDto.offset || 0;
         this.textSearch = queryDto.textSearch || "";
         this.pageSize = queryDto.pageSize;
@@ -139,15 +140,11 @@ export class Query extends ServiceObjectWithActions {
         this.#persistentObject = queryDto.persistentObject instanceof PersistentObject ? queryDto.persistentObject : service.hooks.onConstructPersistentObject(service, queryDto.persistentObject);
         this.#singularLabel = this.#persistentObject.label;
 
-        this.#updateColumns(queryDto.columns);
         this._initializeActions();
 
         this.#canReorder = !!queryDto.canReorder && !asLookup;
 
         this.#selectAll = new QuerySelectAll(this, (!!queryDto.isSystem || !!queryDto.enableSelectAll) && !this.maxSelectedItems && this.actions.some(a => a.isVisible && a.definition.selectionRule !== ExpressionParser.alwaysTrue), this.#selectAllPropertyChanged.bind(this));
-
-        this.#setTotalItems(queryDto.totalItems);
-        this.#setSortOptionsFromService(queryDto.sortOptions);
 
         if (queryDto.disableBulkEdit) {
             const bulkEdit = <Action>this.actions["BulkEdit"];
@@ -164,19 +161,25 @@ export class Query extends ServiceObjectWithActions {
         else
             this.#filters = null;
 
-        this.#canFilter = this.actions.some(a => a.name === "Filter") && this.columns.some(c => c.canFilter);
-
-        this.#tag = queryDto.tag;
-
         if (!!queryDto.groupedBy)
             this.#setGroupingInfo({ groupedBy: queryDto.groupedBy });
 
-        if (queryDto.result)
-            this.#setResult(queryDto.result);
-        else {
+        // Only initialize these properties if we don't have an immediate result
+        // When we have a result, these will be set in #setResult
+        if (!result) {
+            this.#updateColumns(queryDto.columns);
+            this.#setTotalItems(queryDto.totalItems);
+            this.#setSortOptionsFromService(queryDto.sortOptions);
+            this.setNotification(queryDto.notification, queryDto.notificationType, queryDto.notificationDuration);
+            this.#canFilter = this.actions.some(a => a.name === "Filter") && this.columns.some(c => c.canFilter);
+            this.#tag = queryDto.tag;
+
             this.#setItems([]);
             this.#labelWithTotalItems = this.label;
             this.#lastUpdated = new Date();
+        }
+        else {
+            this.#setResult(result);
         }
     }
 
