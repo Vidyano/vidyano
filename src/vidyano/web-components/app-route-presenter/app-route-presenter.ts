@@ -87,7 +87,7 @@ export class AppRoutePresenter extends WebComponent {
         await this.app.initialize;
 
         this._routeUpdater = this._routeUpdater.then(async () => {
-            const initial: Vidyano.PersistentObject = this.service["_initial"];
+            const initial: Vidyano.PersistentObject = this.service.initial;
             if (initial != null)
                 await (<AppServiceHooks>this.service.hooks).onInitial(initial);
 

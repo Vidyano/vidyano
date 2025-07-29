@@ -84,8 +84,7 @@ interface INotification {
         },
         initial: {
             type: Object,
-            readOnly: true,
-            value: null
+            computed: "service.initial"
         },
         logo: {
             type: String,
@@ -125,7 +124,7 @@ export class SignIn extends WebComponent {
     readonly hasForgot: boolean; private _setHasForgot: (hasForgot: boolean) => void;
     readonly hasRegister: boolean; private _setHasRegister: (hasRegister: boolean) => void;
     readonly register: Vidyano.PersistentObject; private _setRegister: (register: Vidyano.PersistentObject) => void;
-    readonly initial: Vidyano.PersistentObject; private _setInitial: (initial: Vidyano.PersistentObject) => void;
+    readonly initial: Vidyano.PersistentObject;
     readonly description: string; private _setDescription: (description: string) => void;
     private readonly notification: INotification; private _setNotification: (notification: INotification) => void;
     private step: Step;
@@ -165,13 +164,12 @@ export class SignIn extends WebComponent {
                 }
             }
             else {
-                if (this.service.initial) {
+                if (this.initial) {
                     this._setReturnUrl(decodeURIComponent(parameters.returnUrl || ""));
 
-                    this.service.initial.beginEdit();
-                    this.service.initial.stateBehavior = "StayInEdit";
+                    this.initial.beginEdit();
+                    this.initial.stateBehavior = "StayInEdit";
 
-                    this._setInitial(this.service.initial);
                     this.step = "initial";
 
                     return;
@@ -260,7 +258,7 @@ export class SignIn extends WebComponent {
         }
         else if (this.step === "initial") {
             this.app.changePath("SignOut/SignIn" + (this.returnUrl ? `/${this.returnUrl}` : ""));
-            this._setInitial(this.service["_initial"] = null);
+            this.service.clearInitial();
         }
 
         this._setNotification(null);
@@ -273,7 +271,7 @@ export class SignIn extends WebComponent {
         if (step === "register")
             this._updateWidth(this.register);
         else if (step === "initial")
-            this._updateWidth(this.service.initial);
+            this._updateWidth(this.initial);
         else
             this._updateWidth(null);
 
@@ -321,7 +319,7 @@ export class SignIn extends WebComponent {
                 type: this.initial.notificationType
             } : null);
 
-            this._setInitial(this.service["_initial"] = null);
+            this.service.clearInitial();
             this.app.changePath(this.returnUrl || "", true);
         }
         catch (error) {

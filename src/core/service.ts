@@ -189,6 +189,14 @@ export class Service extends Observable<Service> {
     }
 
     /**
+     * Clears the initial persistent object.
+     */
+    public clearInitial() {
+        const oldInitial = this.#initial;
+        this.notifyPropertyChanged("initial", this.#initial = null, oldInitial);
+    }
+
+    /**
      * Gets or sets the current language used by the service.
      * Changing this property will notify observers.
      */
