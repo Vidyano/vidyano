@@ -5,18 +5,6 @@
       "Bindings": [
         "*"
       ]
-    },
-    "Legacy": {
-      "Type": 2,
-      "Bindings": [
-        "*/legacy"
-      ]
-    },
-    "Test": {
-      "Type": 4,
-      "Bindings": [
-        "*/test"
-      ]
     }
   }
 }

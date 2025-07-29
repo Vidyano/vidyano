@@ -1,0 +1,52 @@
+{
+  "PersistentObject": {
+    "$id": "PersistentObject:efac9a96-6906-34e3-a601-d74fd1c4d84c",
+    "Id": "efac9a96-6906-34e3-a601-d74fd1c4d84c",
+    "SchemaName": "Dev",
+    "Type": "Feature_RetryAction",
+    "Salt": "pUjUWvHmg6uUvdwq2cAYQpkS_ePNJ50qwQ1dukZPb5Wq_wiaOiuEeA",
+    "Label": {
+      "en": "Retry Action",
+      "nl": ""
+    },
+    "Groups": [
+      {
+        "$id": "PersistentObjectAttributeGroup:1a18d40b-3dc5-4421-b34f-a11e3963b37f",
+        "Id": "1a18d40b-3dc5-4421-b34f-a11e3963b37f"
+      }
+    ],
+    "Tabs": [
+      {
+        "$id": "PersistentObjectAttributeTab:eca99143-3df5-4490-82c3-fb629fb5b393",
+        "Id": "eca99143-3df5-4490-82c3-fb629fb5b393"
+      }
+    ],
+    "Attributes": [
+      {
+        "$id": "PersistentObjectAttribute:4eb2b494-142c-33ac-b021-e1a0dc536a28",
+        "Id": "4eb2b494-142c-33ac-b021-e1a0dc536a28",
+        "Offset": 10,
+        "Rules": "NotEmpty",
+        "Name": "Why",
+        "Label": {
+          "en": "Why are you sure?",
+          "nl": "Why"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:1a18d40b-3dc5-4421-b34f-a11e3963b37f"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:eca99143-3df5-4490-82c3-fb629fb5b393"
+        }
+      }
+    ],
+    "Queries": []
+  },
+  "Queries": [],
+  "Reports": []
+}

@@ -2,13 +2,29 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <Nullable>annotations</Nullable>
-	  <UserSecretsId>60A2590B-D165-41F5-9D56-36B1A10ED282</UserSecretsId>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Enables Dynamic PGO: https://github.com/dotnet/runtime/blob/main/docs/design/features/DynamicPgo.md -->
+    <TieredPGO>enable</TieredPGO>
+    <UserSecretsId>3cb4a092-31ad-494d-9bf4-e3872d9ffe7b</UserSecretsId>
+    <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Vidyano.RavenDB" Version="6.0.20250521.5929" />
-    <PackageReference Include="Vidyano.SourceGenerators" Version="2.15.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <PackageReference Include="Bogus" Version="35.6.3" />
+    <PackageReference Include="Vidyano" Version="6.0.20250724.5998" />
+    <PackageReference Include="Vidyano.SourceGenerators" Version="2.22.1" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- SourceGenerator settings-->
+    <AdditionalFiles Include="App_Data\**\*.json" />
+    <!-- SourceGenerator aliases-->
+    <Using Include="Dev.Service.Generated" />
+    <Using Alias="Types" Include="Dev.Service.Generated.PersistentObjectTypes.Dev" />
+    <Using Alias="AttributeNames" Include="Dev.Service.Generated.PersistentObjectAttributeNames.Dev" />
+    <Using Alias="QueryNames" Include="Dev.Service.Generated.QueryNames.Dev" />
+    <Using Alias="QuerySources" Include="Dev.Service.Generated.QuerySources.Dev" />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,7 +32,5 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
-  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 
 </Project>

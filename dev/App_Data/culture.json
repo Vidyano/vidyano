@@ -3,13 +3,13 @@
     "en": {
       "Name": {
         "en": "English",
-        "nl": "Engels"
+        "nl": "English"
       }
     },
     "nl": {
       "Name": {
         "en": "Dutch",
-        "nl": "Nederlands"
+        "nl": "Dutch"
       }
     }
   },
@@ -17,7 +17,7 @@
     "ActionGeneratedAnError": {
       "Value": {
         "en": "The action {0} generated an error: {1}",
-        "nl": "De actie {0} een fout gegenereerd: {1}"
+        "nl": "The action {0} generated an error: {1}"
       },
       "IsSystem": true
     },
@@ -47,7 +47,7 @@
     "AnUnexpectedDatabaseErrorOccurred": {
       "Value": {
         "en": "An unexpected database error occurred.",
-        "nl": "Er is een onverwachte databasefout opgetreden."
+        "nl": "An unexpected database error occurred."
       },
       "IsSystem": true
     },
@@ -461,7 +461,7 @@
     "GroupByColumn": {
       "Value": {
         "en": "Group by {0}",
-        "nl": "Groeperen op {0}"
+        "nl": "Group by {0}"
       },
       "IsClient": true,
       "IsSystem": true
@@ -476,7 +476,7 @@
     "HideColumn": {
       "Value": {
         "en": "Hide column",
-        "nl": "Kolom verbergen"
+        "nl": "Hide column"
       },
       "IsClient": true,
       "IsSystem": true
@@ -646,7 +646,7 @@
     "LastXDays": {
       "Value": {
         "en": "Last (\\d+) day(s)?",
-        "nl": "Laatste (\\d+) dag(en)?"
+        "nl": "Last (\\d+) day(s)?"
       },
       "IsSystem": true
     },
@@ -727,7 +727,7 @@
     "NewPasswordMustBeDifferent": {
       "Value": {
         "en": "Your new password must be different from your previous password.",
-        "nl": "Uw nieuwe wachtwoord moet verschillen van uw vorige wachtwoord."
+        "nl": "Your new password must be different from your previous password."
       },
       "IsSystem": true
     },
@@ -749,7 +749,7 @@
     "Next": {
       "Value": {
         "en": "Next",
-        "nl": "Volgend"
+        "nl": "Volgende"
       },
       "IsClient": true,
       "IsSystem": true
@@ -949,7 +949,7 @@
     "Previous": {
       "Value": {
         "en": "Previous",
-        "nl": "Vorig"
+        "nl": "Previous"
       },
       "IsClient": true,
       "IsSystem": true
@@ -1315,7 +1315,7 @@
     "UnableToSaveModifiedEntity": {
       "Value": {
         "en": "{0} ({1}) has been modified by another user. Reload the page and try again.",
-        "nl": "{0} ({1}) is gewijzigd door een andere gebruiker. Laad de pagina opnieuw en probeer het opnieuw."
+        "nl": "{0} ({1}) has been modified by another user. Reload the page and try again."
       },
       "IsSystem": true
     },
@@ -1374,7 +1374,7 @@
     "UserSettingsChangePassword": {
       "Value": {
         "en": "Please change your password",
-        "nl": "Wijzig uw wachtwoord"
+        "nl": "Please change your password"
       },
       "IsSystem": true
     },
@@ -1416,7 +1416,7 @@
     "UserSettingsOldPassword": {
       "Value": {
         "en": "Old password",
-        "nl": "Oud wachtwoord"
+        "nl": "Old password"
       },
       "IsSystem": true
     },
@@ -1430,21 +1430,21 @@
     "UserSettingsTwoFactorCode": {
       "Value": {
         "en": "Enter generated code from authenticator app",
-        "nl": "Voer gegenereerde code in vanuit de authenticator-app"
+        "nl": "Enter generated code from authenticator app"
       },
       "IsSystem": true
     },
     "UserSettingsTwoFactorEnabled": {
       "Value": {
         "en": "Use two-factor authentication",
-        "nl": "Tweefactorauthenticatie gebruiken"
+        "nl": "Use two-factor authentication"
       },
       "IsSystem": true
     },
     "UserSettingsTwoFactorImage": {
       "Value": {
         "en": "Scan QR code in authenticator app",
-        "nl": "QR-code scannen in de authenticator-app"
+        "nl": "Scan QR code in authenticator app"
       },
       "IsSystem": true
     },

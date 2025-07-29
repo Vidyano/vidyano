@@ -1,0 +1,324 @@
+{
+  "PersistentObject": {
+    "$id": "PersistentObject:7d6563ff-5014-3606-bb4f-6de864b4519a",
+    "Id": "7d6563ff-5014-3606-bb4f-6de864b4519a",
+    "SchemaName": "Dev",
+    "Type": "Person",
+    "Salt": "5H1v8lDdRcaCoyZeZRExAGjzO2gH3RY6EYV_M45tltvZiv3Qbly5Lg",
+    "Breadcrumb": "{FirstName}",
+    "ContextProperty": "People",
+    "Label": {
+      "en": "Person",
+      "nl": "Person"
+    },
+    "Groups": [
+      {
+        "$id": "PersistentObjectAttributeGroup:cf64fe83-7f29-494d-90ac-1608400b479c",
+        "Id": "cf64fe83-7f29-494d-90ac-1608400b479c"
+      }
+    ],
+    "Tabs": [
+      {
+        "$id": "PersistentObjectAttributeTab:888bca54-2de6-44d6-8c06-edccaeb9e85b",
+        "Id": "888bca54-2de6-44d6-8c06-edccaeb9e85b"
+      }
+    ],
+    "Attributes": [
+      {
+        "$id": "PersistentObjectAttribute:6bf68a60-e00a-376d-b338-14d9774ede53",
+        "Id": "6bf68a60-e00a-376d-b338-14d9774ede53",
+        "Offset": 35,
+        "Rules": "Required",
+        "Name": "BirthDate",
+        "CanGroupBy": true,
+        "Label": {
+          "en": "Birth date",
+          "nl": "Birth date"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Date"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:cf64fe83-7f29-494d-90ac-1608400b479c"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:888bca54-2de6-44d6-8c06-edccaeb9e85b"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:cf9e7a0e-c666-3a0e-a418-988336ca82e9",
+        "Id": "cf9e7a0e-c666-3a0e-a418-988336ca82e9",
+        "Offset": 50,
+        "Rules": "NotEmpty; IsEmail",
+        "Name": "Email",
+        "Label": {
+          "en": "Email",
+          "nl": "Email"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:cf64fe83-7f29-494d-90ac-1608400b479c"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:888bca54-2de6-44d6-8c06-edccaeb9e85b"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:3a010b33-9497-3d68-a2ac-1b618ea1288d",
+        "Id": "3a010b33-9497-3d68-a2ac-1b618ea1288d",
+        "Offset": 10,
+        "Rules": "NotEmpty",
+        "Name": "FirstName",
+        "Label": {
+          "en": "First name",
+          "nl": "First name"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:cf64fe83-7f29-494d-90ac-1608400b479c"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:888bca54-2de6-44d6-8c06-edccaeb9e85b"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:6637bcd1-567b-38ae-86d8-a5eb4e06aebc",
+        "Id": "6637bcd1-567b-38ae-86d8-a5eb4e06aebc",
+        "Offset": 65,
+        "Rules": "Required",
+        "Name": "Gender",
+        "CanGroupBy": true,
+        "Label": {
+          "en": "Gender",
+          "nl": "Gender"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Enum"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:cf64fe83-7f29-494d-90ac-1608400b479c"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:888bca54-2de6-44d6-8c06-edccaeb9e85b"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:004c55b8-c4f0-363a-92b5-c7ce25aa929d",
+        "Id": "004c55b8-c4f0-363a-92b5-c7ce25aa929d",
+        "Offset": 70,
+        "Rules": "Required",
+        "Name": "IsActive",
+        "Label": {
+          "en": "Is active",
+          "nl": "Is active"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Boolean"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:cf64fe83-7f29-494d-90ac-1608400b479c"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:888bca54-2de6-44d6-8c06-edccaeb9e85b"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:03f320d0-ef98-3f25-9847-f35ced9fa7a0",
+        "Id": "03f320d0-ef98-3f25-9847-f35ced9fa7a0",
+        "Offset": 20,
+        "Rules": "NotEmpty",
+        "Name": "LastName",
+        "Label": {
+          "en": "Last name",
+          "nl": "Last name"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:cf64fe83-7f29-494d-90ac-1608400b479c"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:888bca54-2de6-44d6-8c06-edccaeb9e85b"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:2e6945ac-6cbe-31ab-9620-99beb9811cda",
+        "Id": "2e6945ac-6cbe-31ab-9620-99beb9811cda",
+        "Offset": 60,
+        "Rules": "NotEmpty",
+        "Name": "PhoneNumber",
+        "Label": {
+          "en": "Phone number",
+          "nl": "Phone number"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:cf64fe83-7f29-494d-90ac-1608400b479c"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:888bca54-2de6-44d6-8c06-edccaeb9e85b"
+        }
+      }
+    ],
+    "Queries": []
+  },
+  "Queries": [
+    {
+      "$id": "Query:12d3300b-f095-4b96-b430-1a405dcebf3c",
+      "Id": "12d3300b-f095-4b96-b430-1a405dcebf3c",
+      "Source": "Database.People",
+      "AutoQuery": true,
+      "Name": "QueryGrid_InlineActions",
+      "Label": {
+        "en": "People (Inline actions)",
+        "nl": "People (Inline actions)"
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:7d6563ff-5014-3606-bb4f-6de864b4519a"
+      },
+      "Columns": []
+    },
+    {
+      "$id": "Query:17840ff5-58b6-41a7-97f0-dda076910471",
+      "Id": "17840ff5-58b6-41a7-97f0-dda076910471",
+      "Source": "Database.People",
+      "AutoQuery": true,
+      "Name": "QueryGrid_Filter",
+      "Label": {
+        "en": "People (Filter)",
+        "nl": "People (Filter)"
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:7d6563ff-5014-3606-bb4f-6de864b4519a"
+      },
+      "Columns": []
+    },
+    {
+      "$id": "Query:2b7099d6-5553-4d1c-b9c1-da0d81db61bd",
+      "Id": "2b7099d6-5553-4d1c-b9c1-da0d81db61bd",
+      "Source": "Database.People",
+      "AutoQuery": true,
+      "Name": "QueryGrid_SelectAndFilterAndInlineActions",
+      "Label": {
+        "en": "People (Select + Filter + Inline Actions)",
+        "nl": "People (Select + Filter + Inline Actions)"
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:7d6563ff-5014-3606-bb4f-6de864b4519a"
+      },
+      "Columns": []
+    },
+    {
+      "$id": "Query:53ffdac1-5f32-4f28-9916-6c2ddb214a9d",
+      "Id": "53ffdac1-5f32-4f28-9916-6c2ddb214a9d",
+      "Source": "Database.People",
+      "AutoQuery": true,
+      "Name": "QueryGrid_None",
+      "Label": {
+        "en": "People (None)",
+        "nl": "People (None)"
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:7d6563ff-5014-3606-bb4f-6de864b4519a"
+      },
+      "Columns": []
+    },
+    {
+      "$id": "Query:96d1a36a-a7c9-47d0-893d-2b750bf1dc7e",
+      "Id": "96d1a36a-a7c9-47d0-893d-2b750bf1dc7e",
+      "Source": "Database.People",
+      "AutoQuery": true,
+      "Name": "QueryGrid_SelectAndInlineActions",
+      "Label": {
+        "en": "People (Select + Inline Actions)",
+        "nl": "People (Select + Inline Actions)"
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:7d6563ff-5014-3606-bb4f-6de864b4519a"
+      },
+      "Columns": []
+    },
+    {
+      "$id": "Query:c4c93d13-9b69-4c35-b084-214c0664b93a",
+      "Id": "c4c93d13-9b69-4c35-b084-214c0664b93a",
+      "Source": "Database.People",
+      "AutoQuery": true,
+      "Name": "QueryGrid_SelectAndFilter",
+      "Label": {
+        "en": "People (Select + Filter)",
+        "nl": "People (Select + Filter)"
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:7d6563ff-5014-3606-bb4f-6de864b4519a"
+      },
+      "Columns": []
+    },
+    {
+      "$id": "Query:c81496d8-154b-4f66-905e-1d32354eea0c",
+      "Id": "c81496d8-154b-4f66-905e-1d32354eea0c",
+      "Source": "Database.People",
+      "AutoQuery": true,
+      "Name": "People",
+      "Label": {
+        "en": "People",
+        "nl": "People"
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:7d6563ff-5014-3606-bb4f-6de864b4519a"
+      },
+      "Columns": []
+    },
+    {
+      "$id": "Query:cb92f781-dcde-45e3-a149-a80c256e5aec",
+      "Id": "cb92f781-dcde-45e3-a149-a80c256e5aec",
+      "Source": "Database.People",
+      "AutoQuery": true,
+      "Name": "QueryGrid_Select",
+      "Label": {
+        "en": "People (Select)",
+        "nl": "People (Select)"
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:7d6563ff-5014-3606-bb4f-6de864b4519a"
+      },
+      "Columns": []
+    },
+    {
+      "$id": "Query:d9c7a23e-b445-4831-bbce-383121655046",
+      "Id": "d9c7a23e-b445-4831-bbce-383121655046",
+      "Source": "Custom.PeopleTop10",
+      "AutoQuery": true,
+      "Name": "PeopleTop10",
+      "Label": {
+        "en": "People (Top 10)",
+        "nl": "People"
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:7d6563ff-5014-3606-bb4f-6de864b4519a"
+      },
+      "Columns": []
+    }
+  ],
+  "Reports": []
+}

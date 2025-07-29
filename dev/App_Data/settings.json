@@ -1,0 +1,112 @@
+{
+  "SynchronizeSchema": {
+    "Value": "IfEmpty"
+  },
+  "SynchronizeBlacklist": {
+    "Value": ""
+  },
+  "Default PageSize": {
+    "Value": ""
+  },
+  "UseDirtyReads": {
+    "Value": "False"
+  },
+  "EnablePatching": {
+    "Value": "False"
+  },
+  "MicrosoftTranslatorAppId": {},
+  "SmtpConfiguration": {},
+  "FeedbackNotificationEmailTo": {},
+  "FeedbackNotificationEmailFrom": {},
+  "AnalyticsKey": {},
+  "Default Text FilterOperation": {
+    "Value": "StartsWith"
+  },
+  "Default QueryLayoutMode": {
+    "Value": "MasterDetail"
+  },
+  "Default TimeZone": {
+    "Value": ""
+  },
+  "Default Language": {
+    "Value": "en"
+  },
+  "ClientSecurityData": {
+    "Data": {
+      "Vidyano": {
+        "isEnabled": true,
+        "label": null,
+        "description": null,
+        "registerUserId": null,
+        "registerPersistentObjectId": null
+      },
+      "autoCreateUsersInGroup": null,
+      "defaultUser": null,
+      "SAML2": {
+        "isEnabled": false,
+        "label": null,
+        "description": null,
+        "ssoServiceUrl": "",
+        "certificate": "",
+        "signOutUri": ""
+      },
+      "Microsoft": {
+        "isEnabled": false,
+        "clientID": "",
+        "clientSecret": ""
+      },
+      "Google": {
+        "isEnabled": false,
+        "clientID": "",
+        "clientSecret": ""
+      },
+      "Facebook": {
+        "isEnabled": false,
+        "clientID": "",
+        "clientSecret": ""
+      },
+      "Twitter": {
+        "isEnabled": false,
+        "clientID": "",
+        "clientSecret": ""
+      },
+      "Yammer": {
+        "isEnabled": false,
+        "clientID": "",
+        "clientSecret": ""
+      }
+    }
+  },
+  "Web Accent Color": {
+    "Value": "#0c5d7d"
+  },
+  "Log Retention": {
+    "Value": "30"
+  },
+  "Password Minimum Length": {
+    "Value": "8"
+  },
+  "Password Complexity": {
+    "Value": "None"
+  },
+  "Web2Version": {},
+  "Default QueryComputeTotalItems": {
+    "Value": "True"
+  },
+  "DeploymentReportsOverrides": {
+    "Data": {}
+  },
+  "Docx2pdfApiKey (2sky)": {
+    "Value": ""
+  },
+  "PerformanceToken": {
+    "Value": ""
+  },
+  "JobSchedules": {},
+  "Default PersistentObject LoadingStrategy": {
+    "Value": "IncludeReferences"
+  },
+  "AllowWebsockets": {
+    "Value": "True"
+  }
+}

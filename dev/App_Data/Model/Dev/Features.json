@@ -1,0 +1,53 @@
+{
+  "PersistentObject": {
+    "$id": "PersistentObject:555ed331-7ab8-359f-b150-4075aca0e89a",
+    "Id": "555ed331-7ab8-359f-b150-4075aca0e89a",
+    "SchemaName": "Dev",
+    "Type": "Features",
+    "Salt": "RuUSgS_BY3rkLm8bmKni1I6Hi1wjq2Kfe5gXFKxug11tm9QI7DSGcQ",
+    "Breadcrumb": "Features",
+    "IsReadOnly": true,
+    "Label": {
+      "en": "Features",
+      "nl": ""
+    },
+    "Groups": [
+      {
+        "$id": "PersistentObjectAttributeGroup:8a344d7a-b536-441b-aa26-4dce560a694c",
+        "Id": "8a344d7a-b536-441b-aa26-4dce560a694c"
+      }
+    ],
+    "Tabs": [
+      {
+        "$id": "PersistentObjectAttributeTab:9db00003-7d51-4e23-9e02-22c41df68d03",
+        "Id": "9db00003-7d51-4e23-9e02-22c41df68d03"
+      }
+    ],
+    "Attributes": [
+      {
+        "$id": "PersistentObjectAttribute:0939d737-8caf-3011-bfc1-7958609d84c4",
+        "Id": "0939d737-8caf-3011-bfc1-7958609d84c4",
+        "Offset": 10,
+        "Name": "Info",
+        "Label": {
+          "en": "Info",
+          "nl": "Info"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:8a344d7a-b536-441b-aa26-4dce560a694c"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:9db00003-7d51-4e23-9e02-22c41df68d03"
+        }
+      }
+    ],
+    "Queries": []
+  },
+  "Queries": [],
+  "Reports": []
+}

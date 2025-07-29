@@ -1,0 +1,78 @@
+{
+  "Users": [
+    {
+      "Id": "5934b499-2864-4658-9569-c0e7e1d79aeb",
+      "Name": "Admin",
+      "IsEnabled": true,
+      "CreationDate": "2025-07-29T07:57:19.6828436+00:00",
+      "Language": "en",
+      "FriendlyName": null,
+      "CultureInfo": "nl-BE",
+      "LastLoginDate": "2025-07-29T17:29:59.4726635+00:00",
+      "PasswordHash": "$2a$14$PYxxdnOwXl4WXSlsIF7OruvBcLLF3aFwTRdB4cS1FUmHyxtHob1Ea",
+      "ResetPasswordNextLogin": false,
+      "TwoFactorToken": null,
+      "Version": "gzJRLYyCAALj3ctpAkSFXY9-oJ0v1KC79h1SmsUJtrY"
+    },
+    {
+      "Id": "b01e0118-bc96-4ea4-b8bc-f85d3529e8c2",
+      "Name": "User",
+      "IsEnabled": false,
+      "CreationDate": "2025-07-29T07:57:19.6828436+00:00",
+      "Language": "",
+      "FriendlyName": null,
+      "CultureInfo": "",
+      "LastLoginDate": null,
+      "PasswordHash": "",
+      "ResetPasswordNextLogin": false,
+      "TwoFactorToken": null,
+      "Version": "lNgoErPqKagCUww9goImAPgvsdgEXuJg10OJOVa7agE"
+    }
+  ],
+  "Groups": [
+    {
+      "Id": "fe9429ba-d5cd-4e7c-bbe4-05a4c3497d97",
+      "Name": "Administrators",
+      "IsSystem": true,
+      "CreationDate": "2025-07-29T07:57:19.6805761+00:00",
+      "TwoFactorRequired": false
+    },
+    {
+      "Id": "d3bd3312-0730-43d9-9bf4-9e14c75b00f7",
+      "Name": "Users",
+      "IsSystem": true,
+      "CreationDate": "2025-07-29T07:57:19.6805761+00:00",
+      "TwoFactorRequired": false
+    }
+  ],
+  "UserGroups": [
+    {
+      "UserId": "5934b499-2864-4658-9569-c0e7e1d79aeb",
+      "GroupId": "fe9429ba-d5cd-4e7c-bbe4-05a4c3497d97"
+    },
+    {
+      "UserId": "5934b499-2864-4658-9569-c0e7e1d79aeb",
+      "GroupId": "d3bd3312-0730-43d9-9bf4-9e14c75b00f7"
+    },
+    {
+      "UserId": "b01e0118-bc96-4ea4-b8bc-f85d3529e8c2",
+      "GroupId": "d3bd3312-0730-43d9-9bf4-9e14c75b00f7"
+    }
+  ],
+  "UserSettings": {
+    "5934b499-2864-4658-9569-c0e7e1d79aeb": {
+      "QueryGridSettings": {},
+      "QuerySettings": {
+        "c81496d8-154b-4f66-905e-1d32354eea0c": {
+          "sortOptions": "FirstName ASC"
+        },
+        "8c4e0b2d-32d9-4483-9197-a1a9a9f710e0": {
+          "sortOptions": "Name ASC"
+        }
+      }
+    }
+  },
+  "UserProfiles": {
+    "5934b499-2864-4658-9569-c0e7e1d79aeb": {}
+  }
+}

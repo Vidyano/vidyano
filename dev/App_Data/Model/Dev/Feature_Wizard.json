@@ -1,0 +1,89 @@
+{
+  "PersistentObject": {
+    "$id": "PersistentObject:2d8aeece-124b-3942-acde-a640aa438b96",
+    "Id": "2d8aeece-124b-3942-acde-a640aa438b96",
+    "SchemaName": "Dev",
+    "Type": "Feature_Wizard",
+    "Salt": "tt_ciSHFrF4yssWHRTN4rrv0KJCfaPKt0gKZpmsqJbolEpYceoux3A",
+    "Label": {
+      "en": "Wizard",
+      "nl": ""
+    },
+    "StateBehavior": 24,
+    "Groups": [
+      {
+        "$id": "PersistentObjectAttributeGroup:d9b78f5e-a125-459f-8214-ebcbc10e2f70",
+        "Id": "d9b78f5e-a125-459f-8214-ebcbc10e2f70"
+      }
+    ],
+    "Tabs": [
+      {
+        "$id": "PersistentObjectAttributeTab:8c693af8-8d70-4d57-94b6-0fe25ec22dc1",
+        "Id": "8c693af8-8d70-4d57-94b6-0fe25ec22dc1",
+        "Name": "Step1",
+        "Label": {
+          "en": "Step 1",
+          "nl": ""
+        }
+      },
+      {
+        "$id": "PersistentObjectAttributeTab:9ed3dd07-aa84-4622-8ee9-43e54327089d",
+        "Id": "9ed3dd07-aa84-4622-8ee9-43e54327089d",
+        "Name": "Step2",
+        "Label": {
+          "en": "Step 2",
+          "nl": ""
+        }
+      }
+    ],
+    "Attributes": [
+      {
+        "$id": "PersistentObjectAttribute:a3c6c7f3-0559-3e4e-b704-33769c200307",
+        "Id": "a3c6c7f3-0559-3e4e-b704-33769c200307",
+        "Offset": 10,
+        "Rules": "NotEmpty",
+        "Name": "FirstName",
+        "Label": {
+          "en": "First name",
+          "nl": "First name"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:d9b78f5e-a125-459f-8214-ebcbc10e2f70"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:8c693af8-8d70-4d57-94b6-0fe25ec22dc1"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:02d0b094-2260-3038-a5dc-1ba635d0271c",
+        "Id": "02d0b094-2260-3038-a5dc-1ba635d0271c",
+        "Offset": 20,
+        "Rules": "NotEmpty",
+        "Name": "LastName",
+        "Label": {
+          "en": "Last name",
+          "nl": "Last name"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:d9b78f5e-a125-459f-8214-ebcbc10e2f70"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:9ed3dd07-aa84-4622-8ee9-43e54327089d"
+        }
+      }
+    ],
+    "Queries": []
+  },
+  "Queries": [],
+  "Reports": []
+}

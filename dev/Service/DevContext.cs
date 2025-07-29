@@ -1,28 +1,39 @@
-﻿using Raven.Client.Documents.Linq;
-using Raven.Client.Documents.Session;
-using Vidyano.Service.Repository;
-using Vidyano.Service.RavenDB;
+﻿using Bogus;
 using Dev.Service.Model;
-using System.Linq;
-using Dev.Service.Indexes;
+using Vidyano.Service;
 
-namespace Dev.Service
+using Person = Dev.Service.Model.Person;
+
+namespace Dev.Service;
+
+public partial class DevContext : NullTargetContext
 {
-    public partial class DevContext : TargetRavenDBContext
+    static List<Person> _people = [];
+
+    public static void Initialize()
     {
-        public DevContext(IDocumentSession session)
-            : base(session)
-        {
-        }
+        Randomizer.Seed = new Random(6841844);
 
-        public IRavenQueryable<Company> Companies => base.Query<Company>();
+        _people = new Faker<Person>()
+            .RuleFor(p => p.Id, f => f.IndexFaker + 1)
+            .RuleFor(p => p.FirstName, f => f.Name.FirstName())
+            .RuleFor(p => p.LastName, f => f.Name.LastName())
+            .RuleFor(p => p.BirthDate, f => f.Date.Between(new DateTime(1945, 1, 1), new DateTime(2000, 12, 31)))
+            .RuleFor(p => p.Email, (f, p) => f.Internet.Email(p.FirstName, p.LastName))
+            .RuleFor(p => p.PhoneNumber, f => f.Phone.PhoneNumber("###-###-####"))
+            .RuleFor(p => p.Gender, f => f.PickRandom<Gender>())
+            .RuleFor(p => p.IsActive, f => f.Random.Bool(.95f))
+            .Generate(10_000);
 
-        public IRavenQueryable<Employee> Employees => base.Query<Employee>();
+        Version++;
+    }
 
-        public IRavenQueryable<Order> Orders => base.Query<Order>();
+    public static int Version { get; private set; } = 1;
 
-        public IQueryable<VOrder> VOrders => Query<VOrder, Orders_Overview>().AsNoTracking();
-        
-        public IRavenQueryable<Shipper> Shippers => base.Query<Shipper>();
+    public IQueryable<Person> People => _people.AsQueryable();
+
+    public IQueryable<Person> PeopleTop10()
+    {
+        return People.Take(10);
     }
 }

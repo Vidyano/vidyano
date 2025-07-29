@@ -7,31 +7,17 @@
     "Breadcrumb": "Attributes",
     "Label": {
       "en": "Attributes",
-      "de": "Datentypen",
-      "es": "Tipos de datos",
-      "fr": "Types de données",
-      "ja": "データ型",
-      "nl": "Kenmerken",
-      "pt": "Tipos de dados"
+      "nl": "Kenmerken"
     },
     "StateBehavior": 2,
     "Help": [],
     "Groups": [
       {
-        "$id": "PersistentObjectAttributeGroup:04133de8-d6ca-4344-ba02-969640fd8ca2",
-        "Id": "04133de8-d6ca-4344-ba02-969640fd8ca2",
-        "Name": "Nullable",
+        "$id": "PersistentObjectAttributeGroup:19634d6e-7fc5-492a-b0d1-4bc0c07d8158",
+        "Id": "19634d6e-7fc5-492a-b0d1-4bc0c07d8158",
+        "Name": "Radio",
         "Label": {
-          "en": "Nullable",
-          "nl": "Nietigbaar"
-        }
-      },
-      {
-        "$id": "PersistentObjectAttributeGroup:67aff5fa-ee6b-4271-9267-7b0886ffb94e",
-        "Id": "67aff5fa-ee6b-4271-9267-7b0886ffb94e",
-        "Name": "AsDetail",
-        "Label": {
-          "en": "As detail",
+          "en": "Radio",
           "nl": ""
         }
       },
@@ -40,97 +26,28 @@
         "Id": "8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
       },
       {
-        "$id": "PersistentObjectAttributeGroup:e5fcc201-b4b8-46bf-a898-7465820530bd",
-        "Id": "e5fcc201-b4b8-46bf-a898-7465820530bd",
-        "Name": "ReadOnly",
+        "$id": "PersistentObjectAttributeGroup:bef52b8b-439a-4b6f-9b72-216b1bc0927f",
+        "Id": "bef52b8b-439a-4b6f-9b72-216b1bc0927f",
+        "Name": "Chip",
         "Label": {
-          "en": "Read-only",
-          "nl": "Alleen-lezen"
+          "en": "Chip",
+          "nl": ""
         }
       }
     ],
     "Tabs": [
       {
-        "$id": "PersistentObjectAttributeTab:03e6bbf6-b6e6-402c-a344-4f9f31e4442a",
-        "Id": "03e6bbf6-b6e6-402c-a344-4f9f31e4442a",
-        "Name": "Refresh",
-        "ColumnCount": 1,
-        "Label": {
-          "en": "Refresh",
-          "nl": "Vernieuwen"
-        }
-      },
-      {
-        "$id": "PersistentObjectAttributeTab:3afd90d8-8bd7-4376-9b86-492a7b417686",
-        "Id": "3afd90d8-8bd7-4376-9b86-492a7b417686",
-        "Name": "String",
-        "Label": {
-          "en": "String",
-          "nl": "Snaar"
-        }
-      },
-      {
-        "$id": "PersistentObjectAttributeTab:4ee2ffa0-f0c9-43dd-b7c8-75c0f34e694b",
-        "Id": "4ee2ffa0-f0c9-43dd-b7c8-75c0f34e694b",
-        "Name": "Numeric",
-        "Label": {
-          "en": "Numeric",
-          "nl": "Numeriek"
-        }
-      },
-      {
-        "$id": "PersistentObjectAttributeTab:6f42ccfc-bccc-45c2-ae8a-ed8c43678268",
-        "Id": "6f42ccfc-bccc-45c2-ae8a-ed8c43678268",
-        "Name": "Date",
-        "Label": {
-          "en": "Date",
-          "nl": "Datum"
-        }
-      },
-      {
-        "$id": "PersistentObjectAttributeTab:71353c61-acde-4c01-b540-c20b079fb764",
-        "Id": "71353c61-acde-4c01-b540-c20b079fb764",
-        "Name": "Reference",
-        "Label": {
-          "en": "Reference",
-          "nl": "Referentie"
-        }
-      },
-      {
-        "$id": "PersistentObjectAttributeTab:74aab793-3787-4ea7-8622-0242c7588b82",
-        "Id": "74aab793-3787-4ea7-8622-0242c7588b82",
-        "Name": "Boolean",
-        "Label": {
-          "en": "Boolean",
-          "nl": "Booleaans"
-        }
-      },
-      {
-        "$id": "PersistentObjectAttributeTab:7766acf6-5fe8-40f4-97e1-a67b3aaa65f4",
-        "Id": "7766acf6-5fe8-40f4-97e1-a67b3aaa65f4",
-        "Name": "Advanced",
-        "Label": {
-          "en": "Advanced",
-          "nl": "Geavanceerd"
-        }
-      },
-      {
-        "$id": "PersistentObjectAttributeTab:fb74b005-7320-411b-b89c-1aec8b8c9fd8",
-        "Id": "fb74b005-7320-411b-b89c-1aec8b8c9fd8",
-        "Name": "Select",
-        "Label": {
-          "en": "Select",
-          "nl": "Selecteren"
-        }
+        "$id": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c",
+        "Id": "20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
       }
     ],
     "Attributes": [
       {
         "$id": "PersistentObjectAttributeAsDetail:b41f3aab-11d0-3312-ba9f-cad26aa180dc",
         "$type": "Vidyano.Service.Repository.PersistentObjectAttributeAsDetail, Vidyano.Service",
-        "DetailsId": "1278a445-580f-45ae-9b71-92b33b9402c4",
+        "DetailsId": "d9c7a23e-b445-4831-bbce-383121655046",
         "Id": "b41f3aab-11d0-3312-ba9f-cad26aa180dc",
-        "Offset": 403,
+        "Offset": 500,
         "Name": "AsDetail",
         "CanSort": false,
         "CanFilter": false,
@@ -146,16 +63,44 @@
           "$ref": "DataType:AsDetail"
         },
         "Group": {
-          "$ref": "PersistentObjectAttributeGroup:67aff5fa-ee6b-4271-9267-7b0886ffb94e"
+          "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:71353c61-acde-4c01-b540-c20b079fb764"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttributeAsDetail:55e2c59b-04a7-3912-99ab-6656ef8cc350",
+        "$type": "Vidyano.Service.Repository.PersistentObjectAttributeAsDetail, Vidyano.Service",
+        "DetailsId": "d9c7a23e-b445-4831-bbce-383121655046",
+        "Id": "55e2c59b-04a7-3912-99ab-6656ef8cc350",
+        "Offset": 510,
+        "Name": "AsDetailReadOnly",
+        "IsReadOnly": true,
+        "CanSort": false,
+        "CanFilter": false,
+        "CanListDistincts": false,
+        "DataTypeHints": "IncludeHeader=True",
+        "Label": {
+          "en": "As detail (read-only)",
+          "nl": "As detail read only"
+        },
+        "Visibility": 5,
+        "ColumnSpan": 4,
+        "DataType": {
+          "$ref": "DataType:AsDetail"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:017e2bc3-bdfb-4fcb-82c4-6924484621bb",
         "Id": "017e2bc3-bdfb-4fcb-82c4-6924484621bb",
-        "Offset": 1200,
+        "Offset": 1210,
         "Name": "BinaryFile",
         "Label": {
           "en": "BinaryFile",
@@ -170,13 +115,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:7766acf6-5fe8-40f4-97e1-a67b3aaa65f4"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:158f8f93-b1e1-4059-a7e1-a9992aa9feeb",
         "Id": "158f8f93-b1e1-4059-a7e1-a9992aa9feeb",
-        "Offset": 201,
+        "Offset": 200,
         "Rules": "Required",
         "Name": "Boolean",
         "Label": {
@@ -192,13 +137,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:74aab793-3787-4ea7-8622-0242c7588b82"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:8fdb9e1e-6846-41ab-9362-5ed5ab4ed855",
         "Id": "8fdb9e1e-6846-41ab-9362-5ed5ab4ed855",
-        "Offset": 200,
+        "Offset": 159,
         "Rules": "Required",
         "Name": "BooleanRO",
         "IsReadOnly": true,
@@ -215,13 +160,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:74aab793-3787-4ea7-8622-0242c7588b82"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:7a0c3667-22f4-451b-891b-1ac1d0bddba7",
         "Id": "7a0c3667-22f4-451b-891b-1ac1d0bddba7",
-        "Offset": 100,
+        "Offset": 11,
         "Rules": "Required",
         "Name": "Byte",
         "Label": {
@@ -237,13 +182,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:4ee2ffa0-f0c9-43dd-b7c8-75c0f34e694b"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:64ef0e49-f7d0-4822-a8a5-ba778261ec11",
         "Id": "64ef0e49-f7d0-4822-a8a5-ba778261ec11",
-        "Offset": 1010,
+        "Offset": 1020,
         "Name": "ComboBox",
         "Label": {
           "en": "ComboBox",
@@ -259,13 +204,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:fb74b005-7320-411b-b89c-1aec8b8c9fd8"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:9a7ee5ff-d474-4582-9c9d-fc6f4842c051",
         "Id": "9a7ee5ff-d474-4582-9c9d-fc6f4842c051",
-        "Offset": 7,
+        "Offset": 6,
         "Name": "CommonMark",
         "Label": {
           "en": "CommonMark",
@@ -280,13 +225,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:3afd90d8-8bd7-4376-9b86-492a7b417686"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:07e4691a-f321-4c6d-ac49-f2b6bb03a2ca",
         "Id": "07e4691a-f321-4c6d-ac49-f2b6bb03a2ca",
-        "Offset": 500,
+        "Offset": 520,
         "Rules": "Required",
         "Name": "Date",
         "Label": {
@@ -302,13 +247,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:6f42ccfc-bccc-45c2-ae8a-ed8c43678268"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:daf5c7b3-0e50-43ca-85f7-996b2163544e",
         "Id": "daf5c7b3-0e50-43ca-85f7-996b2163544e",
-        "Offset": 510,
+        "Offset": 530,
         "Rules": "Required",
         "Name": "DateTime",
         "Label": {
@@ -324,13 +269,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:6f42ccfc-bccc-45c2-ae8a-ed8c43678268"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:6ba89ca3-4b08-4b67-bc9a-7b230b063c35",
         "Id": "6ba89ca3-4b08-4b67-bc9a-7b230b063c35",
-        "Offset": 520,
+        "Offset": 540,
         "Rules": "Required",
         "Name": "DateTimeOffset",
         "Label": {
@@ -346,13 +291,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:6f42ccfc-bccc-45c2-ae8a-ed8c43678268"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:86c913ee-47f7-487c-9e5d-f3efafac726a",
         "Id": "86c913ee-47f7-487c-9e5d-f3efafac726a",
-        "Offset": 101,
+        "Offset": 100,
         "Rules": "Required",
         "Name": "Decimal",
         "Label": {
@@ -368,13 +313,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:4ee2ffa0-f0c9-43dd-b7c8-75c0f34e694b"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:d88f6a89-67c3-4402-aa06-213ba4e0630f",
         "Id": "d88f6a89-67c3-4402-aa06-213ba4e0630f",
-        "Offset": 102,
+        "Offset": 101,
         "Rules": "Required",
         "Name": "Double",
         "Label": {
@@ -390,13 +335,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:4ee2ffa0-f0c9-43dd-b7c8-75c0f34e694b"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
-        "$id": "PersistentObjectAttribute:ffaa5fa7-c504-4f02-afe1-7a81078e0e15",
-        "Id": "ffaa5fa7-c504-4f02-afe1-7a81078e0e15",
-        "Offset": 1020,
+        "$id": "PersistentObjectAttribute:b825b51f-2a3e-307c-a693-87b99564f6fd",
+        "Id": "b825b51f-2a3e-307c-a693-87b99564f6fd",
+        "Offset": 1040,
         "Name": "DropDown",
         "Label": {
           "en": "DropDown",
@@ -404,7 +349,7 @@
         },
         "Visibility": 7,
         "ColumnSpan": 1,
-        "DefaultOptions": "A\nB\nC",
+        "DefaultOptions": "Monday\nTuesday\nWednesday\nThursday\nFriday\nSaturday\nSunday",
         "DataType": {
           "$ref": "DataType:DropDown"
         },
@@ -412,13 +357,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:fb74b005-7320-411b-b89c-1aec8b8c9fd8"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:a4667612-fe42-45ae-9332-99d834b2f290",
         "Id": "a4667612-fe42-45ae-9332-99d834b2f290",
-        "Offset": 1040,
+        "Offset": 1050,
         "Rules": "Required",
         "Name": "Enum",
         "Label": {
@@ -434,17 +379,17 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:fb74b005-7320-411b-b89c-1aec8b8c9fd8"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
-        "$id": "PersistentObjectAttribute:de75fd13-551f-40eb-b10c-9cf2d5bf2773",
-        "Id": "de75fd13-551f-40eb-b10c-9cf2d5bf2773",
-        "Offset": 1050,
-        "Name": "EnumFlags",
+        "$id": "PersistentObjectAttribute:50555d51-4a22-3794-be68-44c2142b2a1e",
+        "Id": "50555d51-4a22-3794-be68-44c2142b2a1e",
+        "Offset": 1071,
+        "Name": "FlagsEnum",
         "Label": {
-          "en": "Enum (Flags)",
-          "nl": "Enum (Vlaggen)"
+          "en": "FlagsEnum",
+          "nl": "FlagsEnum"
         },
         "Visibility": 7,
         "ColumnSpan": 1,
@@ -455,13 +400,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:fb74b005-7320-411b-b89c-1aec8b8c9fd8"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:18aee3bf-d5c9-40f5-b53e-83bdfc8bb2bc",
         "Id": "18aee3bf-d5c9-40f5-b53e-83bdfc8bb2bc",
-        "Offset": 1080,
+        "Offset": 1100,
         "Rules": "Required",
         "Name": "Group",
         "DataTypeHints": "IncludeGroups=True",
@@ -478,13 +423,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:7766acf6-5fe8-40f4-97e1-a67b3aaa65f4"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:665f5491-082d-4f1f-8f2b-6936e721d9db",
         "Id": "665f5491-082d-4f1f-8f2b-6936e721d9db",
-        "Offset": 1110,
+        "Offset": 1200,
         "Name": "Image",
         "Label": {
           "en": "Image",
@@ -499,13 +444,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:7766acf6-5fe8-40f4-97e1-a67b3aaa65f4"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:ff22f6fb-51b1-4155-a3a7-62f08ab4f48f",
         "Id": "ff22f6fb-51b1-4155-a3a7-62f08ab4f48f",
-        "Offset": 104,
+        "Offset": 103,
         "Rules": "Required",
         "Name": "Int16",
         "Label": {
@@ -521,13 +466,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:4ee2ffa0-f0c9-43dd-b7c8-75c0f34e694b"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:bc30a4e5-cd06-422e-ac4a-3414e7f63726",
         "Id": "bc30a4e5-cd06-422e-ac4a-3414e7f63726",
-        "Offset": 105,
+        "Offset": 104,
         "Rules": "Required",
         "Name": "Int32",
         "Label": {
@@ -543,13 +488,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:4ee2ffa0-f0c9-43dd-b7c8-75c0f34e694b"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:410a75df-6ba8-4ba8-8192-cc7871c49fac",
         "Id": "410a75df-6ba8-4ba8-8192-cc7871c49fac",
-        "Offset": 106,
+        "Offset": 105,
         "Rules": "Required",
         "Name": "Int64",
         "Label": {
@@ -565,13 +510,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:4ee2ffa0-f0c9-43dd-b7c8-75c0f34e694b"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
-        "$id": "PersistentObjectAttribute:64d45304-7f5c-4af7-ab27-78ef83e24f54",
-        "Id": "64d45304-7f5c-4af7-ab27-78ef83e24f54",
-        "Offset": 1000,
+        "$id": "PersistentObjectAttribute:dab65f2f-bf08-3654-b651-1ba4d37381fe",
+        "Id": "dab65f2f-bf08-3654-b651-1ba4d37381fe",
+        "Offset": 1010,
         "Rules": "Required",
         "Name": "KeyValueList",
         "Label": {
@@ -580,7 +525,7 @@
         },
         "Visibility": 7,
         "ColumnSpan": 1,
-        "DefaultOptions": "1=A\n2=B\n3=C",
+        "DefaultOptions": "1=Monday\n2=Tuesday\n3=Wednesday\n4=Thursday\n5=Friday\n6=Saturday\n7=Sunday",
         "DataType": {
           "$ref": "DataType:KeyValueList"
         },
@@ -588,13 +533,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:fb74b005-7320-411b-b89c-1aec8b8c9fd8"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:943cd92a-5164-444f-9046-55a174a32c33",
         "Id": "943cd92a-5164-444f-9046-55a174a32c33",
-        "Offset": 2,
+        "Offset": 1,
         "Name": "MultiLineString",
         "Label": {
           "en": "MultiLineString",
@@ -609,13 +554,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:3afd90d8-8bd7-4376-9b86-492a7b417686"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:3ff86a05-6dd3-4669-915a-bdd8ef3899d9",
         "Id": "3ff86a05-6dd3-4669-915a-bdd8ef3899d9",
-        "Offset": 3,
+        "Offset": 2,
         "Name": "MultiString",
         "Label": {
           "en": "MultiString",
@@ -630,13 +575,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:3afd90d8-8bd7-4376-9b86-492a7b417686"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:be7818c5-5cb7-41bc-818b-3516c68300ac",
         "Id": "be7818c5-5cb7-41bc-818b-3516c68300ac",
-        "Offset": 4,
+        "Offset": 3,
         "Name": "MultiStringWithTags",
         "DataTypeHints": "inputtype=tags",
         "Label": {
@@ -652,13 +597,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:3afd90d8-8bd7-4376-9b86-492a7b417686"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:98e0799f-f8fb-41d3-8d76-67d3bfeca1de",
         "Id": "98e0799f-f8fb-41d3-8d76-67d3bfeca1de",
-        "Offset": 203,
+        "Offset": 202,
         "Name": "NullableBoolean",
         "Label": {
           "en": "Nullable boolean",
@@ -670,16 +615,16 @@
           "$ref": "DataType:NullableBoolean"
         },
         "Group": {
-          "$ref": "PersistentObjectAttributeGroup:04133de8-d6ca-4344-ba02-969640fd8ca2"
+          "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:74aab793-3787-4ea7-8622-0242c7588b82"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:0765b5ad-69a1-43d6-88bb-e81a7645050b",
         "Id": "0765b5ad-69a1-43d6-88bb-e81a7645050b",
-        "Offset": 204,
+        "Offset": 203,
         "Name": "NullableBooleanTypeHints",
         "TriggersRefresh": true,
         "DataTypeHints": "TrueKey=OK; FalseKey=Cancel",
@@ -693,16 +638,16 @@
           "$ref": "DataType:NullableBoolean"
         },
         "Group": {
-          "$ref": "PersistentObjectAttributeGroup:04133de8-d6ca-4344-ba02-969640fd8ca2"
+          "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:74aab793-3787-4ea7-8622-0242c7588b82"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:0cad8992-9c42-4b16-be0b-fdb1dfbf3e95",
         "Id": "0cad8992-9c42-4b16-be0b-fdb1dfbf3e95",
-        "Offset": 150,
+        "Offset": 110,
         "Name": "NullableByte",
         "Label": {
           "en": "NullableByte",
@@ -714,16 +659,16 @@
           "$ref": "DataType:NullableByte"
         },
         "Group": {
-          "$ref": "PersistentObjectAttributeGroup:04133de8-d6ca-4344-ba02-969640fd8ca2"
+          "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:4ee2ffa0-f0c9-43dd-b7c8-75c0f34e694b"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:902106e8-a9b4-4888-ab0a-6180cb3cf248",
         "Id": "902106e8-a9b4-4888-ab0a-6180cb3cf248",
-        "Offset": 540,
+        "Offset": 560,
         "Name": "NullableDate",
         "Label": {
           "en": "NullableDate",
@@ -735,16 +680,16 @@
           "$ref": "DataType:NullableDate"
         },
         "Group": {
-          "$ref": "PersistentObjectAttributeGroup:04133de8-d6ca-4344-ba02-969640fd8ca2"
+          "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:6f42ccfc-bccc-45c2-ae8a-ed8c43678268"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:c11e81d8-b70d-4f77-acfd-63abf9599dea",
         "Id": "c11e81d8-b70d-4f77-acfd-63abf9599dea",
-        "Offset": 550,
+        "Offset": 570,
         "Name": "NullableDateTime",
         "Label": {
           "en": "NullableDateTime",
@@ -756,16 +701,16 @@
           "$ref": "DataType:NullableDateTime"
         },
         "Group": {
-          "$ref": "PersistentObjectAttributeGroup:04133de8-d6ca-4344-ba02-969640fd8ca2"
+          "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:6f42ccfc-bccc-45c2-ae8a-ed8c43678268"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:14db6dba-3357-473a-84a4-58e1a541f79d",
         "Id": "14db6dba-3357-473a-84a4-58e1a541f79d",
-        "Offset": 560,
+        "Offset": 736,
         "Name": "NullableDateTimeOffset",
         "Label": {
           "en": "NullableDateTimeOffset",
@@ -777,16 +722,16 @@
           "$ref": "DataType:NullableDateTimeOffset"
         },
         "Group": {
-          "$ref": "PersistentObjectAttributeGroup:04133de8-d6ca-4344-ba02-969640fd8ca2"
+          "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:6f42ccfc-bccc-45c2-ae8a-ed8c43678268"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:581dd802-7632-406b-9c3a-ac6533041597",
         "Id": "581dd802-7632-406b-9c3a-ac6533041597",
-        "Offset": 151,
+        "Offset": 150,
         "Name": "NullableDecimal",
         "Label": {
           "en": "NullableDecimal",
@@ -798,16 +743,16 @@
           "$ref": "DataType:NullableDecimal"
         },
         "Group": {
-          "$ref": "PersistentObjectAttributeGroup:04133de8-d6ca-4344-ba02-969640fd8ca2"
+          "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:4ee2ffa0-f0c9-43dd-b7c8-75c0f34e694b"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:f7dad5e1-faeb-45f4-aaa4-54a3489f8770",
         "Id": "f7dad5e1-faeb-45f4-aaa4-54a3489f8770",
-        "Offset": 152,
+        "Offset": 151,
         "Name": "NullableDouble",
         "Label": {
           "en": "NullableDouble",
@@ -819,16 +764,16 @@
           "$ref": "DataType:NullableDouble"
         },
         "Group": {
-          "$ref": "PersistentObjectAttributeGroup:04133de8-d6ca-4344-ba02-969640fd8ca2"
+          "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:4ee2ffa0-f0c9-43dd-b7c8-75c0f34e694b"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:a9af29f2-2b43-479b-ae8b-76575b6112d1",
         "Id": "a9af29f2-2b43-479b-ae8b-76575b6112d1",
-        "Offset": 154,
+        "Offset": 153,
         "Name": "NullableInt16",
         "Label": {
           "en": "NullableInt16",
@@ -840,16 +785,16 @@
           "$ref": "DataType:NullableInt16"
         },
         "Group": {
-          "$ref": "PersistentObjectAttributeGroup:04133de8-d6ca-4344-ba02-969640fd8ca2"
+          "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:4ee2ffa0-f0c9-43dd-b7c8-75c0f34e694b"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:43da8c9e-f3c2-4bc9-bc23-ffb8e4bdb1c9",
         "Id": "43da8c9e-f3c2-4bc9-bc23-ffb8e4bdb1c9",
-        "Offset": 155,
+        "Offset": 154,
         "Name": "NullableInt32",
         "Label": {
           "en": "NullableInt32",
@@ -861,16 +806,16 @@
           "$ref": "DataType:NullableInt32"
         },
         "Group": {
-          "$ref": "PersistentObjectAttributeGroup:04133de8-d6ca-4344-ba02-969640fd8ca2"
+          "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:4ee2ffa0-f0c9-43dd-b7c8-75c0f34e694b"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:dee5cc51-e6b5-4d94-97d9-fdc0dfb38467",
         "Id": "dee5cc51-e6b5-4d94-97d9-fdc0dfb38467",
-        "Offset": 156,
+        "Offset": 155,
         "Name": "NullableInt64",
         "Label": {
           "en": "NullableInt64",
@@ -882,16 +827,16 @@
           "$ref": "DataType:NullableInt64"
         },
         "Group": {
-          "$ref": "PersistentObjectAttributeGroup:04133de8-d6ca-4344-ba02-969640fd8ca2"
+          "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:4ee2ffa0-f0c9-43dd-b7c8-75c0f34e694b"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:51141534-c1df-4940-bf0f-104a2c405982",
         "Id": "51141534-c1df-4940-bf0f-104a2c405982",
-        "Offset": 157,
+        "Offset": 156,
         "Name": "NullableSByte",
         "Label": {
           "en": "NullableSByte",
@@ -903,16 +848,16 @@
           "$ref": "DataType:NullableSByte"
         },
         "Group": {
-          "$ref": "PersistentObjectAttributeGroup:04133de8-d6ca-4344-ba02-969640fd8ca2"
+          "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:4ee2ffa0-f0c9-43dd-b7c8-75c0f34e694b"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:933979aa-8cc6-49b2-9a6d-b19cbe363d46",
         "Id": "933979aa-8cc6-49b2-9a6d-b19cbe363d46",
-        "Offset": 153,
+        "Offset": 152,
         "Name": "NullableSingle",
         "Label": {
           "en": "NullableSingle",
@@ -924,16 +869,16 @@
           "$ref": "DataType:NullableSingle"
         },
         "Group": {
-          "$ref": "PersistentObjectAttributeGroup:04133de8-d6ca-4344-ba02-969640fd8ca2"
+          "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:4ee2ffa0-f0c9-43dd-b7c8-75c0f34e694b"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:1cccdcd7-b6e2-4058-a7e4-329922334c00",
         "Id": "1cccdcd7-b6e2-4058-a7e4-329922334c00",
-        "Offset": 570,
+        "Offset": 1000,
         "Name": "NullableTime",
         "Label": {
           "en": "NullableTime",
@@ -945,16 +890,16 @@
           "$ref": "DataType:NullableTime"
         },
         "Group": {
-          "$ref": "PersistentObjectAttributeGroup:04133de8-d6ca-4344-ba02-969640fd8ca2"
+          "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:6f42ccfc-bccc-45c2-ae8a-ed8c43678268"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:07f781e1-0498-4fd2-8c7d-a9a0f32a05a5",
         "Id": "07f781e1-0498-4fd2-8c7d-a9a0f32a05a5",
-        "Offset": 158,
+        "Offset": 157,
         "Name": "NullableUInt16",
         "Label": {
           "en": "NullableUInt16",
@@ -966,16 +911,16 @@
           "$ref": "DataType:NullableUInt16"
         },
         "Group": {
-          "$ref": "PersistentObjectAttributeGroup:04133de8-d6ca-4344-ba02-969640fd8ca2"
+          "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:4ee2ffa0-f0c9-43dd-b7c8-75c0f34e694b"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:59dff8d0-c09b-493e-b351-a73ac71316d4",
         "Id": "59dff8d0-c09b-493e-b351-a73ac71316d4",
-        "Offset": 159,
+        "Offset": 160,
         "Name": "NullableUInt32",
         "Label": {
           "en": "NullableUInt32",
@@ -987,16 +932,16 @@
           "$ref": "DataType:NullableUInt32"
         },
         "Group": {
-          "$ref": "PersistentObjectAttributeGroup:04133de8-d6ca-4344-ba02-969640fd8ca2"
+          "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:4ee2ffa0-f0c9-43dd-b7c8-75c0f34e694b"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:38ae0723-83bf-45f1-99d9-9ae102a581b8",
         "Id": "38ae0723-83bf-45f1-99d9-9ae102a581b8",
-        "Offset": 160,
+        "Offset": 158,
         "Name": "NullableUInt64",
         "Label": {
           "en": "NullableUInt64",
@@ -1008,16 +953,16 @@
           "$ref": "DataType:NullableUInt64"
         },
         "Group": {
-          "$ref": "PersistentObjectAttributeGroup:04133de8-d6ca-4344-ba02-969640fd8ca2"
+          "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:4ee2ffa0-f0c9-43dd-b7c8-75c0f34e694b"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:f92c1d6f-cd61-4214-98db-1007799db925",
         "Id": "f92c1d6f-cd61-4214-98db-1007799db925",
-        "Offset": 1100,
+        "Offset": 1110,
         "Name": "NullableUser",
         "Label": {
           "en": "Nullable user",
@@ -1029,16 +974,16 @@
           "$ref": "DataType:NullableUser"
         },
         "Group": {
-          "$ref": "PersistentObjectAttributeGroup:04133de8-d6ca-4344-ba02-969640fd8ca2"
+          "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:7766acf6-5fe8-40f4-97e1-a67b3aaa65f4"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:e2af44cc-f5f3-47b1-91eb-4fc50eca34e2",
         "Id": "e2af44cc-f5f3-47b1-91eb-4fc50eca34e2",
-        "Offset": 5,
+        "Offset": 4,
         "Name": "Password",
         "Label": {
           "en": "Password",
@@ -1053,16 +998,16 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:3afd90d8-8bd7-4376-9b86-492a7b417686"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
-        "$id": "PersistentObjectAttributeWithReference:dcbb4ec4-826d-4d10-b1ff-7a93df47503b",
+        "$id": "PersistentObjectAttributeWithReference:fa450500-132e-3b0e-a741-9296d8cf0d7e",
         "$type": "Vidyano.Service.Repository.PersistentObjectAttributeWithReference, Vidyano.Service",
         "DisplayAttribute": "FirstName",
-        "LookupId": "026c4ca7-53f4-42ac-b196-158f0cb871a1",
-        "Id": "dcbb4ec4-826d-4d10-b1ff-7a93df47503b",
-        "Offset": 400,
+        "LookupId": "d9c7a23e-b445-4831-bbce-383121655046",
+        "Id": "fa450500-132e-3b0e-a741-9296d8cf0d7e",
+        "Offset": 204,
         "Name": "Reference",
         "Label": {
           "en": "Reference",
@@ -1077,17 +1022,17 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:71353c61-acde-4c01-b540-c20b079fb764"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
-        "$id": "PersistentObjectAttributeWithReference:255a4e36-9a0d-4324-915d-1b2fce077258",
+        "$id": "PersistentObjectAttributeWithReference:c9d8c5f4-0da2-3bc3-aa9e-80329133e215",
         "$type": "Vidyano.Service.Repository.PersistentObjectAttributeWithReference, Vidyano.Service",
-        "DisplayAttribute": "FullName",
+        "DisplayAttribute": "FirstName",
         "CanAddNewReference": true,
-        "LookupId": "026c4ca7-53f4-42ac-b196-158f0cb871a1",
-        "Id": "255a4e36-9a0d-4324-915d-1b2fce077258",
-        "Offset": 401,
+        "LookupId": "d9c7a23e-b445-4831-bbce-383121655046",
+        "Id": "c9d8c5f4-0da2-3bc3-aa9e-80329133e215",
+        "Offset": 400,
         "Name": "ReferenceWithCanAddNew",
         "Label": {
           "en": "Reference with CanAddNew",
@@ -1102,17 +1047,17 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:71353c61-acde-4c01-b540-c20b079fb764"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
-        "$id": "PersistentObjectAttributeWithReference:35d8ae9b-fa9d-4edb-82ef-69448eb3f9d8",
+        "$id": "PersistentObjectAttributeWithReference:fa571e3c-cc5d-3991-947a-900c9ae0dc9e",
         "$type": "Vidyano.Service.Repository.PersistentObjectAttributeWithReference, Vidyano.Service",
         "DisplayAttribute": "FirstName",
         "SelectInPlace": true,
-        "LookupId": "026c4ca7-53f4-42ac-b196-158f0cb871a1",
-        "Id": "35d8ae9b-fa9d-4edb-82ef-69448eb3f9d8",
-        "Offset": 402,
+        "LookupId": "d9c7a23e-b445-4831-bbce-383121655046",
+        "Id": "fa571e3c-cc5d-3991-947a-900c9ae0dc9e",
+        "Offset": 401,
         "Name": "ReferenceWithSelectInPlace",
         "Label": {
           "en": "Reference with SelectInPlance",
@@ -1127,13 +1072,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:71353c61-acde-4c01-b540-c20b079fb764"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:2b610e1d-bc3d-437d-aaad-bddc091ee75c",
         "Id": "2b610e1d-bc3d-437d-aaad-bddc091ee75c",
-        "Offset": 107,
+        "Offset": 106,
         "Rules": "Required",
         "Name": "SByte",
         "Label": {
@@ -1149,13 +1094,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:4ee2ffa0-f0c9-43dd-b7c8-75c0f34e694b"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:e52cad30-d53b-42d7-9962-6b0da774a9db",
         "Id": "e52cad30-d53b-42d7-9962-6b0da774a9db",
-        "Offset": 103,
+        "Offset": 102,
         "Rules": "Required",
         "Name": "Single",
         "Label": {
@@ -1171,15 +1116,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:4ee2ffa0-f0c9-43dd-b7c8-75c0f34e694b"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
-        "$id": "PersistentObjectAttribute:07981414-6f74-4d80-9cd6-38270b73e604",
-        "Id": "07981414-6f74-4d80-9cd6-38270b73e604",
-        "Offset": 1,
+        "$id": "PersistentObjectAttribute:0a935d60-239f-3f33-82c9-8066d94eff42",
+        "Id": "0a935d60-239f-3f33-82c9-8066d94eff42",
         "Name": "String",
-        "TriggersRefresh": true,
         "DataTypeHints": "",
         "Label": {
           "en": "String",
@@ -1194,13 +1137,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:3afd90d8-8bd7-4376-9b86-492a7b417686"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:cb38a662-db39-40d6-b990-ad25cbe08f53",
         "Id": "cb38a662-db39-40d6-b990-ad25cbe08f53",
-        "Offset": 10,
+        "Offset": 7,
         "Name": "StringLower",
         "DataTypeHints": "CharacterCasing=Lower",
         "Label": {
@@ -1216,13 +1159,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:3afd90d8-8bd7-4376-9b86-492a7b417686"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:f17e64f0-48e9-4a46-bcc2-925d2e18374e",
         "Id": "f17e64f0-48e9-4a46-bcc2-925d2e18374e",
-        "Offset": 11,
+        "Offset": 10,
         "Name": "StringUpper",
         "DataTypeHints": "CharacterCasing=Upper",
         "Label": {
@@ -1238,13 +1181,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:3afd90d8-8bd7-4376-9b86-492a7b417686"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:758604f3-31bc-46a5-86aa-708abd2d3d9f",
         "Id": "758604f3-31bc-46a5-86aa-708abd2d3d9f",
-        "Offset": 530,
+        "Offset": 550,
         "Rules": "Required",
         "Name": "Time",
         "Label": {
@@ -1260,13 +1203,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:6f42ccfc-bccc-45c2-ae8a-ed8c43678268"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:dab22963-e906-4598-8ae1-a2a8f3c6dfba",
         "Id": "dab22963-e906-4598-8ae1-a2a8f3c6dfba",
-        "Offset": 6,
+        "Offset": 5,
         "Name": "TranslatedString",
         "Label": {
           "en": "Translated string",
@@ -1281,58 +1224,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:3afd90d8-8bd7-4376-9b86-492a7b417686"
-        }
-      },
-      {
-        "$id": "PersistentObjectAttribute:929c468f-e9d2-40c8-8b72-5228407ea6a9",
-        "Id": "929c468f-e9d2-40c8-8b72-5228407ea6a9",
-        "Offset": 1220,
-        "Rules": "NotEmpty",
-        "Name": "TriggersRefresh",
-        "TriggersRefresh": true,
-        "Label": {
-          "en": "Triggers refresh",
-          "nl": "Triggers vernieuwen"
-        },
-        "Visibility": 7,
-        "ColumnSpan": 1,
-        "DefaultOptions": "Show all attributes\nHide tab Advanced\nHide group Nullable",
-        "DataType": {
-          "$ref": "DataType:DropDown"
-        },
-        "Group": {
-          "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
-        },
-        "Tab": {
-          "$ref": "PersistentObjectAttributeTab:03e6bbf6-b6e6-402c-a344-4f9f31e4442a"
-        }
-      },
-      {
-        "$id": "PersistentObjectAttribute:39c5d06b-4652-41ca-a4f9-502b3f18ad0a",
-        "Id": "39c5d06b-4652-41ca-a4f9-502b3f18ad0a",
-        "Offset": 1210,
-        "Name": "TriggersRefreshNullable",
-        "Label": {
-          "en": "Triggers refresh nullable",
-          "nl": "Triggers vernieuwen nullable"
-        },
-        "Visibility": 7,
-        "ColumnSpan": 1,
-        "DataType": {
-          "$ref": "DataType:String"
-        },
-        "Group": {
-          "$ref": "PersistentObjectAttributeGroup:04133de8-d6ca-4344-ba02-969640fd8ca2"
-        },
-        "Tab": {
-          "$ref": "PersistentObjectAttributeTab:03e6bbf6-b6e6-402c-a344-4f9f31e4442a"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:84171a73-85e7-44db-a01b-6cb92207c0db",
         "Id": "84171a73-85e7-44db-a01b-6cb92207c0db",
-        "Offset": 108,
+        "Offset": 107,
         "Rules": "Required",
         "Name": "UInt16",
         "Label": {
@@ -1348,13 +1246,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:4ee2ffa0-f0c9-43dd-b7c8-75c0f34e694b"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:2e7a2370-3b89-4b7f-b6b3-b12aad28e39e",
         "Id": "2e7a2370-3b89-4b7f-b6b3-b12aad28e39e",
-        "Offset": 109,
+        "Offset": 108,
         "Rules": "Required",
         "Name": "UInt32",
         "Label": {
@@ -1370,13 +1268,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:4ee2ffa0-f0c9-43dd-b7c8-75c0f34e694b"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:ca748fb1-e953-4ce4-9047-e5b255e7f444",
         "Id": "ca748fb1-e953-4ce4-9047-e5b255e7f444",
-        "Offset": 110,
+        "Offset": 109,
         "Rules": "Required",
         "Name": "UInt64",
         "Label": {
@@ -1392,13 +1290,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:4ee2ffa0-f0c9-43dd-b7c8-75c0f34e694b"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:3bab5cb9-96cd-499d-b32b-299728ee2784",
         "Id": "3bab5cb9-96cd-499d-b32b-299728ee2784",
-        "Offset": 1071,
+        "Offset": 1080,
         "Rules": "Required",
         "Name": "User",
         "Label": {
@@ -1414,13 +1312,13 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:7766acf6-5fe8-40f4-97e1-a67b3aaa65f4"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       },
       {
         "$id": "PersistentObjectAttribute:09ca99ce-5623-4cf6-aa19-3127b3cc1a10",
         "Id": "09ca99ce-5623-4cf6-aa19-3127b3cc1a10",
-        "Offset": 202,
+        "Offset": 201,
         "Rules": "Required",
         "Name": "YesNo",
         "Label": {
@@ -1436,12 +1334,12 @@
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
         },
         "Tab": {
-          "$ref": "PersistentObjectAttributeTab:74aab793-3787-4ea7-8622-0242c7588b82"
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
         }
       }
     ],
     "Queries": [
-      "1278a445-580f-45ae-9b71-92b33b9402c4"
+      "d9c7a23e-b445-4831-bbce-383121655046"
     ],
     "ActionCodes": []
   },

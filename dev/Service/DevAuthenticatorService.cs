@@ -1,7 +1,4 @@
-using Raven.Client.Documents.Linq;
-using Raven.Client.Documents.Session;
 using Vidyano.Service.Repository;
-using Vidyano.Service.RavenDB;
 using Dev.Service.Model;
 using Vidyano.Service;
 
@@ -11,7 +8,13 @@ namespace Dev.Service
     {
         public override bool CheckUserCredentials(UserCredentials credentials)
         {
-            return true; // base.CheckUserCredentials(credentials);
+            if (credentials.UserName?.Equals("admin", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                // Simulate successful authentication for the admin user.
+                return true;
+            }
+
+            return base.CheckUserCredentials(credentials);
         }
     }
 }

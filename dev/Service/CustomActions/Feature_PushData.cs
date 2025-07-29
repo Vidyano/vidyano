@@ -5,9 +5,9 @@ using Vidyano.Service.Repository;
 
 namespace Dev.Service.CustomActions;
 
-public partial class PushData : AsyncStreamingAction<DevContext>
+public partial class Feature_PushData : AsyncStreamingAction<DevContext>
 {
-    public PushData(DevContext context, StreamingActionStream streamWriter, IServiceProvider serviceProvider, IAuthenticatedRequest authenticatedRequest)
+    public Feature_PushData(DevContext context, StreamingActionStream streamWriter, IServiceProvider serviceProvider, IAuthenticatedRequest authenticatedRequest)
         : base(context, streamWriter, serviceProvider, authenticatedRequest)
     {
     }

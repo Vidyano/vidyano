@@ -2,62 +2,541 @@
   "ProgramUnits": [
     {
       "Name": "Attributes",
-      "Offset": 20,
+      "Offset": 10,
       "Title": {
         "en": "Attributes",
-        "nl": ""
+        "nl": "Kenmerken"
       },
       "OpenFirst": true,
-      "Groups": [],
+      "Groups": [
+        {
+          "$id": "ProgramUnitItemGroup:3afaa3db-8ed3-43f1-9993-5334a747155e",
+          "Id": "3afaa3db-8ed3-43f1-9993-5334a747155e",
+          "Title": {
+            "en": "Advanced",
+            "nl": ""
+          }
+        },
+        {
+          "$id": "ProgramUnitItemGroup:5807c40a-d81f-4d3c-8be1-98180d5ea179",
+          "Id": "5807c40a-d81f-4d3c-8be1-98180d5ea179",
+          "Title": {
+            "en": "Strings",
+            "nl": ""
+          }
+        },
+        {
+          "$id": "ProgramUnitItemGroup:6d6c6604-ce78-4721-803c-644b5bb5e5da",
+          "Id": "6d6c6604-ce78-4721-803c-644b5bb5e5da",
+          "Title": {
+            "en": "References",
+            "nl": ""
+          }
+        },
+        {
+          "$id": "ProgramUnitItemGroup:984c5be2-1058-451b-a10e-cbe86dd00a3d",
+          "Id": "984c5be2-1058-451b-a10e-cbe86dd00a3d",
+          "Title": {
+            "en": "Dates",
+            "nl": ""
+          }
+        },
+        {
+          "$id": "ProgramUnitItemGroup:a5808235-e57f-4483-a943-03e7a7b5c9bb",
+          "Id": "a5808235-e57f-4483-a943-03e7a7b5c9bb",
+          "Title": {
+            "en": "Numerics",
+            "nl": ""
+          }
+        },
+        {
+          "$id": "ProgramUnitItemGroup:ac168fcc-12f9-4923-8891-3770b163d0d9",
+          "Id": "ac168fcc-12f9-4923-8891-3770b163d0d9",
+          "Title": {
+            "en": "Booleans",
+            "nl": ""
+          }
+        },
+        {
+          "$id": "ProgramUnitItemGroup:cd98fa01-c45b-4df9-a8b8-9000c63ec32f",
+          "Id": "cd98fa01-c45b-4df9-a8b8-9000c63ec32f",
+          "Title": {
+            "en": "Selects",
+            "nl": ""
+          }
+        }
+      ],
       "Items": [
         {
-          "Title": {
-            "en": "DropDown",
-            "nl": ""
-          },
-          "Name": "DropDown",
-          "PersistentObject": {
-            "$ref": "PersistentObject:216f7e3f-786b-3eec-acc5-72b2ca1e8458"
-          }
-        },
-        {
+          "ObjectId": "String;StringLower;StringUpper",
           "Offset": 5,
           "Title": {
-            "en": "KeyValueList",
-            "nl": ""
+            "en": "String",
+            "nl": "String"
           },
-          "Name": "KeyValueList",
+          "Name": "String",
           "PersistentObject": {
-            "$ref": "PersistentObject:deac1ec4-37a8-395b-935c-35b8e87ffbbe"
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:5807c40a-d81f-4d3c-8be1-98180d5ea179"
           }
         },
         {
+          "ObjectId": "MultiLineString",
+          "Offset": 7,
+          "Title": {
+            "en": "MultiLineString",
+            "nl": ""
+          },
+          "Name": "MultiLineString",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:5807c40a-d81f-4d3c-8be1-98180d5ea179"
+          }
+        },
+        {
+          "ObjectId": "MultiString;MultiStringWithTags",
+          "Offset": 8,
+          "Title": {
+            "en": "MultiString",
+            "nl": ""
+          },
+          "Name": "MultiString",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:5807c40a-d81f-4d3c-8be1-98180d5ea179"
+          }
+        },
+        {
+          "ObjectId": "Password",
+          "Offset": 9,
+          "Title": {
+            "en": "Password",
+            "nl": ""
+          },
+          "Name": "Password",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:5807c40a-d81f-4d3c-8be1-98180d5ea179"
+          }
+        },
+        {
+          "ObjectId": "TranslatedString",
           "Offset": 10,
+          "Title": {
+            "en": "TranslatedString",
+            "nl": ""
+          },
+          "Name": "TranslatedString",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:5807c40a-d81f-4d3c-8be1-98180d5ea179"
+          }
+        },
+        {
+          "ObjectId": "CommonMark",
+          "Offset": 30,
+          "Title": {
+            "en": "CommonMark",
+            "nl": ""
+          },
+          "Name": "CommonMark",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:5807c40a-d81f-4d3c-8be1-98180d5ea179"
+          }
+        },
+        {
+          "ObjectId": "Byte;NullableByte",
+          "Offset": 35,
+          "Title": {
+            "en": "Byte",
+            "nl": "Numerics"
+          },
+          "Name": "Byte",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:a5808235-e57f-4483-a943-03e7a7b5c9bb"
+          }
+        },
+        {
+          "ObjectId": "Decimal;NullableDecimal",
+          "Offset": 37,
+          "Title": {
+            "en": "Decimal",
+            "nl": ""
+          },
+          "Name": "Decimal",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:a5808235-e57f-4483-a943-03e7a7b5c9bb"
+          }
+        },
+        {
+          "ObjectId": "Double;NullableDouble",
+          "Offset": 40,
+          "Title": {
+            "en": "Double",
+            "nl": ""
+          },
+          "Name": "Double",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:a5808235-e57f-4483-a943-03e7a7b5c9bb"
+          }
+        },
+        {
+          "ObjectId": "Single;NullableSingle",
+          "Offset": 50,
+          "Title": {
+            "en": "Single",
+            "nl": ""
+          },
+          "Name": "Single",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:a5808235-e57f-4483-a943-03e7a7b5c9bb"
+          }
+        },
+        {
+          "ObjectId": "Int16;NullableInt16",
+          "Offset": 60,
+          "Title": {
+            "en": "Int16",
+            "nl": ""
+          },
+          "Name": "Int16",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:a5808235-e57f-4483-a943-03e7a7b5c9bb"
+          }
+        },
+        {
+          "ObjectId": "Int32;NullableInt32",
+          "Offset": 70,
+          "Title": {
+            "en": "Int32",
+            "nl": ""
+          },
+          "Name": "Int32",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:a5808235-e57f-4483-a943-03e7a7b5c9bb"
+          }
+        },
+        {
+          "ObjectId": "Int64;NullableInt64",
+          "Offset": 80,
+          "Title": {
+            "en": "Int64",
+            "nl": ""
+          },
+          "Name": "Int64",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:a5808235-e57f-4483-a943-03e7a7b5c9bb"
+          }
+        },
+        {
+          "ObjectId": "SByte;NullableSByte",
+          "Offset": 90,
+          "Title": {
+            "en": "SByte",
+            "nl": ""
+          },
+          "Name": "SByte",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:a5808235-e57f-4483-a943-03e7a7b5c9bb"
+          }
+        },
+        {
+          "ObjectId": "UInt16;NullableUInt16",
+          "Offset": 100,
+          "Title": {
+            "en": "UInt16",
+            "nl": ""
+          },
+          "Name": "UInt16",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:a5808235-e57f-4483-a943-03e7a7b5c9bb"
+          }
+        },
+        {
+          "ObjectId": "UInt32;NullableUInt32",
+          "Offset": 110,
+          "Title": {
+            "en": "UInt32",
+            "nl": ""
+          },
+          "Name": "UInt32",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:a5808235-e57f-4483-a943-03e7a7b5c9bb"
+          }
+        },
+        {
+          "ObjectId": "UInt64;NullableUInt64",
+          "Offset": 120,
+          "Title": {
+            "en": "UInt64",
+            "nl": ""
+          },
+          "Name": "UInt64",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:a5808235-e57f-4483-a943-03e7a7b5c9bb"
+          }
+        },
+        {
+          "ObjectId": "Boolean;BooleanRO;NullableBoolean;NullableBooleanTypeHints",
+          "Offset": 130,
+          "Title": {
+            "en": "Boolean",
+            "nl": ""
+          },
+          "Name": "Boolean",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:ac168fcc-12f9-4923-8891-3770b163d0d9"
+          }
+        },
+        {
+          "ObjectId": "YesNo",
+          "Offset": 140,
+          "Title": {
+            "en": "YesNo",
+            "nl": ""
+          },
+          "Name": "YesNo",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:ac168fcc-12f9-4923-8891-3770b163d0d9"
+          }
+        },
+        {
+          "ObjectId": "Date;DateTime;DateTimeOffset;NullableDate;NullableDateTime;NullableDateOffset",
+          "Offset": 150,
+          "Title": {
+            "en": "Date",
+            "nl": ""
+          },
+          "Name": "Date",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:984c5be2-1058-451b-a10e-cbe86dd00a3d"
+          }
+        },
+        {
+          "ObjectId": "Time;NullableTime",
+          "Offset": 160,
+          "Title": {
+            "en": "Time",
+            "nl": ""
+          },
+          "Name": "Time",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:984c5be2-1058-451b-a10e-cbe86dd00a3d"
+          }
+        },
+        {
+          "ObjectId": "Reference;ReferenceWithCanAddNew;ReferenceWithSelectInPlace;ReferenceAsChipHorizontal;ReferenceAsChipVertical;ReferenceAsRadioHorizontal;ReferenceAsRadioVertical",
+          "Offset": 170,
           "Title": {
             "en": "Reference",
             "nl": ""
           },
           "Name": "Reference",
           "PersistentObject": {
-            "$ref": "PersistentObject:f5874a82-992f-3d65-b010-2fc3b7a5583a"
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:6d6c6604-ce78-4721-803c-644b5bb5e5da"
           }
         },
         {
-          "Offset": 2,
+          "ObjectId": "AsDetail;AsDetailReadOnly",
+          "Offset": 180,
+          "Title": {
+            "en": "AsDetail",
+            "nl": ""
+          },
+          "Name": "AsDetail",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:6d6c6604-ce78-4721-803c-644b5bb5e5da"
+          }
+        },
+        {
+          "ObjectId": "KeyValueList;KeyValueListAsChipVertical;KeyValueListAsChipHorizontal;KeyValueListAsRadioVertical;KeyValueListAsRadioHorizontal",
+          "Offset": 190,
+          "Title": {
+            "en": "KeyValueList",
+            "nl": ""
+          },
+          "Name": "KeyValueList",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:cd98fa01-c45b-4df9-a8b8-9000c63ec32f"
+          }
+        },
+        {
+          "ObjectId": "ComboBox",
+          "Offset": 200,
+          "Title": {
+            "en": "ComboBox",
+            "nl": ""
+          },
+          "Name": "ComboBox",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:cd98fa01-c45b-4df9-a8b8-9000c63ec32f"
+          }
+        },
+        {
+          "ObjectId": "DropDown;DropDownAsChipHorizontal;DropDownAsChipVertical;DropDownAsRadioHorizontal;DropDownAsRadioVertical",
+          "Offset": 210,
+          "Title": {
+            "en": "DropDown",
+            "nl": ""
+          },
+          "Name": "DropDown",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:cd98fa01-c45b-4df9-a8b8-9000c63ec32f"
+          }
+        },
+        {
+          "ObjectId": "Enum;EnumAsChipHorizontal;EnumAsChipVertical;EnumAsRadioHorizontal;EnumAsRadioVertical",
+          "Offset": 220,
           "Title": {
             "en": "Enum",
             "nl": ""
           },
           "Name": "Enum",
           "PersistentObject": {
-            "$ref": "PersistentObject:10fdd128-72cf-3485-a52b-bfb695fefe9d"
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:cd98fa01-c45b-4df9-a8b8-9000c63ec32f"
+          }
+        },
+        {
+          "ObjectId": "FlagsEnum",
+          "Offset": 230,
+          "Title": {
+            "en": "FlagsEnum",
+            "nl": ""
+          },
+          "Name": "FlagsEnum",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:cd98fa01-c45b-4df9-a8b8-9000c63ec32f"
+          }
+        },
+        {
+          "ObjectId": "User;Group;NullableUser",
+          "Offset": 240,
+          "Title": {
+            "en": "User",
+            "nl": ""
+          },
+          "Name": "User",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:3afaa3db-8ed3-43f1-9993-5334a747155e"
+          }
+        },
+        {
+          "ObjectId": "Image",
+          "Offset": 250,
+          "Title": {
+            "en": "Image",
+            "nl": ""
+          },
+          "Name": "Image",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:3afaa3db-8ed3-43f1-9993-5334a747155e"
+          }
+        },
+        {
+          "ObjectId": "BinaryFile",
+          "Offset": 260,
+          "Title": {
+            "en": "BinaryFile",
+            "nl": ""
+          },
+          "Name": "BinaryFile",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:3afaa3db-8ed3-43f1-9993-5334a747155e"
           }
         }
       ]
     },
     {
       "Name": "Components",
-      "Offset": 10,
+      "Offset": 20,
       "Title": {
         "en": "Components",
         "nl": ""
@@ -65,154 +544,132 @@
       "OpenFirst": true,
       "Groups": [
         {
-          "$id": "ProgramUnitItemGroup:55c401f9-5703-4daf-909f-135715c68c80",
-          "Id": "55c401f9-5703-4daf-909f-135715c68c80",
+          "$id": "ProgramUnitItemGroup:ec3c90ce-728d-4495-aa71-295c89ab67ef",
+          "Id": "ec3c90ce-728d-4495-aa71-295c89ab67ef",
           "Title": {
-            "en": "QueryGrid",
+            "en": "Query Grid",
             "nl": ""
           }
         }
       ],
       "Items": [
         {
-          "ObjectId": "components/action-bar-test",
-          "Offset": 4,
-          "Title": {
-            "en": "ActionBar",
-            "nl": ""
-          },
-          "Name": "ActionBar"
-        },
-        {
-          "ObjectId": "components/dialog",
-          "Offset": 5,
-          "Title": {
-            "en": "Dialog",
-            "nl": ""
-          },
-          "Name": "Dialog"
-        },
-        {
-          "ObjectId": "components/list",
-          "Offset": 10,
-          "Title": {
-            "en": "List",
-            "nl": ""
-          },
-          "Name": "List"
-        },
-        {
-          "ObjectId": "components/notification-test",
-          "Offset": 15,
-          "Title": {
-            "en": "Notification",
-            "nl": ""
-          },
-          "Name": "Notification"
-        },
-        {
-          "ObjectId": "components/popup-menu",
-          "Offset": 20,
-          "Title": {
-            "en": "Popup menu",
-            "nl": ""
-          },
-          "Name": "Popup menu"
-        },
-        {
-          "ObjectId": "components/query-grid/None",
-          "Offset": 40,
           "Title": {
             "en": "None",
             "nl": ""
           },
-          "Name": "QueryGridTest_None",
+          "Name": "QueryGrid_None",
+          "Query": {
+            "$ref": "Query:53ffdac1-5f32-4f28-9916-6c2ddb214a9d"
+          },
           "Group": {
-            "$ref": "ProgramUnitItemGroup:55c401f9-5703-4daf-909f-135715c68c80"
+            "$ref": "ProgramUnitItemGroup:ec3c90ce-728d-4495-aa71-295c89ab67ef"
           }
         },
         {
-          "ObjectId": "components/query-grid/Select",
-          "Offset": 50,
+          "Offset": 10,
           "Title": {
             "en": "Select",
             "nl": ""
           },
-          "Name": "QueryGridTest_Select",
+          "Name": "QueryGrid_Select",
+          "Query": {
+            "$ref": "Query:cb92f781-dcde-45e3-a149-a80c256e5aec"
+          },
           "Group": {
-            "$ref": "ProgramUnitItemGroup:55c401f9-5703-4daf-909f-135715c68c80"
+            "$ref": "ProgramUnitItemGroup:ec3c90ce-728d-4495-aa71-295c89ab67ef"
           }
         },
         {
-          "ObjectId": "components/query-grid/Filter",
-          "Offset": 60,
+          "Offset": 20,
           "Title": {
             "en": "Filter",
             "nl": ""
           },
-          "Name": "QueryGridTest_Filter",
+          "Name": "QueryGrid_Filter",
+          "Query": {
+            "$ref": "Query:17840ff5-58b6-41a7-97f0-dda076910471"
+          },
           "Group": {
-            "$ref": "ProgramUnitItemGroup:55c401f9-5703-4daf-909f-135715c68c80"
+            "$ref": "ProgramUnitItemGroup:ec3c90ce-728d-4495-aa71-295c89ab67ef"
           }
         },
         {
-          "ObjectId": "components/query-grid/InlineActions",
-          "Offset": 70,
+          "Offset": 30,
           "Title": {
             "en": "Inline actions",
             "nl": ""
           },
-          "Name": "QueryGridTest_InlineActions",
+          "Name": "QueryGrid_InlineActions",
+          "Query": {
+            "$ref": "Query:12d3300b-f095-4b96-b430-1a405dcebf3c"
+          },
           "Group": {
-            "$ref": "ProgramUnitItemGroup:55c401f9-5703-4daf-909f-135715c68c80"
+            "$ref": "ProgramUnitItemGroup:ec3c90ce-728d-4495-aa71-295c89ab67ef"
           }
         },
         {
-          "ObjectId": "components/query-grid/SelectAndFilter",
-          "Offset": 80,
+          "Offset": 40,
           "Title": {
-            "en": "Select and Filter",
+            "en": "Select + Filter",
             "nl": ""
           },
-          "Name": "QueryGridTest_SelectAndFilter",
+          "Name": "QueryGrid_SelectAndFilter",
+          "Query": {
+            "$ref": "Query:c4c93d13-9b69-4c35-b084-214c0664b93a"
+          },
           "Group": {
-            "$ref": "ProgramUnitItemGroup:55c401f9-5703-4daf-909f-135715c68c80"
+            "$ref": "ProgramUnitItemGroup:ec3c90ce-728d-4495-aa71-295c89ab67ef"
           }
         },
         {
-          "ObjectId": "components/query-grid/SelectAndInlineActions",
-          "Offset": 90,
+          "Offset": 50,
           "Title": {
-            "en": "Select and Inline actions",
+            "en": "Select + Inline Actions",
             "nl": ""
           },
-          "Name": "QueryGridTest_SelectAndInlineActions",
+          "Name": "QueryGrid_SelectAndInlineActions",
+          "Query": {
+            "$ref": "Query:96d1a36a-a7c9-47d0-893d-2b750bf1dc7e"
+          },
           "Group": {
-            "$ref": "ProgramUnitItemGroup:55c401f9-5703-4daf-909f-135715c68c80"
+            "$ref": "ProgramUnitItemGroup:ec3c90ce-728d-4495-aa71-295c89ab67ef"
           }
         },
         {
-          "ObjectId": "components/query-grid/SelectAndFilterAndInlineActions",
-          "Offset": 100,
+          "Offset": 60,
           "Title": {
-            "en": "Select, Filter and Inline actions",
+            "en": "Select + Filter + Inline Actions",
             "nl": ""
           },
-          "Name": "QueryGridTest_SelectAndFilterAndInlineActions",
+          "Name": "QueryGrid_SelectAndFilterAndInlineActions",
+          "Query": {
+            "$ref": "Query:2b7099d6-5553-4d1c-b9c1-da0d81db61bd"
+          },
           "Group": {
-            "$ref": "ProgramUnitItemGroup:55c401f9-5703-4daf-909f-135715c68c80"
+            "$ref": "ProgramUnitItemGroup:ec3c90ce-728d-4495-aa71-295c89ab67ef"
           }
-        },
+        }
+      ]
+    },
+    {
+      "Name": "Features",
+      "Offset": 30,
+      "Title": {
+        "en": "Features",
+        "nl": ""
+      },
+      "OpenFirst": true,
+      "Groups": [],
+      "Items": [
         {
-          "ObjectId": "components/query-grid/MaxRows",
-          "Offset": 110,
           "Title": {
-            "en": "Max Rows",
+            "en": "Features",
             "nl": ""
           },
-          "Name": "QueryGridTest_MaxRows",
-          "Group": {
-            "$ref": "ProgramUnitItemGroup:55c401f9-5703-4daf-909f-135715c68c80"
+          "Name": "Features",
+          "PersistentObject": {
+            "$ref": "PersistentObject:555ed331-7ab8-359f-b150-4075aca0e89a"
           }
         }
       ]
@@ -221,116 +678,20 @@
       "Name": "Home",
       "Title": {
         "en": "Home",
-        "nl": "Thuis"
+        "nl": "Home"
       },
       "OpenFirst": true,
-      "Groups": [
-        {
-          "$id": "ProgramUnitItemGroup:4ae1faf8-533e-49fd-abcf-29edb40ee96a",
-          "Id": "4ae1faf8-533e-49fd-abcf-29edb40ee96a",
-          "Title": {
-            "en": "Attributes",
-            "nl": ""
-          }
-        }
-      ],
+      "Groups": [],
       "Items": [
-        {
-          "Offset": 5,
-          "Title": {
-            "en": "Companies",
-            "nl": "Companies"
-          },
-          "Name": "Companies",
-          "Query": {
-            "$ref": "Query:f94e7b97-c09c-4082-bde0-5ab426b1e289"
-          }
-        },
         {
           "Offset": 10,
           "Title": {
-            "en": "Employees",
-            "nl": "Medewerkers"
+            "en": "People",
+            "nl": "People"
           },
-          "Name": "Employees",
+          "Name": "People",
           "Query": {
-            "$ref": "Query:026c4ca7-53f4-42ac-b196-158f0cb871a1"
-          }
-        },
-        {
-          "Offset": 15,
-          "Title": {
-            "en": "Orders",
-            "nl": "Orders"
-          },
-          "Name": "Orders",
-          "Query": {
-            "$ref": "Query:f7a56a67-45a2-4259-9f32-1bd59adcb73e"
-          }
-        },
-        {
-          "Offset": 17,
-          "Title": {
-            "en": "—",
-            "nl": "—"
-          },
-          "Name": "Separator1",
-          "IsSeparator": true
-        },
-        {
-          "Offset": 20,
-          "Title": {
-            "en": "Attributes",
-            "nl": "Kenmerken"
-          },
-          "Name": "Attributes",
-          "PersistentObject": {
-            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
-          },
-          "Group": {
-            "$ref": "ProgramUnitItemGroup:4ae1faf8-533e-49fd-abcf-29edb40ee96a"
-          }
-        },
-        {
-          "ObjectId": "sensitive",
-          "Offset": 30,
-          "Title": {
-            "en": "Attributes sensitive",
-            "nl": ""
-          },
-          "Name": "AttributesSensitive",
-          "PersistentObject": {
-            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
-          },
-          "Group": {
-            "$ref": "ProgramUnitItemGroup:4ae1faf8-533e-49fd-abcf-29edb40ee96a"
-          }
-        },
-        {
-          "Offset": 40,
-          "Title": {
-            "en": "Dynamic employees",
-            "nl": ""
-          },
-          "Name": "DynamicEmployees"
-        },
-        {
-          "Offset": 50,
-          "Title": {
-            "en": "Large employees",
-            "nl": "Large employees"
-          },
-          "Name": "LargeEmployees"
-        },
-        {
-          "Offset": 60,
-          "Title": {
-            "en": "Images",
-            "nl": ""
-          },
-          "Name": "Images",
-          "Query": {
-            "$ref": "Query:4eedc392-c969-49d5-a320-029c335d46bc"
+            "$ref": "Query:c81496d8-154b-4f66-905e-1d32354eea0c"
           }
         }
       ]
