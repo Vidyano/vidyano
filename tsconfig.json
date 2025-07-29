@@ -17,7 +17,7 @@
       "noEmitOnError": false,
       "rootDir": ".",
       "types": [
-          "qunit"
+        "bignumber.js"
       ],
       "baseUrl": "src",
       "paths": {
