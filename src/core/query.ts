@@ -152,15 +152,6 @@ export class Query extends ServiceObjectWithActions {
                 bulkEdit.selectionRule = count => count === 1;
         }
 
-        if (queryDto.filters) {
-            if (queryDto.filters instanceof QueryFilters)
-                this.#filters = asLookup ? queryDto.filters.clone(this) : null;
-            else
-                this.#filters = new QueryFilters(this, service.hooks.onConstructPersistentObject(service, queryDto.filters));
-        }
-        else
-            this.#filters = null;
-
         if (!!queryDto.groupedBy)
             this.#setGroupingInfo({ groupedBy: queryDto.groupedBy });
 
@@ -181,6 +172,15 @@ export class Query extends ServiceObjectWithActions {
         else {
             this.#setResult(result);
         }
+
+        if (queryDto.filters) {
+            if (queryDto.filters instanceof QueryFilters)
+                this.#filters = asLookup ? queryDto.filters.clone(this) : null;
+            else
+                this.#filters = new QueryFilters(this, service.hooks.onConstructPersistentObject(service, queryDto.filters));
+        }
+        else
+            this.#filters = null;
     }
 
     /**
