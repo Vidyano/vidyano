@@ -371,3 +371,4 @@ playwright-report/index.html
 test-results/
 
 patch
+*.sln
