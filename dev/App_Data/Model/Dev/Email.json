@@ -1,0 +1,54 @@
+{
+  "PersistentObject": {
+    "$id": "PersistentObject:019ab868-aed8-3ae3-8f8e-cd66b0205446",
+    "Id": "019ab868-aed8-3ae3-8f8e-cd66b0205446",
+    "SchemaName": "Dev",
+    "Type": "Email",
+    "Salt": "SgGwJYgTB3xxINf2Fd10g0SDBty1Y0bu2_-6tIituKPScZKYMnOQ4Q",
+    "Breadcrumb": "Email",
+    "Label": {
+      "en": "Email",
+      "nl": ""
+    },
+    "StateBehavior": 10,
+    "Groups": [
+      {
+        "$id": "PersistentObjectAttributeGroup:f290c62e-76ba-4761-a2a5-6856100658c1",
+        "Id": "f290c62e-76ba-4761-a2a5-6856100658c1"
+      }
+    ],
+    "Tabs": [
+      {
+        "$id": "PersistentObjectAttributeTab:7b628739-3bb5-4191-8348-6703b824e6ec",
+        "Id": "7b628739-3bb5-4191-8348-6703b824e6ec"
+      }
+    ],
+    "Attributes": [
+      {
+        "$id": "PersistentObjectAttribute:bf6bdefb-f459-3b83-914e-4261950c07e0",
+        "Id": "bf6bdefb-f459-3b83-914e-4261950c07e0",
+        "Offset": 10,
+        "Rules": "NotEmpty",
+        "Name": "Body",
+        "Label": {
+          "en": "Body",
+          "nl": "Body"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:MultiLineString"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:f290c62e-76ba-4761-a2a5-6856100658c1"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:7b628739-3bb5-4191-8348-6703b824e6ec"
+        }
+      }
+    ],
+    "Queries": []
+  },
+  "Queries": [],
+  "Reports": []
+}

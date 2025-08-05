@@ -123,14 +123,6 @@
         "nl": "Feature_RetryAction"
       }
     },
-    "Feature_StartWizard": {
-      "Icon": "Action_Default$",
-      "ShowedOn": 1,
-      "DisplayName": {
-        "en": "Start wizard",
-        "nl": "Start wizard"
-      }
-    },
     "MoreThanOne": {
       "SelectionRule": ">1",
       "DisplayName": {
@@ -147,6 +139,15 @@
         "nl": "Nieuw"
       },
       "IconName": "Add"
+    },
+    "NewPersonWizard": {
+      "Icon": "material-symbols-light:person-add",
+      "RefreshQueryOnCompleted": true,
+      "ShowedOn": 2,
+      "DisplayName": {
+        "en": "New person wizard",
+        "nl": "Start wizard"
+      }
     },
     "One": {
       "SelectionRule": "=1",
@@ -185,6 +186,16 @@
         "nl": "Opslaan"
       },
       "IconName": "Save"
+    },
+    "SendEmail": {
+      "Description": "Opens a dialog to allow the user to send an email to the person. If the contact preference is set to Phone, an error will be shown.",
+      "Offset": 1000,
+      "ShowedOn": 3,
+      "Intent": 1,
+      "DisplayName": {
+        "en": "Send email",
+        "nl": "Send email"
+      }
     },
     "ShowHelp": {
       "Offset": 60000,

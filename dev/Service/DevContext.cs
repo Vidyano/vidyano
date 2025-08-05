@@ -8,7 +8,7 @@ namespace Dev.Service;
 
 public partial class DevContext : NullTargetContext
 {
-    static List<Person> _people = [];
+    public static List<Person> _people = [];
 
     public static void Initialize()
     {
@@ -19,9 +19,10 @@ public partial class DevContext : NullTargetContext
             .RuleFor(p => p.FirstName, f => f.Name.FirstName())
             .RuleFor(p => p.LastName, f => f.Name.LastName())
             .RuleFor(p => p.BirthDate, f => f.Date.Between(new DateTime(1945, 1, 1), new DateTime(2000, 12, 31)))
+            .RuleFor(p => p.Gender, f => f.PickRandom<Gender>())
+            .RuleFor(p => p.ContactPreference, f => f.PickRandom<ContactPreference>())
             .RuleFor(p => p.Email, (f, p) => f.Internet.Email(p.FirstName, p.LastName))
             .RuleFor(p => p.PhoneNumber, f => f.Phone.PhoneNumber("###-###-####"))
-            .RuleFor(p => p.Gender, f => f.PickRandom<Gender>())
             .RuleFor(p => p.IsActive, f => f.Random.Bool(.95f))
             .Generate(10_000);
 

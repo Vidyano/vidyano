@@ -48,6 +48,29 @@
         }
       },
       {
+        "$id": "PersistentObjectAttribute:ce838248-aeeb-304a-9e37-872d7cc6b526",
+        "Id": "ce838248-aeeb-304a-9e37-872d7cc6b526",
+        "Offset": 42,
+        "Rules": "Required",
+        "Name": "ContactPreference",
+        "TriggersRefresh": true,
+        "Label": {
+          "en": "Contact preference",
+          "nl": "Contact preference"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Enum"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:cf64fe83-7f29-494d-90ac-1608400b479c"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:888bca54-2de6-44d6-8c06-edccaeb9e85b"
+        }
+      },
+      {
         "$id": "PersistentObjectAttribute:cf9e7a0e-c666-3a0e-a418-988336ca82e9",
         "Id": "cf9e7a0e-c666-3a0e-a418-988336ca82e9",
         "Offset": 50,
@@ -94,7 +117,7 @@
       {
         "$id": "PersistentObjectAttribute:6637bcd1-567b-38ae-86d8-a5eb4e06aebc",
         "Id": "6637bcd1-567b-38ae-86d8-a5eb4e06aebc",
-        "Offset": 65,
+        "Offset": 38,
         "Rules": "Required",
         "Name": "Gender",
         "CanGroupBy": true,

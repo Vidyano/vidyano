@@ -15,13 +15,13 @@
       "UserId": "fe9429ba-d5cd-4e7c-bbe4-05a4c3497d97"
     },
     {
-      "Id": "84ef72cd-89c7-46d8-b722-576c20e2ec61",
-      "Resource": "Feature_StartWizard/Dev.Features",
+      "Id": "2c39932c-2a6c-4ec0-a1d7-2c149f0e97a5",
+      "Resource": "MoreThanOne/Dev.Person",
       "UserId": "fe9429ba-d5cd-4e7c-bbe4-05a4c3497d97"
     },
     {
-      "Id": "2c39932c-2a6c-4ec0-a1d7-2c149f0e97a5",
-      "Resource": "MoreThanOne/Dev.Person",
+      "Id": "84ef72cd-89c7-46d8-b722-576c20e2ec61",
+      "Resource": "NewPersonWizard/Dev.Person",
       "UserId": "fe9429ba-d5cd-4e7c-bbe4-05a4c3497d97"
     },
     {
@@ -47,6 +47,11 @@
     {
       "Id": "d5b6717f-4ff1-4ddd-9e8a-6c073ec6ed2f",
       "Resource": "ResetTest/Dev.Person",
+      "UserId": "fe9429ba-d5cd-4e7c-bbe4-05a4c3497d97"
+    },
+    {
+      "Id": "3ccc289c-9469-4e07-87fb-25514308cf6d",
+      "Resource": "SendEmail/Dev.Person",
       "UserId": "fe9429ba-d5cd-4e7c-bbe4-05a4c3497d97"
     }
   ]

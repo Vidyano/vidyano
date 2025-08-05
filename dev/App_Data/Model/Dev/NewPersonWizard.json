@@ -1,12 +1,12 @@
 {
   "PersistentObject": {
-    "$id": "PersistentObject:2d8aeece-124b-3942-acde-a640aa438b96",
-    "Id": "2d8aeece-124b-3942-acde-a640aa438b96",
+    "$id": "PersistentObject:bb62d39b-a57b-326b-a8ed-5f184e5dbbd4",
+    "Id": "bb62d39b-a57b-326b-a8ed-5f184e5dbbd4",
     "SchemaName": "Dev",
-    "Type": "Feature_Wizard",
+    "Type": "NewPersonWizard",
     "Salt": "tt_ciSHFrF4yssWHRTN4rrv0KJCfaPKt0gKZpmsqJbolEpYceoux3A",
     "Label": {
-      "en": "Wizard",
+      "en": "New person",
       "nl": ""
     },
     "StateBehavior": 24,

@@ -8,6 +8,8 @@ public class Person
 
     public string LastName { get; set; } = null!;
 
+    public ContactPreference ContactPreference { get; set; }
+
     public string Email { get; set; } = null!;
 
     public string PhoneNumber { get; set; } = null!;
@@ -17,6 +19,12 @@ public class Person
     public Gender Gender { get; set; }
 
     public bool IsActive { get; set; }
+}
+
+public enum ContactPreference
+{
+    Email,
+    Phone
 }
 
 public enum Gender

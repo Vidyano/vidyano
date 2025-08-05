@@ -1,5 +1,7 @@
-using Vidyano.Service;
 using Dev.Service;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Vidyano.Service;
+using Vidyano.Service.Repository.DataLayer;
 
 namespace Dev;
 
@@ -16,7 +18,20 @@ public class Startup
     // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
     public void ConfigureServices(IServiceCollection services)
     {
+        // Add CORS with no restrictions
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAll",
+                builder =>
+                {
+                    builder.AllowAnyOrigin()
+                           .AllowAnyMethod()
+                           .AllowAnyHeader();
+                });
+        });
+
         services.AddVidyanoNoDatabase(Configuration);
+        services.Replace(new(typeof(IRepositoryUserStore), typeof(TestingJsonRepositoryUserStore), ServiceLifetime.Singleton));
         services.AddScoped<DevContext>();
         services.AddTransient<RequestScopeProvider<DevContext>>();
     }
@@ -26,6 +41,9 @@ public class Startup
     {
         if (env.IsDevelopment())
             app.UseDeveloperExceptionPage();
+
+        // Enable CORS
+        app.UseCors("AllowAll");
 
         app.UseVidyano(env, Configuration);
     }
