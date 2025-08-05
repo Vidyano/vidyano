@@ -349,7 +349,7 @@ export class ServiceHooks {
 
             case "Open":
                 const open = <IOpenOperation>operation;
-                this.onOpen(this.onConstructPersistentObject(this.#service, open.persistentObject), open.replace);
+                this.onOpen(this.onConstructPersistentObject(this.#service, open.persistentObject), open.replace, open.persistentObject.isNew);
                 break;
 
             default:
