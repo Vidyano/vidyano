@@ -457,8 +457,7 @@ export class PersistentObject extends ServiceObjectWithActions {
      * @param name - The attribute's name.
      */
     getAttributeValue<T = any>(name: string): T {
-        const attr = this.attributes[name];
-        return attr != null ? attr.value : null;
+        return this.attributes[name]?.value;
     }
 
     /**
