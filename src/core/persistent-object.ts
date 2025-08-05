@@ -19,6 +19,21 @@ export { PersistentObjectLayoutMode, PersistentObjectStateBehavior } from "./typ
 const _dtoBackup = Symbol("PersistentObject_DtoBackup");
 
 /**
+ * Options for persistent object save action.
+ */
+export interface IPersistentObjectSaveOptions {    
+    /**
+     * If true, throw exceptions for when the notification type is "Error". Default is true.
+     */
+    throwExceptions?: boolean;
+
+    /**
+     * If true, wait for the owner query to refresh after save. Default is false.
+     */
+    waitForOwnerQuery?: boolean;
+}
+
+/**
  * Handles the state and operations for persistent objects, including editing,
  * saving, refreshing data, and managing attributes and tabs.
  */
@@ -530,9 +545,9 @@ export class PersistentObject extends ServiceObjectWithActions {
 
     /**
      * Saves changes, refreshes state, and handles post-save notifications.
-     * @param waitForOwnerQuery - Optionally waits for the owner query to refresh.
+     * @param options - Options for saving, such as throwing exceptions on errors.
      */
-    save(waitForOwnerQuery?: boolean): Promise<boolean> {
+    save(options?: IPersistentObjectSaveOptions): Promise<boolean> {
         return this.queueWork(async () => {
             if (this.isEditing) {
                 const attributesToRefresh = this.attributes.filter(attr => attr.shouldRefresh);
@@ -546,29 +561,46 @@ export class PersistentObject extends ServiceObjectWithActions {
                 const wasNew = this.isNew;
                 this.#refreshFromResult(po, true);
 
-                if (!this.notification || this.notification.trim().length === 0 || this.notificationType !== "Error") {
+                const hasError = this.notification?.trim() && this.notificationType === "Error";
+                if (!hasError) {
                     this.#setIsDirty(false);
 
                     if (!wasNew) {
                         this.#setIsEditing(false);
-                        if (this.stateBehavior === "StayInEdit" || this.stateBehavior.indexOf("StayInEdit") >= 0)
+                        
+                        const shouldStayInEdit = this.stateBehavior === "StayInEdit" || this.stateBehavior.indexOf("StayInEdit") >= 0;
+                        if (shouldStayInEdit) {
                             this.beginEdit();
+                        }
                     }
 
                     if (this.ownerAttributeWithReference) {
-                        if (this.ownerAttributeWithReference.objectId !== this.objectId) {
-                            let parent = this.ownerAttributeWithReference.parent;
-                            if (parent.ownerDetailAttribute != null)
+                        const ownerAttr = this.ownerAttributeWithReference;
+                        
+                        if (ownerAttr.objectId !== this.objectId) {
+                            let parent = ownerAttr.parent;
+                            if (parent.ownerDetailAttribute != null) {
                                 parent = parent.ownerDetailAttribute.parent;
+                            }
 
                             parent.beginEdit();
-                            this.ownerAttributeWithReference.changeReference([po.objectId]);
-                        } else if (this.ownerAttributeWithReference.value !== this.breadcrumb)
-                            this.ownerAttributeWithReference.value = this.breadcrumb;
-                    } else if (this.ownerQuery)
-                        this.ownerQuery.search({ keepSelection: this.isBulkEdit });
-                } else if (!!this.notification && this.notification.trim().length > 0)
+                            ownerAttr.changeReference([po.objectId]);
+                        } else if (ownerAttr.value !== this.breadcrumb) {
+                            ownerAttr.value = this.breadcrumb;
+                        }
+                    } else if (this.ownerQuery) {
+                        const searchPromise = this.ownerQuery.search({ keepSelection: this.isBulkEdit });
+                        if (options?.waitForOwnerQuery) {
+                            await searchPromise;
+                        }
+                    }
+                } else {
+                    if (options?.throwExceptions === false) {
+                        return false;
+                    }
+                    
                     throw this.notification;
+                }
             }
 
             return true;
