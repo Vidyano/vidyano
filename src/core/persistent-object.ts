@@ -566,11 +566,12 @@ export class PersistentObject extends ServiceObjectWithActions {
                     this.#setIsDirty(false);
 
                     if (!wasNew) {
-                        this.#setIsEditing(false);
-                        
                         const shouldStayInEdit = this.stateBehavior === "StayInEdit" || this.stateBehavior.indexOf("StayInEdit") >= 0;
-                        if (shouldStayInEdit) {
-                            this.beginEdit();
+                        if (!shouldStayInEdit)
+                            this.#setIsEditing(false);
+                        else {
+                            // If we are staying in edit mode, we need to set the current DTO as the backup
+                            this[_dtoBackup] = this[PersistentObjectSymbols.Dto];
                         }
                     }
 
