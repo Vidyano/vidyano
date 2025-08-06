@@ -5,7 +5,7 @@
     "SchemaName": "Dev",
     "Type": "Person",
     "Salt": "5H1v8lDdRcaCoyZeZRExAGjzO2gH3RY6EYV_M45tltvZiv3Qbly5Lg",
-    "Breadcrumb": "{FirstName}",
+    "Breadcrumb": "{FullName}",
     "ContextProperty": "People",
     "Label": {
       "en": "Person",
@@ -93,6 +93,31 @@
         }
       },
       {
+        "$id": "PersistentObjectAttributeWithReference:e48ee243-f829-3bd4-aa19-e3346521b434",
+        "$type": "Vidyano.Service.Repository.PersistentObjectAttributeWithReference, Vidyano.Service",
+        "DisplayAttribute": "FullName",
+        "LookupId": "c81496d8-154b-4f66-905e-1d32354eea0c",
+        "Id": "e48ee243-f829-3bd4-aa19-e3346521b434",
+        "Offset": 65,
+        "Rules": "Required",
+        "Name": "EmergencyContact",
+        "Label": {
+          "en": "Emergency contact",
+          "nl": "Emergency contact"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Reference"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:cf64fe83-7f29-494d-90ac-1608400b479c"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:888bca54-2de6-44d6-8c06-edccaeb9e85b"
+        }
+      },
+      {
         "$id": "PersistentObjectAttribute:3a010b33-9497-3d68-a2ac-1b618ea1288d",
         "Id": "3a010b33-9497-3d68-a2ac-1b618ea1288d",
         "Offset": 10,
@@ -103,6 +128,28 @@
           "nl": "First name"
         },
         "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:cf64fe83-7f29-494d-90ac-1608400b479c"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:888bca54-2de6-44d6-8c06-edccaeb9e85b"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:0dc26c4a-d1b2-34fa-a714-4178db1d9d6d",
+        "Id": "0dc26c4a-d1b2-34fa-a714-4178db1d9d6d",
+        "Offset": 27,
+        "Rules": "NotEmpty",
+        "Name": "FullName",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Full name",
+          "nl": "Full name"
+        },
         "ColumnSpan": 1,
         "DataType": {
           "$ref": "DataType:String"
@@ -160,6 +207,33 @@
         }
       },
       {
+        "$id": "PersistentObjectAttributeAsDetail:0ca10cfc-072e-3a24-8f98-f424e75e21cc",
+        "$type": "Vidyano.Service.Repository.PersistentObjectAttributeAsDetail, Vidyano.Service",
+        "DetailsId": "c1c26cf2-7846-4a58-984b-2c2291aa707c",
+        "Id": "0ca10cfc-072e-3a24-8f98-f424e75e21cc",
+        "Offset": 67,
+        "Name": "Languages",
+        "CanSort": false,
+        "CanFilter": false,
+        "CanListDistincts": false,
+        "DataTypeHints": "IncludeHeader=True",
+        "Label": {
+          "en": "Languages",
+          "nl": "Languages"
+        },
+        "Visibility": 5,
+        "ColumnSpan": 4,
+        "DataType": {
+          "$ref": "DataType:AsDetail"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:cf64fe83-7f29-494d-90ac-1608400b479c"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:888bca54-2de6-44d6-8c06-edccaeb9e85b"
+        }
+      },
+      {
         "$id": "PersistentObjectAttribute:03f320d0-ef98-3f25-9847-f35ced9fa7a0",
         "Id": "03f320d0-ef98-3f25-9847-f35ced9fa7a0",
         "Offset": 20,
@@ -204,7 +278,10 @@
         }
       }
     ],
-    "Queries": []
+    "Queries": [
+      "90d9028b-8d89-4481-b751-09c2e94d6cd9",
+      "c1c26cf2-7846-4a58-984b-2c2291aa707c"
+    ]
   },
   "Queries": [
     {

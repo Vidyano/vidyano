@@ -1,0 +1,222 @@
+{
+  "PersistentObject": {
+    "$id": "PersistentObject:8d727aa9-2cd7-3e01-ba47-1c17b4643015",
+    "Id": "8d727aa9-2cd7-3e01-ba47-1c17b4643015",
+    "SchemaName": "Dev",
+    "Type": "PersonLanguage",
+    "Salt": "kcIBgIDzRIQGuSFvytivNZrEQEJ6LztQ7EdmN58VWojxVeeKzUqIOQ",
+    "Label": {
+      "en": "Person language",
+      "nl": "Person language"
+    },
+    "Groups": [
+      {
+        "$id": "PersistentObjectAttributeGroup:36dca6ed-379a-4e57-b593-ae1685ce7721",
+        "Id": "36dca6ed-379a-4e57-b593-ae1685ce7721"
+      }
+    ],
+    "Tabs": [
+      {
+        "$id": "PersistentObjectAttributeTab:b45fe4e3-2f95-4124-a03f-8223c0f72a92",
+        "Id": "b45fe4e3-2f95-4124-a03f-8223c0f72a92"
+      }
+    ],
+    "Attributes": [
+      {
+        "$id": "PersistentObjectAttribute:a5f34bf6-a9c4-3f7c-9ec6-7e5f92dc4ea8",
+        "Id": "a5f34bf6-a9c4-3f7c-9ec6-7e5f92dc4ea8",
+        "Offset": 40,
+        "Rules": "Required",
+        "Name": "CanRead",
+        "Label": {
+          "en": "Can read",
+          "nl": "Can read"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Boolean"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:36dca6ed-379a-4e57-b593-ae1685ce7721"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:b45fe4e3-2f95-4124-a03f-8223c0f72a92"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:f3995700-769f-3ec7-9b20-c0ee1758f418",
+        "Id": "f3995700-769f-3ec7-9b20-c0ee1758f418",
+        "Offset": 30,
+        "Rules": "Required",
+        "Name": "CanSpeak",
+        "Label": {
+          "en": "Can speak",
+          "nl": "Can speak"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Boolean"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:36dca6ed-379a-4e57-b593-ae1685ce7721"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:b45fe4e3-2f95-4124-a03f-8223c0f72a92"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:6a97b6a3-f6c4-3346-a5bc-aac3fc29efb8",
+        "Id": "6a97b6a3-f6c4-3346-a5bc-aac3fc29efb8",
+        "Offset": 50,
+        "Rules": "Required",
+        "Name": "CanWrite",
+        "Label": {
+          "en": "Can write",
+          "nl": "Can write"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Boolean"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:36dca6ed-379a-4e57-b593-ae1685ce7721"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:b45fe4e3-2f95-4124-a03f-8223c0f72a92"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:f5111e0f-b6fa-36b6-9415-9e6701ed76c3",
+        "Id": "f5111e0f-b6fa-36b6-9415-9e6701ed76c3",
+        "Offset": 80,
+        "Name": "CertificationLevel",
+        "Label": {
+          "en": "Certification level",
+          "nl": "Certification level"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:36dca6ed-379a-4e57-b593-ae1685ce7721"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:b45fe4e3-2f95-4124-a03f-8223c0f72a92"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:6c86abaf-e38c-3310-9f68-4d6df306afa9",
+        "Id": "6c86abaf-e38c-3310-9f68-4d6df306afa9",
+        "Offset": 60,
+        "Rules": "Required",
+        "Name": "IsNative",
+        "Label": {
+          "en": "Is native",
+          "nl": "Is native"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Boolean"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:36dca6ed-379a-4e57-b593-ae1685ce7721"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:b45fe4e3-2f95-4124-a03f-8223c0f72a92"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:2fba0bdb-2b20-30ee-b067-6da11ecd2bce",
+        "Id": "2fba0bdb-2b20-30ee-b067-6da11ecd2bce",
+        "Offset": 10,
+        "Rules": "NotEmpty",
+        "Name": "Language",
+        "Label": {
+          "en": "Language",
+          "nl": "Language"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:36dca6ed-379a-4e57-b593-ae1685ce7721"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:b45fe4e3-2f95-4124-a03f-8223c0f72a92"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:ba524eb3-a77e-3d86-8056-92638a875767",
+        "Id": "ba524eb3-a77e-3d86-8056-92638a875767",
+        "Offset": 20,
+        "Rules": "NotEmpty",
+        "Name": "ProficiencyLevel",
+        "Label": {
+          "en": "Proficiency level",
+          "nl": "Proficiency level"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:36dca6ed-379a-4e57-b593-ae1685ce7721"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:b45fe4e3-2f95-4124-a03f-8223c0f72a92"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:578e2a8a-1ed7-3d20-98f6-db1d80575a9c",
+        "Id": "578e2a8a-1ed7-3d20-98f6-db1d80575a9c",
+        "Offset": 70,
+        "Rules": "Required",
+        "Name": "YearsStudied",
+        "Label": {
+          "en": "Years studied",
+          "nl": "Years studied"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Int32"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:36dca6ed-379a-4e57-b593-ae1685ce7721"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:b45fe4e3-2f95-4124-a03f-8223c0f72a92"
+        }
+      }
+    ],
+    "Queries": []
+  },
+  "Queries": [
+    {
+      "$id": "Query:c1c26cf2-7846-4a58-984b-2c2291aa707c",
+      "Id": "c1c26cf2-7846-4a58-984b-2c2291aa707c",
+      "Offset": 20,
+      "Source": "Languages",
+      "AutoQuery": true,
+      "Name": "Person_Languages",
+      "Label": {
+        "en": "Languages",
+        "nl": "Languages"
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:8d727aa9-2cd7-3e01-ba47-1c17b4643015"
+      },
+      "Columns": []
+    }
+  ],
+  "Reports": []
+}

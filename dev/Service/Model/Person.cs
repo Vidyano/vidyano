@@ -8,6 +8,8 @@ public class Person
 
     public string LastName { get; set; } = null!;
 
+    public string FullName => $"{FirstName} {LastName}";
+
     public ContactPreference ContactPreference { get; set; }
 
     public string Email { get; set; } = null!;
@@ -17,6 +19,12 @@ public class Person
     public DateTime BirthDate { get; set; }
 
     public Gender Gender { get; set; }
+
+    public Person EmergencyContact { get; set; } = null!;
+
+    public List<Address> Addresses { get; set; } = [];
+
+    public List<PersonLanguage> Languages { get; set; } = [];
 
     public bool IsActive { get; set; }
 }

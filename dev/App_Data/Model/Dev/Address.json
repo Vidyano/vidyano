@@ -1,0 +1,180 @@
+{
+  "PersistentObject": {
+    "$id": "PersistentObject:3992a84c-0648-3996-8ffe-4415e876c132",
+    "Id": "3992a84c-0648-3996-8ffe-4415e876c132",
+    "SchemaName": "Dev",
+    "Type": "Address",
+    "Salt": "C6i9lqu-F2q7zMKK0WLDtI0-JGBmmo9bGExbB-KIOFWQ6aoBIpJHOQ",
+    "Breadcrumb": "{Street}, {ZipCode} {City}, {Country}",
+    "Label": {
+      "en": "Address",
+      "nl": "Address"
+    },
+    "Groups": [
+      {
+        "$id": "PersistentObjectAttributeGroup:dc746d68-8f9f-4a3a-9eba-a0910f2562ff",
+        "Id": "dc746d68-8f9f-4a3a-9eba-a0910f2562ff"
+      }
+    ],
+    "Tabs": [
+      {
+        "$id": "PersistentObjectAttributeTab:11726ec7-133b-4f6d-8a58-c7e51f5b7d58",
+        "Id": "11726ec7-133b-4f6d-8a58-c7e51f5b7d58"
+      }
+    ],
+    "Attributes": [
+      {
+        "$id": "PersistentObjectAttribute:26e4a14a-248e-3430-ad3f-d8cf71eddbe4",
+        "Id": "26e4a14a-248e-3430-ad3f-d8cf71eddbe4",
+        "Offset": 20,
+        "Rules": "NotEmpty",
+        "Name": "City",
+        "Label": {
+          "en": "City",
+          "nl": "City"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:dc746d68-8f9f-4a3a-9eba-a0910f2562ff"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:11726ec7-133b-4f6d-8a58-c7e51f5b7d58"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:c35d0d0b-e23d-33a6-9b3f-84d8d33cc032",
+        "Id": "c35d0d0b-e23d-33a6-9b3f-84d8d33cc032",
+        "Offset": 50,
+        "Rules": "NotEmpty",
+        "Name": "Country",
+        "Label": {
+          "en": "Country",
+          "nl": "Country"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:dc746d68-8f9f-4a3a-9eba-a0910f2562ff"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:11726ec7-133b-4f6d-8a58-c7e51f5b7d58"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:c8129ef0-5f42-3db1-afc7-63686e2aaf07",
+        "Id": "c8129ef0-5f42-3db1-afc7-63686e2aaf07",
+        "Offset": 60,
+        "Rules": "Required",
+        "Name": "IsPrimary",
+        "Label": {
+          "en": "Is primary",
+          "nl": "Is primary"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Boolean"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:dc746d68-8f9f-4a3a-9eba-a0910f2562ff"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:11726ec7-133b-4f6d-8a58-c7e51f5b7d58"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:32e5303d-94c8-3766-ba27-124f4d9ca5e7",
+        "Id": "32e5303d-94c8-3766-ba27-124f4d9ca5e7",
+        "Offset": 30,
+        "Rules": "NotEmpty",
+        "Name": "State",
+        "Label": {
+          "en": "State",
+          "nl": "State"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:dc746d68-8f9f-4a3a-9eba-a0910f2562ff"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:11726ec7-133b-4f6d-8a58-c7e51f5b7d58"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:6405256d-943a-3527-b33e-24722aaae2fd",
+        "Id": "6405256d-943a-3527-b33e-24722aaae2fd",
+        "Offset": 10,
+        "Rules": "NotEmpty",
+        "Name": "Street",
+        "Label": {
+          "en": "Street",
+          "nl": "Street"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:dc746d68-8f9f-4a3a-9eba-a0910f2562ff"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:11726ec7-133b-4f6d-8a58-c7e51f5b7d58"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:fda92be8-b180-361e-8b55-59e552ba5522",
+        "Id": "fda92be8-b180-361e-8b55-59e552ba5522",
+        "Offset": 40,
+        "Rules": "NotEmpty",
+        "Name": "ZipCode",
+        "Label": {
+          "en": "Zip code",
+          "nl": "Zip code"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:dc746d68-8f9f-4a3a-9eba-a0910f2562ff"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:11726ec7-133b-4f6d-8a58-c7e51f5b7d58"
+        }
+      }
+    ],
+    "Queries": []
+  },
+  "Queries": [
+    {
+      "$id": "Query:90d9028b-8d89-4481-b751-09c2e94d6cd9",
+      "Id": "90d9028b-8d89-4481-b751-09c2e94d6cd9",
+      "Offset": 10,
+      "Source": "Addresses",
+      "AutoQuery": true,
+      "Name": "Person_Addresses",
+      "Label": {
+        "en": "Addresses",
+        "nl": "Addresses"
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:3992a84c-0648-3996-8ffe-4415e876c132"
+      },
+      "Columns": []
+    }
+  ],
+  "Reports": []
+}
