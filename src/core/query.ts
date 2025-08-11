@@ -1137,6 +1137,80 @@ export class Query extends ServiceObjectWithActions {
                 return Reflect.get(Array.from(target), property, receiver);
             }
         }
+        else if (property === Symbol.asyncIterator) {
+            // Return an async generator for async iteration
+            const query = this;
+            return async function* () {
+                // If query hasn't been searched yet, search first
+                if (!query.hasSearched) {
+                    await query.search();
+                }
+                
+                // Track which indices we've already yielded to avoid duplicates
+                const yieldedIndices = new Set<number>();
+                
+                // First, yield all currently loaded items (non-null)
+                const currentItems = query.items;
+                for (let i = 0; i < currentItems.length; i++) {
+                    const item = currentItems[i];
+                    if (item !== null && item !== undefined) {
+                        yield item;
+                        yieldedIndices.add(i);
+                    }
+                }
+                
+                // If there are more items to load, continue loading and yielding them
+                if (!query.disableLazyLoading) {
+                    const totalItems = query.totalItems || 0;
+                    const pageSize = query.pageSize || 50;
+                    
+                    // Continue from where we left off
+                    let currentIndex = yieldedIndices.size;
+                    
+                    while (currentIndex < totalItems || query.hasMore) {
+                        // Load the next batch of items
+                        const batchSize = Math.min(pageSize, totalItems - currentIndex);
+                        if (batchSize <= 0 && !query.hasMore) break;
+                        
+                        // Use getItems to load the next page
+                        const items = await query.getItems(currentIndex, batchSize || pageSize);
+                        
+                        // Yield the newly loaded items
+                        for (const item of items) {
+                            if (item !== null && item !== undefined && !yieldedIndices.has(currentIndex)) {
+                                yield item;
+                                yieldedIndices.add(currentIndex);
+                            }
+                            currentIndex++;
+                        }
+                        
+                        // If we got fewer items than expected and there's no more, we're done
+                        if (items.length < batchSize && !query.hasMore) {
+                            break;
+                        }
+                        
+                        // Update totalItems in case it changed (for hasMore queries)
+                        if (query.hasMore && query.totalItems > totalItems) {
+                            // totalItems grew, continue
+                        } else if (!query.hasMore && currentIndex >= query.totalItems) {
+                            break;
+                        }
+                    }
+                }
+            };
+        }
+        else if (property === Symbol.iterator) {
+            // Return a regular iterator for synchronous iteration
+            return function* () {
+                for (let i = 0; i < target.length; i++) {
+                    const item = target[i];
+                    // Skip null items (queued for lazy loading) in sync iteration
+                    if (item !== null && item !== undefined) {
+                        yield item;
+                    }
+                }
+            };
+        }
 
         return Reflect.get(target, property, receiver);
     }
