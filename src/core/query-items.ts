@@ -98,21 +98,21 @@ export class QueryItemsProxy {
 
         // Handle Symbol.asyncIterator
         if (property === Symbol.asyncIterator) {
-            return this.#createAsyncIterator(target);
+            return this.#createAsyncIterator();
         }
 
         // Handle async methods
         switch (property) {
             case "forEachAsync":
-                return this.#createForEachAsync(target);
+                return this.#createForEachAsync();
             case "mapAsync":
-                return this.#createMapAsync(target);
+                return this.#createMapAsync();
             case "filterAsync":
-                return this.#createFilterAsync(target);
+                return this.#createFilterAsync();
             case "toArrayAsync":
-                return this.#createToArrayAsync(target);
+                return this.#createToArrayAsync();
             case "sliceAsync":
-                return this.#createSliceAsync(target);
+                return this.#createSliceAsync();
             default:
                 return Reflect.get(target, property, receiver);
         }
@@ -172,57 +172,55 @@ export class QueryItemsProxy {
     }
 
     /**
-     * Ensures an item at the given index is loaded.
+     * Common async iteration helper that handles initialization and loading.
+     * @param callback - Function to call for each item. Return false to stop iteration.
+     * @param thisArg - Optional this context for the callback.
      */
-    async #ensureItemLoaded(target: QueryResultItem[], index: number): Promise<void> {
-        // Check if item is already loaded
-        if (target[index] !== undefined && target[index] !== null) {
-            return;
+    async #iterateAsync<T>(
+        callback: (item: QueryResultItem, index: number, items: QueryResultItem[]) => T | Promise<T>,
+        thisArg?: any
+    ): Promise<void> {
+        // If query hasn't been searched yet, initialize it first
+        if (!this.#query.hasSearched) {
+            await this.#query.getItemsByIndex(0);
         }
         
-        // Check if we can load this item
-        // If query hasn't been searched yet, we should still try to load
-        if (this.#query.disableLazyLoading) {
-            return;
+        // Use the actual items from the query
+        const items = this.#query.items;
+        let i = 0;
+        // Continue until we've processed all items
+        while (i < this.#query.totalItems || this.#query.hasMore) {
+            // Ensure item is loaded
+            if (items[i] === undefined || items[i] === null) {
+                await this.#query.getItemsByIndex(i);
+            }
+            
+            // If item couldn't be loaded (end of results), break
+            if (items[i] === undefined) {
+                break;
+            }
+            
+            const result = await callback.call(thisArg, items[i], i, items);
+            // Allow early termination by returning false
+            if (result === false) {
+                break;
+            }
+            i++;
         }
-        
-        // If query has been searched, check bounds
-        if (this.#query.hasSearched && index >= this.#query.totalItems && !this.#query.hasMore) {
-            return;
-        }
-        
-        // Load the item
-        await this.#query.getItemsByIndex(index);
     }
 
     /**
      * Creates an async iterator for the query items.
      */
-    #createAsyncIterator(target: QueryResultItem[]) {
+    #createAsyncIterator() {
         const self = this;
         return async function* () {
-            // If query hasn't been searched yet, initialize it first
-            if (!self.#query.hasSearched) {
-                await self.#query.getItemsByIndex(0);
-            }
-            
-            // Use the actual items from the query
-            const items = self.#query.items;
-            let i = 0;
-            // Continue until we've processed all items
-            while (i < self.#query.totalItems || self.#query.hasMore) {
-                // Ensure item is loaded
-                if (items[i] === undefined || items[i] === null) {
-                    await self.#query.getItemsByIndex(i);
-                }
-                
-                // If item couldn't be loaded (end of results), break
-                if (items[i] === undefined) {
-                    break;
-                }
-                
-                yield items[i];
-                i++;
+            const results: QueryResultItem[] = [];
+            await self.#iterateAsync((item) => {
+                results.push(item);
+            });
+            for (const item of results) {
+                yield item;
             }
         };
     }
@@ -230,69 +228,27 @@ export class QueryItemsProxy {
     /**
      * Creates the forEachAsync method.
      */
-    #createForEachAsync(target: QueryResultItem[]) {
+    #createForEachAsync() {
         return async (
             cb: (value: QueryResultItem, index: number, self: QueryResultItem[]) => void | Promise<void>,
             thisArg?: any
         ): Promise<void> => {
-            // If query hasn't been searched yet, initialize it first
-            if (!this.#query.hasSearched) {
-                await this.#query.getItemsByIndex(0);
-            }
-            
-            // Use the actual items from the query
-            const items = this.#query.items;
-            let i = 0;
-            // Continue until we've processed all items
-            while (i < this.#query.totalItems || this.#query.hasMore) {
-                // Ensure item is loaded
-                if (items[i] === undefined || items[i] === null) {
-                    await this.#query.getItemsByIndex(i);
-                }
-                
-                // If item couldn't be loaded (end of results), break
-                if (items[i] === undefined) {
-                    break;
-                }
-                
-                await cb.call(thisArg, items[i], i, items);
-                i++;
-            }
+            await this.#iterateAsync(cb, thisArg);
         };
     }
 
     /**
      * Creates the mapAsync method.
      */
-    #createMapAsync(target: QueryResultItem[]) {
+    #createMapAsync() {
         return async <U>(
             cb: (value: QueryResultItem, index: number, self: QueryResultItem[]) => U | Promise<U>,
             thisArg?: any
         ): Promise<U[]> => {
-            // If query hasn't been searched yet, initialize it first
-            if (!this.#query.hasSearched) {
-                await this.#query.getItemsByIndex(0);
-            }
-            
-            // Use the actual items from the query
-            const items = this.#query.items;
             const results: U[] = [];
-            let i = 0;
-            // Continue until we've processed all items
-            while (i < this.#query.totalItems || this.#query.hasMore) {
-                // Ensure item is loaded
-                if (items[i] === undefined || items[i] === null) {
-                    await this.#query.getItemsByIndex(i);
-                }
-                
-                // If item couldn't be loaded (end of results), break
-                if (items[i] === undefined) {
-                    break;
-                }
-                
-                results.push(await cb.call(thisArg, items[i], i, items));
-                i++;
-            }
+            await this.#iterateAsync(async (item, index, items) => {
+                results.push(await cb.call(thisArg, item, index, items));
+            });
             return results;
         };
     }
@@ -300,37 +256,17 @@ export class QueryItemsProxy {
     /**
      * Creates the filterAsync method.
      */
-    #createFilterAsync(target: QueryResultItem[]) {
+    #createFilterAsync() {
         return async (
             cb: (value: QueryResultItem, index: number, self: QueryResultItem[]) => boolean | Promise<boolean>,
             thisArg?: any
         ): Promise<QueryResultItem[]> => {
-            // If query hasn't been searched yet, initialize it first
-            if (!this.#query.hasSearched) {
-                await this.#query.getItemsByIndex(0);
-            }
-            
-            // Use the actual items from the query
-            const items = this.#query.items;
             const results: QueryResultItem[] = [];
-            let i = 0;
-            // Continue until we've processed all items
-            while (i < this.#query.totalItems || this.#query.hasMore) {
-                // Ensure item is loaded
-                if (items[i] === undefined || items[i] === null) {
-                    await this.#query.getItemsByIndex(i);
+            await this.#iterateAsync(async (item, index, items) => {
+                if (await cb.call(thisArg, item, index, items)) {
+                    results.push(item);
                 }
-                
-                // If item couldn't be loaded (end of results), break
-                if (items[i] === undefined) {
-                    break;
-                }
-                
-                if (await cb.call(thisArg, items[i], i, items)) {
-                    results.push(items[i]);
-                }
-                i++;
-            }
+            });
             return results;
         };
     }
@@ -338,40 +274,20 @@ export class QueryItemsProxy {
     /**
      * Creates the toArrayAsync method.
      */
-    #createToArrayAsync(target: QueryResultItem[]) {
+    #createToArrayAsync() {
         return async (): Promise<QueryResultItem[]> => {
-            // If query hasn't been searched yet, initialize it first
-            if (!this.#query.hasSearched) {
-                await this.#query.getItemsByIndex(0);
-                // After initialization, we need to work with the actual items array
-                // not the old target reference
-            }
-            
-            // Load all items - use the actual items from the query
-            const items = this.#query.items;
-            let i = 0;
-            while (i < this.#query.totalItems || this.#query.hasMore) {
-                // Ensure item is loaded using the actual items array
-                if (items[i] === undefined || items[i] === null) {
-                    await this.#query.getItemsByIndex(i);
-                }
-                
-                // If item couldn't be loaded (end of results), break
-                if (items[i] === undefined) {
-                    break;
-                }
-                i++;
-            }
-            
-            // Return all loaded items from the actual items array
-            return items.filter(item => item !== undefined && item !== null);
+            const results: QueryResultItem[] = [];
+            await this.#iterateAsync((item) => {
+                results.push(item);
+            });
+            return results;
         };
     }
 
     /**
      * Creates the sliceAsync method.
      */
-    #createSliceAsync(target: QueryResultItem[]) {
+    #createSliceAsync() {
         return async (start?: number, end?: number): Promise<QueryResultItem[]> => {
             // If query hasn't been searched yet, initialize it first
             if (!this.#query.hasSearched) {
