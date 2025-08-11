@@ -684,6 +684,16 @@ export class Query extends ServiceObjectWithActions {
         if (!indexes || !indexes.length)
             return [];
 
+        // Initialize the query if it hasn't been searched yet
+        if (!this.hasSearched) {
+            // Find the minimum index to start loading from
+            const minIndex = Math.min(...indexes);
+
+            // Use getItems to initialize the query starting from the minimum index
+            // This will trigger a search with appropriate skip/top values
+            await this.getItems(minIndex, this.pageSize || 1);
+        }
+
         if (this.pageSize > 0) {
             const pages = indexes.sort((a, b) => a - b).reduce((acc: [page: number, top: number][], i) => {
                 const page = Math.floor(i / this.pageSize);
