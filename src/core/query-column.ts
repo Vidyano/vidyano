@@ -6,8 +6,8 @@ import type { Query } from "./query.js"
 import { PersistentObjectAttribute } from "./persistent-object-attribute.js"
 import type { PersistentObject } from "./persistent-object.js"
 import type { PropertyChangedArgs } from "./observable"
-import type { QueryResultItem } from "./query-result-item.js"
 import { QueryColumnSymbols } from "./_internals.js";
+import type { QueryItems } from "./query-items.js"
 
 /**
  * Represents the distinct values for a query column.
@@ -289,7 +289,7 @@ export class QueryColumn extends ServiceObject {
      * @param multiSort - Whether to use multi-sort.
      * @returns A promise resolving to the query result items.
      */
-    async sort(direction: SortDirection, multiSort?: boolean): Promise<QueryResultItem[]> {
+    async sort(direction: SortDirection, multiSort?: boolean): Promise<QueryItems> {
         if (!!multiSort) {
             const sortOption = this.query.sortOptions.filter(option => option.column === this)[0];
             if (sortOption && sortOption.direction === direction)

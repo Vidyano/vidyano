@@ -13,6 +13,7 @@ import { ExpressionParser } from "./common/expression-parser.js"
 import { PersistentObjectAttributeWithReference } from "./persistent-object-attribute-with-reference.js"
 import { _internal, QuerySymbols } from "./_internals.js"
 import { QuerySelectAll, IQuerySelectAll } from "./query-select-all.js";
+import { QueryItems, QueryItemsProxy } from "./query-items.js";
 
 const clonedFrom = Symbol("clonedFrom");
 
@@ -63,9 +64,7 @@ export class Query extends ServiceObjectWithActions {
     #columnObservers: ISubjectDisposer[];
     #hasMore: boolean = null;
     #groupingInfo: IQueryGroupingInfo;
-    #items: QueryResultItem[];
-    #queuedLazyItemIndexes: number[];
-    #queuedLazyItemIndexesTimeout: any;
+    #itemsProxy!: QueryItemsProxy;
     #tag: any;
 
     #persistentObject: PersistentObject;
@@ -118,6 +117,7 @@ export class Query extends ServiceObjectWithActions {
         const { result, ...dtoWithoutResult } = queryDto;
         this.#dto = dtoWithoutResult;
 
+        this.#itemsProxy = new QueryItemsProxy(this);
         this.#asLookup = asLookup;
         this.#isSystem = !!queryDto.isSystem;
         this.#id = queryDto.id;
@@ -671,8 +671,8 @@ export class Query extends ServiceObjectWithActions {
     /**
      * Gets the items of the query.
      */
-    get items(): QueryResultItem[] {
-        return this.#items;
+    get items(): QueryItems {
+        return this.#itemsProxy.items;
     }
 
     /**
@@ -872,9 +872,9 @@ export class Query extends ServiceObjectWithActions {
                 }
 
                 return this.items;
-            }, false).then(items => {
+            }, false).then((items: any) => {
                 if (selectedIds != null && selectedIds.length > 0) {
-                    const newSelectionItems = selectedIds.map(id => items.find(i => i.id === id)).filter(i => i != null);
+                    const newSelectionItems = selectedIds.map(id => items.find((i: QueryResultItem) => i?.id === id)).filter(i => i != null);
                     if (newSelectionItems.length === selectedIds.length)
                         this.selectedItems = newSelectionItems;
                 }
@@ -1049,172 +1049,11 @@ export class Query extends ServiceObjectWithActions {
         this.selectAll.inverse = this.selectAll.allSelected = false;
         this.selectedItems = [];
 
-        const oldItems = this.#items;
-        this.notifyPropertyChanged("items", this.#items = new Proxy(items, { get: this.#getItemsLazy.bind(this) }), oldItems);
+        const oldItems = this.items;
+        this.#itemsProxy.setItems(items);
+        this.notifyPropertyChanged("items", this.items, oldItems);
         this.notifyArrayChanged("items", 0, oldItems, items.length);
     }
-
-    /**
-     * Handles lazy loading of items in the query.
-     * @param target - The target array of query result items.
-     * @param property - The property to access (index or method).
-     * @param receiver - The receiver of the property access.
-     * @returns The item at the specified index or the result of the method call.
-     */
-    #getItemsLazy(target: QueryResultItem[], property: string | symbol, receiver: any) {
-        if (typeof property === "string") {
-            const index = parseInt(property);
-            if (!isNaN(index)) {
-                const item = Reflect.get(target, index, receiver);
-                
-                // Lazy load item if it's not available yet, except when lazy loading is disabled or the index is out of range
-                if (item === undefined && !this.disableLazyLoading && (index < this.totalItems || this.hasMore)) {
-                    if (this.#queuedLazyItemIndexes)
-                        this.#queuedLazyItemIndexes.push(index);
-                    else
-                        this.#queuedLazyItemIndexes = [index];
-
-                    clearTimeout(this.#queuedLazyItemIndexesTimeout);
-                    this.#queuedLazyItemIndexesTimeout = setTimeout(async () => {
-                        const queuedLazyItemIndexes = this.#queuedLazyItemIndexes.filter(i => target[i] === null);
-                        if (queuedLazyItemIndexes.length === 0)
-                            return;
-
-                        try {
-                            await this.getItemsByIndex(...queuedLazyItemIndexes);
-                        }
-                        finally {
-                            queuedLazyItemIndexes.forEach(i => {
-                                if (target[i] == null)
-                                    delete target[i];
-                            });
-                        }
-                    }, 10);
-
-                    return target[index] = null;
-                }
-
-                return item;
-            }
-            else if (property === "length")
-                return this.totalItems;
-            else if (property === "forEach") {
-                // Run forEach on target, but skip null items which are queued for lazy loading
-                return (callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => void, thisArg?: any) => {
-                    for (const key in target) {
-                        const index = parseInt(key);
-                        if (!isNaN(index)) {
-                            const item = target[index];
-                            if (item != null)
-                                callback.call(thisArg, item, index, target);
-                        }
-                    }
-                }
-            }
-            else if (property === "filter") {
-                // Run filter on target, but skip null items which are queued for lazy loading
-                return (callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => boolean, thisArg?: any) => {
-                    const result: QueryResultItem[] = [];
-                    for (const key in target) {
-                        const index = parseInt(key);
-                        if (!isNaN(index)) {
-                            const item = target[index];
-                            if (item != null && callback.call(thisArg, item, index, target))
-                                result.push(item);
-                        }
-                    }
-
-                    return result;
-                }
-            }
-
-            // Don't allow manipulations
-            if (["push", "pop", "shift", "unshift", "splice"].indexOf(property) >= 0)
-                throw "Operation not allowed";
-
-            if (["reverse", "sort"].indexOf(property) >= 0) {
-                console.log(`WARNING: '${property}' works on a copy of the array and not on the original array.`);
-                return Reflect.get(Array.from(target), property, receiver);
-            }
-        }
-        else if (property === Symbol.asyncIterator) {
-            // Return an async generator for async iteration
-            const query = this;
-            return async function* () {
-                // If query hasn't been searched yet, search first
-                if (!query.hasSearched) {
-                    await query.search();
-                }
-                
-                // Track which indices we've already yielded to avoid duplicates
-                const yieldedIndices = new Set<number>();
-                
-                // First, yield all currently loaded items (non-null)
-                const currentItems = query.items;
-                for (let i = 0; i < currentItems.length; i++) {
-                    const item = currentItems[i];
-                    if (item !== null && item !== undefined) {
-                        yield item;
-                        yieldedIndices.add(i);
-                    }
-                }
-                
-                // If there are more items to load, continue loading and yielding them
-                if (!query.disableLazyLoading) {
-                    const totalItems = query.totalItems || 0;
-                    const pageSize = query.pageSize || 50;
-                    
-                    // Continue from where we left off
-                    let currentIndex = yieldedIndices.size;
-                    
-                    while (currentIndex < totalItems || query.hasMore) {
-                        // Load the next batch of items
-                        const batchSize = Math.min(pageSize, totalItems - currentIndex);
-                        if (batchSize <= 0 && !query.hasMore) break;
-                        
-                        // Use getItems to load the next page
-                        const items = await query.getItems(currentIndex, batchSize || pageSize);
-                        
-                        // Yield the newly loaded items
-                        for (const item of items) {
-                            if (item !== null && item !== undefined && !yieldedIndices.has(currentIndex)) {
-                                yield item;
-                                yieldedIndices.add(currentIndex);
-                            }
-                            currentIndex++;
-                        }
-                        
-                        // If we got fewer items than expected and there's no more, we're done
-                        if (items.length < batchSize && !query.hasMore) {
-                            break;
-                        }
-                        
-                        // Update totalItems in case it changed (for hasMore queries)
-                        if (query.hasMore && query.totalItems > totalItems) {
-                            // totalItems grew, continue
-                        } else if (!query.hasMore && currentIndex >= query.totalItems) {
-                            break;
-                        }
-                    }
-                }
-            };
-        }
-        else if (property === Symbol.iterator) {
-            // Return a regular iterator for synchronous iteration
-            return function* () {
-                for (let i = 0; i < target.length; i++) {
-                    const item = target[i];
-                    // Skip null items (queued for lazy loading) in sync iteration
-                    if (item !== null && item !== undefined) {
-                        yield item;
-                    }
-                }
-            };
-        }
-
-        return Reflect.get(target, property, receiver);
-    }
-
     
     /**
      * Updates the columns of the query.
