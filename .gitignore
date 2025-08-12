@@ -372,3 +372,4 @@ test-results/
 
 patch
 *.sln
+.claude/settings.local.json
