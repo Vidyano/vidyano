@@ -88,12 +88,9 @@ export class QueryItemsProxy {
      * @returns The query item at the index or the result of the method call.
      */
     #getItemsLazy(target: QueryResultItem[], property: string | symbol, receiver: any) {
-        // Handle numeric index access
-        if (typeof property === "string") {
-            const index = parseInt(property);
-            if (!isNaN(index)) {
-                return this.#handleIndexAccess(target, index, receiver);
-            }
+        // Handle length property - return totalItems from query
+        if (property === "length") {
+            return this.#query.totalItems;
         }
 
         // Handle Symbol.asyncIterator
@@ -101,21 +98,84 @@ export class QueryItemsProxy {
             return this.#createAsyncIterator();
         }
 
-        // Handle async methods
-        switch (property) {
-            case "forEachAsync":
-                return this.#createForEachAsync();
-            case "mapAsync":
-                return this.#createMapAsync();
-            case "filterAsync":
-                return this.#createFilterAsync();
-            case "toArrayAsync":
-                return this.#createToArrayAsync();
-            case "sliceAsync":
-                return this.#createSliceAsync();
-            default:
-                return Reflect.get(target, property, receiver);
+        // Handle Symbol.iterator for synchronous iteration
+        if (property === Symbol.iterator) {
+            return function* () {
+                for (let i = 0; i < target.length; i++) {
+                    const item = target[i];
+                    // Skip null items (queued for lazy loading) in sync iteration
+                    if (item !== null && item !== undefined) {
+                        yield item;
+                    }
+                }
+            };
         }
+
+        // Handle string properties
+        if (typeof property === "string") {
+            // Handle numeric index access
+            const index = parseInt(property);
+            if (!isNaN(index)) {
+                return this.#handleIndexAccess(target, index, receiver);
+            }
+
+            // Handle forEach - skip null items which are queued for lazy loading
+            if (property === "forEach") {
+                return (callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => void, thisArg?: any) => {
+                    for (const key in target) {
+                        const index = parseInt(key);
+                        if (!isNaN(index)) {
+                            const item = target[index];
+                            if (item != null)
+                                callback.call(thisArg, item, index, target);
+                        }
+                    }
+                };
+            }
+
+            // Handle filter - skip null items which are queued for lazy loading
+            if (property === "filter") {
+                return (callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => boolean, thisArg?: any) => {
+                    const result: QueryResultItem[] = [];
+                    for (const key in target) {
+                        const index = parseInt(key);
+                        if (!isNaN(index)) {
+                            const item = target[index];
+                            if (item != null && callback.call(thisArg, item, index, target))
+                                result.push(item);
+                        }
+                    }
+                    return result;
+                };
+            }
+
+            // Handle async methods
+            switch (property) {
+                case "forEachAsync":
+                    return this.#createForEachAsync();
+                case "mapAsync":
+                    return this.#createMapAsync();
+                case "filterAsync":
+                    return this.#createFilterAsync();
+                case "toArrayAsync":
+                    return this.#createToArrayAsync();
+                case "sliceAsync":
+                    return this.#createSliceAsync();
+            }
+
+            // Don't allow array manipulations
+            if (["push", "pop", "shift", "unshift", "splice"].indexOf(property) >= 0) {
+                throw new Error("Operation not allowed");
+            }
+
+            // Warn about operations that work on a copy
+            if (["reverse", "sort"].indexOf(property) >= 0) {
+                console.log(`WARNING: '${property}' works on a copy of the array and not on the original array.`);
+                return Reflect.get(Array.from(target), property, receiver);
+            }
+        }
+
+        return Reflect.get(target, property, receiver);
     }
 
     /**
