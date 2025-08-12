@@ -1,3 +1,4 @@
+import type * as Dto from "./typings/service.js";
 import type { Service } from "./service.js"
 import { ServiceObject } from "./service-object.js"
 import type { QueryResultItem } from "./query-result-item.js"
@@ -17,7 +18,6 @@ export class QueryResultItemValue extends ServiceObject {
     #key: string;
     #rawValue: string;
     #typeHints: Record<string | symbol, any>;
-    #persistentObjectId: string;
     #objectId: string;
 
     /**
@@ -27,7 +27,7 @@ export class QueryResultItemValue extends ServiceObject {
      * @param item - The parent QueryResultItem.
      * @param value - The raw value object from the service.
      */
-    constructor(service: Service, item: QueryResultItem, value: any) {
+    constructor(service: Service, item: QueryResultItem, value: Dto.QueryResultItemValueDto) {
         super(service);
 
         this[QueryResultItemValueSymbols.IsQueryResultItemValue] = true;
@@ -37,7 +37,6 @@ export class QueryResultItemValue extends ServiceObject {
         this.#key = value.key;
         this.#column = this.#item.query.getColumn(this.#key);
         this.#rawValue = value.value;
-        this.#persistentObjectId = value.persistentObjectId;
         this.#objectId = value.objectId;
         this.#typeHints = value.typeHints || {};
     }
@@ -75,13 +74,6 @@ export class QueryResultItemValue extends ServiceObject {
      */
     get typeHints(): Record<string | symbol, any> {
         return this.#typeHints;
-    }
-
-    /**
-     * Gets the persistent object id associated with this value, if any.
-     */
-    get persistentObjectId(): string {
-        return this.#persistentObjectId;
     }
 
     /**
@@ -125,7 +117,6 @@ export class QueryResultItemValue extends ServiceObject {
         return this._copyPropertiesFromValues({
             key: this.#key,
             value: this.#rawValue,
-            persistentObjectId: this.#persistentObjectId,
             objectId: this.#objectId
         });
     }

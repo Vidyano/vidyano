@@ -40,6 +40,7 @@ export class QueryColumn extends ServiceObject {
     #selectedDistincts: string[];
     #selectedDistinctsInversed: boolean;
     #total: QueryResultItemValue;
+    #persistentObjectId: string;
     #tag: any;
 
     offset: number;
@@ -84,6 +85,7 @@ export class QueryColumn extends ServiceObject {
         this.width = col.width;
         this.typeHints = col.typeHints;
         this.#sortDirection = "";
+        this.#persistentObjectId = col.persistentObjectId;
         this.#tag = col._tag;
 
         query.propertyChanged.attach(this.#queryPropertyChanged.bind(this));
@@ -192,6 +194,13 @@ export class QueryColumn extends ServiceObject {
     /** Gets the total value for the column. */
     get total(): QueryResultItemValue {
         return this.#total;
+    }
+
+    /**
+     * Gets the persistent object ID associated with the column.
+     */
+    get persistentObjectId(): string | undefined {
+        return this.#persistentObjectId;
     }
 
     /** Gets the tag associated with the column. */
