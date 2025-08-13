@@ -645,7 +645,7 @@ export class Service extends Observable<Service> {
      * @param isNew - Optional flag indicating if a new object should be created.
      * @returns A promise resolving to the PersistentObject instance.
      */
-    public async getPersistentObject(parent: PersistentObject, id: string, objectId?: string, isNew?: boolean): Promise<PersistentObject> {
+    public async getPersistentObject(parent: PersistentObject | null, id: string, objectId?: string, isNew?: boolean): Promise<PersistentObject> {
         const data = this.#createData("getPersistentObject");
         data.persistentObjectTypeId = id;
         data.objectId = objectId;
