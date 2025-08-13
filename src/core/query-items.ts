@@ -758,10 +758,10 @@ export class QueryItemsProxy {
      * Creates the reduceAsync method.
      */
     #createReduceAsync() {
-        return async <U>(
+        return async function<U>(
             reducer: (acc: U, value: QueryResultItem, index: number, self: QueryResultItem[]) => U | Promise<U>,
             initialValue?: U
-        ): Promise<U> => {
+        ): Promise<U> {
             const hasInitial = arguments.length >= 2;
             let accumulator = initialValue as U;
             let firstItem = true;
@@ -780,7 +780,7 @@ export class QueryItemsProxy {
             }
             
             return accumulator;
-        };
+        }.bind(this);
     }
 
     /**
