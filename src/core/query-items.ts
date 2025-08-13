@@ -98,55 +98,12 @@ export class QueryItemsProxy {
             return this.#createAsyncIterator();
         }
 
-        // Handle Symbol.iterator for synchronous iteration
-        if (property === Symbol.iterator) {
-            return function* () {
-                for (let i = 0; i < target.length; i++) {
-                    const item = target[i];
-                    // Skip null items (queued for lazy loading) in sync iteration
-                    if (item !== null && item !== undefined) {
-                        yield item;
-                    }
-                }
-            };
-        }
-
         // Handle string properties
         if (typeof property === "string") {
-            // Handle numeric index access
+            // Handle numeric index access (most common operation)
             const index = parseInt(property);
             if (!isNaN(index)) {
                 return this.#handleIndexAccess(target, index, receiver);
-            }
-
-            // Handle forEach - skip null items which are queued for lazy loading
-            if (property === "forEach") {
-                return (callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => void, thisArg?: any) => {
-                    for (const key in target) {
-                        const index = parseInt(key);
-                        if (!isNaN(index)) {
-                            const item = target[index];
-                            if (item != null)
-                                callback.call(thisArg, item, index, target);
-                        }
-                    }
-                };
-            }
-
-            // Handle filter - skip null items which are queued for lazy loading
-            if (property === "filter") {
-                return (callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => boolean, thisArg?: any) => {
-                    const result: QueryResultItem[] = [];
-                    for (const key in target) {
-                        const index = parseInt(key);
-                        if (!isNaN(index)) {
-                            const item = target[index];
-                            if (item != null && callback.call(thisArg, item, index, target))
-                                result.push(item);
-                        }
-                    }
-                    return result;
-                };
             }
 
             // Handle async methods
@@ -163,6 +120,59 @@ export class QueryItemsProxy {
                     return this.#createSliceAsync();
             }
 
+            // Handle methods that may operate on incomplete data
+            if (property === "forEach" || property === "filter") {
+                // Handle forEach - skip null items which are queued for lazy loading
+                if (property === "forEach") {
+                    return (callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => void, thisArg?: any) => {
+                        let processedCount = 0;
+                        let skippedCount = 0;
+                        
+                        for (const key in target) {
+                            const index = parseInt(key);
+                            if (!isNaN(index)) {
+                                const item = target[index];
+                                if (item != null) {
+                                    callback.call(thisArg, item, index, target);
+                                    processedCount++;
+                                } else {
+                                    skippedCount++;
+                                }
+                            }
+                        }
+                        
+                        this.#warnIncompleteData("forEach", processedCount, skippedCount, "forEachAsync()");
+                    };
+                }
+
+                // Handle filter - skip null items which are queued for lazy loading
+                if (property === "filter") {
+                    return (callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => boolean, thisArg?: any) => {
+                        const result: QueryResultItem[] = [];
+                        let processedCount = 0;
+                        let skippedCount = 0;
+                        
+                        for (const key in target) {
+                            const index = parseInt(key);
+                            if (!isNaN(index)) {
+                                const item = target[index];
+                                if (item != null) {
+                                    if (callback.call(thisArg, item, index, target)) {
+                                        result.push(item);
+                                    }
+                                    processedCount++;
+                                } else {
+                                    skippedCount++;
+                                }
+                            }
+                        }
+                        
+                        this.#warnIncompleteData("filter", processedCount, skippedCount, "filterAsync()");
+                        return result;
+                    };
+                }
+            }
+
             // Don't allow array manipulations
             if (["push", "pop", "shift", "unshift", "splice"].indexOf(property) >= 0) {
                 throw new Error("Operation not allowed");
@@ -175,7 +185,60 @@ export class QueryItemsProxy {
             }
         }
 
+        // Handle Symbol.iterator for synchronous iteration
+        if (property === Symbol.iterator) {
+            const self = this;
+            return function* () {
+                let processedCount = 0;
+                let skippedCount = 0;
+                
+                for (let i = 0; i < target.length; i++) {
+                    const item = target[i];
+                    if (item === null || item === undefined) {
+                        skippedCount++;
+                        continue; // skip unloaded items
+                    }
+                    processedCount++;
+                    yield item;
+                }
+                
+                self.#warnIncompleteData("Symbol.iterator", processedCount, skippedCount, "async iteration (for await)");
+            };
+        }
+
         return Reflect.get(target, property, receiver);
+    }
+
+    /**
+     * Warns about incomplete data processing in synchronous methods.
+     * @param methodName - Name of the method being used
+     * @param processedCount - Number of items actually processed
+     * @param skippedCount - Number of null/undefined items skipped
+     * @param asyncAlternative - Suggested async alternative method
+     */
+    #warnIncompleteData(methodName: string, processedCount: number, skippedCount: number, asyncAlternative: string): void {
+        const warnings: string[] = [];
+        
+        // Warn about skipped items
+        if (skippedCount > 0) {
+            warnings.push(`${skippedCount} unloaded items were skipped`);
+        }
+        
+        // Warn about items not yet in the array
+        const totalCount = processedCount + skippedCount;
+        if (totalCount < this.#query.totalItems || this.#query.hasMore) {
+            const moreInfo = this.#query.totalItems > 0 
+                ? `${this.#query.totalItems - totalCount} more items available`
+                : "more items available";
+            warnings.push(moreInfo);
+        }
+        
+        if (warnings.length > 0) {
+            console.warn(
+                `WARNING: ${methodName} only processed ${processedCount} items (${warnings.join(", ")}). ` +
+                `Consider using ${asyncAlternative} to ensure all items are loaded.`
+            );
+        }
     }
 
     /**
