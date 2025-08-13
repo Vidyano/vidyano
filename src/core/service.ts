@@ -728,6 +728,40 @@ export class Service extends Observable<Service> {
     }
 
     /**
+     * Executes an action on a persistent object.
+     * @param action - The name of the persistent object action to execute (must start with "PersistentObject.").
+     * @param persistentObject - The persistent object to execute the action on.
+     * @param query - Optional query context.
+     * @param selectedItems - Optional array of selected query result items.
+     * @param parameters - Optional parameters for the action.
+     * @returns A promise resolving to the resulting PersistentObject, if any.
+     */
+    public async executeAction(action: `PersistentObject.${string}`, persistentObject: PersistentObject, query?: Query, selectedItems?: Array<QueryResultItem>, parameters?: any): Promise<PersistentObject>;
+
+    /**
+     * Executes an action on a query.
+     * @param action - The name of the query action to execute (must start with "Query.").
+     * @param parent - Optional parent persistent object (for context).
+     * @param query - The query to execute the action on.
+     * @param selectedItems - An array of selected query result items.
+     * @param parameters - Optional parameters for the action.
+     * @returns A promise resolving to the resulting PersistentObject, if any.
+     */
+    public async executeAction(action: `Query.${string}`, parent: PersistentObject | undefined, query: Query, selectedItems: Array<QueryResultItem>, parameters?: any): Promise<PersistentObject>;
+
+    /**
+     * Executes an action on a query.
+     * @param action - The name of the action to execute.
+     * @param parent - The parent persistent object (for context).
+     * @param query - The query to execute the action on.
+     * @param selectedItems - An array of selected query result items.
+     * @param parameters - Optional parameters for the action.
+     * @returns A promise resolving to the resulting PersistentObject, if any.
+     */
+    public async executeAction(action: string, parent: PersistentObject, query: Query, selectedItems: Array<QueryResultItem>, parameters?: any): Promise<PersistentObject>;
+
+    /**
+     * @internal
      * Executes an action on a persistent object or query.
      * @param action - The name of the action to execute.
      * @param parent - The parent persistent object (for object actions or context).
@@ -737,7 +771,19 @@ export class Service extends Observable<Service> {
      * @param skipHooks - Internal flag to skip hooks during retry.
      * @returns A promise resolving to the resulting PersistentObject, if any.
      */
-    public async executeAction(action: string, parent: PersistentObject, query: Query, selectedItems: Array<QueryResultItem>, parameters?: any, skipHooks: boolean = false): Promise<PersistentObject> {
+    public async executeAction(action: string, parent: PersistentObject, query: Query, selectedItems: Array<QueryResultItem>, parameters?: any, skipHooks?: boolean): Promise<PersistentObject>;
+
+    /**
+     * Executes an action on a persistent object or query.
+     * @param action - The name of the action to execute.
+     * @param parent - The parent persistent object (for object actions or context).
+     * @param query - The query (for query actions).
+     * @param selectedItems - An array of selected query result items (for query actions).
+     * @param parameters - Optional parameters for the action.
+     * @param skipHooks - Internal flag to skip hooks during retry.
+     * @returns A promise resolving to the resulting PersistentObject, if any.
+     */
+    public async executeAction(action: string, parent: PersistentObject, query?: Query, selectedItems?: Array<QueryResultItem>, parameters?: any, skipHooks: boolean = false): Promise<PersistentObject> {
         const isObjectAction = action.startsWith("PersistentObject.") || query == null;
         const targetServiceObject = isObjectAction ? parent : query;
 
