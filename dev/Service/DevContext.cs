@@ -39,7 +39,7 @@ public partial class DevContext : NullTargetContext
             .RuleFor(p => p.FirstName, f => f.Name.FirstName())
             .RuleFor(p => p.LastName, f => f.Name.LastName())
             .RuleFor(p => p.BirthDate, f => f.Date.Between(new DateTime(1945, 1, 1), new DateTime(2000, 12, 31)))
-            .RuleFor(p => p.Gender, f => f.PickRandom<Gender>())
+            .RuleFor(p => p.Gender, f => f.Random.WeightedRandom([Gender.Male, Gender.Female, Gender.Unknown], [0.45f, 0.45f, 0.1f]))
             .RuleFor(p => p.ContactPreference, f => f.PickRandom<ContactPreference>())
             .RuleFor(p => p.Email, (f, p) => f.Internet.Email(p.FirstName, p.LastName))
             .RuleFor(p => p.PhoneNumber, f => f.Phone.PhoneNumber("047# ## ## ##"))

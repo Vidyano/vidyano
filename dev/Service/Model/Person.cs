@@ -38,5 +38,6 @@ public enum ContactPreference
 public enum Gender
 {
     Female,
-    Male
+    Male,
+    Unknown
 }
