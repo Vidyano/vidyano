@@ -40,12 +40,16 @@
             border-style: solid;
             border-color: var(--theme-light-border);
             border-width: 0 0 1px 0;
+            width: 100%;
+            min-width: 0;
 
             .column {
                 box-sizing: border-box;
                 border-style: solid;
                 border-color: var(--theme-light-border);
                 border-width: 0;
+                min-width: 0;
+                overflow: hidden;
 
                 label {
                     display: block;
@@ -56,6 +60,7 @@
                     font-weight: bold;
                     font-size: 11px;
                     letter-spacing: 0.5px;
+                    white-space: nowrap;
                 }
             }
         }
