@@ -36,7 +36,6 @@
                 box-sizing: border-box;
                 overflow: hidden;
                 text-overflow: ellipsis;
-                padding: 0 var(--theme-h5);
             }
 
             vi-persistent-object-attribute-validation-error:not([hidden]) + div {
