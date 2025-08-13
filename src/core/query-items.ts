@@ -41,6 +41,48 @@ export type QueryItems =
         // Returns a subset of query items within the specified range.
         // Loads items in the range if needed and returns them as a plain array.
         sliceAsync(start?: number, end?: number): Promise<QueryResultItem[]>;
+
+        // Finds the first query item that satisfies the predicate, loading items as needed.
+        // Stops loading once a match is found.
+        findAsync(
+            predicate: (value: QueryResultItem, index: number, self: QueryResultItem[]) => boolean | Promise<boolean>,
+            thisArg?: any
+        ): Promise<QueryResultItem | undefined>;
+
+        // Finds the index of the first query item that satisfies the predicate, loading items as needed.
+        // Stops loading once a match is found.
+        findIndexAsync(
+            predicate: (value: QueryResultItem, index: number, self: QueryResultItem[]) => boolean | Promise<boolean>,
+            thisArg?: any
+        ): Promise<number>;
+
+        // Tests whether at least one query item satisfies the predicate, loading items as needed.
+        // Stops loading once a match is found.
+        someAsync(
+            predicate: (value: QueryResultItem, index: number, self: QueryResultItem[]) => boolean | Promise<boolean>,
+            thisArg?: any
+        ): Promise<boolean>;
+
+        // Tests whether all query items satisfy the predicate, loading items as needed.
+        // Stops loading if any item fails the test.
+        everyAsync(
+            predicate: (value: QueryResultItem, index: number, self: QueryResultItem[]) => boolean | Promise<boolean>,
+            thisArg?: any
+        ): Promise<boolean>;
+
+        // Checks if the query items include a specific element, loading items as needed.
+        // Stops loading once the element is found.
+        includesAsync(searchElement: QueryResultItem, fromIndex?: number): Promise<boolean>;
+
+        // Finds the index of a specific element in the query items, loading items as needed.
+        // Stops loading once the element is found.
+        indexOfAsync(searchElement: QueryResultItem, fromIndex?: number): Promise<number>;
+
+        // Reduces the query items to a single value, loading all items as needed.
+        reduceAsync<U>(
+            reducer: (acc: U, value: QueryResultItem, index: number, self: QueryResultItem[]) => U | Promise<U>,
+            initialValue?: U
+        ): Promise<U>;
     };
 
 /**
@@ -131,6 +173,20 @@ export class QueryItemsProxy {
                 return this.#createToArrayAsync();
             case "sliceAsync":
                 return this.#createSliceAsync();
+            case "findAsync":
+                return this.#createFindAsync();
+            case "findIndexAsync":
+                return this.#createFindIndexAsync();
+            case "someAsync":
+                return this.#createSomeAsync();
+            case "everyAsync":
+                return this.#createEveryAsync();
+            case "includesAsync":
+                return this.#createIncludesAsync();
+            case "indexOfAsync":
+                return this.#createIndexOfAsync();
+            case "reduceAsync":
+                return this.#createReduceAsync();
             default:
                 return undefined;
         }
@@ -534,7 +590,7 @@ export class QueryItemsProxy {
     #createToArrayAsync() {
         return async (): Promise<QueryResultItem[]> => {
             const results: QueryResultItem[] = [];
-            await this.#iterateAsync((item) => {
+            await this.#iterateAsync(item => {
                 results.push(item);
             });
             return results;
@@ -583,6 +639,147 @@ export class QueryItemsProxy {
                 results.push(items[i]);
             }
             return results;
+        };
+    }
+
+    /**
+     * Creates the findAsync method.
+     */
+    #createFindAsync() {
+        return async (
+            predicate: (value: QueryResultItem, index: number, self: QueryResultItem[]) => boolean | Promise<boolean>,
+            thisArg?: any
+        ): Promise<QueryResultItem | undefined> => {
+            let found: QueryResultItem | undefined;
+            await this.#iterateAsync(async (item, index, items) => {
+                if (await predicate.call(thisArg, item, index, items)) {
+                    found = item;
+                    return false; // Stop iteration
+                }
+            });
+            return found;
+        };
+    }
+
+    /**
+     * Creates the findIndexAsync method.
+     */
+    #createFindIndexAsync() {
+        return async (
+            predicate: (value: QueryResultItem, index: number, self: QueryResultItem[]) => boolean | Promise<boolean>,
+            thisArg?: any
+        ): Promise<number> => {
+            let foundIndex = -1;
+            await this.#iterateAsync(async (item, index, items) => {
+                if (await predicate.call(thisArg, item, index, items)) {
+                    foundIndex = index;
+                    return false; // Stop iteration
+                }
+            });
+            return foundIndex;
+        };
+    }
+
+    /**
+     * Creates the someAsync method.
+     */
+    #createSomeAsync() {
+        return async (
+            predicate: (value: QueryResultItem, index: number, self: QueryResultItem[]) => boolean | Promise<boolean>,
+            thisArg?: any
+        ): Promise<boolean> => {
+            let hasMatch = false;
+            await this.#iterateAsync(async (item, index, items) => {
+                if (await predicate.call(thisArg, item, index, items)) {
+                    hasMatch = true;
+                    return false; // Stop iteration
+                }
+            });
+            return hasMatch;
+        };
+    }
+
+    /**
+     * Creates the everyAsync method.
+     */
+    #createEveryAsync() {
+        return async (
+            predicate: (value: QueryResultItem, index: number, self: QueryResultItem[]) => boolean | Promise<boolean>,
+            thisArg?: any
+        ): Promise<boolean> => {
+            let allMatch = true;
+            await this.#iterateAsync(async (item, index, items) => {
+                if (!(await predicate.call(thisArg, item, index, items))) {
+                    allMatch = false;
+                    return false; // Stop iteration
+                }
+            });
+            return allMatch;
+        };
+    }
+
+    /**
+     * Creates the includesAsync method.
+     */
+    #createIncludesAsync() {
+        return async (searchElement: QueryResultItem, fromIndex?: number): Promise<boolean> => {
+            const startIndex = fromIndex ?? 0;
+            let found = false;
+            
+            await this.#iterateAsync((item, index) => {
+                if (index >= startIndex && item === searchElement) {
+                    found = true;
+                    return false; // Stop iteration
+                }
+            });
+            return found;
+        };
+    }
+
+    /**
+     * Creates the indexOfAsync method.
+     */
+    #createIndexOfAsync() {
+        return async (searchElement: QueryResultItem, fromIndex?: number): Promise<number> => {
+            const startIndex = fromIndex ?? 0;
+            let foundIndex = -1;
+            
+            await this.#iterateAsync((item, index) => {
+                if (index >= startIndex && item === searchElement) {
+                    foundIndex = index;
+                    return false; // Stop iteration
+                }
+            });
+            return foundIndex;
+        };
+    }
+
+    /**
+     * Creates the reduceAsync method.
+     */
+    #createReduceAsync() {
+        return async <U>(
+            reducer: (acc: U, value: QueryResultItem, index: number, self: QueryResultItem[]) => U | Promise<U>,
+            initialValue?: U
+        ): Promise<U> => {
+            const hasInitial = arguments.length >= 2;
+            let accumulator = initialValue as U;
+            let firstItem = true;
+            
+            await this.#iterateAsync(async (item, index, items) => {
+                if (firstItem && !hasInitial) {
+                    accumulator = item as any;
+                    firstItem = false;
+                } else {
+                    accumulator = await reducer(accumulator, item, index, items);
+                }
+            });
+            
+            if (firstItem && !hasInitial) {
+                throw new TypeError('Reduce of empty array with no initial value');
+            }
+            
+            return accumulator;
         };
     }
 
