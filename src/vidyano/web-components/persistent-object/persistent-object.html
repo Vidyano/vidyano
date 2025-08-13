@@ -24,8 +24,8 @@
         <template>
             <nav class="layout horizontal">
                 <span>[[_getNavigationIndex(persistentObject)]]</span>
-                <vi-button icon="ChevronLeft" data-direction="previous" on-tap="_navigate" busy$="[[isBusy]]" disabled$="[[isBusy]]"></vi-button>
-                <vi-button icon="ChevronRight" data-direction="next" on-tap="_navigate" busy$="[[isBusy]]" disabled$="[[isBusy]]"></vi-button>
+                <vi-button icon="ChevronLeft" data-direction="previous" on-tap="_navigate" busy$="[[isNavigatingBackward]]" disabled$="[[op_some(isNavigatingBackward, isNavigatingForward, isBusy)]]"></vi-button>
+                <vi-button icon="ChevronRight" data-direction="next" on-tap="_navigate" busy$="[[isNavigatingForward]]" disabled$="[[op_some(isNavigatingBackward, isNavigatingForward, isBusy)]]"></vi-button>
             </nav>
         </template>
     </dom-if>

@@ -97,6 +97,16 @@ export interface IPersistentObjectWebComponent extends WebComponent {
         showNavigation: {
             type: Boolean,
             computed: "_computeShowNavigation(persistentObject)"
+        },
+        isNavigatingForward: {
+            type: Boolean,
+            value: false,
+            readOnly: true
+        },
+        isNavigatingBackward: {
+            type: Boolean,
+            value: false,
+            readOnly: true
         }
     },
     observers: [
@@ -125,6 +135,8 @@ export class PersistentObject extends WebComponent implements IPersistentObjectW
     selectedMasterTab: Vidyano.PersistentObjectTab;
     readonly detailTabs: Vidyano.PersistentObjectTab[]; private _setDetailTabs: (tabs: Vidyano.PersistentObjectTab[]) => void;
     selectedDetailTab: Vidyano.PersistentObjectTab;
+    readonly isNavigatingForward: boolean; private _setIsNavigatingForward: (isNavigating: boolean) => void;
+    readonly isNavigatingBackward: boolean; private _setIsNavigatingBackward: (isNavigating: boolean) => void;
 
     private _persistentObjectChanged(persistentObject: Vidyano.PersistentObject, isConnected: boolean) {
         if (persistentObject && isConnected) {
@@ -367,17 +379,28 @@ export class PersistentObject extends WebComponent implements IPersistentObjectW
     }
 
     private async _navigate(e: Polymer.Gestures.TapEvent) {
-        let index = this.persistentObject.ownerQuery.items.findIndex(i => i.id === this.persistentObject.objectId);
-        index += ((e.target as Button).getAttribute("data-direction") === "previous" ? -1 : 1);
-
-        if (!this.persistentObject.ownerQuery.hasMore)
-            index = (index + this.persistentObject.ownerQuery.totalItems) % this.persistentObject.ownerQuery.totalItems;
-
-        if (index < 0)
+        if (this.isNavigatingForward || this.isNavigatingBackward)
             return;
 
-        const currentPath = this.app.path;
+        const direction = (e.target as Button).getAttribute("data-direction");
+        const isGoingBackward = direction === "previous";
+        
+        if (isGoingBackward)
+            this._setIsNavigatingBackward(true);
+        else
+            this._setIsNavigatingForward(true);
+        
         try {
+            let index = this.persistentObject.ownerQuery.items.findIndex(i => i.id === this.persistentObject.objectId);
+            index += (isGoingBackward ? -1 : 1);
+
+            if (!this.persistentObject.ownerQuery.hasMore)
+                index = (index + this.persistentObject.ownerQuery.totalItems) % this.persistentObject.ownerQuery.totalItems;
+
+            if (index < 0)
+                return;
+
+            const currentPath = this.app.path;
             let targetItem: Vidyano.QueryResultItem = this.persistentObject.ownerQuery.items[index] || await (this.persistentObject.ownerQuery.getItemsByIndex(index))[0];
             if (targetItem == null) {
                 targetItem = await this.persistentObject.ownerQuery.queueWork(async () => { 
@@ -403,6 +426,10 @@ export class PersistentObject extends WebComponent implements IPersistentObjectW
         }
         catch (e) {
             this.app.showAlert(e, "Error")
+        }
+        finally {
+            this._setIsNavigatingForward(false);
+            this._setIsNavigatingBackward(false);
         }
     }
 }
