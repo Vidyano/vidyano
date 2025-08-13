@@ -137,40 +137,168 @@ export class QueryItemsProxy {
     }
 
     /**
-     * Handles sync operations that may work on incomplete data (forEach, filter).
+     * Iterates over non-null items in a sparse array.
+     * @param target - The sparse array to iterate
+     * @param callback - Function to call for each non-null item
+     * @param thisArg - Optional this context
+     * @param options - Options for iteration (reverse, early exit, etc.)
+     */
+    #iterateSparse<T>(
+        target: QueryResultItem[], 
+        callback: (item: QueryResultItem, index: number, array: QueryResultItem[]) => T,
+        thisArg?: any,
+        options?: { reverse?: boolean; earlyExit?: (result: T) => boolean }
+    ): T | undefined {
+        const keys = Object.keys(target).map(k => parseInt(k)).filter(k => !isNaN(k));
+        if (options?.reverse) keys.reverse();
+        
+        for (const index of keys) {
+            const item = target[index];
+            if (item != null) {
+                const result = callback.call(thisArg, item, index, target);
+                if (options?.earlyExit?.(result)) {
+                    return result;
+                }
+            }
+        }
+        return undefined;
+    }
+
+    /**
+     * Handles sync operations that may work on incomplete data.
      */
     #handleIncompleteDataOperations(target: QueryResultItem[], property: string): Function | undefined {
-        if (property === "forEach") {
-            return (callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => void, thisArg?: any) => {
-                for (const key in target) {
-                    const index = parseInt(key);
-                    if (!isNaN(index)) {
-                        const item = target[index];
-                        if (item != null) {
-                            callback.call(thisArg, item, index, target);
-                        }
-                    }
-                }
-            };
-        }
+        switch (property) {
+            case "forEach":
+                return (callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => void, thisArg?: any) => {
+                    this.#iterateSparse(target, callback, thisArg);
+                };
 
-        if (property === "filter") {
-            return (callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => boolean, thisArg?: any) => {
-                const result: QueryResultItem[] = [];
-                for (const key in target) {
-                    const index = parseInt(key);
-                    if (!isNaN(index)) {
-                        const item = target[index];
-                        if (item != null && callback.call(thisArg, item, index, target)) {
+            case "filter":
+                return (callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => boolean, thisArg?: any) => {
+                    const result: QueryResultItem[] = [];
+                    this.#iterateSparse(target, (item, index, array) => {
+                        if (callback.call(thisArg, item, index, array)) {
                             result.push(item);
                         }
-                    }
-                }
-                return result;
-            };
-        }
+                    });
+                    return result;
+                };
 
-        return undefined;
+            case "find":
+                return (callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => boolean, thisArg?: any) => {
+                    let found: QueryResultItem | undefined;
+                    this.#iterateSparse(target, (item, index, array) => {
+                        if (callback.call(thisArg, item, index, array)) {
+                            found = item;
+                            return true; // Signal early exit
+                        }
+                        return false;
+                    }, null, { earlyExit: result => result === true });
+                    return found;
+                };
+
+            case "findIndex":
+                return (callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => boolean, thisArg?: any) => {
+                    let foundIndex = -1;
+                    this.#iterateSparse(target, (item, index, array) => {
+                        if (callback.call(thisArg, item, index, array)) {
+                            foundIndex = index;
+                            return true; // Signal early exit
+                        }
+                        return false;
+                    }, null, { earlyExit: result => result === true });
+                    return foundIndex;
+                };
+
+            case "some":
+                return (callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => boolean, thisArg?: any) => {
+                    let hasMatch = false;
+                    this.#iterateSparse(target, (item, index, array) => {
+                        if (callback.call(thisArg, item, index, array)) {
+                            hasMatch = true;
+                            return true; // Signal early exit
+                        }
+                        return false;
+                    }, null, { earlyExit: result => result === true });
+                    return hasMatch;
+                };
+
+            case "every":
+                return (callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => boolean, thisArg?: any) => {
+                    let allMatch = true;
+                    this.#iterateSparse(target, (item, index, array) => {
+                        if (!callback.call(thisArg, item, index, array)) {
+                            allMatch = false;
+                            return true; // Signal early exit
+                        }
+                        return false;
+                    }, null, { earlyExit: result => result === true });
+                    return allMatch;
+                };
+
+            case "includes":
+                return (searchElement: QueryResultItem, fromIndex?: number) => {
+                    let found = false;
+                    const startIndex = fromIndex ?? 0;
+                    this.#iterateSparse(target, (item, index) => {
+                        if (index >= startIndex && item === searchElement) {
+                            found = true;
+                            return true; // Signal early exit
+                        }
+                        return false;
+                    }, null, { earlyExit: result => result === true });
+                    return found;
+                };
+
+            case "indexOf":
+                return (searchElement: QueryResultItem, fromIndex?: number) => {
+                    let foundIndex = -1;
+                    const startIndex = fromIndex ?? 0;
+                    this.#iterateSparse(target, (item, index) => {
+                        if (index >= startIndex && item === searchElement) {
+                            foundIndex = index;
+                            return true; // Signal early exit
+                        }
+                        return false;
+                    }, null, { earlyExit: result => result === true });
+                    return foundIndex;
+                };
+
+            case "map":
+                return <U>(callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => U, thisArg?: any): U[] => {
+                    const result = new Array(target.length);
+                    this.#iterateSparse(target, (item, index, array) => {
+                        result[index] = callback.call(thisArg, item, index, array);
+                    });
+                    return result;
+                };
+
+            case "reduce":
+                return <U>(callback: (acc: U, value: QueryResultItem, index: number, array: QueryResultItem[]) => U, initialValue?: U): U => {
+                    let hasInitial = arguments.length >= 2;
+                    let accumulator = initialValue as U;
+                    let firstItem = true;
+                    
+                    this.#iterateSparse(target, (item, index, array) => {
+                        if (firstItem && !hasInitial) {
+                            accumulator = item as any;
+                            firstItem = false;
+                        } else {
+                            accumulator = callback(accumulator, item, index, array);
+                        }
+                    });
+                    
+                    if (firstItem && !hasInitial) {
+                        throw new TypeError('Reduce of empty array with no initial value');
+                    }
+                    
+                    return accumulator;
+                };
+
+            default:
+                return undefined;
+        }
     }
 
     /**
