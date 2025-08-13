@@ -81,6 +81,114 @@ export class QueryItemsProxy {
     }
 
     /**
+     * Handles access to the length property.
+     */
+    #handleLengthProperty(): number {
+        return this.#query.totalItems;
+    }
+
+    /**
+     * Handles access to Symbol.asyncIterator.
+     */
+    #handleAsyncIterator() {
+        return this.#createAsyncIterator();
+    }
+
+    /**
+     * Handles access to Symbol.iterator for synchronous iteration.
+     */
+    #handleSyncIterator(target: QueryResultItem[]) {
+        return function* () {
+            for (let i = 0; i < target.length; i++) {
+                const item = target[i];
+                if (item === null || item === undefined) {
+                    continue; // skip unloaded items
+                }
+                yield item;
+            }
+        };
+    }
+
+    /**
+     * Handles access to numeric indices.
+     */
+    #handleNumericIndex(target: QueryResultItem[], index: number, receiver: any): QueryResultItem | null {
+        return this.#handleIndexAccess(target, index, receiver);
+    }
+
+    /**
+     * Handles access to async method properties.
+     */
+    #handleAsyncMethods(property: string): Function | undefined {
+        switch (property) {
+            case "forEachAsync":
+                return this.#createForEachAsync();
+            case "mapAsync":
+                return this.#createMapAsync();
+            case "filterAsync":
+                return this.#createFilterAsync();
+            case "toArrayAsync":
+                return this.#createToArrayAsync();
+            case "sliceAsync":
+                return this.#createSliceAsync();
+            default:
+                return undefined;
+        }
+    }
+
+    /**
+     * Handles sync operations that may work on incomplete data (forEach, filter).
+     */
+    #handleIncompleteDataOperations(target: QueryResultItem[], property: string): Function | undefined {
+        if (property === "forEach") {
+            return (callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => void, thisArg?: any) => {
+                for (const key in target) {
+                    const index = parseInt(key);
+                    if (!isNaN(index)) {
+                        const item = target[index];
+                        if (item != null) {
+                            callback.call(thisArg, item, index, target);
+                        }
+                    }
+                }
+            };
+        }
+
+        if (property === "filter") {
+            return (callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => boolean, thisArg?: any) => {
+                const result: QueryResultItem[] = [];
+                for (const key in target) {
+                    const index = parseInt(key);
+                    if (!isNaN(index)) {
+                        const item = target[index];
+                        if (item != null && callback.call(thisArg, item, index, target)) {
+                            result.push(item);
+                        }
+                    }
+                }
+                return result;
+            };
+        }
+
+        return undefined;
+    }
+
+    /**
+     * Handles array mutation attempts.
+     */
+    #handleArrayMutation(property: string): never {
+        throw new Error(`Operation '${property}' not allowed on query items`);
+    }
+
+    /**
+     * Handles operations that work on a copy.
+     */
+    #handleCopyOperation(target: QueryResultItem[], property: string, receiver: any): any {
+        console.log(`WARNING: '${property}' works on a copy of the array and not on the original array.`);
+        return Reflect.get(Array.from(target), property, receiver);
+    }
+
+    /**
      * Intercepts access to query items and triggers lazy loading when needed.
      * @param target - The array of query result items.
      * @param property - The property being accessed (index or method name).
@@ -88,14 +196,19 @@ export class QueryItemsProxy {
      * @returns The query item at the index or the result of the method call.
      */
     #getItemsLazy(target: QueryResultItem[], property: string | symbol, receiver: any) {
-        // Handle length property - return totalItems from query
+        // Handle length property
         if (property === "length") {
-            return this.#query.totalItems;
+            return this.#handleLengthProperty();
         }
 
         // Handle Symbol.asyncIterator
         if (property === Symbol.asyncIterator) {
-            return this.#createAsyncIterator();
+            return this.#handleAsyncIterator();
+        }
+
+        // Handle Symbol.iterator
+        if (property === Symbol.iterator) {
+            return this.#handleSyncIterator(target);
         }
 
         // Handle string properties
@@ -103,143 +216,36 @@ export class QueryItemsProxy {
             // Handle numeric index access (most common operation)
             const index = parseInt(property);
             if (!isNaN(index)) {
-                return this.#handleIndexAccess(target, index, receiver);
+                return this.#handleNumericIndex(target, index, receiver);
             }
 
             // Handle async methods
-            switch (property) {
-                case "forEachAsync":
-                    return this.#createForEachAsync();
-                case "mapAsync":
-                    return this.#createMapAsync();
-                case "filterAsync":
-                    return this.#createFilterAsync();
-                case "toArrayAsync":
-                    return this.#createToArrayAsync();
-                case "sliceAsync":
-                    return this.#createSliceAsync();
+            const asyncMethod = this.#handleAsyncMethods(property);
+            if (asyncMethod !== undefined) {
+                return asyncMethod;
             }
 
-            // Handle methods that may operate on incomplete data
-            if (property === "forEach" || property === "filter") {
-                // Handle forEach - skip null items which are queued for lazy loading
-                if (property === "forEach") {
-                    return (callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => void, thisArg?: any) => {
-                        let processedCount = 0;
-                        let skippedCount = 0;
-                        
-                        for (const key in target) {
-                            const index = parseInt(key);
-                            if (!isNaN(index)) {
-                                const item = target[index];
-                                if (item != null) {
-                                    callback.call(thisArg, item, index, target);
-                                    processedCount++;
-                                } else {
-                                    skippedCount++;
-                                }
-                            }
-                        }
-                        
-                        this.#warnIncompleteData("forEach", processedCount, skippedCount, "forEachAsync()");
-                    };
-                }
-
-                // Handle filter - skip null items which are queued for lazy loading
-                if (property === "filter") {
-                    return (callback: (value: QueryResultItem, index: number, array: QueryResultItem[]) => boolean, thisArg?: any) => {
-                        const result: QueryResultItem[] = [];
-                        let processedCount = 0;
-                        let skippedCount = 0;
-                        
-                        for (const key in target) {
-                            const index = parseInt(key);
-                            if (!isNaN(index)) {
-                                const item = target[index];
-                                if (item != null) {
-                                    if (callback.call(thisArg, item, index, target)) {
-                                        result.push(item);
-                                    }
-                                    processedCount++;
-                                } else {
-                                    skippedCount++;
-                                }
-                            }
-                        }
-                        
-                        this.#warnIncompleteData("filter", processedCount, skippedCount, "filterAsync()");
-                        return result;
-                    };
-                }
+            // Handle sync operations that may work on incomplete data
+            const incompleteDataOperation = this.#handleIncompleteDataOperations(target, property);
+            if (incompleteDataOperation !== undefined) {
+                return incompleteDataOperation;
             }
 
-            // Don't allow array manipulations
-            if (["push", "pop", "shift", "unshift", "splice"].indexOf(property) >= 0) {
-                throw new Error("Operation not allowed");
+            // Handle array mutations
+            if (["push", "pop", "shift", "unshift", "splice"].includes(property)) {
+                return this.#handleArrayMutation(property);
             }
 
-            // Warn about operations that work on a copy
-            if (["reverse", "sort"].indexOf(property) >= 0) {
-                console.log(`WARNING: '${property}' works on a copy of the array and not on the original array.`);
-                return Reflect.get(Array.from(target), property, receiver);
+            // Handle operations that work on a copy
+            if (["reverse", "sort"].includes(property)) {
+                return this.#handleCopyOperation(target, property, receiver);
             }
         }
 
-        // Handle Symbol.iterator for synchronous iteration
-        if (property === Symbol.iterator) {
-            const self = this;
-            return function* () {
-                let processedCount = 0;
-                let skippedCount = 0;
-                
-                for (let i = 0; i < target.length; i++) {
-                    const item = target[i];
-                    if (item === null || item === undefined) {
-                        skippedCount++;
-                        continue; // skip unloaded items
-                    }
-                    processedCount++;
-                    yield item;
-                }
-                
-                self.#warnIncompleteData("Symbol.iterator", processedCount, skippedCount, "async iteration (for await)");
-            };
-        }
-
+        // Default: pass through to the target
         return Reflect.get(target, property, receiver);
     }
 
-    /**
-     * Warns about incomplete data processing in synchronous methods.
-     * @param methodName - Name of the method being used
-     * @param processedCount - Number of items actually processed
-     * @param skippedCount - Number of null/undefined items skipped
-     * @param asyncAlternative - Suggested async alternative method
-     */
-    #warnIncompleteData(methodName: string, processedCount: number, skippedCount: number, asyncAlternative: string): void {
-        const warnings: string[] = [];
-        
-        // Warn about skipped items
-        if (skippedCount > 0) {
-            warnings.push(`${skippedCount} unloaded items were skipped`);
-        }
-        
-        // Warn about items not yet in the array
-        const totalCount = processedCount + skippedCount;
-        if (totalCount < this.#query.totalItems || this.#query.hasMore) {
-            const moreInfo = this.#query.totalItems > 0 
-                ? `${this.#query.totalItems - totalCount} more items available`
-                : "more items available";
-            warnings.push(moreInfo);
-        }
-        
-        if (warnings.length > 0) {
-            console.warn(
-                `WARNING: ${methodName} only processed ${processedCount} items (${warnings.join(", ")}). ` +
-                `Consider using ${asyncAlternative} to ensure all items are loaded.`
-            );
-        }
-    }
 
     /**
      * Handles access to items by numeric index, triggering lazy loading if needed.
