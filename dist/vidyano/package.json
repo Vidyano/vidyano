@@ -2,6 +2,7 @@
   "name": "@vidyano/vidyano",
   "version": "4.0.0-pre.40",
   "description": "The Vidyano library contains all the web components for working with a Vidyano .NET backend.",
+  "type": "module",
   "main": "index.js",
   "module": "index.js",
   "types": "index.d.ts",
