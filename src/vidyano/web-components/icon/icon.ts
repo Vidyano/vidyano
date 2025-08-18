@@ -64,13 +64,16 @@ export class Icon extends WebComponent {
         if (!source || source.indexOf(":") < 0) {
             // For local icons, use the synchronous load.
             resource = IconRegister.load(source);
+            this._setUnresolved(!resource);
         } else {
+            // Don't set unresolved for remote icons
+            this._setUnresolved(false);
+
             // For Iconify sources, use fetchIcon.
             resource = await IconRegister.fetchIcon(source);
         }
 
-        this._setUnresolved(!resource);
-        if (this.unresolved)
+        if (!resource)
             return;
 
         Array.from(resource.children).forEach((child: HTMLElement) => {
