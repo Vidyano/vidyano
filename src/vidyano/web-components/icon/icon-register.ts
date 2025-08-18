@@ -10,7 +10,7 @@ export function load(name: string): Icon {
 }
 
 export function exists(name: string): boolean {
-    return !!load(name);
+    return !!load(name) || name?.indexOf(":") >= 0; // Remote icons are considered to exist
 }
 
 export function fetchIcon(name: string): Promise<Icon> {
