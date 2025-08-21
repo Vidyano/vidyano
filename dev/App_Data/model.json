@@ -147,6 +147,10 @@
       "DisplayName": {
         "en": "New person wizard",
         "nl": "Start wizard"
+      },
+      "Options": {
+        "en": "New;New using wizard",
+        "nl": "New;New using wizard"
       }
     },
     "One": {
@@ -207,6 +211,77 @@
       },
       "IsPinned": true,
       "IconName": "Help"
+    },
+    "TestActionsGroup": {
+      "DisplayName": {
+        "en": "Test actions",
+        "nl": "Test actions"
+      }
+    },
+    "TestCount": {
+      "Description": "Test action for counting items",
+      "Icon": "mingcute:counter-2-line",
+      "RefreshQueryOnCompleted": true,
+      "KeepSelectionOnRefresh": true,
+      "Offset": 1100,
+      "ShowedOn": 2,
+      "GroupActionName": "TestActionsGroup",
+      "DisplayName": {
+        "en": "Count",
+        "nl": "Select counter"
+      }
+    },
+    "TestCountMany": {
+      "Icon": "simple-icons:oneplus",
+      "Offset": 1102,
+      "ShowedOn": 2,
+      "GroupActionName": "TestActionsGroup",
+      "SelectionRule": ">1",
+      "DisplayName": {
+        "en": "Count (many)",
+        "nl": "Count (many)"
+      }
+    },
+    "TestCountSingle": {
+      "Icon": "iconoir:number-1-square",
+      "Offset": 1101,
+      "ShowedOn": 2,
+      "GroupActionName": "TestActionsGroup",
+      "SelectionRule": "=1",
+      "DisplayName": {
+        "en": "Count (single)",
+        "nl": "Count (single)"
+      }
+    },
+    "TestOptions": {
+      "Offset": 1103,
+      "ShowedOn": 2,
+      "GroupActionName": "TestActionsGroup",
+      "DisplayName": {
+        "en": "Test options",
+        "nl": "Test options"
+      },
+      "Options": {
+        "en": "Option 1;Option 2",
+        "nl": "Optie1;Optie 2"
+      }
+    },
+    "TestPersonSummary": {
+      "Icon": "ooui:text-summary-ltr",
+      "ShowedOn": 1,
+      "DisplayName": {
+        "en": "Summary",
+        "nl": "Test person summary"
+      }
+    },
+    "TestPinned": {
+      "Icon": "ri:pushpin-2-line",
+      "ShowedOn": 2,
+      "DisplayName": {
+        "en": "Test pinned",
+        "nl": "Test pinned"
+      },
+      "IsPinned": true
     },
     "viLoadAdvancedSearch": {
       "Offset": 1600,

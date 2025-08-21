@@ -78,12 +78,16 @@ public partial class DevContext : NullTargetContext
 
         _people = peopleFaker.Generate(10_000);
 
-        var rnd = new Random();
-        _people.ForEach(p =>
+        // Deterministic emergency contact assignment using a fixed seed
+        var emergencyRandom = new Random(6841844);
+        for (int i = 0; i < _people.Count; i++)
         {
-            // Set emergency contact to a random person from the list
-            p.EmergencyContact = _people[rnd.Next(_people.Count)];
-        });
+            var rndIndex = emergencyRandom.Next(_people.Count);
+            if (rndIndex == i) // avoid self as emergency contact
+                rndIndex = (rndIndex + 1) % _people.Count;
+
+            _people[i].EmergencyContact = _people[rndIndex];
+        }
 
         Version++;
     }

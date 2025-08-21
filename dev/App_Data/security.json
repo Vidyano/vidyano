@@ -40,18 +40,43 @@
       "UserId": "fe9429ba-d5cd-4e7c-bbe4-05a4c3497d97"
     },
     {
-      "Id": "4a4518cc-aa28-40d4-aa9d-9f3038c80836",
-      "Resource": "ResetTest/Dev.Attributes",
-      "UserId": "fe9429ba-d5cd-4e7c-bbe4-05a4c3497d97"
-    },
-    {
-      "Id": "d5b6717f-4ff1-4ddd-9e8a-6c073ec6ed2f",
-      "Resource": "ResetTest/Dev.Person",
+      "Id": "315ada93-0ac0-4e36-a610-f52b8aa7585b",
+      "Resource": "ResetTest/Vidyano.Application",
       "UserId": "fe9429ba-d5cd-4e7c-bbe4-05a4c3497d97"
     },
     {
       "Id": "3ccc289c-9469-4e07-87fb-25514308cf6d",
       "Resource": "SendEmail/Dev.Person",
+      "UserId": "fe9429ba-d5cd-4e7c-bbe4-05a4c3497d97"
+    },
+    {
+      "Id": "51a1eb76-c8cc-4098-ad72-2a16df96afea",
+      "Resource": "TestCount/Dev.Person",
+      "UserId": "fe9429ba-d5cd-4e7c-bbe4-05a4c3497d97"
+    },
+    {
+      "Id": "01b5c8dd-fb64-4647-a447-4f6caed06896",
+      "Resource": "TestCountMany/Dev.Person",
+      "UserId": "fe9429ba-d5cd-4e7c-bbe4-05a4c3497d97"
+    },
+    {
+      "Id": "1a8503c3-8e5b-44e2-81dd-fbbb85d194e2",
+      "Resource": "TestCountSingle/Dev.Person",
+      "UserId": "fe9429ba-d5cd-4e7c-bbe4-05a4c3497d97"
+    },
+    {
+      "Id": "8f7f4161-6f8c-4514-9b6f-c796e83180a2",
+      "Resource": "TestOptions/Dev.Person",
+      "UserId": "fe9429ba-d5cd-4e7c-bbe4-05a4c3497d97"
+    },
+    {
+      "Id": "bd9a3e2e-177c-4230-b9eb-91676fcaa272",
+      "Resource": "TestPersonSummary/Dev.Person",
+      "UserId": "fe9429ba-d5cd-4e7c-bbe4-05a4c3497d97"
+    },
+    {
+      "Id": "96373412-1510-4f61-9f39-483aca0680cf",
+      "Resource": "TestPinned/Dev.Person",
       "UserId": "fe9429ba-d5cd-4e7c-bbe4-05a4c3497d97"
     }
   ]

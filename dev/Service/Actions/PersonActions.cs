@@ -1,4 +1,4 @@
-﻿using Dev.Service.Model;
+using Dev.Service.Model;
 using DocumentFormat.OpenXml.Vml.Office;
 using Vidyano.Core.Extensions;
 using Vidyano.Service.ClientOperations;
