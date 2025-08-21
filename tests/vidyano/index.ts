@@ -1,4 +1,6 @@
-import "../../src/vidyano"; // Import the main app module to ensure all components are registered
+import "../../src/vidyano/index.js";
+export * from "../../src/vidyano/index.js";
+
 import "./web-component-lit/test-one-simple-computed.js";
 import "./web-component-lit/test-computed-derived-object.js";
 import "./web-component-lit/test-computed-path.js";
