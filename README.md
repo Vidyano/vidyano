@@ -7,7 +7,7 @@
 
 ## Build
 
-* Start de Vidyano backend .NET service using **dotnet run**
+* Start the Vidyano backend .NET service using **dotnet run**
 
 * Run Build Task (*Ctrl+Shift+B*) and select **tsc: watch - tsconfig.json**
 * Open the Command Palette (*Ctrl+Shift+P*) and select **Live Sass: Watch Sass**
