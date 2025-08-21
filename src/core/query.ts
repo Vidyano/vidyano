@@ -959,7 +959,9 @@ export class Query extends ServiceObjectWithActions {
                 result["allSelectedInversed"] = true;
         }
 
-        result["sortOptions"] = this.sortOptions ? this.sortOptions.filter(option => option.direction !== "").map(option => `${option.name}${option.direction === "DESC" ? " " + option.direction : ""}`).join("; ") : "";
+        result["sortOptions"] = this.sortOptions ? this.sortOptions.filter(option => option.direction !== "").map(option => {
+            return `${option.name}${option.direction === "DESC" ? " " + option.direction : ""}`;
+        }).join("; ") : "";
         result["groupedBy"] = this.groupingInfo?.groupedBy;
 
         if (this.persistentObject)

@@ -327,7 +327,9 @@ export class QueryColumn extends ServiceObject {
         }
 
         const querySettings = (this.service.application.userSettings["QuerySettings"] || (this.service.application.userSettings["QuerySettings"] = {}))[this.query.id] || {};
-        querySettings["sortOptions"] = this.query.sortOptions.filter(option => option.direction !== "").map(option => `${option.name} ${option.direction}`.trimEnd()).join("; ");
+        querySettings["sortOptions"] = this.query.sortOptions.filter(option => option.direction !== "").map(option => {
+            return `${option.name} ${option.direction}`.trimEnd();
+        }).join("; ");
 
         this.service.application.userSettings["QuerySettings"][this.query.id] = querySettings;
         await this.service.application.saveUserSettings();
