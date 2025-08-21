@@ -523,7 +523,7 @@ export class Query extends ServiceObjectWithActions {
             return;
 
         const oldSortOptions = this.#sortOptions;
-        this.notifyPropertyChanged("sortOptions", this.#sortOptions = options, oldSortOptions);
+        this.notifyPropertyChanged("sortOptions", this.#sortOptions = options || [], oldSortOptions);
     }
 
     /**
