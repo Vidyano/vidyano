@@ -223,6 +223,11 @@ export class Query extends ServiceObjectWithActions {
 
     /**
      * Gets whether there are more items available for the query.
+     * 
+     * When a query uses continuation tokens:
+     * - `hasMore` will be `true` while more pages are available
+     * - `totalItems` will be `-1` until all pages are loaded
+     * - Once the last page is loaded, `hasMore` becomes `false` and `totalItems` is updated to the actual count
      */
     get hasMore(): boolean {
         return this.#hasMore;
@@ -500,6 +505,10 @@ export class Query extends ServiceObjectWithActions {
 
     /**
      * Gets the total number of items in the query.
+     * 
+     * When a query uses continuation tokens (`hasMore` is `true`), this will be `-1` 
+     * until all pages have been loaded. Once the last page is loaded, it will be 
+     * updated to reflect the actual total count.
      */
     get totalItems(): number {
         return this.#totalItems;
@@ -672,11 +681,18 @@ export class Query extends ServiceObjectWithActions {
     }
 
     /**
-     * Gets the items by their indexes.
-     * @param indexes - The indexes of the items to retrieve.
-     * @returns A promise that resolves to the query result items.
+     * Gets the items at the specified indexes.
+     * @param indexes - The individual indexes of the items to retrieve. Each parameter is a specific index, not a range.
+     * @returns A promise that resolves to an array containing the query result items at the specified indexes.
+     * @example
+     * // Get single item at index 0
+     * const [firstItem] = await query.getItemsByIndex(0);
+     * 
+     * // Get multiple specific items at indexes 0, 2, and 5
+     * const items = await query.getItemsByIndex(0, 2, 5); // Returns 3 items
      */
     async getItemsByIndex(...indexes: number[]): Promise<QueryResultItem[]> {
+
         if (!indexes || !indexes.length)
             return [];
 
