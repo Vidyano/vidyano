@@ -63,12 +63,12 @@ await people.search();
 
 ```ts
 // Include (default): show only these
-gender!.selectedDistincts = ["|Female"];
-gender!.selectedDistinctsInversed = false;
+gender.selectedDistincts = ["|Female"];
+gender.selectedDistinctsInversed = false;
 
 // Exclude: show everything except these
-gender!.selectedDistincts = ["|Female"];
-gender!.selectedDistinctsInversed = true;
+gender.selectedDistincts = ["|Female"];
+gender.selectedDistinctsInversed = true;
 
 await people.search();
 ```
@@ -78,7 +78,7 @@ await people.search();
 The server controls whether a column uses *contains* or *starts‑with*.
 
 ```ts
-firstName!.selectedDistincts = ["1|@John"]; // matches John, Johnson, Johnathan (depending on server op)
+firstName.selectedDistincts = ["1|@John"]; // matches John, Johnson, Johnathan (depending on server op)
 await people.search();
 ```
 
@@ -86,7 +86,7 @@ await people.search();
 
 ```ts
 const email = people.columns.find(c => c.name === "Email");
-email!.selectedDistincts = ["1|@*gmail.com", "1|@*.edu"]; // wildcards
+email.selectedDistincts = ["1|@*gmail.com", "1|@*.edu"]; // wildcards
 await people.search();
 ```
 
@@ -96,13 +96,13 @@ await people.search();
 const birthDate = people.columns.find(c => c.name === "BirthDate");
 
 // By year
-birthDate!.selectedDistincts = ["1|@1985"]; // all dates in 1985
+birthDate.selectedDistincts = ["1|@1985"]; // all dates in 1985
 
 // By month + year (locale formatting applies)
-birthDate!.selectedDistincts = ["1|@3/1985"]; // March 1985
+birthDate.selectedDistincts = ["1|@3/1985"]; // March 1985
 
 // Specific date (locale dependent)
-birthDate!.selectedDistincts = ["1|@15/3/1985"]; // e.g., DD/MM/YYYY
+birthDate.selectedDistincts = ["1|@15/3/1985"]; // e.g., DD/MM/YYYY
 
 await people.search();
 ```
@@ -110,7 +110,7 @@ await people.search();
 ### Multiple search terms (OR within a column)
 
 ```ts
-firstName!.selectedDistincts = ["1|@John", "1|@Jane", "1|@Michael"]; // OR
+firstName.selectedDistincts = ["1|@John", "1|@Jane", "1|@Michael"]; // OR
 await people.search();
 ```
 
@@ -120,10 +120,10 @@ await people.search();
 
 ```ts
 // Load distincts for a dropdown
-await gender!.refreshDistincts();
+await gender.refreshDistincts();
 const all = [
-    ...(gender!.distincts.matching || []),
-    ...(gender!.distincts.remaining || [])
+    ...(gender.distincts.matching || []),
+    ...(gender.distincts.remaining || [])
 ];
 
 function parseDistinctValue(distinct: string): { value: string; display: string } {
@@ -170,9 +170,9 @@ interface IQueryColumnDistincts {
 const active = people.columns.find(c => c.name === "IsActive");
 const birthDate = people.columns.find(c => c.name === "BirthDate");
 
-gender!.selectedDistincts = ["|Female"];    // Gender = Female
-active!.selectedDistincts = ["|True"];      // IsActive = True
-birthDate!.selectedDistincts = ["1|@1985"]; // Born in 1985
+gender.selectedDistincts = ["|Female"];    // Gender = Female
+active.selectedDistincts = ["|True"];      // IsActive = True
+birthDate.selectedDistincts = ["1|@1985"]; // Born in 1985
 
 await people.search(); // all conditions must be met (AND)
 ```
@@ -181,14 +181,14 @@ await people.search(); // all conditions must be met (AND)
 
 ```ts
 // OR within a column
-firstName!.selectedDistincts = ["|John", "|Jane", "|James"]; // OR
+firstName.selectedDistincts = ["|John", "|Jane", "|James"]; // OR
 
 // Exclude a value
-gender!.selectedDistincts = ["|Not Specified"];
-gender!.selectedDistinctsInversed = true; // exclude
+gender.selectedDistincts = ["|Not Specified"];
+gender.selectedDistinctsInversed = true; // exclude
 
 // Text search on email domain
-email!.selectedDistincts = ["1|@company.com"];
+email.selectedDistincts = ["1|@company.com"];
 
 await people.search();
 ```
@@ -218,9 +218,9 @@ if (people.filters) {
     const birthDate = people.columns.find(c => c.name === "BirthDate");
     const active = people.columns.find(c => c.name === "IsActive");
     
-    gender!.selectedDistincts = ["|Male"];
-    birthDate!.selectedDistincts = ["1|@1980", "1|@1985", "1|@1990"]; // 80s/90s
-    active!.selectedDistincts = ["|True"];
+    gender.selectedDistincts = ["|Male"];
+    birthDate.selectedDistincts = ["1|@1980", "1|@1985", "1|@1990"]; // 80s/90s
+    active.selectedDistincts = ["|True"];
     
     // Save as preset
 const preset = await people.filters.createNew();
@@ -244,14 +244,14 @@ const target = presets.find(p => p.name === "Active Males from 1980s–90s");
 
 ```ts
 // ❌ Multiple server round‑trips
-gender!.selectedDistincts = ["|Male"]; await people.search();
-active!.selectedDistincts = ["|True"]; await people.search();
-birthDate!.selectedDistincts = ["1|@1985"]; await people.search();
+gender.selectedDistincts = ["|Male"]; await people.search();
+active.selectedDistincts = ["|True"]; await people.search();
+birthDate.selectedDistincts = ["1|@1985"]; await people.search();
 
 // ✅ Single server round‑trip
-gender!.selectedDistincts = ["|Male"];
-active!.selectedDistincts = ["|True"];
-birthDate!.selectedDistincts = ["1|@1985"];
+gender.selectedDistincts = ["|Male"];
+active.selectedDistincts = ["|True"];
+birthDate.selectedDistincts = ["1|@1985"];
 await people.search();
 ```
 
