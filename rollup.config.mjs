@@ -37,7 +37,7 @@ const isDevelopment = process.env.NODE_ENV !== 'production';
 
 const configs = [
     {
-        input: isDevelopment ? './tests/components/index.js' : './src/vidyano/index.js',
+        input: isDevelopment ? './tests/vidyano/index.js' : './src/vidyano/index.js',
         external: ['String', "__decorate"],
         plugins: [
             alias({ entries }),
@@ -63,8 +63,7 @@ const configs = [
         ],
         watch: {
             chokidar: {
-                usePolling: true,
-                interval: 5000
+                usePolling: false
             }
         }, onwarn(warning, warn) {
             if (warning.code === 'THIS_IS_UNDEFINED')
@@ -91,8 +90,7 @@ const configs = [
         ],
         watch: {
             chokidar: {
-                usePolling: true,
-                interval: 5000
+                usePolling: false
             }
         }, onwarn(warning, warn) {
             if (warning.code === 'THIS_IS_UNDEFINED')

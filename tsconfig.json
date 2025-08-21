@@ -29,13 +29,15 @@
   },
   "exclude": [
       "wwwroot/dist",
+      "tests/**/*.spec.ts",
   ],
   "include": [
       "src/core/**/*.ts",
       "src/vidyano/**/*.ts",
-      "tests/components/**/*.ts",
+      "tests/vidyano/index.ts"
   ],
   "watchOptions": {
-    "watchFile": "dynamicprioritypolling"
+    "watchFile": "usefsevents",
+    "watchDirectory": "usefsevents"
   }
 }
