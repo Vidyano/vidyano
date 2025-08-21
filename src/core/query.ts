@@ -22,10 +22,6 @@ const clonedFrom = Symbol("clonedFrom");
  */
 export interface ISortOption {
     /**
-     * Gets or sets the column to sort by.
-     */
-    column: QueryColumn;
-    /**
      * Gets or sets the name of the column to sort by.
      */
     name: string;
@@ -1020,9 +1016,7 @@ export class Query extends ServiceObjectWithActions {
                 newSortOptions = [];
                 options.split(";").map(option => option.trim()).forEach(option => {
                     const optionParts = option.splitWithTail(" ", 2).map(option => option.trim());
-                    const col = this.getColumn(optionParts[0]);
                     newSortOptions.push({
-                        column: col,
                         name: optionParts[0],
                         direction: optionParts.length < 2 ? "ASC" : <SortDirection>optionParts[1]
                     });

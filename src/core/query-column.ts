@@ -300,13 +300,13 @@ export class QueryColumn extends ServiceObject {
      */
     async sort(direction: SortDirection, multiSort?: boolean): Promise<QueryItems> {
         if (!!multiSort) {
-            const sortOption = this.query.sortOptions.filter(option => option.column === this)[0];
+            const sortOption = this.query.sortOptions.find(option => option.name === this.name);
             if (sortOption && sortOption.direction === direction)
                 return;
 
             if (!sortOption) {
                 if (direction !== "")
-                    this.query.sortOptions = this.query.sortOptions.concat([{ column: this, name: this.name, direction: direction }]);
+                    this.query.sortOptions = this.query.sortOptions.concat([{ name: this.name, direction: direction }]);
             }
             else {
                 if (direction !== "") {
@@ -317,7 +317,7 @@ export class QueryColumn extends ServiceObject {
                     this.query.sortOptions = this.query.sortOptions.filter(option => option !== sortOption);
             }
         } else
-            this.query.sortOptions = direction !== "" ? [{ column: this, name: this.name, direction: direction }] : [];
+            this.query.sortOptions = direction !== "" ? [{ name: this.name, direction: direction }] : [];
 
         try {
             await this.query.search({ throwExceptions: true });
@@ -342,7 +342,7 @@ export class QueryColumn extends ServiceObject {
      */
     #queryPropertyChanged(sender: Query, args: PropertyChangedArgs) {
         if (args.propertyName === "sortOptions") {
-            const sortOption = this.query.sortOptions ? this.query.sortOptions.filter(option => option.column === this)[0] : null;
+            const sortOption = this.query.sortOptions ? this.query.sortOptions.find(option => option.name === this.name) : null;
             this.#setSortDirection(sortOption ? sortOption.direction : "");
         } else if (args.propertyName === "totalItem")
             this.#setTotal(sender.totalItem ? sender.totalItem.getFullValue(this.name) : null);
