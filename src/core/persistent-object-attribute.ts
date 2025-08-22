@@ -510,39 +510,13 @@ export class PersistentObjectAttribute extends ServiceObject {
     }
 
     /**
-     * Gets the file associated with the attribute (for BinaryFile types).
+     * Gets or sets the file associated with the attribute (for BinaryFile types).
      */
     get file(): File | null {
         return this.#file;
     }
-
-    /**
-     * Sets the file for the attribute asynchronously (for BinaryFile types).
-     * Converts the file to base64 and updates the value in the format: filename|base64content
-     */
-    async setFile(file: File | null): Promise<void> {
-        this.#file = file;
-        
-        if (this.type === "BinaryFile") {
-            if (file) {
-                // Convert file content to base64
-                const buffer = await file.arrayBuffer();
-                const bytes = new Uint8Array(buffer);
-                
-                // Process in chunks to avoid call stack size exceeded on large files
-                const chunkSize = 32768; // 32KB chunks
-                let binary = '';
-                for (let i = 0; i < bytes.length; i += chunkSize) {
-                    const chunk = bytes.slice(i, i + chunkSize);
-                    binary += String.fromCharCode(...chunk);
-                }
-                
-                const base64 = btoa(binary);
-                this.value = `${file.name}|${base64}`;
-            } else {
-                this.value = null;
-            }
-        }
+    set file(value: File | null) {
+        this.#file = value;
     }
 
     /**
@@ -686,6 +660,12 @@ export class PersistentObjectAttribute extends ServiceObject {
 
             this.#serviceValue = resultAttrValue;
             this.#lastParsedValue = undefined;
+
+            // For BinaryFile, if the service value has changed from what we sent, clear the file
+            // It means the file has been uploaded and the service value was updated (fileName|base64data)
+            if (this.type === "BinaryFile" && this.#file && this.#serviceValue !== this.#refreshServiceValue) {
+                this.#file = null;
+            }
 
             this.notifyPropertyChanged("value", this.value, oldValue);
             this.notifyPropertyChanged("displayValue", this.displayValue, oldDisplayValue);

@@ -666,7 +666,7 @@ test.describe("BinaryFile Attributes", () => {
         
         expect(attributesObject.isEditing).toBe(true);
         
-        await binaryFileAttr.setFile(file);
+        binaryFileAttr.file = file;
         expect(binaryFileAttr.file).toBe(file);
         // Value should be in format: filename|base64content
         expect(binaryFileAttr.value).toContain("test-lifecycle.txt|");
@@ -700,7 +700,7 @@ test.describe("BinaryFile Attributes", () => {
             lastModified: Date.now()
         });
         
-        await reloadedBinaryFileAttr.setFile(updatedFile);
+        reloadedBinaryFileAttr.file = updatedFile;
         expect(reloadedBinaryFileAttr.file).toBe(updatedFile);
         // Value should be in format: filename|base64content
         expect(reloadedBinaryFileAttr.value).toContain("updated-file.txt|");

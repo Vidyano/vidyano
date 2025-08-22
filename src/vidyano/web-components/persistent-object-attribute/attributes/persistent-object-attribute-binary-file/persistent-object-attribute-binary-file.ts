@@ -19,31 +19,9 @@ import { PersistentObjectAttribute } from "components/persistent-object-attribut
 export class PersistentObjectAttributeBinaryFile extends PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-binary-file.html">`; }
 
-    private _inputElement: HTMLInputElement;
-
-    connectedCallback(): void {
-        super.connectedCallback();
-
-        this._createInput();
-        this._hookInput();
-    }
-
-    disconnectedCallback(): void {
-        super.disconnectedCallback();
-
-        this._unhookInput();
-    }
-
     focus() {
-        this._inputElement?.focus();
-    }
-
-    protected _attributeChanged() {
-        super._attributeChanged();
-
-        this._unhookInput();
-        this._createInput();
-        this._hookInput();
+        const input = this.shadowRoot.querySelector("input[type='file']") as HTMLInputElement;
+        input?.focus();
     }
 
     private async _change(e: Event) {
@@ -51,43 +29,20 @@ export class PersistentObjectAttributeBinaryFile extends PersistentObjectAttribu
         if (targetInput.files && targetInput.files.length > 0) {
             const file = targetInput.files[0];
             this.value = file.name;
-            await this.attribute.setFile(file);
+            this.attribute.file = file;
             if (this.attribute.triggersRefresh)
                 await this.attribute.triggerRefresh(true);
         }
     }
 
-    private _unhookInput() {
-        const currentInput = this.querySelector("input[slot=upload]") as HTMLInputElement;
-        if (currentInput)
-            this.removeChild(currentInput);
-    }
-
-    private _createInput() {
-        if (!this.attribute || this.attribute.type !== "BinaryFile")
-            return;
-
-        this._inputElement = document.createElement("input");
-        this._inputElement.type = "file";
-        const accept = this.attribute.getTypeHint("accept", null);
-        if (accept)
-            this._inputElement.accept = accept;
-    }
-
-    private _hookInput() {
-        if (!this._inputElement)
-            return;
-        
-        this._inputElement.setAttribute("slot", "upload");
-        this.appendChild(this._inputElement);
-    }
 
     private async _clear() {
         this.value = null;
-        await this.attribute.setFile(null);
+        this.attribute.file = null;
         
-        if (this._inputElement)
-            this._inputElement.value = null;
+        const input = this.shadowRoot.querySelector("input[type='file']") as HTMLInputElement;
+        if (input)
+            input.value = null;
 
         if(this.attribute?.triggersRefresh)
             await this.attribute.triggerRefresh(true);
@@ -102,6 +57,13 @@ export class PersistentObjectAttributeBinaryFile extends PersistentObjectAttribu
             return "";
 
         return value.split("|")[0];
+    }
+
+    private _computeAccept(attribute: Vidyano.PersistentObjectAttribute): string {
+        if (!attribute)
+            return "";
+        
+        return attribute.getTypeHint("accept", "");
     }
 }
 

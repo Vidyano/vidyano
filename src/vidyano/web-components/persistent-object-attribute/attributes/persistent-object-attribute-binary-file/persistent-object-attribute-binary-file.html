@@ -18,7 +18,7 @@
                 <template>
                     <button class="browse" slot="right" on-change="_change">
                         <vi-icon source="FileUpload"></vi-icon>
-                        <slot name="upload"></slot>
+                        <input type="file" accept$="[[_computeAccept(attribute)]]" on-change="_change">
                     </button>
                     <dom-if if="[[canClear]]" restamp>
                         <template>
