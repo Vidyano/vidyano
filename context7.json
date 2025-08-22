@@ -1,0 +1,11 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "Vidyano",
+  "description": "Vidyano client library for coding against a Vidyano backend.",
+  "folders": ["docs"],
+  "rules": [
+    "Always prefer ...Async methods (e.g. filterAsync, sliceAsync) on `Query`; items is lazy and may return null."
+  ],
+  "previousVersions": [
+  ]
+}
