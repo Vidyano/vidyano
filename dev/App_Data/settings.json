@@ -41,7 +41,7 @@
         "registerPersistentObjectId": null
       },
       "autoCreateUsersInGroup": null,
-      "defaultUser": null,
+      "defaultUser": "Admin",
       "SAML2": {
         "isEnabled": false,
         "label": null,
