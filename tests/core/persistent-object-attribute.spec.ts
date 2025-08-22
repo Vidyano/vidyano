@@ -646,3 +646,74 @@ test.describe("Event Handling", () => {
         disposer();
     });
 });
+
+test.describe("BinaryFile Attributes", () => {
+    test("should persist File through edit/save lifecycle", async ({ service }) => {
+        // Phase 1: Load the test object
+        const attributesObject = await service.getPersistentObject(null, "Dev.Attributes", "BinaryFile");
+        expect(attributesObject).toBeInstanceOf(PersistentObject);
+        
+        const binaryFileAttr = attributesObject.getAttribute("BinaryFile");
+        expect(binaryFileAttr).toBeInstanceOf(PersistentObjectAttribute);
+        expect(binaryFileAttr.type).toBe("BinaryFile");
+        
+        // Phase 2: Set initial file
+        const testContent = `Test file created at ${new Date().toISOString()}`;
+        const file = new File([testContent], "test-lifecycle.txt", { 
+            type: "text/plain",
+            lastModified: Date.now()
+        });
+        
+        expect(attributesObject.isEditing).toBe(true);
+        
+        await binaryFileAttr.setFile(file);
+        expect(binaryFileAttr.file).toBe(file);
+        // Value should be in format: filename|base64content
+        expect(binaryFileAttr.value).toContain("test-lifecycle.txt|");
+        expect(binaryFileAttr.value).toContain("VGVzdCBmaWxlIGNyZWF0ZWQgYXQ"); // Start of base64 for "Test file created at"
+        expect(binaryFileAttr.isValueChanged).toBe(true);
+        
+        // Phase 3: Save and verify file persists for potential retry scenarios
+        const saveAction = attributesObject.getAction("EndEdit");
+        expect(saveAction).toBeDefined();
+        
+        const savedObject = await saveAction.execute({ skipOpen: true });
+        
+        expect(savedObject.isEditing).toBe(false);
+        
+        const savedBinaryFileAttr = savedObject.getAttribute("BinaryFile");
+        // File reference should persist for retry scenarios and validation errors
+        expect(savedBinaryFileAttr.file).toBeDefined();
+        expect(savedBinaryFileAttr.file).toBe(file);
+        expect(savedBinaryFileAttr.file?.name).toBe("test-lifecycle.txt");
+        
+        // Phase 4: Reload object to simulate fresh load
+        const reloadedObject = await service.getPersistentObject(null, "Dev.Attributes", "BinaryFile");
+        const reloadedBinaryFileAttr = reloadedObject.getAttribute("BinaryFile");
+        
+        expect(reloadedBinaryFileAttr.value).toBeTruthy();
+        expect(reloadedObject.isEditing).toBe(true);
+        
+        // Phase 5: Update with new file
+        const updatedFile = new File(["Updated content"], "updated-file.txt", {
+            type: "text/plain",
+            lastModified: Date.now()
+        });
+        
+        await reloadedBinaryFileAttr.setFile(updatedFile);
+        expect(reloadedBinaryFileAttr.file).toBe(updatedFile);
+        // Value should be in format: filename|base64content
+        expect(reloadedBinaryFileAttr.value).toContain("updated-file.txt|");
+        expect(reloadedBinaryFileAttr.value).toContain("VXBkYXRlZCBjb250ZW50"); // Base64 for "Updated content"
+        expect(reloadedBinaryFileAttr.isValueChanged).toBe(true);
+        
+        // Phase 6: Save again and verify file persists
+        const saveAction2 = reloadedObject.getAction("EndEdit");
+        const savedObject2 = await saveAction2.execute({ skipOpen: true });
+        
+        expect(savedObject2.isEditing).toBe(false);
+        const finalBinaryFileAttr = savedObject2.getAttribute("BinaryFile");
+        // File reference should persist for potential retry scenarios
+        expect(finalBinaryFileAttr.file).toBe(updatedFile);
+    });
+});

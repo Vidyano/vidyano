@@ -26,7 +26,7 @@ export class PersistentObjectAttribute extends ServiceObject {
     #group: PersistentObjectAttributeGroup;
     #groupKey: string;
     readonly #id: string;
-    #input: HTMLInputElement;
+    #file: File | null;
     #isReadOnly: boolean;
     #isRequired: boolean;
     readonly #isSensitive: boolean;
@@ -97,13 +97,8 @@ export class PersistentObjectAttribute extends ServiceObject {
         if (this.type !== "Reference")
             this.options = attr.options;
 
-        if (this.type === "BinaryFile") {
-            const input = document?.createElement("input");
-            input.type = "file";
-            input.accept = this.getTypeHint("accept", null);
-
-            this.#input = input;
-        }
+        // File handling moved to web component
+        this.#file = null;
 
         this.#actions = <any>[];
         Action.addActions(this.service, this.parent, this.#actions, attr.actions || []);
@@ -515,10 +510,48 @@ export class PersistentObjectAttribute extends ServiceObject {
     }
 
     /**
-     * Gets the input element associated with the attribute.
+     * Gets the file associated with the attribute (for BinaryFile types).
      */
-    get input(): HTMLInputElement {
-        return this.#input;
+    get file(): File | null {
+        return this.#file;
+    }
+
+    /**
+     * Sets the file for the attribute asynchronously (for BinaryFile types).
+     * Converts the file to base64 and updates the value in the format: filename|base64content
+     */
+    async setFile(file: File | null): Promise<void> {
+        this.#file = file;
+        
+        if (this.type === "BinaryFile") {
+            if (file) {
+                // Convert file content to base64
+                const buffer = await file.arrayBuffer();
+                const bytes = new Uint8Array(buffer);
+                
+                // Process in chunks to avoid call stack size exceeded on large files
+                const chunkSize = 32768; // 32KB chunks
+                let binary = '';
+                for (let i = 0; i < bytes.length; i += chunkSize) {
+                    const chunk = bytes.slice(i, i + chunkSize);
+                    binary += String.fromCharCode(...chunk);
+                }
+                
+                const base64 = btoa(binary);
+                this.value = `${file.name}|${base64}`;
+            } else {
+                this.value = null;
+            }
+        }
+    }
+
+    /**
+     * @deprecated Use file property instead. This getter is kept for backward compatibility.
+     */
+    get input(): any {
+        // Return null for backward compatibility
+        // Web components should manage their own input elements
+        return null;
     }
 
     /**
@@ -656,9 +689,6 @@ export class PersistentObjectAttribute extends ServiceObject {
 
             this.notifyPropertyChanged("value", this.value, oldValue);
             this.notifyPropertyChanged("displayValue", this.displayValue, oldDisplayValue);
-
-            if (this.#input)
-                this.#input.value = null;
 
             this.isValueChanged = !!resultAttr.isValueChanged;
         }

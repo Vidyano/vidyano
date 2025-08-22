@@ -854,25 +854,25 @@ export class Service extends Observable<Service> {
             if (isFreezingAction)
                 parent?.freeze();
 
-            const getInputs = (result: [attributeName: string, input: HTMLInputElement][], attribute: PersistentObjectAttribute) => {
-                if (attribute.input != null && attribute.isValueChanged) {
+            const getFiles = (result: [attributeName: string, file: File][], attribute: PersistentObjectAttribute) => {
+                if (attribute.file != null && attribute.isValueChanged) {
                     result.push([
                         !attribute.parent.ownerDetailAttribute ? attribute.name : `${attribute.parent.ownerDetailAttribute.name}.${attribute.parent.ownerDetailAttribute.objects.indexOf(attribute.parent)}.${attribute.name}`,
-                        attribute.input
+                        attribute.file
                     ]);
                 } else if (attribute instanceof PersistentObjectAttributeAsDetail) {
-                    attribute.objects?.flatMap(p => p.attributes).reduce(getInputs, result);
+                    attribute.objects?.flatMap(p => p.attributes).reduce(getFiles, result);
                 }
 
                 return result;
             };
 
-            const inputs = parent?.attributes.reduce(getInputs, []);
-            if (inputs?.length > 0) {
+            const files = parent?.attributes.reduce(getFiles, []);
+            if (files?.length > 0) {
                 const formData = new FormData();
-                inputs.forEach(i => {
-                    const [attributeName, input] = i;
-                    formData.set(attributeName, input.files[0]);
+                files.forEach(f => {
+                    const [attributeName, file] = f;
+                    formData.set(attributeName, file);
                 });
 
                 data.__form_data = formData;
