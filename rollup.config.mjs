@@ -98,6 +98,14 @@ const configs = [
 
             warn(warning);
         }
+    }, {
+        input: 'src/core/index.js',
+        external: ["tslib", "bignumber.js"],
+        plugins: [
+            alias({ entries }),
+            dts({ respectExternal: true })
+        ],
+        output: [{ file: "dist/core/index.d.ts", format: "es" }],
     }
 ];
 
@@ -112,14 +120,6 @@ if (!isDevelopment) {
                 dts({ respectExternal: true })
             ],
             output: [{ file: "dev/wwwroot/index.d.ts", format: "es" }, { file: "dist/vidyano/index.d.ts", format: "es" }],
-        }, {
-            input: 'src/core/index.js',
-            external: ["tslib", "bignumber.js"],
-            plugins: [
-                alias({ entries }),
-                dts({ respectExternal: true })
-            ],
-            output: [{ file: "dist/core/index.d.ts", format: "es" }],
         }
     ]);
 }
