@@ -79,6 +79,7 @@ export class Query extends ServiceObjectWithActions {
     #selectAll: IQuerySelectAll;
     #ownerAttributeWithReference: PersistentObjectAttributeWithReference;
     #textSearch: string;
+    #selectedItemCount: number = 0;
 
     /**
      * Gets or sets the page size for the query.
@@ -369,10 +370,20 @@ export class Query extends ServiceObjectWithActions {
 
             items.forEach(item => item.isSelected = true);
             this.notifyPropertyChanged("selectedItems", items);
+            this.#updateSelectedItemCount();
         }
         finally {
             this.#isSelectionModifying = false;
         }
+    }
+
+    /**
+     * Gets the number of selected items. 
+     * When allSelected is true, returns the totalItems count.
+     * Otherwise returns the actual count of selected items.
+     */
+    get selectedItemCount(): number {
+        return this.#selectedItemCount;
     }
 
     /**
@@ -1020,8 +1031,24 @@ export class Query extends ServiceObjectWithActions {
      * @param args - The property changed arguments.
      */
     #selectAllPropertyChanged(selectAll: QuerySelectAll, args: PropertyChangedArgs) {
-        if (args.propertyName === "allSelected")
+        if (args.propertyName === "allSelected") {
             this.selectedItems = selectAll.allSelected ? this.items : [];
+        }
+    }
+
+    /**
+     * Updates the selected item count and notifies if changed.
+     */
+    #updateSelectedItemCount() {
+        const oldCount = this.#selectedItemCount;
+        const newCount = this.selectAll.allSelected 
+            ? (this.totalItems || 0) 
+            : this.selectedItems.length;
+        
+        if (oldCount !== newCount) {
+            this.#selectedItemCount = newCount;
+            this.notifyPropertyChanged("selectedItemCount", newCount, oldCount);
+        }
     }
 
     /**
@@ -1059,6 +1086,11 @@ export class Query extends ServiceObjectWithActions {
         const oldTotalItems = this.#totalItems;
         this.notifyPropertyChanged("totalItems", this.#totalItems = items, oldTotalItems);
 
+        // If allSelected is true, the selectedItemCount changes with totalItems
+        if (this.selectAll.allSelected) {
+            this.#updateSelectedItemCount();
+        }
+
         const oldLabelWithTotalItems = this.#labelWithTotalItems;
         let formattedTotal = "";
         if (this.totalItems != null) {
@@ -1088,6 +1120,7 @@ export class Query extends ServiceObjectWithActions {
         this.#itemsProxy.setItems(items);
         this.notifyPropertyChanged("items", this.items, oldItems);
         this.notifyArrayChanged("items", 0, oldItems, items.length);
+        this.#updateSelectedItemCount();
     }
     
     /**
@@ -1207,6 +1240,7 @@ export class Query extends ServiceObjectWithActions {
         this.#updateSelectAll(item, selectedItems);
 
         this.notifyPropertyChanged("selectedItems", selectedItems);
+        this.#updateSelectedItemCount();
     }
 
     /**

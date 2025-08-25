@@ -358,4 +358,108 @@ test.describe("Query", () => {
             expect(becameBusy).toBe(true);
         });
     });
+
+    test.describe("Selection and selectedItemCount", () => {
+        test("selectedItemCount starts at 0", async ({ peopleQuery }) => {
+            expect(peopleQuery.selectedItemCount).toBe(0);
+            expect(peopleQuery.selectedItems.length).toBe(0);
+        });
+
+        test("selectedItemCount updates when items are selected", async ({ peopleQuery }) => {
+            const item1 = peopleQuery.items[0];
+            const item2 = peopleQuery.items[1];
+            
+            // Select first item
+            item1.isSelected = true;
+            expect(peopleQuery.selectedItemCount).toBe(1);
+            expect(peopleQuery.selectedItems.length).toBe(1);
+            
+            // Select second item
+            item2.isSelected = true;
+            expect(peopleQuery.selectedItemCount).toBe(2);
+            expect(peopleQuery.selectedItems.length).toBe(2);
+            
+            // Deselect first item
+            item1.isSelected = false;
+            expect(peopleQuery.selectedItemCount).toBe(1);
+            expect(peopleQuery.selectedItems.length).toBe(1);
+        });
+
+        test("selectedItemCount updates when selectedItems is set directly", async ({ peopleQuery }) => {
+            const items = [peopleQuery.items[0], peopleQuery.items[2], peopleQuery.items[4]];
+            
+            peopleQuery.selectedItems = items;
+            expect(peopleQuery.selectedItemCount).toBe(3);
+            expect(peopleQuery.selectedItems.length).toBe(3);
+            
+            peopleQuery.selectedItems = [];
+            expect(peopleQuery.selectedItemCount).toBe(0);
+            expect(peopleQuery.selectedItems.length).toBe(0);
+        });
+
+        test("selectedItemCount equals totalItems when allSelected is true", async ({ peopleQuery }) => {
+            // Verify selectAll is available for this query
+            expect(peopleQuery.selectAll.isAvailable).toBe(true);
+            
+            // Enable select all
+            peopleQuery.selectAll.allSelected = true;
+            
+            expect(peopleQuery.selectedItemCount).toBe(peopleQuery.totalItems);
+            expect(peopleQuery.selectedItemCount).toBe(10_000);
+            
+            // Disable select all
+            peopleQuery.selectAll.allSelected = false;
+            expect(peopleQuery.selectedItemCount).toBe(0);
+        });
+
+        test("selectedItemCount notifies when changed", async ({ peopleQuery }) => {
+            let notificationCount = 0;
+            let lastOldValue: number = 0;
+            let lastNewValue: number = 0;
+            
+            const disposer = peopleQuery.propertyChanged.attach((sender, args) => {
+                if (args.propertyName === "selectedItemCount") {
+                    notificationCount++;
+                    lastOldValue = args.oldValue;
+                    lastNewValue = args.newValue;
+                }
+            });
+            
+            // Select an item
+            peopleQuery.items[0].isSelected = true;
+            expect(notificationCount).toBe(1);
+            expect(lastOldValue).toBe(0);
+            expect(lastNewValue).toBe(1);
+            
+            // Select another item
+            peopleQuery.items[1].isSelected = true;
+            expect(notificationCount).toBe(2);
+            expect(lastOldValue).toBe(1);
+            expect(lastNewValue).toBe(2);
+            
+            // Select all
+            peopleQuery.selectAll.allSelected = true;
+            expect(notificationCount).toBe(3);
+            expect(lastOldValue).toBe(2);
+            expect(lastNewValue).toBe(10_000);
+            
+            disposer();
+        });
+
+        test("selectedItemCount updates when totalItems changes with allSelected", async ({ peopleQuery }) => {
+            // Enable select all
+            peopleQuery.selectAll.allSelected = true;
+            const initialCount = peopleQuery.selectedItemCount;
+            expect(initialCount).toBe(peopleQuery.totalItems);
+            
+            // Clear and re-search to potentially change totalItems
+            peopleQuery.textSearch = "test";
+            await peopleQuery.search();
+            
+            // Verify selectedItemCount still matches totalItems when allSelected is true
+            if (peopleQuery.selectAll.allSelected) {
+                expect(peopleQuery.selectedItemCount).toBe(peopleQuery.totalItems);
+            }
+        });
+    });
 });
