@@ -152,17 +152,27 @@ public partial class AttributesActions
 
     public override void OnLoad(PersistentObject obj, PersistentObject? parent)
     {
-        if (!string.IsNullOrEmpty(obj.ObjectId))
+        if (!string.IsNullOrWhiteSpace(obj.ObjectId))
         {
-            var selectedAttributes = obj.ObjectId.Split(';').Select(a => a.Trim()).ToArray();
+            var spec = obj.ObjectId
+                .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .Select(e => e.Split(':', StringSplitOptions.RemoveEmptyEntries))
+                .Where(p => p.Length > 0)
+                .ToDictionary(
+                    p => p[0].Trim(),
+                    p => p.Skip(1).Select(m => m.Trim().ToLowerInvariant()).ToArray(),
+                    StringComparer.OrdinalIgnoreCase);
 
-            foreach (var attribute in obj.Attributes.ToArray())
+            foreach (var attr in obj.Attributes.ToList())
             {
-                if (!selectedAttributes.Contains(attribute.Name))
+                if (!spec.TryGetValue(attr.Name, out var mods))
                 {
-                    // Remove attributes that are not in the selected list
-                    obj.RemoveAttribute(attribute.Name);
+                    obj.RemoveAttribute(attr.Name);
+                    continue;
                 }
+
+                attr.IsReadOnly  = mods.Contains("readonly");
+                attr.IsSensitive = mods.Contains("sensitive");
             }
         }
 

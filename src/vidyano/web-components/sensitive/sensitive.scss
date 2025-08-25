@@ -3,7 +3,10 @@
     text-overflow: ellipsis;
     overflow: hidden;
 
-    &:not([disabled])[is-app-sensitive] ::slotted(*) {
-        filter: blur(5px);
+    &:not([show]) {
+        &:not([disabled])[is-app-sensitive] ::slotted(*) {
+            cursor: pointer;
+            filter: blur(5px);
+        }
     }
 }
