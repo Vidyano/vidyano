@@ -14,6 +14,7 @@ import { PersistentObjectAttributeWithReference } from "./persistent-object-attr
 import { _internal, QuerySymbols } from "./_internals.js"
 import { QuerySelectAll, IQuerySelectAll } from "./query-select-all.js";
 import { QueryItems, QueryItemsProxy } from "./query-items.js";
+import { CultureInfo } from "./cultures.js";
 
 const clonedFrom = Symbol("clonedFrom");
 
@@ -1059,7 +1060,19 @@ export class Query extends ServiceObjectWithActions {
         this.notifyPropertyChanged("totalItems", this.#totalItems = items, oldTotalItems);
 
         const oldLabelWithTotalItems = this.#labelWithTotalItems;
-        this.#labelWithTotalItems = (this.totalItems != null ? this.totalItems + (this.hasMore ? "+" : "") + " " : "") + (this.totalItems !== 1 ? this.label : (this.singularLabel || this.persistentObject.label || this.persistentObject.type));
+        let formattedTotal = "";
+        if (this.totalItems != null) {
+            // Format number with thousand separators according to current culture
+            try {
+                const culture = CultureInfo.currentCulture || CultureInfo.invariantCulture;
+                formattedTotal = new Intl.NumberFormat(culture?.name || undefined).format(this.totalItems);
+            } catch {
+                // Fall back to browser's default locale if culture formatting fails
+                formattedTotal = new Intl.NumberFormat().format(this.totalItems);
+            }
+            formattedTotal += (this.hasMore ? "+" : "") + " ";
+        }
+        this.#labelWithTotalItems = formattedTotal + (this.totalItems !== 1 ? this.label : (this.singularLabel || this.persistentObject.label || this.persistentObject.type));
         this.notifyPropertyChanged("labelWithTotalItems", this.#labelWithTotalItems, oldLabelWithTotalItems);
     }
 
