@@ -669,8 +669,8 @@ test.describe("BinaryFile Attributes", () => {
         binaryFileAttr.file = file;
         expect(binaryFileAttr.file).toBe(file);
         
-        // Value will be set to null when a file is set
-        expect(binaryFileAttr.value).toBeNull();
+        // Value will be set to the filename when a file is set
+        expect(binaryFileAttr.value).toBe("test-lifecycle.txt");
         expect(binaryFileAttr.isValueChanged).toBe(true);
         
         // Phase 3: Save and verify file persists for potential retry scenarios
@@ -714,8 +714,8 @@ test.describe("BinaryFile Attributes", () => {
         reloadedBinaryFileAttr.file = updatedFile;
         expect(reloadedBinaryFileAttr.file).toBe(updatedFile);
         
-        // Value will be set to null when a file is set
-        expect(reloadedBinaryFileAttr.value).toBeNull();
+        // Value will be set to the filename when a file is set
+        expect(reloadedBinaryFileAttr.value).toBe("updated-file.txt");
         expect(reloadedBinaryFileAttr.isValueChanged).toBe(true);
         
         // Phase 6: Save again and verify file persists

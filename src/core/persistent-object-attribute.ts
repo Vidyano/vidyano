@@ -518,10 +518,14 @@ export class PersistentObjectAttribute extends ServiceObject {
     set file(value: File | null) {
         this.#file = value;
 
-        // Setting a file will take precedence over the value.
-        // By setting the value to null we avoid sending redundant data to the backend.
+        // Setting a file will store the filename as the value temporarily.
+        // This will be filtered out in _toServiceObject to avoid sending redundant data.
         // The backend will immediately populate the attribute's value with the uploaded file contents (filename|base64data).
-        this.value = null;
+        if (value) {
+            this.value = value.name;
+        } else {
+            this.value = null;
+        }
     }
 
     /**
@@ -616,7 +620,13 @@ export class PersistentObjectAttribute extends ServiceObject {
 
         const result = this._copyPropertiesFromValues(!inheritedPropertyValues ? initialPropertyValues : { ...initialPropertyValues, ...inheritedPropertyValues});
 
-        result.value = this.#serviceValue;
+        // For BinaryFile attributes with a file attached, don't send the value to avoid redundancy
+        // The file will be sent separately and the backend will update the value
+        if (this.type === "BinaryFile" && this.#file) {
+            result.value = undefined;
+        } else {
+            result.value = this.#serviceValue;
+        }
         result.actions = this.actions.map(a => a.name);
 
         if (this.options && this.options.length > 0 && this.isValueChanged)
