@@ -12,7 +12,7 @@ import { PersistentObjectAttribute } from "components/persistent-object-attribut
         },
         fileName: {
             type: String,
-            computed: "_computeFileName(value)"
+            computed: "_computeFileName(value, editing)"
         }
     }
 }, "vi-persistent-object-attribute-binary-file")
@@ -52,9 +52,9 @@ export class PersistentObjectAttributeBinaryFile extends PersistentObjectAttribu
         return !readOnly && !String.isNullOrEmpty(value);
     }
 
-    private _computeFileName(value: string): string {
+    private _computeFileName(value: string, editing: boolean): string {
         if (String.isNullOrEmpty(value))
-            return "";
+            return editing ? "" : "—";
 
         return value.split("|")[0];
     }
