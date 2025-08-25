@@ -41,6 +41,10 @@ public partial class PersonActions
                     break;
             }
         }
+        else
+        {
+            query.EnableSelectAll = true;
+        }
     }
 
     public override void PreClient(PersistentObject obj)
