@@ -141,6 +141,27 @@ export class ActionButton extends ConfigurableWebComponent {
         }
     }
 
+    click(option: number = -1) {
+        if (!(this.action instanceof Vidyano.Action))
+            return;
+
+        if (!this.canExecute)
+            return;
+
+        if (!this.item) {
+            this.action.execute({
+                menuOption: option
+            });
+        }
+        else {
+            this.action.execute({
+                menuOption: option,
+                parameters: this.options && option < this.options.length ? { MenuLabel: this.options[option].value } : null,
+                selectedItems: [this.item]
+            });
+        }
+    }
+
     private _applyItemSelection(item: Vidyano.QueryResultItem, action: Vidyano.Action | Vidyano.ActionGroup) {
         const args: Vidyano.ISelectedItemsActionArgs = {
             name: action.name,
@@ -170,7 +191,7 @@ export class ActionButton extends ConfigurableWebComponent {
         }
 
         if (!this.options)
-            this._execute();
+            this.click();
 
         e.stopPropagation();
         e.preventDefault();
@@ -182,27 +203,9 @@ export class ActionButton extends ConfigurableWebComponent {
             return;
         }
 
-        this._execute(e.model.option.key);
+        this.click(e.model.option.key);
     }
 
-    private _execute(option: number = -1) {
-        if (!(this.action instanceof Vidyano.Action))
-            return;
-
-        if (this.canExecute) {
-            if (!this.item)
-                this.action.execute({
-                    menuOption: option
-                });
-            else {
-                this.action.execute({
-                    menuOption: option,
-                    parameters: this.options && option < this.options.length ? { MenuLabel: this.options[option].value } : null,
-                    selectedItems: [this.item]
-                });
-            }
-        }
-    }
 
     private _observeAction(canExecute: boolean, isVisible: boolean, options: boolean) {
         if(this._skipObserver)
