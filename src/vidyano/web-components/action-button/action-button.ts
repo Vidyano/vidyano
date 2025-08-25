@@ -7,6 +7,11 @@ import { ConfigurableWebComponent } from "components/web-component/web-component
     properties: {
         action: Object,
         item: Object,
+        name: {
+            type: String,
+            reflectToAttribute: true,
+            computed: "_computeName(action)"
+        },
         icon: {
             type: String,
             computed: "_computeIcon(action)"
@@ -223,6 +228,10 @@ export class ActionButton extends ConfigurableWebComponent {
 
     private _computeTitle(action: Vidyano.Action, pinned: boolean): string {
         return pinned ? action.displayName : null;
+    }
+
+    private _computeName(action: Vidyano.Action | Vidyano.ActionGroup): string {
+        return action ? action.name : null;
     }
 
     private _computeIcon(action: Vidyano.Action): string {
