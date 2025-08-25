@@ -517,6 +517,11 @@ export class PersistentObjectAttribute extends ServiceObject {
     }
     set file(value: File | null) {
         this.#file = value;
+
+        // Setting a file will take precedence over the value.
+        // By setting the value to null we avoid sending redundant data to the backend.
+        // The backend will immediately populate the attribute's value with the uploaded file contents (filename|base64data).
+        this.value = null;
     }
 
     /**

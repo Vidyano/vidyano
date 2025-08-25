@@ -668,9 +668,9 @@ test.describe("BinaryFile Attributes", () => {
         
         binaryFileAttr.file = file;
         expect(binaryFileAttr.file).toBe(file);
-        // Value should be in format: filename|base64content
-        expect(binaryFileAttr.value).toContain("test-lifecycle.txt|");
-        expect(binaryFileAttr.value).toContain("VGVzdCBmaWxlIGNyZWF0ZWQgYXQ"); // Start of base64 for "Test file created at"
+        
+        // Value will be set to null when a file is set
+        expect(binaryFileAttr.value).toBeNull();
         expect(binaryFileAttr.isValueChanged).toBe(true);
         
         // Phase 3: Save and verify file persists for potential retry scenarios
@@ -682,11 +682,22 @@ test.describe("BinaryFile Attributes", () => {
         expect(savedObject.isEditing).toBe(false);
         
         const savedBinaryFileAttr = savedObject.getAttribute("BinaryFile");
-        // File reference should persist for retry scenarios and validation errors
-        expect(savedBinaryFileAttr.file).toBeDefined();
-        expect(savedBinaryFileAttr.file).toBe(file);
-        expect(savedBinaryFileAttr.file?.name).toBe("test-lifecycle.txt");
+        // File should've been cleared after successful roundtrip
+        expect(savedBinaryFileAttr.file).toBeNull();
         
+        // Backend should have set the value to filename|base64data format
+        expect(savedBinaryFileAttr.value).toBeTruthy();
+        expect(typeof savedBinaryFileAttr.value).toBe("string");
+        
+        // Parse and verify the format
+        const [filename, base64data] = savedBinaryFileAttr.value.split("|");
+        expect(filename).toBe("test-lifecycle.txt");
+        expect(base64data).toBeTruthy();
+        
+        // Verify the base64 data decodes to our original content
+        const decodedContent = atob(base64data);
+        expect(decodedContent).toBe(testContent);
+
         // Phase 4: Reload object to simulate fresh load
         const reloadedObject = await service.getPersistentObject(null, "Dev.Attributes", "BinaryFile");
         const reloadedBinaryFileAttr = reloadedObject.getAttribute("BinaryFile");
@@ -702,9 +713,9 @@ test.describe("BinaryFile Attributes", () => {
         
         reloadedBinaryFileAttr.file = updatedFile;
         expect(reloadedBinaryFileAttr.file).toBe(updatedFile);
-        // Value should be in format: filename|base64content
-        expect(reloadedBinaryFileAttr.value).toContain("updated-file.txt|");
-        expect(reloadedBinaryFileAttr.value).toContain("VXBkYXRlZCBjb250ZW50"); // Base64 for "Updated content"
+        
+        // Value will be set to null when a file is set
+        expect(reloadedBinaryFileAttr.value).toBeNull();
         expect(reloadedBinaryFileAttr.isValueChanged).toBe(true);
         
         // Phase 6: Save again and verify file persists
@@ -713,7 +724,21 @@ test.describe("BinaryFile Attributes", () => {
         
         expect(savedObject2.isEditing).toBe(false);
         const finalBinaryFileAttr = savedObject2.getAttribute("BinaryFile");
-        // File reference should persist for potential retry scenarios
-        expect(finalBinaryFileAttr.file).toBe(updatedFile);
+        
+        // File should've been cleared after successful roundtrip
+        expect(finalBinaryFileAttr.file).toBeNull();
+        
+        // Backend should have set the value to filename|base64data format
+        expect(finalBinaryFileAttr.value).toBeTruthy();
+        expect(typeof finalBinaryFileAttr.value).toBe("string");
+        
+        // Parse and verify the format for the updated file
+        const [updatedFilename, updatedBase64data] = finalBinaryFileAttr.value.split("|");
+        expect(updatedFilename).toBe("updated-file.txt");
+        expect(updatedBase64data).toBeTruthy();
+        
+        // Verify the base64 data decodes to our updated content
+        const updatedDecodedContent = atob(updatedBase64data);
+        expect(updatedDecodedContent).toBe("Updated content");
     });
 });
