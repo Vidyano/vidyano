@@ -569,5 +569,45 @@ test.describe("Query", () => {
             expect(peopleQuery.selectedItemCount).toBe(1);
             expect(peopleQuery.selectAll.allSelected).toBe(false);
         });
+
+        test("selectedItemCount updates correctly with selectRange (additive)", async ({ peopleQuery }) => {
+            // Start with no selection
+            expect(peopleQuery.selectedItemCount).toBe(0);
+            
+            // Select a range from index 2 to 7 (6 items: 2,3,4,5,6,7)
+            peopleQuery.selectRange(2, 7);
+            expect(peopleQuery.selectedItemCount).toBe(6);
+            expect(peopleQuery.selectedItems.length).toBe(6);
+            
+            // Select another range from 10 to 14 (5 items) - should ADD to selection
+            peopleQuery.selectRange(10, 14);
+            expect(peopleQuery.selectedItemCount).toBe(11); // 6 + 5 items
+            expect(peopleQuery.selectedItems.length).toBe(11);
+            
+            // Select overlapping range from 5 to 12 - items 5,6,7 already selected, item 10,11,12 already selected
+            // Should add items 8,9 (only 2 new items)
+            peopleQuery.selectRange(5, 12);
+            expect(peopleQuery.selectedItemCount).toBe(13); // 2,3,4,5,6,7,8,9,10,11,12,13,14
+            
+            // Clear selection
+            peopleQuery.selectedItems = [];
+            expect(peopleQuery.selectedItemCount).toBe(0);
+            
+            // Test with select-all
+            peopleQuery.selectAll.allSelected = true;
+            expect(peopleQuery.selectedItemCount).toBe(10_000);
+            
+            // Deselect a few items to go inverse
+            peopleQuery.items[0].isSelected = false;
+            peopleQuery.items[1].isSelected = false;
+            peopleQuery.items[2].isSelected = false;
+            expect(peopleQuery.selectAll.inverse).toBe(true);
+            expect(peopleQuery.selectedItemCount).toBe(9_997);
+            
+            // selectRange should ensure items 5-8 are selected (re-select item 5-8 if they were deselected)
+            peopleQuery.selectRange(5, 8);
+            // Items 5-8 are now selected, items 0,1,2 remain deselected
+            expect(peopleQuery.selectedItemCount).toBe(9_997); // Still 10000 - 3
+        });
     });
 });

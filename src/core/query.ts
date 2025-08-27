@@ -613,6 +613,10 @@ export class Query extends ServiceObjectWithActions {
 
                 selectionUpdated = itemsToSelect.length > 0;
                 this.notifyPropertyChanged("selectedItems", this.selectedItems);
+                
+                // Update the selected item count after changing selection
+                this.#updateSelectedItemCount();
+                
                 return true;
             }
 
