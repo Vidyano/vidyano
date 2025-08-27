@@ -461,5 +461,113 @@ test.describe("Query", () => {
                 expect(peopleQuery.selectedItemCount).toBe(peopleQuery.totalItems);
             }
         });
+
+        test("selectedItemCount with inverse select-all (deselecting items)", async ({ peopleQuery }) => {
+            // Start with all selected
+            peopleQuery.selectAll.allSelected = true;
+            expect(peopleQuery.selectAll.inverse).toBe(false);
+            expect(peopleQuery.selectedItemCount).toBe(10_000);
+            
+            // Deselect first item - should switch to inverse mode
+            peopleQuery.items[0].isSelected = false;
+            expect(peopleQuery.selectAll.allSelected).toBe(true);
+            expect(peopleQuery.selectAll.inverse).toBe(true);
+            expect(peopleQuery.selectedItemCount).toBe(9_999);
+            
+            // Deselect another item
+            peopleQuery.items[1].isSelected = false;
+            expect(peopleQuery.selectedItemCount).toBe(9_998);
+            
+            // Deselect a third item
+            peopleQuery.items[2].isSelected = false;
+            expect(peopleQuery.selectedItemCount).toBe(9_997);
+            
+            // Re-select one of the deselected items
+            peopleQuery.items[1].isSelected = true;
+            expect(peopleQuery.selectedItemCount).toBe(9_998);
+            
+            // Re-select all deselected items - should go back to non-inverse
+            peopleQuery.items[0].isSelected = true;
+            peopleQuery.items[2].isSelected = true;
+            expect(peopleQuery.selectAll.allSelected).toBe(true);
+            expect(peopleQuery.selectAll.inverse).toBe(false);
+            expect(peopleQuery.selectedItemCount).toBe(10_000);
+        });
+
+        test("selectedItemCount with inverse select-all persists across page loads", async ({ peopleQuery }) => {
+            // Enable select all
+            peopleQuery.selectAll.allSelected = true;
+            expect(peopleQuery.selectedItemCount).toBe(10_000);
+            
+            // Deselect a few items from the first page
+            peopleQuery.items[0].isSelected = false;
+            peopleQuery.items[5].isSelected = false;
+            peopleQuery.items[10].isSelected = false;
+            expect(peopleQuery.selectAll.inverse).toBe(true);
+            expect(peopleQuery.selectedItemCount).toBe(9_997);
+            
+            // Load items from another page
+            const secondPageItems = await peopleQuery.getItems(100, 100);
+            expect(secondPageItems.length).toBe(100);
+            
+            // Verify count remains correct
+            expect(peopleQuery.selectedItemCount).toBe(9_997);
+            
+            // Deselect an item from the second page
+            if (secondPageItems[0]) {
+                secondPageItems[0].isSelected = false;
+                expect(peopleQuery.selectedItemCount).toBe(9_996);
+            }
+        });
+
+        test("selectedItemCount edge cases with empty selection", async ({ peopleQuery }) => {
+            // Start with no selection
+            expect(peopleQuery.selectedItemCount).toBe(0);
+            expect(peopleQuery.selectAll.allSelected).toBe(false);
+            
+            // Select all then immediately deselect all
+            peopleQuery.selectAll.allSelected = true;
+            expect(peopleQuery.selectedItemCount).toBe(10_000);
+            
+            peopleQuery.selectAll.allSelected = false;
+            expect(peopleQuery.selectedItemCount).toBe(0);
+            expect(peopleQuery.selectAll.inverse).toBe(false);
+            
+            // Manually select a few items
+            peopleQuery.items[0].isSelected = true;
+            peopleQuery.items[1].isSelected = true;
+            expect(peopleQuery.selectedItemCount).toBe(2);
+            
+            // Clear selection by setting selectedItems to empty array
+            peopleQuery.selectedItems = [];
+            expect(peopleQuery.selectedItemCount).toBe(0);
+        });
+
+        test("selectedItemCount with mixed selection operations", async ({ peopleQuery }) => {
+            // Select specific items manually
+            peopleQuery.items[0].isSelected = true;
+            peopleQuery.items[2].isSelected = true;
+            peopleQuery.items[4].isSelected = true;
+            expect(peopleQuery.selectedItemCount).toBe(3);
+            
+            // Now select all - should override manual selection
+            peopleQuery.selectAll.allSelected = true;
+            expect(peopleQuery.selectedItemCount).toBe(10_000);
+            expect(peopleQuery.selectAll.inverse).toBe(false);
+            
+            // Deselect one to go inverse
+            peopleQuery.items[3].isSelected = false;
+            expect(peopleQuery.selectAll.inverse).toBe(true);
+            expect(peopleQuery.selectedItemCount).toBe(9_999);
+            
+            // Clear select all
+            peopleQuery.selectAll.allSelected = false;
+            expect(peopleQuery.selectedItemCount).toBe(0);
+            
+            // Verify we can go back to manual selection
+            peopleQuery.items[0].isSelected = true;
+            expect(peopleQuery.selectedItemCount).toBe(1);
+            expect(peopleQuery.selectAll.allSelected).toBe(false);
+        });
     });
 });

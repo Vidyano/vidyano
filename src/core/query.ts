@@ -1064,9 +1064,21 @@ export class Query extends ServiceObjectWithActions {
      */
     #updateSelectedItemCount() {
         const oldCount = this.#selectedItemCount;
-        const newCount = this.selectAll.allSelected 
-            ? (this.totalItems || 0) 
-            : this.selectedItems.length;
+        let newCount: number;
+        
+        if (this.selectAll.allSelected) {
+            if (this.selectAll.inverse) {
+                // In inverse mode: total minus deselected items
+                const deselectedCount = this.items.filter(item => !item.isSelected).length;
+                newCount = (this.totalItems || 0) - deselectedCount;
+            } else {
+                // In regular select-all mode: all items are selected
+                newCount = this.totalItems || 0;
+            }
+        } else {
+            // Normal selection: count selected items
+            newCount = this.selectedItems.length;
+        }
         
         if (oldCount !== newCount) {
             this.#selectedItemCount = newCount;
