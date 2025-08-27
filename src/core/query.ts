@@ -1094,14 +1094,8 @@ export class Query extends ServiceObjectWithActions {
         const oldLabelWithTotalItems = this.#labelWithTotalItems;
         let formattedTotal = "";
         if (this.totalItems != null) {
-            // Format number with thousand separators according to current culture
-            try {
-                const culture = CultureInfo.currentCulture || CultureInfo.invariantCulture;
-                formattedTotal = new Intl.NumberFormat(culture?.name || undefined).format(this.totalItems);
-            } catch {
-                // Fall back to browser's default locale if culture formatting fails
-                formattedTotal = new Intl.NumberFormat().format(this.totalItems);
-            }
+            const culture = CultureInfo.currentCulture || CultureInfo.invariantCulture;
+            formattedTotal = culture.formatNumber(this.totalItems);
             formattedTotal += (this.hasMore ? "+" : "") + " ";
         }
         this.#labelWithTotalItems = formattedTotal + (this.totalItems !== 1 ? this.label : (this.singularLabel || this.persistentObject.label || this.persistentObject.type));

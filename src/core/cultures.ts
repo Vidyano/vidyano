@@ -25,6 +25,19 @@ export class CultureInfo {
      */
     constructor(public name: string, public numberFormat: ICultureInfoNumberFormat, public dateFormat: ICultureInfoDateFormat) {
     }
+
+    /**
+     * Formats a number with thousand separators according to the culture.
+     * @param value - The number to format.
+     * @returns The formatted number string.
+     */
+    formatNumber(value: number): string {
+        try {
+            return new Intl.NumberFormat(this.name || undefined).format(value);
+        } catch {
+            return new Intl.NumberFormat().format(value);
+        }
+    }
 }
 
 /**
