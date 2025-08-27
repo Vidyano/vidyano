@@ -385,6 +385,53 @@ test.describe("Action", () => {
             // After refresh, notification should still show full count
             expect(peopleQuery.notification).toBe("10000");
         });
+
+        test("TestCount with inverse selectAll keeps inverse selection across refresh", async ({ peopleQuery }) => {
+            const testCountAction = peopleQuery.actions.find(a => a.name === "TestCount") as Action;
+            expect(testCountAction).toBeInstanceOf(Action);
+            
+            // Ensure query has many items (10,000 total)
+            await peopleQuery.search();
+            expect(peopleQuery.totalItems).toBe(10000);
+            
+            // Enable select-all (non-inverse)
+            peopleQuery.selectAll.allSelected = true;
+            expect(peopleQuery.selectAll.allSelected).toBe(true);
+            expect(peopleQuery.selectAll.inverse).toBe(false);
+
+            peopleQuery.items[0].isSelected = false;
+
+            expect(peopleQuery.selectAll.allSelected).toBe(true);
+            expect(peopleQuery.selectAll.inverse).toBe(true);
+            
+            // First execution should report 9,999 items
+            let result = await testCountAction.execute();
+            expect(result).toBeNull();
+            
+            // Wait for query refresh since TestCount has RefreshQueryOnCompleted: true
+            while (peopleQuery.isBusy) {
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+
+            // After refresh, notification should show full count
+            expect(peopleQuery.notification).toBe("9999");
+            
+            // After refresh, select-all should still be active
+            expect(peopleQuery.selectAll.allSelected).toBe(true);
+            expect(peopleQuery.selectAll.inverse).toBe(true);
+            
+            // Second execution should still report 9,999 items
+            result = await testCountAction.execute();
+            expect(result).toBeNull();
+
+            // Wait for query refresh since TestCount has RefreshQueryOnCompleted: true
+            while (peopleQuery.isBusy) {
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+
+            // After refresh, notification should still show full count
+            expect(peopleQuery.notification).toBe("9999");
+        });
     });
 
     test.describe("Action Grouping", () => {

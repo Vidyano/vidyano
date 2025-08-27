@@ -884,8 +884,10 @@ export class Query extends ServiceObjectWithActions {
      */
     async search(options?: { delay?: number; throwExceptions?: boolean; keepSelection?: boolean }): Promise<QueryResultItem[]> {
         const selectedIds = options?.keepSelection ? this.selectedItems.map(i => i.id) : null;
-        // Capture whether we had non-inverse select-all before refresh
+        // Capture select-all state before refresh
         const wasAllSelected = options?.keepSelection && this.selectAll.allSelected && !this.selectAll.inverse;
+        const wasAllSelectedInverse = options?.keepSelection && this.selectAll.allSelected && this.selectAll.inverse;
+        const inverseDeselectedIds = wasAllSelectedInverse ? this.items.filter(i => !i.isSelected).map(i => i.id) : null;
         const search = () => {
             this.#continuation = null;
             this.#queriedPages = [];
@@ -909,9 +911,23 @@ export class Query extends ServiceObjectWithActions {
 
                 return this.items;
             }, false).then((items: any) => {
-                // Restore select-all state if it was active before refresh
+                // Restore non-inverse select-all state if it was active before refresh
                 if (wasAllSelected) {
                     this.selectAll.allSelected = true;
+                }
+                // Restore inverse select-all state if it was active before refresh
+                else if (wasAllSelectedInverse) {
+                    this.selectAll.allSelected = true;
+                    this.selectAll.inverse = true;
+                    // Deselect the items that were deselected before
+                    if (inverseDeselectedIds && inverseDeselectedIds.length > 0) {
+                        inverseDeselectedIds.forEach(id => {
+                            const item = items.find((i: QueryResultItem) => i?.id === id);
+                            if (item) {
+                                item.isSelected = false;
+                            }
+                        });
+                    }
                 }
                 // Otherwise restore individual selections
                 else if (selectedIds != null && selectedIds.length > 0) {
