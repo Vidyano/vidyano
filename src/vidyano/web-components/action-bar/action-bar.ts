@@ -111,7 +111,7 @@ export class ActionBar extends WebComponentLit {
 
         return html`
             <div class="selected-items">
-                <vi-button label=${`${Vidyano.CultureInfo.currentCulture.formatNumber(selectedItemCount)} selected`} icon="SearchReset" @click=${() => (this.serviceObject as Vidyano.Query).clearSelection()}></vi-button>
+                <vi-button label=${this.service.getTranslatedMessage("Selected", Vidyano.CultureInfo.currentCulture.formatNumber(selectedItemCount))} icon="SearchReset" @click=${() => (this.serviceObject as Vidyano.Query).clearSelection()}></vi-button>
             </div>`;
     }
 

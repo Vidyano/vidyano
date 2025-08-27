@@ -7,6 +7,7 @@ export default {
     "Or": "Or",
     "Password": "Password",
     "Previous": "Previous",
+    "Selected": "{0} selected",
     "Register": "New here? Create an account",
     "RegisterSave": "Register",
     "Reload": "Reload",
