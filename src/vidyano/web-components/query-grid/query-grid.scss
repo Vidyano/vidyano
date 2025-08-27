@@ -114,6 +114,46 @@
         display: none !important;
     }
 
+    // Selected row styles
+    vi-query-grid-row[selected] {
+        background: var(--color-semi-faint);
+        --vi-query-grid-row-odd-color: var(--color-semi-faint);
+        --vi-query-grid-row-even-color: var(--color-semi-faint);
+
+        // Top border for selected rows not preceded by another selected row
+        &::before {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            content: "";
+            height: 1px;
+            background-color: var(--color-lighter);
+            z-index: 999;
+        }
+
+        // Bottom border for all selected rows
+        &::after {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            content: "";
+            height: 1px;
+            background-color: var(--color-lighter);
+        }
+    }
+
+    // Hide top border when a selected row is preceded by another selected row
+    vi-query-grid-row[selected] + vi-query-grid-row[selected]::before {
+        display: none;
+    }
+
+    // Hide top border for the first row when selected
+    vi-query-grid-row[selected]:first-of-type::before {
+        display: none;
+    }
+
     &:not([can-filter]) {
         vi-query-grid-column-header::part(filter) {
             display: none;
