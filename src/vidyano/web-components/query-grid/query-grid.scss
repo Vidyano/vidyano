@@ -116,9 +116,9 @@
 
     // Selected row styles
     vi-query-grid-row[selected] {
-        background: var(--color-semi-faint);
-        --vi-query-grid-row-odd-color: var(--color-semi-faint);
-        --vi-query-grid-row-even-color: var(--color-semi-faint);
+        background: var(--color-faint);
+        --vi-query-grid-row-odd-color: var(--color-faint);
+        --vi-query-grid-row-even-color: var(--color-faint);
 
         // Top border for selected rows not preceded by another selected row
         &::before {
