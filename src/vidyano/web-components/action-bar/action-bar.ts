@@ -92,27 +92,42 @@ export class ActionBar extends WebComponentLit {
             ${repeat(this.pinnedActions ?? [], (action) => action.name, (action) => html`
                 <vi-action-button .action=${action} no-label inverse></vi-action-button>
             `)}
-            ${this.hasCharts ? html`<vi-query-chart-selector .query=${this.serviceObject}></vi-query-chart-selector>` : ""}
+            ${this.#chartSelector()}
             ${this.#selectedItems(this.selectedItemCount)}
-            ${this.canSearch ? html`
-                <div class="search">
-                    <vi-input-search
-                        .value=${(this.serviceObject as Vidyano.Query).textSearch}
-                        @value-changed=${(e: CustomEvent) => (this.serviceObject as Vidyano.Query).textSearch = e.detail.value}
-                        @search=${this._search}
-                    ></vi-input-search>
-                </div>
-            `: ""}
+            ${this.#searchBar()}
         `;
+    }
+
+    #chartSelector() {
+        if (!this.hasCharts)
+            return nothing;
+
+        return html`<vi-query-chart-selector .query=${this.serviceObject}></vi-query-chart-selector>`;
     }
 
     #selectedItems(selectedItemCount: number) {
         if (this.serviceObject instanceof Vidyano.Query === false || !(selectedItemCount > 0))
             return nothing;
 
-        return html`<div class="selected-items">
-            <vi-button label=${`${Vidyano.CultureInfo.currentCulture.formatNumber(selectedItemCount)} selected`} icon="SearchReset" @click=${() => (this.serviceObject as Vidyano.Query).clearSelection()}></vi-button>
-        </div>`;
+        return html`
+            <div class="selected-items">
+                <vi-button label=${`${Vidyano.CultureInfo.currentCulture.formatNumber(selectedItemCount)} selected`} icon="SearchReset" @click=${() => (this.serviceObject as Vidyano.Query).clearSelection()}></vi-button>
+            </div>`;
+    }
+
+    #searchBar() {
+        if (!this.canSearch)
+            return nothing;
+
+        return html`
+            <div class="search">
+                <vi-input-search
+                    .value=${(this.serviceObject as Vidyano.Query).textSearch}
+                    @value-changed=${(e: CustomEvent) => (this.serviceObject as Vidyano.Query).textSearch = e.detail.value}
+                    @search=${this._search}
+                ></vi-input-search>
+            </div>
+        `;
     }
 }
 
