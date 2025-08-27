@@ -617,14 +617,32 @@ export class QueryGrid extends WebComponent {
             }
         }
 
-        if (!detail.ctrl) {
-            if (this.query.selectAll.isAvailable && this.query.selectAll)
-                this.query.selectAll.allSelected = this.query.selectAll.inverse = false;
-
-            this.query.selectedItems = this.query.selectedItems.length > 1 || !detail.item.isSelected ? [detail.item] : [];
-        }
-        else
+        if (detail.ctrl) {
+            // Ctrl+click: Always toggle the item's selection
             detail.item.isSelected = !detail.item.isSelected;
+        }
+        else {
+            const selectAll = this.query.selectAll;
+            const hasSelectAllFeature = selectAll?.isAvailable;
+            const isAllSelectedMode = hasSelectAllFeature && selectAll.allSelected;
+
+            if (isAllSelectedMode) {
+                // When selectAll is active, single click toggles the item
+                detail.item.isSelected = !detail.item.isSelected;
+            }
+            else {
+                // Normal click behavior (no Ctrl, no selectAll mode)
+                if (hasSelectAllFeature && selectAll) {
+                    // Clear any selectAll state
+                    selectAll.allSelected = false;
+                    selectAll.inverse = false;
+                }
+
+                // Set selection: clear all if multiple selected or item is selected, otherwise select only this item
+                const shouldClearAndSelectOnly = this.query.selectedItems.length > 1 || !detail.item.isSelected;
+                this.query.selectedItems = shouldClearAndSelectOnly ? [detail.item] : [];
+            }
+        }
 
         if (detail.item.isSelected)
             this._lastSelectedItemIndex = indexOfItem;
