@@ -604,6 +604,20 @@ export class Query extends ServiceObjectWithActions {
     }
 
     /**
+     * Clears all selected items in the query.
+     */
+    clearSelection(): void {
+        // Reset select-all state if it's active
+        if (this.selectAll.allSelected) {
+            this.selectAll.allSelected = false;
+            this.selectAll.inverse = false;
+        }
+        
+        // Clear all selected items
+        this.selectedItems = [];
+    }
+
+    /**
      * Selects a range of items in the query.
      * @param from - The starting index.
      * @param to - The ending index.

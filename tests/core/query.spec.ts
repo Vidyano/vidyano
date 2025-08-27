@@ -609,5 +609,86 @@ test.describe("Query", () => {
             // Items 5-8 are now selected, items 0,1,2 remain deselected
             expect(peopleQuery.selectedItemCount).toBe(9_997); // Still 10000 - 3
         });
+
+        test("clearSelection clears all selected items", async ({ peopleQuery }) => {
+            // Select some items manually
+            peopleQuery.items[0].isSelected = true;
+            peopleQuery.items[2].isSelected = true;
+            peopleQuery.items[4].isSelected = true;
+            expect(peopleQuery.selectedItemCount).toBe(3);
+            expect(peopleQuery.selectedItems.length).toBe(3);
+            
+            // Clear selection
+            peopleQuery.clearSelection();
+            expect(peopleQuery.selectedItemCount).toBe(0);
+            expect(peopleQuery.selectedItems.length).toBe(0);
+            
+            // Verify individual items are no longer selected
+            expect(peopleQuery.items[0].isSelected).toBe(false);
+            expect(peopleQuery.items[2].isSelected).toBe(false);
+            expect(peopleQuery.items[4].isSelected).toBe(false);
+        });
+
+        test("clearSelection resets select-all state", async ({ peopleQuery }) => {
+            // Select all items
+            peopleQuery.selectAll.allSelected = true;
+            expect(peopleQuery.selectedItemCount).toBe(10_000);
+            expect(peopleQuery.selectAll.allSelected).toBe(true);
+            expect(peopleQuery.selectAll.inverse).toBe(false);
+            
+            // Clear selection
+            peopleQuery.clearSelection();
+            expect(peopleQuery.selectedItemCount).toBe(0);
+            expect(peopleQuery.selectedItems.length).toBe(0);
+            expect(peopleQuery.selectAll.allSelected).toBe(false);
+            expect(peopleQuery.selectAll.inverse).toBe(false);
+        });
+
+        test("clearSelection handles inverse selection properly", async ({ peopleQuery }) => {
+            // Select all then deselect some to trigger inverse mode
+            peopleQuery.selectAll.allSelected = true;
+            peopleQuery.items[0].isSelected = false;
+            peopleQuery.items[1].isSelected = false;
+            expect(peopleQuery.selectAll.allSelected).toBe(true);
+            expect(peopleQuery.selectAll.inverse).toBe(true);
+            expect(peopleQuery.selectedItemCount).toBe(9_998);
+            
+            // Clear selection
+            peopleQuery.clearSelection();
+            expect(peopleQuery.selectedItemCount).toBe(0);
+            expect(peopleQuery.selectedItems.length).toBe(0);
+            expect(peopleQuery.selectAll.allSelected).toBe(false);
+            expect(peopleQuery.selectAll.inverse).toBe(false);
+            
+            // Verify the previously deselected items are also cleared
+            expect(peopleQuery.items[0].isSelected).toBe(false);
+            expect(peopleQuery.items[1].isSelected).toBe(false);
+        });
+
+        test("clearSelection works when no items are selected", async ({ peopleQuery }) => {
+            // Ensure nothing is selected
+            expect(peopleQuery.selectedItemCount).toBe(0);
+            expect(peopleQuery.selectedItems.length).toBe(0);
+            
+            // Clear selection (should not throw)
+            peopleQuery.clearSelection();
+            expect(peopleQuery.selectedItemCount).toBe(0);
+            expect(peopleQuery.selectedItems.length).toBe(0);
+        });
+
+        test("clearSelection with range selection", async ({ peopleQuery }) => {
+            // Select a range
+            peopleQuery.selectRange(5, 10);
+            expect(peopleQuery.selectedItemCount).toBe(6);
+            expect(peopleQuery.items[5].isSelected).toBe(true);
+            expect(peopleQuery.items[10].isSelected).toBe(true);
+            
+            // Clear selection
+            peopleQuery.clearSelection();
+            expect(peopleQuery.selectedItemCount).toBe(0);
+            expect(peopleQuery.selectedItems.length).toBe(0);
+            expect(peopleQuery.items[5].isSelected).toBe(false);
+            expect(peopleQuery.items[10].isSelected).toBe(false);
+        });
     });
 });
