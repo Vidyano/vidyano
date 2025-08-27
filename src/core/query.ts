@@ -179,6 +179,21 @@ export class Query extends ServiceObjectWithActions {
         }
         else
             this.#filters = null;
+
+        // Set up reactive selectedItemCount updates
+        this.propertyChanged.attach(this.#handleSelectionRelatedChanges.bind(this));
+    }
+
+    /**
+     * Handles property changes that affect selection count for reactive updates.
+     * @param sender - The query instance.
+     * @param args - The property changed arguments.
+     */
+    #handleSelectionRelatedChanges(sender: Query, args: PropertyChangedArgs) {
+        // Update selectedItemCount when relevant properties change
+        if (args.propertyName === "selectedItems" || args.propertyName === "totalItems") {
+            this.#updateSelectedItemCount();
+        }
     }
 
     /**
@@ -370,7 +385,6 @@ export class Query extends ServiceObjectWithActions {
 
             items.forEach(item => item.isSelected = true);
             this.notifyPropertyChanged("selectedItems", items);
-            this.#updateSelectedItemCount();
         }
         finally {
             this.#isSelectionModifying = false;
@@ -613,9 +627,6 @@ export class Query extends ServiceObjectWithActions {
 
                 selectionUpdated = itemsToSelect.length > 0;
                 this.notifyPropertyChanged("selectedItems", this.selectedItems);
-                
-                // Update the selected item count after changing selection
-                this.#updateSelectedItemCount();
                 
                 return true;
             }
@@ -1125,10 +1136,6 @@ export class Query extends ServiceObjectWithActions {
         const oldTotalItems = this.#totalItems;
         this.notifyPropertyChanged("totalItems", this.#totalItems = items, oldTotalItems);
 
-        // If allSelected is true, the selectedItemCount changes with totalItems
-        if (this.selectAll.allSelected) {
-            this.#updateSelectedItemCount();
-        }
 
         const oldLabelWithTotalItems = this.#labelWithTotalItems;
         let formattedTotal = "";
@@ -1153,7 +1160,6 @@ export class Query extends ServiceObjectWithActions {
         this.#itemsProxy.setItems(items);
         this.notifyPropertyChanged("items", this.items, oldItems);
         this.notifyArrayChanged("items", 0, oldItems, items.length);
-        this.#updateSelectedItemCount();
     }
     
     /**
@@ -1273,7 +1279,6 @@ export class Query extends ServiceObjectWithActions {
         this.#updateSelectAll(item, selectedItems);
 
         this.notifyPropertyChanged("selectedItems", selectedItems);
-        this.#updateSelectedItemCount();
     }
 
     /**
