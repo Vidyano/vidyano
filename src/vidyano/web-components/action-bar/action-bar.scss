@@ -40,6 +40,23 @@ vi-action-button {
     text-align: left;
 }
 
+.selected-items {
+    display: flex;
+    align-items: center;
+    gap: var(--theme-h5);
+    border-left: 1px solid #EAEAEA;
+    padding: 0 var(--theme-h5);
+
+    vi-button {
+        flex-direction: row-reverse;
+        gap: var(--theme-h5);
+        border-radius: var(--theme-h5);
+        height: var(--theme-h2);
+        line-height: var(--theme-h2);
+        padding: 0 var(--theme-h5);
+    }
+}
+
 .search {
     display: flex;
     align-items: center;

@@ -1,4 +1,4 @@
-import { html, unsafeCSS } from "lit";
+import { html, nothing, unsafeCSS } from "lit";
 import { repeat } from "lit/directives/repeat.js";
 import * as Vidyano from "vidyano";
 import { WebComponentLit, property } from "components/web-component/web-component-lit.js";
@@ -32,6 +32,9 @@ export class ActionBar extends WebComponentLit {
 
     @property({ type: Boolean, reflect: true })
     accent: boolean;
+
+    @property({ type: Number, computed: "serviceObject.selectedItemCount" })
+    selectedItemCount: number;
 
     private _search() {
         if (!this.canSearch)
@@ -90,6 +93,7 @@ export class ActionBar extends WebComponentLit {
                 <vi-action-button .action=${action} no-label inverse></vi-action-button>
             `)}
             ${this.hasCharts ? html`<vi-query-chart-selector .query=${this.serviceObject}></vi-query-chart-selector>` : ""}
+            ${this.#selectedItems(this.selectedItemCount)}
             ${this.canSearch ? html`
                 <div class="search">
                     <vi-input-search
@@ -100,6 +104,15 @@ export class ActionBar extends WebComponentLit {
                 </div>
             `: ""}
         `;
+    }
+
+    #selectedItems(selectedItemCount: number) {
+        if (this.serviceObject instanceof Vidyano.Query === false || !(selectedItemCount > 0))
+            return nothing;
+
+        return html`<div class="selected-items">
+            <vi-button label=${`${Vidyano.CultureInfo.currentCulture.formatNumber(selectedItemCount)} selected`} icon="SearchReset" @click=${() => (this.serviceObject as Vidyano.Query).clearSelection()}></vi-button>
+        </div>`;
     }
 }
 
