@@ -35,9 +35,60 @@ const terserMinify = terser({
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
-const configs = [
+export default [
+    // Declaration bundles
+    // Note: In watch mode, rollup only rebuilds the last config object, so we need to first build the declaration bundles.
     {
-        input: isDevelopment ? './tests/vidyano/index.js' : './src/vidyano/index.js',
+        input: 'src/core/index.js',
+        external: ["tslib", "bignumber.js"],
+        plugins: [
+            alias({ entries }),
+            dts({ respectExternal: true })
+        ],
+        output: [{ file: "dist/core/index.d.ts", format: "es" }],
+        watch: false
+    },
+    {
+        input: 'src/vidyano/index.js',
+        external: ["tslib", "bignumber.js", "lit"],
+        plugins: [
+            alias({ entries }),
+            dts({ respectExternal: true })
+        ],
+        output: [{ file: "dev/wwwroot/index.d.ts", format: "es" }, { file: "dist/vidyano/index.d.ts", format: "es" }],
+        watch: false
+    },
+    // Implementation bundles
+    {
+        input: 'src/core/index.js',
+        external: ['String', "__decorate"],
+        plugins: [
+            alias({ entries }),
+            nodeResolve(),
+            vulcanize(),
+            replace({
+                "vidyano-latest-version": pjson.version,
+                "process.env.NODE_ENV": "'production'",
+                preventAssignment: true
+            }),
+        ],
+        output: [
+            { file: "dist/core/index.js", format: "es" },
+            { file: "dist/core/index.min.js", format: "es", plugins: [terserMinify] }
+        ],
+        watch: {
+            chokidar: {
+                usePolling: false
+            }
+        }, onwarn(warning, warn) {
+            if (warning.code === 'THIS_IS_UNDEFINED')
+                return;
+
+            warn(warning);
+        }
+    },
+    {
+        input: isDevelopment ? 'tests/vidyano/index.js' : 'src/vidyano/index.js',
         external: ['String', "__decorate"],
         plugins: [
             alias({ entries }),
@@ -71,57 +122,5 @@ const configs = [
 
             warn(warning);
         },
-    }, {
-        input: 'src/core/index.js',
-        external: ['String', "__decorate"],
-        plugins: [
-            alias({ entries }),
-            nodeResolve(),
-            vulcanize(),
-            replace({
-                "vidyano-latest-version": pjson.version,
-                "process.env.NODE_ENV": "'production'",
-                preventAssignment: true
-            }),
-        ],
-        output: [
-            { file: "dist/core/index.js", format: "es" },
-            { file: "dist/core/index.min.js", format: "es", plugins: [terserMinify] }
-        ],
-        watch: {
-            chokidar: {
-                usePolling: false
-            }
-        }, onwarn(warning, warn) {
-            if (warning.code === 'THIS_IS_UNDEFINED')
-                return;
-
-            warn(warning);
-        }
-    }, {
-        input: 'src/core/index.js',
-        external: ["tslib", "bignumber.js"],
-        plugins: [
-            alias({ entries }),
-            dts({ respectExternal: true })
-        ],
-        output: [{ file: "dist/core/index.d.ts", format: "es" }],
     }
 ];
-
-// Add TypeScript definitions generation for production build
-if (!isDevelopment) {
-    configs.push(...[
-        {
-            input: './src/vidyano/index.js',
-            external: ["tslib", "bignumber.js", "lit"],
-            plugins: [
-                alias({ entries }),
-                dts({ respectExternal: true })
-            ],
-            output: [{ file: "dev/wwwroot/index.d.ts", format: "es" }, { file: "dist/vidyano/index.d.ts", format: "es" }],
-        }
-    ]);
-}
-
-export default configs;
