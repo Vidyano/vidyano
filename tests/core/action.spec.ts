@@ -343,6 +343,48 @@ test.describe("Action", () => {
             );
             expect(stillSelectedItems.length).toBe(5);
         });
+
+        test("TestCount with selectAll keeps full selection across refresh", async ({ peopleQuery }) => {
+            const testCountAction = peopleQuery.actions.find(a => a.name === "TestCount") as Action;
+            expect(testCountAction).toBeInstanceOf(Action);
+            
+            // Ensure query has many items (10,000 total)
+            await peopleQuery.search();
+            expect(peopleQuery.totalItems).toBe(10000);
+            
+            // Enable select-all (non-inverse)
+            peopleQuery.selectAll.allSelected = true;
+            expect(peopleQuery.selectAll.allSelected).toBe(true);
+            expect(peopleQuery.selectAll.inverse).toBe(false);
+            
+            // First execution should report all 10,000 items
+            let result = await testCountAction.execute();
+            expect(result).toBeNull();
+            
+            // Wait for query refresh since TestCount has RefreshQueryOnCompleted: true
+            while (peopleQuery.isBusy) {
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+
+            // After refresh, notification should show full count
+            expect(peopleQuery.notification).toBe("10000");
+            
+            // After refresh, select-all should still be active
+            expect(peopleQuery.selectAll.allSelected).toBe(true);
+            expect(peopleQuery.selectAll.inverse).toBe(false);
+            
+            // Second execution should still report all 10,000 items
+            result = await testCountAction.execute();
+            expect(result).toBeNull();
+
+            // Wait for query refresh since TestCount has RefreshQueryOnCompleted: true
+            while (peopleQuery.isBusy) {
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+
+            // After refresh, notification should still show full count
+            expect(peopleQuery.notification).toBe("10000");
+        });
     });
 
     test.describe("Action Grouping", () => {

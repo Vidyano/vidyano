@@ -884,6 +884,8 @@ export class Query extends ServiceObjectWithActions {
      */
     async search(options?: { delay?: number; throwExceptions?: boolean; keepSelection?: boolean }): Promise<QueryResultItem[]> {
         const selectedIds = options?.keepSelection ? this.selectedItems.map(i => i.id) : null;
+        // Capture whether we had non-inverse select-all before refresh
+        const wasAllSelected = options?.keepSelection && this.selectAll.allSelected && !this.selectAll.inverse;
         const search = () => {
             this.#continuation = null;
             this.#queriedPages = [];
@@ -907,7 +909,12 @@ export class Query extends ServiceObjectWithActions {
 
                 return this.items;
             }, false).then((items: any) => {
-                if (selectedIds != null && selectedIds.length > 0) {
+                // Restore select-all state if it was active before refresh
+                if (wasAllSelected) {
+                    this.selectAll.allSelected = true;
+                }
+                // Otherwise restore individual selections
+                else if (selectedIds != null && selectedIds.length > 0) {
                     const newSelectionItems = selectedIds.map(id => items.find((i: QueryResultItem) => i?.id === id)).filter(i => i != null);
                     if (newSelectionItems.length === selectedIds.length)
                         this.selectedItems = newSelectionItems;
