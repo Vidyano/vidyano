@@ -402,7 +402,7 @@ export class Action extends ServiceObject {
                             this.query.search();
                     }
                 } else if (this.parent != null && (po.fullTypeName === this.parent.fullTypeName || po.isNew === this.parent.isNew) && po.id === this.parent.id && po.objectId === this.parent.objectId) {
-                    _internal(this.parent).refreshFromResult(po);
+                    _internal(this.parent).refreshFromResult(po, true);
                 } else {
                     po.ownerQuery = this.query;
                     po.ownerPersistentObject = this.parent;

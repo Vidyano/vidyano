@@ -124,8 +124,8 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
     /**
      * @inheritdoc
      */
-    protected _refreshFromResult(resultAttr: Dto.PersistentObjectAttributeAsDetailDto, resultWins: boolean): boolean {
-        const visibilityChanged = super._refreshFromResult(resultAttr, resultWins);
+    protected _refreshFromResult(resultAttr: Dto.PersistentObjectAttributeAsDetailDto, resultWins: boolean, snapshotDto?: Dto.PersistentObjectAttributeDto): boolean {
+        const visibilityChanged = super._refreshFromResult(resultAttr, resultWins, snapshotDto);
 
         if (resultAttr.objects != null) {
             const newObjects = resultAttr.objects.map(po => {

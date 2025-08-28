@@ -649,8 +649,9 @@ export class PersistentObject extends ServiceObjectWithActions {
      * Refreshes the object state from a new service result, merging changes.
      * @param result - The new data from the service.
      * @param resultWins - If true, the new data overrides current values.
+     * @param attributeDtoSnapshots - Optional map of attribute DTOs captured when the action started.
      */
-    #refreshFromResult(po: PersistentObject | Dto.PersistentObjectDto, resultWins: boolean = false) {
+    #refreshFromResult(po: PersistentObject | Dto.PersistentObjectDto, resultWins: boolean = false, attributeDtoSnapshots?: Map<string, Dto.PersistentObjectAttributeDto>) {
         const result = (po instanceof PersistentObject ? _internal(po).dto : po) as Dto.PersistentObjectDto;
 
         const changedAttributes: PersistentObjectAttribute[] = [];
@@ -674,7 +675,8 @@ export class PersistentObject extends ServiceObjectWithActions {
 
         this.attributes.forEach(attr => {
             let serviceAttr = result.attributes.find(serviceAttr => serviceAttr.id === attr.id);
-            if (serviceAttr && _internal(attr).refreshFromResult(serviceAttr, resultWins))
+            const snapshotDto = attributeDtoSnapshots?.get(attr.id);
+            if (serviceAttr && _internal(attr).refreshFromResult(serviceAttr, resultWins, snapshotDto))
                 changedAttributes.push(attr);
 
             if (attr.isValueChanged)
@@ -876,13 +878,18 @@ export class PersistentObject extends ServiceObjectWithActions {
             if (attrValue !== attr.value)
                 return false;
 
+            const attributeDtoSnapshots = new Map<string, Dto.PersistentObjectAttributeDto>();
+            this.attributes.forEach(attribute => {
+                attributeDtoSnapshots.set(attribute.id, _internal(attribute).toServiceObject());
+            });
+
             this.#prepareAttributesForRefresh(attr);
             const result = await this.service.executeAction("PersistentObject.Refresh", this, null, null, {
                 RefreshedPersistentObjectAttributeId: attr.id 
             });
 
             if (this.isEditing)
-                this.#refreshFromResult(result);
+                this.#refreshFromResult(result, false, attributeDtoSnapshots);
 
             return true;
         };

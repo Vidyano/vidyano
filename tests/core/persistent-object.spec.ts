@@ -370,4 +370,106 @@ test.describe("PersistentObject", () => {
             detachObserver();
         });
     });
+
+    test.describe("Concurrent Edit Protection", () => {
+        test("should preserve user edits to attribute B when attribute A triggers refresh", async ({ service }) => {
+            // Scenario:
+            // Initial: FirstName: "A", LastName: "B", FullName: "A B"
+            // User edits FirstName to "C" -> triggers refresh that wants to set FullName to "C B" (takes 1 second)
+            // While refresh is running, user edits LastName to "D"
+            // Expected result: FirstName: "C", LastName: "D", FullName: "C D"
+            
+            const refreshTest = await service.getPersistentObject(null, "Dev.Feature_RefreshAttribute", undefined, true);
+            refreshTest.beginEdit();
+
+            const firstName = refreshTest.getAttribute("FirstName");
+            const lastName = refreshTest.getAttribute("LastName"); 
+            const fullName = refreshTest.getAttribute("FullName");
+
+            // Set initial values
+            await firstName.setValue("A");
+            await lastName.setValue("B");
+            
+            // Trigger refresh by editing firstName (has triggers refresh, takes 1 second on backend)
+            const refreshPromise = firstName.setValue("C");
+
+            // While refresh is processing (wants to make FullName = "C B"), 
+            // user edits lastName to "D"
+            await new Promise(resolve => setTimeout(resolve, 50)); // Small delay to ensure refresh has started
+            await lastName.setValue("D");
+
+            // Wait for the refresh to complete
+            await refreshPromise;
+
+            // Verify the result:
+            // - FirstName should be "C" (what user set)
+            // - LastName should be "D" (edited AFTER refresh started, so preserved)
+            // - FullName should be "C D" (server calculated based on current values)
+            expect(firstName.value).toBe("C");
+            expect(lastName.value).toBe("D");
+            expect(fullName.value).toBe("C D");
+        });
+
+        test("should handle multiple concurrent refresh triggers correctly", async ({ service }) => {
+            // Use the Feature_RefreshAttribute object
+            const refreshTest = await service.getPersistentObject(null, "Dev.Feature_RefreshAttribute", undefined, true);
+            refreshTest.beginEdit();
+
+            const firstName = refreshTest.getAttribute("FirstName");
+            const lastName = refreshTest.getAttribute("LastName");
+            const fullName = refreshTest.getAttribute("FullName");
+
+            // Both firstName and lastName trigger refresh
+            // Edit firstName first
+            await firstName.setValue("First");
+            
+            // Now quickly edit lastName (which also triggers refresh)
+            await lastName.setValue("Last");
+            
+            // Wait for any pending refreshes to complete
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            // Both edits should be preserved
+            expect(firstName.value).toBe("First");
+            expect(lastName.value).toBe("Last");
+            
+            // FullName should reflect the combination
+            expect(fullName.value).toContain("First");
+            expect(fullName.value).toContain("Last");
+        });
+
+        test("should verify object is frozen during non-refresh actions", async ({ service }) => {
+            // For non-refresh actions (save, custom actions), the object is frozen
+            // preventing concurrent edits during the action
+            const refreshTest = await service.getPersistentObject(null, "Dev.Feature_RefreshAttribute", undefined, true);
+            refreshTest.beginEdit();
+            
+            const firstName = refreshTest.getAttribute("FirstName");
+            const lastName = refreshTest.getAttribute("LastName");
+            
+            // Fill in required fields
+            await firstName.setValue("BeforeSave");
+            await lastName.setValue("LastNameValue");
+            
+            // Start save (takes 1 second on backend)
+            const savePromise = refreshTest.save();
+            
+            // Try to edit firstName while save is in progress (object should be frozen)
+            await new Promise(resolve => setTimeout(resolve, 50)); // Small delay to ensure save has started
+            const currentValue = firstName.value;
+            await firstName.setValue("EditDuringSave");
+            const editSucceeded = firstName.value !== currentValue;
+            
+            // Wait for save to complete
+            const saveResult = await savePromise;
+            
+            // Verify the object was frozen during save (edit should have failed)
+            expect(editSucceeded).toBe(false);
+            expect(firstName.value).toBe("BeforeSave"); // Value should not have changed
+            
+            // After save, resultWins=true applies, and the object should not be dirty
+            expect(refreshTest.isDirty).toBe(false);
+            expect(saveResult).toBe(true);
+        });
+    });
 });

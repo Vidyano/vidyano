@@ -113,7 +113,7 @@ export class PersistentObjectAttributeWithReference extends PersistentObjectAttr
 
             const result = await this.service.executeAction("PersistentObject.SelectReference", this.parent, this.lookup, <QueryResultItem[]>selectedItems, { PersistentObjectAttributeId: this.id });
             if (result)
-                _internal(this.parent).refreshFromResult(result);
+                _internal(this.parent).refreshFromResult(result, true);
 
             return true;
         });
@@ -136,7 +136,7 @@ export class PersistentObjectAttributeWithReference extends PersistentObjectAttr
      * @param resultWins - Whether the result attribute takes precedence over local changes.
      * @returns True if the attribute's visibility changed.
      */
-    protected _refreshFromResult(resultAttr: Dto.PersistentObjectAttributeWithReferenceDto, resultWins: boolean): boolean {
+    protected _refreshFromResult(resultAttr: Dto.PersistentObjectAttributeWithReferenceDto, resultWins: boolean, snapshotDto?: Dto.PersistentObjectAttributeDto): boolean {
         const { objectId, isValueChanged, displayAttribute, canAddNewReference, selectInPlace } = this;
 
         if (resultWins || this.objectId !== resultAttr.objectId) {
@@ -144,7 +144,7 @@ export class PersistentObjectAttributeWithReference extends PersistentObjectAttr
             this.isValueChanged = resultAttr.isValueChanged;
         }
 
-        const visibilityChanged = super._refreshFromResult(resultAttr, resultWins);
+        const visibilityChanged = super._refreshFromResult(resultAttr, resultWins, snapshotDto);
 
         this.#displayAttribute = resultAttr.displayAttribute;
         this.#canAddNewReference = resultAttr.canAddNewReference;

@@ -70,8 +70,9 @@ export type InternalPersistentObject = {
      * Refreshes the object state from a new service result, merging changes.
      * @param result - The new data from the service.
      * @param resultWins - If true, the new data overrides current values.
+     * @param attributeDtoSnapshots - Optional map of attribute DTOs captured when the action started.
      */
-    refreshFromResult(po: PersistentObject | Dto.PersistentObjectDto, resultWins?: boolean): void;
+    refreshFromResult(po: PersistentObject | Dto.PersistentObjectDto, resultWins?: boolean, attributeDtoSnapshots?: Map<string, Dto.PersistentObjectAttributeDto>): void;
 
     /**
      * Rebuilds the tabs and groups UI structure based on changed attributes.
@@ -87,13 +88,14 @@ export type InternalPersistentObjectAttribute = {
     backupServiceValue(): void;
 
     /**
-     * Refreshes the attribute from the service result.
+     * Refreshes the attribute with new values from the service result.
      *
      * @param resultAttr - The result attribute data from the service.
      * @param resultWins - Flag indicating if the result value takes precedence.
+     * @param snapshotDto - Optional DTO snapshot to compare against for detecting user edits.
      * @returns A flag indicating if visibility has changed.
      */
-    refreshFromResult(attr: PersistentObjectAttribute | Dto.PersistentObjectAttributeDto, resultWins?: boolean): boolean;
+    refreshFromResult(attr: PersistentObjectAttribute | Dto.PersistentObjectAttributeDto, resultWins?: boolean, snapshotDto?: Dto.PersistentObjectAttributeDto): boolean;
 
     /**
      * Converts the attribute to a service object.

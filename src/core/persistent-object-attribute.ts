@@ -642,9 +642,10 @@ export class PersistentObjectAttribute extends ServiceObject {
      *
      * @param resultAttr - The result attribute data from the service.
      * @param resultWins - Flag indicating if the result value takes precedence.
+     * @param snapshotDto - The DTO snapshot taken when the action started, to compare against for detecting user edits.
      * @returns A flag indicating if visibility has changed.
      */
-    protected _refreshFromResult(resultAttr: Dto.PersistentObjectAttributeDto, resultWins: boolean): boolean {
+    protected _refreshFromResult(resultAttr: Dto.PersistentObjectAttributeDto, resultWins: boolean, snapshotDto?: Dto.PersistentObjectAttributeDto): boolean {
         let visibilityChanged = false;
 
         this.label = resultAttr.label;
@@ -669,7 +670,15 @@ export class PersistentObjectAttribute extends ServiceObject {
         }
 
         const resultAttrValue = resultAttr.value !== undefined ? resultAttr.value : null;
-        if (resultWins || (this.#serviceValue !== resultAttrValue && (this.isReadOnly || this.#refreshServiceValue !== resultAttrValue))) {
+        
+        let hasUserEdit = false;
+        if (snapshotDto && resultWins) {
+            const currentDto = this._toServiceObject();
+            hasUserEdit = JSON.stringify(currentDto) !== JSON.stringify(snapshotDto);
+        }
+        
+        const effectiveResultWins = resultWins && !hasUserEdit;
+        if (effectiveResultWins || (this.#serviceValue !== resultAttrValue && (this.isReadOnly || this.#refreshServiceValue !== resultAttrValue))) {
             const oldDisplayValue = this.displayValue;
             const oldValue = this.value;
 
