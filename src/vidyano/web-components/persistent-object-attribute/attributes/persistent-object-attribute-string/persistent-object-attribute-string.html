@@ -31,7 +31,7 @@
     <template>
         <vi-persistent-object-attribute-edit attribute="[[attribute]]">
             <vi-sensitive disabled="[[!sensitive]]">
-                <input value="{{value::input}}" type$="[[inputtype]]" maxlength$="[[maxlength]]" autocomplete$="[[autocomplete]]" style$="[[editInputStyle]]" on-focus="_editInputFocus" on-blur="_editInputBlur" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder="[[placeholder]]" disabled="[[frozen]]">
+                <input value="{{value::input}}" type$="[[inputtype]]" maxlength$="[[maxlength]]" autocomplete$="[[autocomplete]]" style$="[[editInputStyle]]" on-focus="_editInputFocus" on-blur="_editInputBlur" on-paste="_editInputPaste" readonly$="[[readOnly]]" tabindex$="[[readOnlyTabIndex]]" placeholder="[[placeholder]]" disabled="[[frozen]]">
             </vi-sensitive>
             <template if="[[link]]">
                 <a class="button" href$="[[link]]" title$="[[linkTitle]]" tabindex="-1" rel="external noopener" target="_blank">

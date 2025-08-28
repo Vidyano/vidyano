@@ -93,6 +93,27 @@ export class PersistentObjectAttributeString extends PersistentObjectAttribute {
         input.selectionEnd = input.value.length;
     }
 
+    private _editInputPaste(e: ClipboardEvent) {
+        e.preventDefault();
+        
+        const pastedText = e.clipboardData.getData('text')
+            .replace(/[\u200B\u200C\u200D\uFEFF]/g, '') // Remove zero-width spaces
+            .replace(/[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]/g, ' ') // Non-breaking and other spaces to regular space
+            .trim();
+        const input = e.target as HTMLInputElement;
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+        
+        const currentValue = this.value || "";
+        const newValue = currentValue.substring(0, start) + pastedText + currentValue.substring(end);
+        
+        this.value = newValue;
+        
+        setTimeout(() => {
+            input.selectionStart = input.selectionEnd = start + pastedText.length;
+        });
+    }
+
     protected _valueChanged(value: any, oldValue: any) {
         let selection: number[];
         let input: HTMLInputElement;
