@@ -1,5 +1,6 @@
 import { html, nothing, unsafeCSS } from "lit";
 import { repeat } from "lit/directives/repeat.js";
+import { keyed } from "lit/directives/keyed.js";
 import * as Vidyano from "vidyano";
 import { WebComponentLit, property } from "components/web-component/web-component-lit.js";
 import type { App } from "components/app/app.js";
@@ -109,10 +110,11 @@ export class ActionBar extends WebComponentLit {
         if (this.serviceObject instanceof Vidyano.Query === false || !(selectedItemCount > 0))
             return nothing;
 
-        return html`
+        // Use keyed directive to force re-render and re-trigger animation when count changes
+        return keyed(selectedItemCount, html`
             <div class="selected-items">
-                <vi-button label=${this.service.getTranslatedMessage("Selected", Vidyano.CultureInfo.currentCulture.formatNumber(selectedItemCount))} icon="SearchReset" @click=${() => (this.serviceObject as Vidyano.Query).clearSelection()}></vi-button>
-            </div>`;
+                <vi-button inverse label=${this.service.getTranslatedMessage("Selected", Vidyano.CultureInfo.currentCulture.formatNumber(selectedItemCount))} icon="SearchReset" @click=${() => (this.serviceObject as Vidyano.Query).clearSelection()}></vi-button>
+            </div>`);
     }
 
     #searchBar() {

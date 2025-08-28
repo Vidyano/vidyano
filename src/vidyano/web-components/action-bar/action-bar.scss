@@ -40,6 +40,21 @@ vi-action-button {
     text-align: left;
 }
 
+@keyframes button-pulse {
+    0% {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.02);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
 .selected-items {
     display: flex;
     align-items: center;
@@ -48,12 +63,20 @@ vi-action-button {
     padding: 0 var(--theme-h5);
 
     vi-button {
+        background-color: var(--color-semi-faint);
+        color: var(--color-dark);
+        fill: var(--color-dark);
         flex-direction: row-reverse;
         gap: var(--theme-h5);
         border-radius: var(--theme-h5);
         height: var(--theme-h2);
         line-height: var(--theme-h2);
         padding: 0 var(--theme-h5);
+        animation: button-pulse 0.35s ease-out;
+
+        &:hover {
+            background-color: var(--color-lighter);
+        }
     }
 }
 
