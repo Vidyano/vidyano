@@ -131,6 +131,7 @@
             height: 1px;
             background-color: var(--color-lighter);
             z-index: 999;
+            pointer-events: none;
         }
 
         // Bottom border for all selected/actions-open rows
@@ -142,6 +143,7 @@
             content: "";
             height: 1px;
             background-color: var(--color-lighter);
+            pointer-events: none;
         }
     }
 
