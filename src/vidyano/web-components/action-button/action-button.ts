@@ -2,6 +2,7 @@ import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
 import * as IconRegister from "components/icon/icon-register"
 import { ConfigurableWebComponent } from "components/web-component/web-component-configurable"
+import { Popup } from "components/popup/popup"
 
 @ConfigurableWebComponent.register({
     properties: {
@@ -190,6 +191,8 @@ export class ActionButton extends ConfigurableWebComponent {
             return;
         }
 
+        Popup.closeAll();
+
         if (!this.options)
             this.click();
 
@@ -202,6 +205,8 @@ export class ActionButton extends ConfigurableWebComponent {
             e.stopPropagation();
             return;
         }
+
+        Popup.closeAll();
 
         this.click(e.model.option.key);
     }
