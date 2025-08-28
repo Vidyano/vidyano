@@ -40,6 +40,7 @@ curl -s -o /dev/null -w '%{http_code}' --head http://localhost:5000
 │  └─ vidyano/         # Dynamic UI components (Polymer/Lit)
 └─ tests/              # Playwright tests
 │  └─ core/            # Core tests
+│  └─ vidyano/         # UI component tests
 ```
 
 # Development Workflow
