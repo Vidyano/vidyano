@@ -742,3 +742,37 @@ test.describe("BinaryFile Attributes", () => {
         expect(updatedDecodedContent).toBe("Updated content");
     });
 });
+
+test.describe("Attribute Refresh Behavior", () => {
+    test("should respect server's isValueChanged flag when value hasn't changed during refresh", async ({ service }) => {
+        // Server can mark an attribute as changed even when the visible value hasn't changed
+        // (e.g., updating a non-visible translation in a TranslatedString)
+        
+        const refreshTest = await service.getPersistentObject(null, "Dev.Feature_RefreshAttribute", undefined, true);
+
+        const firstName = refreshTest.getAttribute("FirstName");
+        const translatedString = refreshTest.getAttribute("TranslatedString");
+        
+        expect(translatedString.isValueChanged).toBe(false);
+        
+        const initialValue = translatedString.value;
+        const initialOptions = translatedString.options;
+        
+        // Trigger refresh - server will update Dutch translation but not English
+        await firstName.setValue("John");
+        
+        // Visible value (English) unchanged
+        expect(translatedString.value).toBe(initialValue);
+        
+        // Verify Dutch translation was updated
+        const updatedTranslations = JSON.parse(translatedString.options[0] as string);
+        const initialTranslations = JSON.parse(initialOptions[0] as string);
+        expect(updatedTranslations.en).toBe("English");
+        expect(updatedTranslations.nl).not.toBe(initialTranslations.nl);
+        expect(updatedTranslations.nl).toContain("Nederlands +");
+        
+        // Server marked attribute as changed despite visible value being unchanged
+        expect(translatedString.isValueChanged).toBe(true);
+        expect(refreshTest.isDirty).toBe(true);
+    });
+});

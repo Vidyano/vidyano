@@ -695,6 +695,11 @@ export class PersistentObjectAttribute extends ServiceObject {
             this.notifyPropertyChanged("displayValue", this.displayValue, oldDisplayValue);
 
             this.isValueChanged = !!resultAttr.isValueChanged;
+        } else if (resultAttr.isValueChanged !== undefined) {
+            // Even if the value hasn't changed, respect the server's isValueChanged flag
+            // This handles cases where server marks attribute as changed for non-visible modifications
+            // (e.g., updating a different language in a TranslatedString)
+            this.isValueChanged = !!resultAttr.isValueChanged;
         }
 
         this.#tag = resultAttr.tag;
