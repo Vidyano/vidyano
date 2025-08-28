@@ -1,0 +1,115 @@
+{
+  "PersistentObject": {
+    "$id": "PersistentObject:c9961e65-3990-37ef-8dc6-65df76ba6b02",
+    "Id": "c9961e65-3990-37ef-8dc6-65df76ba6b02",
+    "SchemaName": "Dev",
+    "Type": "Feature_RefreshAttribute",
+    "Salt": "0gXbd16Saymb-tp9NApQH7xCNhd94dTbCYPUKAKogVxtOPs0XF4I9A",
+    "Groups": [
+      {
+        "$id": "PersistentObjectAttributeGroup:f19155e7-c31a-4445-95b6-48827671fd9d",
+        "Id": "f19155e7-c31a-4445-95b6-48827671fd9d"
+      }
+    ],
+    "Tabs": [
+      {
+        "$id": "PersistentObjectAttributeTab:e3f35389-0548-486f-ac7c-b0c76e713336",
+        "Id": "e3f35389-0548-486f-ac7c-b0c76e713336"
+      }
+    ],
+    "Attributes": [
+      {
+        "$id": "PersistentObjectAttribute:5917007c-172c-3622-b425-92994e270014",
+        "Id": "5917007c-172c-3622-b425-92994e270014",
+        "Offset": 10,
+        "Rules": "NotEmpty",
+        "Name": "FirstName",
+        "TriggersRefresh": true,
+        "Label": {
+          "en": "First name",
+          "nl": "First name"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:f19155e7-c31a-4445-95b6-48827671fd9d"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:e3f35389-0548-486f-ac7c-b0c76e713336"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:67b2fae8-16e9-31f9-9ca3-42bfc2aa2bae",
+        "Id": "67b2fae8-16e9-31f9-9ca3-42bfc2aa2bae",
+        "Offset": 30,
+        "Name": "FullName",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Full name",
+          "nl": "Full name"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:f19155e7-c31a-4445-95b6-48827671fd9d"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:e3f35389-0548-486f-ac7c-b0c76e713336"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:6e7bba47-fbc0-395b-a590-8fa1259e6b76",
+        "Id": "6e7bba47-fbc0-395b-a590-8fa1259e6b76",
+        "Offset": 20,
+        "Rules": "NotEmpty",
+        "Name": "LastName",
+        "TriggersRefresh": true,
+        "Label": {
+          "en": "Last name",
+          "nl": "Last name"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:f19155e7-c31a-4445-95b6-48827671fd9d"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:e3f35389-0548-486f-ac7c-b0c76e713336"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:b3f27229-8376-39e7-b73c-910995a9cacb",
+        "Id": "b3f27229-8376-39e7-b73c-910995a9cacb",
+        "Offset": 40,
+        "Name": "TranslatedString",
+        "Label": {
+          "en": "Translated string",
+          "nl": "Translated string"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:TranslatedString"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:f19155e7-c31a-4445-95b6-48827671fd9d"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:e3f35389-0548-486f-ac7c-b0c76e713336"
+        }
+      }
+    ],
+    "Queries": []
+  },
+  "Queries": [],
+  "Reports": []
+}
