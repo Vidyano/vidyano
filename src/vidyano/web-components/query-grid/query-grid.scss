@@ -114,13 +114,14 @@
         display: none !important;
     }
 
-    // Selected row styles
-    vi-query-grid-row[selected] {
+    // Selected row styles and actions-open styles
+    vi-query-grid-row[selected],
+    vi-query-grid-row[actions-open] {
         background: var(--color-faint);
         --vi-query-grid-row-odd-color: var(--color-faint);
         --vi-query-grid-row-even-color: var(--color-faint);
 
-        // Top border for selected rows not preceded by another selected row
+        // Top border for selected/actions-open rows not preceded by another selected/actions-open row
         &::before {
             position: absolute;
             top: 0;
@@ -132,7 +133,7 @@
             z-index: 999;
         }
 
-        // Bottom border for all selected rows
+        // Bottom border for all selected/actions-open rows
         &::after {
             position: absolute;
             bottom: 0;
@@ -144,13 +145,17 @@
         }
     }
 
-    // Hide top border when a selected row is preceded by another selected row
-    vi-query-grid-row[selected] + vi-query-grid-row[selected]::before {
+    // Hide top border when rows with selection/actions are adjacent
+    vi-query-grid-row[selected] + vi-query-grid-row[selected]::before,
+    vi-query-grid-row[actions-open] + vi-query-grid-row[actions-open]::before,
+    vi-query-grid-row[selected] + vi-query-grid-row[actions-open]::before,
+    vi-query-grid-row[actions-open] + vi-query-grid-row[selected]::before {
         display: none;
     }
 
-    // Hide top border for the first row when selected
-    vi-query-grid-row[selected]:first-of-type::before {
+    // Hide top border for the first row when selected or has actions open
+    vi-query-grid-row[selected]:first-of-type::before,
+    vi-query-grid-row[actions-open]:first-of-type::before {
         display: none;
     }
 

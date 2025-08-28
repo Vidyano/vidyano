@@ -313,6 +313,7 @@ export class QueryGridRow extends WebComponent {
         });
 
         this.style.zIndex = "1";
+        this.setAttribute("actions-open", "");
 
         e.stopPropagation();
     }
@@ -322,6 +323,7 @@ export class QueryGridRow extends WebComponent {
         Array.from(actions.children).filter(c => !c.hasAttribute("slot")).forEach(c => actions.removeChild(c));
 
         this.style.zIndex = "auto";
+        this.removeAttribute("actions-open");
 
         e.stopPropagation();
     }
