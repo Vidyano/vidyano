@@ -103,10 +103,17 @@ await peopleQuery.search();
 
 ##### Data Access & Pagination
 
-The `query.items` array lazy-loads data. **Always use `...Async` methods for iteration.**
+The `query.items` array lazy-loads data. **Always use `...Async` methods or `for await` loops for iteration.**
 
 ```typescript
-// Primary Method: Async Iteration
+// Primary Method: for await Loop (Recommended for iteration)
+for await (const item of peopleQuery.items) {
+    console.log(item.values['FirstName'], item.values['LastName']);
+    // Process each item as it's fetched from the server
+    // This efficiently handles pagination automatically
+}
+
+// Async Methods for Collection Operations
 const allItems = await peopleQuery.items.toArrayAsync();
 const activePeople = await peopleQuery.items.filterAsync(item => item.values['IsActive']);
 const firstMale = await peopleQuery.items.findAsync(item => item.values['Gender'] === 'Male');
@@ -125,6 +132,12 @@ const items = await peopleQuery.items.atAsync([0, 5, 10]); // Fetches specific, 
 // query.pageSize: Records per page
 // query.hasMore: Boolean indicating if more pages exist
 ```
+
+**Important:** `for await` loops are the most efficient way to iterate over query items as they:
+- Fetch data lazily as needed
+- Handle pagination automatically
+- Avoid loading the entire dataset into memory at once
+- Work seamlessly with the async iterator protocol
 
 #### 3. PersistentObject (PO): Record Editing
 
