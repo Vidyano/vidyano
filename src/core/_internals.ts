@@ -44,6 +44,7 @@ export const QuerySymbols = {
     SetOwnerAttributeWithReference: Symbol("Query_SetOwnerAttributeWithReference"),
     NotifyItemSelectionChanged: Symbol("Query_NotifyItemSelectionChanged"),
     ToServiceObject: Symbol("Query_ToServiceObject"),
+    GetItems: Symbol("Query_GetItems"),
 };
 
 export const ServiceHooksSymbols = {
@@ -142,6 +143,15 @@ export type InternalQuery = {
      * Converts the query to a service object.
      */
     toServiceObject(): any;
+
+    /**
+     * Gets a range of items from the query.
+     * @param start - The starting index.
+     * @param length - The number of items to retrieve.
+     * @param skipQueue - Whether to skip the queue.
+     * @returns A promise that resolves to the query result items.
+     */
+    getItems(start: number, length?: number, skipQueue?: boolean): Promise<QueryResultItem[]>;
 };
 
 export type InternalServiceHooks = {
@@ -230,11 +240,14 @@ export function _internal(target: any) {
                     case "toServiceObject":
                         return (...args: any[]) => obj[QuerySymbols.ToServiceObject].apply(obj, args);
 
+                    case "getItems":
+                        return (...args: any[]) => obj[QuerySymbols.GetItems].apply(obj, args);
+
                     default:
                         return Reflect.get(obj, prop, receiver);
                 };
             }
-        }) as InternalPersistentObjectAttribute;
+        }) as InternalQuery;
     } else if (target[QueryResultItemSymbols.IsQueryResultItem]) {
         return target[InternalProxy] = new Proxy(target, {
             get: (obj, prop, receiver) => {

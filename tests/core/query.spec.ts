@@ -64,14 +64,14 @@ test.describe("Query", () => {
 
     test.describe("Query Result Items and Lazy Loading", () => {
         test("retrieves single item by index", async ({ peopleQuery }) => {
-            const [firstPerson] = await peopleQuery.getItemsByIndex(0);
+            const firstPerson = await peopleQuery.items.atAsync(0) as QueryResultItem;
             expect(firstPerson).toBeInstanceOf(QueryResultItem);
             expect(typeof firstPerson.id).toBe("string");
             expect(typeof firstPerson.getValue).toBe("function");
         });
 
         test("retrieves multiple items by specific indexes", async ({ peopleQuery }) => {
-            const items = await peopleQuery.getItemsByIndex(0, 2, 4, 5);
+            const items = await peopleQuery.items.atAsync([0, 2, 4, 5])
             expect(items).toHaveLength(4);
             expect(items[0]).toBeInstanceOf(QueryResultItem);
             expect(items[1]).toBeInstanceOf(QueryResultItem);
@@ -80,7 +80,7 @@ test.describe("Query", () => {
         });
 
         test("retrieves non-contiguous items by indexes", async ({ peopleQuery }) => {
-            const items = await peopleQuery.getItemsByIndex(1, 3, 7);
+            const items = await peopleQuery.items.atAsync([1, 3, 7]);
             expect(items).toHaveLength(3);
             expect(items[0]).toBeInstanceOf(QueryResultItem);
             expect(items[1]).toBeInstanceOf(QueryResultItem);
@@ -88,18 +88,126 @@ test.describe("Query", () => {
         });
 
         test("loads item lazily by index", async ({ peopleQuery }) => {
-            const [loadedItem] = await peopleQuery.getItemsByIndex(2);
+            const loadedItem = await peopleQuery.items.atAsync(2);
             expect(loadedItem).toBeInstanceOf(QueryResultItem);
         });
 
         test("retrieves attribute values from query result item", async ({ peopleQuery }) => {
-            const [person] = await peopleQuery.getItemsByIndex(0);
+            const person = await peopleQuery.items.atAsync(0) as QueryResultItem;
             expect(person).toBeInstanceOf(QueryResultItem);
 
             const firstName = person.getValue("FirstName");
             const email = person.getValue("Email");
             expect(typeof firstName).toBe("string");
             expect(typeof email).toBe("string");
+        });
+
+        test("retrieves items with negative indices in array", async ({ peopleQuery }) => {
+            // Ensure query is fully loaded for negative indices
+            await peopleQuery.search();
+            const totalItems = peopleQuery.totalItems;
+            
+            // Get last three items using negative indices
+            const items = await peopleQuery.items.atAsync([-1, -2, -3]);
+            expect(items).toHaveLength(3);
+            
+            // Verify they match the expected positions
+            const lastItem = await peopleQuery.items.atAsync(totalItems - 1);
+            const secondLastItem = await peopleQuery.items.atAsync(totalItems - 2);
+            const thirdLastItem = await peopleQuery.items.atAsync(totalItems - 3);
+            
+            expect(items[0]).toBe(lastItem);
+            expect(items[1]).toBe(secondLastItem);
+            expect(items[2]).toBe(thirdLastItem);
+        });
+
+        test("handles mixed positive and negative indices in array", async ({ peopleQuery }) => {
+            // Ensure query is fully loaded for negative indices
+            await peopleQuery.search();
+            const totalItems = peopleQuery.totalItems;
+            
+            // Mix positive and negative indices
+            const items = await peopleQuery.items.atAsync([0, -1, 2, -2]);
+            expect(items).toHaveLength(4);
+            
+            // Verify first and third items are from start
+            const firstItem = await peopleQuery.items.atAsync(0);
+            const thirdItem = await peopleQuery.items.atAsync(2);
+            expect(items[0]).toBe(firstItem);
+            expect(items[2]).toBe(thirdItem);
+            
+            // Verify second and fourth items are from end
+            const lastItem = await peopleQuery.items.atAsync(totalItems - 1);
+            const secondLastItem = await peopleQuery.items.atAsync(totalItems - 2);
+            expect(items[1]).toBe(lastItem);
+            expect(items[3]).toBe(secondLastItem);
+        });
+
+        test("returns undefined for out-of-bounds indices in array", async ({ peopleQuery }) => {
+            await peopleQuery.search();
+            const totalItems = peopleQuery.totalItems;
+            
+            // Test out-of-bounds indices
+            const items = await peopleQuery.items.atAsync([totalItems, totalItems + 10, -totalItems - 1]);
+            expect(items).toHaveLength(3);
+            expect(items[0]).toBeUndefined();
+            expect(items[1]).toBeUndefined();
+            expect(items[2]).toBeUndefined();
+        });
+
+        test("handles duplicate indices in array", async ({ peopleQuery }) => {
+            // Test with duplicate indices
+            const items = await peopleQuery.items.atAsync([0, 1, 0, 2, 1]);
+            expect(items).toHaveLength(5);
+            
+            // Verify duplicates return the same items
+            expect(items[0]).toBe(items[2]); // Both index 0
+            expect(items[1]).toBe(items[4]); // Both index 1
+            expect(items[0]).toBeInstanceOf(QueryResultItem);
+            expect(items[1]).toBeInstanceOf(QueryResultItem);
+            expect(items[3]).toBeInstanceOf(QueryResultItem);
+        });
+
+        test("handles empty array", async ({ peopleQuery }) => {
+            const items = await peopleQuery.items.atAsync([]);
+            expect(items).toHaveLength(0);
+            expect(Array.isArray(items)).toBe(true);
+        });
+
+        test("sliceAsync with negative start index", async ({ peopleQuery }) => {
+            // Ensure query is fully loaded
+            await peopleQuery.search();
+            const totalItems = peopleQuery.totalItems;
+            
+            // Get last 2 items using negative start
+            const lastTwo = await peopleQuery.items.sliceAsync(-2);
+            expect(lastTwo).toHaveLength(2);
+            
+            // Verify they match the expected items
+            const expectedFirst = await peopleQuery.items.atAsync(totalItems - 2);
+            const expectedSecond = await peopleQuery.items.atAsync(totalItems - 1);
+            
+            expect(lastTwo[0]).toBe(expectedFirst);
+            expect(lastTwo[1]).toBe(expectedSecond);
+        });
+
+        test("sliceAsync with negative end index", async ({ peopleQuery }) => {
+            // Ensure query is fully loaded
+            await peopleQuery.search();
+            const totalItems = peopleQuery.totalItems;
+            
+            // Get items from index 1 to 2nd-to-last using negative end
+            const slice = await peopleQuery.items.sliceAsync(1, -1);
+            
+            // Verify length
+            expect(slice).toHaveLength(totalItems - 2);
+            
+            // Verify first and last items in slice
+            const expectedFirst = await peopleQuery.items.atAsync(1);
+            const expectedLast = await peopleQuery.items.atAsync(totalItems - 2);
+            
+            expect(slice[0]).toBe(expectedFirst);
+            expect(slice[slice.length - 1]).toBe(expectedLast);
         });
     });
 
@@ -111,7 +219,7 @@ test.describe("Query", () => {
             await peopleQuery.search();
 
             const afterSearchCount = peopleQuery.totalItems;
-            const loadedItems = await peopleQuery.getItemsByIndex(0, 1, 2, 3, 4);
+            const loadedItems = await peopleQuery.items.atAsync([0, 1, 2, 3, 4]);
             const allResultsContainJohn = loadedItems.filter(item => item != null).every((item) => {
                 const firstName = item.getValue("FirstName");
                 const lastName = item.getValue("LastName");
@@ -161,9 +269,9 @@ test.describe("Query", () => {
             genderColumn.selectedDistincts = [firstDistinctValue];
             await peopleQuery.search();
 
-            const loadedItems = await peopleQuery.getItemsByIndex(0, 1, 2, 3, 4);
+            const loadedItems = await peopleQuery.items.atAsync([0, 1, 2, 3, 4]);
             const allMatchFilter = loadedItems.every((item) => {
-                return item.getValue("Gender") === displayValue;
+                return item?.getValue("Gender") === displayValue;
             });
 
             expect(peopleQuery.totalItems).toBeLessThan(initialCount);
@@ -205,7 +313,7 @@ test.describe("Query", () => {
             const itemsBeforeLoad = peopleQuery.items.slice(startIndex, startIndex + count);
             expect(itemsBeforeLoad.every(item => item === null)).toBe(true);
 
-            const rangeItems = await peopleQuery.getItems(startIndex, count);
+            const rangeItems = await peopleQuery.items.sliceAsync(startIndex, startIndex + count);
 
             const itemsAfterLoad = peopleQuery.items.slice(startIndex, startIndex + count);
             for (const item of itemsAfterLoad) {
@@ -325,8 +433,8 @@ test.describe("Query", () => {
 
     test.describe("Advanced Patterns", () => {
         test("gets PersistentObject from query item", async ({ peopleQuery }) => {
-            const [firstPerson] = await peopleQuery.getItemsByIndex(0);
-            const personPO = await firstPerson.getPersistentObject();
+            const firstPerson = await peopleQuery.items.atAsync(0) as QueryResultItem;
+            const personPO = await firstPerson?.getPersistentObject() as PersistentObject;
 
             expect(personPO).toBeInstanceOf(PersistentObject);
             expect(personPO.objectId).toBe(firstPerson.id);
@@ -507,7 +615,7 @@ test.describe("Query", () => {
             expect(peopleQuery.selectedItemCount).toBe(9_997);
             
             // Load items from another page
-            const secondPageItems = await peopleQuery.getItems(100, 100);
+            const secondPageItems = await peopleQuery.items.sliceAsync(100, 200);
             expect(secondPageItems.length).toBe(100);
             
             // Verify count remains correct

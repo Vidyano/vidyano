@@ -111,6 +111,7 @@ export class Query extends ServiceObjectWithActions {
         this[QuerySymbols.NotifyItemSelectionChanged] = this.#notifyItemSelectionChanged.bind(this);
         this[QuerySymbols.SetOwnerAttributeWithReference] = this.#setOwnerAttributeWithReference.bind(this);
         this[QuerySymbols.ToServiceObject] = this.#toServiceObject.bind(this);
+        this[QuerySymbols.GetItems] = this.#getItems.bind(this);
 
         const { result, ...dtoWithoutResult } = queryDto;
         this.#dto = dtoWithoutResult;
@@ -722,66 +723,17 @@ export class Query extends ServiceObjectWithActions {
     }
 
     /**
-     * Gets the items at the specified indexes.
-     * @param indexes - The individual indexes of the items to retrieve. Each parameter is a specific index, not a range.
-     * @returns A promise that resolves to an array containing the query result items at the specified indexes.
-     * @example
-     * // Get single item at index 0
-     * const [firstItem] = await query.getItemsByIndex(0);
-     * 
-     * // Get multiple specific items at indexes 0, 2, and 5
-     * const items = await query.getItemsByIndex(0, 2, 5); // Returns 3 items
-     */
-    async getItemsByIndex(...indexes: number[]): Promise<QueryResultItem[]> {
-
-        if (!indexes || !indexes.length)
-            return [];
-
-        // Initialize the query if it hasn't been searched yet
-        if (!this.hasSearched) {
-            // Find the minimum index to start loading from
-            const minIndex = Math.min(...indexes);
-
-            // Use getItems to initialize the query starting from the minimum index
-            // This will trigger a search with appropriate skip/top values
-            await this.getItems(minIndex, this.pageSize || 1);
-        }
-
-        if (this.pageSize > 0) {
-            const pages = indexes.sort((a, b) => a - b).reduce((acc: [page: number, top: number][], i) => {
-                const page = Math.floor(i / this.pageSize);
-                if (acc.length > 0) {
-                    const last = acc[acc.length - 1];
-                    if (last[0] * this.pageSize + last[1] <= i) {
-                        if (last[0] * this.pageSize + last[1] + this.pageSize <= i)
-                            acc.push([page, this.pageSize]);
-                        else
-                            last[1] += this.pageSize;
-                    }
-                }
-                else
-                    acc.push([page, this.pageSize]);
-            
-                return acc;
-            }, []);
-
-            await Promise.all(pages.map(page =>  this.getItems(page[0] * this.pageSize, page[1])));
-        }
-
-        return indexes.map(i => this.items[i]);
-    }
-
-    /**
      * Gets a range of items from the query.
      * @param start - The starting index.
      * @param length - The number of items to retrieve.
      * @param skipQueue - Whether to skip the queue.
      * @returns A promise that resolves to the query result items.
+     * @internal
      */
-    async getItems(start: number, length: number = this.pageSize, skipQueue: boolean = false): Promise<QueryResultItem[]> {
+    async #getItems(start: number, length: number = this.pageSize, skipQueue: boolean = false): Promise<QueryResultItem[]> {
         if (!this.hasSearched) {
             await this.search({ delay: 0, throwExceptions: true });
-            return this.getItems(start, length);
+            return this.#getItems(start, length);
         }
 
         if (this.totalItems >= 0) {
@@ -884,7 +836,7 @@ export class Query extends ServiceObjectWithActions {
                 this.#updateGroupingInfo(result.groupingInfo);
 
                 if (isChanged) {
-                    const result = await this.getItems(start, length, true);
+                    const result = await this.#getItems(start, length, true);
                     this.notifyPropertyChanged("items", this.items);
 
                     return result;

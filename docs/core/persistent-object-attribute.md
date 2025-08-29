@@ -188,7 +188,7 @@ if (emergencyContactRef instanceof PersistentObjectAttributeWithReference) {
         
         // Search for available people
         await lookupQuery.search();
-        const items = await lookupQuery.getItemsByIndex(0, 10);
+        const items = await lookupQuery.items.sliceAsync(0, 10);
         
         // Display available options
         items.forEach(item => {

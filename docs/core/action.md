@@ -112,7 +112,7 @@ await testCountAction.execute();
 
 // Execution with selected items
 const deleteAction = query.getAction("Delete");
-const [item1, item2] = await query.getItemsByIndex(0, 1);
+const [item1, item2] = await query.items.atAsync([0, 1]);
 item1.isSelected = true;
 item2.isSelected = true;
 await deleteAction.execute();
@@ -206,7 +206,7 @@ const deleteAction = peopleQuery.getAction("Delete");
 console.log(`Can execute Delete with 0 items? ${deleteAction.canExecute}`); // false
 
 // Select one item
-const [person1, person2] = await peopleQuery.getItemsByIndex(0, 1);
+const [person1, person2] = await peopleQuery.items.atAsync([0, 1]);
 person1.isSelected = true;
 console.log(`Can execute Delete with 1 item? ${deleteAction.canExecute}`); // true
 

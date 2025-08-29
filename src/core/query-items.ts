@@ -1,5 +1,6 @@
 import { QueryResultItem } from "./query-result-item.js";
 import type { Query } from "./query.js";
+import { _internal } from "./_internals.js";
 
 /**
  * Query result items collection with lazy loading capabilities.
@@ -87,6 +88,9 @@ export type QueryItems =
         // Returns the query item at the specified index, loading it if needed.
         // Supports negative indices to access items from the end of the array.
         atAsync(index: number): Promise<QueryResultItem | undefined>;
+        // Returns multiple query items at the specified indices, loading them if needed.
+        // Supports negative indices to access items from the end of the array.
+        atAsync(indices: number[]): Promise<(QueryResultItem | undefined)[]>;
     };
 
 /**
@@ -119,10 +123,10 @@ export class QueryItemsProxy {
     setItems(items: QueryResultItem[]): void {
         // Cleanup existing timeout if any
         this.cleanup();
-        
+
         // Create new proxy
-        this.#items = new Proxy(items, { 
-            get: this.#getItemsLazy.bind(this) 
+        this.#items = new Proxy(items, {
+            get: this.#getItemsLazy.bind(this)
         }) as QueryItems;
     }
 
@@ -168,31 +172,31 @@ export class QueryItemsProxy {
     #handleAsyncMethods(property: string): Function | undefined {
         switch (property) {
             case "forEachAsync":
-                return this.#createForEachAsync();
+                return this.#forEachAsync.bind(this);
             case "mapAsync":
-                return this.#createMapAsync();
+                return this.#mapAsync.bind(this);
             case "filterAsync":
-                return this.#createFilterAsync();
+                return this.#filterAsync.bind(this);
             case "toArrayAsync":
-                return this.#createToArrayAsync();
+                return this.#toArrayAsync.bind(this);
             case "sliceAsync":
-                return this.#createSliceAsync();
+                return this.#sliceAsync.bind(this);
             case "findAsync":
-                return this.#createFindAsync();
+                return this.#findAsync.bind(this);
             case "findIndexAsync":
-                return this.#createFindIndexAsync();
+                return this.#findIndexAsync.bind(this);
             case "someAsync":
-                return this.#createSomeAsync();
+                return this.#someAsync.bind(this);
             case "everyAsync":
-                return this.#createEveryAsync();
+                return this.#everyAsync.bind(this);
             case "includesAsync":
-                return this.#createIncludesAsync();
+                return this.#includesAsync.bind(this);
             case "indexOfAsync":
-                return this.#createIndexOfAsync();
+                return this.#indexOfAsync.bind(this);
             case "reduceAsync":
                 return this.#createReduceAsync();
             case "atAsync":
-                return this.#createAtAsync();
+                return this.#atAsync.bind(this);
             default:
                 return undefined;
         }
@@ -206,14 +210,14 @@ export class QueryItemsProxy {
      * @param options - Options for iteration (reverse, early exit, etc.)
      */
     #iterateSparse<T>(
-        target: QueryResultItem[], 
+        target: QueryResultItem[],
         callback: (item: QueryResultItem, index: number, array: QueryResultItem[]) => T,
         thisArg?: any,
         options?: { reverse?: boolean; earlyExit?: (result: T) => boolean }
     ): T | undefined {
         const keys = Object.keys(target).map(k => parseInt(k)).filter(k => !isNaN(k));
         if (options?.reverse) keys.reverse();
-        
+
         for (const index of keys) {
             const item = target[index];
             if (item != null) {
@@ -337,11 +341,11 @@ export class QueryItemsProxy {
                 };
 
             case "reduce":
-                return <U>(callback: (acc: U, value: QueryResultItem, index: number, array: QueryResultItem[]) => U, initialValue?: U): U => {
+                return function<U>(callback: (acc: U, value: QueryResultItem, index: number, array: QueryResultItem[]) => U, initialValue?: U): U {
                     let hasInitial = arguments.length >= 2;
                     let accumulator = initialValue as U;
                     let firstItem = true;
-                    
+
                     this.#iterateSparse(target, (item, index, array) => {
                         if (firstItem && !hasInitial) {
                             accumulator = item as any;
@@ -350,13 +354,13 @@ export class QueryItemsProxy {
                             accumulator = callback(accumulator, item, index, array);
                         }
                     });
-                    
+
                     if (firstItem && !hasInitial) {
                         throw new TypeError('Reduce of empty array with no initial value');
                     }
-                    
+
                     return accumulator;
-                };
+                }.bind(this);
 
             default:
                 return undefined;
@@ -373,9 +377,11 @@ export class QueryItemsProxy {
     /**
      * Handles operations that work on a copy.
      */
-    #handleCopyOperation(target: QueryResultItem[], property: string, receiver: any): any {
-        console.log(`WARNING: '${property}' works on a copy of the array and not on the original array.`);
-        return Reflect.get(Array.from(target), property, receiver);
+    #handleCopyOperation(target: QueryResultItem[], property: string): any {
+        return (...args: any[]) => {
+            const copy = Array.from(target);
+            return (copy as any)[property](...args);
+        };
     }
 
     /**
@@ -428,7 +434,7 @@ export class QueryItemsProxy {
 
             // Handle operations that work on a copy
             if (["reverse", "sort"].includes(property)) {
-                return this.#handleCopyOperation(target, property, receiver);
+                return this.#handleCopyOperation(target, property);
             }
         }
 
@@ -442,7 +448,7 @@ export class QueryItemsProxy {
      */
     #handleIndexAccess(target: QueryResultItem[], index: number, receiver: any): QueryResultItem | null {
         const item = Reflect.get(target, index, receiver);
-        
+
         // Fetch query item if not loaded yet, unless lazy loading is disabled
         // If query hasn't been searched yet, we should still try to load
         const canLoad = !this.#query.hasSearched || (index < this.#query.totalItems || this.#query.hasMore);
@@ -474,13 +480,20 @@ export class QueryItemsProxy {
      * Processes batched lazy load requests.
      */
     async #processBatchedLazyLoads(target: QueryResultItem[]): Promise<void> {
-        const queuedLazyItemIndexes = this.#queuedLazyItemIndexes!.filter(i => target[i] === null);
-        if (queuedLazyItemIndexes.length === 0) {
+        // Snapshot the current queue and reset it immediately to prevent indefinite growth
+        const queued = this.#queuedLazyItemIndexes;
+        this.#queuedLazyItemIndexes = null;
+        
+        if (!queued)
             return;
-        }
+        
+        // Filter out already loaded items
+        const queuedLazyItemIndexes = queued.filter(i => target[i] === null);
+        if (queuedLazyItemIndexes.length === 0)
+            return;
 
         try {
-            await this.#query.getItemsByIndex(...queuedLazyItemIndexes);
+            await this.#atAsync(queuedLazyItemIndexes);
         } finally {
             queuedLazyItemIndexes.forEach(i => {
                 if (target[i] == null) {
@@ -495,15 +508,12 @@ export class QueryItemsProxy {
      * @param callback - Function to call for each item. Return false to stop iteration.
      * @param thisArg - Optional this context for the callback.
      */
-    async #iterateAsync<T>(
-        callback: (item: QueryResultItem, index: number, items: QueryResultItem[]) => T | Promise<T>,
-        thisArg?: any
-    ): Promise<void> {
+    async #iterateAsync<T>(callback: (item: QueryResultItem, index: number, items: QueryResultItem[]) => T | Promise<T>, thisArg?: any): Promise<void> {
         // If query hasn't been searched yet, initialize it first
         if (!this.#query.hasSearched) {
-            await this.#query.getItemsByIndex(0);
+            await this.#atAsync(0);
         }
-        
+
         // Use the actual items from the query
         const items = this.#query.items;
         let i = 0;
@@ -511,14 +521,14 @@ export class QueryItemsProxy {
         while (i < this.#query.totalItems || this.#query.hasMore) {
             // Ensure item is loaded
             if (items[i] === undefined || items[i] === null) {
-                await this.#query.getItemsByIndex(i);
+                await this.#atAsync(i);
             }
-            
+
             // If item couldn't be loaded (end of results), break
             if (items[i] === undefined) {
                 break;
             }
-            
+
             const result = await callback.call(thisArg, items[i], i, items);
             // Allow early termination by returning false
             if (result === false) {
@@ -545,233 +555,208 @@ export class QueryItemsProxy {
     }
 
     /**
-     * Creates the forEachAsync method.
+     * Iterates through all items asynchronously.
      */
-    #createForEachAsync() {
-        return async (
-            cb: (value: QueryResultItem, index: number, self: QueryResultItem[]) => void | Promise<void>,
-            thisArg?: any
-        ): Promise<void> => {
-            await this.#iterateAsync(cb, thisArg);
-        };
+    async #forEachAsync(cb: (value: QueryResultItem, index: number, self: QueryResultItem[]) => void | Promise<void>, thisArg?: any): Promise<void> {
+        await this.#iterateAsync(cb, thisArg);
     }
 
     /**
-     * Creates the mapAsync method.
+     * Maps all items asynchronously.
      */
-    #createMapAsync() {
-        return async <U>(
-            cb: (value: QueryResultItem, index: number, self: QueryResultItem[]) => U | Promise<U>,
-            thisArg?: any
-        ): Promise<U[]> => {
-            const results: U[] = [];
-            await this.#iterateAsync(async (item, index, items) => {
-                results.push(await cb.call(thisArg, item, index, items));
-            });
-            return results;
-        };
+    async #mapAsync<U>(cb: (value: QueryResultItem, index: number, self: QueryResultItem[]) => U | Promise<U>, thisArg?: any): Promise<U[]> {
+        const results: U[] = [];
+        await this.#iterateAsync(async (item, index, items) => {
+            results.push(await cb.call(thisArg, item, index, items));
+        });
+        return results;
     }
 
     /**
-     * Creates the filterAsync method.
+     * Filters items asynchronously.
      */
-    #createFilterAsync() {
-        return async (
-            cb: (value: QueryResultItem, index: number, self: QueryResultItem[]) => boolean | Promise<boolean>,
-            thisArg?: any
-        ): Promise<QueryResultItem[]> => {
-            const results: QueryResultItem[] = [];
-            await this.#iterateAsync(async (item, index, items) => {
-                if (await cb.call(thisArg, item, index, items)) {
-                    results.push(item);
-                }
-            });
-            return results;
-        };
-    }
-
-    /**
-     * Creates the toArrayAsync method.
-     */
-    #createToArrayAsync() {
-        return async (): Promise<QueryResultItem[]> => {
-            const results: QueryResultItem[] = [];
-            await this.#iterateAsync(item => {
+    async #filterAsync(cb: (value: QueryResultItem, index: number, self: QueryResultItem[]) => boolean | Promise<boolean>, thisArg?: any): Promise<QueryResultItem[]> {
+        const results: QueryResultItem[] = [];
+        await this.#iterateAsync(async (item, index, items) => {
+            if (await cb.call(thisArg, item, index, items)) {
                 results.push(item);
-            });
-            return results;
-        };
+            }
+        });
+        return results;
     }
 
     /**
-     * Creates the sliceAsync method.
+     * Converts all items to an array asynchronously.
      */
-    #createSliceAsync() {
-        return async (start?: number, end?: number): Promise<QueryResultItem[]> => {
-            // If query hasn't been searched yet, initialize it first
+    async #toArrayAsync(): Promise<QueryResultItem[]> {
+        const results: QueryResultItem[] = [];
+        await this.#iterateAsync(item => {
+            results.push(item);
+        });
+        return results;
+    }
+
+    /**
+     * Returns a slice of items asynchronously.
+     */
+    async #sliceAsync(start?: number, end?: number): Promise<QueryResultItem[]> {
+        // Handle negative indices - need to ensure query is fully loaded first
+        const hasNegativeIndex = (start !== undefined && start < 0) || (end !== undefined && end < 0);
+        
+        if (hasNegativeIndex) {
+            if (this.#query.hasMore) {
+                throw new Error("Cannot use negative indices in sliceAsync when there are more items to load in the query.");
+            }
+            
             if (!this.#query.hasSearched) {
-                const actualStart = start ?? 0;
-                await this.#query.getItemsByIndex(actualStart);
+                await this.#query.search();
             }
-            
-            // Use the actual items from the query
-            const items = this.#query.items;
-            
-            // Load query items in the requested range and return the slice
+        } else if (!this.#query.hasSearched) {
+            // If query hasn't been searched yet, initialize it first
             const actualStart = start ?? 0;
-            
-            // Determine the actual end based on query bounds
-            let actualEnd: number;
-            if (end !== undefined) {
-                // If end is specified, use it but cap at totalItems if known
-                actualEnd = this.#query.totalItems > 0 ? Math.min(end, this.#query.totalItems) : end;
-            } else {
-                // If no end specified, use totalItems if known, otherwise load all available
-                actualEnd = this.#query.totalItems > 0 ? this.#query.totalItems : Number.MAX_SAFE_INTEGER;
+            await this.#atAsync(actualStart);
+        }
+
+        // Use the actual items from the query
+        const items = this.#query.items;
+        const totalItems = this.#query.totalItems;
+
+        // Convert negative indices to positive
+        let actualStart: number;
+        if (start === undefined) {
+            actualStart = 0;
+        } else if (start < 0) {
+            actualStart = Math.max(0, totalItems + start);
+        } else {
+            actualStart = start;
+        }
+
+        // Determine the actual end based on query bounds
+        let actualEnd: number;
+        if (end === undefined) {
+            // If no end specified, use totalItems if known, otherwise load all available
+            actualEnd = totalItems > 0 ? totalItems : Number.MAX_SAFE_INTEGER;
+        } else if (end < 0) {
+            actualEnd = Math.max(0, totalItems + end);
+        } else {
+            // If end is specified, use it but cap at totalItems if known
+            actualEnd = totalItems > 0 ? Math.min(end, totalItems) : end;
+        }
+
+        const results: QueryResultItem[] = [];
+        for (let i = actualStart; i < actualEnd; i++) {
+            // Ensure item is loaded
+            if (items[i] === undefined || items[i] === null) {
+                await this.#atAsync(i);
             }
-            
-            const results: QueryResultItem[] = [];
-            for (let i = actualStart; i < actualEnd; i++) {
-                // Ensure item is loaded
-                if (items[i] === undefined || items[i] === null) {
-                    await this.#query.getItemsByIndex(i);
-                }
-                
-                // If item couldn't be loaded (end of results), break
-                if (items[i] === undefined) {
-                    break;
-                }
-                
-                results.push(items[i]);
+
+            // If item couldn't be loaded (end of results), break
+            if (items[i] === undefined) {
+                break;
             }
-            return results;
-        };
+
+            results.push(items[i]);
+        }
+        return results;
     }
 
     /**
-     * Creates the findAsync method.
+     * Finds the first item matching the predicate asynchronously.
      */
-    #createFindAsync() {
-        return async (
-            predicate: (value: QueryResultItem, index: number, self: QueryResultItem[]) => boolean | Promise<boolean>,
-            thisArg?: any
-        ): Promise<QueryResultItem | undefined> => {
-            let found: QueryResultItem | undefined;
-            await this.#iterateAsync(async (item, index, items) => {
-                if (await predicate.call(thisArg, item, index, items)) {
-                    found = item;
-                    return false; // Stop iteration
-                }
-            });
-            return found;
-        };
+    async #findAsync(predicate: (value: QueryResultItem, index: number, self: QueryResultItem[]) => boolean | Promise<boolean>, thisArg?: any): Promise<QueryResultItem | undefined> {
+        let found: QueryResultItem | undefined;
+        await this.#iterateAsync(async (item, index, items) => {
+            if (await predicate.call(thisArg, item, index, items)) {
+                found = item;
+                return false; // Stop iteration
+            }
+        });
+        return found;
     }
 
     /**
-     * Creates the findIndexAsync method.
+     * Finds the index of the first item matching the predicate asynchronously.
      */
-    #createFindIndexAsync() {
-        return async (
-            predicate: (value: QueryResultItem, index: number, self: QueryResultItem[]) => boolean | Promise<boolean>,
-            thisArg?: any
-        ): Promise<number> => {
-            let foundIndex = -1;
-            await this.#iterateAsync(async (item, index, items) => {
-                if (await predicate.call(thisArg, item, index, items)) {
-                    foundIndex = index;
-                    return false; // Stop iteration
-                }
-            });
-            return foundIndex;
-        };
+    async #findIndexAsync(predicate: (value: QueryResultItem, index: number, self: QueryResultItem[]) => boolean | Promise<boolean>, thisArg?: any): Promise<number> {
+        let foundIndex = -1;
+        await this.#iterateAsync(async (item, index, items) => {
+            if (await predicate.call(thisArg, item, index, items)) {
+                foundIndex = index;
+                return false; // Stop iteration
+            }
+        });
+        return foundIndex;
     }
 
     /**
-     * Creates the someAsync method.
+     * Checks if any item matches the predicate asynchronously.
      */
-    #createSomeAsync() {
-        return async (
-            predicate: (value: QueryResultItem, index: number, self: QueryResultItem[]) => boolean | Promise<boolean>,
-            thisArg?: any
-        ): Promise<boolean> => {
-            let hasMatch = false;
-            await this.#iterateAsync(async (item, index, items) => {
-                if (await predicate.call(thisArg, item, index, items)) {
-                    hasMatch = true;
-                    return false; // Stop iteration
-                }
-            });
-            return hasMatch;
-        };
+    async #someAsync(predicate: (value: QueryResultItem, index: number, self: QueryResultItem[]) => boolean | Promise<boolean>, thisArg?: any): Promise<boolean> {
+        let hasMatch = false;
+        await this.#iterateAsync(async (item, index, items) => {
+            if (await predicate.call(thisArg, item, index, items)) {
+                hasMatch = true;
+                return false; // Stop iteration
+            }
+        });
+        return hasMatch;
     }
 
     /**
-     * Creates the everyAsync method.
+     * Checks if all items match the predicate asynchronously.
      */
-    #createEveryAsync() {
-        return async (
-            predicate: (value: QueryResultItem, index: number, self: QueryResultItem[]) => boolean | Promise<boolean>,
-            thisArg?: any
-        ): Promise<boolean> => {
-            let allMatch = true;
-            await this.#iterateAsync(async (item, index, items) => {
-                if (!(await predicate.call(thisArg, item, index, items))) {
-                    allMatch = false;
-                    return false; // Stop iteration
-                }
-            });
-            return allMatch;
-        };
+    async #everyAsync(predicate: (value: QueryResultItem, index: number, self: QueryResultItem[]) => boolean | Promise<boolean>, thisArg?: any): Promise<boolean> {
+        let allMatch = true;
+        await this.#iterateAsync(async (item, index, items) => {
+            if (!(await predicate.call(thisArg, item, index, items))) {
+                allMatch = false;
+                return false; // Stop iteration
+            }
+        });
+        return allMatch;
     }
 
     /**
-     * Creates the includesAsync method.
+     * Checks if the array includes a specific item asynchronously.
      */
-    #createIncludesAsync() {
-        return async (searchElement: QueryResultItem, fromIndex?: number): Promise<boolean> => {
-            const startIndex = fromIndex ?? 0;
-            let found = false;
-            
-            await this.#iterateAsync((item, index) => {
-                if (index >= startIndex && item === searchElement) {
-                    found = true;
-                    return false; // Stop iteration
-                }
-            });
-            return found;
-        };
+    async #includesAsync(searchElement: QueryResultItem, fromIndex?: number): Promise<boolean> {
+        const startIndex = fromIndex ?? 0;
+        let found = false;
+
+        await this.#iterateAsync((item, index) => {
+            if (index >= startIndex && item === searchElement) {
+                found = true;
+                return false; // Stop iteration
+            }
+        });
+        return found;
     }
 
     /**
-     * Creates the indexOfAsync method.
+     * Finds the index of a specific item asynchronously.
      */
-    #createIndexOfAsync() {
-        return async (searchElement: QueryResultItem, fromIndex?: number): Promise<number> => {
-            const startIndex = fromIndex ?? 0;
-            let foundIndex = -1;
-            
-            await this.#iterateAsync((item, index) => {
-                if (index >= startIndex && item === searchElement) {
-                    foundIndex = index;
-                    return false; // Stop iteration
-                }
-            });
-            return foundIndex;
-        };
+    async #indexOfAsync(searchElement: QueryResultItem, fromIndex?: number): Promise<number> {
+        const startIndex = fromIndex ?? 0;
+        let foundIndex = -1;
+
+        await this.#iterateAsync((item, index) => {
+            if (index >= startIndex && item === searchElement) {
+                foundIndex = index;
+                return false; // Stop iteration
+            }
+        });
+        return foundIndex;
     }
 
     /**
      * Creates the reduceAsync method.
      */
     #createReduceAsync() {
-        return async function<U>(
-            reducer: (acc: U, value: QueryResultItem, index: number, self: QueryResultItem[]) => U | Promise<U>,
-            initialValue?: U
-        ): Promise<U> {
+        return async function <U>(reducer: (acc: U, value: QueryResultItem, index: number, self: QueryResultItem[]) => U | Promise<U>, initialValue?: U): Promise<U> {
             const hasInitial = arguments.length >= 2;
             let accumulator = initialValue as U;
             let firstItem = true;
-            
+
             await this.#iterateAsync(async (item: QueryResultItem, index: number, items: QueryResultItem[]) => {
                 if (firstItem && !hasInitial) {
                     accumulator = item as any;
@@ -780,40 +765,90 @@ export class QueryItemsProxy {
                     accumulator = await reducer(accumulator, item, index, items);
                 }
             });
-            
+
             if (firstItem && !hasInitial) {
                 throw new TypeError('Reduce of empty array with no initial value');
             }
-            
+
             return accumulator;
         }.bind(this);
     }
 
     /**
-     * Creates the atAsync method.
+     * Gets items at the specified indices asynchronously.
      */
-    #createAtAsync() {
-        return async (index: number): Promise<QueryResultItem | undefined> => {
-            // Negative indices require total count
-            let actualIndex = index;
-            if (index < 0) {
-                if (this.#query.hasMore)
-                    throw new Error("Cannot use negative index when there are more items to load in the query.");
+    async #atAsync(indices: number | number[]): Promise<QueryResultItem | undefined | (QueryResultItem | undefined)[]> {
+        const indicesArray = typeof indices === 'number' ? [indices] : indices;
 
-                if (!this.#query.hasSearched)
-                    await this.#query.search();
+        // Prepare indices and handle negative values
+        const hasNegativeIndices = indicesArray.some(idx => idx < 0);
 
-                actualIndex = this.#query.totalItems + index;
-            } else if (!this.#query.hasSearched) {
-                await this.#query.getItemsByIndex(0);
+        if (hasNegativeIndices) {
+            if (this.#query.hasMore)
+                throw new Error("Cannot use negative indices when there are more items to load in the query.");
+
+            if (!this.#query.hasSearched)
+                await this.#query.search();
+        } else if (!this.#query.hasSearched) {
+            // Initialize the query if it hasn't been searched yet
+            const minIndex = Math.min(...indicesArray);
+            await _internal(this.#query).getItems(minIndex, this.#query.pageSize || 1);
+        }
+
+        const actualIndices = indicesArray.map(idx => idx < 0 ? this.#query.totalItems + idx : idx);
+
+        const validIndices = actualIndices.filter(idx =>
+            idx >= 0 && (this.#query.totalItems === 0 || idx < this.#query.totalItems)
+        );
+
+        const uniqueValidIndices = [...new Set(validIndices)];
+
+        // Load the required pages for all unique valid indices
+        if (uniqueValidIndices.length > 0 && this.#query.pageSize > 0) {
+            const sortedIndexes = uniqueValidIndices.sort((a, b) => a - b);
+
+            // Calculate page ranges inline
+            const ranges: [skip: number, top: number][] = [];
+            if (sortedIndexes.length > 0) {
+                let currentRangeStart = sortedIndexes[0];
+                let currentRangeEnd = sortedIndexes[0];
+
+                for (let i = 1; i < sortedIndexes.length; i++) {
+                    const idx = sortedIndexes[i];
+
+                    if (idx <= currentRangeEnd + this.#query.pageSize) {
+                        currentRangeEnd = idx;
+                    } else {
+                        const skip = Math.floor(currentRangeStart / this.#query.pageSize) * this.#query.pageSize;
+                        const top = currentRangeEnd - skip + 1;
+                        ranges.push([skip, top]);
+
+                        currentRangeStart = idx;
+                        currentRangeEnd = idx;
+                    }
+                }
+
+                const skip = Math.floor(currentRangeStart / this.#query.pageSize) * this.#query.pageSize;
+                const top = currentRangeEnd - skip + 1;
+                ranges.push([skip, top]);
             }
-            
-            if (actualIndex < 0 || (this.#query.totalItems > 0 && actualIndex >= this.#query.totalItems))
+
+            await Promise.all(ranges.map(([skip, top]) => _internal(this.#query).getItems(skip, top)));
+        }
+
+        // Map indices to their items
+        const itemMap = new Map<number, QueryResultItem | undefined>();
+        uniqueValidIndices.forEach(idx => {
+            itemMap.set(idx, this.#query.items[idx]);
+        });
+
+        const results = actualIndices.map(idx => {
+            if (idx < 0 || (this.#query.totalItems > 0 && idx >= this.#query.totalItems))
                 return undefined;
-            
-            const [result] = await this.#query.getItemsByIndex(actualIndex);
-            return result;
-        };
+            return itemMap.get(idx);
+        });
+
+        return typeof indices === 'number' ? results[0] : results;
     }
 
     /**

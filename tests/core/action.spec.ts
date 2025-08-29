@@ -183,8 +183,8 @@ test.describe("Action", () => {
                 return;
             }
             
-            const items = await peopleQuery.getItemsByIndex(5);
-            if (items.length > 0) {
+            const items = await peopleQuery.items.atAsync([5]);
+            if (items.length > 0 && !!items[0]) {
                 items[0].isSelected = true;
             }
             
@@ -290,8 +290,10 @@ test.describe("Action", () => {
                 return;
             }
             
-            const singleItem = await peopleQuery.getItemsByIndex(0);
-            singleItem[0].isSelected = true;
+            const singleItem = await peopleQuery.items.atAsync(0);
+            if (singleItem) {
+                singleItem.isSelected = true;
+            }
             
             const result = await testCountSingleAction.execute();
             expect(result).toBeNull();

@@ -117,9 +117,10 @@ const firstItem = allItems[0];
 const po = await firstItem.getPersistentObject();
 
 // Low-level/Direct Fetching
-const items = await peopleQuery.getItemsByIndex(0, 5, 10); // Fetches specific, non-contiguous items
+const items = await peopleQuery.items.atAsync([0, 5, 10]); // Fetches specific, non-contiguous items
 
 // Properties
+// query.items.length: Equals totalItems (NOT the number of loaded items)
 // query.totalItems: Total records matching filters
 // query.pageSize: Records per page
 // query.hasMore: Boolean indicating if more pages exist

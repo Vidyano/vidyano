@@ -88,7 +88,7 @@ A `QueryResultItem` from a query is a lightweight read-only representation of an
 
 #### 4.1. From a Query Result Item
 
-> Note: Because queries use lazy loading, use `query.items.atAsync(index)` (preferred for a single item) or `getItemsByIndex()` for multiple indexes. Avoid direct array access.
+> Note: Because queries use lazy loading, use `query.items.atAsync(index)` for single items or `query.items.atAsync([indexes])` for multiple items. Avoid direct array access.
 
 The easiest way to load a `PersistentObject` is from an item in a query result.
 

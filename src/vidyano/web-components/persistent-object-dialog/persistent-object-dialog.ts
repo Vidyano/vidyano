@@ -248,7 +248,7 @@ export class PersistentObjectDialog extends Dialog {
 
         const currentPath = this.app.path;
         try {
-            let targetItem: Vidyano.QueryResultItem = this.persistentObject.ownerQuery.items[index] || await (this.persistentObject.ownerQuery.getItemsByIndex(index))[0];
+            let targetItem: Vidyano.QueryResultItem = this.persistentObject.ownerQuery.items[index] || await this.persistentObject.ownerQuery.items.atAsync(index);
             if (targetItem == null) {
                 targetItem = await this.persistentObject.ownerQuery.queueWork(async () => { 
                     return this.persistentObject.ownerQuery.items[index];

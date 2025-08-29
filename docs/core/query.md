@@ -145,36 +145,34 @@ const nextFive = await peopleQuery.items.sliceAsync(5, 10);
 
 ### Loading Specific Items
 
-For fine-grained control, use `getItemsByIndex()`:
-
 ```ts
 // Load single item
 const firstPerson = await peopleQuery.items.atAsync(0);
 
 // Load multiple specific items
-const items = await peopleQuery.getItemsByIndex(0, 5, 10, 25);
+const items = await peopleQuery.items.atAsync([0, 5, 10, 25]);
 console.log(`Loaded ${items.length} specific items`);
 
 // Load items with spread operator for dynamic indexes
 const indexes = [0, 2, 4, 6, 8];
-const evenIndexItems = await peopleQuery.getItemsByIndex(...indexes);
+const evenIndexItems = await peopleQuery.items.atAsync(indexes);
 ```
 
 ### Loading Item Ranges
 
-For consecutive items, use `getItems()`:
+For consecutive items, use `sliceAsync()`:
 
 ```ts
 // Load first 50 items
-const firstPage = await peopleQuery.getItems(0, 50);
+const firstPage = await peopleQuery.items.sliceAsync(0, 50);
 
 // Load next 50 items
-const secondPage = await peopleQuery.getItems(50, 50);
+const secondPage = await peopleQuery.items.sliceAsync(50, 100);
 
 // Load remaining items if query has more
 if (peopleQuery.hasMore) {
-    const currentCount = peopleQuery.items.length;
-    const nextBatch = await peopleQuery.getItems(currentCount, peopleQuery.pageSize);
+    const totalCount = peopleQuery.items.length; // Note: items.length equals totalItems
+    const nextBatch = await peopleQuery.items.sliceAsync(totalCount, totalCount + peopleQuery.pageSize);
 }
 ```
 
@@ -281,14 +279,14 @@ await peopleQuery.search();
 
 ```ts
 // Select individual items
-const [firstPerson, secondPerson] = await peopleQuery.getItemsByIndex(0, 1);
+const [firstPerson, secondPerson] = await peopleQuery.items.atAsync([0, 1]);
 firstPerson.isSelected = true;
 secondPerson.isSelected = true;
 
 console.log(`Selected ${peopleQuery.selectedItems.length} items`);
 
 // Batch select items
-const itemsToSelect = await peopleQuery.getItemsByIndex(0, 1, 2);
+const itemsToSelect = await peopleQuery.items.atAsync([0, 1, 2]);
 peopleQuery.selectedItems = itemsToSelect;
 ```
 
@@ -414,7 +412,7 @@ if (deleteAction?.canExecute && peopleQuery.selectedItems.length > 0) {
 }
 
 // Delete items - Option 2: Pass specific items
-const itemsToDelete = await peopleQuery.getItemsByIndex(0, 1, 2);
+const itemsToDelete = await peopleQuery.items.atAsync([0, 1, 2]);
 if (deleteAction) {
     await deleteAction.execute({ selectedItems: itemsToDelete });
     console.log(`Deleted ${itemsToDelete.length} items`);

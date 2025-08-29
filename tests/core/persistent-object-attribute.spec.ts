@@ -231,7 +231,7 @@ test.describe("Reference Attributes (Many-to-One)", () => {
         
         // Search for available people
         await lookupQuery.search();
-        const [item] = await lookupQuery.getItemsByIndex(0);
+        const item = await lookupQuery.items.atAsync(0) as QueryResultItem;
         expect(item).toBeInstanceOf(QueryResultItem);
         expect(item.id).toBe("3")
     });
@@ -258,12 +258,12 @@ test.describe("Reference Attributes (Many-to-One)", () => {
         
         // First, get available options from lookup
         await lookupQuery.search();
-        const items = await lookupQuery.getItemsByIndex(0, 10);
+        const items = await lookupQuery.items.atAsync([0, 1]);
         expect(Array.isArray(items)).toBe(true);
         expect(items.length).toBe(2);
         expect(items.every(item => item instanceof QueryResultItem)).toBe(true);
         
-        const firstPerson = items[0];
+        const firstPerson = items[0] as QueryResultItem;
 
         await emergencyContactRef.changeReference([firstPerson]);
         expect(emergencyContactRef.objectId).toBe(firstPerson.id);

@@ -214,7 +214,7 @@ if (addressesQuery) {
     console.log(`Found ${addressesQuery.totalItems} addresses`);
     
     // Access address items (each has Street, City, ZipCode, Country, State)
-    const addresses = await addressesQuery.getItemsByIndex(0, 10);
+    const addresses = await addressesQuery.items.sliceAsync(0, 10);
     addresses.forEach(address => {
         const street = address.getAttributeValue('Street');
         const city = address.getAttributeValue('City');

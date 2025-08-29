@@ -34,7 +34,7 @@ const test = base.extend<Fixtures>({
     },
 
     firstItem: async ({ peopleQuery }, use) => {
-        const [first] = await peopleQuery.getItemsByIndex(0);
+        const first = await peopleQuery.items.atAsync(0) as QueryResultItem;
         expect(first).toBeInstanceOf(QueryResultItem);
         await use(first);
     },
@@ -70,7 +70,7 @@ test.describe("PersistentObject", () => {
         });
 
         test("loads multiple objects and validates properties", async ({ service, peopleQuery }) => {
-            const items = await peopleQuery.getItemsByIndex(0, 1, 2);
+            const items = await peopleQuery.items.atAsync([0, 1, 2]) as QueryResultItem[];
             expect(items.length).toBe(3);
 
             const persistentObjects = await Promise.all(items.map(item => item.getPersistentObject()));
@@ -323,7 +323,7 @@ test.describe("PersistentObject", () => {
             await validPerson.setAttributeValue("IsActive", true);
             await validPerson.setAttributeValue("ContactPreference", "Email");
 
-            const [randomPerson] = await peopleQuery.getItemsByIndex(0);
+            const randomPerson = await peopleQuery.items.atAsync(0) as QueryResultItem;
             expect(randomPerson).toBeInstanceOf(QueryResultItem);
             const emergencyContextAttr = await validPerson.getAttribute("EmergencyContact") as PersistentObjectAttributeWithReference;
             emergencyContextAttr.changeReference([randomPerson]);
