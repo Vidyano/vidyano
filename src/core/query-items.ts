@@ -83,6 +83,10 @@ export type QueryItems =
             reducer: (acc: U, value: QueryResultItem, index: number, self: QueryResultItem[]) => U | Promise<U>,
             initialValue?: U
         ): Promise<U>;
+
+        // Returns the query item at the specified index, loading it if needed.
+        // Supports negative indices to access items from the end of the array.
+        atAsync(index: number): Promise<QueryResultItem | undefined>;
     };
 
 /**
@@ -187,6 +191,8 @@ export class QueryItemsProxy {
                 return this.#createIndexOfAsync();
             case "reduceAsync":
                 return this.#createReduceAsync();
+            case "atAsync":
+                return this.#createAtAsync();
             default:
                 return undefined;
         }
@@ -766,7 +772,7 @@ export class QueryItemsProxy {
             let accumulator = initialValue as U;
             let firstItem = true;
             
-            await this.#iterateAsync(async (item, index, items) => {
+            await this.#iterateAsync(async (item: QueryResultItem, index: number, items: QueryResultItem[]) => {
                 if (firstItem && !hasInitial) {
                     accumulator = item as any;
                     firstItem = false;
@@ -781,6 +787,33 @@ export class QueryItemsProxy {
             
             return accumulator;
         }.bind(this);
+    }
+
+    /**
+     * Creates the atAsync method.
+     */
+    #createAtAsync() {
+        return async (index: number): Promise<QueryResultItem | undefined> => {
+            // Negative indices require total count
+            let actualIndex = index;
+            if (index < 0) {
+                if (this.#query.hasMore)
+                    throw new Error("Cannot use negative index when there are more items to load in the query.");
+
+                if (!this.#query.hasSearched)
+                    await this.#query.search();
+
+                actualIndex = this.#query.totalItems + index;
+            } else if (!this.#query.hasSearched) {
+                await this.#query.getItemsByIndex(0);
+            }
+            
+            if (actualIndex < 0 || (this.#query.totalItems > 0 && actualIndex >= this.#query.totalItems))
+                return undefined;
+            
+            const [result] = await this.#query.getItemsByIndex(actualIndex);
+            return result;
+        };
     }
 
     /**
