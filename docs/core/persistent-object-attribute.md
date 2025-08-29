@@ -210,7 +210,7 @@ if (emergencyContactRef instanceof PersistentObjectAttributeWithReference) {
     // Get people from lookup query
     const lookupQuery = emergencyContactRef.lookup;
     await lookupQuery.search();
-    const [firstPerson] = await lookupQuery.getItemsByIndex(0);
+    const firstPerson = await lookupQuery.items.atAsync(0);
     
     // Change the reference - accepts array of QueryResultItem or string IDs
     if (firstPerson) {

@@ -33,7 +33,7 @@ A `Query` represents a dynamic view of data from your backend. It consists of:
 Each row in a query is a `QueryResultItem` with strongly-typed access to column values:
 
 ```ts
-const [person] = await peopleQuery.getItemsByIndex(0);
+const person = await peopleQuery.items.atAsync(0);
 
 // Access values directly via the values object
 const firstName = person.values.FirstName;    // string
@@ -52,7 +52,7 @@ console.log(person.values.FirstName, person.values.Email);
 For advanced scenarios, you can access the full `QueryResultItemValue` object which includes metadata like reference IDs and type hints:
 
 ```ts
-const [person] = await peopleQuery.getItemsByIndex(0);
+const person = await peopleQuery.items.atAsync(0);
 
 // Get the full value object with metadata
 const emergencyContactValue = person.getFullValue('EmergencyContact');
@@ -81,12 +81,12 @@ const names = await query.items.mapAsync(item =>
     item.values.FirstName
 );
 
-// ✅ Fine: Use getItemsByIndex() for specific items
-const [item] = await query.getItemsByIndex(150);
+// ✅ Fine: Use atAsync() for a specific item
+const item = await query.items.atAsync(150);
 console.log(item.values.FirstName);
 
 // ❌ Avoid: Direct array access may return null for unloaded items
-const item = query.items[150]; // May be null!
+const maybeItem = query.items[150]; // May be null!
 ```
 
 ## Working with Query Data
@@ -149,7 +149,7 @@ For fine-grained control, use `getItemsByIndex()`:
 
 ```ts
 // Load single item
-const [firstPerson] = await peopleQuery.getItemsByIndex(0);
+const firstPerson = await peopleQuery.items.atAsync(0);
 
 // Load multiple specific items
 const items = await peopleQuery.getItemsByIndex(0, 5, 10, 25);

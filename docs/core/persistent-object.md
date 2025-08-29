@@ -29,7 +29,7 @@ console.log(`Person name: ${person.getAttributeValue('FirstName')} ${person.getA
 const peopleQuery = await service.getQuery('People');
 
 // Get the first item and load it as a persistent object
-const [firstItem] = await peopleQuery.getItemsByIndex(0);
+const firstItem = await peopleQuery.items.atAsync(0);
 if (firstItem) {
     const person = await firstItem.getPersistentObject();
     console.log(`Loaded: ${person.breadcrumb}`);

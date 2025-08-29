@@ -71,6 +71,26 @@ await peopleQuery.search({ keepSelection: true }); // keepSelection preserves se
 *   Multiple values in a single column's `selectedDistincts` are combined with **OR** logic.
 *   Check `query.isFiltering` to see if any filters are active.
 
+##### Pre-filter on Load
+
+```typescript
+// Fetch a query with initial filters, text search, and sorting
+const people = await service.getQuery("People", {
+    columnOverrides: [
+        { name: "Gender", includes: ["|Female", "|Male"] }, // exclude "Not Specified"
+        { name: "IsActive", includes: ["|True"] },           // only active
+        { name: "Country", excludes: ["|US", "|CA"] }       // anything except US/CA
+    ],
+    textSearch: "FirstName:A*",
+    sortOptions: "LastName ASC; BirthDate DESC"
+});
+
+// Apply in one round-trip (depending on backend, an extra search may be needed)
+await people.search();
+```
+*   Use `includes` to whitelist values and `excludes` to blacklist them.
+*   Batch overrides and call `search()` once to avoid multiple round-trips.
+
 ##### Sorting
 
 ```typescript
@@ -115,7 +135,7 @@ The standard edit lifecycle is essential.
 const person = await service.getPersistentObject(null, "Person", "1");
 
 // 1. Start Editing
-await person.beginEdit(); // Or: person.getAction("Edit").execute();
+person.beginEdit(); // Or: person.getAction("Edit").execute();
 // person.isEditing is now true
 
 // 2. Modify Attributes
@@ -129,7 +149,7 @@ try {
     // Check person.notification or attribute.validationError
 }
 // OR
-await person.cancelEdit(); // Discards changes.
+person.cancelEdit(); // Discards changes.
 
 // New Objects
 const newAction = peopleQuery.getAction("New");
@@ -166,15 +186,16 @@ emailAttr.value = "new@example.com"; // Must be in edit mode
 // Reference (Many-to-One)
 const contactAttr = person.getAttribute("EmergencyContact");
 const lookupQuery = contactAttr.lookup; // Query to find items to link
-const [contactItem] = await lookupQuery.items.sliceAsync(0, 1);
-await contactAttr.changeReference([contactItem]); // Set reference
+const contactItem = await lookupQuery.items.atAsync(0);
+await contactAttr.changeReference(contactItem ? [contactItem] : []); // Set or clear reference
 await contactAttr.changeReference([]); // Clear reference
 
 // AsDetail (One-to-Many)
 const languagesAttr = person.getAttribute("Languages");
+if (!person.isEditing) person.beginEdit(); // Parent must be in edit mode
 const newLangPO = await languagesAttr.newObject(); // Create new child PO
 await newLangPO.setAttributeValue("Language", "Spanish");
-languagesAttr.objects.push(newLangPO); // Add to parent's collection, then save parent PO.
+languagesAttr.objects.push(newLangPO); // Add to parent's collection, then save parent PO
 ```
 
 ##### Metadata & State
@@ -219,7 +240,8 @@ Actions exist on `Query` and `PersistentObject` via `.actions.Name` or `.getActi
 ```typescript
 // On a Query
 const deleteAction = peopleQuery.getAction("Delete");
-peopleQuery.items[0].isSelected = true; // Selection rules determine canExecute
+const firstItem = await peopleQuery.items.atAsync(0);
+firstItem!.isSelected = true; // Selection rules determine canExecute
 
 if (deleteAction.canExecute) { // ALWAYS check canExecute
     await deleteAction.execute();
@@ -245,7 +267,7 @@ await optionsAction.execute({ menuOption: 0, parameters: { foo: "bar" } });
 
 ```typescript
 // Query Notifications
-query.setNotification("Operation complete.", "OK"); // Types: "OK", "Warning", "Error"
+query.setNotification("Operation complete.", "OK"); // Types: "", "OK", "Notice", "Warning", "Error"
 query.setNotification(null); // Clear notification
 
 // Observable Property Changes (Advanced)

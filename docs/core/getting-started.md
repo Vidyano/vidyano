@@ -88,13 +88,13 @@ A `QueryResultItem` from a query is a lightweight read-only representation of an
 
 #### 4.1. From a Query Result Item
 
-> Note: Because queries use lazy loading, always obtain items with `getItemsByIndex()` rather than direct array access.
+> Note: Because queries use lazy loading, use `query.items.atAsync(index)` (preferred for a single item) or `getItemsByIndex()` for multiple indexes. Avoid direct array access.
 
 The easiest way to load a `PersistentObject` is from an item in a query result.
 
 ```ts
 // Safely load the first item as a PersistentObject using lazy-loading aware APIs
-const [firstPersonItem] = await peopleQuery.getItemsByIndex(0);
+const firstPersonItem = await peopleQuery.items.atAsync(0);
 if (firstPersonItem) {
     console.log(`Loading full details for person with ID: ${firstPersonItem.id}`);
     try {
@@ -246,7 +246,7 @@ if (inactivePeople.length > 0) {
 }
 
 // Or delete a specific item by index
-const [itemToDelete] = await peopleQuery.getItemsByIndex(1);
+const itemToDelete = await peopleQuery.items.atAsync(1);
 if (itemToDelete && peopleQuery.actions.Delete) {
     await peopleQuery.actions.Delete.execute({ selectedItems: [itemToDelete] });
 }
