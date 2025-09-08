@@ -721,13 +721,16 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
             element.prototype[`op_${fn}`] = Operations.prototype[fn];
         }
 
-        if (!!elementName)
+        if (!!elementName) {
             window.customElements.define(elementName, element);
+            WebComponent._registeredClasses.add(element);
+        }
 
         return element;
     }
 
-    private static abstractRegistrations: { [key: string]: IWebComponentRegistrationInfo; } = {};
+    private static _abstractRegistrations: { [key: string]: IWebComponentRegistrationInfo; } = {};
+    private static _registeredClasses = new Set<CustomElementConstructor>();
 
     static register(prefixOrElementName: string): (obj: any) => void;
     static register(info: IWebComponentRegistrationInfo, prefixOrElementName: string): (obj: any) => void;
@@ -749,7 +752,11 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
             let info: IWebComponentRegistrationInfo = {};
 
             while (currentProto && currentProto !== WebComponent) {
-                const baseInfo = WebComponent.abstractRegistrations[currentProto.name];
+                // Stop at already registered classes to avoid duplicated Polymer registration behavior
+                if (WebComponent._registeredClasses.has(currentProto))
+                    break;
+
+                const baseInfo = WebComponent._abstractRegistrations[currentProto.name];
                 if (baseInfo)
                     info = WebComponent._clone(Vidyano.extend(info, WebComponent._clone(baseInfo)));
 
@@ -789,7 +796,7 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
 
     static registerAbstract(info?: IWebComponentRegistrationInfo): (obj: any) => void {
         return (target: Function) => {
-            WebComponent.abstractRegistrations[Object(target).name] = info;
+            WebComponent._abstractRegistrations[Object(target).name] = info;
         };
     }
 
