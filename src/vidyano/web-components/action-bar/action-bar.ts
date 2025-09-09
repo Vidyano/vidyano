@@ -37,6 +37,37 @@ export class ActionBar extends WebComponentLit {
     @property({ type: Number, computed: "serviceObject.selectedItemCount" })
     selectedItemCount: number;
 
+    #searchResizeObserver: ResizeObserver;
+
+    connectedCallback() {
+        super.connectedCallback();
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+
+        this.#searchResizeObserver?.disconnect();
+    }
+
+    private _setupSearchResizeObserver() {
+        if (!this.#searchResizeObserver) {
+            this.#searchResizeObserver = new ResizeObserver((entries) => {
+                for (const entry of entries) {
+                    const { width } = entry.contentRect;
+                    this.style.setProperty('--search-width', `${width}px`);
+                }
+            });
+        }
+        
+        requestAnimationFrame(() => {
+            const searchElement = this.shadowRoot?.querySelector('.search') as HTMLElement;
+            if (searchElement && this.#searchResizeObserver) {
+                this.#searchResizeObserver.disconnect(); // Disconnect from any previous elements
+                this.#searchResizeObserver.observe(searchElement);
+            }
+        });
+    }
+
     private _search() {
         if (!this.canSearch)
             return;
@@ -83,6 +114,13 @@ export class ActionBar extends WebComponentLit {
         return !actions.some(a => a.isVisible);
     }
 
+    protected firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
+        super.firstUpdated(changedProperties);
+
+        if (this.canSearch)
+            this._setupSearchResizeObserver();
+    }
+
     render() {
         return html`
             <vi-overflow>
@@ -123,6 +161,7 @@ export class ActionBar extends WebComponentLit {
 
         return html`
             <div class="search">
+                <div class="resizer" @pointerdown=${this._searchResize}></div>
                 <vi-input-search
                     .value=${(this.serviceObject as Vidyano.Query).textSearch}
                     @value-changed=${(e: CustomEvent) => (this.serviceObject as Vidyano.Query).textSearch = e.detail.value}
@@ -131,6 +170,49 @@ export class ActionBar extends WebComponentLit {
             </div>
         `;
     }
+
+    private _searchResize = (e: PointerEvent) => {
+        e.preventDefault();
+
+        const searchElement = this.shadowRoot?.querySelector('.search') as HTMLElement;
+        const resizerElement = e.target as HTMLElement;
+        if (!searchElement || !resizerElement)
+            return;
+
+        // Capture the pointer to maintain control even if mouse moves fast or for touch
+        resizerElement.setPointerCapture(e.pointerId);
+        
+        const startX = e.clientX;
+
+        // Get the current width from the computed style
+        const computedStyle = window.getComputedStyle(searchElement);
+        const startWidth = parseFloat(computedStyle.width);
+
+        if (e.pointerType === 'mouse') {
+            document.body.style.cursor = 'ew-resize';
+        }
+
+        const doResize = (moveEvent: PointerEvent) => {
+            const newWidth = startWidth - (moveEvent.clientX - startX);
+            if (newWidth >= 200 && newWidth <= 600)
+                this.style.setProperty('--search-width', `${newWidth}px`);
+        };
+
+        const stopResize = () => {
+            // Release the pointer capture
+            resizerElement.releasePointerCapture(e.pointerId);
+            
+            document.body.style.cursor = '';
+            
+            resizerElement.removeEventListener('pointermove', doResize);
+            resizerElement.removeEventListener('pointerup', stopResize);
+            resizerElement.removeEventListener('pointercancel', stopResize);
+        };
+
+        resizerElement.addEventListener('pointermove', doResize);
+        resizerElement.addEventListener('pointerup', stopResize);
+        resizerElement.addEventListener('pointercancel', stopResize);
+    };
 }
 
 customElements.define("vi-action-bar", ActionBar);

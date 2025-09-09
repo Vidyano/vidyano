@@ -84,11 +84,45 @@ vi-action-button {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-left: 1px solid #EAEAEA;
     padding: 0 var(--theme-h5);
+    margin-left: var(--theme-h5);
+    width: var(--search-width, 16em);
+    min-width: 200px;
+    max-width: 600px;
+    position: relative;
+    align-self: stretch;
+
+    .resizer {
+        position: absolute;
+        left: -2.5px;
+        top: 0;
+        bottom: 0;
+        width: 5px;
+        cursor: ew-resize;
+        z-index: 1;
+        
+        &::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: calc((var(--theme-h1) - var(--theme-h2)) / 2);
+            bottom: calc((var(--theme-h1) - var(--theme-h2)) / 2);
+            width: 1px;
+            background-color: #EAEAEA;
+            transition: top 0.2s ease, bottom 0.2s ease, width 0.2s ease;
+        }
+        
+        &:hover::before {
+            top: 0;
+            bottom: 0;
+            width: 5px;
+        }
+    }
 
     vi-input-search {
-        min-width: 16em;
+        min-width: 100%;
+        width: 100%;
         height: var(--theme-h2);
         box-sizing: border-box;
 
