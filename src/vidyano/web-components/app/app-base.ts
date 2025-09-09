@@ -48,10 +48,16 @@ if (hashBangRe.test(document.location.href)) {
 declare global {
     interface Window {
         Vidyano: typeof Vidyano;
+        VidyanoSettings?: {
+            // The element names for which to skip web component registration
+            skipElements?: string[];
+        };
     }
 }
 
 window.Vidyano = Vidyano;
+if (!window.VidyanoSettings)
+    window.VidyanoSettings = {};
 
 const baseElement = document.head.querySelector("base") as HTMLBaseElement;
 const baseHref = baseElement?.href || `${document.location.origin}${document.location.pathname.replace(/[^/]*$/, "")}`;

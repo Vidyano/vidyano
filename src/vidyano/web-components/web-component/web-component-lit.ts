@@ -217,6 +217,9 @@ export abstract class WebComponentLit<TTranslations extends Record<string, any> 
 
 const originalDefine = customElements.define;
 customElements.define = function (name, constructor, options) {
+    if (window.VidyanoSettings?.skipElements?.includes(name))
+        return;
+
     if (constructor.prototype instanceof WebComponentLit) {
         const registrationInfo = registerWebComponent({}, name, constructor as any);
         if (!registrationInfo)

@@ -721,7 +721,7 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
             element.prototype[`op_${fn}`] = Operations.prototype[fn];
         }
 
-        if (!!elementName) {
+        if (!!elementName && !window.VidyanoSettings?.skipElements?.includes(elementName)) {
             window.customElements.define(elementName, element);
             WebComponent._registeredClasses.add(element);
         }
