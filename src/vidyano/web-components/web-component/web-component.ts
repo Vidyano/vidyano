@@ -721,16 +721,14 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
             element.prototype[`op_${fn}`] = Operations.prototype[fn];
         }
 
-        if (!!elementName && !window.VidyanoSettings?.skipElements?.includes(elementName)) {
+        if (!!elementName && !window.VidyanoSettings?.skipElements?.includes(elementName))
             window.customElements.define(elementName, element);
-            WebComponent._registeredClasses.add(element);
-        }
 
         return element;
     }
 
     private static _abstractRegistrations: { [key: string]: IWebComponentRegistrationInfo; } = {};
-    private static _registeredClasses = new Set<CustomElementConstructor>();
+    private static readonly REGISTRATION_PROCESSED = Symbol("WebComponent.registrationProcessed");
 
     static register(prefixOrElementName: string): (obj: any) => void;
     static register(info: IWebComponentRegistrationInfo, prefixOrElementName: string): (obj: any) => void;
@@ -748,12 +746,16 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
         }
 
         return (target: CustomElementConstructor) => {
+            // Check if this class has already been processed
+            if (Object.prototype.hasOwnProperty.call(target, WebComponent.REGISTRATION_PROCESSED))
+                return target;
+
             let currentProto = Object.getPrototypeOf(target);
             let info: IWebComponentRegistrationInfo = {};
 
             while (currentProto && currentProto !== WebComponent) {
-                // Stop at already registered classes to avoid duplicated Polymer registration behavior
-                if (WebComponent._registeredClasses.has(currentProto))
+                // Stop at already processed classes to avoid duplicate registration
+                if (Object.prototype.hasOwnProperty.call(currentProto, WebComponent.REGISTRATION_PROCESSED))
                     break;
 
                 const baseInfo = WebComponent._abstractRegistrations[currentProto.name];
@@ -790,7 +792,12 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
                     info.serviceBusObservers = info.serviceBusObservers ? Vidyano.extend(info.serviceBusObservers, targetInfo.serviceBusObservers) : targetInfo.serviceBusObservers;
             }
             
-            return WebComponent._register(target, WebComponent._clone(info), prefixOrElementNameFromArgs);
+            const result = WebComponent._register(target, WebComponent._clone(info), prefixOrElementNameFromArgs);
+            
+            // Mark the class as processed to avoid duplicate registration in future inheritance chains
+            target[WebComponent.REGISTRATION_PROCESSED] = true;
+            
+            return result;
         };
     }
 
