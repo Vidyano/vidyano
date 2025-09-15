@@ -45,6 +45,9 @@ export const ClientOperations = {
      * @param message - Optional message to show after copying.
      */
     copyToClipboard: function (hooks: ServiceHooks, data: string, message?: string) {
+        if (!IS_BROWSER)
+            throw new Error("Cannot copy to clipboard in a non-browser environment.");
+
         navigator.clipboard.writeText(data);
         hooks.onShowNotification(message || "Copied to clipboard!", "OK", 5_000);
     },
@@ -60,6 +63,11 @@ export const ClientOperations = {
      * @param environment - Optional environment (e.g., "production", "development").
      */
     enableDatadog: function(hooks: ServiceHooks, applicationId: string, clientToken: string, site: string, service: string, version?: string, environment?: string) {
+        if (!IS_BROWSER) {
+            console.warn("Datadog RUM can only be enabled in a browser environment.");
+            return;
+        }
+
         const _enableDatadog = (h,o,u,n,d) => {
             h=h[d]=h[d]||{q:[],onReady:function(c){h.q.push(c)}}
             d=o.createElement(u);d.async=1;d.src=n

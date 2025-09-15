@@ -326,7 +326,7 @@ export class Service extends Observable<Service> {
             else
                 cookie("authToken", val);
 
-            if (!oldAuthToken && val) {
+            if (!oldAuthToken && val && IS_BROWSER) {
                 localStorage.setItem("vi-setAuthToken", JSON.stringify({ cookiePrefix: cookiePrefix(), authToken: val }));
                 localStorage.removeItem("vi-setAuthToken");
             }

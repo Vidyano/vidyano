@@ -1,4 +1,3 @@
-import { IS_BROWSER } from "./environment.js";
 import type * as Dto from "./typings/service.js";
 import type { NotificationType, Service } from "./service.js";
 import type { ServiceObjectWithActions } from "./service-object-with-actions.js";
@@ -19,7 +18,6 @@ import { QueryResultItem } from "./query-result-item.js";
 import { QueryResultItemValue } from "./query-result-item-value.js";
 import { QueryColumn } from "./query-column.js";
 import type { Language } from "./language.js";
-import { cookiePrefix } from "./cookie.js";
 import messages from "./client-messages.js";
 import { ServiceHooksSymbols } from "./_internals.js";
 
