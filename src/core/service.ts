@@ -1107,7 +1107,7 @@ export class Service extends Observable<Service> {
 
             throw response.text;
         } catch (e) {
-            throw e || (NoInternetMessage.messages[navigator.language.split("-")[0].toLowerCase()] || NoInternetMessage.messages["en"]).message;
+            throw e || (NoInternetMessage.messages[IS_BROWSER ? navigator.language.split("-")[0].toLowerCase() : "en"] || NoInternetMessage.messages["en"]).message;
         }
     }
 
