@@ -271,12 +271,6 @@ export class AppServiceHooksBase extends Vidyano.ServiceHooks {
         return true;
     }
 
-    onUpdateAvailable() {
-        super.onUpdateAvailable();
-
-        this.app.fire("app-update-available", null);
-    }
-
     onNavigate(path: string, replaceCurrent: boolean = false) {
         this.app.changePath(Path.removeRootPath(path), replaceCurrent);
     }

@@ -112,16 +112,6 @@ export const ClientOperations = {
     },
 
     /**
-     * Notifies that an update is available and triggers the update handler.
-     * @param hooks - The service hooks.
-     * @param path - The path related to the update.
-     * @param replaceCurrent - Whether to replace the current history entry.
-     */
-    refreshForUpdate: function (hooks: ServiceHooks, path: string, replaceCurrent?: boolean) {
-        hooks.onUpdateAvailable();
-    },
-
-    /**
      * Reloads the current page.
      */
     reloadPage: function () {

@@ -152,11 +152,6 @@ const baseHref = baseElement?.href || `${document.location.origin}${document.loc
             value: "#009688"
         },
         configs: String,
-        updateAvailable: {
-            type: Boolean,
-            readOnly: true,
-            value: false
-        },
         sensitive: {
             type: Boolean,
             reflectToAttribute: true,
@@ -180,7 +175,6 @@ const baseHref = baseElement?.href || `${document.location.origin}${document.loc
     listeners: {
         "app-route-presenter:connected": "_appRoutePresenterConnected",
         "click": "_anchorClickHandler",
-        "app-update-available": "_updateAvailable"
     },
     forwardObservers: [
         "service.isSignedIn",
@@ -195,14 +189,12 @@ export abstract class AppBase extends WebComponent {
 
     private _keybindingRegistrations: { [key: string]: Keyboard.IKeybindingRegistration[]; } = {};
     private _activeDialogs: Dialog[] = [];
-    private _updateAvailableSnoozeTimer: any;
     private _initializeResolve: (app: Vidyano.Application) => void;
     private _initialize: Promise<Vidyano.Application> = new Promise(resolve => { this._initializeResolve = resolve; });
     private _setInitializing: (initializing: boolean) => void;
     private _setService: (service: Vidyano.Service) => void;
     readonly appRoutePresenter: AppRoutePresenter; private _setAppRoutePresenter: (appRoutePresenter: AppRoutePresenter) => void;
     readonly keys: string; private _setKeys: (keys: string) => void;
-    readonly updateAvailable: boolean; private _setUpdateAvailable: (updateAvailable: boolean) => void;
     readonly sessionLost: boolean; private _setSessionLost: (sessionLost: boolean) => void;
     readonly base: string;
     uri: string;
@@ -353,12 +345,6 @@ export abstract class AppBase extends WebComponent {
             this.service.authToken = authTokenInfo.authToken;
             this._setSessionLost(false);
         }
-        else if (event.key === "vi-updateAvailable") {
-            if (this.service != null)
-                this.service.hooks.onUpdateAvailable();
-            else
-                this._updateAvailable();
-        }
     }
 
     private _reload(e: Polymer.Gestures.TapEvent) {
@@ -450,35 +436,6 @@ export abstract class AppBase extends WebComponent {
 
             this.changePath(path);
         }
-    }
-
-    private _updateAvailable() {
-        if (this._updateAvailableSnoozeTimer)
-            return;
-
-        this._setUpdateAvailable(true);
-
-        Polymer.flush();
-        // TODO
-        // this.async(() => this.shadowRoot.querySelector("#update").classList.add("show"), 100);
-    }
-
-    private _refreshForUpdate() {
-        document.location.reload();
-    }
-
-    private _refreshForUpdateDismiss() {
-        if (this._updateAvailableSnoozeTimer)
-            clearTimeout(this._updateAvailableSnoozeTimer);
-
-        this._updateAvailableSnoozeTimer = setTimeout(() => {
-            this._updateAvailableSnoozeTimer = null;
-            this._updateAvailable();
-        }, 300000);
-
-        this.shadowRoot.querySelector("#update").classList.remove("show");
-        // TODO
-        // this.async(() => this._setUpdateAvailable(false), 500);
     }
 
     private _computeThemeColorVariants(base: string, target: string, isConnected: boolean) {

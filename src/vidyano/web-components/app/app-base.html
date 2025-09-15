@@ -61,17 +61,6 @@
     </vi-persistent-object-tab-config>
     <slot name="vi-app-config" slot="vi-app-config"></slot>
 </vi-app-config>
-<dom-if if="[[updateAvailable]]">
-    <template>
-        <div id="update">
-            <div class="overlay" on-tap="_refreshForUpdateDismiss"></div>
-            <div class="message" on-tap="_refreshForUpdate">
-                <span>[[translations.ApplicationOutdated]]</span>
-                <span class="highlight">[[translations.ApplicationOutdatedRefresh]]</span>
-            </div>
-        </div>
-    </template>
-</dom-if>
 <vi-spinner hidden$="[[!initializing]]"></vi-spinner>
 
 <dom-module id="vi-app-config">

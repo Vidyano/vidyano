@@ -389,14 +389,6 @@ export class ServiceHooks {
     }
 
     /**
-     * Called when an update of the client library is available.
-     */
-    onUpdateAvailable() {
-        localStorage.setItem("vi-updateAvailable", cookiePrefix());
-        localStorage.removeItem("vi-updateAvailable");
-    }
-
-    /**
      * Called when a retry action is requested.
      * @param retry - The retry action data.
      */

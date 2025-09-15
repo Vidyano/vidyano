@@ -49,7 +49,8 @@ export class Application extends PersistentObject {
         this.#queryRe = queryNames.length === 0 ? /$ ^/ : new RegExp(puRoutes + "(" + queryNames.join("|") + ")$");
 
         const userSettings = this.getAttributeValue("UserSettings");
-        this.#userSettings = JSON.parse(String.isNullOrEmpty(userSettings) ? (localStorage["UserSettings"] || "{}") : userSettings);
+        const localSettings = typeof localStorage !== "undefined" ? localStorage["UserSettings"] : null;
+        this.#userSettings = JSON.parse(String.isNullOrEmpty(userSettings) ? (localSettings || "{}") : userSettings);
 
         this.#canProfile = this.getAttributeValue("CanProfile");
 
