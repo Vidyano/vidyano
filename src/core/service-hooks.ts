@@ -342,7 +342,7 @@ export class ServiceHooks {
                 if (typeof (method) === "function") {
                     method.apply(ClientOperations, [this].concat(executeMethod.arguments));
                 }
-                else if (IS_BROWSER)
+                else
                     console.error("Method not found: " + executeMethod.name, executeMethod);
 
                 break;
@@ -353,8 +353,7 @@ export class ServiceHooks {
                 break;
 
             default:
-                if (IS_BROWSER)
-                    console.log("Missing client operation type: " + operation.type, operation);
+                console.log("Missing client operation type: " + operation.type, operation);
                 break;
         }
     }
