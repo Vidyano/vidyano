@@ -65,6 +65,11 @@
       "UserId": "fe9429ba-d5cd-4e7c-bbe4-05a4c3497d97"
     },
     {
+      "Id": "05608951-fa99-4da3-993f-94727a6e9b85",
+      "Resource": "TestDownload/Dev.Person",
+      "UserId": "fe9429ba-d5cd-4e7c-bbe4-05a4c3497d97"
+    },
+    {
       "Id": "8f7f4161-6f8c-4514-9b6f-c796e83180a2",
       "Resource": "TestOptions/Dev.Person",
       "UserId": "fe9429ba-d5cd-4e7c-bbe4-05a4c3497d97"

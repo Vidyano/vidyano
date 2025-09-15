@@ -253,6 +253,17 @@
         "nl": "Count (single)"
       }
     },
+    "TestDownload": {
+      "Offset": 1104,
+      "ShowedOn": 2,
+      "GroupActionName": "TestActionsGroup",
+      "Intent": 1,
+      "SelectionRule": ">0",
+      "DisplayName": {
+        "en": "Test download",
+        "nl": "Test download"
+      }
+    },
     "TestOptions": {
       "Offset": 1103,
       "ShowedOn": 2,

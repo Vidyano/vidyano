@@ -88,4 +88,12 @@ public partial class PersonActions
     {
         entities.Run(e => DevContext._people.Remove(e));
     }
+
+    public override Stream OnGetStream(GetStreamArgs e)
+    {
+        var ids = e.Key.Split(",").Select(id => id.Trim());
+        var result = string.Join("\n", ids);
+
+        return e.GetBytes(System.Text.Encoding.UTF8.GetBytes(result), "SelectedIds.txt", "text/plain");
+    }
 }

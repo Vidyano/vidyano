@@ -928,21 +928,11 @@ export class Service extends Observable<Service> {
         }));
 
         if (response.ok) {
-            const blob = await response.blob();
-            
-            const a = document.createElement("a");
-            a.style.display = "none";
-            
             const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
             const matches = filenameRegex.exec(response.headers.get("Content-Disposition"));
-            if (matches != null && matches[1])
-                a.download = matches[1].replace(/['"]/g, "");
+            const filename = matches?.[1]?.replace(/['"]/g, "");
 
-            a.href = URL.createObjectURL(blob);
-            document.body.appendChild(a);
-            a.dispatchEvent(new MouseEvent("click", { bubbles: false }));
-            document.body.removeChild(a);
-            URL.revokeObjectURL(a.href);
+            this.hooks.onGetStream(response.blob.bind(response), filename);
         }
     }
 

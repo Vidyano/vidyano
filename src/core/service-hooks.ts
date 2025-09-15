@@ -378,6 +378,17 @@ export class ServiceHooks {
     }
 
     /**
+     * Called when a blob stream is received from the server.
+     * @param blob - The blob data.
+     * @param filename - The suggested filename.
+     * @returns A promise that resolves when the blob has been handled.
+     */
+    onGetStream(blob: () => Promise<Blob>, filename: string): Promise<void> {
+        console.log("Unhandled stream", { blob, filename });
+        return Promise.resolve();
+    }
+
+    /**
      * Called when an update of the client library is available.
      */
     onUpdateAvailable() {
