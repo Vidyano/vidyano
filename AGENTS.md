@@ -3,6 +3,8 @@
 ## IMPORTANT
 **When working with @vidyano/core code**, read `docs/core/cheat-sheet.md` first for quick reference on core concepts and coding patterns.
 
+**File Types:** Only work with TypeScript source files (`.ts`). Do NOT modify JavaScript files (`.js`) or TypeScript declaration files (`.d.ts`).
+
 ## Quick Reference
 
 ### Commands
@@ -42,6 +44,15 @@ curl -s -o /dev/null -w '%{http_code}' --head http://localhost:5000
 │  └─ core/            # Core tests
 │  └─ vidyano/         # UI component tests
 ```
+
+### Vidyano Components Structure
+Components in `src/vidyano/` follow this pattern:
+- Each component is in a folder named after the component (e.g., `src/vidyano/my-component/`)
+- Component folders can be nested deeper in the directory structure
+- Each component folder contains:
+  - **`.ts` file** - TypeScript source (required)
+  - **`.scss` file** - Component styles (required)
+  - **`.html` file** - Component template (optional)
 
 # Development Workflow
 
