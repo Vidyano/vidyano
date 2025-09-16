@@ -216,6 +216,89 @@ test.describe("Action", () => {
             expect(peopleQuery.notification).toBe("5");
         });
 
+        test("TestDownload streams selected ids using default hooks", async ({ service, peopleQuery }) => {
+            const testDownloadAction = peopleQuery.actions.find(a => a.name === "TestDownload") as Action;
+            expect(testDownloadAction).toBeInstanceOf(Action);
+
+            peopleQuery.items.forEach(item => item.isSelected = false);
+            const selectedItems = await peopleQuery.items.sliceAsync(0, 3);
+            const expectedIds = selectedItems.map(item => {
+                item.isSelected = true;
+                return item.id;
+            });
+
+            const originalOnGetStream = service.hooks.onGetStream;
+            let capturedFilename: string | undefined;
+            let capturedContent: string | undefined;
+
+            const streamHandled = new Promise<void>(resolve => {
+                service.hooks.onGetStream = async (blob, filename) => {
+                    capturedFilename = filename;
+                    capturedContent = await blob.text();
+                    resolve();
+                };
+            });
+
+            try {
+                const executePromise = testDownloadAction.execute();
+                await streamHandled;
+                const result = await executePromise;
+
+                expect(typeof capturedFilename).toBe("string");
+                const idsFromFile = capturedContent?.split(/\r?\n/).filter(line => line.length > 0);
+                expect(idsFromFile).toEqual(expectedIds);
+            }
+            finally {
+                service.hooks.onGetStream = originalOnGetStream;
+                selectedItems.forEach(item => item.isSelected = false);
+            }
+        });
+
+        test("TestDownload uses custom getStreamCallback handlers", async ({ service, peopleQuery }) => {
+            const testDownloadAction = peopleQuery.actions.find(a => a.name === "TestDownload") as Action;
+            expect(testDownloadAction).toBeInstanceOf(Action);
+
+            peopleQuery.items.forEach(item => item.isSelected = false);
+            const selectedItems = await peopleQuery.items.sliceAsync(0, 2);
+            const expectedIds = selectedItems.map(item => {
+                item.isSelected = true;
+                return item.id;
+            });
+
+            const originalOnGetStream = service.hooks.onGetStream;
+            let defaultHookCalled = false;
+            service.hooks.onGetStream = () => {
+                defaultHookCalled = true;
+            };
+
+            let callbackResolved = false;
+            let receivedFilename: string | undefined;
+            let receivedContent: string | undefined;
+
+            try {
+                const result = await testDownloadAction.execute({
+                    getStreamCallback: {
+                        onSuccess: async (blob, filename) => {
+                            await new Promise(resolve => setTimeout(resolve, 10));
+                            callbackResolved = true;
+                            receivedFilename = filename;
+                            receivedContent = await blob.text();
+                        }
+                    }
+                });
+
+                expect(defaultHookCalled).toBe(false);
+                expect(callbackResolved).toBe(true);
+                expect(typeof receivedFilename).toBe("string");
+                const idsFromFile = receivedContent?.split(/\r?\n/).filter(line => line.length > 0);
+                expect(idsFromFile).toEqual(expectedIds);
+            }
+            finally {
+                service.hooks.onGetStream = originalOnGetStream;
+                selectedItems.forEach(item => item.isSelected = false);
+            }
+        });
+
         test("actions are disabled while another action is executing", async ({ peopleQuery }) => {
             const itemsToSelect = peopleQuery.items.slice(0, 2);
             itemsToSelect.forEach(item => item.isSelected = true);
