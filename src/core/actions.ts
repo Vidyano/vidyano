@@ -96,7 +96,12 @@ Actions.ExportToCsv = class ExportToCsv extends Action {
     }
 
     protected _onExecute({ menuOption, parameters, selectedItems, skipOpen, noConfirmation, throwExceptions }: IActionExecuteOptions): Promise<PersistentObject> {
-        this.service.getStream(null, "Query.ExportToCsv", this.parent, this.query, null, this._getParameters(parameters, menuOption));
+        this.service.getStream(null, {
+            action: "Query.ExportToCsv",
+            parent: this.parent,
+            query: this.query,
+            parameters: this._getParameters(parameters, menuOption)
+        });
         return Promise.resolve(null);
     }
 }
@@ -107,7 +112,12 @@ Actions.ExportToExcel = class ExportToExcel extends Action {
     }
 
     protected _onExecute({ menuOption, parameters, selectedItems, skipOpen, noConfirmation, throwExceptions }: IActionExecuteOptions): Promise<PersistentObject> {
-        this.service.getStream(null, "Query.ExportToExcel", this.parent, this.query, null, this._getParameters(parameters, menuOption));
+        this.service.getStream(null, {
+            action: "Query.ExportToExcel",
+            parent: this.parent,
+            query: this.query,
+            parameters: this._getParameters(parameters, menuOption)
+        });
         return Promise.resolve(null);
     }
 }

@@ -380,9 +380,8 @@ export class ServiceHooks {
      * @param filename - The suggested filename.
      * @returns A promise that resolves when the blob has been handled.
      */
-    onGetStream(blob: () => Promise<Blob>, filename: string): Promise<void> {
+    onGetStream(blob: Blob, filename: string): Promise<void> | void {
         console.log("Unhandled stream", { blob, filename });
-        return Promise.resolve();
     }
 
     /**

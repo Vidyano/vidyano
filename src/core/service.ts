@@ -77,6 +77,46 @@ export type GetQueryOptions = {
 };
 
 /**
+ * Options for retrieving a stream associated with an action or persistent object.
+ */
+export type GetStreamOptions = {
+    /**
+     * Optional action name that produces the stream.
+     */
+    action?: string;
+
+    /**
+     * Optional parent persistent object context.
+     */
+    parent?: PersistentObject;
+
+    /**
+     * Optional query context for the stream.
+     */
+    query?: Query;
+
+    /**
+     * Optional selected items coming from a query.
+     */
+    selectedItems?: Array<QueryResultItem> | null;
+
+    /**
+     * Optional parameters payload for the action producing the stream.
+     */
+    parameters?: any;
+
+    /**
+     * Optional callback invoked when the stream is successfully retrieved.
+     */
+    onSuccess?: (blob: Blob, filename: string) => Promise<void> | void;
+
+    /**
+     * Optional callback invoked when an error occurs while retrieving the stream.
+     */
+    onError?: (error: Error) => Promise<void> | void;
+};
+
+/**
  * Represents the service layer for interacting with the Vidyano backend.
  * Manages authentication, data fetching, and action execution.
  */
@@ -893,14 +933,10 @@ export class Service extends Observable<Service> {
     /**
      * Retrieves a data stream (e.g., a file download) associated with an action or object.
      * @param obj - The persistent object context for the stream.
-     * @param action - The action that produces the stream.
-     * @param parent - Optional parent persistent object.
-     * @param query - Optional query context.
-     * @param selectedItems - Optional selected items from a query.
-     * @param parameters - Optional parameters for the stream action.
+     * @param options - Optional settings such as action context, parent, query, selected items, parameters, and callback handler.
      * @returns A promise that resolves when the stream download is initiated.
      */
-    public async getStream(obj: PersistentObject, action?: string, parent?: PersistentObject, query?: Query, selectedItems?: Array<QueryResultItem>, parameters?: any) {
+    public async getStream(obj: PersistentObject | null, { action, parent, query, selectedItems, parameters, onSuccess, onError }: GetStreamOptions = {}): Promise<void> {
         const data = this.#createData("getStream");
         data.action = action;
 
@@ -922,17 +958,35 @@ export class Service extends Observable<Service> {
         const formData = new FormData();
         formData.append("data", JSON.stringify(data));
 
-        const response = await this.#fetch(new Request(this.#createUri("GetStream"), {
-            body: formData,
-            method: "POST"
-        }));
+        try {
+            const response = await this.#fetch(new Request(this.#createUri("GetStream"), {
+                body: formData,
+                method: "POST"
+            }));
 
-        if (response.ok) {
-            const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-            const matches = filenameRegex.exec(response.headers.get("Content-Disposition"));
-            const filename = matches?.[1]?.replace(/['"]/g, "");
+            if (response.ok) {
+                const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                const matches = filenameRegex.exec(response.headers.get("Content-Disposition"));
+                const filename = matches?.[1]?.replace(/['"]/g, "");
 
-            this.hooks.onGetStream(response.blob.bind(response), filename);
+                const blob = await response.blob();
+
+                if (!onSuccess)
+                    this.hooks.onGetStream(blob, filename);
+                else
+                    await onSuccess(blob, filename);
+            } else {
+                const error = new Error(`Failed to get stream: ${response.status} ${response.statusText}`);
+                if (onError)
+                    await onError(error);
+                else
+                    throw error;
+            }
+        } catch (error) {
+            if (onError)
+                await onError(error as Error);
+            else
+                throw error;
         }
     }
 

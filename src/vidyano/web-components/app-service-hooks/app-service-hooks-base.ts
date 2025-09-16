@@ -177,12 +177,12 @@ export class AppServiceHooksBase extends Vidyano.ServiceHooks {
         return super.onAction(args);
     }
 
-    async onGetStream(blob: () => Promise<Blob>, filename: string): Promise<void> {
+    onGetStream(blob: Blob, filename: string) {
         const a = document.createElement("a");
         a.style.display = "none";
         a.download = filename || "download";
 
-        a.href = URL.createObjectURL(await blob());
+        a.href = URL.createObjectURL(blob);
         document.body.appendChild(a);
         a.dispatchEvent(new MouseEvent("click", { bubbles: false }));
         document.body.removeChild(a);

@@ -41,6 +41,22 @@ export interface IActionExecuteOptions {
      * If true, throw exceptions instead of setting the notification.
      */
     throwExceptions?: boolean;
+
+    /**
+     * Callbacks to handle stream results.
+     * If not provided, the default stream handling will be used.
+     */
+    getStreamCallback?: {
+        /**
+         * Callback invoked when the stream is successfully retrieved.
+         */
+        onSuccess?: (blob: Blob, fileName: string) => Promise<void> | void;
+
+        /**
+         * Callback invoked when an error occurs while retrieving the stream.
+         */
+        onError?: (error: Error) => void;
+    };
 }
 
 /**
@@ -384,7 +400,10 @@ export class Action extends ServiceObject {
 
                     po = null;
                 } else if (po.fullTypeName === "Vidyano.RegisteredStream") {
-                    await this.service.getStream(po);
+                    await this.service.getStream(po, {
+                        onSuccess: options.getStreamCallback?.onSuccess,
+                        onError: options.getStreamCallback?.onError
+                    });
                 } else if (po.fullTypeName === "Vidyano.AddReference") {
                     const query = po.queries[0];
                     query.parent = this.parent;
