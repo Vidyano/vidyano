@@ -1294,7 +1294,7 @@ export class Service extends Observable<Service> {
                 }
 
                 if (result.exception == null) {
-                    if (createdRequest > this.#lastAuthTokenUpdate && this.authTokenType !== "JWT") {
+                    if (createdRequest > this.#lastAuthTokenUpdate && !!result.authToken) {
                         this.authToken = result.authToken;
                         this.#lastAuthTokenUpdate = createdRequest;
                     }
