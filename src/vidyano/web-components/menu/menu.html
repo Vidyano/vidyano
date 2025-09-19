@@ -12,7 +12,7 @@
         <vi-input-search value="{{filter}}" on-search="_search" focused="{{searchFocused}}"></vi-input-search>
     </header>
     <main class="horizontal layout flex relative">
-        <vi-scroller class="flex programUnits" no-horizontal>
+        <vi-scroller class="flex program-units" no-horizontal>
             <div class="instantSearch" hidden$="[[!instantSearchResults]]">
                 <dom-repeat items="[[instantSearchResults]]" as="item">
                     <template>
@@ -22,7 +22,7 @@
             </div>
             <dom-repeat items="[[programUnits]]" as="programUnit">
                 <template>
-                    <vi-menu-item class="program-unit" item="[[programUnit]]" filter="[[filter]]" program-unit="[[activeProgramUnit]]" items="[[programUnit.items]]" collapse-groups-on-tap></vi-menu-item>
+                    <vi-menu-item class="program-unit" item="[[programUnit]]" filter="[[filter]]" program-unit="[[activeProgramUnit]]" items="[[programUnit.items]]" collapsed="[[collapsed]]" hovering="[[hovering]]" collapse-groups-on-tap></vi-menu-item>
                     <dom-if if="[[_isFirstRunProgramUnit(app.service.application, programUnit)]]">
                         <template>
                             <div id="add" on-tap="_add">+ Add menu item</div>

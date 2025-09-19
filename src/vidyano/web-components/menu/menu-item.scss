@@ -5,7 +5,7 @@ $backgroundColor: var(--colors-blue-grey-900);
     position: relative;
     box-sizing: border-box;
 	display: block;
-	line-height: var(--theme-h2);
+	line-height: var(--vi-menu-item-height);
     color: var(--vi-menu-color, $color);
     fill: var(--vi-menu-color, $color);
     cursor: pointer;
@@ -19,39 +19,38 @@ $backgroundColor: var(--colors-blue-grey-900);
 
     > .title {
         display: flex;
+        gap: var(--vi-menu-item-gap);
         position: relative;
-        padding-right: var(--theme-h5);
+        padding-left: calc(var(--vi-menu-item-indent) + (var(--vi-menu-item-indent-level, 0) * var(--vi-menu-item-icon-offset, 0)));
+        padding-right: var(--vi-menu-item-gap);
         text-decoration: none;
         color: var(--vi-menu-color, $color);
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
         outline: none;
+        align-items: center;
 
         &:hover {
             background-color: rgba(0, 0, 0, 0.1);
         }
 
         > vi-icon {
-            height: var(--theme-h2);
-            width: var(--theme-h3);
-            --vi-icon-width: 1em;
-            --vi-icon-height: 1em;
-            margin-left: calc(var(--theme-h3) * var(--vi-menu-item-indent-level, 0));
+            --vi-icon-width: var(--vi-menu-item-icon-size);
+            --vi-icon-height: var(--vi-menu-item-icon-size);
+            width: var(--vi-menu-item-icon-size);
             fill: var(--vi-menu-color, $color);
-    		transition: transform 0.2s ease;
+    		transition: transform 0.2s ease, opacity 0.2s ease;
             transform: rotate(0deg);
+        }
 
-            &[unresolved] {
-                display: none;
-
-                & + span {
-                    margin-left: calc(var(--theme-h3) + var(--theme-h3) * var(--vi-menu-item-indent-level, 0));
-                }
-            }
+        > span {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
     }
-    
+
     &[hidden] {
         display: none !important;
     }
@@ -75,12 +74,77 @@ $backgroundColor: var(--colors-blue-grey-900);
             font-weight: 600;
             color: var(--vi-menu-color, $color);
             text-transform: uppercase;
+        }
 
-            > vi-icon {
-                display: none;
+        #subItems {
+            transition: opacity 0.22s cubic-bezier(0.2, 0, 0, 1);
+        }
 
-                + span {
-                    margin-left: var(--theme-h4);
+        &[collapsed]:not([hovering]) {
+            #subItems {
+                opacity: 0;
+                pointer-events: none;
+            }
+            > .title {
+                height: var(--vi-menu-item-height);
+                line-height: var(--vi-menu-item-height);
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+                padding-left: var(--vi-menu-item-indent);
+                padding-right: var(--vi-menu-item-padding-right);
+                width: var(--vi-menu-collapsed-width);
+                min-width: var(--vi-menu-collapsed-width);
+                max-width: var(--vi-menu-collapsed-width);
+                overflow: hidden;
+                transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
+
+                > vi-icon {
+                    --vi-icon-width: var(--vi-menu-item-icon-size);
+                    --vi-icon-height: var(--vi-menu-item-icon-size);
+                    width: var(--vi-menu-item-icon-size);
+                    height: var(--vi-menu-item-icon-size);
+                    flex-shrink: 0;
+                }
+
+                > span {
+                    display: none;
+                }
+
+                &:hover > vi-icon {
+                    transform: scale(1.1);
+                }
+            }
+        }
+
+        &[collapsed][hovering] {
+            #subItems {
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            > .title {
+                height: var(--vi-menu-item-height);
+                line-height: var(--vi-menu-item-height);
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+                padding-left: var(--vi-menu-item-indent);
+                padding-right: var(--vi-menu-item-padding-right);
+                width: auto;
+                min-width: unset;
+                max-width: unset;
+                transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
+
+                > vi-icon {
+                    --vi-icon-width: var(--vi-menu-item-icon-size);
+                    --vi-icon-height: var(--vi-menu-item-icon-size);
+                    width: var(--vi-menu-item-icon-size);
+                    height: var(--vi-menu-item-height);
+                }
+
+                > span {
+                    display: inline;
                 }
             }
         }
@@ -88,7 +152,7 @@ $backgroundColor: var(--colors-blue-grey-900);
 
     &[is-separator] {
         cursor: default;
-        --separator-height: var(--theme-h2);
+        --separator-height: var(--vi-menu-item-height);
 
         a {
             height: var(--separator-height);
@@ -101,10 +165,24 @@ $backgroundColor: var(--colors-blue-grey-900);
 
             &::after {
                 position: absolute;
-                inset: calc(var(--separator-height) / 2) var(--theme-h3) 0 calc(var(--theme-h3) + var(--theme-h3) * var(--vi-menu-item-indent-level, 0));
+                inset: calc(var(--separator-height) / 2) var(--theme-h3) 0 calc(var(--vi-menu-item-indent) * (var(--vi-menu-item-indent-level, 0) + 1));
                 content: "";
                 height: 1px;
                 background-color: rgba(255, 255, 255, .2);
+            }
+        }
+    }
+
+    // When siblings contain groups, align all items at the same level by adding space for icon
+    &[sibling-has-group]:not([has-icon]) {
+        > .title {
+            // Add placeholder for icon to align with siblings that have icons/groups
+            &::before {
+                content: '';
+                display: inline-block;
+                width: var(--vi-menu-item-icon-size);
+                height: var(--vi-menu-item-icon-size);
+                flex-shrink: 0;
             }
         }
     }

@@ -10,6 +10,20 @@ $backgroundColor: var(--colors-blue-grey-900);
     min-width: var(--vi-menu--expand-width, 17em);
     will-change: width;
 
+    // Menu dimensions
+    --vi-menu-collapsed-width: var(--theme-h1);
+    --vi-menu-header-height: calc(var(--theme-h1) * 2);
+    --vi-menu-item-height: var(--theme-h2);
+    --vi-menu-item-icon-size: 1em;
+
+    // Menu spacing
+    --vi-menu-item-indent: var(--theme-h4);
+    --vi-menu-item-padding-right: var(--theme-h4);
+    --vi-menu-item-gap: var(--theme-h4);
+    --vi-menu-search-margin: calc(var(--theme-h4) / 2);
+
+    // Calculated offsets
+    --vi-menu-item-icon-offset: calc(var(--vi-menu-item-icon-size) + var(--vi-menu-item-gap));
     
     &[hide-search] {
         vi-input-search {
@@ -17,7 +31,7 @@ $backgroundColor: var(--colors-blue-grey-900);
         }
 
         vi-menu-item:first-of-type {
-            margin-top: var(--theme-h5);
+            margin-top: var(--vi-menu-item-gap);
         }
     }
 
@@ -31,8 +45,8 @@ $backgroundColor: var(--colors-blue-grey-900);
     top: 0;
     right: 0;
     background-color: transparent;
-    height: var(--theme-h1);
-    width: var(--theme-h1);
+    height: var(--vi-menu-collapsed-width);
+    width: var(--vi-menu-collapsed-width);
     fill: rgba(255, 255, 255, 0.5);
 
     &::part(icon) { 
@@ -125,8 +139,8 @@ header {
     .label {
         display: block;
         font-size: var(--theme-h3);
-        line-height: calc(var(--theme-h1) * 2);
-        height: calc(var(--theme-h1) * 2);
+        line-height: var(--vi-menu-header-height);
+        height: var(--vi-menu-header-height);
         white-space: nowrap;
         overflow: hidden;
     }
@@ -137,10 +151,10 @@ footer {
 }
 
 vi-input-search {
-    margin-top: calc(var(--theme-h4) / 2);
-    margin-right: calc(var(--theme-h4) - var(--theme-h4) / 2);
-    margin-bottom: calc(var(--theme-h4) / 2);
-    margin-left: calc(var(--theme-h4) - var(--theme-h4) / 2);
+    margin-top: var(--vi-menu-search-margin);
+    margin-right: var(--vi-menu-search-margin);
+    margin-bottom: var(--vi-menu-search-margin);
+    margin-left: var(--vi-menu-search-margin);
 
     &::part(input) {
         line-height: var(--theme-h2);
@@ -175,43 +189,80 @@ vi-input-search {
 
 :host {
     &[collapsed] {
-        width: var(--theme-h1);
-        min-width: var(--theme-h1);
+        width: var(--vi-menu-collapsed-width);
+        min-width: var(--vi-menu-collapsed-width);
+
+        &:not(:hover):not([search-focused]) {
+            vi-input-search {
+                form {
+                    display: none;
+                }
+
+                &::part(search) {
+                    position: relative;
+                    right: auto;
+                    left: 50%;
+                    transform: translateX(-50%);
+                }
+
+                &::part(reset) {
+                    position: relative;
+                    right: auto;
+                    left: 50%;
+                    transform: translateX(-50%);
+                }
+            }
+        }
 
         .container {
-            transform: translateX(calc(var(--vi-menu--expand-width, 17em) * -1 + var(--theme-h1)));
+            position: relative;
+            width: var(--vi-menu-collapsed-width);
             transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
-            transition-property: transform, box-shadow;
-            transition-delay: 200ms;
+            transition-property: width, box-shadow, position;
             box-shadow: none;
-            will-change: transform;
+            will-change: width;
             z-index: 100;
+            overflow: hidden;
 
-            > main, footer, header .label {
+            > main {
+                opacity: 1;
+            }
+
+            footer, header .label {
                 opacity: 0;
                 transition: opacity 0.22s ease-out;
-                transition-delay: 200ms;
                 will-change: opacity;
             }
+
         }
 
         #toggleCollapse {
             z-index: 1000;
             background-color: var(--color-dark);
 
-            &::part(icon) { 
+            &::part(icon) {
                 transform: rotate(180deg);
             }
         }
 
         &:hover, &[search-focused] {
+            width: var(--vi-menu-collapsed-width);
+            min-width: var(--vi-menu-collapsed-width);
+
             .container {
-                transform: translateX(0);
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: var(--vi-menu--expand-width, 17em);
                 box-shadow: 4px 0px 10px 0px rgba(0,0,0,0.5);
+                overflow: visible;
+                z-index: 200;
 
                 > main, footer, header .label {
                     opacity: 1;
                 }
+
             }
         }
     }

@@ -61,7 +61,8 @@ import "components/user/user"
         },
         searchFocused: {
             type: Boolean,
-            reflectToAttribute: true
+            reflectToAttribute: true,
+            observer: "_searchFocusedChanged"
         }
     },
     listeners: {
@@ -83,6 +84,8 @@ export class Menu extends WebComponent {
     filtering: boolean;
     activeProgramUnit: Vidyano.ProgramUnit;
     collapsed: boolean;
+    hovering: boolean;
+    searchFocused: boolean;
     hasGlobalSearch: boolean;
     hideSearch: boolean;
 
@@ -90,6 +93,17 @@ export class Menu extends WebComponent {
         super.connectedCallback();
 
         this.hideSearch = this.app.configuration.getSetting("vi-menu.hide-search", "false").toLowerCase() === "true";
+
+        // Add mouse enter/leave listeners to track hover state
+        this.addEventListener('mouseenter', () => {
+            this.hovering = true;
+        });
+        this.addEventListener('mouseleave', () => {
+            // Don't remove hover state if search input has focus
+            if (!this.searchFocused) {
+                this.hovering = false;
+            }
+        });
 
         // TODO
         // Array.from(Polymer.dom(this.app).querySelectorAll("[vi-menu-element~='footer']")).forEach(element => Polymer.dom(this.$.footerElements).appendChild(element));
@@ -115,6 +129,23 @@ export class Menu extends WebComponent {
         // TODO
         // Array.from(Polymer.dom(this.$.footerElements).children).forEach(element => Polymer.dom(this.app).appendChild(element));
         // Array.from(Polymer.dom(this.$.headerElements).children).forEach(element => Polymer.dom(this.app).appendChild(element));
+    }
+
+    private _searchFocusedChanged(searchFocused: boolean) {
+        // When search gets focus while collapsed, set hovering to true
+        if (searchFocused && this.collapsed) {
+            this.hovering = true;
+        }
+        // When search loses focus while collapsed, remove hover state
+        else if (!searchFocused && this.collapsed) {
+            // Small delay to allow for click events to complete
+            setTimeout(() => {
+                // Check if mouse is still over the menu
+                if (!this.matches(':hover')) {
+                    this.hovering = false;
+                }
+            }, 100);
+        }
     }
 
     private _filterChanged() {

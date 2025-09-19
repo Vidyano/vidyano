@@ -27,6 +27,11 @@ import { ConfigurableWebComponent } from "components/web-component/web-component
             reflectToAttribute: true,
             value: false
         },
+        hovering: {
+            type: Boolean,
+            reflectToAttribute: true,
+            value: false
+        },
         programUnit: {
             type: Object,
             observer: "_programUnitChanged"
@@ -44,6 +49,16 @@ import { ConfigurableWebComponent } from "components/web-component/web-component
         icon: {
             type: String,
             computed: "_computeIcon(item)"
+        },
+        hasIcon: {
+            type: Boolean,
+            reflectToAttribute: true,
+            computed: "op_isNotEmpty(icon)"
+        },
+        siblingHasGroup: {
+            type: Boolean,
+            reflectToAttribute: true,
+            value: false
         },
         expand: {
             type: Boolean,
@@ -85,9 +100,9 @@ import { ConfigurableWebComponent } from "components/web-component/web-component
         }
     },
     observers: [
-        "_updateItemTitle(item, filter, filtering, collapsed)",
+        "_updateItemTitle(item, filter, filtering, collapsed, hovering)",
         "_updateIndentVariable(level)",
-        "_updateOpened(filtering, item, expand)"
+        "_updateOpened(filtering, item, expand, collapsed, hovering)"
     ],
     listeners: {
         "tap": "_tap",
@@ -103,15 +118,23 @@ export class MenuItem extends ConfigurableWebComponent {
     readonly expand: boolean; private _setExpand: (val: boolean) => void;
     collapseGroupsOnTap: boolean;
     item: Vidyano.ProgramUnitItem;
+    items: Vidyano.ProgramUnitItem[];
     programUnit: Vidyano.ProgramUnit;
+    level: number;
     collapsed: boolean;
+    hovering: boolean;
     filter: string;
     filtering: boolean;
     hidden: boolean;
     filterParent: Vidyano.ProgramUnitItem;
+    siblingHasGroup: boolean;
 
     private _updateIndentVariable(level: number) {
         this.style.setProperty("--vi-menu-item-indent-level", level.toString());
+    }
+
+    private _anySiblingIsGroup(items: Vidyano.ProgramUnitItem[]): boolean {
+        return !!items?.some(item => item instanceof Vidyano.ProgramUnitItemGroup);
     }
 
     private _computeSubLevel(level: number): number {
@@ -159,8 +182,18 @@ export class MenuItem extends ConfigurableWebComponent {
         this.hidden = this.filtering && !this._hasMatch(<Vidyano.ProgramUnitItem><any>this.item, this.filter.toUpperCase());
     }
 
-    private _updateOpened(filtering: boolean, item: Vidyano.ProgramUnitItem, expand: boolean) {
-        (<any>this.$.subItems).opened = filtering || item === this.programUnit || expand;
+    private _updateOpened(filtering: boolean, item: Vidyano.ProgramUnitItem, expand: boolean, collapsed?: boolean, hovering?: boolean) {
+        const shouldOpen = filtering || (item === this.programUnit || expand) && (!collapsed || hovering);
+
+        // If closing and a descendant has focus, blur it first to avoid accessibility warning
+        if (!shouldOpen && (<any>this.$.subItems).opened) {
+            const focusedElement = this.shadowRoot.activeElement || this.querySelector(':focus');
+            if (focusedElement instanceof HTMLElement) {
+                focusedElement.blur();
+            }
+        }
+
+        (<any>this.$.subItems).opened = shouldOpen;
     }
 
     private _hasMatch(item: Vidyano.ProgramUnitItem, search: string): boolean {
@@ -181,12 +214,14 @@ export class MenuItem extends ConfigurableWebComponent {
         if (!this.classList.contains("program-unit"))
             return;
 
-        this._setExpand(this.item && (this.item === this.programUnit || this.collapsed));
+        this._setExpand(this.item && this.item === this.programUnit);
     }
 
-    private _updateItemTitle(item: Vidyano.ProgramUnitItem, filter: string, filtering: boolean, collapsed: boolean) {
-        if (item instanceof Vidyano.ProgramUnit && collapsed)
-            this.$.title.textContent = item.title[0];
+    private _updateItemTitle(item: Vidyano.ProgramUnitItem, filter: string, filtering: boolean, collapsed: boolean, hovering?: boolean) {
+        if (item instanceof Vidyano.ProgramUnit && collapsed && !hovering) {
+            // When collapsed and not hovering, hide the title text - icon will be shown instead
+            this.$.title.textContent = "";
+        }
         else if (filtering && this._hasMatch(item, this.filter.toUpperCase())) {
             const exp = new RegExp(`(${filter})`, "gi");
             this.$.title.innerHTML = item.title.replace(exp, "<span class='style-scope vi-menu-item match'>$1</span>");
@@ -196,7 +231,8 @@ export class MenuItem extends ConfigurableWebComponent {
     }
 
     private _computeIcon(item: Vidyano.ProgramUnitItem): string {
-        let prefix: string;
+        if (!item)
+            return null;
 
         if (item instanceof Vidyano.ProgramUnitItemGroup)
             return "ProgramUnitGroup";
@@ -204,18 +240,34 @@ export class MenuItem extends ConfigurableWebComponent {
         if (item instanceof Vidyano.ProgramUnit) {
             if (item.offset === 2147483647)
                 return "ProgramUnit_Vidyano";
-            else
-                prefix = "ProgramUnit_";
+
+            const programUnitIconCandidates = [
+                `ProgramUnit_${item.name}`,
+                item.nameKebab ? `ProgramUnit_${item.nameKebab}` : null
+            ].filter(Boolean) as string[];
+
+            for (const icon of programUnitIconCandidates) {
+                if (IconRegister.exists(icon))
+                    return icon;
+            }
+
+            // Use generic app icon as fallback for program units
+            return "ProgramUnit_Default$";
         }
-        else if (item instanceof Vidyano.ProgramUnitItemQuery)
+
+        let prefix: string | undefined;
+        if (item instanceof Vidyano.ProgramUnitItemQuery)
             prefix = "ProgramUnitItem_Query_";
         else if (item instanceof Vidyano.ProgramUnitItemPersistentObject)
             prefix = "ProgramUnitItem_PersistentObject_";
         else if (item instanceof Vidyano.ProgramUnitItemUrl)
             prefix = "ProgramUnitItem_Url_";
 
-        if (IconRegister.exists(prefix + item.name))
-             return prefix + item.name;
+        if (prefix) {
+            const iconName = prefix + item.name;
+            if (IconRegister.exists(iconName))
+                return iconName;
+        }
 
         return null;
     }

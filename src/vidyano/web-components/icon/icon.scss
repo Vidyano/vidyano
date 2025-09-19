@@ -4,7 +4,7 @@
     pointer-events: none;
 
     &[unresolved] {
-        display: none !important;
+        display: var(--vi-icon-unresolved-display, none);
     }
 
     > div {
