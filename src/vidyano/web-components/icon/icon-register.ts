@@ -14,12 +14,14 @@ export function exists(name: string): boolean {
 }
 
 export function fetchIcon(name: string): Promise<Icon> {
-    const existing = load(name);
-    if (existing)
-        return Promise.resolve(existing);
-
+    // Check if we're already fetching this icon
     if (pendingFetches[name])
         return pendingFetches[name];
+
+    // Check if we already have this icon loaded and populated
+    const existing = load(name);
+    if (existing?.children.length > 0)
+        return Promise.resolve(existing);
 
     // Create a placeholder and register it immediately.
     // This makes `exists(name)` return true right away.
@@ -46,8 +48,9 @@ export function fetchIcon(name: string): Promise<Icon> {
                 svgEl = container;
             }
 
-            // Populate the placeholder that's already in the registry.
-            placeholder.appendChild(svgEl);
+            // Store the SVG as innerHTML so it can be safely cloned multiple times
+            // We need to preserve the SVG for future cloning operations
+            placeholder.innerHTML = svgEl.outerHTML;
             return placeholder;
         } catch (err) {
             console.error(err);
