@@ -66,6 +66,13 @@ $backgroundColor: var(--colors-blue-grey-900);
             font-weight: 600;
             color: var(--vi-menu-color, $color);
             text-transform: uppercase;
+
+            > vi-icon {
+                --vi-icon-width: var(--vi-menu-program-unit-icon-size);
+                --vi-icon-height: var(--vi-menu-program-unit-icon-size);
+                width: var(--vi-menu-program-unit-icon-size);
+                height: var(--vi-menu-program-unit-icon-size);
+            }
         }
 
         #subItems {
@@ -92,10 +99,10 @@ $backgroundColor: var(--colors-blue-grey-900);
                 transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
 
                 > vi-icon {
-                    --vi-icon-width: var(--vi-menu-item-icon-size);
-                    --vi-icon-height: var(--vi-menu-item-icon-size);
-                    width: var(--vi-menu-item-icon-size);
-                    height: var(--vi-menu-item-icon-size);
+                    --vi-icon-width: var(--vi-menu-program-unit-icon-size);
+                    --vi-icon-height: var(--vi-menu-program-unit-icon-size);
+                    width: var(--vi-menu-program-unit-icon-size);
+                    height: var(--vi-menu-program-unit-icon-size);
                     flex-shrink: 0;
                     transition: transform 0.2s ease;
                 }
@@ -131,10 +138,10 @@ $backgroundColor: var(--colors-blue-grey-900);
                 transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
 
                 > vi-icon {
-                    --vi-icon-width: var(--vi-menu-item-icon-size);
-                    --vi-icon-height: var(--vi-menu-item-icon-size);
-                    width: var(--vi-menu-item-icon-size);
-                    height: var(--vi-menu-item-icon-size);
+                    --vi-icon-width: var(--vi-menu-program-unit-icon-size);
+                    --vi-icon-height: var(--vi-menu-program-unit-icon-size);
+                    width: var(--vi-menu-program-unit-icon-size);
+                    height: var(--vi-menu-program-unit-icon-size);
                     flex-shrink: 0;
                     transition: transform 0.2s ease;
                 }

@@ -14,7 +14,8 @@ $backgroundColor: var(--colors-blue-grey-900);
     --vi-menu-collapsed-width: var(--theme-h1);
     --vi-menu-header-height: calc(var(--theme-h1) * 2);
     --vi-menu-item-height: var(--theme-h2);
-    --vi-menu-item-icon-size: 1.5em;
+    --vi-menu-program-unit-icon-size: 1.5em;
+    --vi-menu-item-icon-size: 1em;
 
     // Menu spacing
     --vi-menu-item-indent: var(--theme-h4);
@@ -24,7 +25,7 @@ $backgroundColor: var(--colors-blue-grey-900);
     --vi-menu-program-unit-spacing: var(--theme-h4);
 
     // Calculated offsets
-    --vi-menu-item-icon-offset: calc(var(--vi-menu-item-icon-size) + var(--vi-menu-item-gap));
+    --vi-menu-item-icon-offset: calc(var(--vi-menu-program-unit-icon-size) + var(--vi-menu-item-gap));
     
     &[hide-search] {
         vi-input-search {
