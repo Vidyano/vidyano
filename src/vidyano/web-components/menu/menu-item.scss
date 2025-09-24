@@ -55,19 +55,7 @@ $backgroundColor: var(--colors-blue-grey-900);
         display: none !important;
     }
 
-    &[expand], &[filtering] {
-        > .title {
-            > vi-icon[source="ProgramUnitGroup"] {
-                -moz-transform: rotate(90deg);
-    			-ms-transform: rotate(90deg);
-    			-o-transform: rotate(90deg);
-    			-webkit-transform: rotate(90deg);
-    			transform: rotate(90deg);
-            }
-        }
-    }
-
-    &.program-unit {
+    &[type=program-unit] {
 		background-color: transparent;
 
         > .title {
@@ -150,7 +138,23 @@ $backgroundColor: var(--colors-blue-grey-900);
         }
 	}
 
-    &[is-separator] {
+    &[type=program-unit-item-group] {
+        a {
+            flex-direction: row-reverse;
+
+            vi-icon {
+                transform: rotate(90deg);
+            }
+        }
+
+        &[expand], &[filtering] {
+            vi-icon[source="ProgramUnitGroup"] {
+                transform: rotate(-90deg);
+            }
+        }
+    }
+
+    &[type=program-unit-item-separator] {
         cursor: default;
         --separator-height: var(--vi-menu-item-height);
 
@@ -169,20 +173,6 @@ $backgroundColor: var(--colors-blue-grey-900);
                 content: "";
                 height: 1px;
                 background-color: rgba(255, 255, 255, .2);
-            }
-        }
-    }
-
-    // When siblings contain groups, align all items at the same level by adding space for icon
-    &[sibling-has-group]:not([has-icon]) {
-        > .title {
-            // Add placeholder for icon to align with siblings that have icons/groups
-            &::before {
-                content: '';
-                display: inline-block;
-                width: var(--vi-menu-item-icon-size);
-                height: var(--vi-menu-item-icon-size);
-                flex-shrink: 0;
             }
         }
     }

@@ -41,11 +41,6 @@ import { ConfigurableWebComponent } from "components/web-component/web-component
             reflectToAttribute: true,
             computed: "_computedHasItems(item)"
         },
-        isSeparator: {
-            type: Boolean,
-            reflectToAttribute: true,
-            computed: "_computedIsSeparator(item)"
-        },
         icon: {
             type: String,
             computed: "_computeIcon(item)"
@@ -55,10 +50,10 @@ import { ConfigurableWebComponent } from "components/web-component/web-component
             reflectToAttribute: true,
             computed: "op_isNotEmpty(icon)"
         },
-        siblingHasGroup: {
-            type: Boolean,
+        type: {
+            type: String,
             reflectToAttribute: true,
-            value: false
+            computed: "_computeType(item)"
         },
         expand: {
             type: Boolean,
@@ -127,14 +122,10 @@ export class MenuItem extends ConfigurableWebComponent {
     filtering: boolean;
     hidden: boolean;
     filterParent: Vidyano.ProgramUnitItem;
-    siblingHasGroup: boolean;
+    type: string;
 
     private _updateIndentVariable(level: number) {
         this.style.setProperty("--vi-menu-item-indent-level", level.toString());
-    }
-
-    private _anySiblingIsGroup(items: Vidyano.ProgramUnitItem[]): boolean {
-        return !!items?.some(item => item instanceof Vidyano.ProgramUnitItemGroup);
     }
 
     private _computeSubLevel(level: number): number {
@@ -276,8 +267,43 @@ export class MenuItem extends ConfigurableWebComponent {
         return (item instanceof Vidyano.ProgramUnit || item instanceof Vidyano.ProgramUnitItemGroup) && item.items.length > 0;
     }
 
-    private _computedIsSeparator(item: Vidyano.ProgramUnitItem): boolean {
-        return item instanceof Vidyano.ProgramUnitItemSeparator;
+    private _computeType(item: Vidyano.ProgramUnitItem): string {
+        if (!(item instanceof Vidyano.ProgramUnitItem))
+            return null;
+
+        if (item instanceof Vidyano.ProgramUnit)
+            return "program-unit";
+
+        if (item instanceof Vidyano.ProgramUnitItemGroup)
+            return "program-unit-item-group";
+
+        if (item instanceof Vidyano.ProgramUnitItemSeparator)
+            return "program-unit-item-separator";
+
+        return "program-unit-item";
+    }
+
+    private _typeChanged(type: string) {
+        const icon = this.shadowRoot.querySelector('vi-icon');
+        const title = this.$.title as HTMLElement;
+
+        if (!(icon instanceof HTMLElement) || !title)
+            return;
+
+        if (type === 'program-unit-item-group') {
+            icon.style.order = '1';
+            icon.style.marginLeft = 'auto';
+            title.style.order = '0';
+            title.style.flex = '1 1 auto';
+            title.style.minWidth = '0';
+        }
+        else {
+            icon.style.order = '';
+            icon.style.marginLeft = '';
+            title.style.order = '';
+            title.style.flex = '';
+            title.style.minWidth = '';
+        }
     }
 
     private _computedHref(item: Vidyano.ProgramUnitItem, app: App): string {
