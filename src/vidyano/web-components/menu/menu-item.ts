@@ -229,6 +229,9 @@ export class MenuItem extends ConfigurableWebComponent {
             return "ProgramUnitGroup";
 
         if (item instanceof Vidyano.ProgramUnit) {
+            if (item.icon)
+                return item.icon;
+
             if (item.offset === 2147483647)
                 return "ProgramUnit_Vidyano";
 

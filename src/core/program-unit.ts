@@ -9,6 +9,7 @@ export class ProgramUnit extends ProgramUnitItem {
     #offset: number;
     #openFirst: boolean;
     #items: ProgramUnitItem[];
+    #icon: string;
 
     /**
      * Initializes a new instance of the ProgramUnit class.
@@ -21,6 +22,7 @@ export class ProgramUnit extends ProgramUnitItem {
 
         this.#offset = unit.offset;
         this.#openFirst = unit.openFirst;
+        this.#icon = unit.icon;
 
         if (unit.items) {
             this.#items = [];
@@ -83,6 +85,13 @@ export class ProgramUnit extends ProgramUnitItem {
      */
     get openFirst(): boolean {
         return this.#openFirst;
+    }
+
+    /**
+     * Gets the icon of the program unit.
+     */
+    get icon(): string {
+        return this.#icon;
     }
 
     /**

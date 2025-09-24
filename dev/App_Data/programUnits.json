@@ -8,6 +8,7 @@
         "nl": "Kenmerken"
       },
       "OpenFirst": true,
+      "Icon": "streamline-plump:input-box-remix",
       "Groups": [
         {
           "$id": "ProgramUnitItemGroup:3afaa3db-8ed3-43f1-9993-5334a747155e",
@@ -542,6 +543,7 @@
         "nl": ""
       },
       "OpenFirst": true,
+      "Icon": "fluent:puzzle-piece-48-regular",
       "Groups": [
         {
           "$id": "ProgramUnitItemGroup:ec3c90ce-728d-4495-aa71-295c89ab67ef",
@@ -660,6 +662,7 @@
         "nl": ""
       },
       "OpenFirst": true,
+      "Icon": "tabler:sparkles",
       "Groups": [],
       "Items": [
         {
@@ -681,6 +684,7 @@
         "nl": "Home"
       },
       "OpenFirst": true,
+      "Icon": "material-symbols:house-outline-rounded",
       "Groups": [],
       "Items": [
         {
