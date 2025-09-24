@@ -2,7 +2,11 @@
 
 <a class="title" href$="[[href]]" target$="[[target]]" rel$="[[rel]]">
     <paper-ripple></paper-ripple>
-    <vi-icon source="[[icon]]" part="icon"></vi-icon>
+    <dom-if if="[[icon]]">
+        <template>
+            <vi-icon source="[[icon]]" part="icon"></vi-icon>
+        </template>
+    </dom-if>
     <span class="flex" id="title" on-mouseenter="_titleMouseenter"></span>
 </a>
 

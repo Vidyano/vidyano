@@ -21,7 +21,12 @@ $backgroundColor: var(--colors-blue-grey-900);
         display: flex;
         gap: var(--vi-menu-item-gap);
         position: relative;
-        padding-left: var(--vi-menu-item-padding-left);
+        padding-left: calc(
+            var(--vi-menu-item-padding-left) +
+            var(--vi-menu-program-unit-icon-size) +
+            var(--vi-menu-item-gap) +
+            var(--vi-menu-extra-indent, 0px)  // Extra indent passed from parent group
+        );
         padding-right: var(--vi-menu-item-gap);
         text-decoration: none;
         color: var(--vi-menu-color, $color);
@@ -66,6 +71,7 @@ $backgroundColor: var(--colors-blue-grey-900);
             font-weight: 600;
             color: var(--vi-menu-color, $color);
             text-transform: uppercase;
+            padding-left: var(--vi-menu-item-padding-left);
 
             > vi-icon {
                 --vi-icon-width: var(--vi-menu-program-unit-icon-size);
@@ -168,6 +174,10 @@ $backgroundColor: var(--colors-blue-grey-900);
                 transform: rotate(0deg);
             }
         }
+
+        #subItems {
+            --vi-menu-extra-indent: var(--vi-menu-group-indent);
+        }
     }
 
     &[type=program-unit-item-separator] {
@@ -195,27 +205,5 @@ $backgroundColor: var(--colors-blue-grey-900);
                 background-color: rgba(255, 255, 255, .1);
             }
         }
-    }
-}
-
-// Context-based indentation
-
-// All non-program-unit items need to align with or indent past program unit text
-:host(:not([type="program-unit"])) {
-    > .title {
-        // Base indent to align with program unit text (icon + gap)
-        padding-left: calc(
-            var(--vi-menu-item-padding-left) +
-            var(--vi-menu-program-unit-icon-size) +
-            var(--vi-menu-item-gap) +
-            var(--vi-menu-extra-indent, 0px)  // Extra indent passed from parent group
-        );
-    }
-}
-
-// Groups pass extra indent to their children
-:host([type="program-unit-item-group"]) {
-    #subItems {
-        --vi-menu-extra-indent: var(--vi-menu-group-indent);
     }
 }
