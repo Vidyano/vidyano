@@ -12,8 +12,8 @@
 
   <ItemGroup>
     <PackageReference Include="Bogus" Version="35.6.3" />
-    <PackageReference Include="Vidyano" Version="6.0.20250724.5998" />
-    <PackageReference Include="Vidyano.SourceGenerators" Version="2.22.1" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <PackageReference Include="Vidyano" Version="6.0.20250923.6107" />
+    <PackageReference Include="Vidyano.SourceGenerators" Version="2.23.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
   </ItemGroup>
 
   <ItemGroup>
