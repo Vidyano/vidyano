@@ -14,14 +14,6 @@ import { ConfigurableWebComponent } from "components/web-component/web-component
     properties: {
         item: Object,
         items: Array,
-        level: {
-            type: Number,
-            value: 0
-        },
-        subLevel: {
-            type: Number,
-            computed: "_computeSubLevel(level)"
-        },
         collapsed: {
             type: Boolean,
             reflectToAttribute: true,
@@ -114,7 +106,6 @@ export class MenuItem extends ConfigurableWebComponent {
     item: Vidyano.ProgramUnitItem;
     items: Vidyano.ProgramUnitItem[];
     programUnit: Vidyano.ProgramUnit;
-    level: number;
     collapsed: boolean;
     hovering: boolean;
     filter: string;
@@ -122,10 +113,6 @@ export class MenuItem extends ConfigurableWebComponent {
     hidden: boolean;
     filterParent: Vidyano.ProgramUnitItem;
     type: string;
-
-    private _computeSubLevel(level: number): number {
-        return level + 1;
-    }
 
     private _collapseRecursive() {
         if (!this.collapseGroupsOnTap)
@@ -190,7 +177,7 @@ export class MenuItem extends ConfigurableWebComponent {
             return true;
 
         const items = (<any>item).items;
-        if (items != null && items.filter(i => this._hasMatch(i, search)).length > 0)
+        if (items != null && items.filter((i: Vidyano.ProgramUnitItem) => this._hasMatch(i, search)).length > 0)
             return true;
 
         return this.filterParent instanceof Vidyano.ProgramUnitItemGroup && this.filterParent.title.toUpperCase().contains(search);
@@ -279,29 +266,6 @@ export class MenuItem extends ConfigurableWebComponent {
             return "program-unit-item-separator";
 
         return "program-unit-item";
-    }
-
-    private _typeChanged(type: string) {
-        const icon = this.shadowRoot.querySelector('vi-icon');
-        const title = this.$.title as HTMLElement;
-
-        if (!(icon instanceof HTMLElement) || !title)
-            return;
-
-        if (type === 'program-unit-item-group') {
-            icon.style.order = '1';
-            icon.style.marginLeft = 'auto';
-            title.style.order = '0';
-            title.style.flex = '1 1 auto';
-            title.style.minWidth = '0';
-        }
-        else {
-            icon.style.order = '';
-            icon.style.marginLeft = '';
-            title.style.order = '';
-            title.style.flex = '';
-            title.style.minWidth = '';
-        }
     }
 
     private _computedHref(item: Vidyano.ProgramUnitItem, app: App): string {

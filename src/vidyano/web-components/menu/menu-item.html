@@ -9,7 +9,7 @@
 <iron-collapse id="subItems" class="subItems" hidden$="[[!hasItems]]" no-animation="[[filtering]]">
     <dom-repeat items="[[items]]" as="subItem">
         <template>
-            <vi-menu-item item="[[subItem]]" items="[[subItem.items]]" level="[[subLevel]]" filter="[[filter]]" filter-parent="[[item]]"></vi-menu-item>
+            <vi-menu-item item="[[subItem]]" items="[[subItem.items]]" filter="[[filter]]" filter-parent="[[item]]"></vi-menu-item>
         </template>
     </dom-repeat>
 </iron-collapse>

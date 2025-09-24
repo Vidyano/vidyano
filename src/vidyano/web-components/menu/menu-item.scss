@@ -155,7 +155,7 @@ $backgroundColor: var(--colors-blue-grey-900);
 	}
 
     &[type=program-unit-item-group] {
-        a {
+        > .title {
             flex-direction: row-reverse;
 
             vi-icon {
