@@ -21,7 +21,7 @@ $backgroundColor: var(--colors-blue-grey-900);
         display: flex;
         gap: var(--vi-menu-item-gap);
         position: relative;
-        padding-left: calc(var(--vi-menu-item-indent) + (var(--vi-menu-item-indent-level, 0) * var(--vi-menu-item-icon-offset, 0)));
+        padding-left: var(--vi-menu-item-padding-left);
         padding-right: var(--vi-menu-item-gap);
         text-decoration: none;
         color: var(--vi-menu-color, $color);
@@ -77,6 +77,7 @@ $backgroundColor: var(--colors-blue-grey-900);
 
         #subItems {
             transition: opacity 0.22s cubic-bezier(0.2, 0, 0, 1);
+            margin-top: var(--theme-h5);
         }
 
         &[collapsed]:not([hovering]) {
@@ -129,7 +130,7 @@ $backgroundColor: var(--colors-blue-grey-900);
                 display: flex;
                 align-items: center;
                 justify-content: flex-start;
-                padding-left: var(--vi-menu-item-indent);
+                padding-left: var(--vi-menu-item-padding-left);
                 padding-right: var(--vi-menu-item-padding-right);
                 gap: var(--vi-menu-item-gap);
                 width: auto;
@@ -158,23 +159,22 @@ $backgroundColor: var(--colors-blue-grey-900);
             flex-direction: row-reverse;
 
             vi-icon {
-                transform: rotate(90deg);
+                transform: rotate(-180deg);
             }
         }
 
         &[expand], &[filtering] {
-            vi-icon[source="ProgramUnitGroup"] {
-                transform: rotate(-90deg);
+            vi-icon {
+                transform: rotate(0deg);
             }
         }
     }
 
     &[type=program-unit-item-separator] {
         cursor: default;
-        --separator-height: var(--vi-menu-item-height);
 
         a {
-            height: var(--separator-height);
+            height: var(--vi-menu-separator-height);
             pointer-events: none;
             position: relative;
 
@@ -184,11 +184,38 @@ $backgroundColor: var(--colors-blue-grey-900);
 
             &::after {
                 position: absolute;
-                inset: calc(var(--separator-height) / 2) var(--theme-h3) 0 calc(var(--vi-menu-item-indent) * (var(--vi-menu-item-indent-level, 0) + 1));
+                inset: calc(var(--vi-menu-separator-height) / 2) var(--vi-menu-item-gap) 0 calc(
+                    var(--vi-menu-item-padding-left) +
+                    var(--vi-menu-program-unit-icon-size) +
+                    var(--vi-menu-item-gap) +
+                    var(--vi-menu-extra-indent, 0px)
+                );
                 content: "";
                 height: 1px;
-                background-color: rgba(255, 255, 255, .2);
+                background-color: rgba(255, 255, 255, .1);
             }
         }
+    }
+}
+
+// Context-based indentation
+
+// All non-program-unit items need to align with or indent past program unit text
+:host(:not([type="program-unit"])) {
+    > .title {
+        // Base indent to align with program unit text (icon + gap)
+        padding-left: calc(
+            var(--vi-menu-item-padding-left) +
+            var(--vi-menu-program-unit-icon-size) +
+            var(--vi-menu-item-gap) +
+            var(--vi-menu-extra-indent, 0px)  // Extra indent passed from parent group
+        );
+    }
+}
+
+// Groups pass extra indent to their children
+:host([type="program-unit-item-group"]) {
+    #subItems {
+        --vi-menu-extra-indent: var(--vi-menu-group-indent);
     }
 }

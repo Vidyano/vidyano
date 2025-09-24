@@ -96,7 +96,6 @@ import { ConfigurableWebComponent } from "components/web-component/web-component
     },
     observers: [
         "_updateItemTitle(item, filter, filtering, collapsed, hovering)",
-        "_updateIndentVariable(level)",
         "_updateOpened(filtering, item, expand, collapsed, hovering)"
     ],
     listeners: {
@@ -123,10 +122,6 @@ export class MenuItem extends ConfigurableWebComponent {
     hidden: boolean;
     filterParent: Vidyano.ProgramUnitItem;
     type: string;
-
-    private _updateIndentVariable(level: number) {
-        this.style.setProperty("--vi-menu-item-indent-level", level.toString());
-    }
 
     private _computeSubLevel(level: number): number {
         return level + 1;

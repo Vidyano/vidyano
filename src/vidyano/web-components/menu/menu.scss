@@ -14,18 +14,17 @@ $backgroundColor: var(--colors-blue-grey-900);
     --vi-menu-collapsed-width: var(--theme-h1);
     --vi-menu-header-height: calc(var(--theme-h1) * 2);
     --vi-menu-item-height: var(--theme-h2);
+    --vi-menu-separator-height: var(--theme-h3);
     --vi-menu-program-unit-icon-size: 1.5em;
     --vi-menu-item-icon-size: 1em;
 
     // Menu spacing
-    --vi-menu-item-indent: var(--theme-h4);
+    --vi-menu-item-padding-left: var(--theme-h4);
     --vi-menu-item-padding-right: var(--theme-h4);
     --vi-menu-item-gap: var(--theme-h4);
-    --vi-menu-search-margin: calc(var(--theme-h4) / 2);
+    --vi-menu-search-margin: var(--theme-h5);
     --vi-menu-program-unit-spacing: var(--theme-h4);
-
-    // Calculated offsets
-    --vi-menu-item-icon-offset: calc(var(--vi-menu-program-unit-icon-size) + var(--vi-menu-item-gap));
+    --vi-menu-group-indent: var(--theme-h3);
     
     &[hide-search] {
         vi-input-search {

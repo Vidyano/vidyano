@@ -489,6 +489,15 @@
           }
         },
         {
+          "Offset": 235,
+          "Title": {
+            "en": "—",
+            "nl": "—"
+          },
+          "Name": "Separator1",
+          "IsSeparator": true
+        },
+        {
           "ObjectId": "User;Group;NullableUser",
           "Offset": 240,
           "Title": {
