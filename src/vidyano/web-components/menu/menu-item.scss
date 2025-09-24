@@ -58,6 +58,10 @@ $backgroundColor: var(--colors-blue-grey-900);
     &[type=program-unit] {
 		background-color: transparent;
 
+        &:not(:last-of-type) {
+            margin: var(--vi-menu-program-unit-spacing) 0;
+        }
+
         > .title {
             font-weight: 600;
             color: var(--vi-menu-color, $color);
@@ -78,9 +82,9 @@ $backgroundColor: var(--colors-blue-grey-900);
                 line-height: var(--vi-menu-item-height);
                 display: flex;
                 align-items: center;
-                justify-content: flex-start;
-                padding-left: var(--vi-menu-item-indent);
-                padding-right: var(--vi-menu-item-padding-right);
+                justify-content: center;
+                padding-left: 0;
+                padding-right: 0;
                 width: var(--vi-menu-collapsed-width);
                 min-width: var(--vi-menu-collapsed-width);
                 max-width: var(--vi-menu-collapsed-width);
@@ -93,6 +97,7 @@ $backgroundColor: var(--colors-blue-grey-900);
                     width: var(--vi-menu-item-icon-size);
                     height: var(--vi-menu-item-icon-size);
                     flex-shrink: 0;
+                    transition: transform 0.2s ease;
                 }
 
                 > span {
@@ -119,6 +124,7 @@ $backgroundColor: var(--colors-blue-grey-900);
                 justify-content: flex-start;
                 padding-left: var(--vi-menu-item-indent);
                 padding-right: var(--vi-menu-item-padding-right);
+                gap: var(--vi-menu-item-gap);
                 width: auto;
                 min-width: unset;
                 max-width: unset;
@@ -128,7 +134,9 @@ $backgroundColor: var(--colors-blue-grey-900);
                     --vi-icon-width: var(--vi-menu-item-icon-size);
                     --vi-icon-height: var(--vi-menu-item-icon-size);
                     width: var(--vi-menu-item-icon-size);
-                    height: var(--vi-menu-item-height);
+                    height: var(--vi-menu-item-icon-size);
+                    flex-shrink: 0;
+                    transition: transform 0.2s ease;
                 }
 
                 > span {
