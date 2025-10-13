@@ -277,7 +277,10 @@ export class ActionButton extends ConfigurableWebComponent {
     }
 
     private _hiddenChanged() {
-        this.fire("sizechanged", null);
+        this.dispatchEvent(new CustomEvent("sizechanged", {
+            bubbles: true,
+            composed: true
+        }));
     }
 
     _configure(e: CustomEvent) {

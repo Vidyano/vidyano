@@ -287,9 +287,10 @@ export class PersistentObjectDialog extends Dialog {
         if (!e.detail.height)
             return;
 
-        this.fire("sizechanged", e.detail, {
+        this.dispatchEvent(new CustomEvent("sizechanged", {
+            detail: e.detail,
             bubbles: true,
             composed: true
-        });
+        }));
     }
 }

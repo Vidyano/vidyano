@@ -65,16 +65,26 @@ export class PersistentObjectAttributeMultiStringItem extends WebComponent {
 
         if (this.isNew) {
             if (value) {
-                this.fire("multi-string-item-value-new", { value: value });
+                this.dispatchEvent(new CustomEvent("multi-string-item-value-new", {
+                    detail: { value: value },
+                    bubbles: true,
+                    composed: true
+                }));
                 this.value = "";
             }
         }
         else
-            this.fire("multi-string-item-value-changed", null);
+            this.dispatchEvent(new CustomEvent("multi-string-item-value-changed", {
+                bubbles: true,
+                composed: true
+            }));
     }
 
     private _onInputBlur() {
         if (!this.isReadOnly && !this.isNew)
-            this.fire("multi-string-item-value-changed", null);
+            this.dispatchEvent(new CustomEvent("multi-string-item-value-changed", {
+                bubbles: true,
+                composed: true
+            }));
     }
 }

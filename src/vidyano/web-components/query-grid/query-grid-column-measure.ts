@@ -29,7 +29,11 @@ export class QueryGridColumnMeasure extends WebComponent {
         if (this._reported)
             return;
 
-        this.fire("column-size-changed", { column, size });
+        this.dispatchEvent(new CustomEvent("column-size-changed", {
+            detail: { column, size },
+            bubbles: true,
+            composed: true
+        }));
         this._reported = true;
     }
 }

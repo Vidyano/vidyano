@@ -83,6 +83,9 @@ export class QueryGridConfigureDialog extends Dialog {
 }, "vi-query-grid-configure-dialog-column-list")
 export class QueryGridConfigureDialogColumnList extends Sortable {
     protected _dragEnd() {
-        this.fire("reorder-columns", {}, { bubbles: true });
+        this.dispatchEvent(new CustomEvent("reorder-columns", {
+            bubbles: true,
+            composed: true
+        }));
     }
 }

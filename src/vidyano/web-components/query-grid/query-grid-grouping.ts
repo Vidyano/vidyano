@@ -18,7 +18,10 @@ export class QueryGridGrouping extends WebComponent {
         const collapse = (<PopupMenuItem>e.currentTarget).icon === "QueryGrid_Group_Collapse";
         this.query.groupingInfo.groups.forEach(g => g.isCollapsed = collapse);
 
-        this.fire("scroll-top");
+        this.dispatchEvent(new CustomEvent("scroll-top", {
+            bubbles: true,
+            composed: true
+        }));
     }
 
     private _remove() {

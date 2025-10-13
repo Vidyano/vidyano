@@ -233,7 +233,11 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
         if (!breadcrumb)
             return;
 
-        this.fire("title-changed", { title: this.persistentObject.isBreadcrumbSensitive && this.isAppSensitive ? null : breadcrumb }, { bubbles: true });
+        this.dispatchEvent(new CustomEvent("title-changed", {
+            detail: { title: this.persistentObject.isBreadcrumbSensitive && this.isAppSensitive ? null : breadcrumb },
+            bubbles: true,
+            composed: true
+        }));
     }
 
     private async _renderPersistentObject(persistentObject: Vidyano.PersistentObject) {

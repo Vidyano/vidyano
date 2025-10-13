@@ -109,7 +109,11 @@ export class PersistentObjectTab extends ConfigurableWebComponent {
     }
 
     private _innerSizeChanged(size: ISize) {
-        this.fire("vi-persistent-object-tab-inner-size-changed", size, { bubbles: true});
+        this.dispatchEvent(new CustomEvent("vi-persistent-object-tab-inner-size-changed", {
+            detail: size,
+            bubbles: true,
+            composed: true
+        }));
     }
 
     private _configure(e: CustomEvent) {

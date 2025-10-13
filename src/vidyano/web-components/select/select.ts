@@ -506,7 +506,11 @@ export class SelectOptionItem extends WebComponent {
     item: ISelectItem;
 
     private _onTap(e: Polymer.Gestures.TapEvent) {
-        this.fire("select-option", { option: this.item.option }, { bubbles: true });
+        this.dispatchEvent(new CustomEvent("select-option", {
+            detail: { option: this.item.option },
+            bubbles: true,
+            composed: true
+        }));
 
         e.stopPropagation();
     }

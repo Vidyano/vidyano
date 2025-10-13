@@ -89,7 +89,11 @@ export class SizeTracker extends WebComponent {
 
         if (this._resizeLast) {
             this._setSize(this._resizeLast);
-            this.fire("sizechanged", this._resizeLast, { node: this, bubbles: !!this.bubbles });
+            this.dispatchEvent(new CustomEvent("sizechanged", {
+                detail: this._resizeLast,
+                bubbles: !!this.bubbles,
+                composed: true
+            }));
         }
     }
 
@@ -108,7 +112,11 @@ export class SizeTracker extends WebComponent {
                 return;
 
             this._setSize(this._resizeLast);
-            this.fire("sizechanged", this._resizeLast, { node: this, bubbles: !!this.bubbles });
+            this.dispatchEvent(new CustomEvent("sizechanged", {
+                detail: this._resizeLast,
+                bubbles: !!this.bubbles,
+                composed: true
+            }));
         }
     }
 }

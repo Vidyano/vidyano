@@ -19,9 +19,10 @@ export class ConnectedNotifier extends WebComponent {
             return;
 
         this._wasAttached = true;
-        this.fire("connected", { id: this.id }, {
-            node: this,
-            bubbles: false
-        });
+        this.dispatchEvent(new CustomEvent("connected", {
+            detail: { id: this.id },
+            bubbles: false,
+            composed: true
+        }));
     }
 }

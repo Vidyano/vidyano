@@ -70,6 +70,10 @@ export class FileDrop extends WebComponent {
             });
         });
 
-        this.fire("file-dropped", await Promise.all(readers));
+        this.dispatchEvent(new CustomEvent("file-dropped", {
+            detail: await Promise.all(readers),
+            bubbles: true,
+            composed: true
+        }));
     }
 }

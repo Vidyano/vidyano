@@ -496,7 +496,11 @@ export abstract class AppBase extends WebComponent {
     }
 
     private _mediaQueryChanged(isDesktop: boolean, isTablet: boolean, isPhone: boolean) {
-        this.fire("media-query-changed", isDesktop ? "desktop" : (isTablet ? "tablet" : "phone"), { bubbles: false });
+        this.dispatchEvent(new CustomEvent("media-query-changed", {
+            detail: isDesktop ? "desktop" : (isTablet ? "tablet" : "phone"),
+            bubbles: false,
+            composed: true
+        }));
     }
 
     private _keysPressed(e: Keyboard.IKeysEvent) {
