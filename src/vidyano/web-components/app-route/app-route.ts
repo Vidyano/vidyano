@@ -100,8 +100,11 @@ export class AppRoute extends WebComponent {
     }
 
     private _fireActivate(target: WebComponent) {
-        if (target.fire)
-            target.fire("app-route-activate", { route: this, parameters: this._parameters }, { bubbles: true });
+        target.dispatchEvent(new CustomEvent("app-route-activate", {
+            detail: { route: this, parameters: this._parameters },
+            bubbles: true,
+            composed: true
+        }));
     }
 
     private _clearChildren() {
@@ -123,7 +126,20 @@ export class AppRoute extends WebComponent {
                 resolve(false);
 
             this.deactivator = resolve;
-            if (!component || !component.fire || !component.fire("app-route-deactivate", null, { bubbles: false, cancelable: true }).defaultPrevented)
+
+            let defaultPrevented = false;
+            if (component) {
+                const event = new CustomEvent("app-route-deactivate", {
+                    detail: null,
+                    bubbles: false,
+                    cancelable: true,
+                    composed: true
+                });
+                component.dispatchEvent(event);
+                defaultPrevented = event.defaultPrevented;
+            }
+
+            if (!component || !defaultPrevented)
                 resolve(true);
         }).then(result => {
             if (result && (!this.preserveContent || nextRoute !== this))
