@@ -36,6 +36,28 @@ export abstract class WebComponentLit<TTranslations extends Record<string, any> 
     };
 
     /**
+     * Override createProperty to automatically convert camelCase property names to kebab-case attribute names.
+     * This provides Polymer-like behavior and improves HTML readability.
+     *
+     * Example: `openOnHover` property -> `open-on-hover` attribute
+     */
+    static override createProperty(name: PropertyKey, options?: any) {
+        // Only process string property names (not symbols or numbers)
+        if (typeof name === 'string') {
+            // If no explicit attribute name is provided, convert camelCase to kebab-case
+            if (options?.attribute === undefined || options?.attribute === true) {
+                const kebabName = name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+                options = {
+                    ...options,
+                    attribute: kebabName
+                };
+            }
+        }
+
+        super.createProperty(name, options);
+    }
+
+    /**
      * Creates a new instance of the WebComponentLit class.
      * @param translations - Optional translations object that contains key-value pairs for translations.
      */
