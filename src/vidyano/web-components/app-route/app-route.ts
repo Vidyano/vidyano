@@ -157,9 +157,9 @@ export class AppRoute extends WebComponent {
         this.classList.toggle("active", this.active);
 
         if (this.activate)
-            this.fire("app-route-activated", { route: this, parameters: this._parameters }, { bubbles: true });
+            this.dispatchEvent(new CustomEvent("app-route-activated", { detail: { route: this, parameters: this._parameters }, bubbles: true, composed: true }));
         else
-            this.fire("app-route-deactivated", { route: this }, { bubbles: true });
+            this.dispatchEvent(new CustomEvent("app-route-deactivated", { detail: { route: this }, bubbles: true, composed: true }));
     }
 
     private _titleChanged(e: CustomEvent) {

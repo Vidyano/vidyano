@@ -58,7 +58,10 @@ export class Checkbox extends WebComponent {
         if (!this.radio)
             this.checked = !this.checked;
         else
-            this.fire("changed", null);
+            this.dispatchEvent(new CustomEvent("changed", {
+                bubbles: true,
+                composed: true
+            }));
     }
 
     private _keyToggle(e: KeyboardEvent) {

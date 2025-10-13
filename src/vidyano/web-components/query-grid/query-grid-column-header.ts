@@ -194,16 +194,25 @@ export class QueryGridColumnHeader extends WebComponent {
         this.column.isPinned = !this.column.isPinned;
         this._setIsPinned(this.column.isPinned);
 
-        this.fire("query-grid-column:update");
+        this.dispatchEvent(new CustomEvent("query-grid-column:update", {
+            bubbles: true,
+            composed: true
+        }));
     }
 
     private _hide() {
         this.column.isHidden = !this.column.isHidden;
-        this.fire("query-grid-column:update");
+        this.dispatchEvent(new CustomEvent("query-grid-column:update", {
+            bubbles: true,
+            composed: true
+        }));
     }
 
     private async _configure() {
-        this.fire("query-grid-column:configure");
+        this.dispatchEvent(new CustomEvent("query-grid-column:configure", {
+            bubbles: true,
+            composed: true
+        }));
     }
 
     private _queueMeasure(column: QueryGridColumn, isConnected: boolean) {

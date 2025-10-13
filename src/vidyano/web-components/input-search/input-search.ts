@@ -43,14 +43,23 @@ export class InputSearch extends WebComponent {
     }
 
     private _searchClick(e?: Polymer.Gestures.TapEvent) {
-        this.fire("search", this.value);
+        this.dispatchEvent(new CustomEvent("search", {
+            detail: this.value,
+            bubbles: true,
+            composed: true
+        }));
 
         if (e && !this.value)
             e.stopPropagation();
     }
 
     private _resetClick(e?: Polymer.Gestures.TapEvent) {
-        this.fire("search", this.value = "");
+        this.value = "";
+        this.dispatchEvent(new CustomEvent("search", {
+            detail: this.value,
+            bubbles: true,
+            composed: true
+        }));
 
         if (e && !this.value)
             e.stopPropagation();

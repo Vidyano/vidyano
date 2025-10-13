@@ -37,7 +37,10 @@ export class QueryGridConfigureDialogColumn extends WebComponent {
     private _togglePin() {
         this.isPinned = !this.isPinned;
 
-        this.fire("distribute-columns", {}, { bubbles: true });
+        this.dispatchEvent(new CustomEvent("distribute-columns", {
+            bubbles: true,
+            composed: true
+        }));
     }
 
     private _toggleVisible() {

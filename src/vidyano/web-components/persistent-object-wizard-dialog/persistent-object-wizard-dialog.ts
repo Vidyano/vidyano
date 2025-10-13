@@ -83,10 +83,11 @@ export class PersistentObjectWizardDialog extends Dialog {
             return;
 
         this.$.main.style.height = `${e.detail.height}px`;
-        this.fire("sizechanged", e.detail, {
+        this.dispatchEvent(new CustomEvent("sizechanged", {
+            detail: e.detail,
             bubbles: true,
             composed: true
-        });
+        }));
     }
 
     private _computeVisibleTabs(tabs: Vidyano.PersistentObjectAttributeTab[]): Vidyano.PersistentObjectAttributeTab[] {

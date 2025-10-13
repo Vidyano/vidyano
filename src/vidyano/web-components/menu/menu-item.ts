@@ -140,7 +140,10 @@ export class MenuItem extends ConfigurableWebComponent {
                 (<App>this.app).cacheRemove(new AppCacheEntryPersistentObject((<Vidyano.ProgramUnitItemPersistentObject>item).persistentObjectId, (<Vidyano.ProgramUnitItemPersistentObject>item).persistentObjectObjectId));
 
             if (this.filtering && this.app.configuration.getSetting("vi-menu.sticky-search", "false").toLowerCase() !== "true")
-                this.fire("reset-filter", null);
+                this.dispatchEvent(new CustomEvent("reset-filter", {
+                    bubbles: true,
+                    composed: true
+                }));
         }
 
         e.stopPropagation();

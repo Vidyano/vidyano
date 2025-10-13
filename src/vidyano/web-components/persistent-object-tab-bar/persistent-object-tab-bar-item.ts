@@ -48,7 +48,11 @@ export class PersistentObjectTabBarItem extends WebComponent {
     tab: Vidyano.PersistentObjectTab;
 
     private _select() {
-        this.fire("tab-selected", { tab: this.tab }, { bubbles: false });
+        this.dispatchEvent(new CustomEvent("tab-selected", {
+            detail: { tab: this.tab },
+            bubbles: false,
+            composed: true
+        }));
     }
 
     private _computeIsSelected(tab: Vidyano.PersistentObjectTab, selectedTab: Vidyano.PersistentObjectTab): boolean {

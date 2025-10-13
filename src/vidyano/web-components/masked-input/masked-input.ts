@@ -226,14 +226,20 @@ export class MaskedInput extends WebComponent {
 
             if (this._update(e.key)) {
                 if (this._isFilled())
-                    this.fire("filled");
+                    this.dispatchEvent(new CustomEvent("filled", {
+                        bubbles: true,
+                        composed: true
+                    }));
 
                 e.preventDefault();
                 return true;
             }
 
             if (this._isFilled())
-                this.fire("filled");
+                this.dispatchEvent(new CustomEvent("filled", {
+                    bubbles: true,
+                    composed: true
+                }));
 
             e.preventDefault();
             return false;

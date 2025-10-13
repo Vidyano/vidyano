@@ -10,7 +10,11 @@ import { WebComponent } from "components/web-component/web-component"
 @WebComponent.register("vi-persistent-object-attribute-multi-string-items")
 export class PersistentObjectAttributeMultiStringItems extends Sortable {
     protected _dragEnd() {
-        this.fire("reorder-strings", {}, { bubbles: true });
+        this.dispatchEvent(new CustomEvent("reorder-strings", {
+            detail: {},
+            bubbles: true,
+            composed: true
+        }));
     }
 }
 

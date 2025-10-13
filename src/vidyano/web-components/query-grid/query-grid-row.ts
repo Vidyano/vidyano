@@ -192,7 +192,14 @@ export class QueryGridRow extends WebComponent {
         if (this.item.getTypeHint("extraclass", "").split(" ").some(c => c.toUpperCase() === "DISABLED"))
             return;
 
-        if (this.fire("item-tap", { item: this.item }, { bubbles: true, composed: true, cancelable: true }).defaultPrevented)
+        const tapEvent = new CustomEvent("item-tap", {
+            detail: { item: this.item },
+            bubbles: true,
+            composed: true,
+            cancelable: true
+        });
+        this.dispatchEvent(tapEvent);
+        if (tapEvent.defaultPrevented)
             return;
 
         let openaction = this.item.getTypeHint("openaction", null);
@@ -273,11 +280,15 @@ export class QueryGridRow extends WebComponent {
         e.stopPropagation();
 
         const mouse = e.detail.sourceEvent instanceof MouseEvent ? e.detail.sourceEvent : null;
-        this.fire("item-select", {
-            item: this.item,
-            shift: mouse ? mouse.shiftKey : false,
-            ctrl: this.app.configuration.getSetting("vi-query-grid.single-click", "true").toLowerCase() === "true" || (mouse ? mouse.ctrlKey : true)
-        }, { bubbles: true });
+        this.dispatchEvent(new CustomEvent("item-select", {
+            detail: {
+                item: this.item,
+                shift: mouse ? mouse.shiftKey : false,
+                ctrl: this.app.configuration.getSetting("vi-query-grid.single-click", "true").toLowerCase() === "true" || (mouse ? mouse.ctrlKey : true)
+            },
+            bubbles: true,
+            composed: true
+        }));
     }
 
     // TODO: Actions popup displays out of viewport

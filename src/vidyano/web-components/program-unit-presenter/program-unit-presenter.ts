@@ -59,7 +59,11 @@ export class ProgramUnitPresenter extends WebComponent {
             this.empty();
         }
 
-        this.fire("title-changed", { title: programUnit ? programUnit.title : null }, { bubbles: true });
+        this.dispatchEvent(new CustomEvent("title-changed", {
+            detail: { title: programUnit ? programUnit.title : null },
+            bubbles: true,
+            composed: true
+        }));
 
         if (!programUnit)
             return;

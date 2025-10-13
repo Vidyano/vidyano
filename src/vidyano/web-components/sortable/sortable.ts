@@ -92,15 +92,22 @@ export abstract class Sortable extends WebComponent {
     }
 
     protected _dragStart() {
-        this.fire("drag-start", undefined);
+        this.dispatchEvent(new CustomEvent("drag-start", {
+            bubbles: true,
+            composed: true
+        }));
     }
 
     protected _dragEnd(element: HTMLElement, newIndex: number, oldIndex: number) {
-        this.fire("drag-end", {
-            element: element,
-            newIndex: newIndex,
-            oldIndex: oldIndex
-        });
+        this.dispatchEvent(new CustomEvent("drag-end", {
+            detail: {
+                element: element,
+                newIndex: newIndex,
+                oldIndex: oldIndex
+            },
+            bubbles: true,
+            composed: true
+        }));
     }
 
     private _create() {

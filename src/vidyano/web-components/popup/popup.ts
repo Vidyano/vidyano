@@ -165,7 +165,13 @@ export class Popup extends WebComponent {
         }
 
         const parentPopup = this._findParentPopup();
-        if (this.open || this.hasAttribute("disabled") || this.fire("popup-opening", null, { bubbles: false, cancelable: true }).defaultPrevented)
+        const openingEvent = new CustomEvent("popup-opening", {
+            bubbles: false,
+            cancelable: true,
+            composed: true
+        });
+        this.dispatchEvent(openingEvent);
+        if (this.open || this.hasAttribute("disabled") || openingEvent.defaultPrevented)
             return;
 
         // Close non-parent popups
@@ -178,7 +184,10 @@ export class Popup extends WebComponent {
 
         openPopups.push(this);
 
-        this.fire("popup-opened", null, { bubbles: false, cancelable: false });
+        this.dispatchEvent(new CustomEvent("popup-opened", {
+            bubbles: false,
+            composed: true
+        }));
     }
 
     private _sizeChanged(e: CustomEvent) {
@@ -220,7 +229,13 @@ export class Popup extends WebComponent {
     }
 
     close() {
-        if (!this.open || this.fire("popup-closing", null, { bubbles: false, cancelable: true }).defaultPrevented)
+        const closingEvent = new CustomEvent("popup-closing", {
+            bubbles: false,
+            cancelable: true,
+            composed: true
+        });
+        this.dispatchEvent(closingEvent);
+        if (!this.open || closingEvent.defaultPrevented)
             return;
 
         // Clear any pending open timer
@@ -246,7 +261,10 @@ export class Popup extends WebComponent {
         this.#cleanup?.();
         openPopups.remove(this);
 
-        this.fire("popup-closed", null, { bubbles: false, cancelable: false });
+        this.dispatchEvent(new CustomEvent("popup-closed", {
+            bubbles: false,
+            composed: true
+        }));
     }
 
     private _hookTapAndHoverEvents() {
@@ -341,11 +359,14 @@ export class Popup extends WebComponent {
     }
 
     protected _findParentPopup(): Popup {
-        const e = this.fire("popupparent", { popup: null }, {
+        const e = new CustomEvent("popupparent", {
+            detail: { popup: null },
             bubbles: true,
-            composed: true,
-            node: this.parentElement || (<ShadowRoot>this.parentNode)?.host
-        }) as CustomEvent;
+            composed: true
+        });
+
+        const node = this.parentElement || (<ShadowRoot>this.parentNode)?.host || this;
+        node.dispatchEvent(e);
 
         return !e.defaultPrevented ? e.detail.popup as Popup : null;
     }

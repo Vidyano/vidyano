@@ -231,6 +231,7 @@ export class WebComponent extends Polymer.GestureEventListeners(Polymer.PolymerE
      *  `cancelable` (boolean, defaults to false), and
      *  `node` on which to fire the event (HTMLElement, defaults to `this`).
      * @return {!Event} The new event that was fired.
+     * @deprecated Use dispatchEvent(new CustomEvent(...)) directly instead.
      */
     fire(type: string, detail?: any, options?: { node?: Node, bubbles?: boolean, cancelable?: boolean, composed?: boolean }): Event {
         options = options || {};
