@@ -697,8 +697,8 @@ export class QueryGrid extends WebComponent {
                 const headers = Array.from(sizeTracker.parentElement.querySelectorAll("vi-query-grid-column-header")) as QueryGridColumnHeader[];
 
                 this._setMoreColumns({
-                    left: headers.filter(h => h.offsetLeft - horizontalScrollOffset < 0),
-                    right: headers.filter(h => (h.offsetLeft + h.offsetWidth / 2) > visibleColumnHeaderSize.width)
+                    left: headers.filter(h => h.offsetLeft - horizontalScrollOffset < 0).sort((a, b) => a.column.label.localeCompare(b.column.label)),
+                    right: headers.filter(h => (h.offsetLeft + h.offsetWidth / 2) > visibleColumnHeaderSize.width).sort((a, b) => a.column.label.localeCompare(b.column.label))
                 });
             });
     }
