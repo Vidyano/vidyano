@@ -33,17 +33,6 @@
     user-select: none;
     --vi-spinner-size: 1.5em;
 
-    .highlight {
-        display: none !important;
-        position: absolute;
-        left: 0;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        background-color: var(--color);
-        opacity: 0.1;
-    }
-    
     /* elevation values from http://codepen.io/shyndman/pen/c5394ddf2e8b2a5c9185904b57421cdb */
     &[elevation] {
         transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
@@ -85,10 +74,6 @@
         white-space: nowrap;
         gap: 2px;
 
-        > *:not(style) {
-            display: inline-block;
-        }
-
         &[busy] {
             > span, > vi-icon {
                 visibility: hidden;
@@ -96,122 +81,83 @@
         }
     }
 
-    &[type=""], &:not([type]) {
-        &:not([inverse]) {
-            background-color: var(--color);
-            color: white;
-            fill: white;
-            --vi-spinner-color: white;
+    &[type=""]:not([inverse]), &:not([type]):not([inverse]) {
+        background-color: var(--color);
+        color: white;
+        fill: white;
+        --vi-spinner-color: white;
 
-            &:not([disabled]):hover {
-                background-color: var(--color-light);
-            }
-
-            &:not([busy])[disabled] {
-                opacity: 0.5;
-            }
+        &:not([disabled]):hover {
+            background-color: var(--color-light);
         }
 
-        &[inverse] {
-            background-color: transparent;
-            color: var(--color);
-            fill: var(--color);
-            --vi-spinner-color: var(--color);
-
-            &:not([disabled]):hover {
-                background-color: rgba(var(--color-rgb), 0.1);
-            }
-
-            &:not([busy])[disabled] {
-                opacity: 0.5;
-            }
+        &:not([busy])[disabled] {
+            opacity: 0.5;
         }
     }
 
-    &[type="light-monochrome"] {
-        &:not([inverse]) {
-            @include colorizer(#f0f0f0, white, color.adjust(#f0f0f0, $lightness: 10%));
+    &[type=""][inverse], &:not([type])[inverse] {
+        background-color: transparent;
+        color: var(--color);
+        fill: var(--color);
+        --vi-spinner-color: var(--color);
+
+        &:not([disabled]):hover {
+            background-color: rgba(var(--color-rgb), 0.1);
         }
 
-        &[inverse] {
-            @include colorizer(transparent, #f0f0f0, color.adjust(#f0f0f0, $alpha: -0.9));
+        &:not([busy])[disabled] {
+            opacity: 0.5;
         }
     }
 
-    &[type="danger"] {
-        &:not([inverse]) {
-            @include colorizer(#FF4136, white, color.adjust(#FF4136, $lightness: 10%));
-        }
-
-        &[inverse] {
-            @include colorizer(transparent, #FF4136, color.adjust(#FF4136, $alpha: -0.9));
-        }
+    &[type="light-monochrome"]:not([inverse]) {
+        @include colorizer(#f0f0f0, white, color.adjust(#f0f0f0, $lightness: 10%));
     }
 
-    &[type="safe"] {
-        &:not([inverse]) {
-            @include colorizer(#3D9970, white, color.adjust(#3D9970, $lightness: 10%));
-        }
+    &[type="light-monochrome"][inverse] {
+        @include colorizer(transparent, #f0f0f0, color.adjust(#f0f0f0, $alpha: -0.9));
+    }
 
-        &[inverse] {
-            @include colorizer(transparent, #3D9970, color.adjust(#3D9970, $alpha: -0.9));
-        }
+    &[type="danger"]:not([inverse]) {
+        @include colorizer(#FF4136, white, color.adjust(#FF4136, $lightness: 10%));
+    }
+
+    &[type="danger"][inverse] {
+        @include colorizer(transparent, #FF4136, color.adjust(#FF4136, $alpha: -0.9));
+    }
+
+    &[type="safe"]:not([inverse]) {
+        @include colorizer(#3D9970, white, color.adjust(#3D9970, $lightness: 10%));
+    }
+
+    &[type="safe"][inverse] {
+        @include colorizer(transparent, #3D9970, color.adjust(#3D9970, $alpha: -0.9));
     }
 
     &[accent] {
         --color: var(--theme-accent-color);
-		--color-light: var(--theme-accent-color-light);
-		--color-lighter: var(--theme-accent-color-lighter);
-		--color-dark: var(--theme-accent-color-dark);
-		--color-darker: var(--theme-accent-color-darker);
-		--color-faint: var(--theme-accent-color-faint);
-		--color-semi-faint: var(--theme-accent-color-semi-faint);
-		--color-rgb: var(--theme-accent-color-rgb);
-
-		paper-ripple {
-			color: var(--color);
-		}
+        --color-light: var(--theme-accent-color-light);
+        --color-lighter: var(--theme-accent-color-lighter);
+        --color-dark: var(--theme-accent-color-dark);
+        --color-darker: var(--theme-accent-color-darker);
+        --color-faint: var(--theme-accent-color-faint);
+        --color-semi-faint: var(--theme-accent-color-semi-faint);
+        --color-rgb: var(--theme-accent-color-rgb);
     }
 }
 
-vi-popup[open] > [toggle] vi-button[slot="header"] {
-    &[type=""], &:not([type]) {
-        &:not([inverse]) {
-            background-color: var(--color-light);
-        }
+.highlight {
+    display: none !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--color);
+    opacity: 0.1;
+}
 
-        &[inverse] {
-            background-color: var(--color-faint);
-        }
-    }
-
-    &[type="light-monochrome"] {
-        &:not([inverse]) {
-            background-color: color.adjust(#f0f0f0, $lightness: 10%);
-        }
-
-        &[inverse] {
-            background-color: color.adjust(#f0f0f0, $alpha: -0.9);
-        }
-    }
-
-    &[type="danger"] {
-        &:not([inverse]) {
-            background-color: color.adjust(#FF4136, $lightness: 10%);
-        }
-
-        &[inverse] {
-            background-color: color.adjust(#FF4136, $alpha: -0.9);
-        }
-    }
-
-    &[type="safe"] {
-        &:not([inverse]) {
-            background-color: color.adjust(#3D9970, $lightness: 10%);
-        }
-
-        &[inverse] {
-            background-color: color.adjust(#3D9970, $alpha: -0.9);
-        }
-    }
+:host([accent]) paper-ripple {
+    color: var(--color);
 }
