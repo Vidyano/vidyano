@@ -6,37 +6,36 @@ import { Scroller } from "components/scroller/scroller";
 import "components/size-tracker/size-tracker";
 import styles from "./popup.css";
 
-let _documentClosePopupListener: EventListener;
-document.addEventListener("mousedown", _documentClosePopupListener = e => {
-    const target = e.target;
-    if (!target)
+/**
+ * Closes all popups when clicking outside. Walks the event path to check if
+ * the click originated from within any popup or an element referencing a popup.
+ */
+document.addEventListener("pointerdown", (e: PointerEvent) => {
+    if (!e.target)
         return;
 
-    let shouldClose = true;
-    for (const el of e.composedPath()) {
-        if (el === document)
-            break;
-
-        if (!(el instanceof Element))
-            continue;
+    const hasOpenPopupInPath = e.composedPath().some(el => {
+        if (el === document || !(el instanceof Element))
+            return false;
 
         const containingPopup = el.closest("vi-popup") as Popup | null;
-        if (containingPopup && containingPopup.open) {
-            shouldClose = false;
-            break;
-        }
+        if (containingPopup?.open)
+            return true;
 
-        const elPopupRef = (el as any).popup;
+        // Legacy: Support for elements with a .popup property reference
+        // Allows programmatic association of trigger elements to popups
+        const elPopupRef = 'popup' in el ? (el as { popup: unknown }).popup : undefined;
         if (elPopupRef instanceof Popup && elPopupRef.open) {
-             shouldClose = false;
-             break;
+            console.warn('[Deprecated] Using .popup property on elements is deprecated. Use proper DOM hierarchy instead.', el);
+            return true;
         }
-    }
 
-    if (shouldClose)
+        return false;
+    });
+
+    if (!hasOpenPopupInPath)
         Popup.closeAll();
 });
-document.addEventListener("touchstart", _documentClosePopupListener);
 
 const openPopups: Popup[] = [];
 
@@ -64,13 +63,13 @@ export class Popup extends WebComponentLit {
     /**
      * Whether the popup trigger element has hover state.
      */
-    @property({ type: Boolean, reflect: true, state: true })
+    @property({ type: Boolean, state: true, observer: '_onHoverChanged' })
     hover: boolean = false;
 
     /**
      * Whether the popup is currently open.
      */
-    @property({ type: Boolean, reflect: true, state: true, observer: '_onOpenChanged' })
+    @property({ type: Boolean, state: true, observer: '_onOpenChanged' })
     open: boolean = false;
 
     /**
@@ -246,16 +245,15 @@ export class Popup extends WebComponentLit {
         });
     }
 
-    #open() {
+    async #open() {
         if (!this.popupRendered) {
             this.popupRendered = true;
+
             this.requestUpdate();
-            this.updateComplete.then(() => {
-                this.#completeOpen();
-            });
-        } else {
-            this.#completeOpen();
+            await this.updateComplete;
         }
+        
+        this.#completeOpen();
     }
 
     #completeOpen() {
@@ -377,19 +375,23 @@ export class Popup extends WebComponentLit {
         }
     }
 
+    private _onHoverChanged(hover: boolean) {
+        this.toggleAttribute("hover", hover);
+    }
+
     private _onOpenChanged(open: boolean) {
+        this.toggleAttribute("open", open);
+
         const popup = this.shadowRoot?.getElementById("popup");
-        if (!popup || !popup.isConnected) return;
+        if (!popup?.isConnected)
+            return;
 
         try {
-            if (open) {
-                if (!popup.matches(':popover-open')) {
-                    popup.showPopover();
-                }
-            } else {
-                if (popup.matches(':popover-open')) {
-                    popup.hidePopover();
-                }
+            const isPopoverOpen = popup.matches(':popover-open');
+            if (open && !isPopoverOpen) {
+                popup.showPopover();
+            } else if (!open && isPopoverOpen) {
+                popup.hidePopover();
             }
         } catch (e) {
             console.warn("Popover state change failed:", e);
