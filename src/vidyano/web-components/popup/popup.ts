@@ -24,7 +24,7 @@ document.addEventListener("pointerdown", (e: PointerEvent) => {
 
         // Legacy: Support for elements with a .popup property reference
         // Allows programmatic association of trigger elements to popups
-        const elPopupRef = 'popup' in el ? (el as { popup: unknown }).popup : undefined;
+        const elPopupRef = 'popup' in el ? (el as any).popup : undefined;
         if (elPopupRef instanceof Popup && elPopupRef.open) {
             console.warn('[Deprecated] Using .popup property on elements is deprecated. Use proper DOM hierarchy instead.', el);
             return true;
