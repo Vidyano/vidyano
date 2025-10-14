@@ -1,36 +1,25 @@
 :host {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--theme-h5) - 1px);
     box-sizing: border-box;
 
     &:not([disabled]) {
         cursor: pointer;
     }
 
-    div {
-        > span:not([empty]) {
-            padding: 0 1px 0 3px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        > vi-icon:not([hidden]) + span:not([empty]) {
-            margin-left: calc(var(--theme-h5) - 1px);
-        }
+    > span {
+        padding: 0 1px 0 3px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     &:focus {
         outline: 0;
 
-        &:not([disabled]) vi-icon {
-            &[source="SelectedRadio"] ::content #box {
-                fill: var(--color-light);
-                opacity: 0.75;
-            }
-
-            &[source="Selected"] + span {
-                outline: 1px dotted var(--color-light);
-            }
+        &:not([disabled]) span {
+            outline: 1px dotted var(--color-light);
         }
     }
 }

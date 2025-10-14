@@ -1,49 +1,21 @@
-﻿import * as Polymer from "polymer"
-import { WebComponent } from "components/web-component/web-component"
+import { html, unsafeCSS } from "lit";
+import { WebComponentLit, property, listener } from "components/web-component/web-component-lit";
+import styles from "./checkbox.css";
 
-@WebComponent.register({
-    properties: {
-        checked: {
-            type: Boolean,
-            reflectToAttribute: true,
-            notify: true
-        },
-        label: {
-            type: String,
-            value: null
-        },
-        noLabel: {
-            type: Boolean,
-            computed: "_computeNoLabel(label)"
-        },
-        disabled: {
-            type: Boolean,
-            reflectToAttribute: true
-        },
-        radio: {
-            type: Boolean,
-            reflectToAttribute: true,
-            value: false
-        },
-        icon: {
-            type: String,
-            computed: "_computeIcon(radio)"
-        }
-    },
-    listeners: {
-        "tap": "toggle"
-    },
-    keybindings: {
-        "space": "_keyToggle"
-    }
-}, "vi-checkbox")
-export class Checkbox extends WebComponent {
-    static get template() { return Polymer.html`<link rel="import" href="checkbox.html">`; }
+export class Checkbox extends WebComponentLit {
+    static styles = unsafeCSS(styles);
 
-    checked: boolean;
-    label: string;
-    disabled: boolean;
-    radio: boolean;
+    @property({ type: Boolean, reflect: true })
+    checked: boolean = false;
+
+    @property({ type: String })
+    label: string | null = null;
+
+    @property({ type: Boolean, reflect: true })
+    disabled: boolean = false;
+
+    @property({ type: Boolean, reflect: true })
+    radio: boolean = false;
 
     connectedCallback() {
         super.connectedCallback();
@@ -51,31 +23,49 @@ export class Checkbox extends WebComponent {
         this.setAttribute("tabindex", "0");
     }
 
+    render() {
+        return html`
+            <vi-icon
+                ?disabled=${this.disabled}
+                source=${!this.radio ? "Selected" : "SelectedRadio"}
+                ?is-selected=${this.checked}
+                part="icon">
+            </vi-icon>
+            <span ?hidden=${!this.label} part="label">${this.label}</span>
+        `;
+    }
+
+    @listener("click")
     toggle() {
         if (this.disabled)
             return;
 
-        if (!this.radio)
+        if (!this.radio) {
             this.checked = !this.checked;
-        else
+
+            // Legacy: Manually dispatch change event for Polymer two-way binding
+            this.dispatchEvent(new CustomEvent("checked-changed", {
+                detail: { value: this.checked },
+                bubbles: false,
+                composed: true
+            }));
+        }
+        else {
             this.dispatchEvent(new CustomEvent("changed", {
                 bubbles: true,
                 composed: true
             }));
+        }
     }
 
+    @listener("keydown")
     private _keyToggle(e: KeyboardEvent) {
-        if (this.app.activeElement !== this)
-            return true;
+        if (e.key !== " " && e.key !== "Enter")
+            return;
 
+        e.preventDefault();
         this.toggle();
     }
-
-    private _computeIcon(radio: boolean): string {
-        return !radio ? "Selected" : "SelectedRadio";
-    }
-
-    private _computeNoLabel(label: string): boolean {
-        return !label;
-    }
 }
+
+customElements.define("vi-checkbox", Checkbox);
