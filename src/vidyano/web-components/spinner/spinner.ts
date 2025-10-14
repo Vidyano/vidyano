@@ -1,24 +1,28 @@
-﻿import * as Polymer from "polymer"
-import { WebComponent } from "components/web-component/web-component"
+﻿import { html, unsafeCSS } from "lit";
+import { WebComponentLit, property } from "components/web-component/web-component-lit.js";
+import styles from "./spinner.css";
 
-@WebComponent.register({
-    properties: {
-        color: {
-            type: String,
-            reflectToAttribute: true
-        }
-    },
-    observers: [
-        "_updateColor(color, isConnected)"
-    ]
-}, "vi-spinner")
-export class Spinner extends WebComponent {
-    static get template() { return Polymer.html`<link rel="import" href="spinner.html">` }
+export class Spinner extends WebComponentLit {
+    static styles = unsafeCSS(styles);
 
-    private _updateColor(color: string, isConnected: boolean) {
-        if (!isConnected)
-            return;
+    @property({ type: String, reflect: true })
+    color: string;
 
-        this.style.setProperty("--vi-spinner-color", color);
+    render() {
+        return html`
+            <div class="box"></div>
+            <div class="box"></div>
+            <div class="box"></div>
+            <div class="box"></div>
+        `;
+    }
+
+    updated(changedProperties: Map<PropertyKey, unknown>) {
+        super.updated(changedProperties);
+
+        if (changedProperties.has('color') && this.color)
+            this.style.setProperty("--vi-spinner-color", this.color);
     }
 }
+
+customElements.define("vi-spinner", Spinner);
