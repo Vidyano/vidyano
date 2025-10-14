@@ -178,7 +178,7 @@ export class Popup extends WebComponentLit {
         clearTimeout(this.#openOnHoverTimer);
         this.#openOnHoverTimer = undefined;
 
-        if (!this.open && this.#closeOnMoveoutTimer) {
+        if (this.#closeOnMoveoutTimer) {
             clearTimeout(this.#closeOnMoveoutTimer);
             this.#closeOnMoveoutTimer = undefined;
         }
