@@ -73,10 +73,11 @@ export function add(name: string, innerHTML: string): void;
 export function add(arg: Element | HTMLTemplateElement | TemplateStringsArray | string, maybeInnerHTML?: string) {
     // add(name, innerHTML)
     if (typeof arg === "string" && typeof maybeInnerHTML === "string") {
-        const icon = document.createElement("vi-icon") as Icon;
-        icon.name = arg;
-        icon.innerHTML = DOMPurify.sanitize(maybeInnerHTML);
-        icons[icon.name] = icon;
+        // Create a plain div to avoid vi-icon initialization issues
+        const wrapper = document.createElement("div") as any;
+        wrapper.name = arg;
+        wrapper.innerHTML = DOMPurify.sanitize(maybeInnerHTML);
+        icons[wrapper.name] = wrapper;
         return;
     }
     
@@ -92,10 +93,19 @@ export function add(arg: Element | HTMLTemplateElement | TemplateStringsArray | 
         arg = Polymer.html(<TemplateStringsArray>arg);
 
     // For HTMLTemplateElement overload: extract all <vi-icon> elements
-    Array.from((<HTMLTemplateElement>arg).content.querySelectorAll("vi-icon")).forEach((icon: Icon) => {
-        document.body.appendChild(icon);
-        icons[icon.name] = icon;
-        document.body.removeChild(icon);
+    Array.from((<HTMLTemplateElement>arg).content.querySelectorAll("vi-icon")).forEach((iconElement: Element) => {
+        const name = iconElement.getAttribute("name");
+        if (!name) return;
+
+        // Create a plain div wrapper to store the icon content
+        // Don't use the actual vi-icon element as it will initialize with shadow DOM
+        const wrapper = document.createElement("div") as any;
+        wrapper.name = name;
+
+        // Copy the innerHTML from the template's vi-icon element
+        wrapper.innerHTML = iconElement.innerHTML;
+
+        icons[wrapper.name] = wrapper;
     });
 }
 

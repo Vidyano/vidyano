@@ -1,37 +1,23 @@
-import * as Polymer from "polymer"
-import { WebComponent } from "components/web-component/web-component"
+import { html, unsafeCSS } from "lit";
+import { WebComponentLit, property, observer } from "components/web-component/web-component-lit.js";
 import * as IconRegister from "./icon-register"
+import styles from "./icon.css";
+import { iconsTemplate } from "./icons";
 
-@WebComponent.register({
-    properties: {
-        name: {
-            type: String,
-            reflectToAttribute: true
-        },
-        source: {
-            type: String,
-            observer: "_load",
-            reflectToAttribute: true
-        },
-        unresolved: {
-            type: Boolean,
-            readOnly: true,
-            reflectToAttribute: true,
-            value: true
-        }
-    },
-    observers: [
-        "_load(source, isConnected)"
-    ]
-}, "vi-icon")
-export class Icon extends WebComponent {
-    static get template() { return Polymer.html`<link rel="import" href="icon.html">`; }
+export class Icon extends WebComponentLit {
+    static styles = unsafeCSS(styles);
 
-    private _source: string;
-    private _aliases: string[] = [];
+    @property({ type: String, reflect: true })
     name: string;
+
+    @property({ type: String, reflect: true })
     source: string;
-    readonly unresolved: boolean; private _setUnresolved: (unresolved: boolean) => void;
+
+    @property({ type: Boolean, reflect: true })
+    unresolved: boolean = true;
+
+    #loadedSource: string;
+    #aliases: string[] = [];
 
     connectedCallback() {
         super.connectedCallback();
@@ -41,35 +27,42 @@ export class Icon extends WebComponent {
     }
 
     get aliases(): string[] {
-        return this._aliases;
+        return this.#aliases;
     }
 
     addAlias(...alias: string[]) {
-        this._aliases.push(...alias);
+        this.#aliases.push(...alias);
     }
 
+    render() {
+        return html`<div id="svgHost"></div>`;
+    }
+
+    @observer("source", "isConnected")
     private async _load(source: string, isConnected: boolean) {
         if (isConnected === undefined || source === undefined)
             return;
 
-        if (this._source === source)
+        if (this.#loadedSource === source)
             return;
 
-        if (this.$.svgHost.children.length > 0)
-            this.$.svgHost.innerHTML = "";
+        await this.updateComplete;
 
-        this._source = source;
-        
+        const svgHost = this.shadowRoot?.getElementById("svgHost");
+        if (!svgHost)
+            return;
+
+        if (svgHost.children.length > 0)
+            svgHost.innerHTML = "";
+
+        this.#loadedSource = source;
+
         let resource: Icon;
         if (!source || source.indexOf(":") < 0) {
-            // For local icons, use the synchronous load.
             resource = IconRegister.load(source);
-            this._setUnresolved(!resource);
+            this.unresolved = !resource;
         } else {
-            // Don't set unresolved for remote icons
-            this._setUnresolved(false);
-
-            // For Iconify sources, use fetchIcon.
+            this.unresolved = false;
             resource = await IconRegister.fetchIcon(source);
         }
 
@@ -77,11 +70,14 @@ export class Icon extends WebComponent {
             return;
 
         Array.from(resource.children).forEach((child: HTMLElement) => {
-            this.$.svgHost.appendChild(child.cloneNode(true));
+            svgHost.appendChild(child.cloneNode(true));
         });
 
-        this.$.svgHost.querySelectorAll("svg").forEach(svg => svg.setAttribute("part", "svg"));
+        svgHost.querySelectorAll("svg").forEach(svg => svg.setAttribute("part", "svg"));
     }
 }
 
-IconRegister.add(Polymer.html`<link rel="import" href="icons.html">`);
+customElements.define("vi-icon", Icon);
+
+// Register all icon definitions from the template
+IconRegister.add(iconsTemplate);
