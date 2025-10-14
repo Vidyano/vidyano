@@ -1,211 +1,228 @@
-import * as Polymer from "polymer"
-import "components/size-tracker/size-tracker"
-import { ISize } from "components/size-tracker/size-tracker"
-import { WebComponent } from "components/web-component/web-component"
-import { autoUpdate, computePosition, flip, Placement, shift, size} from '@floating-ui/dom'
+import { html, nothing, unsafeCSS } from "lit";
+import { WebComponentLit, property } from "components/web-component/web-component-lit.js";
+import { autoUpdate, computePosition, flip, Placement, shift, size } from '@floating-ui/dom';
+import { ISize } from "components/size-tracker/size-tracker";
+import { Scroller } from "components/scroller/scroller";
+import "components/size-tracker/size-tracker";
+import styles from "./popup.css";
 
-import { Scroller } from "components/scroller/scroller"
-
-let _documentClosePopupListener: EventListener;
-document.addEventListener("mousedown", _documentClosePopupListener = e => {
-    const target = e.target;
-    if (!target)
+/**
+ * Closes all popups when clicking outside. Walks the event path to check if
+ * the click originated from within any popup or an element referencing a popup.
+ */
+document.addEventListener("pointerdown", (e: PointerEvent) => {
+    if (!e.target)
         return;
 
-    let shouldClose = true;
-    for (const el of e.composedPath()) {
-        // Stop iterating if we reach the document root
-        if (el === document)
-            break;
+    const hasOpenPopupInPath = e.composedPath().some(el => {
+        if (el === document || !(el instanceof Element))
+            return false;
 
-        // Skip processing if the current item in the path is not an Element
-        if (!(el instanceof Element))
-            continue;
-
-        // Is the click within the DOM structure of an open popup?
         const containingPopup = el.closest("vi-popup") as Popup | null;
-        if (containingPopup && containingPopup.open) {
-            shouldClose = false;
-            break;
-        }
+        if (containingPopup?.open)
+            return true;
 
-        // Is the click on the trigger element that references an open popup?
-        const elPopupRef = (el as any).popup;
+        // Legacy: Support for elements with a .popup property reference
+        // Allows programmatic association of trigger elements to popups
+        const elPopupRef = 'popup' in el ? (el as any).popup : undefined;
         if (elPopupRef instanceof Popup && elPopupRef.open) {
-             shouldClose = false;
-             break;
+            console.warn('[Deprecated] Using .popup property on elements is deprecated. Use proper DOM hierarchy instead.', el);
+            return true;
         }
-    }
 
-    if (shouldClose)
+        return false;
+    });
+
+    if (!hasOpenPopupInPath)
         Popup.closeAll();
 });
-document.addEventListener("touchstart", _documentClosePopupListener);
 
 const openPopups: Popup[] = [];
 
-@WebComponent.register({
-    properties: {
-        closeDelay: {
-            type: Number,
-            value: 500
-        },
-        openDelay: {
-            type: Number,
-            value: 0
-        },
-        disabled: {
-            type: Boolean,
-            reflectToAttribute: true
-        },
-        hover: {
-            type: Boolean,
-            reflectToAttribute: true,
-            readOnly: true,
-            observer: "_hoverChanged"
-        },
-        open: {
-            type: Boolean,
-            readOnly: true,
-            reflectToAttribute: true,
-            notify: true,
-            observer: "_openChanged"
-        },
-        openOnHover: {
-            type: Boolean,
-            reflectToAttribute: true,
-            value: false
-        },
-        placement: {
-            type: String,
-            reflectToAttribute: true,
-            value: "bottom-start"
-        },
-        sticky: {
-            type: Boolean,
-            reflectToAttribute: true
-        },
-        autoWidth: {
-            type: Boolean,
-            reflectToAttribute: true
-        },
-        renderPopupCoreFit: {
-            type: Boolean,
-            readOnly: true
-        },
-        supportsPopover: {
-            type: Boolean,
-            readOnly: true,
-            value: () => HTMLElement.prototype.hasOwnProperty("popover")
-        },
-    },
-    observers: [
-        "_hookTapAndHoverEvents(isConnected, openOnHover)"
-    ],
-    listeners: {
-        "tap": "_tap"
-    }
-}, "vi-popup")
-export class Popup extends WebComponent {
-    static get template() { return Polymer.html`<link rel="import" href="popup.html">` }
+export class Popup extends WebComponentLit {
+    static styles = unsafeCSS(styles);
+
+    /**
+     * Delay in milliseconds before closing the popup when hover is lost.
+     */
+    @property({ type: Number })
+    closeDelay: number = 500;
+
+    /**
+     * Delay in milliseconds before opening the popup on hover.
+     */
+    @property({ type: Number })
+    openDelay: number = 0;
+
+    /**
+     * Whether the popup is disabled and cannot be opened.
+     */
+    @property({ type: Boolean, reflect: true })
+    disabled: boolean = false;
+
+    /**
+     * Whether the popup trigger element has hover state.
+     */
+    @property({ type: Boolean, state: true, observer: '_onHoverChanged' })
+    hover: boolean = false;
+
+    /**
+     * Whether the popup is currently open.
+     */
+    @property({ type: Boolean, state: true, observer: '_onOpenChanged' })
+    open: boolean = false;
+
+    /**
+     * Whether the popup should open automatically on hover instead of requiring a click.
+     */
+    @property({ type: Boolean, reflect: true })
+    openOnHover: boolean = false;
+
+    /**
+     * The placement of the popup relative to its anchor element.
+     */
+    @property({ type: String, reflect: true })
+    placement: Placement = "bottom-start";
+
+    /**
+     * Whether the popup should stay open when clicking outside of it.
+     */
+    @property({ type: Boolean, reflect: true })
+    sticky: boolean = false;
+
+    /**
+     * Whether the popup should automatically match the width of its anchor element.
+     */
+    @property({ type: Boolean, reflect: true })
+    autoWidth: boolean = false;
+
+    @property({ type: Boolean, state: true })
+    popupRendered: boolean = false;
 
     #cleanup: ReturnType<typeof autoUpdate>;
-    private _tapHandler: EventListener;
-    private _enterHandler: EventListener;
-    private _leaveHandler: EventListener;
-    private _headerLeaveHandler: EventListener;
-    private _toggleSize: ISize;
-    private _header: HTMLElement;
-    private _resolver: Function;
-    private _closeOnMoveoutTimer: ReturnType<typeof setTimeout>;
-    private _openOnHoverTimer: ReturnType<typeof setTimeout>;
-    private _currentTarget: HTMLElement | WebComponent;
-    readonly open: boolean; protected _setOpen: (val: boolean) => void;
-    readonly hover: boolean; private _setHover: (val: boolean) => void;
-    readonly renderPopupCoreFit: boolean; private _setRenderPopupCoreFit: (renderPopupCoreFit: boolean) => void;
-    readonly supportsPopover: boolean;
-    placement: Placement;
-    disabled: boolean;
-    sticky: boolean;
-    closeDelay: number;
-    openDelay: number;
-    openOnHover: boolean;
-    autoWidth: boolean;
+    #toggleSize: ISize;
+    #resolver: Function;
+    #closeOnMoveoutTimer: ReturnType<typeof setTimeout>;
+    #openOnHoverTimer: ReturnType<typeof setTimeout>;
+
+    render() {
+        return html`
+            <vi-size-tracker @sizechanged=${this._onAnchorSizeChanged} part="size-tracker"></vi-size-tracker>
+            <div id="anchor"
+                 class="layout horizontal"
+                 part="anchor"
+                 @click=${this._handleAnchorClick}
+                 @mouseenter=${this._handleAnchorMouseEnter}
+                 @mouseleave=${this._handleAnchorMouseLeave}>
+                <slot name="header"></slot>
+            </div>
+            
+            ${this.popupRendered ? html`
+                <div id="popup"
+                     part="popup"
+                     class="relative"
+                     @click=${this._onContentClick}
+                     @mouseenter=${this._onContentMouseEnter}
+                     @mouseleave=${this._onContentMouseLeave}
+                     popover="">
+                    <vi-size-tracker @sizechanged=${this.refit} part="popup-size-tracker"></vi-size-tracker>
+                    <slot part="content"></slot>
+                </div>
+            ` : nothing}
+        `;
+    }
 
     connectedCallback() {
         super.connectedCallback();
-
         this.addEventListener("popupparent", this._onPopupparent);
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
-
         this.removeEventListener("popupparent", this._onPopupparent);
         this.#cleanup?.();
-
-        clearTimeout(this._openOnHoverTimer);
-        clearTimeout(this._closeOnMoveoutTimer);
+        clearTimeout(this.#openOnHoverTimer);
+        clearTimeout(this.#closeOnMoveoutTimer);
     }
 
+    /**
+     * Opens the popup and returns a promise that resolves when it is closed.
+     * If the popup is already open, returns an immediately resolved promise.
+     * @returns A promise that resolves when the popup is closed.
+     */
     popup(): Promise<any> {
         if (this.open)
             return Promise.resolve();
 
         return new Promise(resolve => {
-            this._resolver = resolve;
-            this._open();
+            this.#resolver = resolve;
+            this.#open();
         });
     }
 
-    private _open() {
-        if (!this.renderPopupCoreFit) {
-            this._setRenderPopupCoreFit(true);
-            Polymer.flush();
-        }
-
-        const parentPopup = this._findParentPopup();
-        const openingEvent = new CustomEvent("popup-opening", {
+    /**
+     * Closes the popup and any child popups.
+     * Dispatches a cancelable "popup-closing" event before closing, and a "popup-closed" event after.
+     * If the "popup-closing" event is cancelled, the popup will remain open.
+     */
+    close() {
+        const closingEvent = new CustomEvent("popup-closing", {
             bubbles: false,
             cancelable: true,
             composed: true
         });
-        this.dispatchEvent(openingEvent);
-        if (this.open || this.hasAttribute("disabled") || openingEvent.defaultPrevented)
+        this.dispatchEvent(closingEvent);
+        if (!this.open || closingEvent.defaultPrevented)
             return;
 
-        // Close non-parent popups
-        const firstOpenNonParentChild = openPopups[parentPopup == null ? 0 : openPopups.indexOf(parentPopup) + 1];
-        if (firstOpenNonParentChild != null)
-            firstOpenNonParentChild.close();
+        clearTimeout(this.#openOnHoverTimer);
+        this.#openOnHoverTimer = undefined;
 
-        this.#cleanup = autoUpdate(this.$.anchor, this.$.popup, this.refit.bind(this));
-        this._setOpen(true);
+        if (this.#closeOnMoveoutTimer) {
+            clearTimeout(this.#closeOnMoveoutTimer);
+            this.#closeOnMoveoutTimer = undefined;
+        }
 
-        openPopups.push(this);
+        const openChild = openPopups[openPopups.indexOf(this) + 1];
+        if (openChild != null)
+            openChild.close();
 
-        this.dispatchEvent(new CustomEvent("popup-opened", {
+        this.open = false;
+        this.hover = false;
+
+        if (this.#resolver)
+            this.#resolver();
+
+        this.#cleanup?.();
+        const index = openPopups.indexOf(this);
+        if (index > -1) {
+            openPopups.splice(index, 1);
+        }
+
+        this.dispatchEvent(new CustomEvent("popup-closed", {
             bubbles: false,
             composed: true
         }));
     }
 
-    private _sizeChanged(e: CustomEvent) {
-        if (!this.open)
-            return;
-
-        this.refit();
-    }
-
+    /**
+     * Repositions the popup relative to its anchor element using Floating UI.
+     * Automatically handles viewport boundaries, flipping, and sizing constraints.
+     * Called automatically when the popup opens or when the anchor size changes.
+     */
     async refit() {
-        let { x, y } = await computePosition(this.$.anchor, this.$.popup, {
+        const anchor = this.shadowRoot?.getElementById("anchor");
+        const popup = this.shadowRoot?.getElementById("popup");
+
+        if (!anchor || !popup) return;
+
+        let { x, y } = await computePosition(anchor, popup, {
             placement: this.placement,
             strategy: "fixed",
             middleware: [
                 flip(),
                 shift({
-                    boundary: this.supportsPopover ? undefined : this.findParent<Scroller>(e => e instanceof Scroller)?.scroller,
-                    rootBoundary: this.supportsPopover ? "viewport" : undefined
+                    rootBoundary: "viewport"
                 }),
                 size({
                     apply({ availableWidth, availableHeight, elements }) {
@@ -221,144 +238,56 @@ export class Popup extends WebComponent {
             ]
         });
 
-        Object.assign(this.$.popup.style, {
+        Object.assign(popup.style, {
             left: `${x}px`,
             top: `${y}px`,
-            minWidth: this.autoWidth && this._toggleSize?.width ? `${this._toggleSize.width}px` : undefined
+            minWidth: this.autoWidth && this.#toggleSize?.width ? `${this.#toggleSize.width}px` : undefined
         });
     }
 
-    close() {
-        const closingEvent = new CustomEvent("popup-closing", {
+    async #open() {
+        if (!this.popupRendered) {
+            this.popupRendered = true;
+
+            this.requestUpdate();
+            await this.updateComplete;
+        }
+        
+        this.#completeOpen();
+    }
+
+    #completeOpen() {
+        const parentPopup = this.#findParentPopup();
+        const openingEvent = new CustomEvent("popup-opening", {
             bubbles: false,
             cancelable: true,
             composed: true
         });
-        this.dispatchEvent(closingEvent);
-        if (!this.open || closingEvent.defaultPrevented)
+        this.dispatchEvent(openingEvent);
+        if (this.open || this.hasAttribute("disabled") || openingEvent.defaultPrevented)
             return;
 
-        // Clear any pending open timer
-        clearTimeout(this._openOnHoverTimer);
-        this._openOnHoverTimer = undefined;
+        const firstOpenNonParentChild = openPopups[parentPopup == null ? 0 : openPopups.indexOf(parentPopup) + 1];
+        if (firstOpenNonParentChild != null)
+            firstOpenNonParentChild.close();
 
-        if (!this.open && this._closeOnMoveoutTimer) {
-            clearTimeout(this._closeOnMoveoutTimer);
-            this._closeOnMoveoutTimer = undefined;
+        const anchor = this.shadowRoot?.getElementById("anchor");
+        const popup = this.shadowRoot?.getElementById("popup");
+
+        if (anchor && popup) {
+            this.#cleanup = autoUpdate(anchor, popup, this.refit.bind(this));
         }
 
-        const openChild = openPopups[openPopups.indexOf(this) + 1];
-        if (openChild != null)
-            openChild.close();
+        this.open = true;
+        openPopups.push(this);
 
-        this._currentTarget = null;
-        this._setOpen(false);
-        this._setHover(false);
-
-        if (this._resolver)
-            this._resolver();
-
-        this.#cleanup?.();
-        openPopups.remove(this);
-
-        this.dispatchEvent(new CustomEvent("popup-closed", {
+        this.dispatchEvent(new CustomEvent("popup-opened", {
             bubbles: false,
             composed: true
         }));
     }
 
-    private _hookTapAndHoverEvents() {
-        this._header = <HTMLElement>this.$.anchor || this.parentElement;
-
-        if (this._header === this.parentElement)
-            (<any>this._header).popup = this;
-
-        if (this.isConnected) {
-            if (this.openOnHover) {
-                // Add delay logic to mouseenter
-                this._header.addEventListener("mouseenter", this._enterHandler = () => {
-                    clearTimeout(this._openOnHoverTimer); // Clear previous timer if any
-                    clearTimeout(this._closeOnMoveoutTimer); // Clear pending close timer when re-entering header
-
-                    if (!this.open) { // Only schedule open if not already open
-                        if (this.openDelay > 0) {
-                            this._openOnHoverTimer = setTimeout(() => {
-                                this.popup();
-                                this._openOnHoverTimer = undefined;
-                            }, this.openDelay);
-                        } else {
-                            this.popup(); // Open immediately if delay is 0
-                        }
-                    }
-                });
-                // Add listener to header to cancel open timer on leave
-                this._header.addEventListener("mouseleave", this._headerLeaveHandler = () => {
-                    clearTimeout(this._openOnHoverTimer);
-                    this._openOnHoverTimer = undefined;
-                });
-                // Keep existing leave handler on popup content for closing
-                this.addEventListener("mouseleave", this._leaveHandler = this.close.bind(this));
-            }
-            else
-                this._header.addEventListener("tap", this._tapHandler = this._tap.bind(this));
-        }
-        else {
-            if (this._enterHandler) {
-                this._header.removeEventListener("mouseenter", this._enterHandler);
-                this._enterHandler = undefined;
-            }
-
-            if (this._headerLeaveHandler) {
-                this._header.removeEventListener("mouseleave", this._headerLeaveHandler);
-                this._headerLeaveHandler = undefined;
-            }
-
-            if (this._leaveHandler) {
-                this.removeEventListener("mouseleave", this._leaveHandler);
-                this._leaveHandler = undefined;
-            }
-
-            if (this._tapHandler) {
-                this._header.removeEventListener("tap", this._tapHandler);
-                this._tapHandler = undefined;
-            }
-        }
-    }
-
-    private _tap(e: CustomEvent) {
-        if (this.disabled)
-            return;
-
-        // Clear any pending hover open timer for instant click open
-        clearTimeout(this._openOnHoverTimer);
-        this._openOnHoverTimer = undefined;
-
-        if (this.open) {
-            if (!this.sticky)
-                this.close();
-
-            return;
-        }
-
-        const path = e.composedPath().slice();
-        do {
-            if (this._header !== path.shift())
-                continue;
-
-            this.popup();
-
-            e.stopPropagation();
-            break;
-        }
-        while (path.length);
-    }
-
-    private _onPopupparent(e: CustomEvent) {
-        e.detail.popup = this;
-        e.stopPropagation();
-    }
-
-    protected _findParentPopup(): Popup {
+    #findParentPopup(): Popup {
         const e = new CustomEvent("popupparent", {
             detail: { popup: null },
             bubbles: true,
@@ -371,67 +300,112 @@ export class Popup extends WebComponent {
         return !e.defaultPrevented ? e.detail.popup as Popup : null;
     }
 
-    private _catchContentClick(e?: Event) {
+    private _handleAnchorClick(e: MouseEvent) {
+        if (this.openOnHover || this.disabled)
+            return;
+
+        clearTimeout(this.#openOnHoverTimer);
+        this.#openOnHoverTimer = undefined;
+
+        if (this.open) {
+            if (!this.sticky)
+                this.close();
+            return;
+        }
+
+        this.popup();
+        e.stopPropagation();
+    }
+
+    private _handleAnchorMouseEnter() {
+        if (!this.openOnHover)
+            return;
+
+        clearTimeout(this.#openOnHoverTimer);
+        clearTimeout(this.#closeOnMoveoutTimer);
+
+        if (this.open)
+            return;
+
+        if (this.openDelay > 0) {
+            this.#openOnHoverTimer = setTimeout(() => {
+                this.popup();
+                this.#openOnHoverTimer = undefined;
+            }, this.openDelay);
+        } else {
+            this.popup();
+        }
+    }
+
+    private _handleAnchorMouseLeave() {
+        if (!this.openOnHover)
+            return;
+
+        clearTimeout(this.#openOnHoverTimer);
+        this.#openOnHoverTimer = undefined;
+
+        if (this.open && !this.sticky) {
+            this.#closeOnMoveoutTimer = setTimeout(() => {
+                this.close();
+            }, this.closeDelay);
+        }
+    }
+
+    private _onContentClick(e?: Event) {
         if (this.sticky)
             e.stopPropagation();
     }
 
-    protected _contentMouseEnter(e: MouseEvent) {
-        if (this._setHover)
-            this._setHover(true);
+    private _onContentMouseEnter(e: MouseEvent) {
+        this.hover = true;
 
-        // Clear pending open timer if mouse enters content before timer fires
-        clearTimeout(this._openOnHoverTimer);
-        this._openOnHoverTimer = undefined;
+        clearTimeout(this.#openOnHoverTimer);
+        this.#openOnHoverTimer = undefined;
 
-        if (this._closeOnMoveoutTimer) {
-            clearTimeout(this._closeOnMoveoutTimer);
-            this._closeOnMoveoutTimer = undefined;
+        if (this.#closeOnMoveoutTimer) {
+            clearTimeout(this.#closeOnMoveoutTimer);
+            this.#closeOnMoveoutTimer = undefined;
         }
     }
 
-    protected _contentMouseLeave(e: MouseEvent) {
-        if (this.openOnHover && !this.sticky) {
-            this._closeOnMoveoutTimer = setTimeout(() => {
-                this.close();
-            }, this.closeDelay);
-        }
-
-
+    private _onContentMouseLeave(e: MouseEvent) {
         if (e.relatedTarget == null) {
             e.stopPropagation();
             return;
         }
 
         if (!this.sticky) {
-            this._closeOnMoveoutTimer = setTimeout(() => {
+            this.#closeOnMoveoutTimer = setTimeout(() => {
                 this.close();
             }, this.closeDelay);
         }
     }
 
-    private _openChanged(open: boolean) {
-        if (!this.supportsPopover)
-            return;
-
-        if (open)
-            this.$.popup.showPopover();
-        else
-            this.$.popup.hidePopover();
+    private _onHoverChanged(hover: boolean) {
+        this.toggleAttribute("hover", hover);
     }
 
-    private _hoverChanged(hover: boolean) {
-        if (!this._currentTarget)
+    private _onOpenChanged(open: boolean) {
+        this.toggleAttribute("open", open);
+
+        const popup = this.shadowRoot?.getElementById("popup");
+        if (!popup?.isConnected)
             return;
 
-        if (hover)
-            this._currentTarget.setAttribute("hover", "");
-        else
-            this._currentTarget.removeAttribute("hover");
+        try {
+            const isPopoverOpen = popup.matches(':popover-open');
+            if (open && !isPopoverOpen) {
+                popup.showPopover();
+            } else if (!open && isPopoverOpen) {
+                popup.hidePopover();
+            }
+        } catch (e) {
+            console.warn("Popover state change failed:", e);
+        }
     }
 
-    private _toggleSizeChanged(e: Event, detail: { width: number; height: number }) {
-        this._toggleSize = detail;
+    private _onAnchorSizeChanged(e: CustomEvent) {
+        this.#toggleSize = e.detail;
         if (!this.open)
             return;
 
@@ -439,12 +413,16 @@ export class Popup extends WebComponent {
         e.stopPropagation();
     }
 
-    private _getPopover(supportsPopover: boolean) {
-        // Return empty string to prevent Polymer from stamping 'true' as attribute value
-        return supportsPopover ? "" : null;
+    private _onPopupparent(e: CustomEvent) {
+        e.detail.popup = this;
+        e.stopPropagation();
     }
 
-    static closeAll(parent?: HTMLElement | WebComponent) {
+    /**
+     * Closes all open popups, or only popups descended from the specified parent element.
+     * @param parent - Optional parent element. If provided, only closes popups that are descendants of this element.
+     */
+    static closeAll(parent?: HTMLElement | WebComponentLit) {
         const rootPopup = openPopups[0];
         if (rootPopup && (!parent || Popup._isDescendant(<HTMLElement>parent, rootPopup)))
             rootPopup.close();
@@ -462,3 +440,5 @@ export class Popup extends WebComponent {
         return false;
     }
 }
+
+customElements.define("vi-popup", Popup);
