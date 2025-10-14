@@ -343,6 +343,12 @@ export class Popup extends WebComponentLit {
 
         clearTimeout(this.#openOnHoverTimer);
         this.#openOnHoverTimer = undefined;
+
+        if (this.open && !this.sticky) {
+            this.#closeOnMoveoutTimer = setTimeout(() => {
+                this.close();
+            }, this.closeDelay);
+        }
     }
 
     private _onContentClick(e?: Event) {
