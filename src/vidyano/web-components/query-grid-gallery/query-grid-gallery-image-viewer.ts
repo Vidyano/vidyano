@@ -1,7 +1,7 @@
 import { html, unsafeCSS } from "lit";
 import { query, property } from "lit/decorators.js";
 import type { ImageItemMap } from "./query-grid-gallery"
-import { WebComponentLit } from "components/web-component/web-component-lit";
+import { WebComponent } from "components/web-component/web-component";
 import * as Vidyano from "vidyano";
 import styles from "./query-grid-gallery-image-viewer.css";
 
@@ -9,7 +9,7 @@ import styles from "./query-grid-gallery-image-viewer.css";
  * A web component that uses a native <dialog> element to display a single photo
  * in a full-screen overlay, with navigation controls.
  */
-export class QueryGridGalleryImageViewer extends WebComponentLit {
+export class QueryGridGalleryImageViewer extends WebComponent {
     static styles = unsafeCSS(styles);
 
     @property({ type: Array }) items: Vidyano.QueryResultItem[] = [];

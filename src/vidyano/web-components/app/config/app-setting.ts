@@ -1,12 +1,11 @@
-import { WebComponent } from "components/web-component/web-component"
-
-@WebComponent.register({
+import * as Polymer from "polymer"
+@Polymer.WebComponent.register({
     properties: {
         key: String,
         value: String
     }
 }, "vi-app-setting")
-export class AppSetting extends WebComponent {
+export class AppSetting extends Polymer.WebComponent {
     key: string;
     value: string;
 

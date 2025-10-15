@@ -1,9 +1,8 @@
-import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
+import * as Vidyano from "vidyano"
 import * as IconRegister from "components/icon/icon-register"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         query: Object,
         types: {
@@ -16,7 +15,7 @@ import { WebComponent } from "components/web-component/web-component"
         "query.currentChart"
     ]
 }, "vi-query-chart-selector")
-export class QueryChartSelector extends WebComponent {
+export class QueryChartSelector extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-chart-selector.html">`; }
 
     query: Vidyano.Query;

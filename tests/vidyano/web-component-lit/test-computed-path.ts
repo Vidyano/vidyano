@@ -1,8 +1,8 @@
 import { property } from "lit/decorators.js";
-import { WebComponentLit, computed } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
+import { WebComponent, computed } from "../../../src/vidyano/web-components/web-component/web-component.js";
 import { html } from "lit";
 
-class TestComputedPath extends WebComponentLit {
+class TestComputedPath extends WebComponent {
     @property({ type: Object })
     declare sourceObject: { data: string };
 

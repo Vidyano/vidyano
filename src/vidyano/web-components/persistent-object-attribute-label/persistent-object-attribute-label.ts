@@ -1,8 +1,7 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         attribute: Object,
         editing: {
@@ -56,7 +55,7 @@ import { WebComponent } from "components/web-component/web-component"
         "attribute.toolTip",
     ]
 }, "vi-persistent-object-attribute-label")
-export class PersistentObjectAttributeLabel extends WebComponent {
+export class PersistentObjectAttributeLabel extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-label.html">`; }
 
     attribute: Vidyano.PersistentObjectAttribute;

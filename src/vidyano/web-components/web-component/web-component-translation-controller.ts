@@ -1,5 +1,5 @@
 import { ReactiveController } from "lit";
-import type { WebComponentLit } from "./web-component-lit";
+import type { WebComponent } from "./web-component";
 
 // The TypedTranslations type alias remains the same, it's the correct approach.
 type Translations<T> = { [K in keyof T]: string };
@@ -11,13 +11,13 @@ export type TypedTranslations<T> = Translations<T> & Record<string, string>;
  */
 export class WebComponentTranslationController<T extends Record<string, any>> implements ReactiveController {
     // Private fields for better encapsulation
-    #host: WebComponentLit<T>;
+    #host: WebComponent<T>;
     #componentTranslations: T;
 
     // This will store the proxy instance once it's created.
     #proxy: TypedTranslations<T> | null = null;
 
-    constructor(host: WebComponentLit<T>, componentTranslations: T) {
+    constructor(host: WebComponent<T>, componentTranslations: T) {
         this.#host = host;
         this.#componentTranslations = componentTranslations;
         this.#host.addController(this);

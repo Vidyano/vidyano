@@ -1,10 +1,9 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import { PersistentObjectAttributePresenter } from "components/persistent-object-attribute-presenter/persistent-object-attribute-presenter"
-import { WebComponent } from "components/web-component/web-component"
 import "./persistent-object-attribute-as-detail-cell"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         serviceObject: Object,
         columns: Array,
@@ -41,7 +40,7 @@ import "./persistent-object-attribute-as-detail-cell"
     },
     sensitive: true
 }, "vi-persistent-object-attribute-as-detail-row")
-export class PersistentObjectAttributeAsDetailRow extends WebComponent {
+export class PersistentObjectAttributeAsDetailRow extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-as-detail-row.html">`; }
 
     private fullEdit: boolean;

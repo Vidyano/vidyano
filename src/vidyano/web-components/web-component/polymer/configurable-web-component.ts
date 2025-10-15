@@ -1,6 +1,6 @@
+import * as Polymer from "polymer"
 import { PopupMenuItemSplit } from "components/popup-menu/popup-menu-item-split"
 import { PopupMenuItem } from "components/popup-menu/popup-menu-item"
-import { WebComponent } from "./web-component"
 
 export interface IConfigurableAction {
     icon: string;
@@ -10,7 +10,7 @@ export interface IConfigurableAction {
     subActions?: IConfigurableAction[];
 }
 
-export abstract class ConfigurableWebComponent extends WebComponent {
+export abstract class ConfigurableWebComponent extends Polymer.WebComponent {
     #_onContextmenu: (e: Event) => void;
 
     async connectedCallback() {
@@ -33,9 +33,9 @@ export abstract class ConfigurableWebComponent extends WebComponent {
             if (actions.length === 0)
                 return;
 
-            const configureItems: WebComponent[] = [];
+            const configureItems: Polymer.WebComponent[] = [];
             actions.forEach(action => {
-                let item: WebComponent;
+                let item: Polymer.WebComponent;
 
                 if (!action.subActions)
                     item = new PopupMenuItem(action.label, action.icon, action.action);

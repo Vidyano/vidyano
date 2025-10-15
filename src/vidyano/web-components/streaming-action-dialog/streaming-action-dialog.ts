@@ -2,7 +2,6 @@ import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import { Dialog } from "components/dialog/dialog"
 import { Scroller } from "components/scroller/scroller";
-import { WebComponent } from "components/web-component/web-component"
 
 type StreamingActionDialogDetails = {
     backgroundColor: string;
@@ -14,7 +13,7 @@ type StreamingActionDialogDetails = {
     width: string;
 };
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         content: {
             type: String,
@@ -109,8 +108,8 @@ export class StreamingActionDialog extends Dialog {
     }
 }
 
-@WebComponent.register("vi-streaming-action-dialog-busy-indicator")
-export class StreamingActionDialogBusyIndicator extends WebComponent {
+@Polymer.WebComponent.register("vi-streaming-action-dialog-busy-indicator")
+export class StreamingActionDialogBusyIndicator extends Polymer.WebComponent {
     #interval: number;
 
     connectedCallback(): void {

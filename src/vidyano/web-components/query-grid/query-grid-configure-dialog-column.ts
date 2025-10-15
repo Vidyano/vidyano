@@ -1,8 +1,7 @@
 import * as Polymer from "polymer"
 import { QueryGridColumn } from "./query-grid-column"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         column: Object,
         isPinned: {
@@ -15,7 +14,7 @@ import { WebComponent } from "components/web-component/web-component"
         }
     }
 }, "vi-query-grid-configure-dialog-column")
-export class QueryGridConfigureDialogColumn extends WebComponent {
+export class QueryGridConfigureDialogColumn extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-configure-dialog-column.html">`; }
 
     offset: number;

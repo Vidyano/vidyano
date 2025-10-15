@@ -1,5 +1,5 @@
-import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
+import * as Vidyano from "vidyano"
 import { Path } from "libs/pathjs/pathjs"
 import "@polymer/iron-collapse"
 import { App } from "components/app/app"
@@ -8,7 +8,7 @@ import { AppCacheEntryQuery } from "components/app-cache/app-cache-entry-query"
 import * as IconRegister from "components/icon/icon-register"
 import { SelectReferenceDialog } from "components/select-reference-dialog/select-reference-dialog"
 import "components/scroller/scroller"
-import { ConfigurableWebComponent } from "components/web-component/web-component-configurable"
+import { ConfigurableWebComponent } from "components/web-component/polymer/configurable-web-component"
 
 @ConfigurableWebComponent.register({
     properties: {

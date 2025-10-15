@@ -1,9 +1,8 @@
 import * as Polymer from "polymer"
-import { WebComponent } from "components/web-component/web-component"
 import { Dialog } from "components/dialog/dialog"
 import { ISize } from "components/size-tracker/size-tracker"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         label: String,
         sources: Array,

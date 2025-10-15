@@ -1,13 +1,12 @@
-﻿import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
+﻿import * as Vidyano from "vidyano"
 import { Path } from "libs/pathjs/pathjs"
 import { AppRoute } from "components/app-route/app-route"
 import { AppServiceHooks } from "components/app-service-hooks/app-service-hooks"
 import { Dialog } from "components/dialog/dialog"
 import "components/error/error"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         currentRoute: {
             type: Object,
@@ -21,7 +20,7 @@ import { WebComponent } from "components/web-component/web-component"
         }
     }
 }, "vi-app-route-presenter")
-export class AppRoutePresenter extends WebComponent {
+export class AppRoutePresenter extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="app-route-presenter.html">`; }
 
     private _routesObserver: Polymer.FlattenedNodesObserver;

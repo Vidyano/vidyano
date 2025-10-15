@@ -1,5 +1,5 @@
-import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
+import * as Vidyano from "vidyano"
 import { Path } from "libs/pathjs/pathjs"
 import { App } from "components/app/app"
 import "components/button/button"
@@ -8,10 +8,9 @@ import type { InputSearch } from "components/input-search/input-search"
 import "./menu-item"
 import { Popup } from "components/popup/popup"
 import { SelectReferenceDialog } from "components/select-reference-dialog/select-reference-dialog"
-import { WebComponent } from "components/web-component/web-component"
 import "components/user/user"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         label: String,
         activeProgramUnit: Object,
@@ -69,7 +68,7 @@ import "components/user/user"
         "reset-filter": "_resetFilter"
     }
 }, "vi-menu")
-export class Menu extends WebComponent {
+export class Menu extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="menu.html">`; }
 
     private static _minResizeWidth: number;

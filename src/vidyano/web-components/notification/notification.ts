@@ -1,13 +1,12 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import * as IconRegister from "components/icon/icon-register"
-import { WebComponent } from "components/web-component/web-component"
 
 const findUriLabel = /\[url:([^|]+)\|((https?:\/\/[-\w]+(\.[-\w]+)*(:\d+)?(\/#?!?[^\.\s]*(\.[^\.\s]+)*)?)|(#!\/)?[^\]]+)]/g;
 const findUri = /(https?:\/\/[-\w]+(\.[-\w]+)*(:\d+)?(\/#?!?[^\.\s]*(\.[^\.\s]+)*)?)/g;
 const findNewLine = /\r?\n|\r/g;
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         serviceObject: Object,
         type: {
@@ -51,7 +50,7 @@ const findNewLine = /\r?\n|\r/g;
         "serviceObject.notificationDuration"
     ]
 }, "vi-notification")
-export class Notification extends WebComponent {
+export class Notification extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="notification.html">` }
 
     readonly isOverflowing: boolean; private _setIsOverflowing: (val: boolean) => void;

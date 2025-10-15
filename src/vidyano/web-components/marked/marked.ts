@@ -1,7 +1,7 @@
 import { css, html } from "lit";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import { property } from "lit/decorators.js";
-import { WebComponentLit } from "components/web-component/web-component-lit";
+import { WebComponent } from "components/web-component/web-component";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 
@@ -18,7 +18,7 @@ DOMPurify.addHook('uponSanitizeAttribute', (node, data) => {
         data.forceKeepAttr = true;
 });
 
-export class Marked extends WebComponentLit {
+export class Marked extends WebComponent {
     static styles = [css`:host { display: block; }`];
 
     @property({ type: String })

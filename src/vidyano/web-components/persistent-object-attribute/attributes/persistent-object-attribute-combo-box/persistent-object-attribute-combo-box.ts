@@ -1,11 +1,10 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { WebComponent } from "components/web-component/web-component"
 import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute"
 import { Select } from '../../../select/select.js'
 import "components/select/select"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         newValue: {
             type: String,

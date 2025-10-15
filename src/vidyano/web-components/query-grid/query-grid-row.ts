@@ -1,5 +1,5 @@
-import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
+import * as Vidyano from "vidyano"
 import { Path } from "libs/pathjs/pathjs"
 import { ActionButton } from "components/action-button/action-button"
 import { Popup } from "components/popup/popup"
@@ -9,13 +9,12 @@ import "./cell-templates/query-grid-cell-common-mark"
 import "./cell-templates/query-grid-cell-image"
 import { QueryGridCellDefault } from "./cell-templates/query-grid-cell-default"
 import { QueryGridRowGroup } from "./query-grid-row-group"
-import { WebComponent } from "components/web-component/web-component"
 
 export interface IItemTapEventArgs {
     item: Vidyano.QueryResultItem;
 }
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         item: {
             type: Object,
@@ -58,7 +57,7 @@ export interface IItemTapEventArgs {
         "_flush(offsets, visibleRange)"
     ]
 }, "vi-query-grid-row")
-export class QueryGridRow extends WebComponent {
+export class QueryGridRow extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-row.html">` }
 
     item: Vidyano.QueryResultItem | Vidyano.QueryResultItemGroup;

@@ -1,8 +1,7 @@
-﻿import * as Polymer from "polymer"
+import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import { Button } from "components/button/button"
 import { Popup } from "components/popup/popup"
-import { WebComponent } from "components/web-component/web-component"
 
 export interface IDatePickerCell {
     type: string;
@@ -12,7 +11,7 @@ export interface IDatePickerCell {
     blocked?: boolean;
 }
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         zoom: {
             type: String,
@@ -70,7 +69,7 @@ export interface IDatePickerCell {
         "tap": "_catchTap"
     }
 }, "vi-date-picker")
-export class DatePicker extends WebComponent {
+export class DatePicker extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="date-picker.html">`; }
 
     readonly cells: IDatePickerCell[]; private _setCells: (cells: IDatePickerCell[]) => void;

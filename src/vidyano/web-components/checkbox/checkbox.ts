@@ -1,9 +1,9 @@
 import { html, unsafeCSS } from "lit";
 import { property } from "lit/decorators.js";
-import { WebComponentLit, listener, notify } from "components/web-component/web-component-lit";
+import { WebComponent, listener, notify } from "components/web-component/web-component";
 import styles from "./checkbox.css";
 
-export class Checkbox extends WebComponentLit {
+export class Checkbox extends WebComponent {
     static styles = unsafeCSS(styles);
 
     @property({ type: Boolean, reflect: true })

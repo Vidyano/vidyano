@@ -1,4 +1,4 @@
-import * as Polymer from "polymer"
+import { html } from "@polymer/polymer"
 import type { Icon } from "./icon"
 import DOMPurify from "dompurify";
 
@@ -90,7 +90,7 @@ export function add(arg: Element | HTMLTemplateElement | TemplateStringsArray | 
     
     // For TemplateStringsArray overload
     if (Array.isArray(arg))
-        arg = Polymer.html(<TemplateStringsArray>arg);
+        arg = html(<TemplateStringsArray>arg);
 
     // For HTMLTemplateElement overload: extract all <vi-icon> elements
     Array.from((<HTMLTemplateElement>arg).content.querySelectorAll("vi-icon")).forEach((iconElement: Element) => {

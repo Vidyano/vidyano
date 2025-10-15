@@ -1,7 +1,5 @@
 import * as Polymer from "polymer"
-import { WebComponent } from "components/web-component/web-component"
-
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         disabled: {
             type: Boolean,
@@ -18,7 +16,7 @@ import { WebComponent } from "components/web-component/web-component"
     },
     sensitive: true
 }, "vi-sensitive")
-export class Sensitive extends WebComponent {
+export class Sensitive extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="sensitive.html">` }
 
     readonly show: boolean; private _setShow: (show: boolean) => void;

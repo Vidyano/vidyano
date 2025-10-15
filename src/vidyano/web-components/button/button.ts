@@ -1,9 +1,9 @@
 import { html, nothing, unsafeCSS } from "lit";
 import { property } from "lit/decorators.js";
-import { WebComponentLit, listener } from "components/web-component/web-component-lit.js";
+import { WebComponent, listener } from "components/web-component/web-component.js";
 import styles from "./button.css";
 
-export class Button extends WebComponentLit {
+export class Button extends WebComponent {
     static styles = unsafeCSS(styles);
 
     @property({ type: Boolean, reflect: true })

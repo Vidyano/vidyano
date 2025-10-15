@@ -5,9 +5,8 @@ import "./popup-menu-item"
 import "./popup-menu-item-separator"
 import "./popup-menu-item-split"
 import "./popup-menu-item-with-actions"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         disabled: {
             type: Boolean,
@@ -47,7 +46,7 @@ import { WebComponent } from "components/web-component/web-component"
         "tap": "_stopTap"
     }
 }, "vi-popup-menu")
-export class PopupMenu extends WebComponent {
+export class PopupMenu extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="popup-menu.html">`; }
 
     #contextHost: Element;

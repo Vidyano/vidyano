@@ -1,7 +1,6 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano";
 import { AppServiceHooks } from "components/app-service-hooks/app-service-hooks"
-import { WebComponent } from "components/web-component/web-component"
 
 export interface IAppRouteActivatedArgs {
     route: AppRoute;
@@ -13,7 +12,7 @@ export interface IAppRouteDeactivateArgs {
     cancel: boolean;
 }
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         route: {
             type: String,
@@ -42,7 +41,7 @@ export interface IAppRouteDeactivateArgs {
         "title-changed": "_titleChanged"
     }
 }, "vi-app-route")
-export class AppRoute extends WebComponent {
+export class AppRoute extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="app-route.html">`; }
 
     private _hasChildren: boolean;
@@ -99,7 +98,7 @@ export class AppRoute extends WebComponent {
         (<AppServiceHooks>this.service.hooks).trackPageView(this.app.path);
     }
 
-    private _fireActivate(target: WebComponent) {
+    private _fireActivate(target: Polymer.WebComponent) {
         target.dispatchEvent(new CustomEvent("app-route-activate", {
             detail: { route: this, parameters: this._parameters },
             bubbles: true,
@@ -116,7 +115,7 @@ export class AppRoute extends WebComponent {
     }
 
     deactivate(nextRoute?: AppRoute): Promise<boolean> {
-        const component = <WebComponent>this.shadowRoot.querySelector("slot").assignedElements()[0];
+        const component = <Polymer.WebComponent>this.shadowRoot.querySelector("slot").assignedElements()[0];
 
         return new Promise<boolean>(resolve => {
             const deactivate: IAppRouteDeactivateArgs = { route: this, cancel: false };

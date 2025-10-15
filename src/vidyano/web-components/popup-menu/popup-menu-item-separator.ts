@@ -1,7 +1,5 @@
 import * as Polymer from "polymer"
-import { WebComponent } from "components/web-component/web-component"
-
-@WebComponent.register("vi-popup-menu-item-separator")
-export class PopupMenuItemSeparator extends WebComponent {
+@Polymer.WebComponent.register("vi-popup-menu-item-separator")
+export class PopupMenuItemSeparator extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="popup-menu-item-separator.html">`; }
 }

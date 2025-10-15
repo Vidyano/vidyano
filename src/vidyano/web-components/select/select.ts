@@ -1,7 +1,6 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import * as Keyboard from "components/utils/keyboard"
-import { WebComponent } from "components/web-component/web-component"
 import { Popup } from '../popup/popup.js';
 import { Scroller } from "components/scroller/scroller";
 
@@ -14,7 +13,7 @@ export interface ISelectItem {
     option: string | SelectOption;
 }
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         options: {
             type: Array,
@@ -118,7 +117,7 @@ export interface ISelectItem {
         "_computeSuggestionFeedback(inputValue, suggestion, filtering)"
     ]
 }, "vi-select")
-export class Select extends WebComponent {
+export class Select extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="select.html">` }
 
     private items: ISelectItem[];
@@ -481,7 +480,7 @@ export class Select extends WebComponent {
     }
 }
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         suggested: {
             type: Boolean,
@@ -502,7 +501,7 @@ export class Select extends WebComponent {
         "tap": "_onTap"
     }
 }, "vi-select-option-item")
-export class SelectOptionItem extends WebComponent {
+export class SelectOptionItem extends Polymer.WebComponent {
     item: ISelectItem;
 
     private _onTap(e: Polymer.Gestures.TapEvent) {

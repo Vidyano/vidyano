@@ -1,8 +1,6 @@
-import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
-import { WebComponent } from "components/web-component/web-component"
-
-@WebComponent.register({
+import * as Vidyano from "vidyano"
+@Polymer.WebComponent.register({
     properties: {
         attribute: {
             type: Object,
@@ -28,7 +26,7 @@ import { WebComponent } from "components/web-component/web-component"
         "_updateAttributeValue(attribute, name, group, isConnected)",
     ]
 }, "vi-query-grid-filter-dialog-name")
-export class QueryGridFilterDialogName extends WebComponent {
+export class QueryGridFilterDialogName extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-filter-dialog-name.html">` }
 
     private _blockUpdate: boolean;

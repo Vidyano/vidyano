@@ -2,9 +2,8 @@ import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import { Dialog } from "components/dialog/dialog"
 import { SizeTrackerEvent } from "components/size-tracker/size-tracker"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         persistentObject: Object,
         currentTab: {

@@ -1,9 +1,9 @@
-﻿import { html, unsafeCSS } from "lit";
+import { html, unsafeCSS } from "lit";
 import { property } from "lit/decorators.js";
-import { WebComponentLit } from "components/web-component/web-component-lit.js";
+import { WebComponent } from "components/web-component/web-component.js";
 import styles from "./spinner.css";
 
-export class Spinner extends WebComponentLit {
+export class Spinner extends WebComponent {
     static styles = unsafeCSS(styles);
 
     @property({ type: String, reflect: true })

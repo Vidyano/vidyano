@@ -1,5 +1,4 @@
 import * as Polymer from "polymer"
-import { WebComponent } from "components/web-component/web-component"
 import { Dialog } from "components/dialog/dialog"
 import "components/marked/marked"
 
@@ -16,7 +15,7 @@ export interface IMessageDialogOptions {
     rich?: boolean;
 }
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         options: {
             type: Object,

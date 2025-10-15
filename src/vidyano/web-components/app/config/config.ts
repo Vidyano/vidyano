@@ -1,6 +1,5 @@
-import { WebComponent } from "components/web-component/web-component"
-
-@WebComponent.register({
+import * as Polymer from "polymer"
+@Polymer.WebComponent.register({
     properties: {
         key: {
             type: String,
@@ -12,7 +11,7 @@ import { WebComponent } from "components/web-component/web-component"
         }
     }
 }, "vi-config")
-export class Config extends WebComponent {
+export class Config extends Polymer.WebComponent {
     key: string;
 
     value: string;

@@ -24,7 +24,7 @@ import "components/persistent-object-attribute/attributes/persistent-object-attr
 import "components/persistent-object-attribute/attributes/persistent-object-attribute-user/persistent-object-attribute-user"
 import { PersistentObjectAttributeConfig } from '../app/config/persistent-object-attribute-config.js'
 import "components/persistent-object-attribute-label/persistent-object-attribute-label"
-import { ConfigurableWebComponent } from "components/web-component/web-component-configurable"
+import { ConfigurableWebComponent } from "components/web-component/polymer/configurable-web-component"
 
 class DeveloperShortcut extends Observable<DeveloperShortcut> {
     private _state: boolean = false;

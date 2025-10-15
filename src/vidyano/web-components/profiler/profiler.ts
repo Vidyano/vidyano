@@ -1,8 +1,7 @@
-import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
+import * as Vidyano from "vidyano"
 import { ISize } from "components/size-tracker/size-tracker"
 import { Scroller } from "components/scroller/scroller"
-import { WebComponent } from "components/web-component/web-component"
 
 type ProfilerRequest = Vidyano.Dto.ProfilerRequestDto & {
     hasNPlusOne: boolean;
@@ -18,7 +17,7 @@ type FlattenedProfilerRequestEntry = {
     level: number;
 }
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         service: Object,
         awaiting: {
@@ -66,7 +65,7 @@ type FlattenedProfilerRequestEntry = {
         "_renderRequestTimeline(selectedRequest, timelineSize, zoom)"
     ]
 }, "vi-profiler")
-export class Profiler extends WebComponent {
+export class Profiler extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="profiler.html">`; }
 
     readonly lastRequest: ProfilerRequest; private _setLastRequest: (request: Vidyano.Dto.ProfilerRequestDto) => void;

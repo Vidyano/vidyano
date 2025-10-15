@@ -1,10 +1,10 @@
 import { html, unsafeCSS, nothing } from "lit";
 import { property } from "lit/decorators.js";
 import * as Vidyano from "vidyano";
-import { WebComponentLit, observer } from "components/web-component/web-component-lit.js";
+import { WebComponent, observer } from "components/web-component/web-component.js";
 import styles from "./persistent-object-attribute-as-detail-cell.css";
 
-export class PersistentObjectAttributeAsDetailCell extends WebComponentLit {
+export class PersistentObjectAttributeAsDetailCell extends WebComponent {
     static styles = unsafeCSS(styles);
 
     @property({ type: Object })

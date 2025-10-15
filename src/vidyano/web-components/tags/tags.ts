@@ -1,9 +1,8 @@
 import * as Polymer from "polymer"
 import * as Keyboard from "components/utils/keyboard"
 import type { Scroller } from "components/scroller/scroller"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         input: String,
         tags: Array,
@@ -18,7 +17,7 @@ import { WebComponent } from "components/web-component/web-component"
         }
     }
 }, "vi-tags")
-export class Tags extends WebComponent {
+export class Tags extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="tags.html">` }
 
     input: string;

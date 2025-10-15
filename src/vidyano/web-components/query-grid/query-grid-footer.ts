@@ -1,15 +1,14 @@
-import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
+import * as Vidyano from "vidyano"
 import { QueryGridColumn } from "./query-grid-column"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         item: Object,
         columns: Array
     }
 }, "vi-query-grid-footer")
-export class QueryGridFooter extends WebComponent {
+export class QueryGridFooter extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-footer.html">` }
 
     item: Vidyano.QueryResultItem;

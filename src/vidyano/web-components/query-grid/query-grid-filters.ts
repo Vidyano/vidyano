@@ -1,8 +1,7 @@
-import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
+import * as Vidyano from "vidyano"
 import { Popup } from "components/popup/popup"
 import { QueryGridFilterDialog } from "./query-grid-filter-dialog"
-import { WebComponent } from "components/web-component/web-component"
 
 interface IQueryFilter {
     filter?: Vidyano.QueryFilter;
@@ -10,7 +9,7 @@ interface IQueryFilter {
     children?: IQueryFilter[];
 }
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         query: Object,
         queryFilters: {
@@ -80,7 +79,7 @@ interface IQueryFilter {
         "query.filters.currentFilter"
     ]
 }, "vi-query-grid-filters")
-export class QueryGridFilters extends WebComponent {
+export class QueryGridFilters extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-filters.html">` }
 
     query: Vidyano.Query;

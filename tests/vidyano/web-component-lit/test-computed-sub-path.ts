@@ -1,5 +1,5 @@
 import { property } from "lit/decorators.js";
-import { WebComponentLit, computed } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
+import { WebComponent, computed } from "../../../src/vidyano/web-components/web-component/web-component.js";
 import { Observable } from "../../../src/core/observable/index.js";
 import { html } from "lit";
 
@@ -32,7 +32,7 @@ export class QuerySource extends Observable<QuerySource> {
     }
 }
 
-export class TestComputedSubPath extends WebComponentLit {
+export class TestComputedSubPath extends WebComponent {
     @property({ type: Object })
     query: QuerySource;
 

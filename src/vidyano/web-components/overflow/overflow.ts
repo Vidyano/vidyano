@@ -1,11 +1,10 @@
 import * as Polymer from "polymer"
 import "components/popup/popup"
 import { Popup } from "components/popup/popup"
-import { WebComponent} from "components/web-component/web-component"
 
 export type OverflowType = "label" | "icon" | "icon-label";
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         hasOverflow: {
             type: Boolean,
@@ -25,7 +24,7 @@ export type OverflowType = "label" | "icon" | "icon-label";
         }
     }
 }, "vi-overflow")
-export class Overflow extends WebComponent {
+export class Overflow extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="overflow.html">` }
 
     private _overflownChildren: HTMLElement[];

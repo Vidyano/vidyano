@@ -1,12 +1,10 @@
 import * as Polymer from "polymer"
-import { WebComponent } from "components/web-component/web-component"
-
 export interface IFileDropDetails {
     name: string;
     contents: string;
 }
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         "dragOver": {
             type: Boolean,
@@ -22,7 +20,7 @@ export interface IFileDropDetails {
         "drop": "_drop"
     }
 }, "vi-file-drop")
-export class FileDrop extends WebComponent {
+export class FileDrop extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="file-drop.html">` }
 
     readonly dragOver: boolean; private _setDragOver: (val: boolean) => void;

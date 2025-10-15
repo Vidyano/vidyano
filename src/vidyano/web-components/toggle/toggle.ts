@@ -1,7 +1,5 @@
 import * as Polymer from "polymer"
-import { WebComponent } from "components/web-component/web-component"
-
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         toggled: {
             type: Boolean,
@@ -29,7 +27,7 @@ import { WebComponent } from "components/web-component/web-component"
         "space": "_keyToggle"
     }
 }, "vi-toggle")
-export class Toggle extends WebComponent {
+export class Toggle extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="toggle.html">`; }
 
     toggled: boolean;

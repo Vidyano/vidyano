@@ -1,8 +1,8 @@
 import { html } from "lit";
 import { property } from "lit/decorators.js";
-import { WebComponentLit, listener } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
+import { WebComponent, listener } from "../../../src/vidyano/web-components/web-component/web-component.js";
 
-class TestEventListeners extends WebComponentLit {
+class TestEventListeners extends WebComponent {
     @property({ type: String })
     declare message: string;
 

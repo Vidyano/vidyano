@@ -1,8 +1,7 @@
-﻿import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
+﻿import * as Vidyano from "vidyano"
 import { App } from "components/app/app"
 import * as IconRegister from "components/icon/icon-register"
-import { WebComponent } from "components/web-component/web-component"
 
 interface ILogEntryGroup {
     today: boolean;
@@ -42,7 +41,7 @@ type AuditPersistentObject = Vidyano.PersistentObject & {
     __audit_filter__?: string;
 };
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         persistentObject: Object,
         query: {
@@ -70,7 +69,7 @@ type AuditPersistentObject = Vidyano.PersistentObject & {
         "_syncFilter(filter, persistentObject, isConnected)"
     ]
 }, "vi-audit")
-export class Audit extends WebComponent {
+export class Audit extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="audit.html">`; }
 
     private _updating: Promise<any>;

@@ -8,7 +8,7 @@ import { AppCacheEntryPersistentObjectFromAction } from "components/app-cache/ap
 import { AppRoute } from "components/app-route/app-route"
 import "components/error/error"
 import { PersistentObject, IPersistentObjectWebComponent } from "components/persistent-object/persistent-object"
-import { ConfigurableWebComponent } from "components/web-component/web-component-configurable"
+import { ConfigurableWebComponent } from "components/web-component/polymer/configurable-web-component"
 
 interface IPersistentObjectPresenterRouteParameters {
     id: string;

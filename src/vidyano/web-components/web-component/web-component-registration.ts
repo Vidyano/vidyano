@@ -1,5 +1,5 @@
 import { PropertyDeclaration } from "lit";
-import type { WebComponentLit } from "./web-component-lit";
+import type { WebComponent } from "./web-component";
 
 export const COMPUTED_CONFIG_SYMBOL = Symbol("WebComponent.computedConfig");
 export const OBSERVERS_CONFIG_SYMBOL = Symbol("WebComponent.observersConfig");
@@ -37,7 +37,7 @@ export type PropertyObserversConfig = Record<string, string>;
 export type NotifyConfig = Record<string, string | true>; // true = auto-generate kebab-case-changed, string = custom event name
 export type ListenersConfig = Record<string, string>;
 
-type WebComponentConstructor = typeof WebComponentLit & {
+type WebComponentConstructor = typeof WebComponent & {
     properties?: Record<string, PropertyDeclaration>;
     [COMPUTED_CONFIG_SYMBOL]?: ComputedConfig;
     [OBSERVERS_CONFIG_SYMBOL]?: ObserversConfig;
@@ -70,31 +70,31 @@ export interface WebComponentRegistrationInfo {
     sensitive?: boolean;
 }
 
-export function getListenersConfig(component: WebComponentLit): ListenersConfig {
+export function getListenersConfig(component: WebComponent): ListenersConfig {
     return (component.constructor as WebComponentConstructor)[LISTENERS_CONFIG_SYMBOL] || {};
 }
 
-export function getObserversConfig(component: WebComponentLit): ObserversConfig {
+export function getObserversConfig(component: WebComponent): ObserversConfig {
     return (component.constructor as WebComponentConstructor)[OBSERVERS_CONFIG_SYMBOL] || {};
 }
 
-export function getComputedConfig(component: WebComponentLit): ComputedConfig {
+export function getComputedConfig(component: WebComponent): ComputedConfig {
     return (component.constructor as WebComponentConstructor)[COMPUTED_CONFIG_SYMBOL] || {};
 }
 
-export function getPropertyObserversConfig(component: WebComponentLit): PropertyObserversConfig {
+export function getPropertyObserversConfig(component: WebComponent): PropertyObserversConfig {
     return (component.constructor as WebComponentConstructor)[PROPERTY_OBSERVERS_CONFIG_SYMBOL] || {};
 }
 
-export function getNotifyConfig(component: WebComponentLit): NotifyConfig {
+export function getNotifyConfig(component: WebComponent): NotifyConfig {
     return (component.constructor as WebComponentConstructor)[NOTIFY_CONFIG_SYMBOL] || {};
 }
 
-export function getSensitiveConfig(component: WebComponentLit): boolean {
+export function getSensitiveConfig(component: WebComponent): boolean {
     return (component.constructor as WebComponentConstructor)[SENSITIVE_CONFIG_SYMBOL];
 }
 
-export type WebComponentRegistration = { tagName: string, targetClass: typeof WebComponentLit };
+export type WebComponentRegistration = { tagName: string, targetClass: typeof WebComponent };
 
 /**
  * Registers a web component class with the specified configuration and tag name.
@@ -104,9 +104,9 @@ export type WebComponentRegistration = { tagName: string, targetClass: typeof We
  * @param targetClass The web component class to register.
  * @returns The web component class or void.
  */
-export function registerWebComponent<T extends typeof WebComponentLit>(tagName: string, targetClass: T): WebComponentRegistration | undefined;
-export function registerWebComponent<T extends typeof WebComponentLit>(config: WebComponentRegistrationInfo, tagName: string, targetClass: T): WebComponentRegistration | undefined;
-export function registerWebComponent<T extends typeof WebComponentLit>(configOrTag: WebComponentRegistrationInfo | string, tagNameOrClass: string | T, maybeClass?: T): WebComponentRegistration | undefined {
+export function registerWebComponent<T extends typeof WebComponent>(tagName: string, targetClass: T): WebComponentRegistration | undefined;
+export function registerWebComponent<T extends typeof WebComponent>(config: WebComponentRegistrationInfo, tagName: string, targetClass: T): WebComponentRegistration | undefined;
+export function registerWebComponent<T extends typeof WebComponent>(configOrTag: WebComponentRegistrationInfo | string, tagNameOrClass: string | T, maybeClass?: T): WebComponentRegistration | undefined {
     let config: WebComponentRegistrationInfo;
     let tagName: string;
     let targetClass: T;

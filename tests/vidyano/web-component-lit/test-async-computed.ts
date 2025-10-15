@@ -1,8 +1,8 @@
 import { property } from "lit/decorators.js";
-import { WebComponentLit, computed } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
+import { WebComponent, computed } from "../../../src/vidyano/web-components/web-component/web-component.js";
 import { html } from "lit";
 
-class TestAsyncComputed extends WebComponentLit {
+class TestAsyncComputed extends WebComponent {
     @property({ type: String })
     declare inputValue: string;
 

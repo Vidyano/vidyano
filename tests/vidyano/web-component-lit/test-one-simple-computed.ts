@@ -1,8 +1,8 @@
 import { html } from "lit";
 import { property } from "lit/decorators.js";
-import { WebComponentLit, observe, computed } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
+import { WebComponent, observe, computed } from "../../../src/vidyano/web-components/web-component/web-component.js";
 
-class TestOneSimpleComputed extends WebComponentLit {
+class TestOneSimpleComputed extends WebComponent {
     @property({ type: String })
     @observe("_firstNameChanged")
     declare firstName: string;

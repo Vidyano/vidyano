@@ -1,7 +1,5 @@
-import { WebComponent } from "components/web-component/web-component"
 import * as Polymer from "polymer"
-
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         value: {
             type: String,
@@ -23,7 +21,7 @@ import * as Polymer from "polymer"
         }
     }
 }, "vi-input-search")
-export class InputSearch extends WebComponent {
+export class InputSearch extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="input-search.html">`; }
 
     value: string;

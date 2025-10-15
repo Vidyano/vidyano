@@ -1,8 +1,6 @@
-import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
-import { WebComponent } from "components/web-component/web-component"
-
-@WebComponent.register({
+import * as Vidyano from "vidyano"
+@Polymer.WebComponent.register({
     properties: {
         group: Object,
         first: {
@@ -22,7 +20,7 @@ import { WebComponent } from "components/web-component/web-component"
         "tap": "_tap"
     }
 }, "vi-query-grid-row-group")
-export class QueryGridRowGroup extends WebComponent {
+export class QueryGridRowGroup extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-row-group.html">` }
 
     group: Vidyano.QueryResultItemGroup;

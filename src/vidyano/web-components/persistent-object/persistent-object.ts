@@ -6,13 +6,12 @@ import { Button } from "components/button/button"
 import "components/notification/notification"
 import "components/persistent-object-tab-bar/persistent-object-tab-bar"
 import "components/persistent-object-tab-presenter/persistent-object-tab-presenter"
-import { WebComponent } from "components/web-component/web-component"
 
-export interface IPersistentObjectWebComponent extends WebComponent {
+export interface IPersistentObjectWebComponent extends Polymer.WebComponent {
     persistentObject: Vidyano.PersistentObject;
 }
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         persistentObject: {
             type: Object,
@@ -124,7 +123,7 @@ export interface IPersistentObjectWebComponent extends WebComponent {
     },
     sensitive: true
 }, "vi-persistent-object")
-export class PersistentObject extends WebComponent implements IPersistentObjectWebComponent {
+export class PersistentObject extends Polymer.WebComponent implements IPersistentObjectWebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object.html">` }
 
     private _cacheEntry: AppCacheEntryPersistentObject;
@@ -434,17 +433,17 @@ export class PersistentObject extends WebComponent implements IPersistentObjectW
     }
 }
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         tab: Object,
         hideActionBar: Boolean
     }
 }, "vi-persistent-object-details-content")
-export class PersistentObjectDetailsContent extends WebComponent {
+export class PersistentObjectDetailsContent extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="vi-persistent-object-details-content.html">` }
 }
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         tabs: Object,
         tab: {
@@ -453,6 +452,6 @@ export class PersistentObjectDetailsContent extends WebComponent {
         }
     }
 }, "vi-persistent-object-details-header")
-export class PersistentObjectDetailsHeader extends WebComponent {
+export class PersistentObjectDetailsHeader extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="vi-persistent-object-details-header.html">` }
 }

@@ -1,9 +1,8 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import "components/popup/popup"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         attribute: Object,
         hidden: {
@@ -21,7 +20,7 @@ import { WebComponent } from "components/web-component/web-component"
         "attribute.isReadOnly"
     ]
 }, "vi-persistent-object-attribute-validation-error")
-export class PersistentObjectAttributeValidationError extends WebComponent {
+export class PersistentObjectAttributeValidationError extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-validation-error.html">` }
 
     attribute: Vidyano.PersistentObjectAttribute;

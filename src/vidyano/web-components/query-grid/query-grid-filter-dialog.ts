@@ -1,11 +1,10 @@
-import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
+import * as Vidyano from "vidyano"
 import { Dialog } from "components/dialog/dialog"
 import "components/notification/notification"
 import "./query-grid-filter-dialog-name"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         persistentObject: {
             type: Object,

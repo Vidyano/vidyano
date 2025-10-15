@@ -1,6 +1,6 @@
 import { ReactiveController, PropertyValueMap } from "lit";
 import { Observable, ForwardObservedPropertyChangedArgs, ForwardObservedArrayChangedArgs } from "vidyano";
-import type { WebComponentLit } from "./web-component-lit";
+import type { WebComponent } from "./web-component";
 import { ComputedConfig, getComputedConfig, getObserversConfig, getPropertyObserversConfig, getNotifyConfig } from "./web-component-registration";
 
 type ForwardObservedDetail = ForwardObservedPropertyChangedArgs | ForwardObservedArrayChangedArgs;
@@ -22,14 +22,14 @@ const MAX_ITERATIONS = 10;
  * A Reactive Controller that manages computed properties, observers, and deep path observation.
  */
 export class WebComponentObserverController implements ReactiveController {
-    #host: WebComponentLit;
+    #host: WebComponent;
 
     #forwarderDisposers: Map<string, () => void> = new Map();
     #dirtyForwardedPaths: Set<string> = new Set();
     #pendingComputedTokens: Map<string, number> = new Map();
     #tokenCounter = 0;
 
-    constructor(host: WebComponentLit) {
+    constructor(host: WebComponent) {
         this.#host = host;
         this.#host.addController(this);
     }
@@ -264,7 +264,7 @@ export class WebComponentObserverController implements ReactiveController {
      * @returns A map where keys are property names and values are their current values.
      */
     #capturePropertyState(): Map<PropertyKey, any> {
-        const allPropKeys = Array.from((this.#host.constructor as typeof WebComponentLit).elementProperties.keys());
+        const allPropKeys = Array.from((this.#host.constructor as typeof WebComponent).elementProperties.keys());
         return new Map(allPropKeys.map(prop => [prop, this.#host[prop]]));
     }
 

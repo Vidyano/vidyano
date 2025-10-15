@@ -1,9 +1,7 @@
+import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import * as Polymer from "libs/polymer/polymer"
 import { QueryGridCell } from "./query-grid-cell"
-import { WebComponent } from "components/web-component/web-component"
-
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         value: {
             type: Object,
