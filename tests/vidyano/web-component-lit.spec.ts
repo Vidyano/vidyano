@@ -8,6 +8,11 @@ async function setupComponentTest(page: Page, componentTag: string) {
     <html>
       <head>
         <meta charset="utf-8" />
+        <style>
+          /* Ensure all custom elements are visible for Playwright tests */
+          :not(:defined) { display: none; }
+          * { display: block; padding: 1px; }
+        </style>
       </head>
       <body>
         <${componentTag}></${componentTag}>

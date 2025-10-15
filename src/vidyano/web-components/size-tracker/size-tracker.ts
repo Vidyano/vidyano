@@ -1,4 +1,5 @@
-﻿import { WebComponentLit, property } from "components/web-component/web-component-lit.js";
+﻿import { property } from "lit/decorators.js";
+import { WebComponentLit, notify } from "components/web-component/web-component-lit.js";
 
 /**
  * Represents the dimensions of an element.
@@ -60,6 +61,7 @@ export class SizeTracker extends WebComponentLit {
      * Updated whenever a size change is detected.
      */
     @property({ type: Object })
+    @notify()
     size: ISize | null = null;
 
     /**
@@ -109,19 +111,7 @@ export class SizeTracker extends WebComponentLit {
         }));
     }
 
-    updated(changedProperties: Map<string, any>) {
-        super.updated(changedProperties);
-
-        if (changedProperties.has('size') && this.size) {
-            // Dispatch property change event for Polymer backward compatibility
-            // This maintains compatibility with existing Polymer components that have a two-way binding on 'size'
-            this.dispatchEvent(new CustomEvent('size-changed', {
-                detail: { value: this.size },
-                bubbles: false,
-                composed: false
-            }));
-        }
-    }
+    // Note: size-changed event is now automatically dispatched by @notify decorator
 
     /**
      * Starts tracking the parent element's size.

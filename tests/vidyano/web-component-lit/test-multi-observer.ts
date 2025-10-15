@@ -1,12 +1,13 @@
 import { html } from "lit";
-import { WebComponentLit } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
-import { observer, property } from "../../../src/vidyano/web-components/web-component/web-component-decorators.js";
+import { property } from "lit/decorators.js";
+import { WebComponentLit, observer, computed } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
 
 class TestMultiObserver extends WebComponentLit {
     @property({ type: Number })
     declare counter: number;
 
-    @property({ type: Number, computed: "_doubleCounter(counter)" })
+    @property({ type: Number })
+    @computed("_doubleCounter(counter)")
     declare readonly doubled: number;
 
     // Public properties for testing

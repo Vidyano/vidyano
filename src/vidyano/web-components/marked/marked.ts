@@ -1,6 +1,7 @@
 import { css, html } from "lit";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
-import { WebComponentLit, property } from "components/web-component/web-component-lit";
+import { property } from "lit/decorators.js";
+import { WebComponentLit } from "components/web-component/web-component-lit";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 

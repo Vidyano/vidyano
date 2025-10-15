@@ -1,7 +1,7 @@
-import { html, nothing, unsafeCSS } from "lit";
-import { WebComponentLit, property, listener } from "components/web-component/web-component-lit";
+import { html, unsafeCSS } from "lit";
+import { property } from "lit/decorators.js";
+import { WebComponentLit, listener, observe, notify } from "components/web-component/web-component-lit";
 import "components/size-tracker/size-tracker"
-import { ISize } from "components/size-tracker/size-tracker";
 import styles from "./scroller.css";
 
 /**
@@ -56,10 +56,12 @@ export class Scroller extends WebComponentLit {
 
     /** Width of the viewport (outer container) */
     @property({ type: Number })
+    @notify()
     outerWidth: number = 0;
 
     /** Height of the viewport (outer container) */
     @property({ type: Number })
+    @notify()
     outerHeight: number = 0;
 
     /** Width of the scrollable content (inner container) */
@@ -95,11 +97,15 @@ export class Scroller extends WebComponentLit {
     scrollbars: string;
 
     /** Current vertical scroll position in pixels */
-    @property({ type: Number, observer: "_verticalScrollOffsetChanged" })
+    @property({ type: Number })
+    @observe("_verticalScrollOffsetChanged")
+    @notify("vertical-scroll-offset-changed")
     verticalScrollOffset: number = 0;
 
     /** Current horizontal scroll position in pixels */
-    @property({ type: Number, observer: "_horizontalScrollOffsetChanged" })
+    @property({ type: Number })
+    @observe("_horizontalScrollOffsetChanged")
+    @notify("horizontal-scroll-offset-changed")
     horizontalScrollOffset: number = 0;
 
     /** Whether to disable scroll shadows */
@@ -185,28 +191,6 @@ export class Scroller extends WebComponentLit {
         if (changedProperties.has('outerWidth') || changedProperties.has('innerWidth') ||
             changedProperties.has('horizontalScrollOffset') || changedProperties.has('noHorizontal')) {
             this.#updateHorizontalScrollbar(this.outerWidth, this.innerWidth, this.horizontalScrollOffset, this.noHorizontal);
-        }
-
-        this.#dispatchPropertyChangeEvents(changedProperties, [
-            ['outerWidth', 'outer-width-changed'],
-            ['outerHeight', 'outer-height-changed'],
-            ['verticalScrollOffset', 'vertical-scroll-offset-changed'],
-            ['horizontalScrollOffset', 'horizontal-scroll-offset-changed']
-        ]);
-    }
-
-    /**
-     * Helper to dispatch property change events for notify properties.
-     */
-    #dispatchPropertyChangeEvents(changedProperties: Map<PropertyKey, unknown>, eventMap: [string, string][]) {
-        for (const [property, eventName] of eventMap) {
-            if (changedProperties.has(property)) {
-                this.dispatchEvent(new CustomEvent(eventName, {
-                    detail: { value: this[property] },
-                    bubbles: false,
-                    composed: true
-                }));
-            }
         }
     }
 

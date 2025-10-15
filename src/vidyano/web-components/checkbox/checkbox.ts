@@ -1,11 +1,13 @@
 import { html, unsafeCSS } from "lit";
-import { WebComponentLit, property, listener } from "components/web-component/web-component-lit";
+import { property } from "lit/decorators.js";
+import { WebComponentLit, listener, notify } from "components/web-component/web-component-lit";
 import styles from "./checkbox.css";
 
 export class Checkbox extends WebComponentLit {
     static styles = unsafeCSS(styles);
 
     @property({ type: Boolean, reflect: true })
+    @notify()
     checked: boolean = false;
 
     @property({ type: String })
@@ -42,13 +44,7 @@ export class Checkbox extends WebComponentLit {
 
         if (!this.radio) {
             this.checked = !this.checked;
-
-            // Legacy: Manually dispatch change event for Polymer two-way binding
-            this.dispatchEvent(new CustomEvent("checked-changed", {
-                detail: { value: this.checked },
-                bubbles: false,
-                composed: true
-            }));
+            // Note: checked-changed event is now automatically dispatched by @notify decorator
         }
         else {
             this.dispatchEvent(new CustomEvent("changed", {

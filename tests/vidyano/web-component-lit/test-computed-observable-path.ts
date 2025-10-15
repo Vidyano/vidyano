@@ -1,5 +1,5 @@
-import { WebComponentLit } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
-import { property } from "../../../src/vidyano/web-components/web-component/web-component-decorators.js";
+import { property } from "lit/decorators.js";
+import { WebComponentLit, computed } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
 import { html } from "lit";
 import { Observable } from "../../../src/core/observable/index.js";
 
@@ -27,7 +27,8 @@ class TestComputedObservablePath extends WebComponentLit {
     @property({ type: Object })
     declare serviceObject?: ServiceObject;
 
-    @property({ type: Boolean, computed: "serviceObject.isBusy" })
+    @property({ type: Boolean })
+    @computed("serviceObject.isBusy")
     declare readonly loading: boolean;
 
     constructor() {

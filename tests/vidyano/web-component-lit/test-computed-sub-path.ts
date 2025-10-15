@@ -1,5 +1,5 @@
-import { WebComponentLit } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
-import { property } from "../../../src/vidyano/web-components/web-component/web-component-decorators.js";
+import { property } from "lit/decorators.js";
+import { WebComponentLit, computed } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
 import { Observable } from "../../../src/core/observable/index.js";
 import { html } from "lit";
 
@@ -36,7 +36,8 @@ export class TestComputedSubPath extends WebComponentLit {
     @property({ type: Object })
     query: QuerySource;
 
-    @property({ type: Array, computed: "query.items" })
+    @property({ type: Array })
+    @computed("query.items")
     readonly items: string[];
 
     constructor() {

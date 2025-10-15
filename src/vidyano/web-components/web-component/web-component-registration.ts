@@ -4,6 +4,7 @@ import type { WebComponentLit } from "./web-component-lit";
 export const COMPUTED_CONFIG_SYMBOL = Symbol("WebComponent.computedConfig");
 export const OBSERVERS_CONFIG_SYMBOL = Symbol("WebComponent.observersConfig");
 export const PROPERTY_OBSERVERS_CONFIG_SYMBOL = Symbol("WebComponent.propertyObserversConfig");
+export const NOTIFY_CONFIG_SYMBOL = Symbol("WebComponent.notifyConfig");
 export const SENSITIVE_CONFIG_SYMBOL = Symbol("WebComponent.sensitiveConfig");
 export const LISTENERS_CONFIG_SYMBOL = Symbol("WebComponent.listenersConfig");
 
@@ -33,37 +34,25 @@ type ComputedPropertyConfig = {
 export type ComputedConfig = Record<string, ComputedPropertyConfig>;
 export type ObserversConfig = Record<string, string[]>;
 export type PropertyObserversConfig = Record<string, string>;
+export type NotifyConfig = Record<string, string | true>; // true = auto-generate kebab-case-changed, string = custom event name
 export type ListenersConfig = Record<string, string>;
 
 type WebComponentConstructor = typeof WebComponentLit & {
-    properties?: Record<string, WebComponentProperty>;
+    properties?: Record<string, PropertyDeclaration>;
     [COMPUTED_CONFIG_SYMBOL]?: ComputedConfig;
     [OBSERVERS_CONFIG_SYMBOL]?: ObserversConfig;
     [PROPERTY_OBSERVERS_CONFIG_SYMBOL]?: PropertyObserversConfig;
+    [NOTIFY_CONFIG_SYMBOL]?: NotifyConfig;
     [SENSITIVE_CONFIG_SYMBOL]?: boolean;
     [LISTENERS_CONFIG_SYMBOL]?: ListenersConfig;
 };
 
-export interface WebComponentProperty<T = unknown> extends PropertyDeclaration<T> {
-    /**
-     *  Computed properties can be either:
-     *  - A path string (e.g., "user.firstName") to observe property changes,
-     *  - Or a function signature (e.g., "myObserver(user.firstName, user.lastName)") to call a method when dependencies change.
-     */
-    computed?: string;
-
-    /**
-     * Observer method to call when the property changes.
-     * The method should accept two parameters: the new value and the old value.
-     */
-    observer?: string;
-}
 
 export interface WebComponentRegistrationInfo {
     /**
      * The properties of the web component.
      */
-    properties?: Record<string, WebComponentProperty>;
+    properties?: Record<string, PropertyDeclaration>;
 
     /**
      * An array of observer strings to forward changes to.
@@ -95,6 +84,10 @@ export function getComputedConfig(component: WebComponentLit): ComputedConfig {
 
 export function getPropertyObserversConfig(component: WebComponentLit): PropertyObserversConfig {
     return (component.constructor as WebComponentConstructor)[PROPERTY_OBSERVERS_CONFIG_SYMBOL] || {};
+}
+
+export function getNotifyConfig(component: WebComponentLit): NotifyConfig {
+    return (component.constructor as WebComponentConstructor)[NOTIFY_CONFIG_SYMBOL] || {};
 }
 
 export function getSensitiveConfig(component: WebComponentLit): boolean {
@@ -143,24 +136,10 @@ export function registerWebComponent<T extends typeof WebComponentLit>(configOrT
     const decoratedPropertyObserversConfig = targetClass[PROPERTY_OBSERVERS_CONFIG_SYMBOL] || {};
     const decoratedObserversConfig = targetClass[OBSERVERS_CONFIG_SYMBOL] || {};
     const decoratedListenersConfig = targetClass[LISTENERS_CONFIG_SYMBOL] || {};
-    const newComputedConfig: ComputedConfig = { ...decoratedComputedConfig };
-    const newPropertyObserversConfig: PropertyObserversConfig = { ...decoratedPropertyObserversConfig };
-
-    if (config.properties) {
-        for (const [name, propConfig] of Object.entries(config.properties)) {
-            if (propConfig.computed) {
-                const parsed = parseMethodSignature(propConfig.computed);
-                newComputedConfig[name] = parsed ? { dependencies: parsed.args, methodName: parsed.methodName } : { dependencies: [propConfig.computed] };
-            }
-            if (propConfig.observer) {
-                newPropertyObserversConfig[name] = propConfig.observer;
-            }
-        }
-    }
 
     // Merge new configs with inherited configs and decorator-provided configs. Child-specific config wins.
-    (targetClass as WebComponentConstructor)[COMPUTED_CONFIG_SYMBOL] = { ...inheritedComputedConfig, ...newComputedConfig };
-    (targetClass as WebComponentConstructor)[PROPERTY_OBSERVERS_CONFIG_SYMBOL] = { ...inheritedPropertyObserversConfig, ...newPropertyObserversConfig };
+    (targetClass as WebComponentConstructor)[COMPUTED_CONFIG_SYMBOL] = { ...inheritedComputedConfig, ...decoratedComputedConfig };
+    (targetClass as WebComponentConstructor)[PROPERTY_OBSERVERS_CONFIG_SYMBOL] = { ...inheritedPropertyObserversConfig, ...decoratedPropertyObserversConfig };
     (targetClass as WebComponentConstructor)[LISTENERS_CONFIG_SYMBOL] = { ...inheritedListenersConfig, ...decoratedListenersConfig, ...(config.listeners || {}) };
 
     // Merge new properties with inherited ones, overriding as necessary.

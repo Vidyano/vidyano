@@ -1,5 +1,5 @@
-import { WebComponentLit } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
-import { property } from "../../../src/vidyano/web-components/web-component/web-component-decorators.js";
+import { property } from "lit/decorators.js";
+import { WebComponentLit, computed } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
 import { html } from "lit";
 import { Observable } from "../../../src/core/observable/index.js";
 
@@ -34,7 +34,8 @@ class TestComputedDerivedObject extends WebComponentLit {
     @property({ type: Object })
     source: DataSource;
 
-    @property({ type: Object, computed: "_computeDerivedObject(source.value)" })
+    @property({ type: Object })
+    @computed("_computeDerivedObject(source.value)")
     derivedObject: { value: string };
 
     @property({ type: Number })
