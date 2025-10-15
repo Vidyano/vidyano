@@ -1,188 +1,271 @@
-import * as Polymer from "polymer"
+import { html, nothing, unsafeCSS } from "lit";
+import { WebComponentLit, property, listener } from "components/web-component/web-component-lit";
 import "components/size-tracker/size-tracker"
 import { ISize } from "components/size-tracker/size-tracker";
-import { WebComponent } from "components/web-component/web-component"
+import styles from "./scroller.css";
 
-@WebComponent.register({
-    properties: {
-        hovering: {
-            type: Boolean,
-            readOnly: true,
-            reflectToAttribute: true
-        },
-        scrolling: {
-            type: String,
-            readOnly: true,
-            reflectToAttribute: true
-        },
-        atTop: {
-            type: Boolean,
-            readOnly: true,
-            reflectToAttribute: true,
-            value: true
-        },
-        atBottom: {
-            type: Boolean,
-            readOnly: true,
-            reflectToAttribute: true
-        },
-        atStart: {
-            type: Boolean,
-            readOnly: true,
-            reflectToAttribute: true,
-            value: true
-        },
-        atEnd: {
-            type: Boolean,
-            readOnly: true,
-            reflectToAttribute: true
-        },
-        outerWidth: {
-            type: Number,
-            notify: true,
-            readOnly: true
-        },
-        outerHeight: {
-            type: Number,
-            notify: true,
-            readOnly: true
-        },
-        innerWidth: {
-            type: Number,
-            readOnly: true
-        },
-        innerHeight: {
-            type: Number,
-            readOnly: true
-        },
-        horizontal: {
-            type: Boolean,
-            readOnly: true,
-            reflectToAttribute: true
-        },
-        alignVerticalScrollbar: {
-            type: String,
-            reflectToAttribute: true
-        },
-        noHorizontal: {
-            type: Boolean,
-            reflectToAttribute: true,
-            value: false
-        },
-        vertical: {
-            type: Boolean,
-            readOnly: true,
-            reflectToAttribute: true
-        },
-        noVertical: {
-            type: Boolean,
-            reflectToAttribute: true,
-            value: false
-        },
-        scrollbars: {
-            type: String,
-            reflectToAttribute: true
-        },
-        verticalScrollOffset: {
-            type: Number,
-            value: 0,
-            notify: true,
-            observer: "_verticalScrollOffsetChanged"
-        },
-        horizontalScrollOffset: {
-            type: Number,
-            value: 0,
-            notify: true,
-            observer: "_horizontalScrollOffsetChanged"
-        },
-        noScrollShadow: {
-            type: Boolean,
-            reflectToAttribute: true
-        },
-        scrollTopShadow: {
-            type: Boolean,
-            readOnly: true,
-            reflectToAttribute: true,
-        },
-        scrollBottomShadow: {
-            type: Boolean,
-            readOnly: true,
-            reflectToAttribute: true
-        },
-        forceScrollbars: {
-            type: Boolean,
-            reflectToAttribute: true
-        },
-        hideScrollbars: {
-            type: Boolean,
-            reflectToAttribute: true
+/**
+ * Custom scrollable container with styled scrollbars and scroll shadows.
+ *
+ * @element vi-scroller
+ *
+ * @fires outer-width-changed - Fired when the outer (viewport) width changes
+ * @fires outer-height-changed - Fired when the outer (viewport) height changes
+ * @fires vertical-scroll-offset-changed - Fired when the vertical scroll position changes
+ * @fires horizontal-scroll-offset-changed - Fired when the horizontal scroll position changes
+ */
+export class Scroller extends WebComponentLit {
+    static styles = unsafeCSS(styles);
+
+    /** Minimum size for scrollbar thumbs in pixels */
+    static #minBarSize: number = 40;
+
+    #scrollEventListener: EventListener;
+    #verticalScrollHeight: number;
+    #verticalScrollTop: number;
+    #verticalScrollSpace: number;
+    #horizontalScrollWidth: number;
+    #horizontalScrollLeft: number;
+    #horizontalScrollSpace: number;
+    #trackStart: number;
+    #cachedScroller: HTMLElement | null = null;
+
+    /** Whether the mouse is currently hovering over the scroller */
+    @property({ type: Boolean, reflect: true })
+    hovering: boolean = false;
+
+    /** Current scrolling state: "vertical", "horizontal", or null */
+    @property({ type: String, reflect: true })
+    scrolling: string;
+
+    /** Whether the scroller is scrolled to the top */
+    @property({ type: Boolean, reflect: true })
+    atTop: boolean = true;
+
+    /** Whether the scroller is scrolled to the bottom */
+    @property({ type: Boolean, reflect: true })
+    atBottom: boolean = false;
+
+    /** Whether the scroller is scrolled to the start (left) */
+    @property({ type: Boolean, reflect: true })
+    atStart: boolean = true;
+
+    /** Whether the scroller is scrolled to the end (right) */
+    @property({ type: Boolean, reflect: true })
+    atEnd: boolean = false;
+
+    /** Width of the viewport (outer container) */
+    @property({ type: Number })
+    outerWidth: number = 0;
+
+    /** Height of the viewport (outer container) */
+    @property({ type: Number })
+    outerHeight: number = 0;
+
+    /** Width of the scrollable content (inner container) */
+    @property({ type: Number })
+    innerWidth: number = 0;
+
+    /** Height of the scrollable content (inner container) */
+    @property({ type: Number })
+    innerHeight: number = 0;
+
+    /** Whether horizontal scrollbar is visible */
+    @property({ type: Boolean, reflect: true })
+    horizontal: boolean = false;
+
+    /** Alignment of the vertical scrollbar */
+    @property({ type: String, reflect: true })
+    alignVerticalScrollbar: string;
+
+    /** Whether to disable horizontal scrolling */
+    @property({ type: Boolean, reflect: true })
+    noHorizontal: boolean = false;
+
+    /** Whether vertical scrollbar is visible */
+    @property({ type: Boolean, reflect: true })
+    vertical: boolean = false;
+
+    /** Whether to disable vertical scrolling */
+    @property({ type: Boolean, reflect: true })
+    noVertical: boolean = false;
+
+    /** Scrollbar visibility mode */
+    @property({ type: String, reflect: true })
+    scrollbars: string;
+
+    /** Current vertical scroll position in pixels */
+    @property({ type: Number, observer: "_verticalScrollOffsetChanged" })
+    verticalScrollOffset: number = 0;
+
+    /** Current horizontal scroll position in pixels */
+    @property({ type: Number, observer: "_horizontalScrollOffsetChanged" })
+    horizontalScrollOffset: number = 0;
+
+    /** Whether to disable scroll shadows */
+    @property({ type: Boolean, reflect: true })
+    noScrollShadow: boolean = false;
+
+    /** Whether to show top scroll shadow */
+    @property({ type: Boolean, reflect: true })
+    scrollTopShadow: boolean = false;
+
+    /** Whether to show bottom scroll shadow */
+    @property({ type: Boolean, reflect: true })
+    scrollBottomShadow: boolean = false;
+
+    /** Whether to always show scrollbars */
+    @property({ type: Boolean, reflect: true })
+    forceScrollbars: boolean = false;
+
+    /** Whether to hide scrollbars */
+    @property({ type: Boolean, reflect: true })
+    hideScrollbars: boolean = false;
+
+    @listener("mouseenter")
+    private _mouseenter() {
+        this.hovering = true;
+
+        // Update scrollable content size on hover to show scrollbars
+        if (this.scroller) {
+            this.innerHeight = this.scroller.scrollHeight;
+            this.innerWidth = this.scroller.scrollWidth;
         }
-    },
-    forwardObservers: [
-        "attribute.objects"
-    ],
-    observers: [
-        "_updateVerticalScrollbar(outerHeight, innerHeight, verticalScrollOffset, noVertical)",
-        "_updateHorizontalScrollbar(outerWidth, innerWidth, horizontalScrollOffset, noHorizontal)"
-    ],
-    listeners: {
-        "mouseenter": "_mouseenter",
-        "mouseleave": "_mouseleave",
-        "scroll": "_trapEvent"
     }
-}, "vi-scroller")
-export class Scroller extends WebComponent {
-    static get template() { return Polymer.html`<link rel="import" href="scroller.html">`; }
 
-    private static _minBarSize: number = 40;
-    private _scrollEventListener: EventListener;
-    private _verticalScrollHeight: number;
-    private _verticalScrollTop: number;
-    private _verticalScrollSpace: number;
-    private _horizontalScrollWidth: number;
-    private _horizontalScrollLeft: number;
-    private _horizontalScrollSpace: number;
-    private _trackStart: number;
-    readonly hovering: boolean; private _setHovering: (hovering: boolean) => void;
-    readonly scrolling: string; private _setScrolling: (scrolling: string) => void;
-    readonly atTop: boolean; private _setAtTop: (atTop: boolean) => void;
-    readonly atBottom: boolean; private _setAtBottom: (atBottom: boolean) => void;
-    readonly atStart: boolean; private _setAtStart: (atLeft: boolean) => void;
-    readonly atEnd: boolean; private _setAtEnd: (atRight: boolean) => void;
-    readonly outerWidth: number; private _setOuterWidth: (width: number) => void;
-    readonly outerHeight: number; private _setOuterHeight: (height: number) => void;
-    readonly innerWidth: number; private _setInnerWidth: (width: number) => void;
-    readonly innerHeight: number; private _setInnerHeight: (height: number) => void;
-    readonly horizontal: boolean; private _setHorizontal: (val: boolean) => void;
-    readonly vertical: boolean; private _setVertical: (val: boolean) => void;
-    readonly scrollTopShadow: boolean; private _setScrollTopShadow: (val: boolean) => void;
-    readonly scrollBottomShadow: boolean; private _setScrollBottomShadow: (val: boolean) => void;
-    readonly hiddenScrollbars: boolean; private _setHiddenScrollbars: (val: boolean) => void;
-    noHorizontal: boolean;
-    noVertical: boolean;
-    horizontalScrollOffset: number;
-    verticalScrollOffset: number;
-    forceScrollbars: boolean;
-    noScrollShadow: boolean;
+    @listener("mouseleave")
+    private _mouseleave() {
+        this.hovering = false;
+    }
+
+    @listener("scroll")
+    private _trapEvent(e: Event) {
+        // Prevent scroll events on the component itself (only allow on the wrapper)
+        this.scrollTop = this.scrollLeft = 0;
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    render() {
+        return html`
+            <main class="main-container">
+                <div id="wrapper" class="wrapper" tabindex="-1">
+                    <vi-size-tracker class="fit" @sizechanged=${this._outerSizeChanged}></vi-size-tracker>
+                    <div id="content" class="relative content">
+                        <vi-size-tracker @sizechanged=${this._innerSizeChanged} trigger-zero></vi-size-tracker>
+                        <slot></slot>
+                    </div>
+                </div>
+
+                <div class="top scroll-shadow-parent">
+                    <div class="top scroll-shadow"></div>
+                </div>
+                <div class="bottom scroll-shadow-parent">
+                    <div class="bottom scroll-shadow"></div>
+                </div>
+            </main>
+
+            <div class="horizontal scrollbar-parent" @click=${this._horizontalScrollbarParentTap}>
+                <div id="horizontal" class="scrollbar" @pointerdown=${this._startTrackHorizontal}></div>
+            </div>
+            <div class="vertical scrollbar-parent" @click=${this._verticalScrollbarParentTap}>
+                <div id="vertical" class="scrollbar" @pointerdown=${this._startTrackVertical}></div>
+            </div>
+        `;
+    }
+
+    updated(changedProperties: Map<PropertyKey, unknown>) {
+        super.updated(changedProperties);
+
+        if (changedProperties.has('outerHeight') || changedProperties.has('innerHeight') ||
+            changedProperties.has('verticalScrollOffset') || changedProperties.has('noVertical')) {
+            this.#updateVerticalScrollbar(this.outerHeight, this.innerHeight, this.verticalScrollOffset, this.noVertical);
+        }
+
+        if (changedProperties.has('outerWidth') || changedProperties.has('innerWidth') ||
+            changedProperties.has('horizontalScrollOffset') || changedProperties.has('noHorizontal')) {
+            this.#updateHorizontalScrollbar(this.outerWidth, this.innerWidth, this.horizontalScrollOffset, this.noHorizontal);
+        }
+
+        this.#dispatchPropertyChangeEvents(changedProperties, [
+            ['outerWidth', 'outer-width-changed'],
+            ['outerHeight', 'outer-height-changed'],
+            ['verticalScrollOffset', 'vertical-scroll-offset-changed'],
+            ['horizontalScrollOffset', 'horizontal-scroll-offset-changed']
+        ]);
+    }
+
+    /**
+     * Helper to dispatch property change events for notify properties.
+     */
+    #dispatchPropertyChangeEvents(changedProperties: Map<PropertyKey, unknown>, eventMap: [string, string][]) {
+        for (const [property, eventName] of eventMap) {
+            if (changedProperties.has(property)) {
+                this.dispatchEvent(new CustomEvent(eventName, {
+                    detail: { value: this[property] },
+                    bubbles: false,
+                    composed: true
+                }));
+            }
+        }
+    }
 
     connectedCallback() {
         super.connectedCallback();
 
-        this.scroller.addEventListener("scroll", this._scrollEventListener = this._scroll.bind(this), { capture: true, passive: true });
+        // CRITICAL: Force synchronous render for backward compatibility
+        // Polymer components expect .scroller to be available immediately
+        this.performUpdate();
+
+        if (this.scroller) {
+            this.scroller.addEventListener("scroll", this.#scrollEventListener = this.#scroll.bind(this), { capture: true, passive: true });
+        }
+    }
+
+    firstUpdated() {
+        const actualWrapper = this.$.wrapper;
+        if (actualWrapper) {
+            this.#cachedScroller = actualWrapper;
+        }
+
+        this.#updateScrollOffsets();
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
 
-        this.scroller.removeEventListener("scroll", this._scrollEventListener);
+        if (this.#cachedScroller && this.#scrollEventListener) {
+            this.#cachedScroller.removeEventListener("scroll", this.#scrollEventListener);
+        }
+        this.#cachedScroller = null;
     }
 
-    get scroller(): HTMLElement {
-        // NOTE: This property is used by other components to determine the scrolling parent.
-        return this.$.wrapper;
+    /**
+     * Gets the scrollable element.
+     * NOTE: This property is used by other components to determine the scrolling parent.
+     */
+    get scroller(): HTMLElement | null {
+        if (!this.#cachedScroller) {
+            if (!this.shadowRoot) {
+                console.warn('[vi-scroller] scroller accessed before connectedCallback, forcing render');
+                this.performUpdate();
+            }
+
+            this.#cachedScroller = this.$.wrapper;
+        }
+
+        return this.#cachedScroller;
     }
 
+
+    /**
+     * Scrolls to the top of the content.
+     * @param offsetTop - The offset from the top in pixels
+     * @param animated - Whether to use smooth scrolling
+     */
     async scrollToTop(offsetTop: number = 0, animated?: boolean) {
+        if (!this.scroller) return;
+
         if (animated) {
             this.scroller.scrollTo({
                 top: offsetTop,
@@ -193,7 +276,13 @@ export class Scroller extends WebComponent {
             this.scroller.scrollTop = offsetTop;
     }
 
+    /**
+     * Scrolls to the bottom of the content.
+     * @param animated - Whether to use smooth scrolling
+     */
     scrollToBottom(animated?: boolean) {
+        if (!this.scroller) return;
+
         if (animated) {
             this.scroller.scrollTo({
                 top: this.innerHeight,
@@ -204,181 +293,240 @@ export class Scroller extends WebComponent {
             this.scroller.scrollTop = this.innerHeight;
     }
 
-    private _outerSizeChanged(e: Event, detail: { width: number; height: number }) {
-        this._setOuterWidth(detail.width);
-        this._setOuterHeight(detail.height);
+    private _outerSizeChanged(e: CustomEvent<{ width: number; height: number }>) {
+        this.outerWidth = e.detail.width;
+        this.outerHeight = e.detail.height;
 
-        this._updateScrollOffsets();
+        if (this.scroller) {
+            this.innerHeight = this.scroller.scrollHeight;
+            this.innerWidth = this.scroller.scrollWidth;
+        }
 
+        this.#updateScrollOffsets();
         e.stopPropagation();
     }
 
-    private _innerSizeChanged(e: Event, detail: { width: number; height: number }) {
-        this._setInnerWidth(detail.width);
-        this._setInnerHeight(detail.height);
+    private _innerSizeChanged(e: CustomEvent<{ width: number; height: number }>) {
+        if (this.scroller) {
+            this.innerHeight = this.scroller.scrollHeight;
+            this.innerWidth = this.scroller.scrollWidth;
+        }
 
-        this._updateScrollOffsets();
-
+        this.#updateScrollOffsets();
         e.stopPropagation();
     }
 
-    private _updateVerticalScrollbar(outerHeight: number, innerHeight: number, verticalScrollOffset: number, noVertical: boolean) {
-        let height = outerHeight < innerHeight ? outerHeight / innerHeight * outerHeight : 0;
-        if (height !== this._verticalScrollHeight) {
-            if (height > 0 && height < Scroller._minBarSize)
-                height = Scroller._minBarSize;
-            else
-                height = Math.floor(height);
+    /**
+     * Updates the vertical scrollbar size and position.
+     */
+    #updateVerticalScrollbar(outerHeight: number, innerHeight: number, verticalScrollOffset: number, noVertical: boolean) {
+        let height = innerHeight > outerHeight ? outerHeight / innerHeight * outerHeight : 0;
 
-            this._verticalScrollSpace = outerHeight - height;
+        if (height > 0 && height < Scroller.#minBarSize)
+            height = Scroller.#minBarSize;
+        else if (height > 0)
+            height = Math.floor(height);
 
-            if (height !== this._verticalScrollHeight) {
-                this._verticalScrollHeight = height;
-                (<HTMLElement>this.$.vertical).style.height = `${height}px`;
+        if (height !== this.#verticalScrollHeight) {
+            this.#verticalScrollHeight = height;
+            this.#verticalScrollSpace = outerHeight - height;
+
+            const verticalElement = this.$.vertical;
+            if (verticalElement)
+                verticalElement.style.height = `${height}px`;
+        }
+
+        this.vertical = !noVertical && height > 0;
+
+        const verticalScrollTop = verticalScrollOffset === 0 || innerHeight - outerHeight === 0 ? 0 : Math.round((1 / ((innerHeight - outerHeight) / verticalScrollOffset)) * this.#verticalScrollSpace);
+        if (verticalScrollTop !== this.#verticalScrollTop) {
+            const verticalElement = this.$.vertical;
+            if (verticalElement)
+                verticalElement.style.transform = `translateY(${this.#verticalScrollTop = verticalScrollTop}px)`;
+        }
+
+        this.scrollTopShadow = !this.noScrollShadow && verticalScrollTop > 0;
+        this.scrollBottomShadow = !this.noScrollShadow && Math.floor(innerHeight - verticalScrollOffset - outerHeight) > 0;
+    }
+
+    /**
+     * Updates the horizontal scrollbar size and position.
+     */
+    #updateHorizontalScrollbar(outerWidth: number, innerWidth: number, horizontalScrollOffset: number, noHorizontal: boolean) {
+        let width = innerWidth > outerWidth ? outerWidth / innerWidth * outerWidth : 0;
+
+        if (width > 0 && width < Scroller.#minBarSize)
+            width = Scroller.#minBarSize;
+        else if (width > 0)
+            width = Math.floor(width);
+
+        if (width !== this.#horizontalScrollWidth) {
+            this.#horizontalScrollWidth = width;
+            this.#horizontalScrollSpace = outerWidth - width;
+
+            const horizontalElement = this.$.horizontal;
+            if (horizontalElement)
+                horizontalElement.style.width = `${width}px`;
+        }
+
+        this.horizontal = !noHorizontal && width > 0;
+
+        const horizontalScrollLeft = horizontalScrollOffset === 0 ? 0 : Math.round((1 / ((innerWidth - outerWidth) / horizontalScrollOffset)) * this.#horizontalScrollSpace);
+        if (horizontalScrollLeft !== this.#horizontalScrollLeft) {
+            const horizontalElement = this.$.horizontal;
+            if (horizontalElement)
+                horizontalElement.style.transform = `translate3d(${this.#horizontalScrollLeft = horizontalScrollLeft}px, 0, 0)`;
+        }
+    }
+
+    private _startTrackVertical(e: PointerEvent) {
+        this.#startTrack(e, "vertical");
+    }
+
+    private _startTrackHorizontal(e: PointerEvent) {
+        this.#startTrack(e, "horizontal");
+    }
+
+    /**
+     * Handles dragging of scrollbar thumbs using pointer events.
+     */
+    #startTrack(e: PointerEvent, direction: "vertical" | "horizontal") {
+        if (!this.scroller) return;
+
+        this.scrolling = direction;
+        const isVertical = direction === "vertical";
+
+        this.#trackStart = isVertical ? this.#verticalScrollTop : this.#horizontalScrollLeft;
+        const startPos = isVertical ? e.clientY : e.clientX;
+        const inner = isVertical ? this.innerHeight : this.innerWidth;
+        const outer = isVertical ? this.outerHeight : this.outerWidth;
+        const space = isVertical ? this.#verticalScrollSpace : this.#horizontalScrollSpace;
+
+        const pointerId = e.pointerId;
+        const target = e.currentTarget as HTMLElement;
+        target.setPointerCapture(pointerId);
+
+        const onPointerMove = (e: PointerEvent) => {
+            const delta = (isVertical ? e.clientY : e.clientX) - startPos;
+            const newScrollbarPos = this.#trackStart + delta;
+            const scrollValue = newScrollbarPos === 0 ? 0 : (inner - outer) * ((1 / space) * newScrollbarPos);
+
+            if (isVertical) {
+                this.scroller.scrollTop = scrollValue;
+            } else {
+                this.scroller.scrollLeft = scrollValue;
             }
-        }
+        };
 
-        this._setVertical(!noVertical && height > 0);
+        const onPointerUp = () => {
+            this.scrolling = null;
+            target.releasePointerCapture(pointerId);
+            target.removeEventListener("pointermove", onPointerMove);
+            target.removeEventListener("pointerup", onPointerUp);
+            target.removeEventListener("pointercancel", onPointerUp);
+        };
 
-        const verticalScrollTop = verticalScrollOffset === 0 || innerHeight - outerHeight === 0 ? 0 : Math.round((1 / ((innerHeight - outerHeight) / verticalScrollOffset)) * this._verticalScrollSpace);
-        if (verticalScrollTop !== this._verticalScrollTop)
-            this.$.vertical.style.transform = `translateY(${this._verticalScrollTop = verticalScrollTop}px)`;
-
-        this._setScrollTopShadow(!this.noScrollShadow && verticalScrollTop > 0);
-        this._setScrollBottomShadow(!this.noScrollShadow && Math.floor(innerHeight - verticalScrollOffset - outerHeight) > 0);
-    }
-
-    private _updateHorizontalScrollbar(outerWidth: number, innerWidth: number, horizontalScrollOffset: number, noHorizontal: boolean) {
-        let width = outerWidth < innerWidth ? outerWidth / innerWidth * outerWidth : 0;
-        if (width !== this._horizontalScrollWidth) {
-            if (width > 0 && width < Scroller._minBarSize)
-                width = Scroller._minBarSize;
-            else
-                width = Math.floor(width);
-
-            this._horizontalScrollSpace = outerWidth - width;
-
-            if (width !== this._horizontalScrollWidth) {
-                this._horizontalScrollWidth = width;
-                (<HTMLElement>this.$.horizontal).style.width = `${width}px`;
-            }
-        }
-
-        this._setHorizontal(!noHorizontal && width > 0);
-
-        const horizontalScrollLeft = horizontalScrollOffset === 0 ? 0 : Math.round((1 / ((innerWidth - outerWidth) / horizontalScrollOffset)) * this._horizontalScrollSpace);
-        if (horizontalScrollLeft !== this._horizontalScrollLeft)
-            this.$.horizontal.style.transform = `translate3d(${this._horizontalScrollLeft = horizontalScrollLeft}px, 0, 0)`;
-    }
-
-    private _trackVertical(e: Polymer.Gestures.TrackEvent) {
-        if (e.detail.state === "start") {
-            this._setScrolling("vertical");
-            this._trackStart = this._verticalScrollTop;
-        }
-        else if (e.detail.state === "track") {
-            const newVerticalScrollTop = this._trackStart + e.detail.dy;
-            this.scroller.scrollTop = newVerticalScrollTop === 0 ? 0 : (this.innerHeight - this.outerHeight) * ((1 / this._verticalScrollSpace) * newVerticalScrollTop);
-        }
-        else if (e.detail.state === "end") {
-            this._setScrolling(null);
-            this._trackStart = undefined;
-        }
+        target.addEventListener("pointermove", onPointerMove);
+        target.addEventListener("pointerup", onPointerUp);
+        target.addEventListener("pointercancel", onPointerUp);
 
         e.preventDefault();
-
-        if (e.sourceEvent)
-            e.sourceEvent.preventDefault();
     }
 
-    private _trackHorizontal(e: Polymer.Gestures.TrackEvent) {
-        if (e.detail.state === "start") {
-            this._setScrolling("horizontal");
-            this._trackStart = this._horizontalScrollLeft;
-        }
-        else if (e.detail.state === "track") {
-            const newHorizontalScrollLeft = this._trackStart + e.detail.dx;
-            this.scroller.scrollLeft = newHorizontalScrollLeft === 0 ? 0 : (this.innerWidth - this.outerWidth) * ((1 / this._horizontalScrollSpace) * newHorizontalScrollLeft);
-        }
-        else if (e.detail.state === "end") {
-            this._setScrolling(null);
-            this._trackStart = undefined;
+    /**
+     * Handles scroll events to update scrollbar positions and content size.
+     */
+    #scroll(e: Event) {
+        if (this.scroller) {
+            this.innerHeight = this.scroller.scrollHeight;
+            this.innerWidth = this.scroller.scrollWidth;
         }
 
-        e.preventDefault();
-
-        if (e.sourceEvent)
-            e.sourceEvent.preventDefault();
+        this.#updateScrollOffsets();
     }
 
-    private _trapEvent(e: Event) {
-        this.scrollTop = this.scrollLeft = 0;
+    /**
+     * Updates scroll offset properties and boundary flags.
+     */
+    #updateScrollOffsets() {
+        if (!this.scroller) return;
 
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    private _scroll(e: Event) {
-        // TODO
-        // Popup.closeAll(this);
-        this._updateScrollOffsets();
-    }
-
-    private _updateScrollOffsets() {
-        if (this.vertical) {
-            this._setAtTop((this.verticalScrollOffset = this.scroller.scrollTop) === 0);
-            this._setAtBottom(Math.abs(Math.round(this.scroller.scrollTop + this.scroller.offsetHeight) - this.scroller.scrollHeight) <= 1);
+        const newVerticalScrollOffset = this.scroller.scrollTop;
+        if (this.verticalScrollOffset !== newVerticalScrollOffset) {
+            this.verticalScrollOffset = newVerticalScrollOffset;
         }
+        this.atTop = this.verticalScrollOffset === 0;
+        this.atBottom = Math.abs(Math.round(this.scroller.scrollTop + this.scroller.offsetHeight) - this.scroller.scrollHeight) <= 1;
 
-        if (this.horizontal) {
-            this._setAtStart((this.horizontalScrollOffset = this.scroller.scrollLeft) === 0);
-            this._setAtEnd(Math.abs(Math.round(this.scroller.scrollLeft + this.scroller.offsetWidth) - this.scroller.scrollWidth) <= 1);
+        const newHorizontalScrollOffset = this.scroller.scrollLeft;
+        if (this.horizontalScrollOffset !== newHorizontalScrollOffset) {
+            this.horizontalScrollOffset = newHorizontalScrollOffset;
         }
+        this.atStart = this.horizontalScrollOffset === 0;
+        this.atEnd = Math.abs(Math.round(this.scroller.scrollLeft + this.scroller.offsetWidth) - this.scroller.scrollWidth) <= 1;
     }
 
     private _verticalScrollOffsetChanged(newVerticalScrollOffset: number) {
-        if (this.scroller.scrollTop === newVerticalScrollOffset)
+        // Skip if scroller doesn't exist yet (during initialization)
+        const scroller = this.#cachedScroller || this.$.wrapper;
+        if (!scroller) return;
+
+        if (scroller.scrollTop === newVerticalScrollOffset)
             return;
 
-        this.scroller.scrollTop = newVerticalScrollOffset;
+        scroller.scrollTop = newVerticalScrollOffset;
     }
 
     private _horizontalScrollOffsetChanged(newHorizontalScrollOffset: number) {
-        if (this.scroller.scrollLeft === newHorizontalScrollOffset)
+        // Skip if scroller doesn't exist yet (during initialization)
+        const scroller = this.#cachedScroller || this.$.wrapper;
+        if (!scroller) return;
+
+        if (scroller.scrollLeft === newHorizontalScrollOffset)
             return;
 
-        this.scroller.scrollLeft = newHorizontalScrollOffset;
+        scroller.scrollLeft = newHorizontalScrollOffset;
     }
 
-    private _mouseenter() {
-        this._setHovering(true);
+    private _verticalScrollbarParentTap(e: MouseEvent) {
+        this.#scrollbarParentTap(e, "vertical");
     }
 
-    private _mouseleave() {
-        this._setHovering(false);
+    private _horizontalScrollbarParentTap(e: MouseEvent) {
+        this.#scrollbarParentTap(e, "horizontal");
     }
 
-    private _verticalScrollbarParentTap(e: CustomEvent) {
-        const event = <MouseEvent>e.detail.sourceEvent;
-        if (event.offsetY) {
-            if (event.offsetY > this._verticalScrollTop + this._verticalScrollHeight)
-                this.scroller.scrollTop += this.scroller.scrollHeight * 0.1;
-            else if (event.offsetY < this._verticalScrollTop)
-                this.scroller.scrollTop -= this.scroller.scrollHeight * 0.1;
+    /**
+     * Handles clicks on the scrollbar track to jump to a position.
+     */
+    #scrollbarParentTap(e: MouseEvent, direction: "vertical" | "horizontal") {
+        if (!this.scroller) return;
 
-            e.stopPropagation();
+        const target = e.currentTarget as HTMLElement;
+        const rect = target.getBoundingClientRect();
+        const isVertical = direction === "vertical";
+
+        const offset = isVertical ? e.clientY - rect.top : e.clientX - rect.left;
+        const scrollbarPos = isVertical ? this.#verticalScrollTop : this.#horizontalScrollLeft;
+        const scrollbarSize = isVertical ? this.#verticalScrollHeight : this.#horizontalScrollWidth;
+        const scrollSize = isVertical ? this.scroller.scrollHeight : this.scroller.scrollWidth;
+
+        if (offset > scrollbarPos + scrollbarSize) {
+            if (isVertical) {
+                this.scroller.scrollTop += scrollSize * 0.1;
+            } else {
+                this.scroller.scrollLeft += scrollSize * 0.1;
+            }
+        } else if (offset < scrollbarPos) {
+            if (isVertical) {
+                this.scroller.scrollTop -= scrollSize * 0.1;
+            } else {
+                this.scroller.scrollLeft -= scrollSize * 0.1;
+            }
         }
-    }
 
-    private _horizontalScrollbarParentTap(e: CustomEvent) {
-        const event = <MouseEvent>e.detail.sourceEvent;
-        if (event.offsetX) {
-            if (event.offsetX > this._horizontalScrollLeft + this._horizontalScrollLeft)
-                this.scroller.scrollLeft += this.scroller.scrollWidth * 0.1;
-            else if (event.offsetX < this._horizontalScrollLeft)
-                this.scroller.scrollLeft -= this.scroller.scrollWidth * 0.1;
-
-            e.stopPropagation();
-        }
+        e.stopPropagation();
     }
 }
+
+customElements.define("vi-scroller", Scroller);

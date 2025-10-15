@@ -8,6 +8,27 @@
     --vi-scroller-thumb-capture-size: calc(var(--theme-h4) + 2px);
     --vi-scroller-thumb-parent-hover-size: calc(var(--theme-h5) + 6px);
 
+    .main-container {
+        display: flex;
+        flex-direction: row;
+        flex: 1;
+        min-height: 0;
+        min-width: 0;
+        position: relative;
+    }
+
+    .fit {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+    }
+
+    .relative {
+        position: relative;
+    }
+
     .scroll-host {
         overflow: hidden;
         display: flex;
@@ -19,6 +40,7 @@
         min-height: 0;
         min-width: 0;
         position: relative;
+        display: flex;
         overflow: auto;
         outline: none !important;
         -ms-overflow-style: none;
