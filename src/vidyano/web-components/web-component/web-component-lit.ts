@@ -15,6 +15,7 @@ const TRANSLATION_CONTROLLER_SYMBOL = Symbol("WebComponent.translationController
 
 const APP_CHANGE_LISTENER_SYMBOL = Symbol("WebComponent.appChangeListener");
 const SERVICE_CHANGE_LISTENER_SYMBOL = Symbol("WebComponent.serviceChangeListener");
+const DOLLAR_PROXY_SYMBOL = Symbol("WebComponent.dollarProxy");
 
 // A mapped type to get the shape of the specific translations.
 type Translations<T> = { [K in keyof T]: string };
@@ -123,6 +124,22 @@ export abstract class WebComponentLit<TTranslations extends Record<string, any> 
      */
     get translations(): TypedTranslations<TTranslations> {
         return this[TRANSLATION_CONTROLLER_SYMBOL]?.translations || this.service?.language?.messages || {};
+    }
+
+    /**
+     * Provides convenient $ accessor for shadow DOM elements by ID.
+     * Usage: this.$.elementId returns the element with id="elementId" in the shadow DOM.
+     */
+    get $(): Record<string, HTMLElement> {
+        if (!this[DOLLAR_PROXY_SYMBOL]) {
+            this[DOLLAR_PROXY_SYMBOL] = new Proxy({}, {
+                get: (_target, prop: string) => {
+                    if (typeof prop !== 'string') return undefined;
+                    return this.shadowRoot?.getElementById(prop) as HTMLElement;
+                }
+            });
+        }
+        return this[DOLLAR_PROXY_SYMBOL];
     }
 
     override willUpdate(changedProperties: PropertyValueMap<any>) {
