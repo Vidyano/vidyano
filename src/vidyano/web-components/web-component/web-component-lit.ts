@@ -7,7 +7,7 @@ import { WebComponentRegistrationInfo } from "./web-component-registration";
 import { WebComponentTranslationController } from "./web-component-translation-controller";
 import { registerWebComponent, getListenersConfig, getComputedConfig, getPropertyObserversConfig, getObserversConfig } from "./web-component-registration";
 
-export { property, listener, observer } from "./web-component-decorators";
+export { listener, observer, observe, notify, computed } from "./web-component-decorators";
 
 const LISTENER_CONTROLLER_SYMBOL = Symbol("WebComponent.listenerController");
 const OBSERVER_CONTROLLER_SYMBOL = Symbol("WebComponent.observerController");

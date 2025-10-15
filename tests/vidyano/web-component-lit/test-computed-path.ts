@@ -1,12 +1,13 @@
-import { WebComponentLit } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
-import { property } from "../../../src/vidyano/web-components/web-component/web-component-decorators.js";
+import { property } from "lit/decorators.js";
+import { WebComponentLit, computed } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
 import { html } from "lit";
 
 class TestComputedPath extends WebComponentLit {
     @property({ type: Object })
     declare sourceObject: { data: string };
 
-    @property({ type: String, computed: "sourceObject.data" })
+    @property({ type: String })
+    @computed("sourceObject.data")
     declare readonly derivedValue: string;
 
     constructor() {

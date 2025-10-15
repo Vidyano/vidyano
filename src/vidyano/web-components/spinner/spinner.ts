@@ -1,5 +1,6 @@
 ﻿import { html, unsafeCSS } from "lit";
-import { WebComponentLit, property } from "components/web-component/web-component-lit.js";
+import { property } from "lit/decorators.js";
+import { WebComponentLit } from "components/web-component/web-component-lit.js";
 import styles from "./spinner.css";
 
 export class Spinner extends WebComponentLit {

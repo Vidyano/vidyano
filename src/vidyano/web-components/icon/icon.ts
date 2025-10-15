@@ -1,5 +1,6 @@
 import { html, unsafeCSS } from "lit";
-import { WebComponentLit, property, observer } from "components/web-component/web-component-lit.js";
+import { property } from "lit/decorators.js";
+import { WebComponentLit, observer } from "components/web-component/web-component-lit.js";
 import * as IconRegister from "./icon-register"
 import styles from "./icon.css";
 import { iconsTemplate } from "./icons";

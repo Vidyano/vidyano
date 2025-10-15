@@ -1,15 +1,17 @@
 import { html } from "lit";
-import { WebComponentLit } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
-import { property } from "../../../src/vidyano/web-components/web-component/web-component-decorators.js";
+import { property } from "lit/decorators.js";
+import { WebComponentLit, observe, computed } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
 
 class TestOneSimpleComputed extends WebComponentLit {
-    @property({ type: String, observer: "_firstNameChanged" })
+    @property({ type: String })
+    @observe("_firstNameChanged")
     declare firstName: string;
 
     @property({ type: String })
     declare lastName: string;
 
-    @property({ type: String, computed: "_computeFullName(firstName, lastName)" })
+    @property({ type: String })
+    @computed("_computeFullName(firstName, lastName)")
     declare readonly fullName: string;
 
     // Public properties for testing

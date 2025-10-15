@@ -1,5 +1,6 @@
 import { html, nothing, unsafeCSS } from "lit";
-import { WebComponentLit, property, listener } from "components/web-component/web-component-lit.js";
+import { property } from "lit/decorators.js";
+import { WebComponentLit, listener } from "components/web-component/web-component-lit.js";
 import styles from "./button.css";
 
 export class Button extends WebComponentLit {

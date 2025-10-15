@@ -1,7 +1,7 @@
 import { ReactiveController, PropertyValueMap } from "lit";
 import { Observable, ForwardObservedPropertyChangedArgs, ForwardObservedArrayChangedArgs } from "vidyano";
 import type { WebComponentLit } from "./web-component-lit";
-import { ComputedConfig, getComputedConfig, getObserversConfig, getPropertyObserversConfig } from "./web-component-registration";
+import { ComputedConfig, getComputedConfig, getObserversConfig, getPropertyObserversConfig, getNotifyConfig } from "./web-component-registration";
 
 type ForwardObservedDetail = ForwardObservedPropertyChangedArgs | ForwardObservedArrayChangedArgs;
 
@@ -254,6 +254,7 @@ export class WebComponentObserverController implements ReactiveController {
 
         this.#executePropertyObservers(changedProperties);
         this.#executeComplexObservers(changedProperties, dirtyPaths, lastComplexObserverArgs);
+        this.#dispatchNotifyEvents(changedProperties);
 
         return this.#detectSideEffects(stateBeforeObservers);
     }
@@ -288,6 +289,49 @@ export class WebComponentObserverController implements ReactiveController {
                 }
             }
         }
+    }
+
+    /**
+     * Dispatches notify events for properties that have the @notify decorator.
+     * Converts camelCase property names to kebab-case-changed event names by default.
+     * @param changedProperties A map of properties that have changed.
+     */
+    #dispatchNotifyEvents(changedProperties: Map<PropertyKey, unknown>): void {
+        const notifyConfig = getNotifyConfig(this.#host);
+        if (!notifyConfig || Object.keys(notifyConfig).length === 0) return;
+
+        for (const [prop, oldVal] of changedProperties.entries()) {
+            const eventConfig = notifyConfig[prop as string];
+            if (eventConfig) {
+                const newVal = this.#host[prop as string];
+                if (newVal !== oldVal) {
+                    // Determine event name: custom name or auto-generated kebab-case-changed
+                    const eventName = eventConfig === true
+                        ? this.#toKebabCaseChanged(prop as string)
+                        : eventConfig;
+
+                    try {
+                        this.#host.dispatchEvent(new CustomEvent(eventName, {
+                            detail: { value: newVal },
+                            bubbles: false,
+                            composed: true
+                        }));
+                    } catch (e) {
+                        console.error(`[${this.#host.tagName.toLowerCase()}] Error dispatching notify event '${eventName}' for property '${String(prop)}':`, e);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Converts a camelCase property name to kebab-case-changed event name.
+     * Example: "scrollTop" -> "scroll-top-changed"
+     * @param propertyName The camelCase property name
+     * @returns The kebab-case event name with -changed suffix
+     */
+    #toKebabCaseChanged(propertyName: string): string {
+        return propertyName.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase() + '-changed';
     }
 
     /**

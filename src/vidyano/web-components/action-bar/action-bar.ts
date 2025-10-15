@@ -1,8 +1,9 @@
 import { html, nothing, unsafeCSS } from "lit";
 import { repeat } from "lit/directives/repeat.js";
 import { keyed } from "lit/directives/keyed.js";
+import { property } from "lit/decorators.js";
 import * as Vidyano from "vidyano";
-import { WebComponentLit, property } from "components/web-component/web-component-lit.js";
+import { WebComponentLit, computed } from "components/web-component/web-component-lit.js";
 import type { App } from "components/app/app.js";
 import "components/action-button/action-button.js";
 import "components/overflow/overflow.js";
@@ -16,25 +17,31 @@ export class ActionBar extends WebComponentLit {
     @property({ type: Object })
     serviceObject: Vidyano.ServiceObjectWithActions;
 
-    @property({ computed: "_computePinnedActions(serviceObject, serviceObject.actions.*.isPinned)" })
+    @property({ type: Array })
+    @computed("_computePinnedActions(serviceObject, serviceObject.actions.*.isPinned)")
     pinnedActions: (Vidyano.Action | Vidyano.ActionGroup)[];
 
-    @property({ computed: "_computeUnpinnedActions(serviceObject, serviceObject.actions.*.isPinned)" })
+    @property({ type: Array })
+    @computed("_computeUnpinnedActions(serviceObject, serviceObject.actions.*.isPinned)")
     unpinnedActions: (Vidyano.Action | Vidyano.ActionGroup)[];
 
-    @property({ type: Boolean, computed: "_computeHasCharts(serviceObject.charts, app)" })
+    @property({ type: Boolean })
+    @computed("_computeHasCharts(serviceObject.charts, app)")
     hasCharts: boolean = false;
 
-    @property({ type: Boolean, computed: "_computeCanSearch(serviceObject)" })
+    @property({ type: Boolean })
+    @computed("_computeCanSearch(serviceObject)")
     canSearch: boolean;
 
-    @property({ type: Boolean, reflect: true, computed: "_computeNoActions(pinnedActions, unpinnedActions, serviceObject.actions.*.isVisible)" })
+    @property({ type: Boolean, reflect: true })
+    @computed("_computeNoActions(pinnedActions, unpinnedActions, serviceObject.actions.*.isVisible)")
     noActions: boolean;
 
     @property({ type: Boolean, reflect: true })
     accent: boolean;
 
-    @property({ type: Number, computed: "serviceObject.selectedItemCount" })
+    @property({ type: Number })
+    @computed("serviceObject.selectedItemCount")
     selectedItemCount: number;
 
     #searchResizeObserver: ResizeObserver;

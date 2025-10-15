@@ -1,7 +1,8 @@
 import * as Vidyano from "vidyano"
 import { html, unsafeCSS } from "lit";
+import { property } from "lit/decorators.js";
 import type { Scroller } from "components/scroller/scroller";
-import { property, WebComponentLit } from "components/web-component/web-component-lit";
+import { WebComponentLit, computed } from "components/web-component/web-component-lit";
 import type { QueryGridGalleryLazyImage } from "./query-grid-gallery-lazy-image";
 import "./query-grid-gallery-lazy-image";
 import "./query-grid-gallery-image-viewer";
@@ -58,8 +59,11 @@ export type ImageItemMap = {
  */
 export class QueryGridGallery extends WebComponentLit {
     static styles = unsafeCSS(styles);
-    
-    @property({ type: Array, computed: "query.items", state: true }) private _items: Vidyano.QueryResultItem[];
+
+    @property({ type: Array, state: true })
+    @computed("query.items")
+    private _items: Vidyano.QueryResultItem[];
+
     @property({ type: String, attribute: "map" }) private declare map: string;
     @property({ type: Array, state: true }) private _rows: (MonthHeaderRowItem | GalleryRowItem)[] = [];
     @property({ type: Array, state: true }) private _selectedItems: Set<any> = new Set();
@@ -68,8 +72,10 @@ export class QueryGridGallery extends WebComponentLit {
     @property({ type: Boolean, state: true }) private _viewerActive = false;
     @property({ type: Number, state: true }) private _viewerCurrentIndex: number | null = null;
 
+    @property({ type: Object, state: true })
+    @computed("_computeMap(map)")
+    private _map: ImageItemMap;
 
-    @property({ type: Object, computed: "_computeMap(map)", state: true }) private _map: ImageItemMap;
     @property({ type: Object }) query: Vidyano.Query;
     @property({ type: Number, reflect: true, attribute: "size" }) size = 175; // Preferred size (in pixels) for gallery images.
 

@@ -1,7 +1,7 @@
 import { html, unsafeCSS } from "lit";
-import { query } from "lit/decorators.js";
+import { query, property } from "lit/decorators.js";
 import type { ImageItemMap } from "./query-grid-gallery"
-import { property, WebComponentLit } from "components/web-component/web-component-lit";
+import { WebComponentLit } from "components/web-component/web-component-lit";
 import * as Vidyano from "vidyano";
 import styles from "./query-grid-gallery-image-viewer.css";
 

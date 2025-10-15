@@ -1,6 +1,6 @@
 import { html } from "lit";
-import { WebComponentLit } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
-import { listener, property } from "../../../src/vidyano/web-components/web-component/web-component-decorators.js";
+import { property } from "lit/decorators.js";
+import { WebComponentLit, listener } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
 
 class TestEventListeners extends WebComponentLit {
     @property({ type: String })
@@ -18,6 +18,21 @@ class TestEventListeners extends WebComponentLit {
 
     render() {
         return html`
+            <style>
+                :host {
+                    display: block;
+                }
+                #hostElement {
+                    display: block;
+                    padding: 10px;
+                    background-color: #f0f0f0;
+                    cursor: pointer;
+                }
+                #myButton {
+                    display: block;
+                    margin-top: 10px;
+                }
+            </style>
             <p>Demonstrates event listeners on host and child elements.</p>
             <div id="hostElement">Host Element (Click Me)</div>
             <button id="myButton" @click="${this._handleButtonClick}">Child Button (Click Me)</button>
