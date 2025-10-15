@@ -1,8 +1,8 @@
+import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import { TemplateConfig } from "./template-config"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         name: {
             type: String,

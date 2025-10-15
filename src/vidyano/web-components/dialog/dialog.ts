@@ -1,13 +1,13 @@
 import * as Polymer from "polymer"
 import { PopupMenu } from "components/popup-menu/popup-menu";
 import "components/size-tracker/size-tracker"
-import { IPosition, WebComponent } from "components/web-component/web-component"
+import { IPosition } from "components/web-component/polymer-web-component"
 
 export interface IDialogOptions {
     omitStyle?: boolean
 }
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         anchorTag: {
             type: String,
@@ -29,7 +29,7 @@ export interface IDialogOptions {
     },
     mediaQueryAttributes: true
 }, "vi-dialog")
-export abstract class Dialog extends WebComponent {
+export abstract class Dialog extends Polymer.WebComponent {
     static dialogTemplate(innerTemplate: HTMLTemplateElement, options?: IDialogOptions) {
         const outerTemplate = Polymer.html`<link rel="import" href="dialog.html">`;
         if (options?.omitStyle)
@@ -166,7 +166,7 @@ export abstract class Dialog extends WebComponent {
         if (!this.service || !this.service.application)
             return;
 
-        const configureItems: WebComponent[] = e["vi:configure"];
+        const configureItems: Polymer.WebComponent[] = e["vi:configure"];
         if (!this.service.application.hasManagement || !configureItems?.length || window.getSelection().toString()) {
             e.stopImmediatePropagation();
             return;

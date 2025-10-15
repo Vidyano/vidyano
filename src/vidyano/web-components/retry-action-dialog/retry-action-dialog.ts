@@ -1,9 +1,8 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import { Dialog } from "components/dialog/dialog"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         retry: Object,
         tab: {

@@ -1,8 +1,6 @@
-import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
-import { WebComponent } from "components/web-component/web-component"
-
-@WebComponent.register({
+import * as Vidyano from "vidyano"
+@Polymer.WebComponent.register({
     properties: {
         query: Object,
         canSelectAll: {
@@ -31,7 +29,7 @@ import { WebComponent } from "components/web-component/web-component"
         "tap": "_toggle"
     }
 }, "vi-query-grid-select-all")
-export class QueryGridSelectAll extends WebComponent {
+export class QueryGridSelectAll extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-select-all.html">` }
 
     query: Vidyano.Query;

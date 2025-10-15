@@ -1,4 +1,4 @@
-﻿import * as Vidyano from "vidyano"
+import * as Vidyano from "vidyano"
 import { guid } from "libs/utils/guid"
 import { Path } from "libs/pathjs/pathjs"
 import type { App } from "components/app/app"

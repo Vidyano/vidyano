@@ -1,12 +1,11 @@
-import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
+import * as Vidyano from "vidyano"
 import "components/checkbox/checkbox"
 import "components/input-search/input-search"
 import { Popup } from "components/popup/popup"
 import { ISize } from "components/size-tracker/size-tracker"
 import { QueryGrid } from "./query-grid"
 import { QueryGridColumn } from "./query-grid-column"
-import { WebComponent } from "components/web-component/web-component"
 
 export interface IQueryGridColumnFilterDistinct {
     type: string;
@@ -14,7 +13,7 @@ export interface IQueryGridColumnFilterDistinct {
     displayValue: string;
 }
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         column: Object,
         queryColumn: {
@@ -72,7 +71,7 @@ export interface IQueryGridColumnFilterDistinct {
         "queryColumn.query.isFiltering"
     ]
 }, "vi-query-grid-column-filter")
-export class QueryGridColumnFilter extends WebComponent {
+export class QueryGridColumnFilter extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-column-filter.html">` }
 
     private _searchTextDebouncer: Polymer.Debounce.Debouncer;

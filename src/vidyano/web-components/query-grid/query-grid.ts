@@ -1,5 +1,5 @@
-import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
+import * as Vidyano from "vidyano"
 import { AppRoute, IAppRouteDeactivateArgs } from "components/app-route/app-route"
 import "./cell-templates/query-grid-cell-default"
 import "./query-grid-column-measure"
@@ -18,7 +18,6 @@ import { QueryGridRow } from "./query-grid-row"
 import { QueryGridUserSettings } from "./query-grid-user-settings"
 import { ISize, SizeTracker } from "components/size-tracker/size-tracker";
 import { ISortableDragEndDetails, Sortable } from "components/sortable/sortable"
-import { WebComponent } from "components/web-component/web-component"
 import { PopupMenuItem } from "components/popup-menu/popup-menu-item"
 
 const placeholder: { query?: Vidyano.Query; } = {};
@@ -39,7 +38,7 @@ type MoreColumns = { left: QueryGridColumnHeader[], right: QueryGridColumnHeader
 
 const PHYSICAL_UPPER_LIMIT = 100000;
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         initializing: {
             type: Boolean,
@@ -188,7 +187,7 @@ const PHYSICAL_UPPER_LIMIT = 100000;
         "app-route:deactivate": "_onAppRouteDeactivate"
     }
 }, "vi-query-grid")
-export class QueryGrid extends WebComponent {
+export class QueryGrid extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid.html">` }
 
     private readonly _columnWidths = new Map<string, ColumnWidthDetail>();
@@ -723,7 +722,7 @@ export class QueryGrid extends WebComponent {
     }
 }
 
-@WebComponent.register("vi-query-grid-sortable")
+@Polymer.WebComponent.register("vi-query-grid-sortable")
 class QueryGridSortable extends Sortable {
     static get template() { return Polymer.html`<style>:host { display: block; }</style><slot></slot>` }
 }

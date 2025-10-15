@@ -2,9 +2,8 @@ import * as Polymer from "polymer"
 import type * as Vidyano from "vidyano"
 import "./persistent-object-tab-bar-item"
 import { Popup } from "components/popup/popup"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         tabs: Array,
         selectedTab: {
@@ -21,7 +20,7 @@ import { WebComponent } from "components/web-component/web-component"
         "_hookObservers(isConnected, tabs)"
     ]
 }, "vi-persistent-object-tab-bar")
-export class PersistentObjectTabBar extends WebComponent {
+export class PersistentObjectTabBar extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-tab-bar.html">`; }
 
     private _observeDisposer: Vidyano.ForwardObservedChainDisposer;

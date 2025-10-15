@@ -1,11 +1,10 @@
-import * as Polymer from "libs/polymer/polymer"
+import * as Polymer from "polymer"
 import { QueryGridCell } from "./query-grid-cell"
 import { QueryGridCellDefault } from "./query-grid-cell-default"
-import { WebComponent } from "components/web-component/web-component"
 import { getMarkdown } from "components/marked/marked"
 import { Path } from "libs/pathjs/pathjs"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         value: {
             type: Object,

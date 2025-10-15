@@ -3,11 +3,10 @@ import * as Vidyano from "vidyano"
 import { Path } from "libs/pathjs/pathjs"
 import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute"
 import { SelectReferenceDialog } from "components/select-reference-dialog/select-reference-dialog"
-import { WebComponent } from "components/web-component/web-component"
 import type { Select } from "components/select/select"
 import "components/select/select"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         href: String,
         canClear: {

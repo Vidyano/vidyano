@@ -2,7 +2,6 @@ import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import { PersistentObjectAttributeConfig } from "components/app/config/persistent-object-attribute-config"
 import { PersistentObjectAttributePresenter } from "components/persistent-object-attribute-presenter/persistent-object-attribute-presenter"
-import { WebComponent } from "components/web-component/web-component"
 
 interface IPersistentObjectGroupItem {
     attribute: Vidyano.PersistentObjectAttribute;
@@ -19,7 +18,7 @@ interface IPersistentObjectGroupRow {
     cells: HTMLTableCellElement[];
 }
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         group: Object,
         groupIndex: {
@@ -57,7 +56,7 @@ interface IPersistentObjectGroupRow {
         "_onAttributeVisibilityChanged(group.attributes.*.isVisible)"
     ]
 }, "vi-persistent-object-group")
-export class PersistentObjectGroup extends WebComponent {
+export class PersistentObjectGroup extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-group.html">`; }
 
     private _asyncHandles: number[] = [];

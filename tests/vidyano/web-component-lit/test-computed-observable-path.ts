@@ -1,5 +1,5 @@
 import { property } from "lit/decorators.js";
-import { WebComponentLit, computed } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
+import { WebComponent, computed } from "../../../src/vidyano/web-components/web-component/web-component.js";
 import { html } from "lit";
 import { Observable } from "../../../src/core/observable/index.js";
 
@@ -23,7 +23,7 @@ export class ServiceObject extends Observable<any> {
     }
 }
 
-class TestComputedObservablePath extends WebComponentLit {
+class TestComputedObservablePath extends WebComponent {
     @property({ type: Object })
     declare serviceObject?: ServiceObject;
 

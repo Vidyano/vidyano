@@ -1,6 +1,6 @@
 import { html, unsafeCSS } from "lit";
 import { property } from "lit/decorators.js";
-import { WebComponentLit, listener, observe, notify } from "components/web-component/web-component-lit";
+import { WebComponent, listener, observe, notify } from "components/web-component/web-component";
 import "components/size-tracker/size-tracker"
 import styles from "./scroller.css";
 
@@ -14,7 +14,7 @@ import styles from "./scroller.css";
  * @fires vertical-scroll-offset-changed - Fired when the vertical scroll position changes
  * @fires horizontal-scroll-offset-changed - Fired when the horizontal scroll position changes
  */
-export class Scroller extends WebComponentLit {
+export class Scroller extends WebComponent {
     static styles = unsafeCSS(styles);
 
     /** Minimum size for scrollbar thumbs in pixels */

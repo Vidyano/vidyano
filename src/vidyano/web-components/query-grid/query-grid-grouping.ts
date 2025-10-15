@@ -1,15 +1,14 @@
-import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
+import * as Vidyano from "vidyano"
 import "components/popup-menu/popup-menu"
 import { PopupMenuItem } from "components/popup-menu/popup-menu-item"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         query: Object
     }
 }, "vi-query-grid-grouping")
-export class QueryGridGrouping extends WebComponent {
+export class QueryGridGrouping extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-grouping.html">` }
 
     query: Vidyano.Query;

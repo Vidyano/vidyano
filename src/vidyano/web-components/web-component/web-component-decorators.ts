@@ -1,7 +1,7 @@
 import { parseMethodSignature, COMPUTED_CONFIG_SYMBOL, PROPERTY_OBSERVERS_CONFIG_SYMBOL, OBSERVERS_CONFIG_SYMBOL, NOTIFY_CONFIG_SYMBOL, LISTENERS_CONFIG_SYMBOL } from "./web-component-registration";
-import type { WebComponentLit } from "./web-component-lit";
+import type { WebComponent } from "./web-component";
 
-type WebComponentConstructor = typeof WebComponentLit & {
+type WebComponentConstructor = typeof WebComponent & {
     [COMPUTED_CONFIG_SYMBOL]?: Record<string, any>;
     [PROPERTY_OBSERVERS_CONFIG_SYMBOL]?: Record<string, any>;
     [OBSERVERS_CONFIG_SYMBOL]?: Record<string, string[]>;

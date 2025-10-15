@@ -3,7 +3,7 @@ import { repeat } from "lit/directives/repeat.js";
 import { keyed } from "lit/directives/keyed.js";
 import { property } from "lit/decorators.js";
 import * as Vidyano from "vidyano";
-import { WebComponentLit, computed } from "components/web-component/web-component-lit.js";
+import { WebComponent, computed } from "components/web-component/web-component.js";
 import type { App } from "components/app/app.js";
 import "components/action-button/action-button.js";
 import "components/overflow/overflow.js";
@@ -11,7 +11,7 @@ import "components/input-search/input-search.js";
 import "components/query-chart-selector/query-chart-selector.js";
 import styles from "./action-bar.css";
 
-export class ActionBar extends WebComponentLit {
+export class ActionBar extends WebComponent {
     static styles = unsafeCSS(styles);
 
     @property({ type: Object })

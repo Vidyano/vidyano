@@ -1,5 +1,5 @@
-﻿import { property } from "lit/decorators.js";
-import { WebComponentLit, notify } from "components/web-component/web-component-lit.js";
+import { property } from "lit/decorators.js";
+import { WebComponent, notify } from "components/web-component/web-component.js";
 
 /**
  * Represents the dimensions of an element.
@@ -44,7 +44,7 @@ resizeObserver = new ResizeObserver(entries => {
  * @fires sizechanged - Fired when the parent element's size changes. Event detail contains ISize.
  * @fires size-changed - Fired for Polymer backward compatibility when the size property changes.
  */
-export class SizeTracker extends WebComponentLit {
+export class SizeTracker extends WebComponent {
     #isActive: boolean;
     #resizeLast: ISize;
 

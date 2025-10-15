@@ -1,9 +1,8 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { WebComponent } from "components/web-component/web-component"
 import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         attribute: Object,
         checked: {
@@ -29,7 +28,7 @@ import { PersistentObjectAttribute } from "components/persistent-object-attribut
         "attribute.value"
     ]
 }, "vi-persistent-object-attribute-flags-enum-flag")
-export class PersistentObjectAttributeFlagsEnumFlag extends WebComponent {
+export class PersistentObjectAttributeFlagsEnumFlag extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-flags-enum-flag.html">`; }
 
     private _skipCheckedChanged: boolean;

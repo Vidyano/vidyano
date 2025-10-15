@@ -3,10 +3,9 @@ import * as Vidyano from "vidyano"
 import { Scroller } from "components/scroller/scroller"
 import { SelectReferenceDialog } from "components/select-reference-dialog/select-reference-dialog"
 import "./persistent-object-attribute-as-detail-row"
-import { WebComponent } from "components/web-component/web-component"
 import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         columns: {
             type: Array,

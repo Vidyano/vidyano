@@ -1,11 +1,11 @@
 import { html, unsafeCSS } from "lit";
 import { property } from "lit/decorators.js";
-import { WebComponentLit, observer } from "components/web-component/web-component-lit.js";
+import { WebComponent, observer } from "components/web-component/web-component.js";
 import * as IconRegister from "./icon-register"
 import styles from "./icon.css";
 import { iconsTemplate } from "./icons";
 
-export class Icon extends WebComponentLit {
+export class Icon extends WebComponent {
     static styles = unsafeCSS(styles);
 
     @property({ type: String, reflect: true })

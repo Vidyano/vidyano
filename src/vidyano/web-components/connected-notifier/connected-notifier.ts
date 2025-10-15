@@ -1,6 +1,6 @@
-﻿import { WebComponent } from "components/web-component/web-component"
+import * as Polymer from "polymer"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         oneTime: {
             type: Boolean,
@@ -8,7 +8,7 @@
         }
     }
 }, "vi-connected-notifier")
-export class ConnectedNotifier extends WebComponent {
+export class ConnectedNotifier extends Polymer.WebComponent {
     private _wasAttached;
     oneTime: boolean;
 

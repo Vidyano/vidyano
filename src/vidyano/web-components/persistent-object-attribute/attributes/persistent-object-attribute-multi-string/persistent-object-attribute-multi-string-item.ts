@@ -1,7 +1,5 @@
 import * as Polymer from "polymer"
-import { WebComponent } from "components/web-component/web-component"
-
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         value: {
             type: String,
@@ -27,7 +25,7 @@ import { WebComponent } from "components/web-component/web-component"
         sensitive: Boolean
     }
 }, "vi-persistent-object-attribute-multi-string-item")
-export class PersistentObjectAttributeMultiStringItem extends WebComponent {
+export class PersistentObjectAttributeMultiStringItem extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-multi-string-item.html">`; }
 
     readonly input: HTMLInputElement; private _setInput: (input: HTMLInputElement) => void;

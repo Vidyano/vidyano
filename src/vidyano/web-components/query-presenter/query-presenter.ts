@@ -1,7 +1,7 @@
 import * as Vidyano from "vidyano"
 import { html, unsafeCSS } from "lit"
 import { property } from "lit/decorators.js";
-import { WebComponentLit, observer, listener } from "components/web-component/web-component-lit"
+import { WebComponent, observer, listener } from "components/web-component/web-component"
 import { App } from "components/app/app"
 import { AppCacheEntryQuery } from "components/app-cache/app-cache-entry-query"
 import { AppServiceHooks } from "components/app-service-hooks/app-service-hooks"
@@ -16,7 +16,7 @@ interface IQueryPresenterRouteParameters {
     id: string;
 }
 
-export class QueryPresenter extends WebComponentLit {
+export class QueryPresenter extends WebComponent {
     static override styles = unsafeCSS(styles);
 
     #cacheEntry: AppCacheEntryQuery;

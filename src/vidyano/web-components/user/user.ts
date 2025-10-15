@@ -1,9 +1,8 @@
-import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
+import * as Vidyano from "vidyano"
 import { App } from "components/app/app"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         isSignedIn: {
             type: Boolean,
@@ -50,7 +49,7 @@ import { WebComponent } from "components/web-component/web-component"
     ],
     sensitive: true
 }, "vi-user")
-export class User extends WebComponent {
+export class User extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="user.html">`; }
 
     readonly service: Vidyano.Service; private _setService: (service: Vidyano.Service) => void;

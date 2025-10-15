@@ -4,7 +4,7 @@ import { ISize } from "components/size-tracker/size-tracker"
 import "components/persistent-object-group/persistent-object-group"
 import { PersistentObjectAttributePresenter } from "components/persistent-object-attribute-presenter/persistent-object-attribute-presenter"
 import "components/size-tracker/size-tracker"
-import { ConfigurableWebComponent } from "components/web-component/web-component-configurable"
+import { ConfigurableWebComponent } from "components/web-component/polymer/configurable-web-component"
 
 @ConfigurableWebComponent.register({
     properties: {

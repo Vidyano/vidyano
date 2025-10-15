@@ -2,14 +2,13 @@ import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import * as Keyboard from "components/utils/keyboard"
 import "components/masked-input/masked-input"
-import { WebComponent } from "components/web-component/web-component"
 import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute"
 import type { TimePicker } from '../../../time-picker/time-picker.js'
 import '../../../time-picker/time-picker.js'
 import type { DatePicker } from '../../../date-picker/date-picker.js'
 import '../../../date-picker/date-picker.js'
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         selectedDate: Object,
         selectedTime: Object,

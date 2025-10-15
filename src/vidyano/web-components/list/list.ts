@@ -1,10 +1,9 @@
+import * as Polymer from "polymer"
 import "@polymer/iron-list"
 import { IronListElement } from "@polymer/iron-list"
-import * as Polymer from "polymer"
 import { Scroller } from "components/scroller/scroller"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         items: Array,
         as: String,
@@ -18,7 +17,7 @@ import { WebComponent } from "components/web-component/web-component"
         "_hookIronListToScroller(parentScroller, isConnected)"
     ]
 }, "vi-list")
-export class List extends WebComponent {
+export class List extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="list.html">` }
 
     items: any[];

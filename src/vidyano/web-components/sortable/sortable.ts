@@ -1,4 +1,4 @@
-import { WebComponent } from "components/web-component/web-component"
+import * as Polymer from "polymer"
 import * as Sortablejs from "sortablejs"
 
 const _groups: Sortable[] = [];
@@ -9,7 +9,7 @@ export interface ISortableDragEndDetails {
     oldIndex: number;
 }
 
-@WebComponent.registerAbstract({
+@Polymer.WebComponent.registerAbstract({
     properties: {
         "group": {
             type: String,
@@ -44,7 +44,7 @@ export interface ISortableDragEndDetails {
         }
     }
 })
-export abstract class Sortable extends WebComponent {
+export abstract class Sortable extends Polymer.WebComponent {
     private _sortable: Sortablejs;
     readonly isDragging: boolean; private _setIsDragging: (isDragging: boolean) => void;
     readonly isGroupDragging: boolean; private _setIsGroupDragging: (isGroupDragging: boolean) => void;

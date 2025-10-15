@@ -1,10 +1,9 @@
-import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
+import * as Vidyano from "vidyano"
 import "components/popup-menu/popup-menu"
 import { PopupMenu } from "components/popup-menu/popup-menu"
 import { QueryGridColumn } from "./query-grid-column"
 import "./query-grid-column-filter"
-import { WebComponent } from "components/web-component/web-component"
 
 let resizeObserver: ResizeObserver;
 resizeObserver = new ResizeObserver(allEntries => {
@@ -42,7 +41,7 @@ resizeObserver = new ResizeObserver(allEntries => {
     });
 });
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         column: {
             type: Object,
@@ -94,7 +93,7 @@ resizeObserver = new ResizeObserver(allEntries => {
         "_queueMeasure(column, isConnected)"
     ]
 }, "vi-query-grid-column-header")
-export class QueryGridColumnHeader extends WebComponent {
+export class QueryGridColumnHeader extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-column-header.html">` }
 
     #_lastMeasuredColumn: Vidyano.QueryColumn;

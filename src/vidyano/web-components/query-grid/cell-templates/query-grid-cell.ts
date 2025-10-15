@@ -1,5 +1,5 @@
+import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { WebComponent } from "components/web-component/web-component"
 import type { QueryGridRow } from "components/query-grid/query-grid-row"
 
 let resizeObserver: ResizeObserver;
@@ -36,7 +36,7 @@ resizeObserver = new ResizeObserver(allEntries => {
     });
 });
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         column: Object,
         value: Object,
@@ -54,7 +54,7 @@ resizeObserver = new ResizeObserver(allEntries => {
         "_queueMeasure(value, isConnected)"
     ]
 }, "vi-query-grid-cell")
-export abstract class QueryGridCell extends WebComponent {
+export abstract class QueryGridCell extends Polymer.WebComponent {
     #_observeOnConnected: boolean;
     #_lastMeasuredColumn: Vidyano.QueryColumn;
     #_isObserved: boolean;

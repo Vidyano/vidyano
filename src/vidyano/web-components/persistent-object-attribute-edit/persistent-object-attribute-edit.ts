@@ -2,9 +2,8 @@ import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import * as IconRegister from "components/icon/icon-register"
 import "components/persistent-object-attribute-validation-error/persistent-object-attribute-validation-error"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         attribute: Object,
         focus: {
@@ -50,7 +49,7 @@ import { WebComponent } from "components/web-component/web-component"
     ],
     sensitive: true
 }, "vi-persistent-object-attribute-edit")
-export class PersistentObjectAttributeEdit extends WebComponent {
+export class PersistentObjectAttributeEdit extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-edit.html">`; }
 
     private _setFocus: (val: boolean) => void;

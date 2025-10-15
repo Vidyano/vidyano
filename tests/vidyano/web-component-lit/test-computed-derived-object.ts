@@ -1,5 +1,5 @@
 import { property } from "lit/decorators.js";
-import { WebComponentLit, computed } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
+import { WebComponent, computed } from "../../../src/vidyano/web-components/web-component/web-component.js";
 import { html } from "lit";
 import { Observable } from "../../../src/core/observable/index.js";
 
@@ -30,7 +30,7 @@ class DataSource extends Observable<any> {
  * The `_computeDerivedObject` method intentionally returns a new object instance
  * on every call to test the controller's update loop stability.
  */
-class TestComputedDerivedObject extends WebComponentLit {
+class TestComputedDerivedObject extends WebComponent {
     @property({ type: Object })
     source: DataSource;
 

@@ -1,8 +1,7 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         session: {
             type: Object,
@@ -16,7 +15,7 @@ import { WebComponent } from "components/web-component/web-component"
         "_stamp(session, isConnected)"
     ]
 }, "vi-session-presenter")
-export class SessionPresenter extends WebComponent {
+export class SessionPresenter extends Polymer.WebComponent {
     static get template() { return Polymer.html`<slot></slot>` }
 
     private _stampedTemplate: Polymer.Templatize.TemplateInstanceBase;

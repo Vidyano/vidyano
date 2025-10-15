@@ -1,9 +1,8 @@
 import * as Polymer from "polymer"
 import { Popup } from "components/popup/popup"
-import { WebComponent } from "components/web-component/web-component"
 import "components/icon/icon"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         time: {
             type: Date,
@@ -25,7 +24,7 @@ import "components/icon/icon"
         }
     }
 }, "vi-time-picker")
-export class TimePicker extends WebComponent {
+export class TimePicker extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="time-picker.html">`; }
 
     readonly hours: number; private _setHours: (hours: number) => void;

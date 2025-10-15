@@ -1,11 +1,10 @@
-import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
+import * as Vidyano from "vidyano"
 import { Dialog } from "components/dialog/dialog"
 import { IItemTapEventArgs } from "components/query-grid/query-grid-row"
 import "components/notification/notification"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         query: Object,
         canSelect: Boolean,

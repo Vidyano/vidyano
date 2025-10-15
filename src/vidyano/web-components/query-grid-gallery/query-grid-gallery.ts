@@ -2,7 +2,7 @@ import * as Vidyano from "vidyano"
 import { html, unsafeCSS } from "lit";
 import { property } from "lit/decorators.js";
 import type { Scroller } from "components/scroller/scroller";
-import { WebComponentLit, computed } from "components/web-component/web-component-lit";
+import { WebComponent, computed } from "components/web-component/web-component";
 import type { QueryGridGalleryLazyImage } from "./query-grid-gallery-lazy-image";
 import "./query-grid-gallery-lazy-image";
 import "./query-grid-gallery-image-viewer";
@@ -57,7 +57,7 @@ export type ImageItemMap = {
  * A web component that displays a gallery of photos grouped by day and month,
  * with responsive layout and lazy image loading.
  */
-export class QueryGridGallery extends WebComponentLit {
+export class QueryGridGallery extends WebComponent {
     static styles = unsafeCSS(styles);
 
     @property({ type: Array, state: true })

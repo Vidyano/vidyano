@@ -1,10 +1,9 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { WebComponent } from "components/web-component/web-component"
 import { QueryItemsPresenter } from "components/query-items-presenter/query-items-presenter"
 import { PersistentObjectTab } from "components/persistent-object-tab/persistent-object-tab"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         tab: Object,
         loading: {
@@ -26,7 +25,7 @@ import { PersistentObjectTab } from "components/persistent-object-tab/persistent
         "attribute-loaded": "_attributeLoaded"
     }
 }, "vi-persistent-object-tab-presenter")
-export class PersistentObjectTabPresenter extends WebComponent {
+export class PersistentObjectTabPresenter extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-tab-presenter.html">`; }
 
     private _renderedTab: Vidyano.PersistentObjectTab;

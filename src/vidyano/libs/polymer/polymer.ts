@@ -21,6 +21,8 @@ export * from "@polymer/iron-overlay-behavior/iron-focusables-helper"
 export { IronListElement } from "@polymer/iron-list"
 import "@polymer/iron-media-query"
 
+export { WebComponent } from "components/web-component/polymer/web-component"
+
 declare module "@polymer/polymer/lib/utils/gestures" {
     export interface GestureEvent extends Event {
         x: number;

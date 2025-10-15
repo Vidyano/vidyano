@@ -1,8 +1,8 @@
+import * as Polymer from "polymer"
 import "./style-modules/flex-layout"
 import "./style-modules/reset-css"
 import "./style-modules/responsive"
 
-import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import { Path } from "libs/pathjs/pathjs"
 import { AppColor } from "components/app-color/app-color"
@@ -20,7 +20,6 @@ import * as Keyboard from "components/utils/keyboard"
 import { MessageDialog, IMessageDialogOptions } from "components/message-dialog/message-dialog"
 import "components/sensitive/sensitive"
 import "components/session-presenter/session-presenter"
-import { WebComponent } from "components/web-component/web-component"
 import "@polymer/iron-a11y-keys/iron-a11y-keys"
 import { IronA11yKeysElement } from "@polymer/iron-a11y-keys/iron-a11y-keys"
 import "@polymer/paper-ripple"
@@ -62,7 +61,7 @@ if (!window.VidyanoSettings)
 const baseElement = document.head.querySelector("base") as HTMLBaseElement;
 const baseHref = baseElement?.href || `${document.location.origin}${document.location.pathname.replace(/[^/]*$/, "")}`;
 
-@WebComponent.registerAbstract({
+@Polymer.WebComponent.registerAbstract({
     properties: {
         uri: {
             type: String,
@@ -181,7 +180,7 @@ const baseHref = baseElement?.href || `${document.location.origin}${document.loc
         "service.application"
     ]
 })
-export abstract class AppBase extends WebComponent {
+export abstract class AppBase extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="app-base.html">`; }
 
     #serviceHooksAwaiter: Promise<AppServiceHooksBase>;

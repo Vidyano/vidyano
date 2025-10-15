@@ -1,8 +1,7 @@
 import * as Polymer from "polymer"
 import type * as Vidyano from "vidyano"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         tab: Object,
         selectedTab: Object,
@@ -42,7 +41,7 @@ import { WebComponent } from "components/web-component/web-component"
         "query.filters.currentFilter.name"
     ]
 }, "vi-persistent-object-tab-bar-item")
-export class PersistentObjectTabBarItem extends WebComponent {
+export class PersistentObjectTabBarItem extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-tab-bar-item.html">`; }
 
     tab: Vidyano.PersistentObjectTab;

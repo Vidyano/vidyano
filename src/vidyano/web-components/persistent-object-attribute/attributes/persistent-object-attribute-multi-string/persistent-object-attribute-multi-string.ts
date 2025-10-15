@@ -5,9 +5,8 @@ import { PersistentObjectAttributeMultiStringItem } from "./persistent-object-at
 import { Sortable } from "components/sortable/sortable"
 import type { Tags } from "components/tags/tags"
 import "components/tags/tags"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register("vi-persistent-object-attribute-multi-string-items")
+@Polymer.WebComponent.register("vi-persistent-object-attribute-multi-string-items")
 export class PersistentObjectAttributeMultiStringItems extends Sortable {
     protected _dragEnd() {
         this.dispatchEvent(new CustomEvent("reorder-strings", {
@@ -18,7 +17,7 @@ export class PersistentObjectAttributeMultiStringItems extends Sortable {
     }
 }
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         maxlength: Number,
         strings: {

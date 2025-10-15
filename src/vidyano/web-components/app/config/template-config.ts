@@ -1,9 +1,8 @@
-import * as Polymer from "libs/polymer/polymer"
-import { WebComponent } from "components/web-component/web-component"
+import * as Polymer from "polymer"
 import "./config"
 import { Config } from "./config"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         hasTemplate: {
             type: Boolean,
@@ -15,7 +14,7 @@ import { Config } from "./config"
         }
     }
 }, "vi-template-config")
-export abstract class TemplateConfig<T> extends WebComponent {
+export abstract class TemplateConfig<T> extends Polymer.WebComponent {
     private __template: HTMLTemplateElement;
     readonly hasTemplate: boolean; private _setHasTemplate: (val: boolean) => void;
     as: string;

@@ -1,10 +1,9 @@
-import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
-import { WebComponent } from "components/web-component/web-component"
+import * as Vidyano from "vidyano"
 import { Dialog } from "components/dialog/dialog"
 import type { ITranslatedString } from "./persistent-object-attribute-translated-string"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         label: String,
         strings: Array,

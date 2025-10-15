@@ -1,7 +1,5 @@
 import * as Polymer from "polymer"
-import { WebComponent } from "components/web-component/web-component"
-
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         icon: {
             type: String,
@@ -11,6 +9,6 @@ import { WebComponent } from "components/web-component/web-component"
         message: String
     }
 }, "vi-error")
-export class Error extends WebComponent {
+export class Error extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="error.html">`; }
 }

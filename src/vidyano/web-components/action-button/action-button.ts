@@ -1,7 +1,7 @@
-import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
+import * as Vidyano from "vidyano"
 import * as IconRegister from "components/icon/icon-register"
-import { ConfigurableWebComponent } from "components/web-component/web-component-configurable"
+import { ConfigurableWebComponent } from "components/web-component/polymer/configurable-web-component"
 import { Popup } from "components/popup/popup"
 
 @ConfigurableWebComponent.register({

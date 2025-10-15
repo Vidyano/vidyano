@@ -2,13 +2,12 @@ import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import "components/persistent-object-attribute-edit/persistent-object-attribute-edit"
 import type { Select } from "components/select/select";
-import { WebComponent } from "components/web-component/web-component"
 
 const styleElement = document.createElement("dom-module");
 styleElement.innerHTML = `<link rel="import" href="persistent-object-attribute-style-module.html">`;
 styleElement.register("vi-persistent-object-attribute-style-module");
 
-@WebComponent.registerAbstract({
+@Polymer.WebComponent.registerAbstract({
     properties: {
         attribute: {
             type: Object,
@@ -100,7 +99,7 @@ styleElement.register("vi-persistent-object-attribute-style-module");
     ],
     sensitive: true
 })
-export abstract class PersistentObjectAttribute extends WebComponent {
+export abstract class PersistentObjectAttribute extends Polymer.WebComponent {
     private _foreground: string;
     attribute: Vidyano.PersistentObjectAttribute;
     value: any;

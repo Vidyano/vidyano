@@ -1,8 +1,8 @@
 import { html } from "lit";
 import { property } from "lit/decorators.js";
-import { WebComponentLit, observer, computed } from "../../../src/vidyano/web-components/web-component/web-component-lit.js";
+import { WebComponent, observer, computed } from "../../../src/vidyano/web-components/web-component/web-component.js";
 
-class TestMultiObserver extends WebComponentLit {
+class TestMultiObserver extends WebComponent {
     @property({ type: Number })
     declare counter: number;
 

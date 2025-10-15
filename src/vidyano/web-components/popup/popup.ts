@@ -1,6 +1,6 @@
 import { html, nothing, unsafeCSS } from "lit";
 import { property } from "lit/decorators.js";
-import { WebComponentLit, observe } from "components/web-component/web-component-lit.js";
+import { WebComponent, observe } from "components/web-component/web-component.js";
 import { autoUpdate, computePosition, flip, Placement, shift, size } from '@floating-ui/dom';
 import { ISize } from "components/size-tracker/size-tracker";
 import { Scroller } from "components/scroller/scroller";
@@ -40,7 +40,7 @@ document.addEventListener("pointerdown", (e: PointerEvent) => {
 
 const openPopups: Popup[] = [];
 
-export class Popup extends WebComponentLit {
+export class Popup extends WebComponent {
     static styles = unsafeCSS(styles);
 
     /**
@@ -425,7 +425,7 @@ export class Popup extends WebComponentLit {
      * Closes all open popups, or only popups descended from the specified parent element.
      * @param parent - Optional parent element. If provided, only closes popups that are descendants of this element.
      */
-    static closeAll(parent?: HTMLElement | WebComponentLit) {
+    static closeAll(parent?: HTMLElement | WebComponent) {
         const rootPopup = openPopups[0];
         if (rootPopup && (!parent || Popup._isDescendant(<HTMLElement>parent, rootPopup)))
             rootPopup.close();

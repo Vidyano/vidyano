@@ -1,6 +1,5 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { WebComponent } from "components/web-component/web-component"
 import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute"
 import { PersistentObjectAttributeTranslatedStringDialog } from "./persistent-object-attribute-translated-string-dialog"
 
@@ -10,7 +9,7 @@ export interface ITranslatedString {
     value: string;
 }
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         strings: {
             type: Array,

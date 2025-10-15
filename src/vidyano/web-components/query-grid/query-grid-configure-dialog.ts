@@ -4,9 +4,8 @@ import { Dialog } from "components/dialog/dialog"
 import { QueryGridConfigureDialogColumn } from "./query-grid-configure-dialog-column"
 import { QueryGridUserSettings } from "./query-grid-user-settings"
 import { Sortable } from "components/sortable/sortable"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         query: Object
     },
@@ -79,7 +78,7 @@ export class QueryGridConfigureDialog extends Dialog {
     }
 }
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
 }, "vi-query-grid-configure-dialog-column-list")
 export class QueryGridConfigureDialogColumnList extends Sortable {
     protected _dragEnd() {

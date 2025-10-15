@@ -1,12 +1,11 @@
-import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
+import * as Vidyano from "vidyano"
 import "components/action-bar/action-bar"
 import { AppCacheEntryQuery } from "components/app-cache/app-cache-entry-query"
 import type { App } from "components/app/app"
 import "components/notification/notification"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         query: {
             type: Object,
@@ -37,7 +36,7 @@ import { WebComponent } from "components/web-component/web-component"
         "query.filters.currentFilter.name"
     ]
 }, "vi-query")
-export class Query extends WebComponent {
+export class Query extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query.html">`; }
 
     private _cacheEntry: AppCacheEntryQuery;

@@ -1,7 +1,5 @@
 import * as Polymer from "polymer"
-import { WebComponent } from "components/web-component/web-component"
-
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         format: {
             type: String,
@@ -41,7 +39,7 @@ import { WebComponent } from "components/web-component/web-component"
         }
     }
 }, "vi-masked-input")
-export class MaskedInput extends WebComponent {
+export class MaskedInput extends Polymer.WebComponent {
     static get template() {  return Polymer.html`<link rel="import" href="masked-input.html">` }
 
     private _startText: string;

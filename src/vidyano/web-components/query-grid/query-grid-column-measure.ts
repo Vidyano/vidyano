@@ -1,10 +1,9 @@
-import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
+import * as Vidyano from "vidyano"
 import type { QueryGrid } from "./query-grid"
 import { ISize } from "components/size-tracker/size-tracker"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         grid: Object,
         column: Object,
@@ -14,7 +13,7 @@ import { WebComponent } from "components/web-component/web-component"
         "_report(grid, column, size)"
     ]
 }, "vi-query-grid-column-measure")
-export class QueryGridColumnMeasure extends WebComponent {
+export class QueryGridColumnMeasure extends Polymer.WebComponent {
     private _reported: boolean;
 
     static get template() {

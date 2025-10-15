@@ -3,7 +3,6 @@ import * as Vidyano from "vidyano"
 import * as Keyboard from "components/utils/keyboard"
 import type { PersistentObjectTabPresenter } from '../persistent-object-tab-presenter/persistent-object-tab-presenter.js'
 import { ISize } from '../size-tracker/size-tracker.js'
-import { WebComponent } from "components/web-component/web-component"
 
 declare type Step = "username" | "password" | "twofactor" | "register" | "initial";
 
@@ -23,7 +22,7 @@ interface INotification {
     type: Vidyano.NotificationType;
 }
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         returnUrl: {
             type: String,
@@ -114,7 +113,7 @@ interface INotification {
         "initial.isBusy"
     ]
 }, "vi-sign-in")
-export class SignIn extends WebComponent {
+export class SignIn extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="sign-in.html">`; }
 
     readonly returnUrl: string; private _setReturnUrl: (returnUrl: string) => void;

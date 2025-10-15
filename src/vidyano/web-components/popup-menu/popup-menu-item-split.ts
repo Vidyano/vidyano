@@ -1,9 +1,8 @@
 import * as Polymer from "polymer"
 import * as IconRegister from "components/icon/icon-register"
 import { Popup } from "components/popup/popup"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         label: String,
         icon: String,
@@ -27,7 +26,7 @@ import { WebComponent } from "components/web-component/web-component"
         "tap": "_onTap"
     }
 }, "vi-popup-menu-item-split")
-export class PopupMenuItemSplit extends WebComponent {
+export class PopupMenuItemSplit extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="popup-menu-item-split.html">`; }
 
     private _observer: Polymer.FlattenedNodesObserver;

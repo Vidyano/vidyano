@@ -1,7 +1,6 @@
-import * as Polymer from "libs/polymer/polymer"
+import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import { AppServiceHooks } from "components/app-service-hooks/app-service-hooks"
-import { WebComponent } from "components/web-component/web-component"
 import { AppSetting } from "./app-setting"
 import { PersistentObjectAttributeConfig } from "./persistent-object-attribute-config"
 import { PersistentObjectConfig } from "./persistent-object-config"
@@ -10,8 +9,8 @@ import { ProgramUnitConfig } from "./program-unit-config"
 import { QueryChartConfig } from "./query-chart-config"
 import { QueryConfig } from "./query-config"
 
-@WebComponent.register("vi-app-config")
-export class AppConfig extends WebComponent {
+@Polymer.WebComponent.register("vi-app-config")
+export class AppConfig extends Polymer.WebComponent {
     private _nodeObserver: Polymer.FlattenedNodesObserver;
     private _defaultAttributeConfig: PersistentObjectAttributeConfig;
     private _persistentObjectConfigs: PersistentObjectConfig[] = [];
@@ -24,7 +23,7 @@ export class AppConfig extends WebComponent {
     ready() {
         super.ready();
 
-        Array.from(this.children).forEach(element => this._handleNode(<WebComponent>element, true));
+        Array.from(this.children).forEach(element => this._handleNode(<Polymer.WebComponent>element, true));
         this._nodeObserver = new Polymer.FlattenedNodesObserver(this, this._nodesChanged.bind(this));
     }
 
@@ -36,15 +35,15 @@ export class AppConfig extends WebComponent {
     }
 
     private _nodesChanged(info: Polymer.FlattenedNodesObserverInfo) {
-        info.addedNodes.forEach(node => this._handleNode(node as WebComponent, true));
-        info.removedNodes.forEach(node => this._handleNode(node as WebComponent, false));
+        info.addedNodes.forEach(node => this._handleNode(node as Polymer.WebComponent, true));
+        info.removedNodes.forEach(node => this._handleNode(node as Polymer.WebComponent, false));
     }
 
-    private _handleNode(node: WebComponent, added: boolean) {
+    private _handleNode(node: Polymer.WebComponent, added: boolean) {
         if (node.nodeType !== Node.ELEMENT_NODE)
             return;
 
-        let arr: Array<WebComponent>;
+        let arr: Array<Polymer.WebComponent>;
         switch (node.tagName.toUpperCase()) {
             case "VI-PERSISTENT-OBJECT-ATTRIBUTE-CONFIG":
                 arr = this._attributeConfigs;

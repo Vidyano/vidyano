@@ -1,8 +1,7 @@
-import * as Vidyano from "vidyano"
 import * as Polymer from "polymer"
+import * as Vidyano from "vidyano"
 import "components/error/error"
 import { AppServiceHooks } from "components/app-service-hooks/app-service-hooks"
-import { WebComponent } from "components/web-component/web-component"
 
 const ProgramUnitPresenter_Activated = Symbol("ProgramUnitPresenter_Activated");
 
@@ -10,7 +9,7 @@ interface IProgramUnitPresenterRouteParameters {
     programUnitName: string;
 }
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         programUnit: {
             type: Object,
@@ -27,7 +26,7 @@ interface IProgramUnitPresenterRouteParameters {
         "app-route-deactivate": "_deactivate"
     }
 }, "vi-program-unit-presenter")
-export class ProgramUnitPresenter extends WebComponent {
+export class ProgramUnitPresenter extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="program-unit-presenter.html">`; }
 
     readonly programUnit: Vidyano.ProgramUnit; private _setProgramUnit: (programUnit: Vidyano.ProgramUnit) => void;

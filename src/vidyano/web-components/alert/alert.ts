@@ -1,9 +1,8 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { WebComponent } from "components/web-component/web-component"
 
-@WebComponent.register("vi-alert")
-export class Alert extends WebComponent {
+@Polymer.WebComponent.register("vi-alert")
+export class Alert extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="alert.html">`; }
 
     async log(message: string, type: Vidyano.NotificationType, wait: number) {

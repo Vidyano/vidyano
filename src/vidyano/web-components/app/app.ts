@@ -1,6 +1,6 @@
+import * as Polymer from "polymer"
 import "tslib"
 import * as Vidyano from "vidyano"
-import * as Polymer from "polymer"
 import { Path } from "libs/pathjs/pathjs"
 import { AppBase } from "./app-base"
 export { AppBase } from "./app-base"
@@ -9,13 +9,12 @@ import "components/sign-in/sign-in"
 import "components/sign-out/sign-out"
 import "components/spinner/spinner"
 import "components/profiler/profiler"
-import { WebComponent } from "components/web-component/web-component"
 import { AppCacheEntry } from "components/app-cache/app-cache-entry"
 import { AppServiceHooks } from "components/app-service-hooks/app-service-hooks"
 import { AppCacheEntryPersistentObject } from "components/app-cache/app-cache-entry-persistent-object"
 import { PopupMenu } from "components/popup-menu/popup-menu"
 
-@WebComponent.register({
+@Polymer.WebComponent.register({
     properties: {
         cacheSize: {
             type: Number,
@@ -198,7 +197,7 @@ export class App extends AppBase {
         if (!this.service || !this.service.application)
             return;
 
-        const configureItems: WebComponent[] = e["vi:configure"];
+        const configureItems: Polymer.WebComponent[] = e["vi:configure"];
         if (!this.service.application.hasManagement || !configureItems?.length || window.getSelection().toString()) {
             e.stopImmediatePropagation();
             return;
