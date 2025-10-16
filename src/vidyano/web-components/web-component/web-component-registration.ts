@@ -29,10 +29,16 @@ export function parseMethodSignature(signature: string): { methodName: string; a
 type ComputedPropertyConfig = {
     dependencies: string[];
     methodName?: string; // When undefined, the value is forwarded from the first dependency
+    allowUndefined: boolean;
+};
+
+type ObserverConfig = {
+    dependencies: string[];
+    allowUndefined: boolean;
 };
 
 export type ComputedConfig = Record<string, ComputedPropertyConfig>;
-export type ObserversConfig = Record<string, string[]>;
+export type ObserversConfig = Record<string, ObserverConfig>;
 export type PropertyObserversConfig = Record<string, string>;
 export type NotifyConfig = Record<string, string | true>; // true = auto-generate kebab-case-changed, string = custom event name
 export type ListenersConfig = Record<string, string>;
@@ -157,15 +163,21 @@ export function registerWebComponent<T extends typeof WebComponent>(configOrTag:
         for (const observer of config.observers) {
             const parsed = parseMethodSignature(observer);
             if (parsed) {
-                const existingDeps = finalObserversConfig[parsed.methodName] || [];
+                const existing = finalObserversConfig[parsed.methodName];
+                const existingDeps = existing?.dependencies || [];
+                const existingAllowUndefined = existing?.allowUndefined || false;
+
                 const combinedDeps = new Set([...existingDeps, ...parsed.args]);
-                finalObserversConfig[parsed.methodName] = Array.from(combinedDeps);
+                finalObserversConfig[parsed.methodName] = {
+                    dependencies: Array.from(combinedDeps),
+                    allowUndefined: existingAllowUndefined // Preserve existing allowUndefined setting
+                };
             } else {
                 console.warn(`[${tagName}] Invalid observer signature: ${observer}. Must be "methodName(dep1, dep2)".`);
             }
         }
     }
-    
+
     (targetClass as WebComponentConstructor)[OBSERVERS_CONFIG_SYMBOL] = finalObserversConfig;
 
     (targetClass as WebComponentConstructor)[SENSITIVE_CONFIG_SYMBOL] = config.sensitive !== undefined ? config.sensitive : inheritedSensitive;
