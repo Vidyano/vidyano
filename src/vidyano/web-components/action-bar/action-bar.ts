@@ -18,11 +18,11 @@ export class ActionBar extends WebComponent {
     serviceObject: Vidyano.ServiceObjectWithActions;
 
     @property({ type: Array })
-    @computed("_computePinnedActions(serviceObject, serviceObject.actions.*.isPinned)")
+    @computed("_computePinnedActions(serviceObject, serviceObject.actions.*.isPinned)", { allowUndefined: true })
     pinnedActions: (Vidyano.Action | Vidyano.ActionGroup)[];
 
     @property({ type: Array })
-    @computed("_computeUnpinnedActions(serviceObject, serviceObject.actions.*.isPinned)")
+    @computed("_computeUnpinnedActions(serviceObject, serviceObject.actions.*.isPinned)", { allowUndefined: true })
     unpinnedActions: (Vidyano.Action | Vidyano.ActionGroup)[];
 
     @property({ type: Boolean })
@@ -34,7 +34,7 @@ export class ActionBar extends WebComponent {
     canSearch: boolean;
 
     @property({ type: Boolean, reflect: true })
-    @computed("_computeNoActions(pinnedActions, unpinnedActions, serviceObject.actions.*.isVisible)")
+    @computed("_computeNoActions(pinnedActions, unpinnedActions, serviceObject.actions.*.isVisible)", { allowUndefined: true })
     noActions: boolean;
 
     @property({ type: Boolean, reflect: true })
