@@ -526,3 +526,327 @@ test('TestComputedDerivedObject: stability with new object instances', async ({ 
     // The computation should only be called ONCE more.
     expect(state.computeCallCount).toBe(initialCallCount + 1);
 });
+
+test('TestObserverUndefinedBlocking: observer not called when properties are undefined by default', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-observer-undefined-blocking');
+    await expect(component).toBeVisible();
+
+    // --- Initial state verification ---
+    // Initially both firstName and lastName are undefined, so observer should NOT have been called
+    let state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            lastName: inst.lastName,
+            observerCallCount: inst.observerCallCount,
+            observerLastArgs: inst.observerLastArgs
+        };
+    });
+
+    expect(state.firstName).toBeUndefined();
+    expect(state.lastName).toBeUndefined();
+    expect(state.observerCallCount).toBe(0); // Observer not called because both are undefined
+    expect(state.observerLastArgs).toBeNull();
+
+    // --- Act: Set only firstName (lastName still undefined) ---
+    await component.evaluate(node => { (node as any).firstName = 'John'; });
+    state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            lastName: inst.lastName,
+            observerCallCount: inst.observerCallCount,
+            observerLastArgs: inst.observerLastArgs
+        };
+    });
+
+    expect(state.firstName).toBe('John');
+    expect(state.lastName).toBeUndefined();
+    expect(state.observerCallCount).toBe(0); // Observer still not called because lastName is undefined
+    expect(state.observerLastArgs).toBeNull();
+
+    // --- Act: Set lastName (now both are defined) ---
+    await component.evaluate(node => { (node as any).lastName = 'Doe'; });
+    state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            lastName: inst.lastName,
+            observerCallCount: inst.observerCallCount,
+            observerLastArgs: inst.observerLastArgs
+        };
+    });
+
+    expect(state.firstName).toBe('John');
+    expect(state.lastName).toBe('Doe');
+    expect(state.observerCallCount).toBe(1); // Observer called now that both are defined
+    expect(state.observerLastArgs).toEqual({ firstName: 'John', lastName: 'Doe' });
+
+    // --- Act: Change firstName (both still defined) ---
+    await component.evaluate(node => { (node as any).firstName = 'Jane'; });
+    state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            lastName: inst.lastName,
+            observerCallCount: inst.observerCallCount,
+            observerLastArgs: inst.observerLastArgs
+        };
+    });
+
+    expect(state.firstName).toBe('Jane');
+    expect(state.lastName).toBe('Doe');
+    expect(state.observerCallCount).toBe(2); // Observer called again
+    expect(state.observerLastArgs).toEqual({ firstName: 'Jane', lastName: 'Doe' });
+
+    // --- Act: Set firstName to null (null is allowed) ---
+    await component.evaluate(node => { (node as any).firstName = null; });
+    state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            lastName: inst.lastName,
+            observerCallCount: inst.observerCallCount,
+            observerLastArgs: inst.observerLastArgs
+        };
+    });
+
+    expect(state.firstName).toBeNull();
+    expect(state.lastName).toBe('Doe');
+    expect(state.observerCallCount).toBe(3); // Observer called because null is allowed
+    expect(state.observerLastArgs).toEqual({ firstName: null, lastName: 'Doe' });
+});
+
+test('TestObserverAllowUndefined: observer called even when properties are undefined', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-observer-allow-undefined');
+    await expect(component).toBeVisible();
+
+    // --- Initial state verification ---
+    // With allowUndefined: true, observer should be called even if properties are undefined
+    let state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            lastName: inst.lastName,
+            observerCallCount: inst.observerCallCount,
+            observerLastArgs: inst.observerLastArgs
+        };
+    });
+
+    expect(state.firstName).toBeUndefined();
+    expect(state.lastName).toBeUndefined();
+    expect(state.observerCallCount).toBe(0); // No initial call because properties haven't changed yet
+
+    // --- Act: Set only firstName (lastName still undefined) ---
+    await component.evaluate(node => { (node as any).firstName = 'John'; });
+    state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            lastName: inst.lastName,
+            observerCallCount: inst.observerCallCount,
+            observerLastArgs: inst.observerLastArgs
+        };
+    });
+
+    expect(state.firstName).toBe('John');
+    expect(state.lastName).toBeUndefined();
+    expect(state.observerCallCount).toBe(1); // Observer called even though lastName is undefined
+    expect(state.observerLastArgs).toEqual({ firstName: 'John', lastName: undefined });
+
+    // --- Act: Set lastName ---
+    await component.evaluate(node => { (node as any).lastName = 'Doe'; });
+    state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            lastName: inst.lastName,
+            observerCallCount: inst.observerCallCount,
+            observerLastArgs: inst.observerLastArgs
+        };
+    });
+
+    expect(state.firstName).toBe('John');
+    expect(state.lastName).toBe('Doe');
+    expect(state.observerCallCount).toBe(2); // Observer called again
+    expect(state.observerLastArgs).toEqual({ firstName: 'John', lastName: 'Doe' });
+
+    // --- Act: Set firstName back to undefined ---
+    await component.evaluate(node => { (node as any).firstName = undefined; });
+    state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            lastName: inst.lastName,
+            observerCallCount: inst.observerCallCount,
+            observerLastArgs: inst.observerLastArgs
+        };
+    });
+
+    expect(state.firstName).toBeUndefined();
+    expect(state.lastName).toBe('Doe');
+    expect(state.observerCallCount).toBe(3); // Observer called even with undefined
+    expect(state.observerLastArgs).toEqual({ firstName: undefined, lastName: 'Doe' });
+});
+
+test('TestComputedUndefinedBlocking: computed not calculated when properties are undefined by default', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-computed-undefined-blocking');
+    await expect(component).toBeVisible();
+
+    // --- Initial state verification ---
+    // Initially both firstName and lastName are undefined, so computed should NOT have been calculated
+    let state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            lastName: inst.lastName,
+            fullName: inst.fullName,
+            computeCallCount: inst.computeCallCount,
+            computeLastArgs: inst.computeLastArgs
+        };
+    });
+
+    expect(state.firstName).toBeUndefined();
+    expect(state.lastName).toBeUndefined();
+    expect(state.fullName).toBeUndefined(); // Computed property is undefined
+    expect(state.computeCallCount).toBe(0); // Compute method not called because both deps are undefined
+    expect(state.computeLastArgs).toBeNull();
+
+    // --- Act: Set only firstName (lastName still undefined) ---
+    await component.evaluate(node => { (node as any).firstName = 'John'; });
+    state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            lastName: inst.lastName,
+            fullName: inst.fullName,
+            computeCallCount: inst.computeCallCount,
+            computeLastArgs: inst.computeLastArgs
+        };
+    });
+
+    expect(state.firstName).toBe('John');
+    expect(state.lastName).toBeUndefined();
+    expect(state.fullName).toBeUndefined(); // Still undefined
+    expect(state.computeCallCount).toBe(0); // Still not called because lastName is undefined
+    expect(state.computeLastArgs).toBeNull();
+
+    // --- Act: Set lastName (now both are defined) ---
+    await component.evaluate(node => { (node as any).lastName = 'Doe'; });
+    state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            lastName: inst.lastName,
+            fullName: inst.fullName,
+            computeCallCount: inst.computeCallCount,
+            computeLastArgs: inst.computeLastArgs
+        };
+    });
+
+    expect(state.firstName).toBe('John');
+    expect(state.lastName).toBe('Doe');
+    expect(state.fullName).toBe('John Doe'); // Now calculated
+    expect(state.computeCallCount).toBe(1); // Compute method called now that both are defined
+    expect(state.computeLastArgs).toEqual({ firstName: 'John', lastName: 'Doe' });
+
+    // --- Act: Change firstName (both still defined) ---
+    await component.evaluate(node => { (node as any).firstName = 'Jane'; });
+    state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            lastName: inst.lastName,
+            fullName: inst.fullName,
+            computeCallCount: inst.computeCallCount,
+            computeLastArgs: inst.computeLastArgs
+        };
+    });
+
+    expect(state.firstName).toBe('Jane');
+    expect(state.lastName).toBe('Doe');
+    expect(state.fullName).toBe('Jane Doe');
+    expect(state.computeCallCount).toBe(2); // Computed again
+    expect(state.computeLastArgs).toEqual({ firstName: 'Jane', lastName: 'Doe' });
+});
+
+test('TestComputedAllowUndefined: computed calculated even when properties are undefined', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-computed-allow-undefined');
+    await expect(component).toBeVisible();
+
+    // --- Initial state verification ---
+    // With allowUndefined: true, but no properties have changed yet, so computed hasn't run
+    let state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            lastName: inst.lastName,
+            fullName: inst.fullName,
+            computeCallCount: inst.computeCallCount,
+            computeLastArgs: inst.computeLastArgs
+        };
+    });
+
+    expect(state.firstName).toBeUndefined();
+    expect(state.lastName).toBeUndefined();
+    expect(state.fullName).toBeUndefined(); // Not yet computed because no changes triggered it
+    expect(state.computeCallCount).toBe(0); // Not yet called
+    expect(state.computeLastArgs).toBeNull();
+
+    // --- Act: Set only firstName (lastName still undefined) ---
+    await component.evaluate(node => { (node as any).firstName = 'John'; });
+    state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            lastName: inst.lastName,
+            fullName: inst.fullName,
+            computeCallCount: inst.computeCallCount,
+            computeLastArgs: inst.computeLastArgs
+        };
+    });
+
+    expect(state.firstName).toBe('John');
+    expect(state.lastName).toBeUndefined();
+    expect(state.fullName).toBe('John'); // Computed with partial data
+    expect(state.computeCallCount).toBe(1); // Computed for the first time
+    expect(state.computeLastArgs).toEqual({ firstName: 'John', lastName: undefined });
+
+    // --- Act: Set lastName ---
+    await component.evaluate(node => { (node as any).lastName = 'Doe'; });
+    state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            lastName: inst.lastName,
+            fullName: inst.fullName,
+            computeCallCount: inst.computeCallCount,
+            computeLastArgs: inst.computeLastArgs
+        };
+    });
+
+    expect(state.firstName).toBe('John');
+    expect(state.lastName).toBe('Doe');
+    expect(state.fullName).toBe('John Doe');
+    expect(state.computeCallCount).toBe(2); // Computed again
+    expect(state.computeLastArgs).toEqual({ firstName: 'John', lastName: 'Doe' });
+
+    // --- Act: Set firstName back to undefined ---
+    await component.evaluate(node => { (node as any).firstName = undefined; });
+    state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            lastName: inst.lastName,
+            fullName: inst.fullName,
+            computeCallCount: inst.computeCallCount,
+            computeLastArgs: inst.computeLastArgs
+        };
+    });
+
+    expect(state.firstName).toBeUndefined();
+    expect(state.lastName).toBe('Doe');
+    expect(state.fullName).toBe('Doe'); // Computed even with undefined
+    expect(state.computeCallCount).toBe(3); // Computed again
+    expect(state.computeLastArgs).toEqual({ firstName: undefined, lastName: 'Doe' });
+});

@@ -102,11 +102,11 @@ export class WebComponentObserverController implements ReactiveController {
      * @param observersConfig The complete observer configuration for the component.
      * @returns A Set of unique root property names.
      */
-    #extractObservedRoots(observersConfig: Record<string, string[]>, computedConfig: ComputedConfig): Set<string> {
+    #extractObservedRoots(observersConfig: Record<string, { dependencies: string[], allowUndefined: boolean }>, computedConfig: ComputedConfig): Set<string> {
         const observedRoots = new Set<string>();
 
-        Object.values(observersConfig).forEach(deps =>
-            deps.forEach(depPath => {
+        Object.values(observersConfig).forEach(config =>
+            config.dependencies.forEach(depPath => {
                 const root = depPath.split('.')[0];
                 if (root) observedRoots.add(root);
             })
@@ -361,14 +361,14 @@ export class WebComponentObserverController implements ReactiveController {
      * @param dirtyPaths The set of deep paths marked as dirty.
      * @returns A Set of observer method names that should be called.
      */
-    #identifyObserversToCall(observersConfig: Record<string, string[]>, changedProperties: Map<PropertyKey, unknown>, dirtyPaths: Set<string>): Set<string> {
+    #identifyObserversToCall(observersConfig: Record<string, { dependencies: string[], allowUndefined: boolean }>, changedProperties: Map<PropertyKey, unknown>, dirtyPaths: Set<string>): Set<string> {
         const observersToCall = new Set<string>();
         const allChangedKeys = new Set(changedProperties.keys());
 
-        for (const [observerIdentifier, dependencies] of Object.entries(observersConfig)) {
+        for (const [observerIdentifier, config] of Object.entries(observersConfig)) {
             if (typeof this.#host[observerIdentifier] !== 'function') continue;
 
-            const hasChangedDep = dependencies.some(dep => {
+            const hasChangedDep = config.dependencies.some(dep => {
                 const rootDep = dep.split('.')[0];
                 return (
                     allChangedKeys.has(dep) ||
@@ -389,13 +389,22 @@ export class WebComponentObserverController implements ReactiveController {
      * Executes a single complex observer method. It includes an optimization to prevent
      * redundant calls if the resolved values of its dependencies have not changed
      * since the last time it was called in this update cycle.
+     *
+     * By default, the observer is only called if none of the arguments are undefined.
+     * If allowUndefined is true, the observer will be called regardless.
+     *
      * @param observerIdentifier The name of the observer method to call.
      * @param observersConfig The complete observer configuration.
      * @param lastComplexObserverArgs A map for tracking observer arguments to prevent redundant calls.
      */
-    #executeComplexObserver(observerIdentifier: string, observersConfig: Record<string, string[]>,lastComplexObserverArgs: Map<string, any[]>): void {
-        const dependencies = observersConfig[observerIdentifier];
-        const newArgs = dependencies.map(dep => this.#resolvePath(dep));
+    #executeComplexObserver(observerIdentifier: string, observersConfig: Record<string, { dependencies: string[], allowUndefined: boolean }>, lastComplexObserverArgs: Map<string, any[]>): void {
+        const config = observersConfig[observerIdentifier];
+        const newArgs = config.dependencies.map(dep => this.#resolvePath(dep));
+
+        // Check for undefined values unless allowUndefined is true
+        if (!config.allowUndefined && newArgs.some(arg => arg === undefined)) {
+            return;
+        }
 
         const oldArgs = lastComplexObserverArgs.get(observerIdentifier);
         if (oldArgs && this.#areArgumentsEqual(oldArgs, newArgs)) {
@@ -403,7 +412,11 @@ export class WebComponentObserverController implements ReactiveController {
         }
 
         lastComplexObserverArgs.set(observerIdentifier, newArgs);
-        this.#host[observerIdentifier](...newArgs);
+        try {
+            this.#host[observerIdentifier](...newArgs);
+        } catch (e) {
+            console.error(`[${this.#host.tagName.toLowerCase()}] Error in observer '${observerIdentifier}':`, e);
+        }
     }
 
     /**
@@ -479,14 +492,14 @@ export class WebComponentObserverController implements ReactiveController {
      * @param rootsToRebind An optional set of roots to scope the rebinding to.
      * @returns A Set of full dependency paths (e.g., "app.user.name") that need a forwarder.
      */
-    #determinePathsToRebind(observersConfig: Record<string, string[]>, computedConfig: ComputedConfig, rootsToRebind?: Set<string>): Set<string> {
+    #determinePathsToRebind(observersConfig: Record<string, { dependencies: string[], allowUndefined: boolean }>, computedConfig: ComputedConfig, rootsToRebind?: Set<string>): Set<string> {
         const allDependencies = new Set<string>();
-        Object.values(observersConfig).forEach(deps => deps.forEach(dep => allDependencies.add(dep)));
-        Object.values(computedConfig).forEach(deps => deps.dependencies.forEach(dep => allDependencies.add(dep)));
+        Object.values(observersConfig).forEach(config => config.dependencies.forEach(dep => allDependencies.add(dep)));
+        Object.values(computedConfig).forEach(config => config.dependencies.forEach(dep => allDependencies.add(dep)));
 
         const setupAll = !rootsToRebind || rootsToRebind.size === 0;
         const pathsToRebind = new Set<string>();
-        
+
         for (const depPath of allDependencies) {
             // Forwarders are only for deep paths. Simple properties are handled by Lit.
             if (!depPath.includes('.'))
@@ -551,12 +564,12 @@ export class WebComponentObserverController implements ReactiveController {
 
         const changedKeys = changedProperties ? new Set(changedProperties.keys()) : null;
 
-        for (const [prop, { dependencies, methodName }] of Object.entries(computedConfig)) {
-            const shouldUpdate = this.#shouldUpdateComputedProperty(dependencies, changedKeys, dirtyPaths);
-            
+        for (const [prop, config] of Object.entries(computedConfig)) {
+            const shouldUpdate = this.#shouldUpdateComputedProperty(config.dependencies, changedKeys, dirtyPaths);
+
             if (shouldUpdate) {
                 const oldValue = this.#host[prop];
-                const newValue = this.#computePropertyValue(dependencies, methodName);
+                const newValue = this.#computePropertyValue(config);
 
                 if (newValue instanceof Promise) {
                     const token = ++this.#tokenCounter;
@@ -609,20 +622,28 @@ export class WebComponentObserverController implements ReactiveController {
     /**
      * Computes the new value for a property. It either forwards a single dependency's
      * value or calls a specified compute method with the resolved values of all dependencies.
-     * @param dependencies The list of dependency paths.
-     * @param methodName The optional name of the method to call for computation.
-     * @returns The newly computed value.
+     *
+     * By default, computed properties are only calculated if none of the arguments are undefined.
+     * If allowUndefined is true, the computation will proceed regardless.
+     *
+     * @param config The computed property configuration including dependencies, methodName, and allowUndefined.
+     * @returns The newly computed value, or undefined if blocked by undefined dependencies.
      */
-    #computePropertyValue(dependencies: string[], methodName?: string): any {
-        const args = dependencies.map(dep => this.#resolvePath(dep));
-        
-        if (!methodName)
+    #computePropertyValue(config: { dependencies: string[], methodName?: string, allowUndefined: boolean }): any {
+        const args = config.dependencies.map(dep => this.#resolvePath(dep));
+
+        // Check for undefined values unless allowUndefined is true
+        if (!config.allowUndefined && args.some(arg => arg === undefined)) {
+            return undefined;
+        }
+
+        if (!config.methodName)
             return args[0]; // Simple forwarding
-        
-        if (typeof this.#host[methodName] === 'function')
-            return this.#host[methodName](...args);
-        
-        console.warn(`[${this.#host.tagName.toLowerCase()}] Compute method '${methodName}' not found.`);
+
+        if (typeof this.#host[config.methodName] === 'function')
+            return this.#host[config.methodName](...args);
+
+        console.warn(`[${this.#host.tagName.toLowerCase()}] Compute method '${config.methodName}' not found.`);
         return undefined;
     }
 

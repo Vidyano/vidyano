@@ -9,3 +9,7 @@ import "./web-component-lit/test-async-computed.js";
 import "./web-component-lit/test-multi-observer.js";
 import "./web-component-lit/test-event-listeners.js";
 import "./web-component-lit/test-computed-observable-path.js";
+import "./web-component-lit/test-observer-undefined-blocking.js";
+import "./web-component-lit/test-observer-allow-undefined.js";
+import "./web-component-lit/test-computed-undefined-blocking.js";
+import "./web-component-lit/test-computed-allow-undefined.js";
