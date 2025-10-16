@@ -79,22 +79,20 @@ The following sections cover the full Lit migration flow.
 Classic Polymer component structure with template and metadata decorators:
 
 ```typescript
-import { Polymer, WebComponent } from "@vidyano/vidyano"; 
+import { Polymer, WebComponent } from "@vidyano/vidyano";
 
-@WebComponent.register()
+@WebComponent.register({
+    properties: {
+        myProp: String,
+        myNumber: {
+            type: Number,
+            value: 42
+        }
+    }
+}, "vi-my-component")
 export class MyComponent extends WebComponent {
     static get template() {
         return Polymer.html`<link rel="import" href="my-component.html">`;
-    }
-
-    static get properties() {
-        return {
-            myProp: String,
-            myNumber: {
-                type: Number,
-                value: 42
-            }
-        };
     }
 }
 ```
@@ -516,17 +514,18 @@ Apply the `@observe()` and `@observer()` decorators to replicate Polymer's prope
 
 ```typescript
 // Before - single property observer
-static get properties() {
-    return {
+@WebComponent.register({
+    properties: {
         userId: {
             type: String,
             observer: "_userIdChanged"
         }
-    };
-}
-
-private _userIdChanged(newValue: string, oldValue: string) {
-    console.log("User ID changed", newValue);
+    }
+}, "vi-my-component")
+export class MyComponent extends WebComponent {
+    private _userIdChanged(newValue: string, oldValue: string) {
+        console.log("User ID changed", newValue);
+    }
 }
 
 // After
@@ -722,7 +721,8 @@ This is because changes to Vidyano objects won't automatically trigger Lit's upd
             computed: "_computeHasError(error)"
         }
     }
-})
+}, "vi-my-component")
+export class MyComponent extends WebComponent {
 
 private _computeHasError(error: string): boolean {
     return !String.isNullOrEmpty(error);
