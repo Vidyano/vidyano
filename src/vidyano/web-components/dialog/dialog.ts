@@ -1,7 +1,11 @@
 import * as Polymer from "polymer"
 import { PopupMenu } from "components/popup-menu/popup-menu";
 import "components/size-tracker/size-tracker"
-import { IPosition } from "components/web-component/polymer-web-component"
+
+interface IPosition {
+    x: number;
+    y: number;
+}
 
 export interface IDialogOptions {
     omitStyle?: boolean
@@ -43,7 +47,7 @@ export abstract class Dialog extends Polymer.WebComponent {
 
     #result: any;
     #resolve: Function;
-    #translatePosition: IPosition; 
+    #translatePosition: IPosition;
     readonly isDragging: boolean; private _setIsDragging: (isDragging: boolean) => void;
 
     anchorTag: string;
@@ -118,7 +122,7 @@ export abstract class Dialog extends Polymer.WebComponent {
             this._setIsDragging(false);
     } 
 
-    private _translate(position: IPosition) { 
+    private _translate(position: IPosition) {
         const { x, y } = this.#translatePosition = position;
 
         this.dialog.style.left = `${x}px`;
