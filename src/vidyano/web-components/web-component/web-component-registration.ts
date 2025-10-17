@@ -29,7 +29,7 @@ export function parseMethodSignature(signature: string): { methodName: string; a
 
 type ComputedPropertyConfig = {
     dependencies: string[];
-    methodName?: string; // When undefined, the value is forwarded from the first dependency
+    computeFunction?: Function; // Compute function, or undefined for simple forwarding
     allowUndefined: boolean;
 };
 

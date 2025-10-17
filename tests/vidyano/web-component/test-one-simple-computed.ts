@@ -11,7 +11,14 @@ class TestOneSimpleComputed extends WebComponent {
     declare lastName: string;
 
     @property({ type: String })
-    @computed(TestOneSimpleComputed.prototype._computeFullName, "firstName", "lastName")
+    @computed(function(this: TestOneSimpleComputed, firstName: string, lastName: string): string {
+        this.computeFullNameCallCount++;
+        this.computeFullNameLastArgs = { firstName, lastName };
+        const result = `${firstName} ${lastName}`;
+        this.computeFullNameLastResult = result;
+
+        return result;
+    }, "firstName", "lastName")
     declare readonly fullName: string;
 
     // Public properties for testing
@@ -41,15 +48,6 @@ class TestOneSimpleComputed extends WebComponent {
                 <li><strong>Computed Full Name: ${this.fullName}</strong></li>
             </ul>
         `;
-    }
-
-    private _computeFullName(firstName: string, lastName: string): string {
-        this.computeFullNameCallCount++;
-        this.computeFullNameLastArgs = { firstName, lastName };
-        const result = `${firstName} ${lastName}`;
-        this.computeFullNameLastResult = result;
-
-        return result;
     }
 
     private _firstNameChanged(newValue: string, oldValue: string): void {

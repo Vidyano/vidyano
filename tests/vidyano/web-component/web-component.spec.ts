@@ -160,6 +160,70 @@ test('TestAsyncComputed: basic async computed property', async ({ page }) => {
     expect(state.computedAsyncValue).toBe("Computed: updated");
 });
 
+test('TestAsyncComputedInline: async computed property with inline function', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-async-computed-inline');
+    await expect(component).toBeVisible();
+
+    // --- Initial state verification ---
+    await expect(component.locator('#input')).toContainText('initial');
+    await expect(component.locator('#computed')).toContainText('Loading...'); // Initial render before promise resolves
+
+    // Wait for the async computation to complete
+    await expect(component.locator('#computed')).toContainText('Computed: initial', { timeout: 2000 });
+
+    let state = await component.evaluate(node => ({
+        inputValue: (node as any).inputValue,
+        computedAsyncValue: (node as any).computedAsyncValue
+    }));
+    expect(state.inputValue).toBe("initial");
+    expect(state.computedAsyncValue).toBe("Computed: initial");
+
+    // --- Act: Change inputValue property ---
+    await component.evaluate((node: any) => { node.inputValue = "updated"; });
+    await expect(component.locator('#input')).toContainText('updated');
+    // Wait for the async computation to complete
+    await expect(component.locator('#computed')).toContainText('Computed: updated', { timeout: 2000 });
+
+    state = await component.evaluate(node => ({
+        inputValue: (node as any).inputValue,
+        computedAsyncValue: (node as any).computedAsyncValue
+    }));
+    expect(state.inputValue).toBe("updated");
+    expect(state.computedAsyncValue).toBe("Computed: updated");
+});
+
+test('TestAsyncComputedInlineUnnamed: async computed property with inline unnamed function', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-async-computed-inline-unnamed');
+    await expect(component).toBeVisible();
+
+    // --- Initial state verification ---
+    await expect(component.locator('#input')).toContainText('initial');
+    await expect(component.locator('#computed')).toContainText('Loading...'); // Initial render before promise resolves
+
+    // Wait for the async computation to complete
+    await expect(component.locator('#computed')).toContainText('Computed: initial', { timeout: 2000 });
+
+    let state = await component.evaluate(node => ({
+        inputValue: (node as any).inputValue,
+        computedAsyncValue: (node as any).computedAsyncValue
+    }));
+    expect(state.inputValue).toBe("initial");
+    expect(state.computedAsyncValue).toBe("Computed: initial");
+
+    // --- Act: Change inputValue property ---
+    await component.evaluate((node: any) => { node.inputValue = "updated"; });
+    await expect(component.locator('#input')).toContainText('updated');
+    // Wait for the async computation to complete
+    await expect(component.locator('#computed')).toContainText('Computed: updated', { timeout: 2000 });
+
+    state = await component.evaluate(node => ({
+        inputValue: (node as any).inputValue,
+        computedAsyncValue: (node as any).computedAsyncValue
+    }));
+    expect(state.inputValue).toBe("updated");
+    expect(state.computedAsyncValue).toBe("Computed: updated");
+});
+
 test('TestAsyncComputed: ignore stale async result', async ({ page }) => {
     const component = await setupComponentTest(page, 'test-async-computed');
     await expect(component).toBeVisible();

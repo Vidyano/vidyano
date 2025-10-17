@@ -7,7 +7,10 @@ class TestMultiObserver extends WebComponent {
     declare counter: number;
 
     @property({ type: Number })
-    @computed(TestMultiObserver.prototype._doubleCounter, "counter")
+    @computed(function(this: TestMultiObserver, counter: number): number {
+        this.doubleCounterCallCount++;
+        return counter * 2;
+    }, "counter")
     declare readonly doubled: number;
 
     // Public properties for testing
@@ -26,11 +29,6 @@ class TestMultiObserver extends WebComponent {
             <div>Counter: <span id="counter">${this.counter}</span></div>
             <div>Doubled: <span id="doubled">${this.doubled}</span></div>
         `;
-    }
-
-    private _doubleCounter(counter: number): number {
-        this.doubleCounterCallCount++;
-        return counter * 2;
     }
 
     @observer("counter", "doubled")

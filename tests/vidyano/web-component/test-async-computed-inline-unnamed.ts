@@ -2,14 +2,14 @@ import { property } from "lit/decorators.js";
 import { WebComponent, computed } from "../../../src/vidyano/web-components/web-component/web-component.js";
 import { html } from "lit";
 
-class TestAsyncComputed extends WebComponent {
+class TestAsyncComputedInlineUnnamed extends WebComponent {
     @property({ type: String })
     declare inputValue: string;
 
     @property({ type: String })
-    @computed(async function(this: TestAsyncComputed, inputValue: string): Promise<string> {
+    @computed(function(this: TestAsyncComputedInlineUnnamed, inputValue: string): Promise<string> {
         if (inputValue === undefined) {
-            return "Error: input was undefined";
+            return Promise.resolve("Error: input was undefined");
         }
 
         const valForPromise = inputValue;
@@ -28,13 +28,13 @@ class TestAsyncComputed extends WebComponent {
 
     render() {
         return html`
-            <p>Tests async computed properties.</p>
+            <p>Tests async computed properties with inline unnamed function.</p>
             <div>Input Value: <span id="input">${this.inputValue}</span></div>
             <div>Computed Async Value: <span id="computed">${this.computedAsyncValue ?? 'Loading...'}</span></div>
         `;
     }
 }
 
-export { TestAsyncComputed };
+export { TestAsyncComputedInlineUnnamed };
 
-customElements.define("test-async-computed", TestAsyncComputed);
+customElements.define("test-async-computed-inline-unnamed", TestAsyncComputedInlineUnnamed);

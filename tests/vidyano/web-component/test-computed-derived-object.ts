@@ -35,8 +35,12 @@ class TestComputedDerivedObject extends WebComponent {
     source: DataSource;
 
     @property({ type: Object })
-    @computed(TestComputedDerivedObject.prototype._computeDerivedObject, "source.value")
-    derivedObject: { value: string };
+    @computed(function(this: TestComputedDerivedObject, sourceValue: string): { value: string } {
+        this.computeCallCount++;
+        // CRITICAL: Always return a new object instance to test the scenario.
+        return { value: sourceValue };
+    }, "source.value")
+    declare readonly derivedObject: { value: string };
 
     @property({ type: Number })
     computeCallCount: number = 0;
@@ -51,12 +55,6 @@ class TestComputedDerivedObject extends WebComponent {
             <p>Call Count: <span id="call-count">${this.computeCallCount}</span></p>
             <p>Derived Value: <span id="derived-value">${this.derivedObject?.value}</span></p>
         `;
-    }
-
-    _computeDerivedObject(sourceValue: string): { value: string } {
-        this.computeCallCount++;
-        // CRITICAL: Always return a new object instance to test the scenario.
-        return { value: sourceValue };
     }
 
     updateSourceValue(newValue: string) {

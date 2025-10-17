@@ -654,7 +654,7 @@ updated(changedProperties: Map<PropertyKey, unknown>) {
 
 When the computed value must stay reactive (or reflect to attributes), use the `@computed()` decorator to describe its dependencies.
 
-**Important:** The `@computed()` decorator uses function references (e.g., `MyComponent.prototype._computeMethod`) followed by dependency names as separate string parameters. This provides better type safety and IDE support.
+**Important:** The `@computed()` decorator uses an inline function with explicit `this` typing, followed by dependency names as separate string parameters. This provides better type safety and IDE support, and keeps the computation logic colocated with the property declaration.
 
 ```typescript
 // Before
@@ -674,7 +674,7 @@ export class MyComponent extends WebComponent {
     }
 }
 
-// After - use @computed decorator
+// After - use @computed decorator with inline function
 import { computed } from "@vidyano/vidyano";
 
 @property({ type: String })
@@ -684,25 +684,40 @@ firstName: string;
 lastName: string;
 
 @property({ type: String })
-@computed(MyComponent.prototype._computeFullName, "firstName", "lastName")
-fullName: string;
-
-private _computeFullName(firstName: string, lastName: string): string {
+@computed(function(this: MyComponent, firstName: string, lastName: string): string {
     return `${firstName} ${lastName}`;
-}
+}, "firstName", "lastName")
+declare readonly fullName: string;
 ```
 
 **Note:** The `@computed` decorator will NOT calculate the computed property when any dependency is `undefined`. `null` values are allowed. To allow `undefined` values, use `{ allowUndefined: true }` as the last parameter:
 
 ```typescript
 @property({ type: String })
-@computed(MyComponent.prototype._computeFullName, "firstName", "lastName", { allowUndefined: true })
-fullName: string;
-
-private _computeFullName(firstName: string | undefined, lastName: string | undefined): string {
+@computed(function(this: MyComponent, firstName: string | undefined, lastName: string | undefined): string {
     return `${firstName ?? ''} ${lastName ?? ''}`.trim();
-}
+}, "firstName", "lastName", { allowUndefined: true })
+declare readonly fullName: string;
 ```
+
+**Alternative: Named Functions**
+
+If you prefer to define the compute function outside the decorator, use a named function:
+
+```typescript
+function computeFullName(this: MyComponent, firstName: string, lastName: string): string {
+    return `${firstName} ${lastName}`;
+}
+
+@property({ type: String })
+@computed(computeFullName, "firstName", "lastName")
+declare readonly fullName: string;
+```
+
+**Best Practices:**
+- Always declare computed properties as `declare readonly` to make their immutable nature clear
+- Use inline functions for simple computations to keep logic colocated with the property
+- Always include explicit `this` typing for better IDE support and type checking
 
 ##### Using getters (for reactive component properties only)
 

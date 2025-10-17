@@ -10,7 +10,11 @@ class TestComputedUndefinedBlocking extends WebComponent {
     declare lastName: string | undefined;
 
     @property({ type: String })
-    @computed(TestComputedUndefinedBlocking.prototype._computeFullName, "firstName", "lastName")
+    @computed(function(this: TestComputedUndefinedBlocking, firstName: string, lastName: string): string {
+        this.computeCallCount++;
+        this.computeLastArgs = { firstName, lastName };
+        return `${firstName} ${lastName}`;
+    }, "firstName", "lastName")
     declare readonly fullName: string | undefined;
 
     // Public properties for testing
@@ -34,11 +38,6 @@ class TestComputedUndefinedBlocking extends WebComponent {
         `;
     }
 
-    private _computeFullName(firstName: string, lastName: string): string {
-        this.computeCallCount++;
-        this.computeLastArgs = { firstName, lastName };
-        return `${firstName} ${lastName}`;
-    }
 }
 
 customElements.define("test-computed-undefined-blocking", TestComputedUndefinedBlocking);

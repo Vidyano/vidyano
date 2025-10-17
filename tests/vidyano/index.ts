@@ -6,6 +6,8 @@ import "./web-component/test-computed-derived-object.js";
 import "./web-component/test-computed-path.js";
 import "./web-component/test-computed-sub-path.js";
 import "./web-component/test-async-computed.js";
+import "./web-component/test-async-computed-inline.js";
+import "./web-component/test-async-computed-inline-unnamed.js";
 import "./web-component/test-multi-observer.js";
 import "./web-component/test-event-listeners.js";
 import "./web-component/test-keybinding.js";

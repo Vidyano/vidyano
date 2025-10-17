@@ -10,7 +10,11 @@ class TestComputedAllowUndefined extends WebComponent {
     declare lastName: string | undefined;
 
     @property({ type: String })
-    @computed(TestComputedAllowUndefined.prototype._computeFullName, "firstName", "lastName", { allowUndefined: true })
+    @computed(function(this: TestComputedAllowUndefined, firstName: string | undefined, lastName: string | undefined): string {
+        this.computeCallCount++;
+        this.computeLastArgs = { firstName, lastName };
+        return `${firstName ?? ''} ${lastName ?? ''}`.trim();
+    }, "firstName", "lastName", { allowUndefined: true })
     declare readonly fullName: string | undefined;
 
     // Public properties for testing
@@ -34,11 +38,6 @@ class TestComputedAllowUndefined extends WebComponent {
         `;
     }
 
-    private _computeFullName(firstName: string | undefined, lastName: string | undefined): string {
-        this.computeCallCount++;
-        this.computeLastArgs = { firstName, lastName };
-        return `${firstName ?? ''} ${lastName ?? ''}`.trim();
-    }
 }
 
 customElements.define("test-computed-allow-undefined", TestComputedAllowUndefined);
