@@ -209,7 +209,7 @@ export class MyComponent extends WebComponent { }
 import { observe } from "@vidyano/vidyano";
 
 @property({ type: String, reflect: true })
-@observe("_userIdChanged")
+@observe(MyComponent.prototype._userIdChanged)
 userId: string;
 
 private _userIdChanged(newValue: string, oldValue: string) {
@@ -512,6 +512,8 @@ customElements.define("vi-my-component", MyComponent);
 
 Apply the `@observe()` and `@observer()` decorators to replicate Polymer's property watchers.
 
+**Important:** The `@observe()` decorator uses function references (e.g., `MyComponent.prototype._methodName`) instead of string names. This provides better type safety and IDE support.
+
 ```typescript
 // Before - single property observer
 @WebComponent.register({
@@ -532,7 +534,7 @@ export class MyComponent extends WebComponent {
 import { observe } from "@vidyano/vidyano";
 
 @property({ type: String })
-@observe("_userIdChanged")
+@observe(MyComponent.prototype._userIdChanged)
 userId: string;
 
 private _userIdChanged(newValue: string, oldValue: string) {
@@ -622,7 +624,7 @@ Keep business logic in observers and move DOM-oriented side effects into Lit's l
 ```typescript
 // Wrong - causes infinite update loop
 @property({ type: String, reflect: true })
-@observe("_updateColor")
+@observe(MyComponent.prototype._updateColor)
 color: string;
 
 private _updateColor(color: string) {
@@ -652,6 +654,8 @@ updated(changedProperties: Map<PropertyKey, unknown>) {
 
 When the computed value must stay reactive (or reflect to attributes), use the `@computed()` decorator to describe its dependencies.
 
+**Important:** The `@computed()` decorator uses function references (e.g., `MyComponent.prototype._computeMethod`) followed by dependency names as separate string parameters. This provides better type safety and IDE support.
+
 ```typescript
 // Before
 @WebComponent.register({
@@ -680,7 +684,7 @@ firstName: string;
 lastName: string;
 
 @property({ type: String })
-@computed("_computeFullName(firstName, lastName)")
+@computed(MyComponent.prototype._computeFullName, "firstName", "lastName")
 fullName: string;
 
 private _computeFullName(firstName: string, lastName: string): string {
@@ -688,11 +692,11 @@ private _computeFullName(firstName: string, lastName: string): string {
 }
 ```
 
-**Note:** The `@computed` decorator will NOT calculate the computed property when any dependency is `undefined`. `null` values are allowed. To allow `undefined` values, use `{ allowUndefined: true }` as the second parameter:
+**Note:** The `@computed` decorator will NOT calculate the computed property when any dependency is `undefined`. `null` values are allowed. To allow `undefined` values, use `{ allowUndefined: true }` as the last parameter:
 
 ```typescript
 @property({ type: String })
-@computed("_computeFullName(firstName, lastName)", { allowUndefined: true })
+@computed(MyComponent.prototype._computeFullName, "firstName", "lastName", { allowUndefined: true })
 fullName: string;
 
 private _computeFullName(firstName: string | undefined, lastName: string | undefined): string {
