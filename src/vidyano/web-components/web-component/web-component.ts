@@ -1,5 +1,6 @@
 import { AppBase } from "components/app/app";
 import { LitElement, PropertyValueMap } from "lit";
+import { property } from "lit/decorators.js";
 import { Service } from "vidyano";
 import { WebComponentObserverController } from "./web-component-observer-controller";
 import { WebComponentListenerController } from "./web-component-listener-controller";
@@ -7,6 +8,7 @@ import { WebComponentKeybindingController } from "./web-component-keybinding-con
 import { WebComponentRegistrationInfo } from "./web-component-registration";
 import { WebComponentTranslationController } from "./web-component-translation-controller";
 import { registerWebComponent, getListenersConfig, getKeybindingsConfig, getComputedConfig, getPropertyObserversConfig, getObserversConfig } from "./web-component-registration";
+import { computed } from "./web-component-decorators";
 
 export { listener, keybinding, observer, observe, notify, computed } from "./web-component-decorators";
 
@@ -32,11 +34,15 @@ export type TypedTranslations<T> = Translations<T> & Record<string, string>;
  * Base class for all lit-based web components in a Vidyano application.
  */
 export abstract class WebComponent<TTranslations extends Record<string, any> = {}> extends LitElement {
-    static properties = {
-        app: { type: Object, noAccessor: true },
-        service: { type: Object, noAccessor: true },
-        translations: { type: Object, computed: "service.language.messages" },
-    };
+    @property({ type: Object, noAccessor: true })
+    app: AppBase;
+
+    @property({ type: Object, noAccessor: true })
+    service: Service;
+
+    @property({ type: Object })
+    @computed("service.language.messages")
+    translations: TypedTranslations<TTranslations>;
 
     /**
      * Override createProperty to automatically convert camelCase property names to kebab-case attribute names.
@@ -88,10 +94,18 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
     }
 
     override connectedCallback() {
+        // Initialize app from window.app if not already set
         if (!this.app) {
-            this.#listenForApp();
+            // @ts-ignore - window.app is set but not typed
+            if (window.app) {
+                // @ts-ignore - window.app is set but not typed
+                this.app = window.app;
+            } else {
+                this.#listenForApp();
+            }
         }
-        else if (!this.app.service)
+
+        if (this.app && !this.app.service)
             this.#listenForService(this.app);
 
         super.connectedCallback();
@@ -111,27 +125,6 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
         }
     }
 
-    /**
-     * Gets the global app instance.
-     */
-    get app(): AppBase {
-        // @ts-ignore window.app is set but not typed
-        return window.app;
-    }
-
-    /**
-     * Gets the Vidyano service instance associated with the app.
-     */
-    get service(): Service {
-        return this.app?.service;
-    }
-
-    /**
-     * Gets the translations from the service's client-side language messages.
-     */
-    get translations(): TypedTranslations<TTranslations> {
-        return this[TRANSLATION_CONTROLLER_SYMBOL]?.translations || this.service?.language?.messages || {};
-    }
 
     /**
      * Provides convenient $ accessor for shadow DOM elements by ID.
@@ -221,8 +214,10 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
             window.removeEventListener("app-changed", this[APP_CHANGE_LISTENER_SYMBOL]);
             this[APP_CHANGE_LISTENER_SYMBOL] = null;
 
-            // @ts-ignore window.app is set but not typed
-            this.requestUpdate("app", window.app);
+            const oldApp = this.app;
+            // @ts-ignore - window.app is set but not typed
+            this.app = window.app;
+            this.requestUpdate("app", oldApp);
 
             if (!this.app.service)
                 this.#listenForService(this.app);
@@ -238,7 +233,9 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
             app.removeEventListener("service-changed", this[SERVICE_CHANGE_LISTENER_SYMBOL]);
             this[SERVICE_CHANGE_LISTENER_SYMBOL] = null;
 
-            this.requestUpdate("service", app.service);
+            const oldService = this.service;
+            this.service = app.service;
+            this.requestUpdate("service", oldService);
         });
     }
 
