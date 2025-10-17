@@ -35,7 +35,7 @@ class TestComputedDerivedObject extends WebComponent {
     source: DataSource;
 
     @property({ type: Object })
-    @computed("_computeDerivedObject(source.value)")
+    @computed(TestComputedDerivedObject.prototype._computeDerivedObject, "source.value")
     derivedObject: { value: string };
 
     @property({ type: Number })

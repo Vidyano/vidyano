@@ -10,7 +10,7 @@ class TestComputedUndefinedBlocking extends WebComponent {
     declare lastName: string | undefined;
 
     @property({ type: String })
-    @computed("_computeFullName(firstName, lastName)")
+    @computed(TestComputedUndefinedBlocking.prototype._computeFullName, "firstName", "lastName")
     declare readonly fullName: string | undefined;
 
     // Public properties for testing
