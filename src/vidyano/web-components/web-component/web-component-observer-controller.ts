@@ -277,16 +277,18 @@ export class WebComponentObserverController implements ReactiveController {
         if (!propertyObservers) return;
 
         for (const [prop, oldVal] of changedProperties.entries()) {
-            const observerName = propertyObservers[prop as string];
-            if (observerName && typeof this.#host[observerName] === 'function') {
-                const newVal = this.#host[prop as string];
-                if (newVal !== oldVal) {
-                    try {
-                        this.#host[observerName](newVal, oldVal);
-                    } catch (e) {
-                        console.error(`[${this.#host.tagName.toLowerCase()}] Error in property observer '${observerName}' for property '${String(prop)}':`, e);
-                    }
-                }
+            const observerFunction = propertyObservers[prop as string];
+            if (!observerFunction) continue;
+
+            const newVal = this.#host[prop as string];
+            if (newVal === oldVal) continue;
+
+            try {
+                // Call the function with the host as `this` context
+                observerFunction.call(this.#host, newVal, oldVal);
+            } catch (e) {
+                const observerName = observerFunction.name || '<anonymous>';
+                console.error(`[${this.#host.tagName.toLowerCase()}] Error in property observer '${observerName}' for property '${String(prop)}':`, e);
             }
         }
     }

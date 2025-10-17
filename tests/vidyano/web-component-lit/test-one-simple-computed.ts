@@ -4,7 +4,7 @@ import { WebComponent, observe, computed } from "../../../src/vidyano/web-compon
 
 class TestOneSimpleComputed extends WebComponent {
     @property({ type: String })
-    @observe("_firstNameChanged")
+    @observe(TestOneSimpleComputed.prototype._firstNameChanged)
     declare firstName: string;
 
     @property({ type: String })
@@ -23,7 +23,7 @@ class TestOneSimpleComputed extends WebComponent {
 
     constructor() {
         super();
-        
+
         this.firstName = "Jane";
         this.lastName = "Doe";
     }

@@ -850,3 +850,75 @@ test('TestComputedAllowUndefined: computed calculated even when properties are u
     expect(state.computeCallCount).toBe(3); // Computed again
     expect(state.computeLastArgs).toEqual({ firstName: undefined, lastName: 'Doe' });
 });
+
+test('TestObserveFunction: @observe with function reference', async ({ page}) => {
+    const component = await setupComponentTest(page, 'test-observe-function');
+    await expect(component).toBeVisible();
+
+    // --- Initial state verification ---
+    await expect(component.locator('#counter')).toContainText('1');
+    await expect(component.locator('#name')).toContainText('initial');
+    await expect(component.locator('#counter-changes')).toContainText('1'); // Called once on initialization
+    await expect(component.locator('#name-changes')).toContainText('1'); // Called once on initialization
+
+    let state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            counter: inst.counter,
+            name: inst.name,
+            counterChangeCallCount: inst.counterChangeCallCount,
+            counterChangeLastArgs: inst.counterChangeLastArgs,
+            counterChangeThisContext: inst.counterChangeThisContext,
+            nameChangeCallCount: inst.nameChangeCallCount,
+            nameChangeLastArgs: inst.nameChangeLastArgs
+        };
+    });
+
+    expect(state.counter).toBe(1);
+    expect(state.name).toBe('initial');
+    expect(state.counterChangeCallCount).toBe(1);
+    expect(state.counterChangeLastArgs).toEqual({ newValue: 1, oldValue: undefined });
+    // Verify that `this` refers to the component instance
+    expect(state.counterChangeThisContext).not.toBeNull();
+    expect(state.nameChangeCallCount).toBe(1);
+    expect(state.nameChangeLastArgs).toEqual({ newValue: 'initial', oldValue: undefined });
+
+    // --- Act: Change counter property ---
+    await component.evaluate(node => { (node as any).counter = 5; });
+    await expect(component.locator('#counter')).toContainText('5');
+    await expect(component.locator('#counter-changes')).toContainText('2');
+
+    let counterState = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            counter: inst.counter,
+            counterChangeCallCount: inst.counterChangeCallCount,
+            counterChangeLastArgs: inst.counterChangeLastArgs,
+            counterChangeThisContext: inst.counterChangeThisContext
+        };
+    });
+
+    expect(counterState.counter).toBe(5);
+    expect(counterState.counterChangeCallCount).toBe(2);
+    expect(counterState.counterChangeLastArgs).toEqual({ newValue: 5, oldValue: 1 });
+    // Verify `this` context is still correct
+    expect(counterState.counterChangeThisContext).not.toBeNull();
+
+    // --- Act: Change name property ---
+    await component.evaluate(node => { (node as any).name = 'updated'; });
+    await expect(component.locator('#name')).toContainText('updated');
+    await expect(component.locator('#name-changes')).toContainText('2');
+
+    let nameState = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            name: inst.name,
+            nameChangeCallCount: inst.nameChangeCallCount,
+            nameChangeLastArgs: inst.nameChangeLastArgs
+        };
+    });
+
+    expect(nameState.name).toBe('updated');
+    expect(nameState.nameChangeCallCount).toBe(2);
+    expect(nameState.nameChangeLastArgs).toEqual({ newValue: 'updated', oldValue: 'initial' });
+});

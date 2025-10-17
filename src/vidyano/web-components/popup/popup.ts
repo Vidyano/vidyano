@@ -65,14 +65,14 @@ export class Popup extends WebComponent {
      * Whether the popup trigger element has hover state.
      */
     @property({ type: Boolean, state: true })
-    @observe('_onHoverChanged')
+    @observe(Popup.prototype._onHoverChanged)
     hover: boolean = false;
 
     /**
      * Whether the popup is currently open.
      */
     @property({ type: Boolean, state: true })
-    @observe('_onOpenChanged')
+    @observe(Popup.prototype._onOpenChanged)
     open: boolean = false;
 
     /**
