@@ -34,11 +34,33 @@ export type TypedTranslations<T> = Translations<T> & Record<string, string>;
  * Base class for all lit-based web components in a Vidyano application.
  */
 export abstract class WebComponent<TTranslations extends Record<string, any> = {}> extends LitElement {
-    @property({ type: Object, noAccessor: true })
-    app: AppBase;
+    #app: AppBase;
+    #service: Service;
 
-    @property({ type: Object, noAccessor: true })
-    service: Service;
+    @property({ attribute: false })
+    get app(): AppBase {
+        return this.#app;
+    }
+    set app(value: AppBase) {
+        const oldValue = this.#app;
+        this.#app = value;
+        if (value && !value.service) {
+            this.#listenForService(value);
+        } else if (value?.service) {
+            this.service = value.service;
+        }
+        this.requestUpdate("app", oldValue);
+    }
+
+    @property({ attribute: false })
+    get service(): Service {
+        return this.#service;
+    }
+    set service(value: Service) {
+        const oldValue = this.#service;
+        this.#service = value;
+        this.requestUpdate("service", oldValue);
+    }
 
     @property({ type: Object })
     @computed("service.language.messages")
@@ -94,11 +116,10 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
     }
 
     override connectedCallback() {
-        // Initialize app from window.app if not already set
         if (!this.app) {
-            // @ts-ignore - window.app is set but not typed
+            // @ts-ignore
             if (window.app) {
-                // @ts-ignore - window.app is set but not typed
+                // @ts-ignore
                 this.app = window.app;
             } else {
                 this.#listenForApp();
