@@ -1,4 +1,4 @@
-import { COMPUTED_CONFIG_SYMBOL, PROPERTY_OBSERVERS_CONFIG_SYMBOL, OBSERVERS_CONFIG_SYMBOL, NOTIFY_CONFIG_SYMBOL, LISTENERS_CONFIG_SYMBOL } from "./web-component-registration";
+import { COMPUTED_CONFIG_SYMBOL, PROPERTY_OBSERVERS_CONFIG_SYMBOL, OBSERVERS_CONFIG_SYMBOL, NOTIFY_CONFIG_SYMBOL, LISTENERS_CONFIG_SYMBOL, KEYBINDINGS_CONFIG_SYMBOL } from "./web-component-registration";
 import type { WebComponent } from "./web-component";
 
 type WebComponentConstructor = typeof WebComponent & {
@@ -7,6 +7,7 @@ type WebComponentConstructor = typeof WebComponent & {
     [OBSERVERS_CONFIG_SYMBOL]?: Record<string, string[]>;
     [NOTIFY_CONFIG_SYMBOL]?: Record<string, string | true>;
     [LISTENERS_CONFIG_SYMBOL]?: Record<string, string>;
+    [KEYBINDINGS_CONFIG_SYMBOL]?: Record<string, string>;
 };
 
 function ensureOwn<T extends object>(ctor: any, symbol: symbol, initial: T): T {
@@ -25,6 +26,32 @@ export function listener(eventName: string) {
         const ctor = target.constructor as WebComponentConstructor;
         const conf = ensureOwn<Record<string, string>>(ctor, LISTENERS_CONFIG_SYMBOL, {});
         conf[eventName] = propertyKey;
+    };
+}
+
+/**
+ * Decorator for binding keyboard shortcuts to component methods.
+ * @param keybinding - Keyboard shortcut (e.g., "ctrl+s", "escape", "alt+shift+k")
+ *
+ * @example
+ * ```typescript
+ * @keybinding("ctrl+s")
+ * private handleSave(e: KeyboardEvent) {
+ *   e.preventDefault();
+ *   // Save logic
+ * }
+ *
+ * @keybinding("escape")
+ * private handleEscape(e: KeyboardEvent) {
+ *   // Close dialog
+ * }
+ * ```
+ */
+export function keybinding(keybinding: string) {
+    return (target: any, propertyKey: string, _desc: PropertyDescriptor) => {
+        const ctor = target.constructor as WebComponentConstructor;
+        const conf = ensureOwn<Record<string, string>>(ctor, KEYBINDINGS_CONFIG_SYMBOL, {});
+        conf[keybinding] = propertyKey;
     };
 }
 

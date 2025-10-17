@@ -922,3 +922,107 @@ test('TestObserveFunction: @observe with function reference', async ({ page}) =>
     expect(nameState.nameChangeCallCount).toBe(2);
     expect(nameState.nameChangeLastArgs).toEqual({ newValue: 'updated', oldValue: 'initial' });
 });
+
+test('TestKeybinding: @keybinding decorator with keyboard shortcuts', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-keybinding');
+    await expect(component).toBeVisible();
+
+    // --- Initial state verification ---
+    let state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            escapeCallCount: inst.escapeCallCount,
+            ctrlSCallCount: inst.ctrlSCallCount,
+            altKCallCount: inst.altKCallCount,
+            shiftEnterCallCount: inst.shiftEnterCallCount,
+            lastEvent: inst.lastEvent
+        };
+    });
+    expect(state.escapeCallCount).toBe(0);
+    expect(state.ctrlSCallCount).toBe(0);
+    expect(state.altKCallCount).toBe(0);
+    expect(state.shiftEnterCallCount).toBe(0);
+    expect(state.lastEvent).toBeNull();
+
+    // --- Act: Press Escape key ---
+    await component.press('Escape');
+    await expect(component.locator('#escape-count')).toContainText('1');
+    state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            escapeCallCount: inst.escapeCallCount,
+            ctrlSCallCount: inst.ctrlSCallCount,
+            altKCallCount: inst.altKCallCount,
+            shiftEnterCallCount: inst.shiftEnterCallCount,
+            lastEvent: inst.lastEvent
+        };
+    });
+    expect(state.escapeCallCount).toBe(1);
+    expect(state.lastEvent).not.toBeNull();
+
+    // --- Act: Press Ctrl+S ---
+    await component.press('Control+s');
+    await expect(component.locator('#ctrl-s-count')).toContainText('1');
+    state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            escapeCallCount: inst.escapeCallCount,
+            ctrlSCallCount: inst.ctrlSCallCount,
+            altKCallCount: inst.altKCallCount,
+            shiftEnterCallCount: inst.shiftEnterCallCount,
+            lastEvent: inst.lastEvent
+        };
+    });
+    expect(state.escapeCallCount).toBe(1);
+    expect(state.ctrlSCallCount).toBe(1);
+
+    // --- Act: Press Alt+K ---
+    await component.press('Alt+k');
+    await expect(component.locator('#alt-k-count')).toContainText('1');
+    state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            escapeCallCount: inst.escapeCallCount,
+            ctrlSCallCount: inst.ctrlSCallCount,
+            altKCallCount: inst.altKCallCount,
+            shiftEnterCallCount: inst.shiftEnterCallCount,
+            lastEvent: inst.lastEvent
+        };
+    });
+    expect(state.escapeCallCount).toBe(1);
+    expect(state.ctrlSCallCount).toBe(1);
+    expect(state.altKCallCount).toBe(1);
+
+    // --- Act: Press Shift+Enter ---
+    await component.press('Shift+Enter');
+    await expect(component.locator('#shift-enter-count')).toContainText('1');
+    state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            escapeCallCount: inst.escapeCallCount,
+            ctrlSCallCount: inst.ctrlSCallCount,
+            altKCallCount: inst.altKCallCount,
+            shiftEnterCallCount: inst.shiftEnterCallCount,
+            lastEvent: inst.lastEvent
+        };
+    });
+    expect(state.escapeCallCount).toBe(1);
+    expect(state.ctrlSCallCount).toBe(1);
+    expect(state.altKCallCount).toBe(1);
+    expect(state.shiftEnterCallCount).toBe(1);
+
+    // --- Act: Press Escape again to verify it increments ---
+    await component.press('Escape');
+    await expect(component.locator('#escape-count')).toContainText('2');
+    state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            escapeCallCount: inst.escapeCallCount,
+            ctrlSCallCount: inst.ctrlSCallCount,
+            altKCallCount: inst.altKCallCount,
+            shiftEnterCallCount: inst.shiftEnterCallCount,
+            lastEvent: inst.lastEvent
+        };
+    });
+    expect(state.escapeCallCount).toBe(2);
+});
