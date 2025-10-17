@@ -62,7 +62,7 @@ export class SizeTracker extends WebComponent {
      */
     @property({ type: Object })
     @notify()
-    size: ISize | null = null;
+    size: ISize;
 
     /**
      * When true, fires sizechanged events even when width or height is 0.
