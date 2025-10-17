@@ -13,3 +13,4 @@ import "./web-component-lit/test-observer-undefined-blocking.js";
 import "./web-component-lit/test-observer-allow-undefined.js";
 import "./web-component-lit/test-computed-undefined-blocking.js";
 import "./web-component-lit/test-computed-allow-undefined.js";
+import "./web-component-lit/test-observe-function.js";

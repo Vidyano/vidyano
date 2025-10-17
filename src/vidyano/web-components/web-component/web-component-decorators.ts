@@ -106,24 +106,31 @@ export function observer(...args: Array<string | ObserverOptions>): (target: any
 /**
  * Decorator for observing changes to a single property.
  * The decorated property will call the specified observer method when it changes.
- * @param methodName - The name of the observer method to call when the property changes.
+ *
+ * **IMPORTANT:** By JavaScript design, truly private methods (with `#`) cannot be
+ * referenced via `Class.prototype.#method`. Use regular `private` methods with underscore prefix instead.
+ *
+ * @param observerFunction - A reference to the observer method function via prototype.
  *
  * @example
  * ```typescript
  * @property({ type: Number })
- * @observe("_handleScrollChange")
+ * @observe(DatePicker.prototype._handleScrollChange)
  * scrollTop: number;
  *
  * private _handleScrollChange(newValue: number, oldValue: number) {
+ *   // `this` refers to the DatePicker instance
  *   console.log(`Scroll changed from ${oldValue} to ${newValue}`);
  * }
  * ```
  */
-export function observe(methodName: string) {
+export function observe(observerFunction: Function) {
     return (target: any, propertyKey: string) => {
         const ctor = target.constructor as WebComponentConstructor;
-        const conf = ensureOwn<Record<string, string>>(ctor, PROPERTY_OBSERVERS_CONFIG_SYMBOL, {});
-        conf[propertyKey] = methodName;
+        const conf = ensureOwn<Record<string, Function>>(ctor, PROPERTY_OBSERVERS_CONFIG_SYMBOL, {});
+
+        // Store the function reference
+        conf[propertyKey] = observerFunction;
     };
 }
 

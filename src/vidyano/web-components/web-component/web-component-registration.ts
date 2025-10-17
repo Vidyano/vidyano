@@ -39,7 +39,7 @@ type ObserverConfig = {
 
 export type ComputedConfig = Record<string, ComputedPropertyConfig>;
 export type ObserversConfig = Record<string, ObserverConfig>;
-export type PropertyObserversConfig = Record<string, string>;
+export type PropertyObserversConfig = Record<string, Function>;
 export type NotifyConfig = Record<string, string | true>; // true = auto-generate kebab-case-changed, string = custom event name
 export type ListenersConfig = Record<string, string>;
 

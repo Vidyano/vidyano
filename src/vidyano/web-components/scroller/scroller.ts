@@ -98,13 +98,13 @@ export class Scroller extends WebComponent {
 
     /** Current vertical scroll position in pixels */
     @property({ type: Number })
-    @observe("_verticalScrollOffsetChanged")
+    @observe(Scroller.prototype._verticalScrollOffsetChanged)
     @notify("vertical-scroll-offset-changed")
     verticalScrollOffset: number = 0;
 
     /** Current horizontal scroll position in pixels */
     @property({ type: Number })
-    @observe("_horizontalScrollOffsetChanged")
+    @observe(Scroller.prototype._horizontalScrollOffsetChanged)
     @notify("horizontal-scroll-offset-changed")
     horizontalScrollOffset: number = 0;
 

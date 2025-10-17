@@ -21,7 +21,7 @@ export class DatePicker extends WebComponent {
     static styles = unsafeCSS(styles);
 
     @property({ type: String, reflect: true })
-    @observe("_zoomChanged")
+    @observe(DatePicker.prototype._zoomChanged)
     zoom: "days" | "months" | "years" = "days";
 
     @state()
