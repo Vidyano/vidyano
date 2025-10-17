@@ -78,7 +78,7 @@ export class DatePicker extends WebComponent {
                         <vi-button n="1" @click=${this._slow}><vi-icon source="Forward"></vi-icon></vi-button>
                         <vi-button n="1" @click=${this._fast} ?hidden=${!this.canFast}><vi-icon source="FastForward"></vi-icon></vi-button>
                     </header>
-                    <main class="main" zoom=${this.zoom}>
+                    <main class="main" zoom=${this.zoom} @wheel=${this._onWheel}>
                         ${!this.deferredCellsUpdate ? html`
                             ${this.cells?.map(cell => html`
                                 <div
@@ -288,6 +288,24 @@ export class DatePicker extends WebComponent {
             this.zoom = "years";
 
         e.stopPropagation();
+    }
+
+    private _onWheel(e: WheelEvent) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const direction = Math.sign(e.deltaY);
+        switch (this.zoom) {
+            case "days":
+                this.#navigate(direction, "month");
+                break;
+            case "months":
+                this.#navigate(direction, "year");
+                break;
+            case "years":
+                this.#navigate(direction * 12, "year");
+                break;
+        }
     }
 
     #applyTimeToDate(date: Date): void {
