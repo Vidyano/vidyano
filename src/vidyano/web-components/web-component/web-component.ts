@@ -3,13 +3,15 @@ import { LitElement, PropertyValueMap } from "lit";
 import { Service } from "vidyano";
 import { WebComponentObserverController } from "./web-component-observer-controller";
 import { WebComponentListenerController } from "./web-component-listener-controller";
+import { WebComponentKeybindingController } from "./web-component-keybinding-controller";
 import { WebComponentRegistrationInfo } from "./web-component-registration";
 import { WebComponentTranslationController } from "./web-component-translation-controller";
-import { registerWebComponent, getListenersConfig, getComputedConfig, getPropertyObserversConfig, getObserversConfig } from "./web-component-registration";
+import { registerWebComponent, getListenersConfig, getKeybindingsConfig, getComputedConfig, getPropertyObserversConfig, getObserversConfig } from "./web-component-registration";
 
-export { listener, observer, observe, notify, computed } from "./web-component-decorators";
+export { listener, keybinding, observer, observe, notify, computed } from "./web-component-decorators";
 
 const LISTENER_CONTROLLER_SYMBOL = Symbol("WebComponent.listenerController");
+const KEYBINDING_CONTROLLER_SYMBOL = Symbol("WebComponent.keybindingController");
 const OBSERVER_CONTROLLER_SYMBOL = Symbol("WebComponent.observerController");
 const TRANSLATION_CONTROLLER_SYMBOL = Symbol("WebComponent.translationController");
 
@@ -71,6 +73,11 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
         const listenerConfig = getListenersConfig(this);
         if (Object.keys(listenerConfig).length > 0) {
             this.addController(this[LISTENER_CONTROLLER_SYMBOL] = new WebComponentListenerController(this));
+        }
+
+        const keybindingConfig = getKeybindingsConfig(this);
+        if (Object.keys(keybindingConfig).length > 0) {
+            this.addController(this[KEYBINDING_CONTROLLER_SYMBOL] = new WebComponentKeybindingController(this));
         }
 
         if (Object.keys(getComputedConfig(this)).length > 0 ||

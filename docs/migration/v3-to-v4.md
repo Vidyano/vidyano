@@ -802,6 +802,45 @@ export class MyComponent extends WebComponent {
 }
 ```
 
+### Keyboard Shortcuts
+
+For binding keyboard shortcuts to component methods, use the `@keybinding()` decorator:
+
+```typescript
+import { keybinding } from "@vidyano/vidyano";
+
+export class MyComponent extends WebComponent {
+    @keybinding("escape")
+    private _handleEscape(e: KeyboardEvent) {
+        // Handle Escape key
+        this.close();
+    }
+
+    @keybinding("ctrl+s")
+    private _handleSave(e: KeyboardEvent) {
+        e.preventDefault();  // Prevent browser's default save
+        this.save();
+    }
+
+    @keybinding("alt+shift+k")
+    private _handleComplexShortcut(e: KeyboardEvent) {
+        // Handle Alt+Shift+K combination
+    }
+}
+```
+
+**Keybinding format:**
+- Single keys: `"escape"`, `"enter"`, `"delete"`, `"f1"`, etc.
+- With modifiers: `"ctrl+s"`, `"alt+k"`, `"shift+enter"`
+- Multiple modifiers: `"ctrl+alt+shift+s"`
+- Case insensitive: `"Ctrl+S"` is the same as `"ctrl+s"`
+
+**Important notes:**
+- Keybindings listen for `keydown` events on the component element
+- The keyboard event is passed to your handler method
+- Use `e.preventDefault()` to prevent default browser behavior
+- Modifier order in the binding string doesn't matter (normalized internally)
+
 ### Waiting for Rendering
 
 ```typescript

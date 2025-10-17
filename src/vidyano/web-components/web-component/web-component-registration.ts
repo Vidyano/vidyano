@@ -7,6 +7,7 @@ export const PROPERTY_OBSERVERS_CONFIG_SYMBOL = Symbol("WebComponent.propertyObs
 export const NOTIFY_CONFIG_SYMBOL = Symbol("WebComponent.notifyConfig");
 export const SENSITIVE_CONFIG_SYMBOL = Symbol("WebComponent.sensitiveConfig");
 export const LISTENERS_CONFIG_SYMBOL = Symbol("WebComponent.listenersConfig");
+export const KEYBINDINGS_CONFIG_SYMBOL = Symbol("WebComponent.keybindingsConfig");
 
 /**
  * Parses a method signature string of the form "methodName(arg1, arg2, ...)".
@@ -42,6 +43,7 @@ export type ObserversConfig = Record<string, ObserverConfig>;
 export type PropertyObserversConfig = Record<string, Function>;
 export type NotifyConfig = Record<string, string | true>; // true = auto-generate kebab-case-changed, string = custom event name
 export type ListenersConfig = Record<string, string>;
+export type KeybindingsConfig = Record<string, string>; // keybinding -> methodName
 
 type WebComponentConstructor = typeof WebComponent & {
     properties?: Record<string, PropertyDeclaration>;
@@ -51,6 +53,7 @@ type WebComponentConstructor = typeof WebComponent & {
     [NOTIFY_CONFIG_SYMBOL]?: NotifyConfig;
     [SENSITIVE_CONFIG_SYMBOL]?: boolean;
     [LISTENERS_CONFIG_SYMBOL]?: ListenersConfig;
+    [KEYBINDINGS_CONFIG_SYMBOL]?: KeybindingsConfig;
 };
 
 
@@ -78,6 +81,10 @@ export interface WebComponentRegistrationInfo {
 
 export function getListenersConfig(component: WebComponent): ListenersConfig {
     return (component.constructor as WebComponentConstructor)[LISTENERS_CONFIG_SYMBOL] || {};
+}
+
+export function getKeybindingsConfig(component: WebComponent): KeybindingsConfig {
+    return (component.constructor as WebComponentConstructor)[KEYBINDINGS_CONFIG_SYMBOL] || {};
 }
 
 export function getObserversConfig(component: WebComponent): ObserversConfig {
@@ -135,6 +142,7 @@ export function registerWebComponent<T extends typeof WebComponent>(configOrTag:
     const inheritedPropertyObserversConfig = parentClass[PROPERTY_OBSERVERS_CONFIG_SYMBOL] || {};
     const inheritedObserversConfig = parentClass[OBSERVERS_CONFIG_SYMBOL] || {};
     const inheritedListenersConfig = parentClass[LISTENERS_CONFIG_SYMBOL] || {};
+    const inheritedKeybindingsConfig = parentClass[KEYBINDINGS_CONFIG_SYMBOL] || {};
     const inheritedSensitive = parentClass[SENSITIVE_CONFIG_SYMBOL];
 
     // Process the decorated configurations from the target class.
@@ -142,11 +150,13 @@ export function registerWebComponent<T extends typeof WebComponent>(configOrTag:
     const decoratedPropertyObserversConfig = targetClass[PROPERTY_OBSERVERS_CONFIG_SYMBOL] || {};
     const decoratedObserversConfig = targetClass[OBSERVERS_CONFIG_SYMBOL] || {};
     const decoratedListenersConfig = targetClass[LISTENERS_CONFIG_SYMBOL] || {};
+    const decoratedKeybindingsConfig = targetClass[KEYBINDINGS_CONFIG_SYMBOL] || {};
 
     // Merge new configs with inherited configs and decorator-provided configs. Child-specific config wins.
     (targetClass as WebComponentConstructor)[COMPUTED_CONFIG_SYMBOL] = { ...inheritedComputedConfig, ...decoratedComputedConfig };
     (targetClass as WebComponentConstructor)[PROPERTY_OBSERVERS_CONFIG_SYMBOL] = { ...inheritedPropertyObserversConfig, ...decoratedPropertyObserversConfig };
     (targetClass as WebComponentConstructor)[LISTENERS_CONFIG_SYMBOL] = { ...inheritedListenersConfig, ...decoratedListenersConfig, ...(config.listeners || {}) };
+    (targetClass as WebComponentConstructor)[KEYBINDINGS_CONFIG_SYMBOL] = { ...inheritedKeybindingsConfig, ...decoratedKeybindingsConfig };
 
     // Merge new properties with inherited ones, overriding as necessary.
     const { properties: newProperties, ...restConfig } = config;
