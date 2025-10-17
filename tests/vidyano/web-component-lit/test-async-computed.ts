@@ -7,7 +7,7 @@ class TestAsyncComputed extends WebComponent {
     declare inputValue: string;
 
     @property({ type: String })
-    @computed("_computeAsyncValue(inputValue)")
+    @computed(TestAsyncComputed.prototype._computeAsyncValue, "inputValue")
     declare readonly computedAsyncValue: string;
 
     constructor() {

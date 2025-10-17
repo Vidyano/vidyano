@@ -18,23 +18,23 @@ export class ActionBar extends WebComponent {
     serviceObject: Vidyano.ServiceObjectWithActions;
 
     @property({ type: Array })
-    @computed("_computePinnedActions(serviceObject, serviceObject.actions.*.isPinned)", { allowUndefined: true })
+    @computed(ActionBar.prototype._computePinnedActions, "serviceObject", "serviceObject.actions.*.isPinned", { allowUndefined: true })
     pinnedActions: (Vidyano.Action | Vidyano.ActionGroup)[];
 
     @property({ type: Array })
-    @computed("_computeUnpinnedActions(serviceObject, serviceObject.actions.*.isPinned)", { allowUndefined: true })
+    @computed(ActionBar.prototype._computeUnpinnedActions, "serviceObject", "serviceObject.actions.*.isPinned", { allowUndefined: true })
     unpinnedActions: (Vidyano.Action | Vidyano.ActionGroup)[];
 
     @property({ type: Boolean })
-    @computed("_computeHasCharts(serviceObject.charts, app)")
+    @computed(ActionBar.prototype._computeHasCharts, "serviceObject.charts", "app")
     hasCharts: boolean = false;
 
     @property({ type: Boolean })
-    @computed("_computeCanSearch(serviceObject)")
+    @computed(ActionBar.prototype._computeCanSearch, "serviceObject")
     canSearch: boolean;
 
     @property({ type: Boolean, reflect: true })
-    @computed("_computeNoActions(pinnedActions, unpinnedActions, serviceObject.actions.*.isVisible)", { allowUndefined: true })
+    @computed(ActionBar.prototype._computeNoActions, "pinnedActions", "unpinnedActions", "serviceObject.actions.*.isVisible", { allowUndefined: true })
     noActions: boolean;
 
     @property({ type: Boolean, reflect: true })

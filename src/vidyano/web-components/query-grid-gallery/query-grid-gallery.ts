@@ -73,7 +73,7 @@ export class QueryGridGallery extends WebComponent {
     @property({ type: Number, state: true }) private _viewerCurrentIndex: number | null = null;
 
     @property({ type: Object, state: true })
-    @computed("_computeMap(map)")
+    @computed(QueryGridGallery.prototype._computeMap, "map")
     private _map: ImageItemMap;
 
     @property({ type: Object }) query: Vidyano.Query;

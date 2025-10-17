@@ -11,7 +11,7 @@ class TestOneSimpleComputed extends WebComponent {
     declare lastName: string;
 
     @property({ type: String })
-    @computed("_computeFullName(firstName, lastName)")
+    @computed(TestOneSimpleComputed.prototype._computeFullName, "firstName", "lastName")
     declare readonly fullName: string;
 
     // Public properties for testing

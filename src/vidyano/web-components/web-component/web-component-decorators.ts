@@ -1,4 +1,4 @@
-import { parseMethodSignature, COMPUTED_CONFIG_SYMBOL, PROPERTY_OBSERVERS_CONFIG_SYMBOL, OBSERVERS_CONFIG_SYMBOL, NOTIFY_CONFIG_SYMBOL, LISTENERS_CONFIG_SYMBOL } from "./web-component-registration";
+import { COMPUTED_CONFIG_SYMBOL, PROPERTY_OBSERVERS_CONFIG_SYMBOL, OBSERVERS_CONFIG_SYMBOL, NOTIFY_CONFIG_SYMBOL, LISTENERS_CONFIG_SYMBOL } from "./web-component-registration";
 import type { WebComponent } from "./web-component";
 
 type WebComponentConstructor = typeof WebComponent & {
@@ -176,10 +176,10 @@ export interface ComputedOptions {
  *
  * By default, computed properties are only calculated when ALL dependencies are NOT undefined.
  * Note: null values are allowed and do not block computation.
- * Use { allowUndefined: true } as the second parameter to compute even when some dependencies are undefined.
+ * Use { allowUndefined: true } as the last parameter to compute even when some dependencies are undefined.
  *
- * @param signature - Method signature like "methodName(dep1, dep2)" or simple path like "user.name"
- * @param options - Optional configuration object
+ * @param computeFunction - A reference to the compute method via prototype (e.g., MyComponent.prototype._computeValue)
+ * @param dependencies - One or more property names as strings, optionally followed by ComputedOptions
  *
  * @example
  * ```typescript
@@ -190,7 +190,7 @@ export interface ComputedOptions {
  * lastName: string;
  *
  * @property({ type: String })
- * @computed("_computeFullName(firstName, lastName)")
+ * @computed(MyComponent.prototype._computeFullName, "firstName", "lastName")
  * readonly fullName: string;
  *
  * private _computeFullName(firstName: string, lastName: string): string {
@@ -199,7 +199,7 @@ export interface ComputedOptions {
  *
  * // With allowUndefined option
  * @property({ type: String })
- * @computed("_computeFullName(firstName, lastName)", { allowUndefined: true })
+ * @computed(MyComponent.prototype._computeFullName, "firstName", "lastName", { allowUndefined: true })
  * readonly fullName: string;
  *
  * private _computeFullName(firstName: string | undefined, lastName: string | undefined): string {
@@ -207,13 +207,54 @@ export interface ComputedOptions {
  * }
  * ```
  */
-export function computed(signature: string, options?: ComputedOptions) {
+export function computed(computeFunctionOrDependency: Function | string, ...dependencies: Array<string | Function | ComputedOptions>) {
     return (target: any, propertyKey: string) => {
         const ctor = target.constructor as WebComponentConstructor;
-        const parsed = parseMethodSignature(signature);
         const conf = ensureOwn<Record<string, any>>(ctor, COMPUTED_CONFIG_SYMBOL, {});
-        conf[propertyKey] = parsed
-            ? { dependencies: parsed.args, methodName: parsed.methodName, allowUndefined: options?.allowUndefined ?? false }
-            : { dependencies: [signature], allowUndefined: options?.allowUndefined ?? false };
+
+        let methodName: string | undefined;
+        let deps: string[];
+        let options: ComputedOptions = {};
+
+        // Check if first parameter is a function (compute function provided)
+        if (typeof computeFunctionOrDependency === 'function') {
+            // Validate that it's a prototype function
+            const fnName = computeFunctionOrDependency.name;
+            if (!fnName) {
+                throw new Error(`@computed decorator on ${ctor.name}.${propertyKey}: When providing a function reference, it must be a named prototype method (e.g., ${ctor.name}.prototype.methodName). Anonymous or arrow functions are not supported.`);
+            }
+
+            // Check if the function exists on the target's prototype
+            if (!(fnName in target)) {
+                throw new Error(`@computed decorator on ${ctor.name}.${propertyKey}: Method '${fnName}' not found on ${ctor.name}.prototype. Ensure you're using ${ctor.name}.prototype.${fnName} as the decorator argument.`);
+            }
+
+            methodName = fnName;
+
+            // Separate remaining dependencies from options
+            if (dependencies.length > 0 && typeof dependencies[dependencies.length - 1] === 'object' && typeof dependencies[dependencies.length - 1] !== 'function' && !Array.isArray(dependencies[dependencies.length - 1])) {
+                // Last argument is options object (not a function)
+                options = dependencies[dependencies.length - 1] as ComputedOptions;
+                deps = dependencies.slice(0, -1).map(dep => typeof dep === 'function' ? dep.name : dep) as string[];
+            } else {
+                // All arguments are dependencies
+                deps = dependencies.map(dep => typeof dep === 'function' ? dep.name : dep) as string[];
+            }
+        } else {
+            // First parameter is a string dependency (simple property path)
+            // Check if last argument is options
+            if (dependencies.length > 0 && typeof dependencies[dependencies.length - 1] === 'object' && typeof dependencies[dependencies.length - 1] !== 'function' && !Array.isArray(dependencies[dependencies.length - 1])) {
+                options = dependencies[dependencies.length - 1] as ComputedOptions;
+                deps = [computeFunctionOrDependency, ...dependencies.slice(0, -1).map(dep => typeof dep === 'function' ? dep.name : dep)] as string[];
+            } else {
+                deps = [computeFunctionOrDependency, ...dependencies.map(dep => typeof dep === 'function' ? dep.name : dep)] as string[];
+            }
+        }
+
+        conf[propertyKey] = {
+            dependencies: deps,
+            methodName: methodName,
+            allowUndefined: options.allowUndefined ?? false
+        };
     };
 }
