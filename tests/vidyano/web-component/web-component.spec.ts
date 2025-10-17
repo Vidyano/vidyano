@@ -125,103 +125,51 @@ test('TestComputedPath: computed property with path string', async ({ page }) =>
     expect(state.derivedValue).toBe("new object");
 });
 
-test('TestAsyncComputed: basic async computed property', async ({ page }) => {
+test('TestAsyncComputed: all three async function patterns', async ({ page }) => {
     const component = await setupComponentTest(page, 'test-async-computed');
     await expect(component).toBeVisible();
 
     // --- Initial state verification ---
     await expect(component.locator('#input')).toContainText('initial');
-    await expect(component.locator('#computed')).toContainText('Loading...'); // Initial render before promise resolves
+    await expect(component.locator('#inline-async')).toContainText('Loading...'); // Initial render before promise resolves
+    await expect(component.locator('#inline-unnamed')).toContainText('Loading...');
+    await expect(component.locator('#named')).toContainText('Loading...');
 
-    // Wait for the async computation to complete
-    await expect(component.locator('#computed')).toContainText('Computed: initial', { timeout: 2000 });
+    // Wait for all async computations to complete
+    await expect(component.locator('#inline-async')).toContainText('Inline Async: initial', { timeout: 2000 });
+    await expect(component.locator('#inline-unnamed')).toContainText('Inline Unnamed: initial', { timeout: 2000 });
+    await expect(component.locator('#named')).toContainText('Named: initial', { timeout: 2000 });
 
     let state = await component.evaluate(node => ({
         inputValue: (node as any).inputValue,
-        computedAsyncValue: (node as any).computedAsyncValue
+        computedInlineAsync: (node as any).computedInlineAsync,
+        computedInlineUnnamed: (node as any).computedInlineUnnamed,
+        computedNamed: (node as any).computedNamed
     }));
     expect(state.inputValue).toBe("initial");
-    expect(state.computedAsyncValue).toBe("Computed: initial");
+    expect(state.computedInlineAsync).toBe("Inline Async: initial");
+    expect(state.computedInlineUnnamed).toBe("Inline Unnamed: initial");
+    expect(state.computedNamed).toBe("Named: initial");
 
     // --- Act: Change inputValue property ---
     await component.evaluate((node: any) => { node.inputValue = "updated"; });
     await expect(component.locator('#input')).toContainText('updated');
-    // The computed value should revert to 'Loading...' or the old value briefly,
-    // then update after the new promise resolves.
-    // Depending on timing, it might briefly show the old resolved value or "Loading..."
-    // We will wait for the final state.
-    await expect(component.locator('#computed')).toContainText('Computed: updated', { timeout: 2000 });
+
+    // Wait for all async computations to complete
+    await expect(component.locator('#inline-async')).toContainText('Inline Async: updated', { timeout: 2000 });
+    await expect(component.locator('#inline-unnamed')).toContainText('Inline Unnamed: updated', { timeout: 2000 });
+    await expect(component.locator('#named')).toContainText('Named: updated', { timeout: 2000 });
 
     state = await component.evaluate(node => ({
         inputValue: (node as any).inputValue,
-        computedAsyncValue: (node as any).computedAsyncValue
+        computedInlineAsync: (node as any).computedInlineAsync,
+        computedInlineUnnamed: (node as any).computedInlineUnnamed,
+        computedNamed: (node as any).computedNamed
     }));
     expect(state.inputValue).toBe("updated");
-    expect(state.computedAsyncValue).toBe("Computed: updated");
-});
-
-test('TestAsyncComputedInline: async computed property with inline function', async ({ page }) => {
-    const component = await setupComponentTest(page, 'test-async-computed-inline');
-    await expect(component).toBeVisible();
-
-    // --- Initial state verification ---
-    await expect(component.locator('#input')).toContainText('initial');
-    await expect(component.locator('#computed')).toContainText('Loading...'); // Initial render before promise resolves
-
-    // Wait for the async computation to complete
-    await expect(component.locator('#computed')).toContainText('Computed: initial', { timeout: 2000 });
-
-    let state = await component.evaluate(node => ({
-        inputValue: (node as any).inputValue,
-        computedAsyncValue: (node as any).computedAsyncValue
-    }));
-    expect(state.inputValue).toBe("initial");
-    expect(state.computedAsyncValue).toBe("Computed: initial");
-
-    // --- Act: Change inputValue property ---
-    await component.evaluate((node: any) => { node.inputValue = "updated"; });
-    await expect(component.locator('#input')).toContainText('updated');
-    // Wait for the async computation to complete
-    await expect(component.locator('#computed')).toContainText('Computed: updated', { timeout: 2000 });
-
-    state = await component.evaluate(node => ({
-        inputValue: (node as any).inputValue,
-        computedAsyncValue: (node as any).computedAsyncValue
-    }));
-    expect(state.inputValue).toBe("updated");
-    expect(state.computedAsyncValue).toBe("Computed: updated");
-});
-
-test('TestAsyncComputedInlineUnnamed: async computed property with inline unnamed function', async ({ page }) => {
-    const component = await setupComponentTest(page, 'test-async-computed-inline-unnamed');
-    await expect(component).toBeVisible();
-
-    // --- Initial state verification ---
-    await expect(component.locator('#input')).toContainText('initial');
-    await expect(component.locator('#computed')).toContainText('Loading...'); // Initial render before promise resolves
-
-    // Wait for the async computation to complete
-    await expect(component.locator('#computed')).toContainText('Computed: initial', { timeout: 2000 });
-
-    let state = await component.evaluate(node => ({
-        inputValue: (node as any).inputValue,
-        computedAsyncValue: (node as any).computedAsyncValue
-    }));
-    expect(state.inputValue).toBe("initial");
-    expect(state.computedAsyncValue).toBe("Computed: initial");
-
-    // --- Act: Change inputValue property ---
-    await component.evaluate((node: any) => { node.inputValue = "updated"; });
-    await expect(component.locator('#input')).toContainText('updated');
-    // Wait for the async computation to complete
-    await expect(component.locator('#computed')).toContainText('Computed: updated', { timeout: 2000 });
-
-    state = await component.evaluate(node => ({
-        inputValue: (node as any).inputValue,
-        computedAsyncValue: (node as any).computedAsyncValue
-    }));
-    expect(state.inputValue).toBe("updated");
-    expect(state.computedAsyncValue).toBe("Computed: updated");
+    expect(state.computedInlineAsync).toBe("Inline Async: updated");
+    expect(state.computedInlineUnnamed).toBe("Inline Unnamed: updated");
+    expect(state.computedNamed).toBe("Named: updated");
 });
 
 test('TestAsyncComputed: ignore stale async result', async ({ page }) => {
@@ -230,42 +178,42 @@ test('TestAsyncComputed: ignore stale async result', async ({ page }) => {
 
     // --- Initial state verification ---
     await expect(component.locator('#input')).toContainText('initial');
-    // Wait for the initial computation
-    await expect(component.locator('#computed')).toContainText('Computed: initial', { timeout: 2000 });
+    // Wait for the initial computation (testing inline-async pattern)
+    await expect(component.locator('#inline-async')).toContainText('Inline Async: initial', { timeout: 2000 });
 
     // --- Act: Trigger two changes in quick succession ---
     // Change 1: inputValue = "first" (will take 1s)
     await component.evaluate((node: any) => { node.inputValue = "first"; });
     await expect(component.locator('#input')).toContainText('first');
-    // The computed value might show "Loading..." or "Computed: initial"
+    // The computed value might show "Loading..." or "Inline Async: initial"
 
     // Change 2: inputValue = "second" (will take 1s, started shortly after "first")
     // We introduce a very small delay to ensure the first evaluation starts
     await page.waitForTimeout(50); // 50ms delay
     await component.evaluate((node: any) => { node.inputValue = "second"; });
     await expect(component.locator('#input')).toContainText('second');
-    // The computed value might show "Loading..." or "Computed: first" or "Computed: initial"
+    // The computed value might show "Loading..." or "Inline Async: first" or "Inline Async: initial"
 
     // --- Verification ---
     // We expect the component to eventually settle on the result of the "second" computation,
     // ignoring the result from the "first" computation.
-    // The "first" promise (resolving to "Computed: first") should be ignored.
-    // The "second" promise (resolving to "Computed: second") should be the final state.
-    await expect(component.locator('#computed')).toContainText('Computed: second', { timeout: 2500 }); // Allow enough time for both to "try" to resolve
+    // The "first" promise (resolving to "Inline Async: first") should be ignored.
+    // The "second" promise (resolving to "Inline Async: second") should be the final state.
+    await expect(component.locator('#inline-async')).toContainText('Inline Async: second', { timeout: 2500 }); // Allow enough time for both to "try" to resolve
 
     const finalState = await component.evaluate(node => ({
         inputValue: (node as any).inputValue,
-        computedAsyncValue: (node as any).computedAsyncValue
+        computedInlineAsync: (node as any).computedInlineAsync
     }));
     expect(finalState.inputValue).toBe("second");
-    expect(finalState.computedAsyncValue).toBe("Computed: second");
+    expect(finalState.computedInlineAsync).toBe("Inline Async: second");
 
     // To be absolutely sure the "first" value didn't sneak in later, wait a bit more
     await page.waitForTimeout(1000); // Wait for the first promise's timeout duration
     const stateAfterWaiting = await component.evaluate(node => ({
-        computedAsyncValue: (node as any).computedAsyncValue
+        computedInlineAsync: (node as any).computedInlineAsync
     }));
-    expect(stateAfterWaiting.computedAsyncValue).toBe("Computed: second");
+    expect(stateAfterWaiting.computedInlineAsync).toBe("Inline Async: second");
 });
 
 test('TestMultiObserver: multi-property observer and computed property', async ({ page }) => {
