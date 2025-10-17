@@ -1,9 +1,15 @@
-import * as Polymer from "polymer"
-import * as Vidyano from "vidyano"
-import { Button } from "components/button/button"
-import { Popup } from "components/popup/popup"
+import { html, nothing, unsafeCSS } from "lit";
+import { property, state } from "lit/decorators.js";
+import { WebComponent, observe, observer, notify, listener } from "components/web-component/web-component.js";
+import * as Vidyano from "vidyano";
+import { Button } from "components/button/button.js";
+import { Popup } from "components/popup/popup.js";
+import styles from "./date-picker.css";
 
-export interface IDatePickerCell {
+/**
+ * Represents a single cell in the date picker grid.
+ */
+interface IDatePickerCell {
     type: string;
     content?: string;
     date?: Date;
@@ -11,342 +17,267 @@ export interface IDatePickerCell {
     blocked?: boolean;
 }
 
-@Polymer.WebComponent.register({
-    properties: {
-        zoom: {
-            type: String,
-            reflectToAttribute: true,
-            observer: "_zoomChanged"
-        },
-        canFast: {
-            type: Boolean,
-            readOnly: true
-        },
-        currentDate: {
-            type: Object,
-            readOnly: true
-        },
-        selectedDate: {
-            type: Object,
-            notify: true
-        },
-        today: {
-            type: Object,
-            readOnly: true
-        },
-        monthMode: {
-            type: Boolean,
-            reflectToAttribute: true,
-            value: false
-        },
-        cells: {
-            type: Array,
-            readOnly: true
-        },
-        header: {
-            type: String,
-            readOnly: true
-        },
-        deferredCellsUpdate: {
-            type: Boolean,
-            readOnly: true,
-            value: true
-        },
-        minDate: {
-            type: Object,
-            value: null
-        },
-        maxDate: {
-            type: Object,
-            value: null
-        },
-        newTime: String
-    },
-    observers: [
-        "_render(cells, currentDate, minDate, maxDate, deferredCellsUpdate)"
-    ],
-    listeners: {
-        "tap": "_catchTap"
-    }
-}, "vi-date-picker")
-export class DatePicker extends Polymer.WebComponent {
-    static get template() { return Polymer.html`<link rel="import" href="date-picker.html">`; }
+export class DatePicker extends WebComponent {
+    static styles = unsafeCSS(styles);
 
-    readonly cells: IDatePickerCell[]; private _setCells: (cells: IDatePickerCell[]) => void;
-    readonly canFast: boolean; private _setCanFast: (canFast: boolean) => void;
-    readonly currentDate: Date; private _setCurrentDate: (date: Date) => void;
-    readonly today: Date; private _setToday: (date: Date) => void;
-    readonly header: string; private _setHeader: (header: string) => void;
-    readonly deferredCellsUpdate: boolean; private _setDeferredCellsUpdate: (defer: boolean) => void;
-    zoom: "days" | "months" | "years";
+    @property({ type: String, reflect: true })
+    @observe("_zoomChanged")
+    zoom: "days" | "months" | "years" = "days";
+
+    @state()
+    canFast: boolean = false;
+
+    @state()
+    currentDate: Date;
+
+    @property({ type: Object })
+    @notify()
     selectedDate: Date;
-    monthMode: boolean;
-    minDate: Date;
-    maxDate: Date;
+
+    @state()
+    today: Date;
+
+    @property({ type: Boolean, reflect: true })
+    monthMode: boolean = false;
+
+    @state()
+    cells: IDatePickerCell[] = [];
+
+    @state()
+    header: string = "";
+
+    @state()
+    deferredCellsUpdate: boolean = true;
+
+    @property({ type: Object })
+    minDate: Date = null;
+
+    @property({ type: Object })
+    maxDate: Date = null;
+
+    @property({ type: String })
     newTime: string;
 
     connectedCallback() {
         super.connectedCallback();
 
         this.zoom = this.monthMode ? "months" : "days";
-        this._setToday(new Date());
-        this._setCurrentDate(new Date());
+        this.today = new Date();
+        this.currentDate = new Date();
+    }
+
+    render() {
+        return html`
+            <vi-popup id="popup" placement="bottom-end" @popup-opening=${this._opening}>
+                <vi-icon slot="header" part="icon" source="Calendar"></vi-icon>
+                <div class="calendar">
+                    <header class="header">
+                        <vi-button n="-1" @click=${this._fast} ?hidden=${!this.canFast}><vi-icon source="FastBackward"></vi-icon></vi-button>
+                        <vi-button n="-1" @click=${this._slow}><vi-icon source="Backward"></vi-icon></vi-button>
+                        <vi-button class="header-label" @click=${this._zoomOut} label=${this.header}></vi-button>
+                        <vi-button n="1" @click=${this._slow}><vi-icon source="Forward"></vi-icon></vi-button>
+                        <vi-button n="1" @click=${this._fast} ?hidden=${!this.canFast}><vi-icon source="FastForward"></vi-icon></vi-button>
+                    </header>
+                    <main class="main" zoom=${this.zoom}>
+                        ${!this.deferredCellsUpdate ? html`
+                            ${this.cells?.map(cell => html`
+                                <div
+                                    class="cell"
+                                    type=${cell.type}
+                                    ?is-selected=${this.#isDateSelected(this.zoom, cell.date, this.selectedDate)}
+                                    ?is-today=${this.#isDateToday(this.zoom, cell.date, this.today)}
+                                    ?is-other=${this.#isOtherMonth(cell.monthOffset)}
+                                    ?blocked=${cell.blocked}
+                                    @click=${(e: MouseEvent) => this._select(e, cell)}
+                                >${cell.content}</div>
+                            `)}
+                        ` : nothing}
+                    </main>
+                </div>
+            </vi-popup>
+        `;
+    }
+
+    @observer("currentDate", "minDate", "maxDate", "deferredCellsUpdate", "zoom")
+    private _render(currentDate: Date, minDate: Date, maxDate: Date, deferredCellsUpdate: boolean) {
+        if (deferredCellsUpdate || !currentDate)
+            return;
+
+        const currentDateLocal = cloneDate(currentDate);
+        const cells = this.cells;
+
+        if (this.zoom === "days") {
+            if (!cells || cells.length !== 42 + 7)
+                return;
+
+            this.header = `${Vidyano.CultureInfo.currentCulture.dateFormat.monthNames[currentDateLocal.getMonth()]} ${currentDateLocal.getFullYear()}`;
+
+            let loop = startOfMonth(currentDateLocal);
+            loop = startOfWeek(loop, Vidyano.CultureInfo.currentCulture.dateFormat.firstDayOfWeek);
+            const end = addDays(cloneDate(loop), 42);
+
+            this.#updateCells(cells, 7, loop, end, minDate, maxDate, (date: Date) => {
+                return {
+                    content: date.getDate().toString(),
+                    monthOffset: getMonthOffset(date, currentDate),
+                    increment: () => date.setDate(date.getDate() + 1)
+                };
+            });
+        }
+        else if (this.zoom === "months") {
+            this.header = `${currentDateLocal.getFullYear()}`;
+
+            const loop = startOfYear(currentDateLocal);
+            const end = addYears(cloneDate(loop), 1);
+
+            this.#updateCells(cells, 0, loop, end, minDate, maxDate, (date: Date) => {
+                return {
+                    content: Vidyano.CultureInfo.currentCulture.dateFormat.shortMonthNames[date.getMonth()],
+                    increment: () => date.setMonth(date.getMonth() + 1)
+                };
+            });
+        }
+        else if (this.zoom === "years") {
+            const loop = startOfYear(currentDateLocal);
+            loop.setFullYear(loop.getFullYear() - 6);
+            const end = addYears(cloneDate(loop), 12);
+
+            this.#updateCells(cells, 0, loop, end, minDate, maxDate, (date: Date) => {
+                return {
+                    content: date.getFullYear().toString(),
+                    increment: () => date.setFullYear(date.getFullYear() + 1)
+                };
+            });
+
+            if (cells.length > 0 && cells[0].date && cells[cells.length - 1].date) {
+                this.header = `${cells[0].date.getFullYear()} - ${cells[cells.length - 1].date.getFullYear()}`;
+            }
+        }
+    }
+
+    #updateCells(
+        cells: IDatePickerCell[],
+        startIndex: number,
+        loop: Date,
+        end: Date,
+        minDate: Date,
+        maxDate: Date,
+        cellConfig: (date: Date) => { content: string; monthOffset?: number; increment: () => void }
+    ) {
+        let index = startIndex;
+        do {
+            cells[index].date = cloneDate(loop);
+            const config = cellConfig(loop);
+            cells[index].content = config.content;
+            if (config.monthOffset !== undefined) {
+                cells[index].monthOffset = config.monthOffset;
+            }
+            cells[index].blocked = this.#isBlocked(cells[index], minDate, maxDate);
+
+            index++;
+            config.increment();
+        }
+        while (loop.getTime() < end.getTime());
+
+        this.cells = [...cells]; // Trigger reactivity
+    }
+
+    @listener("click")
+    private _catchTap(e: MouseEvent) {
+        e.stopPropagation();
     }
 
     get isOpen(): boolean {
         return (<Popup>this.$.popup).open;
     }
 
-    private _cloneDate(date: Date): Date | null {
-        return date ? new Date(date.getTime()) : null;
-    }
-
-    private _startOfMonth(date: Date): Date {
-        const newDate = this._cloneDate(date);
-        newDate.setDate(1);
-        newDate.setHours(0, 0, 0, 0);
-        return newDate;
-    }
-
-    private _startOfYear(date: Date): Date {
-        const newDate = this._cloneDate(date);
-        newDate.setMonth(0, 1); // Month is 0-indexed, day is 1-indexed
-        newDate.setHours(0, 0, 0, 0);
-        return newDate;
-    }
-
-    private _startOfWeek(date: Date, firstDayOfWeek: number): Date {
-        const newDate = this._cloneDate(date);
-        const day = newDate.getDay(); // 0 (Sunday) to 6 (Saturday)
-        let diff = day - firstDayOfWeek;
-        if (diff < 0) {
-            diff += 7;
-        }
-        newDate.setDate(newDate.getDate() - diff);
-        newDate.setHours(0, 0, 0, 0);
-        return newDate;
-    }
-
-    private _addDays(date: Date, days: number): Date {
-        const newDate = this._cloneDate(date);
-        newDate.setDate(newDate.getDate() + days);
-        return newDate;
-    }
-
-    private _addMonths(date: Date, months: number): Date {
-        const newDate = this._cloneDate(date);
-        newDate.setMonth(newDate.getMonth() + months);
-        return newDate;
-    }
-
-    private _addYears(date: Date, years: number): Date {
-        const newDate = this._cloneDate(date);
-        newDate.setFullYear(newDate.getFullYear() + years);
-        return newDate;
-    }
-
-    private _isSameDay(date1: Date, date2: Date): boolean {
-        if (!date1 || !date2) return false;
-        return date1.getFullYear() === date2.getFullYear() &&
-               date1.getMonth() === date2.getMonth() &&
-               date1.getDate() === date2.getDate();
-    }
-
-    private _isSameMonth(date1: Date, date2: Date): boolean {
-        if (!date1 || !date2) return false;
-        return date1.getFullYear() === date2.getFullYear() &&
-               date1.getMonth() === date2.getMonth();
-    }
-
-    private _isSameYear(date1: Date, date2: Date): boolean {
-        if (!date1 || !date2) return false;
-        return date1.getFullYear() === date2.getFullYear();
-    }
-    
-    private _normalizeDateByGranularity(date: Date, granularity: "day" | "month" | "year"): Date {
-        const d = new Date(date.getFullYear(), granularity === "year" ? 0 : date.getMonth(), granularity === "day" ? date.getDate() : 1);
-        d.setHours(0,0,0,0); // Normalize time part for comparisons
-        return d;
-    }
-
-    private _isBefore(date1: Date, date2: Date, granularity: "day" | "month" | "year"): boolean {
-        if (!date1 || !date2) return false;
-        const d1 = this._normalizeDateByGranularity(date1, granularity);
-        const d2 = this._normalizeDateByGranularity(date2, granularity);
-        return d1.getTime() < d2.getTime();
-    }
-
-    private _isAfter(date1: Date, date2: Date, granularity: "day" | "month" | "year"): boolean {
-        if (!date1 || !date2) return false;
-        const d1 = this._normalizeDateByGranularity(date1, granularity);
-        const d2 = this._normalizeDateByGranularity(date2, granularity);
-        return d1.getTime() > d2.getTime();
-    }
-
-    private _getMonthOffset(dateForCell: Date, currentDisplayMonthDate: Date): number {
-        if (dateForCell.getFullYear() < currentDisplayMonthDate.getFullYear()) return -1;
-        if (dateForCell.getFullYear() > currentDisplayMonthDate.getFullYear()) return 1;
-        // Same year, compare month
-        if (dateForCell.getMonth() < currentDisplayMonthDate.getMonth()) return -1;
-        if (dateForCell.getMonth() > currentDisplayMonthDate.getMonth()) return 1;
-        return 0; // Same month and year
-    }
-
     private _zoomChanged(zoom: string) {
         if (zoom === "days") {
-            let dayNames = Vidyano.CultureInfo.currentCulture.dateFormat.shortDayNames.slice();
-            if (Vidyano.CultureInfo.currentCulture.dateFormat.firstDayOfWeek > 0)
-                dayNames = dayNames.slice(Vidyano.CultureInfo.currentCulture.dateFormat.firstDayOfWeek).concat(dayNames.slice(0, Vidyano.CultureInfo.currentCulture.dateFormat.firstDayOfWeek));
+            const { shortDayNames, firstDayOfWeek } = Vidyano.CultureInfo.currentCulture.dateFormat;
+            const dayNames = firstDayOfWeek > 0
+                ? [...shortDayNames.slice(firstDayOfWeek), ...shortDayNames.slice(0, firstDayOfWeek)]
+                : shortDayNames.slice();
 
-            const cells: IDatePickerCell[] = dayNames.map(d => {
-                return {
-                    type: "weekday",
-                    content: d
-                };
-            });
+            const cells: IDatePickerCell[] = [
+                ...dayNames.map(d => ({ type: "weekday", content: d })),
+                ...Array.range(1, 42).map(() => ({ type: "day" }))
+            ];
 
-            cells.push(...Array.range(1, 42).map(() => {
-                return { type: "day" };
-            }));
-
-            this._setCells(cells);
-            this._setCanFast(true);
+            this.cells = cells;
+            this.canFast = true;
         }
         else {
-            this._setCells(Array.range(1, 12).map(() => {
-                return { type: zoom.substr(0, zoom.length - 1) };
-            }));
-            this._setCanFast(false);
+            const cellType = zoom.slice(0, -1); // Remove trailing 's' from 'months' or 'years'
+            this.cells = Array.range(1, 12).map(() => ({ type: cellType }));
+            this.canFast = false;
         }
     }
 
-    private _render(cells: IDatePickerCell[], currentDate: Date, minDate: Date, maxDate: Date, deferredCellsUpdate: boolean) {
-        if (deferredCellsUpdate || !currentDate)
-            return;
-
-        const currentDateLocal = this._cloneDate(currentDate);
-
-        if (this.zoom === "days") {
-            if (cells.length !== 42 + 7)
-                return;
-
-            this._setHeader(`${Vidyano.CultureInfo.currentCulture.dateFormat.monthNames[currentDateLocal.getMonth()]} ${currentDateLocal.getFullYear()}`);
-
-            let loop = this._startOfMonth(currentDateLocal);
-            loop = this._startOfWeek(loop, Vidyano.CultureInfo.currentCulture.dateFormat.firstDayOfWeek);
-            
-            const end = this._addDays(this._cloneDate(loop), 42); // 6 weeks * 7 days
-
-            let index = 7; // Skip weekday cells
-            do {
-                this.set(`cells.${index}.date`, this._cloneDate(loop));
-                this.set(`cells.${index}.content`, loop.getDate().toString());
-                this.set(`cells.${index}.monthOffset`, this._getMonthOffset(loop, currentDate));
-                this.set(`cells.${index}.blocked`, this._isBlocked(cells[index], minDate, maxDate));
-
-                index++;
-                loop.setDate(loop.getDate() + 1);
-            }
-            while (loop.getTime() < end.getTime());
-        }
-        else if (this.zoom === "months") {
-            this._setHeader(`${currentDateLocal.getFullYear()}`);
-
-            const loop = this._startOfYear(currentDateLocal);
-            const end = this._addYears(this._cloneDate(loop), 1); // 12 months
-
-            let index = 0;
-            do {
-                this.set(`cells.${index}.date`, this._cloneDate(loop));
-                this.set(`cells.${index}.content`, Vidyano.CultureInfo.currentCulture.dateFormat.shortMonthNames[loop.getMonth()]);
-                this.set(`cells.${index}.blocked`, this._isBlocked(cells[index], minDate, maxDate));
-
-                index++;
-                loop.setMonth(loop.getMonth() + 1);
-            }
-            while (loop.getTime() < end.getTime());
-        }
-        else if (this.zoom === "years") {
-            const loop = this._startOfYear(currentDateLocal);
-            loop.setFullYear(loop.getFullYear() - 6); // Start 6 years back
-
-            const end = this._addYears(this._cloneDate(loop), 12); // 12 years total
-
-            let index = 0;
-            do {
-                this.set(`cells.${index}.date`, this._cloneDate(loop));
-                this.set(`cells.${index}.content`, loop.getFullYear().toString());
-                this.set(`cells.${index}.blocked`, this._isBlocked(cells[index], minDate, maxDate));
-
-                index++;
-                loop.setFullYear(loop.getFullYear() + 1);
-            }
-            while (loop.getTime() < end.getTime());
-
-            if (cells && cells.length > 0 && cells[0].date && cells[cells.length - 1].date) {
-                 this._setHeader(`${cells[0].date.getFullYear()} - ${cells[cells.length - 1].date.getFullYear()}`);
-            }
-        }
-    }
-
-    private _isDateSelected(zoom: string, date: Date, selectedDate: Date): boolean {
-        if (!this.ensureArgumentValues(arguments) || !date || !selectedDate)
+    #isDateSelected(zoom: string, date: Date, selectedDate: Date): boolean {
+        if (!date || !selectedDate)
             return false;
 
         if (zoom === "days")
-            return this._isSameDay(date, selectedDate);
+            return isSameDate(date, selectedDate, "day");
         else if (zoom === "months" && this.monthMode)
-            return this._isSameMonth(date, selectedDate);
+            return isSameDate(date, selectedDate, "month");
 
         return false;
     }
 
-    private _isDateToday(zoom: string, date: Date, today: Date): boolean {
-        if (!this.ensureArgumentValues(arguments) || !date || !today)
+    #isDateToday(zoom: string, date: Date, today: Date): boolean {
+        if (!date || !today)
             return false;
 
         if (zoom === "days")
-            return this._isSameDay(date, today);
+            return isSameDate(date, today, "day");
         else if (zoom === "months")
-            return this._isSameMonth(date, today);
+            return isSameDate(date, today, "month");
 
-        return this._isSameYear(date, today);
+        return isSameDate(date, today, "year");
     }
 
-    private _isOtherMonth(monthOffset: number): boolean {
+    #isOtherMonth(monthOffset: number): boolean {
         return !!monthOffset;
     }
 
-    private _isBlocked(cell: IDatePickerCell, minDate: Date, maxDate: Date): boolean {
+    #isBlocked(cell: IDatePickerCell, minDate: Date, maxDate: Date): boolean {
         const date = cell.date;
         if (!date || (!minDate && !maxDate))
             return false;
 
         const granularity = this.zoom === "days" ? "day" : (this.zoom === "months" ? "month" : "year");
-        return (minDate && this._isBefore(date, minDate, granularity)) || (maxDate && this._isAfter(date, maxDate, granularity));
+        return (minDate && compareDate(date, minDate, granularity) < 0) || (maxDate && compareDate(date, maxDate, granularity) > 0);
+    }
+
+    #navigate(amount: number, unit: "month" | "year") {
+        const newCurrentDate = cloneDate(this.currentDate);
+
+        if (unit === "month") {
+            newCurrentDate.setMonth(newCurrentDate.getMonth() + amount);
+        } else {
+            newCurrentDate.setFullYear(newCurrentDate.getFullYear() + amount);
+        }
+
+        this.currentDate = newCurrentDate;
     }
 
     private _slow(e: Event) {
         const amount = parseInt((<Button>e.currentTarget).getAttribute("n"));
-        const newCurrentDate = this._cloneDate(this.currentDate);
 
         if (this.zoom === "days")
-            newCurrentDate.setMonth(newCurrentDate.getMonth() + amount);
+            this.#navigate(amount, "month");
         else if(this.zoom === "months")
-            newCurrentDate.setFullYear(newCurrentDate.getFullYear() + amount);
+            this.#navigate(amount, "year");
         else
-            newCurrentDate.setFullYear(newCurrentDate.getFullYear() + amount * 12);
+            this.#navigate(amount * 12, "year");
 
-        this._setCurrentDate(newCurrentDate);
         e.stopPropagation();
     }
 
     private _fast(e: Event) {
         const amount = parseInt((<Button>e.currentTarget).getAttribute("n"));
-        const newCurrentDate = this._cloneDate(this.currentDate);
-        newCurrentDate.setFullYear(newCurrentDate.getFullYear() + amount);
-        this._setCurrentDate(newCurrentDate);
-
+        this.#navigate(amount, "year");
         e.stopPropagation();
     }
 
@@ -359,74 +290,228 @@ export class DatePicker extends Polymer.WebComponent {
         e.stopPropagation();
     }
 
-    private _select(e: Polymer.Gestures.TapEvent) {
-        const cell = <IDatePickerCell>e.model.cell;
-        if (!cell?.date)
-            return;
+    #applyTimeToDate(date: Date): void {
+        if (!this.selectedDate && this.newTime) {
+            const timeParts = /(\d\d):(\d\d)(:(\d\d))?/.exec(this.newTime);
+            if (timeParts?.[1] && timeParts?.[2]) {
+                date.setHours(parseInt(timeParts[1], 10));
+                date.setMinutes(parseInt(timeParts[2], 10));
+                date.setSeconds(parseInt(timeParts[4] || "0", 10));
+            }
+        }
+    }
 
-        if (cell.blocked) {
+    #selectDay(cell: IDatePickerCell) {
+        const newSelectedDate = this.selectedDate ? cloneDate(this.selectedDate) : new Date();
+        this.#applyTimeToDate(newSelectedDate);
+
+        newSelectedDate.setFullYear(cell.date.getFullYear());
+        newSelectedDate.setMonth(cell.date.getMonth());
+        newSelectedDate.setDate(cell.date.getDate());
+
+        this.selectedDate = newSelectedDate;
+
+        if (cell.monthOffset !== 0) {
+            this.#navigate(cell.monthOffset, "month");
+        }
+    }
+
+    #selectMonth(cell: IDatePickerCell) {
+        const newCurrentDate = cloneDate(this.currentDate);
+        newCurrentDate.setMonth(cell.date.getMonth());
+        newCurrentDate.setFullYear(cell.date.getFullYear());
+        this.currentDate = newCurrentDate;
+
+        if (!this.monthMode) {
+            this.zoom = "days";
+        } else {
+            const newSelectedDate = this.selectedDate ? cloneDate(this.selectedDate) : new Date();
+            newSelectedDate.setDate(1);
+            newSelectedDate.setMonth(cell.date.getMonth());
+            newSelectedDate.setFullYear(cell.date.getFullYear());
+            this.selectedDate = newSelectedDate;
+        }
+    }
+
+    #selectYear(cell: IDatePickerCell) {
+        const newCurrentDate = cloneDate(this.currentDate);
+        newCurrentDate.setFullYear(cell.date.getFullYear());
+        this.currentDate = newCurrentDate;
+        this.zoom = "months";
+    }
+
+    private _select(e: MouseEvent, cell: IDatePickerCell) {
+        if (!cell?.date || cell.blocked) {
             e.stopPropagation();
             return;
         }
 
         if (this.zoom === "days") {
-            const newSelectedDate = this.selectedDate ? this._cloneDate(this.selectedDate) : new Date();
-            if (!this.selectedDate && this.newTime) {
-                const newTimeParts = /(\d\d):(\d\d)(:(\d\d))?/.exec(this.newTime);
-                if (newTimeParts && newTimeParts[1] != null && newTimeParts[2] != null) {
-                    newSelectedDate.setHours(parseInt(newTimeParts[1], 10));
-                    newSelectedDate.setMinutes(parseInt(newTimeParts[2], 10));
-                    newSelectedDate.setSeconds(parseInt(newTimeParts[4] || "0", 10));
-                }
-            }
-
-            newSelectedDate.setFullYear(cell.date.getFullYear());
-            newSelectedDate.setMonth(cell.date.getMonth());
-            newSelectedDate.setDate(cell.date.getDate());
-
-            this.selectedDate = newSelectedDate;
-
-            if (cell.monthOffset !== 0) {
-                const newCurrentDate = this._cloneDate(this.currentDate);
-                newCurrentDate.setMonth(newCurrentDate.getMonth() + cell.monthOffset);
-                this._setCurrentDate(newCurrentDate);
-            }
+            this.#selectDay(cell);
         }
         else if (this.zoom === "months") {
-            const newCurrentDate = this._cloneDate(this.currentDate);
-            newCurrentDate.setMonth(cell.date.getMonth());
-            newCurrentDate.setFullYear(cell.date.getFullYear());
-            this._setCurrentDate(newCurrentDate);
-
-            if (!this.monthMode)
-                this.zoom = "days";
-            else {
-                const newSelectedDate = this.selectedDate ? this._cloneDate(this.selectedDate) : new Date();
-                newSelectedDate.setDate(1);
-                newSelectedDate.setMonth(cell.date.getMonth());
-                newSelectedDate.setFullYear(cell.date.getFullYear());
-
-                this.selectedDate = newSelectedDate;
-            }
+            this.#selectMonth(cell);
         }
         else if (this.zoom === "years") {
-            const newCurrentDate = this._cloneDate(this.currentDate);
-            newCurrentDate.setFullYear(cell.date.getFullYear());
-            this._setCurrentDate(newCurrentDate);
-            this.zoom = "months";
+            this.#selectYear(cell);
         }
 
         e.stopPropagation();
     }
 
     private _opening() {
-        this._setCurrentDate(this.selectedDate ? this._cloneDate(this.selectedDate) : new Date());
+        this.currentDate = this.selectedDate ? cloneDate(this.selectedDate) : new Date();
         this.zoom = this.monthMode ? "months" : "days";
 
-        this._setDeferredCellsUpdate(false);
+        this.deferredCellsUpdate = false;
     }
+}
 
-    private _catchTap(e: MouseEvent) {
-        e.stopPropagation();
-    }
+customElements.define("vi-date-picker", DatePicker);
+
+/**************************************
+ * Date Manipulation Utilities
+ **************************************/
+
+/**
+ * Creates a new Date object with the same time value.
+ * @param date - The date to clone
+ * @returns A new Date instance or null if input is falsy
+ */
+function cloneDate(date: Date): Date | null {
+    return date ? new Date(date.getTime()) : null;
+}
+
+/**
+ * Normalizes a date to midnight (00:00:00.000).
+ * @param date - The date to normalize
+ * @returns A new Date instance set to midnight
+ */
+function normalizeDate(date: Date): Date {
+    const newDate = cloneDate(date);
+    newDate.setHours(0, 0, 0, 0);
+    return newDate;
+}
+
+/**
+ * Returns the start of the month for a given date.
+ * @param date - The date to get the start of month for
+ * @returns A new Date instance representing the first day of the month at midnight
+ */
+function startOfMonth(date: Date): Date {
+    const newDate = normalizeDate(date);
+    newDate.setDate(1);
+    return newDate;
+}
+
+/**
+ * Returns the start of the year for a given date.
+ * @param date - The date to get the start of year for
+ * @returns A new Date instance representing January 1st at midnight
+ */
+function startOfYear(date: Date): Date {
+    const newDate = normalizeDate(date);
+    newDate.setMonth(0, 1);
+    return newDate;
+}
+
+/**
+ * Returns the start of the week for a given date.
+ * @param date - The date to get the start of week for
+ * @param firstDayOfWeek - The first day of the week (0 = Sunday, 1 = Monday, etc.)
+ * @returns A new Date instance representing the first day of the week at midnight
+ */
+function startOfWeek(date: Date, firstDayOfWeek: number): Date {
+    const newDate = normalizeDate(date);
+    const diff = (newDate.getDay() - firstDayOfWeek + 7) % 7;
+    newDate.setDate(newDate.getDate() - diff);
+    return newDate;
+}
+
+/**
+ * Adds a specified number of days to a date.
+ * @param date - The starting date
+ * @param days - Number of days to add (can be negative)
+ * @returns A new Date instance with the days added
+ */
+function addDays(date: Date, days: number): Date {
+    const newDate = cloneDate(date);
+    newDate.setDate(newDate.getDate() + days);
+    return newDate;
+}
+
+/**
+ * Adds a specified number of years to a date.
+ * @param date - The starting date
+ * @param years - Number of years to add (can be negative)
+ * @returns A new Date instance with the years added
+ */
+function addYears(date: Date, years: number): Date {
+    const newDate = cloneDate(date);
+    newDate.setFullYear(newDate.getFullYear() + years);
+    return newDate;
+}
+
+/**************************************
+ * Date Comparison Utilities
+ **************************************/
+
+/**
+ * Checks if two dates are the same at a given granularity level.
+ * @param date1 - First date to compare
+ * @param date2 - Second date to compare
+ * @param granularity - Level of comparison: "day", "month", or "year"
+ * @returns True if dates match at the specified granularity
+ */
+function isSameDate(date1: Date, date2: Date, granularity: "day" | "month" | "year"): boolean {
+    if (!date1 || !date2) return false;
+
+    if (date1.getFullYear() !== date2.getFullYear()) return false;
+    if (granularity === "year") return true;
+
+    if (date1.getMonth() !== date2.getMonth()) return false;
+    if (granularity === "month") return true;
+
+    return date1.getDate() === date2.getDate();
+}
+
+/**
+ * Normalizes a date to a specific granularity by zeroing out finer units.
+ * @param date - The date to normalize
+ * @param granularity - The granularity level: "day", "month", or "year"
+ * @returns A new Date instance normalized to the specified granularity
+ */
+function normalizeDateByGranularity(date: Date, granularity: "day" | "month" | "year"): Date {
+    const year = date.getFullYear();
+    const month = granularity === "year" ? 0 : date.getMonth();
+    const day = granularity === "day" ? date.getDate() : 1;
+    return new Date(year, month, day, 0, 0, 0, 0);
+}
+
+/**
+ * Compares two dates at a given granularity level.
+ * @param date1 - First date to compare
+ * @param date2 - Second date to compare
+ * @param granularity - Level of comparison: "day", "month", or "year"
+ * @returns Negative if date1 < date2, positive if date1 > date2, 0 if equal
+ */
+function compareDate(date1: Date, date2: Date, granularity: "day" | "month" | "year"): number {
+    if (!date1 || !date2) return 0;
+    const d1 = normalizeDateByGranularity(date1, granularity);
+    const d2 = normalizeDateByGranularity(date2, granularity);
+    return d1.getTime() - d2.getTime();
+}
+
+/**
+ * Calculates the month offset between two dates.
+ * @param dateForCell - The cell's date
+ * @param currentDisplayMonthDate - The currently displayed month's date
+ * @returns -1 if cell is before, 1 if after, 0 if same month
+ */
+function getMonthOffset(dateForCell: Date, currentDisplayMonthDate: Date): number {
+    const yearDiff = dateForCell.getFullYear() - currentDisplayMonthDate.getFullYear();
+    if (yearDiff !== 0) return Math.sign(yearDiff);
+
+    const monthDiff = dateForCell.getMonth() - currentDisplayMonthDate.getMonth();
+    return Math.sign(monthDiff);
 }
