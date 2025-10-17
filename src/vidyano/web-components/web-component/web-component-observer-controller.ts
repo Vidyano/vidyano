@@ -623,15 +623,15 @@ export class WebComponentObserverController implements ReactiveController {
 
     /**
      * Computes the new value for a property. It either forwards a single dependency's
-     * value or calls a specified compute method with the resolved values of all dependencies.
+     * value or calls a compute function with the resolved values of all dependencies.
      *
      * By default, computed properties are only calculated if none of the arguments are undefined.
      * If allowUndefined is true, the computation will proceed regardless.
      *
-     * @param config The computed property configuration including dependencies, methodName, and allowUndefined.
+     * @param config The computed property configuration including dependencies, computeFunction, and allowUndefined.
      * @returns The newly computed value, or undefined if blocked by undefined dependencies.
      */
-    #computePropertyValue(config: { dependencies: string[], methodName?: string, allowUndefined: boolean }): any {
+    #computePropertyValue(config: { dependencies: string[], computeFunction?: Function, allowUndefined: boolean }): any {
         const args = config.dependencies.map(dep => this.#resolvePath(dep));
 
         // Check for undefined values unless allowUndefined is true
@@ -639,14 +639,12 @@ export class WebComponentObserverController implements ReactiveController {
             return undefined;
         }
 
-        if (!config.methodName)
-            return args[0]; // Simple forwarding
+        // If no compute function, forward the first dependency value
+        if (!config.computeFunction)
+            return args[0];
 
-        if (typeof this.#host[config.methodName] === 'function')
-            return this.#host[config.methodName](...args);
-
-        console.warn(`[${this.#host.tagName.toLowerCase()}] Compute method '${config.methodName}' not found.`);
-        return undefined;
+        // Call the compute function with resolved dependency values
+        return config.computeFunction.call(this.#host, ...args);
     }
 
     /**

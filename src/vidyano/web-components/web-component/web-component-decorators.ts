@@ -205,7 +205,7 @@ export interface ComputedOptions {
  * Note: null values are allowed and do not block computation.
  * Use { allowUndefined: true } as the last parameter to compute even when some dependencies are undefined.
  *
- * @param computeFunction - A reference to the compute method via prototype (e.g., MyComponent.prototype._computeValue)
+ * @param computeFunctionOrDependency - Either a compute function with explicit `this` parameter, or a string property path
  * @param dependencies - One or more property names as strings, optionally followed by ComputedOptions
  *
  * @example
@@ -216,22 +216,33 @@ export interface ComputedOptions {
  * @property({ type: String })
  * lastName: string;
  *
- * @property({ type: String })
- * @computed(MyComponent.prototype._computeFullName, "firstName", "lastName")
- * readonly fullName: string;
- *
- * private _computeFullName(firstName: string, lastName: string): string {
- *   return `${firstName} ${lastName}`;
+ * // With named function and explicit this typing
+ * async function computeFullNameAsync(this: MyComponent, firstName: string, lastName: string) {
+ *   return new Promise(r => setTimeout(() => r(`${firstName} ${lastName}`), 100));
  * }
+ *
+ * @property({ type: String })
+ * @computed(computeFullNameAsync, "firstName", "lastName")
+ * declare readonly fullName: string;
+ *
+ * // With inline function and explicit this typing
+ * @property({ type: String })
+ * @computed(function(this: MyComponent, firstName: string, lastName: string) {
+ *   return `${firstName} ${lastName}`;
+ * }, "firstName", "lastName")
+ * declare readonly fullNameInline: string;
+ *
+ * // With string path (simple forwarding)
+ * @property({ type: String })
+ * @computed("user.name")
+ * declare readonly userName: string;
  *
  * // With allowUndefined option
  * @property({ type: String })
- * @computed(MyComponent.prototype._computeFullName, "firstName", "lastName", { allowUndefined: true })
- * readonly fullName: string;
- *
- * private _computeFullName(firstName: string | undefined, lastName: string | undefined): string {
+ * @computed(function(this: MyComponent, firstName: string | undefined, lastName: string | undefined) {
  *   return `${firstName ?? ''} ${lastName ?? ''}`;
- * }
+ * }, "firstName", "lastName", { allowUndefined: true })
+ * declare readonly fullName: string;
  * ```
  */
 export function computed(computeFunctionOrDependency: Function | string, ...dependencies: Array<string | Function | ComputedOptions>) {
@@ -239,24 +250,14 @@ export function computed(computeFunctionOrDependency: Function | string, ...depe
         const ctor = target.constructor as WebComponentConstructor;
         const conf = ensureOwn<Record<string, any>>(ctor, COMPUTED_CONFIG_SYMBOL, {});
 
-        let methodName: string | undefined;
+        let computeFunction: Function | undefined;
         let deps: string[];
         let options: ComputedOptions = {};
 
         // Check if first parameter is a function (compute function provided)
         if (typeof computeFunctionOrDependency === 'function') {
-            // Validate that it's a prototype function
-            const fnName = computeFunctionOrDependency.name;
-            if (!fnName) {
-                throw new Error(`@computed decorator on ${ctor.name}.${propertyKey}: When providing a function reference, it must be a named prototype method (e.g., ${ctor.name}.prototype.methodName). Anonymous or arrow functions are not supported.`);
-            }
-
-            // Check if the function exists on the target's prototype
-            if (!(fnName in target)) {
-                throw new Error(`@computed decorator on ${ctor.name}.${propertyKey}: Method '${fnName}' not found on ${ctor.name}.prototype. Ensure you're using ${ctor.name}.prototype.${fnName} as the decorator argument.`);
-            }
-
-            methodName = fnName;
+            // Store the compute function directly
+            computeFunction = computeFunctionOrDependency;
 
             // Separate remaining dependencies from options
             if (dependencies.length > 0 && typeof dependencies[dependencies.length - 1] === 'object' && typeof dependencies[dependencies.length - 1] !== 'function' && !Array.isArray(dependencies[dependencies.length - 1])) {
@@ -280,7 +281,7 @@ export function computed(computeFunctionOrDependency: Function | string, ...depe
 
         conf[propertyKey] = {
             dependencies: deps,
-            methodName: methodName,
+            computeFunction: computeFunction,
             allowUndefined: options.allowUndefined ?? false
         };
     };

@@ -62,7 +62,7 @@ export class QueryGridGallery extends WebComponent {
 
     @property({ type: Array, state: true })
     @computed("query.items")
-    private _items: Vidyano.QueryResultItem[];
+    private declare readonly _items: Vidyano.QueryResultItem[];
 
     @property({ type: String, attribute: "map" }) private declare map: string;
     @property({ type: Array, state: true }) private _rows: (MonthHeaderRowItem | GalleryRowItem)[] = [];
@@ -73,25 +73,7 @@ export class QueryGridGallery extends WebComponent {
     @property({ type: Number, state: true }) private _viewerCurrentIndex: number | null = null;
 
     @property({ type: Object, state: true })
-    @computed(QueryGridGallery.prototype._computeMap, "map")
-    private _map: ImageItemMap;
-
-    @property({ type: Object }) query: Vidyano.Query;
-    @property({ type: Number, reflect: true, attribute: "size" }) size = 175; // Preferred size (in pixels) for gallery images.
-
-    #lastSelectedIndex: number | null = null;
-
-    #intersectionObserver: IntersectionObserver;
-    #rowIntersectionObserver: IntersectionObserver;
-    #resizeObserver: ResizeObserver;
-    #resizeDebounceTimer: number;
-
-    /**
-     * Computes the mapping of item properties based on the provided map string.
-     * @param map The JSON string representing the mapping of item properties.
-     * @returns An object mapping item properties to their respective keys.
-     */
-    private _computeMap(map: string): ImageItemMap {
+    @computed(function(this: QueryGridGallery, map: string): ImageItemMap {
         const defaults: ImageItemMap = {
             date: null,
             image: "image",
@@ -114,7 +96,18 @@ export class QueryGridGallery extends WebComponent {
             console.error("Invalid map format:", e);
             return defaults;
         }
-    }
+    }, "map")
+    private declare readonly _map: ImageItemMap;
+
+    @property({ type: Object }) query: Vidyano.Query;
+    @property({ type: Number, reflect: true, attribute: "size" }) size = 175; // Preferred size (in pixels) for gallery images.
+
+    #lastSelectedIndex: number | null = null;
+
+    #intersectionObserver: IntersectionObserver;
+    #rowIntersectionObserver: IntersectionObserver;
+    #resizeObserver: ResizeObserver;
+    #resizeDebounceTimer: number;
 
     /**
      * Calculates the layout of the gallery based on the container width and items.
