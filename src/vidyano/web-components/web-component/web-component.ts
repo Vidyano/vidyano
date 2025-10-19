@@ -8,13 +8,11 @@ import { WebComponentKeybindingController, getKeybindingsConfig } from "./web-co
 import { registerWebComponent } from "./web-component-registration";
 import { WebComponentTranslationController } from "./web-component-translation-controller";
 import { getComputedConfig, computed } from "./web-component-computed-decorator";
-import { getObserversConfig } from "./web-component-observer-decorator";
-import { getPropertyObserversConfig } from "./web-component-observe-decorator";
+import { getObserversConfig, getPropertyObserversConfig } from "./web-component-observer-decorator";
 
 export { listener } from "./web-component-listener-decorator";
 export { keybinding } from "./web-component-keybinding-decorator";
 export { observer, type ObserverOptions } from "./web-component-observer-decorator";
-export { observe } from "./web-component-observe-decorator";
 export { notify } from "./web-component-notify-decorator";
 export { computed, type ComputedOptions } from "./web-component-computed-decorator";
 

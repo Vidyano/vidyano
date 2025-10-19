@@ -1,10 +1,10 @@
 import { html } from "lit";
 import { property } from "lit/decorators.js";
-import { WebComponent, observe } from "../../../src/vidyano/web-components/web-component/web-component.js";
+import { WebComponent, observer } from "../../../src/vidyano/web-components/web-component/web-component.js";
 
-class TestObserveInline extends WebComponent {
+class TestObserverPropertyInline extends WebComponent {
     @property({ type: Number })
-    @observe(function(this: TestObserveInline, newValue?: number, oldValue?: number) {
+    @observer(function(this: TestObserverPropertyInline, newValue?: number, oldValue?: number) {
         this.counterChangeCallCount++;
         this.counterChangeLastArgs = { newValue, oldValue };
         // Store the context to verify `this` refers to the component instance
@@ -13,7 +13,7 @@ class TestObserveInline extends WebComponent {
     declare counter: number;
 
     @property({ type: String })
-    @observe(function(this: TestObserveInline, newValue?: string, oldValue?: string) {
+    @observer(function(this: TestObserverPropertyInline, newValue?: string, oldValue?: string) {
         this.nameChangeCallCount++;
         this.nameChangeLastArgs = { newValue, oldValue };
     })
@@ -35,7 +35,7 @@ class TestObserveInline extends WebComponent {
 
     render() {
         return html`
-            <p>Tests @observe decorator with inline functions</p>
+            <p>Tests @observer decorator on properties with inline functions</p>
             <div>Counter: <span id="counter">${this.counter}</span></div>
             <div>Name: <span id="name">${this.name}</span></div>
             <div>Counter Changes: <span id="counter-changes">${this.counterChangeCallCount}</span></div>
@@ -44,6 +44,6 @@ class TestObserveInline extends WebComponent {
     }
 }
 
-export { TestObserveInline };
+export { TestObserverPropertyInline };
 
-customElements.define("test-observe-inline", TestObserveInline);
+customElements.define("test-observer-property-inline", TestObserverPropertyInline);

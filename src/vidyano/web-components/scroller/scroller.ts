@@ -1,6 +1,6 @@
 import { html, unsafeCSS } from "lit";
 import { property } from "lit/decorators.js";
-import { WebComponent, listener, observe, notify } from "components/web-component/web-component";
+import { WebComponent, listener, observer, notify } from "components/web-component/web-component";
 import "components/size-tracker/size-tracker"
 import styles from "./scroller.css";
 
@@ -98,13 +98,13 @@ export class Scroller extends WebComponent {
 
     /** Current vertical scroll position in pixels */
     @property({ type: Number })
-    @observe(Scroller.prototype._verticalScrollOffsetChanged)
+    @observer(Scroller.prototype._verticalScrollOffsetChanged)
     @notify("vertical-scroll-offset-changed")
     verticalScrollOffset: number = 0;
 
     /** Current horizontal scroll position in pixels */
     @property({ type: Number })
-    @observe(Scroller.prototype._horizontalScrollOffsetChanged)
+    @observer(Scroller.prototype._horizontalScrollOffsetChanged)
     @notify("horizontal-scroll-offset-changed")
     horizontalScrollOffset: number = 0;
 

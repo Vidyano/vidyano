@@ -140,10 +140,10 @@ export class MyComponent extends WebComponent { }
 **After - Option 1: Prototype method reference**
 
 ```typescript
-import { observe } from "@vidyano/vidyano";
+import { observer } from "@vidyano/vidyano";
 
 @property({ type: String, reflect: true })
-@observe(MyComponent.prototype._userIdChanged)
+@observer(MyComponent.prototype._userIdChanged)
 userId: string;
 
 private _userIdChanged(newValue: string, oldValue: string) {
@@ -155,7 +155,7 @@ private _userIdChanged(newValue: string, oldValue: string) {
 
 ```typescript
 @property({ type: String, reflect: true })
-@observe(function(this: MyComponent, newValue: string, oldValue: string) {
+@observer(function(this: MyComponent, newValue: string, oldValue: string) {
     console.log("User ID changed", newValue);
 })
 userId: string;
@@ -511,9 +511,12 @@ customElements.define("vi-my-component", MyComponent);
 
 #### Property Observers
 
-Apply the `@observe()` and `@observer()` decorators to replicate Polymer's property watchers.
+The `@observer()` decorator replicates Polymer's property watchers and supports two usage patterns:
 
-**Two syntax options for `@observe()`:**
+1. **Property observation** - Observes a single property by decorating the property itself
+2. **Method observation** - Observes multiple properties by decorating a method
+
+**Two syntax options for property observation:**
 1. **Prototype method reference**: Reference a class method using `ClassName.prototype.methodName`
 2. **Inline function**: Use an inline function with explicit `this` typing
 
@@ -538,10 +541,10 @@ export class MyComponent extends WebComponent {
 **After - Option 1: Prototype method reference**
 
 ```typescript
-import { observe } from "@vidyano/vidyano";
+import { observer } from "@vidyano/vidyano";
 
 @property({ type: String })
-@observe(MyComponent.prototype._userIdChanged)
+@observer(MyComponent.prototype._userIdChanged)
 userId: string;
 
 private _userIdChanged(newValue: string, oldValue: string) {
@@ -553,7 +556,7 @@ private _userIdChanged(newValue: string, oldValue: string) {
 
 ```typescript
 @property({ type: String })
-@observe(function(this: MyComponent, newValue: string, oldValue: string) {
+@observer(function(this: MyComponent, newValue: string, oldValue: string) {
     console.log("User ID changed", newValue);
 })
 userId: string;
@@ -650,7 +653,7 @@ Keep business logic in observers and move DOM-oriented side effects into Lit's l
 
 ```typescript
 @property({ type: String, reflect: true })
-@observe(MyComponent.prototype._updateColor)
+@observer(MyComponent.prototype._updateColor)
 color: string;
 
 private _updateColor(color: string) {

@@ -289,8 +289,8 @@ test('TestAsyncComputed: ignore stale async result', async ({ page }) => {
     expect(stateAfterWaiting.computedInlineAsync).toBe("Inline Async: second");
 });
 
-test('TestMultiObserver: multi-property observer and computed property', async ({ page }) => {
-    const component = await setupComponentTest(page, 'test-multi-observer');
+test('TestObserverMethod: @observer on methods for multi-property observation', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-observer-method');
     await expect(component).toBeVisible();
 
     // --- Initial state verification ---
@@ -936,8 +936,8 @@ test('TestComputedAllowUndefined: computed calculated even when properties are u
     expect(state.computeLastArgs).toEqual({ firstName: undefined, lastName: 'Doe' });
 });
 
-test('TestObservePrototype: @observe with prototype method reference', async ({ page}) => {
-    const component = await setupComponentTest(page, 'test-observe-prototype');
+test('TestObserverPropertyPrototype: @observer on properties with prototype method reference', async ({ page}) => {
+    const component = await setupComponentTest(page, 'test-observer-property-prototype');
     await expect(component).toBeVisible();
 
     // --- Initial state verification ---
@@ -1008,8 +1008,8 @@ test('TestObservePrototype: @observe with prototype method reference', async ({ 
     expect(nameState.nameChangeLastArgs).toEqual({ newValue: 'updated', oldValue: 'initial' });
 });
 
-test('TestObserveInline: @observe with inline functions', async ({ page }) => {
-    const component = await setupComponentTest(page, 'test-observe-inline');
+test('TestObserverPropertyInline: @observer on properties with inline functions', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-observer-property-inline');
     await expect(component).toBeVisible();
 
     // --- Initial state verification ---

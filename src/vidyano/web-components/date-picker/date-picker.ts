@@ -1,6 +1,6 @@
 import { html, nothing, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
-import { WebComponent, observe, observer, notify, listener } from "components/web-component/web-component.js";
+import { WebComponent, observer, notify, listener } from "components/web-component/web-component.js";
 import * as Vidyano from "vidyano";
 import { Button } from "components/button/button.js";
 import { Popup } from "components/popup/popup.js";
@@ -21,7 +21,7 @@ export class DatePicker extends WebComponent {
     static styles = unsafeCSS(styles);
 
     @property({ type: String, reflect: true })
-    @observe(DatePicker.prototype._zoomChanged)
+    @observer(DatePicker.prototype._zoomChanged)
     zoom: "days" | "months" | "years" = "days";
 
     @state()

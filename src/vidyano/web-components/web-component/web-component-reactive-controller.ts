@@ -2,9 +2,8 @@ import { ReactiveController, PropertyValueMap } from "lit";
 import { Observable, ForwardObservedPropertyChangedArgs, ForwardObservedArrayChangedArgs } from "vidyano";
 import type { WebComponent } from "./web-component";
 import { ComputedConfig, getComputedConfig } from "./web-component-computed-decorator";
-import { getObserversConfig } from "./web-component-observer-decorator";
+import { getObserversConfig, executePropertyObservers } from "./web-component-observer-decorator";
 import { getNotifyConfig } from "./web-component-notify-decorator";
-import { executePropertyObservers } from "./web-component-observe-decorator";
 
 type ForwardObservedDetail = ForwardObservedPropertyChangedArgs | ForwardObservedArrayChangedArgs;
 

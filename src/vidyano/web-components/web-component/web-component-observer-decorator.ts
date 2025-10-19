@@ -1,6 +1,7 @@
 import type { WebComponent } from "./web-component";
 
 export const OBSERVERS_CONFIG_SYMBOL = Symbol("WebComponent.observersConfig");
+export const PROPERTY_OBSERVERS_CONFIG_SYMBOL = Symbol("WebComponent.propertyObserversConfig");
 
 type ObserverConfig = {
     dependencies: string[];
@@ -8,9 +9,11 @@ type ObserverConfig = {
 };
 
 export type ObserversConfig = Record<string, ObserverConfig>;
+export type PropertyObserversConfig = Record<string, Function>;
 
 type WebComponentConstructor = typeof WebComponent & {
     [OBSERVERS_CONFIG_SYMBOL]?: ObserversConfig;
+    [PROPERTY_OBSERVERS_CONFIG_SYMBOL]?: PropertyObserversConfig;
 };
 
 function ensureOwn<T extends object>(ctor: any, symbol: symbol, initial: T): T {
@@ -30,67 +33,95 @@ export interface ObserverOptions {
 }
 
 /**
- * Decorator for observing changes to multiple properties in a web component.
+ * Unified decorator for observing property changes in a web component.
  *
- * By default, the observer method is only called when ALL dependencies are NOT undefined.
- * Note: null values are allowed and do not block execution.
- * Use { allowUndefined: true } to call the observer even when some dependencies are undefined.
+ * Can be used in two ways:
  *
- * @param deps - The names of the properties to observe, optionally followed by an options object.
- *
- * @example
+ * 1. **Property observation** - Observes a single property by passing an observer function:
  * ```typescript
- * // Observer called only when both firstName and lastName are NOT undefined
- * @observer("firstName", "lastName")
- * private _handleNameChange(firstName: string, lastName: string) {
- *   // firstName and lastName are guaranteed to NOT be undefined
- *   // (but they could be null)
- * }
+ * @property({ type: Number })
+ * @observer(MyClass.prototype._handleCounterChange)
+ * declare counter: number;
  *
- * // Observer called even if some properties are undefined
- * @observer("firstName", "lastName", { allowUndefined: true })
- * private _handleNameChangeWithUndefined(firstName: string, lastName: string) {
- *   if (firstName === undefined || lastName === undefined) return;
- *   // Handle the change...
+ * private _handleCounterChange(newValue: number, oldValue: number) {
+ *   console.log(`Changed from ${oldValue} to ${newValue}`);
  * }
  * ```
+ *
+ * 2. **Method observation** - Observes multiple properties by decorating a method:
+ * ```typescript
+ * @observer("firstName", "lastName")
+ * private _handleNameChange(firstName: string, lastName: string) {
+ *   console.log(`Name: ${firstName} ${lastName}`);
+ * }
+ * ```
+ *
+ * **IMPORTANT:** By JavaScript design, truly private methods (with `#`) cannot be
+ * referenced via `Class.prototype.#method`. Use regular `private` methods with underscore prefix instead.
+ *
+ * By default, observers are only called when ALL dependencies are NOT undefined.
+ * Note: null values are allowed and do not block execution.
+ * Use `{ allowUndefined: true }` to call the observer even when some dependencies are undefined.
+ *
+ * @param args - For property observation: observer function. For method observation: property names followed by optional options object.
  */
-export function observer(...args: Array<string | ObserverOptions>): (target: any, propertyKey: string, _desc: PropertyDescriptor) => void {
-    return (target: any, propertyKey: string, _desc: PropertyDescriptor) => {
-        const ctor = target.constructor as WebComponentConstructor;
+export function observer<T extends WebComponent, K extends keyof T>(
+    ...args: Array<((this: T, newValue?: T[K], oldValue?: T[K]) => void) | string | ObserverOptions>
+): any {
+    // Return a decorator function that can handle both property and method decoration
+    return (target: any, propertyKey: string | symbol, descriptor?: PropertyDescriptor): any => {
+        // Detect if this is a property decorator (no descriptor) or method decorator (has descriptor)
+        const isMethodDecorator = descriptor !== undefined;
 
-        // Separate dependencies from options
-        let deps: string[];
-        let options: ObserverOptions = {};
+        if (isMethodDecorator) {
+            // Method observation: args are property names + optional options
+            const ctor = target.constructor as WebComponentConstructor;
+            let deps: string[];
+            let options: ObserverOptions = {};
 
-        if (args.length > 0 && typeof args[args.length - 1] === 'object' && !Array.isArray(args[args.length - 1])) {
-            // Last argument is options object
-            options = args[args.length - 1] as ObserverOptions;
-            deps = args.slice(0, -1) as string[];
+            if (args.length > 0 && typeof args[args.length - 1] === 'object' && !Array.isArray(args[args.length - 1])) {
+                // Last argument is options object
+                options = args[args.length - 1] as ObserverOptions;
+                deps = args.slice(0, -1) as string[];
+            } else {
+                // All arguments are dependencies
+                deps = args as string[];
+            }
+
+            const conf = ensureOwn<Record<string, any>>(ctor, OBSERVERS_CONFIG_SYMBOL, {});
+            const existing = conf[propertyKey as string];
+
+            if (existing) {
+                // Merge dependencies, keeping the most permissive allowUndefined setting
+                const existingDeps = existing.dependencies || existing;
+                const existingAllowUndefined = typeof existing === 'object' && 'allowUndefined' in existing
+                    ? existing.allowUndefined
+                    : false;
+
+                conf[propertyKey as string] = {
+                    dependencies: Array.from(new Set([...(Array.isArray(existingDeps) ? existingDeps : []), ...deps])),
+                    allowUndefined: existingAllowUndefined || (options.allowUndefined ?? false)
+                };
+            } else {
+                conf[propertyKey as string] = {
+                    dependencies: deps,
+                    allowUndefined: options.allowUndefined ?? false
+                };
+            }
         } else {
-            // All arguments are dependencies
-            deps = args as string[];
-        }
+            // Property observation: first arg is the observer function
+            if (args.length !== 1 || typeof args[0] !== 'function') {
+                throw new Error(
+                    `@observer on property '${String(propertyKey)}' requires exactly one argument (the observer function). ` +
+                    `Received ${args.length} argument(s). ` +
+                    `For multi-property observation, use @observer on a method instead.`
+                );
+            }
 
-        const conf = ensureOwn<Record<string, any>>(ctor, OBSERVERS_CONFIG_SYMBOL, {});
-        const existing = conf[propertyKey];
-
-        if (existing) {
-            // Merge dependencies, keeping the most permissive allowUndefined setting
-            const existingDeps = existing.dependencies || existing;
-            const existingAllowUndefined = typeof existing === 'object' && 'allowUndefined' in existing
-                ? existing.allowUndefined
-                : false;
-
-            conf[propertyKey] = {
-                dependencies: Array.from(new Set([...(Array.isArray(existingDeps) ? existingDeps : []), ...deps])),
-                allowUndefined: existingAllowUndefined || (options.allowUndefined ?? false)
-            };
-        } else {
-            conf[propertyKey] = {
-                dependencies: deps,
-                allowUndefined: options.allowUndefined ?? false
-            };
+            const observerFunction = args[0] as Function;
+            const ctor = target.constructor as WebComponentConstructor;
+            const conf = ensureOwn<Record<string, Function>>(ctor, PROPERTY_OBSERVERS_CONFIG_SYMBOL, {});
+            conf[propertyKey as string] = observerFunction;
         }
     };
 }
@@ -102,4 +133,40 @@ export function observer(...args: Array<string | ObserverOptions>): (target: any
  */
 export function getObserversConfig(component: WebComponent): ObserversConfig {
     return (component.constructor as WebComponentConstructor)[OBSERVERS_CONFIG_SYMBOL] || {};
+}
+
+/**
+ * Retrieves the property observers configuration for a component instance.
+ * @param component The WebComponent instance.
+ * @returns A map of property names to their observer functions.
+ */
+export function getPropertyObserversConfig(component: WebComponent): PropertyObserversConfig {
+    return (component.constructor as WebComponentConstructor)[PROPERTY_OBSERVERS_CONFIG_SYMBOL] || {};
+}
+
+/**
+ * Executes single-property observers for any property that has changed.
+ * This function is called during the component update cycle.
+ * @param host The WebComponent instance.
+ * @param changedProperties A map of properties that have changed.
+ */
+export function executePropertyObservers(host: WebComponent, changedProperties: Map<PropertyKey, unknown>): void {
+    const propertyObservers = getPropertyObserversConfig(host);
+    if (!propertyObservers) return;
+
+    for (const [prop, oldVal] of changedProperties.entries()) {
+        const observerFunction = propertyObservers[prop as string];
+        if (!observerFunction) continue;
+
+        const newVal = host[prop as string];
+        if (newVal === oldVal) continue;
+
+        try {
+            // Call the function with the host as `this` context
+            observerFunction.call(host, newVal, oldVal);
+        } catch (e) {
+            const observerName = observerFunction.name || '<anonymous>';
+            console.error(`[${host.tagName.toLowerCase()}] Error in property observer '${observerName}' for property '${String(prop)}':`, e);
+        }
+    }
 }
