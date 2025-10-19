@@ -1,13 +1,16 @@
 import { PropertyDeclaration } from "lit";
 import type { WebComponent } from "./web-component";
+import { PROPERTY_OBSERVERS_CONFIG_SYMBOL, PropertyObserversConfig } from "./web-component-observe-decorator";
+import { COMPUTED_CONFIG_SYMBOL, ComputedConfig } from "./web-component-computed-decorator";
+import { OBSERVERS_CONFIG_SYMBOL, ObserversConfig } from "./web-component-observer-decorator";
+import { NOTIFY_CONFIG_SYMBOL, NotifyConfig } from "./web-component-notify-decorator";
+import { LISTENERS_CONFIG_SYMBOL, ListenersConfig } from "./web-component-listener-decorator";
+import { KEYBINDINGS_CONFIG_SYMBOL, KeybindingsConfig } from "./web-component-keybinding-decorator";
 
-export const COMPUTED_CONFIG_SYMBOL = Symbol("WebComponent.computedConfig");
-export const OBSERVERS_CONFIG_SYMBOL = Symbol("WebComponent.observersConfig");
-export const PROPERTY_OBSERVERS_CONFIG_SYMBOL = Symbol("WebComponent.propertyObserversConfig");
-export const NOTIFY_CONFIG_SYMBOL = Symbol("WebComponent.notifyConfig");
 export const SENSITIVE_CONFIG_SYMBOL = Symbol("WebComponent.sensitiveConfig");
-export const LISTENERS_CONFIG_SYMBOL = Symbol("WebComponent.listenersConfig");
-export const KEYBINDINGS_CONFIG_SYMBOL = Symbol("WebComponent.keybindingsConfig");
+
+// Re-export symbols for backward compatibility
+export { COMPUTED_CONFIG_SYMBOL, OBSERVERS_CONFIG_SYMBOL, NOTIFY_CONFIG_SYMBOL, LISTENERS_CONFIG_SYMBOL, KEYBINDINGS_CONFIG_SYMBOL, PROPERTY_OBSERVERS_CONFIG_SYMBOL };
 
 /**
  * Parses a method signature string of the form "methodName(arg1, arg2, ...)".
@@ -27,23 +30,8 @@ export function parseMethodSignature(signature: string): { methodName: string; a
     return { methodName, args };
 }
 
-type ComputedPropertyConfig = {
-    dependencies: string[];
-    computeFunction?: Function; // Compute function, or undefined for simple forwarding
-    allowUndefined: boolean;
-};
-
-type ObserverConfig = {
-    dependencies: string[];
-    allowUndefined: boolean;
-};
-
-export type ComputedConfig = Record<string, ComputedPropertyConfig>;
-export type ObserversConfig = Record<string, ObserverConfig>;
-export type PropertyObserversConfig = Record<string, Function>;
-export type NotifyConfig = Record<string, string | true>; // true = auto-generate kebab-case-changed, string = custom event name
-export type ListenersConfig = Record<string, string>;
-export type KeybindingsConfig = Record<string, string>; // keybinding -> methodName
+// Re-export types for backward compatibility
+export type { ComputedConfig, ObserversConfig, NotifyConfig, ListenersConfig, KeybindingsConfig, PropertyObserversConfig };
 
 type WebComponentConstructor = typeof WebComponent & {
     properties?: Record<string, PropertyDeclaration>;
@@ -79,29 +67,13 @@ export interface WebComponentRegistrationInfo {
     sensitive?: boolean;
 }
 
-export function getListenersConfig(component: WebComponent): ListenersConfig {
-    return (component.constructor as WebComponentConstructor)[LISTENERS_CONFIG_SYMBOL] || {};
-}
-
-export function getKeybindingsConfig(component: WebComponent): KeybindingsConfig {
-    return (component.constructor as WebComponentConstructor)[KEYBINDINGS_CONFIG_SYMBOL] || {};
-}
-
-export function getObserversConfig(component: WebComponent): ObserversConfig {
-    return (component.constructor as WebComponentConstructor)[OBSERVERS_CONFIG_SYMBOL] || {};
-}
-
-export function getComputedConfig(component: WebComponent): ComputedConfig {
-    return (component.constructor as WebComponentConstructor)[COMPUTED_CONFIG_SYMBOL] || {};
-}
-
-export function getPropertyObserversConfig(component: WebComponent): PropertyObserversConfig {
-    return (component.constructor as WebComponentConstructor)[PROPERTY_OBSERVERS_CONFIG_SYMBOL] || {};
-}
-
-export function getNotifyConfig(component: WebComponent): NotifyConfig {
-    return (component.constructor as WebComponentConstructor)[NOTIFY_CONFIG_SYMBOL] || {};
-}
+// Re-export getter functions from their respective decorator files for backward compatibility
+export { getListenersConfig } from "./web-component-listener-decorator";
+export { getKeybindingsConfig } from "./web-component-keybinding-decorator";
+export { getObserversConfig } from "./web-component-observer-decorator";
+export { getComputedConfig } from "./web-component-computed-decorator";
+export { getNotifyConfig } from "./web-component-notify-decorator";
+export { getPropertyObserversConfig } from "./web-component-observe-decorator";
 
 export function getSensitiveConfig(component: WebComponent): boolean {
     return (component.constructor as WebComponentConstructor)[SENSITIVE_CONFIG_SYMBOL];
