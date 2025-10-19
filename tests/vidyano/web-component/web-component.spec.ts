@@ -40,8 +40,8 @@ async function getSimpleComputedComponentState(component: Locator) {
     });
 }
 
-test('TestOneSimpleComputed: lifecycle and computed/observer flow', async ({ page }) => {
-    const component = await setupComponentTest(page, 'test-one-simple-computed');
+test('TestComputedInline: @computed with inline function', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-computed-inline');
     await expect(component).toBeVisible();
 
     // --- Initial state verification ---
@@ -936,8 +936,8 @@ test('TestComputedAllowUndefined: computed calculated even when properties are u
     expect(state.computeLastArgs).toEqual({ firstName: undefined, lastName: 'Doe' });
 });
 
-test('TestObserveFunction: @observe with function reference', async ({ page}) => {
-    const component = await setupComponentTest(page, 'test-observe-function');
+test('TestObservePrototype: @observe with prototype method reference', async ({ page}) => {
+    const component = await setupComponentTest(page, 'test-observe-prototype');
     await expect(component).toBeVisible();
 
     // --- Initial state verification ---
