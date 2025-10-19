@@ -1,7 +1,10 @@
 import { ReactiveController, PropertyValueMap } from "lit";
 import { Observable, ForwardObservedPropertyChangedArgs, ForwardObservedArrayChangedArgs } from "vidyano";
 import type { WebComponent } from "./web-component";
-import { ComputedConfig, getComputedConfig, getObserversConfig, getPropertyObserversConfig, getNotifyConfig } from "./web-component-registration";
+import { ComputedConfig, getComputedConfig } from "./web-component-computed-decorator";
+import { getObserversConfig } from "./web-component-observer-decorator";
+import { getNotifyConfig } from "./web-component-notify-decorator";
+import { executePropertyObservers } from "./web-component-observe-decorator";
 
 type ForwardObservedDetail = ForwardObservedPropertyChangedArgs | ForwardObservedArrayChangedArgs;
 
@@ -252,7 +255,7 @@ export class WebComponentObserverController implements ReactiveController {
     #executeObserversAndDetectSideEffects(changedProperties: Map<PropertyKey, unknown>, dirtyPaths: Set<string>,lastComplexObserverArgs: Map<string, any[]>): Map<PropertyKey, unknown> {
         const stateBeforeObservers = this.#capturePropertyState();
 
-        this.#executePropertyObservers(changedProperties);
+        executePropertyObservers(this.#host, changedProperties);
         this.#executeComplexObservers(changedProperties, dirtyPaths, lastComplexObserverArgs);
         this.#dispatchNotifyEvents(changedProperties);
 
@@ -266,31 +269,6 @@ export class WebComponentObserverController implements ReactiveController {
     #capturePropertyState(): Map<PropertyKey, any> {
         const allPropKeys = Array.from((this.#host.constructor as typeof WebComponent).elementProperties.keys());
         return new Map(allPropKeys.map(prop => [prop, this.#host[prop]]));
-    }
-
-    /**
-     * Executes single-property observers for any property that has changed in this pass.
-     * @param changedProperties A map of properties that have changed.
-     */
-    #executePropertyObservers(changedProperties: Map<PropertyKey, unknown>): void {
-        const propertyObservers = getPropertyObserversConfig(this.#host);
-        if (!propertyObservers) return;
-
-        for (const [prop, oldVal] of changedProperties.entries()) {
-            const observerFunction = propertyObservers[prop as string];
-            if (!observerFunction) continue;
-
-            const newVal = this.#host[prop as string];
-            if (newVal === oldVal) continue;
-
-            try {
-                // Call the function with the host as `this` context
-                observerFunction.call(this.#host, newVal, oldVal);
-            } catch (e) {
-                const observerName = observerFunction.name || '<anonymous>';
-                console.error(`[${this.#host.tagName.toLowerCase()}] Error in property observer '${observerName}' for property '${String(prop)}':`, e);
-            }
-        }
     }
 
     /**

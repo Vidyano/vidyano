@@ -5,12 +5,21 @@ import { Service } from "vidyano";
 import { WebComponentObserverController } from "./web-component-observer-controller";
 import { WebComponentListenerController } from "./web-component-listener-controller";
 import { WebComponentKeybindingController } from "./web-component-keybinding-controller";
-import { WebComponentRegistrationInfo } from "./web-component-registration";
+import { WebComponentRegistrationInfo, registerWebComponent } from "./web-component-registration";
 import { WebComponentTranslationController } from "./web-component-translation-controller";
-import { registerWebComponent, getListenersConfig, getKeybindingsConfig, getComputedConfig, getPropertyObserversConfig, getObserversConfig } from "./web-component-registration";
-import { computed } from "./web-component-decorators";
+import { getListenersConfig } from "./web-component-listener-decorator";
+import { getKeybindingsConfig } from "./web-component-keybinding-decorator";
+import { getComputedConfig } from "./web-component-computed-decorator";
+import { getObserversConfig } from "./web-component-observer-decorator";
+import { getPropertyObserversConfig } from "./web-component-observe-decorator";
+import { computed } from "./web-component-computed-decorator";
 
-export { listener, keybinding, observer, observe, notify, computed } from "./web-component-decorators";
+export { listener } from "./web-component-listener-decorator";
+export { keybinding } from "./web-component-keybinding-decorator";
+export { observer, type ObserverOptions } from "./web-component-observer-decorator";
+export { observe } from "./web-component-observe-decorator";
+export { notify } from "./web-component-notify-decorator";
+export { computed, type ComputedOptions } from "./web-component-computed-decorator";
 
 const LISTENER_CONTROLLER_SYMBOL = Symbol("WebComponent.listenerController");
 const KEYBINDING_CONTROLLER_SYMBOL = Symbol("WebComponent.keybindingController");
