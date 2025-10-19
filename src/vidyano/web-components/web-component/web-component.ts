@@ -2,19 +2,25 @@ import { AppBase } from "components/app/app";
 import { LitElement, PropertyValueMap } from "lit";
 import { property } from "lit/decorators.js";
 import { Service } from "vidyano";
-import { WebComponentObserverController } from "./web-component-observer-controller";
-import { WebComponentListenerController } from "./web-component-listener-controller";
-import { WebComponentKeybindingController } from "./web-component-keybinding-controller";
-import { WebComponentRegistrationInfo } from "./web-component-registration";
+import { WebComponentReactiveController } from "./web-component-reactive-controller";
+import { WebComponentListenerController, getListenersConfig } from "./web-component-listener-decorator";
+import { WebComponentKeybindingController, getKeybindingsConfig } from "./web-component-keybinding-decorator";
+import { WebComponentRegistrationInfo, registerWebComponent } from "./web-component-registration";
 import { WebComponentTranslationController } from "./web-component-translation-controller";
-import { registerWebComponent, getListenersConfig, getKeybindingsConfig, getComputedConfig, getPropertyObserversConfig, getObserversConfig } from "./web-component-registration";
-import { computed } from "./web-component-decorators";
+import { getComputedConfig, computed } from "./web-component-computed-decorator";
+import { getObserversConfig } from "./web-component-observer-decorator";
+import { getPropertyObserversConfig } from "./web-component-observe-decorator";
 
-export { listener, keybinding, observer, observe, notify, computed } from "./web-component-decorators";
+export { listener } from "./web-component-listener-decorator";
+export { keybinding } from "./web-component-keybinding-decorator";
+export { observer, type ObserverOptions } from "./web-component-observer-decorator";
+export { observe } from "./web-component-observe-decorator";
+export { notify } from "./web-component-notify-decorator";
+export { computed, type ComputedOptions } from "./web-component-computed-decorator";
 
 const LISTENER_CONTROLLER_SYMBOL = Symbol("WebComponent.listenerController");
 const KEYBINDING_CONTROLLER_SYMBOL = Symbol("WebComponent.keybindingController");
-const OBSERVER_CONTROLLER_SYMBOL = Symbol("WebComponent.observerController");
+const REACTIVE_CONTROLLER_SYMBOL = Symbol("WebComponent.reactiveController");
 const TRANSLATION_CONTROLLER_SYMBOL = Symbol("WebComponent.translationController");
 
 const APP_CHANGE_LISTENER_SYMBOL = Symbol("WebComponent.appChangeListener");
@@ -111,7 +117,7 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
         if (Object.keys(getComputedConfig(this)).length > 0 ||
             Object.keys(getPropertyObserversConfig(this)).length > 0 ||
             Object.keys(getObserversConfig(this)).length > 0) {
-            this[OBSERVER_CONTROLLER_SYMBOL] = new WebComponentObserverController(this);
+            this[REACTIVE_CONTROLLER_SYMBOL] = new WebComponentReactiveController(this);
         }
     }
 
@@ -166,7 +172,7 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
     override willUpdate(changedProperties: PropertyValueMap<any>) {
         // The ObserverController handles computed properties, observers, and side-effects,
         // returning the complete set of properties that have changed.
-        const totalChangedProps = this[OBSERVER_CONTROLLER_SYMBOL]?.onWillUpdate(changedProperties) ?? changedProperties;
+        const totalChangedProps = this[REACTIVE_CONTROLLER_SYMBOL]?.onWillUpdate(changedProperties) ?? changedProperties;
 
         // Finally, call super.willUpdate with the complete set of changes.
         super.willUpdate(totalChangedProps);
