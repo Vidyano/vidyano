@@ -205,7 +205,7 @@ Translate `reflectToAttribute`, custom observers, and similar settings into deco
 }, "vi-my-component")
 export class MyComponent extends WebComponent { }
 
-// After
+// After - Option 1: Prototype method reference
 import { observe } from "@vidyano/vidyano";
 
 @property({ type: String, reflect: true })
@@ -215,6 +215,13 @@ userId: string;
 private _userIdChanged(newValue: string, oldValue: string) {
     console.log("User ID changed", newValue);
 }
+
+// After - Option 2: Inline function
+@property({ type: String, reflect: true })
+@observe(function(this: MyComponent, newValue: string, oldValue: string) {
+    console.log("User ID changed", newValue);
+})
+userId: string;
 ```
 
 ##### Read-Only Properties (Internal State)
@@ -512,7 +519,9 @@ customElements.define("vi-my-component", MyComponent);
 
 Apply the `@observe()` and `@observer()` decorators to replicate Polymer's property watchers.
 
-**Important:** The `@observe()` decorator uses function references (e.g., `MyComponent.prototype._methodName`) instead of string names. This provides better type safety and IDE support.
+**Two syntax options for `@observe()`:**
+1. **Prototype method reference**: Reference a class method using `ClassName.prototype.methodName`
+2. **Inline function**: Use an inline function with explicit `this` typing
 
 ```typescript
 // Before - single property observer
@@ -530,7 +539,7 @@ export class MyComponent extends WebComponent {
     }
 }
 
-// After
+// After - Option 1: Prototype method reference
 import { observe } from "@vidyano/vidyano";
 
 @property({ type: String })
@@ -540,6 +549,13 @@ userId: string;
 private _userIdChanged(newValue: string, oldValue: string) {
     console.log("User ID changed", newValue);
 }
+
+// After - Option 2: Inline function
+@property({ type: String })
+@observe(function(this: MyComponent, newValue: string, oldValue: string) {
+    console.log("User ID changed", newValue);
+})
+userId: string;
 ```
 
 ```typescript
@@ -654,7 +670,9 @@ updated(changedProperties: Map<PropertyKey, unknown>) {
 
 When the computed value must stay reactive (or reflect to attributes), use the `@computed()` decorator to describe its dependencies.
 
-**Important:** The `@computed()` decorator uses an inline function with explicit `this` typing, followed by dependency names as separate string parameters. This provides better type safety and IDE support, and keeps the computation logic colocated with the property declaration.
+**Two syntax options for `@computed()`:**
+1. **Inline function**: Use an inline function with explicit `this` typing (recommended for simple computations)
+2. **Prototype method reference**: Reference a class method using `ClassName.prototype.methodName` (recommended for complex computations)
 
 ```typescript
 // Before
@@ -674,7 +692,7 @@ export class MyComponent extends WebComponent {
     }
 }
 
-// After - use @computed decorator with inline function
+// After - Option 1: Inline function (recommended for simple computations)
 import { computed } from "@vidyano/vidyano";
 
 @property({ type: String })
@@ -688,6 +706,15 @@ lastName: string;
     return `${firstName} ${lastName}`;
 }, "firstName", "lastName")
 declare readonly fullName: string;
+
+// After - Option 2: Prototype method reference (recommended for complex computations)
+@property({ type: String })
+@computed(MyComponent.prototype._computeFullName, "firstName", "lastName")
+declare readonly fullName: string;
+
+private _computeFullName(firstName: string, lastName: string): string {
+    return `${firstName} ${lastName}`;
+}
 ```
 
 **Note:** The `@computed` decorator will NOT calculate the computed property when any dependency is `undefined`. `null` values are allowed. To allow `undefined` values, use `{ allowUndefined: true }` as the last parameter:
@@ -700,23 +727,10 @@ declare readonly fullName: string;
 declare readonly fullName: string;
 ```
 
-**Alternative: Named Functions**
-
-If you prefer to define the compute function outside the decorator, use a named function:
-
-```typescript
-function computeFullName(this: MyComponent, firstName: string, lastName: string): string {
-    return `${firstName} ${lastName}`;
-}
-
-@property({ type: String })
-@computed(computeFullName, "firstName", "lastName")
-declare readonly fullName: string;
-```
-
 **Best Practices:**
 - Always declare computed properties as `declare readonly` to make their immutable nature clear
 - Use inline functions for simple computations to keep logic colocated with the property
+- Use prototype method references for complex computations with multiple lines of logic
 - Always include explicit `this` typing for better IDE support and type checking
 
 ##### Using getters (for reactive component properties only)
