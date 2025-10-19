@@ -15,3 +15,4 @@ import "./web-component/test-observer-allow-undefined.js";
 import "./web-component/test-computed-undefined-blocking.js";
 import "./web-component/test-computed-allow-undefined.js";
 import "./web-component/test-observe-function.js";
+import "./web-component/test-observe-inline.js";

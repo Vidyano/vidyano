@@ -137,9 +137,10 @@ export function observer(...args: Array<string | ObserverOptions>): (target: any
  * **IMPORTANT:** By JavaScript design, truly private methods (with `#`) cannot be
  * referenced via `Class.prototype.#method`. Use regular `private` methods with underscore prefix instead.
  *
- * @param observerFunction - A reference to the observer method function via prototype.
+ * @param observerFunction - A reference to the observer method function via prototype, or an inline function with explicit `this` typing.
  *
  * @example
+ * Using a function reference:
  * ```typescript
  * @property({ type: Number })
  * @observe(DatePicker.prototype._handleScrollChange)
@@ -150,8 +151,21 @@ export function observer(...args: Array<string | ObserverOptions>): (target: any
  *   console.log(`Scroll changed from ${oldValue} to ${newValue}`);
  * }
  * ```
+ *
+ * @example
+ * Using an inline function:
+ * ```typescript
+ * @property({ type: Number })
+ * @observe(function(this: DatePicker, newValue?: number, oldValue?: number) {
+ *   // `this` refers to the DatePicker instance
+ *   console.log(`Scroll changed from ${oldValue} to ${newValue}`);
+ * })
+ * scrollTop: number;
+ * ```
  */
-export function observe(observerFunction: Function) {
+export function observe<T extends WebComponent, K extends keyof T>(
+    observerFunction: (this: T, newValue?: T[K], oldValue?: T[K]) => void
+): PropertyDecorator {
     return (target: any, propertyKey: string) => {
         const ctor = target.constructor as WebComponentConstructor;
         const conf = ensureOwn<Record<string, Function>>(ctor, PROPERTY_OBSERVERS_CONFIG_SYMBOL, {});
