@@ -2,6 +2,7 @@ import "../../src/vidyano/index.js";
 export * from "../../src/vidyano/index.js";
 
 import "./web-component/test-one-simple-computed.js";
+import "./web-component/test-computed-prototype.js";
 import "./web-component/test-computed-derived-object.js";
 import "./web-component/test-computed-path.js";
 import "./web-component/test-computed-sub-path.js";
