@@ -2,7 +2,7 @@ import { ReactiveController, PropertyValueMap } from "lit";
 import { Observable, ForwardObservedPropertyChangedArgs, ForwardObservedArrayChangedArgs } from "vidyano";
 import type { WebComponent } from "./web-component";
 import { ComputedConfig, getComputedConfig } from "./web-component-computed-decorator";
-import { getObserversConfig, executePropertyObservers } from "./web-component-observer-decorator";
+import { getMethodObserversConfig, executePropertyObservers } from "./web-component-observer-decorator";
 import { getNotifyConfig } from "./web-component-notify-decorator";
 
 type ForwardObservedDetail = ForwardObservedPropertyChangedArgs | ForwardObservedArrayChangedArgs;
@@ -85,7 +85,7 @@ export class WebComponentReactiveController implements ReactiveController {
      * @param changedProperties The map of properties that have changed in this update cycle.
      */
     #rebindForwardersIfNeeded(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-        const observersConfig = getObserversConfig(this.#host);
+        const observersConfig = getMethodObserversConfig(this.#host);
         const computedConfig = getComputedConfig(this.#host);
 
         if (Object.keys(observersConfig).length === 0 && Object.keys(computedConfig).length === 0)
@@ -322,7 +322,7 @@ export class WebComponentReactiveController implements ReactiveController {
      * @param lastComplexObserverArgs A map tracking the last arguments passed to complex observers.
      */
     #executeComplexObservers(changedProperties: Map<PropertyKey, unknown>, dirtyPaths: Set<string>, lastComplexObserverArgs: Map<string, any[]>): void {
-        const observersConfig = getObserversConfig(this.#host);
+        const observersConfig = getMethodObserversConfig(this.#host);
         if (!observersConfig) return;
 
         const observersToCall = this.#identifyObserversToCall(observersConfig, changedProperties, dirtyPaths);
@@ -453,7 +453,7 @@ export class WebComponentReactiveController implements ReactiveController {
      * @param rootsToRebind Optional set of root property names to rebind forwarders for.
      */
     #setupForwardersForRoots(rootsToRebind?: Set<string>) {
-        const staticObserversConfig = getObserversConfig(this.#host);
+        const staticObserversConfig = getMethodObserversConfig(this.#host);
         const staticComputedConfig = getComputedConfig(this.#host);
 
         if (Object.keys(staticObserversConfig).length === 0 && Object.keys(staticComputedConfig).length === 0)

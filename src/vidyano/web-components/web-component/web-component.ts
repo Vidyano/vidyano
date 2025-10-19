@@ -8,7 +8,7 @@ import { WebComponentKeybindingController, getKeybindingsConfig } from "./web-co
 import { registerWebComponent } from "./web-component-registration";
 import { WebComponentTranslationController } from "./web-component-translation-controller";
 import { getComputedConfig, computed } from "./web-component-computed-decorator";
-import { getObserversConfig, getPropertyObserversConfig } from "./web-component-observer-decorator";
+import { getMethodObserversConfig, getPropertyObserversConfig } from "./web-component-observer-decorator";
 
 export { listener } from "./web-component-listener-decorator";
 export { keybinding } from "./web-component-keybinding-decorator";
@@ -114,7 +114,7 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
 
         if (Object.keys(getComputedConfig(this)).length > 0 ||
             Object.keys(getPropertyObserversConfig(this)).length > 0 ||
-            Object.keys(getObserversConfig(this)).length > 0) {
+            Object.keys(getMethodObserversConfig(this)).length > 0) {
             this[REACTIVE_CONTROLLER_SYMBOL] = new WebComponentReactiveController(this);
         }
     }
