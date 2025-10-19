@@ -22,9 +22,10 @@ interface ObserverExecutionResult {
 const MAX_ITERATIONS = 10;
 
 /**
- * A Reactive Controller that manages computed properties, observers, and deep path observation.
+ * A Reactive Controller that orchestrates the entire reactive update cycle,
+ * including computed properties, observers, deep path observation, and notify events.
  */
-export class WebComponentObserverController implements ReactiveController {
+export class WebComponentReactiveController implements ReactiveController {
     #host: WebComponent;
 
     #forwarderDisposers: Map<string, () => void> = new Map();
