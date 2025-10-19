@@ -1,38 +1,71 @@
-import * as Polymer from "polymer"
-@Polymer.WebComponent.register({
-    properties: {
-        value: {
-            type: String,
-            notify: true,
-            value: ""
-        },
-        hasValue: {
-            type: Boolean,
-            computed: "_computeHasValue(value)"
-        },
-        focused: {
-            type: Boolean,
-            notify: true,
-            reflectToAttribute: true
-        },
-        autofocus: {
-            type: Boolean,
-            reflectToAttribute: true
+import { html, unsafeCSS } from "lit";
+import { property } from "lit/decorators.js";
+import { notify, WebComponent } from "components/web-component/web-component";
+import styles from "./input-search.css";
+
+export class InputSearch extends WebComponent {
+    static styles = unsafeCSS(styles);
+
+    @property({ type: String })
+    @notify()
+    value: string = "";
+
+    @property({ type: Boolean, reflect: true })
+    @notify()
+    focused: boolean = false;
+
+    @property({ type: Boolean, reflect: true })
+    autofocus: boolean = false;
+
+    get hasValue(): boolean {
+        return !!this.value;
+    }
+
+    render() {
+        return html`
+            <form autocomplete="off" class="form-container" @submit=${this._catchOnSumbit}>
+                <input
+                    name="search"
+                    class="input"
+                    placeholder=${this.translations["FilterSearchHint"]}
+                    .value=${this.value}
+                    @input=${this._handleInput}
+                    @keypress=${this._searchKeypressed}
+                    @focus=${this._input_focused}
+                    @blur=${this._input_blurred}
+                    ?autofocus=${this.autofocus}
+                    role="search"
+                    part="input">
+            </form>
+            <button
+                class="reset"
+                @click=${this._resetClick}
+                ?hidden=${!this.hasValue}
+                part="reset">
+                <vi-icon source="SearchReset"></vi-icon>
+            </button>
+            <button
+                class="search"
+                @click=${this._searchClick}
+                ?hidden=${this.hasValue}
+                part="search">
+                <vi-icon source="Search"></vi-icon>
+            </button>
+        `;
+    }
+
+    firstUpdated(changedProperties: Map<PropertyKey, unknown>) {
+        super.firstUpdated(changedProperties);
+
+        if (this.autofocus) {
+            const input = this.shadowRoot?.querySelector("input");
+            if (input) input.focus();
         }
     }
-}, "vi-input-search")
-export class InputSearch extends Polymer.WebComponent {
-    static get template() { return Polymer.html`<link rel="import" href="input-search.html">`; }
 
-    value: string;
-    focused: boolean;
-    autofocus: boolean;
-
-    connectedCallback() {
-        super.connectedCallback();
-
-        if (this.autofocus)
-            this._focusElement(this);
+    private _handleInput(e: Event) {
+        const input = e.target as HTMLInputElement;
+        this.value = input.value;
     }
 
     private _searchKeypressed(e: KeyboardEvent) {
@@ -40,7 +73,7 @@ export class InputSearch extends Polymer.WebComponent {
             this._searchClick();
     }
 
-    private _searchClick(e?: Polymer.Gestures.TapEvent) {
+    private _searchClick(e?: MouseEvent) {
         this.dispatchEvent(new CustomEvent("search", {
             detail: this.value,
             bubbles: true,
@@ -51,7 +84,7 @@ export class InputSearch extends Polymer.WebComponent {
             e.stopPropagation();
     }
 
-    private _resetClick(e?: Polymer.Gestures.TapEvent) {
+    private _resetClick(e?: MouseEvent) {
         this.value = "";
         this.dispatchEvent(new CustomEvent("search", {
             detail: this.value,
@@ -71,20 +104,14 @@ export class InputSearch extends Polymer.WebComponent {
         this.focused = false;
     }
 
-    private _stop_tap(e: Polymer.Gestures.TapEvent) {
-        e.stopPropagation();
-        this._focusElement(this);
-    }
-
-    private _catchOnSumbit(e: CustomEvent) {
+    private _catchOnSumbit(e: Event) {
         e.preventDefault();
     }
 
-    private _computeHasValue(value: string): boolean {
-        return !!value;
-    }
-
     focus() {
-        this._focusElement(this.shadowRoot.querySelector("input"));
+        const input = this.shadowRoot?.querySelector("input");
+        if (input) input.focus();
     }
 }
+
+customElements.define("vi-input-search", InputSearch);
