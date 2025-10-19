@@ -219,18 +219,34 @@ export interface ComputedOptions {
  * Note: null values are allowed and do not block computation.
  * Use { allowUndefined: true } as the last parameter to compute even when some dependencies are undefined.
  *
- * @param computeFunctionOrDependency - Either a compute function with explicit `this` parameter, or a string property path
+ * @param computeFunctionOrDependency - Either a compute function (inline with `this` parameter or prototype reference), or a string property path
  * @param dependencies - One or more property names as strings, optionally followed by ComputedOptions
  *
  * @example
+ * Using a prototype function reference:
  * ```typescript
  * @property({ type: String })
- * firstName: string;
+ * @computed(MyComponent.prototype._computeFullName, "firstName", "lastName")
+ * declare readonly fullName: string;
  *
+ * private _computeFullName(firstName: string, lastName: string) {
+ *   return `${firstName} ${lastName}`;
+ * }
+ * ```
+ *
+ * @example
+ * Using an inline function with explicit this typing:
+ * ```typescript
  * @property({ type: String })
- * lastName: string;
+ * @computed(function(this: MyComponent, firstName: string, lastName: string) {
+ *   return `${firstName} ${lastName}`;
+ * }, "firstName", "lastName")
+ * declare readonly fullName: string;
+ * ```
  *
- * // With named function and explicit this typing
+ * @example
+ * Using a named function with explicit this typing:
+ * ```typescript
  * async function computeFullNameAsync(this: MyComponent, firstName: string, lastName: string) {
  *   return new Promise(r => setTimeout(() => r(`${firstName} ${lastName}`), 100));
  * }
@@ -238,20 +254,19 @@ export interface ComputedOptions {
  * @property({ type: String })
  * @computed(computeFullNameAsync, "firstName", "lastName")
  * declare readonly fullName: string;
+ * ```
  *
- * // With inline function and explicit this typing
- * @property({ type: String })
- * @computed(function(this: MyComponent, firstName: string, lastName: string) {
- *   return `${firstName} ${lastName}`;
- * }, "firstName", "lastName")
- * declare readonly fullNameInline: string;
- *
- * // With string path (simple forwarding)
+ * @example
+ * Using a string path (simple forwarding):
+ * ```typescript
  * @property({ type: String })
  * @computed("user.name")
  * declare readonly userName: string;
+ * ```
  *
- * // With allowUndefined option
+ * @example
+ * With allowUndefined option:
+ * ```typescript
  * @property({ type: String })
  * @computed(function(this: MyComponent, firstName: string | undefined, lastName: string | undefined) {
  *   return `${firstName ?? ''} ${lastName ?? ''}`;
@@ -259,7 +274,10 @@ export interface ComputedOptions {
  * declare readonly fullName: string;
  * ```
  */
-export function computed(computeFunctionOrDependency: Function | string, ...dependencies: Array<string | Function | ComputedOptions>) {
+export function computed<T extends WebComponent, K extends keyof T>(
+    computeFunctionOrDependency: ((this: T, ...args: any[]) => T[K] | Promise<T[K]>) | ((...args: any[]) => T[K] | Promise<T[K]>) | string,
+    ...dependencies: Array<string | Function | ComputedOptions>
+): PropertyDecorator {
     return (target: any, propertyKey: string) => {
         const ctor = target.constructor as WebComponentConstructor;
         const conf = ensureOwn<Record<string, any>>(ctor, COMPUTED_CONFIG_SYMBOL, {});

@@ -89,6 +89,79 @@ test('TestOneSimpleComputed: lifecycle and computed/observer flow', async ({ pag
     await expect(component.locator('strong')).toContainText('Computed Full Name: John Smith');
 });
 
+test('TestComputedPrototype: @computed with prototype function reference', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-computed-prototype');
+    await expect(component).toBeVisible();
+
+    // --- Initial state verification ---
+    await expect(component.locator('#full-name')).toContainText('Jane Doe');
+    let state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            lastName: inst.lastName,
+            fullName: inst.fullName,
+            computeFullNameCallCount: inst.computeFullNameCallCount,
+            computeFullNameLastArgs: inst.computeFullNameLastArgs,
+            computeFullNameLastResult: inst.computeFullNameLastResult
+        };
+    });
+
+    expect(state.firstName).toBe("Jane");
+    expect(state.lastName).toBe("Doe");
+    expect(state.fullName).toBe("Jane Doe");
+    expect(state.computeFullNameCallCount).toBe(1);
+    expect(state.computeFullNameLastArgs).toEqual({ firstName: "Jane", lastName: "Doe" });
+    expect(state.computeFullNameLastResult).toBe("Jane Doe");
+
+    // --- Act: Change firstName property ---
+    await component.evaluate(node => { (node as any).firstName = 'John'; });
+    await expect(component.locator('#full-name')).toContainText('John Doe');
+    state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            lastName: inst.lastName,
+            fullName: inst.fullName,
+            computeFullNameCallCount: inst.computeFullNameCallCount,
+            computeFullNameLastArgs: inst.computeFullNameLastArgs,
+            computeFullNameLastResult: inst.computeFullNameLastResult
+        };
+    });
+
+    expect(state.firstName).toBe("John");
+    expect(state.lastName).toBe("Doe");
+    expect(state.fullName).toBe("John Doe");
+    expect(state.computeFullNameCallCount).toBe(2);
+    expect(state.computeFullNameLastArgs).toEqual({ firstName: "John", lastName: "Doe" });
+    expect(state.computeFullNameLastResult).toBe("John Doe");
+
+    // --- Act: Change lastName property ---
+    await component.evaluate(node => { (node as any).lastName = 'Smith'; });
+    await expect(component.locator('#full-name')).toContainText('John Smith');
+    state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            lastName: inst.lastName,
+            fullName: inst.fullName,
+            computeFullNameCallCount: inst.computeFullNameCallCount,
+            computeFullNameLastArgs: inst.computeFullNameLastArgs,
+            computeFullNameLastResult: inst.computeFullNameLastResult
+        };
+    });
+
+    expect(state.firstName).toBe("John");
+    expect(state.lastName).toBe("Smith");
+    expect(state.fullName).toBe("John Smith");
+    expect(state.computeFullNameCallCount).toBe(3);
+    expect(state.computeFullNameLastArgs).toEqual({ firstName: "John", lastName: "Smith" });
+    expect(state.computeFullNameLastResult).toBe("John Smith");
+
+    // Final check on rendered output
+    await expect(component.locator('#full-name')).toContainText('John Smith');
+});
+
 test('TestComputedPath: computed property with path string', async ({ page }) => {
     const component = await setupComponentTest(page, 'test-computed-path');
     await expect(component).toBeVisible();
