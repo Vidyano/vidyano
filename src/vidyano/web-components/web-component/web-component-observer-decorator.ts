@@ -1,6 +1,6 @@
 import type { WebComponent } from "./web-component";
 
-export const OBSERVERS_CONFIG_SYMBOL = Symbol("WebComponent.observersConfig");
+export const METHOD_OBSERVERS_CONFIG_SYMBOL = Symbol("WebComponent.methodObserversConfig");
 export const PROPERTY_OBSERVERS_CONFIG_SYMBOL = Symbol("WebComponent.propertyObserversConfig");
 
 type ObserverConfig = {
@@ -8,11 +8,11 @@ type ObserverConfig = {
     allowUndefined: boolean;
 };
 
-export type ObserversConfig = Record<string, ObserverConfig>;
+export type MethodObserversConfig = Record<string, ObserverConfig>;
 export type PropertyObserversConfig = Record<string, Function>;
 
 type WebComponentConstructor = typeof WebComponent & {
-    [OBSERVERS_CONFIG_SYMBOL]?: ObserversConfig;
+    [METHOD_OBSERVERS_CONFIG_SYMBOL]?: MethodObserversConfig;
     [PROPERTY_OBSERVERS_CONFIG_SYMBOL]?: PropertyObserversConfig;
 };
 
@@ -88,7 +88,7 @@ export function observer<T extends WebComponent, K extends keyof T>(
                 deps = args as string[];
             }
 
-            const conf = ensureOwn<Record<string, any>>(ctor, OBSERVERS_CONFIG_SYMBOL, {});
+            const conf = ensureOwn<Record<string, any>>(ctor, METHOD_OBSERVERS_CONFIG_SYMBOL, {});
             const existing = conf[propertyKey as string];
 
             if (existing) {
@@ -127,12 +127,12 @@ export function observer<T extends WebComponent, K extends keyof T>(
 }
 
 /**
- * Retrieves the observers configuration for a component instance.
+ * Retrieves the method observers configuration for a component instance.
  * @param component The WebComponent instance.
  * @returns A map of observer method names to their configuration.
  */
-export function getObserversConfig(component: WebComponent): ObserversConfig {
-    return (component.constructor as WebComponentConstructor)[OBSERVERS_CONFIG_SYMBOL] || {};
+export function getMethodObserversConfig(component: WebComponent): MethodObserversConfig {
+    return (component.constructor as WebComponentConstructor)[METHOD_OBSERVERS_CONFIG_SYMBOL] || {};
 }
 
 /**
