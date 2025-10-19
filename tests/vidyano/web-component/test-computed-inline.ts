@@ -1,10 +1,10 @@
 import { html } from "lit";
 import { property } from "lit/decorators.js";
-import { WebComponent, observe, computed } from "../../../src/vidyano/web-components/web-component/web-component.js";
+import { WebComponent, observer, computed } from "../../../src/vidyano/web-components/web-component/web-component.js";
 
 class TestComputedInline extends WebComponent {
     @property({ type: String })
-    @observe(TestComputedInline.prototype._firstNameChanged)
+    @observer(TestComputedInline.prototype._firstNameChanged)
     declare firstName: string;
 
     @property({ type: String })

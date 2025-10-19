@@ -1,8 +1,7 @@
 import { PropertyDeclaration } from "lit";
 import type { WebComponent } from "./web-component";
-import { PROPERTY_OBSERVERS_CONFIG_SYMBOL, PropertyObserversConfig } from "./web-component-observe-decorator";
+import { PROPERTY_OBSERVERS_CONFIG_SYMBOL, PropertyObserversConfig, OBSERVERS_CONFIG_SYMBOL, ObserversConfig } from "./web-component-observer-decorator";
 import { COMPUTED_CONFIG_SYMBOL, ComputedConfig } from "./web-component-computed-decorator";
-import { OBSERVERS_CONFIG_SYMBOL, ObserversConfig } from "./web-component-observer-decorator";
 import { NOTIFY_CONFIG_SYMBOL, NotifyConfig } from "./web-component-notify-decorator";
 import { LISTENERS_CONFIG_SYMBOL, ListenersConfig } from "./web-component-listener-decorator";
 import { KEYBINDINGS_CONFIG_SYMBOL, KeybindingsConfig } from "./web-component-keybinding-decorator";
@@ -32,7 +31,6 @@ export { getKeybindingsConfig } from "./web-component-keybinding-decorator";
 export { getObserversConfig } from "./web-component-observer-decorator";
 export { getComputedConfig } from "./web-component-computed-decorator";
 export { getNotifyConfig } from "./web-component-notify-decorator";
-export { getPropertyObserversConfig } from "./web-component-observe-decorator";
 
 export function getSensitiveConfig(component: WebComponent): boolean {
     return (component.constructor as WebComponentConstructor)[SENSITIVE_CONFIG_SYMBOL];

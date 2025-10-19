@@ -1,6 +1,6 @@
 import { html, nothing, unsafeCSS } from "lit";
 import { property } from "lit/decorators.js";
-import { WebComponent, observe } from "components/web-component/web-component.js";
+import { WebComponent, observer } from "components/web-component/web-component.js";
 import { autoUpdate, computePosition, flip, Placement, shift, size } from '@floating-ui/dom';
 import { ISize } from "components/size-tracker/size-tracker";
 import { Scroller } from "components/scroller/scroller";
@@ -65,14 +65,14 @@ export class Popup extends WebComponent {
      * Whether the popup trigger element has hover state.
      */
     @property({ type: Boolean, state: true })
-    @observe(Popup.prototype._onHoverChanged)
+    @observer(Popup.prototype._onHoverChanged)
     hover: boolean = false;
 
     /**
      * Whether the popup is currently open.
      */
     @property({ type: Boolean, state: true })
-    @observe(Popup.prototype._onOpenChanged)
+    @observer(Popup.prototype._onOpenChanged)
     open: boolean = false;
 
     /**

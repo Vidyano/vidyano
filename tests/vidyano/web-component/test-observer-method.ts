@@ -2,12 +2,12 @@ import { html } from "lit";
 import { property } from "lit/decorators.js";
 import { WebComponent, observer, computed } from "../../../src/vidyano/web-components/web-component/web-component.js";
 
-class TestMultiObserver extends WebComponent {
+class TestObserverMethod extends WebComponent {
     @property({ type: Number })
     declare counter: number;
 
     @property({ type: Number })
-    @computed(function(this: TestMultiObserver, counter: number): number {
+    @computed(function(this: TestObserverMethod, counter: number): number {
         this.doubleCounterCallCount++;
         return counter * 2;
     }, "counter")
@@ -25,7 +25,7 @@ class TestMultiObserver extends WebComponent {
 
     render() {
         return html`
-            <p>Demonstrates a multi-property observer and a computed property.</p>
+            <p>Tests @observer decorator on methods for multi-property observation</p>
             <div>Counter: <span id="counter">${this.counter}</span></div>
             <div>Doubled: <span id="doubled">${this.doubled}</span></div>
         `;
@@ -38,6 +38,6 @@ class TestMultiObserver extends WebComponent {
     }
 }
 
-export { TestMultiObserver };
+export { TestObserverMethod };
 
-customElements.define("test-multi-observer", TestMultiObserver);
+customElements.define("test-observer-method", TestObserverMethod);
