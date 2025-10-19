@@ -5,7 +5,7 @@ import { Service } from "vidyano";
 import { WebComponentReactiveController } from "./web-component-reactive-controller";
 import { WebComponentListenerController, getListenersConfig } from "./web-component-listener-decorator";
 import { WebComponentKeybindingController, getKeybindingsConfig } from "./web-component-keybinding-decorator";
-import { WebComponentRegistrationInfo, registerWebComponent } from "./web-component-registration";
+import { registerWebComponent } from "./web-component-registration";
 import { WebComponentTranslationController } from "./web-component-translation-controller";
 import { getComputedConfig, computed } from "./web-component-computed-decorator";
 import { getObserversConfig } from "./web-component-observer-decorator";
@@ -265,24 +265,6 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
             this.requestUpdate("service", oldService);
         });
     }
-
-    /**
-     * Registers a web component class with the specified configuration and tag name.
-     * @param config The registration configuration object.
-     * @param tagName The custom element tag name to register.
-     * @returns A decorator function for the web component class.
-     * @deprecated Use decorators and register the web component using customElements.define instead.
-     */
-    static register(config: WebComponentRegistrationInfo, tagName: string) {
-        return function <T extends typeof WebComponent<any>>(targetClass: T): T | void {
-            const registrationInfo = registerWebComponent(config, tagName, targetClass);
-            if (!registrationInfo)
-                return;
-
-            originalDefine.call(window.customElements, registrationInfo.tagName, registrationInfo.targetClass as unknown as CustomElementConstructor);
-            return targetClass;
-        };
-    }
 }
 
 const originalDefine = customElements.define;
@@ -291,7 +273,7 @@ customElements.define = function (name, constructor, options) {
         return;
 
     if (constructor.prototype instanceof WebComponent) {
-        const registrationInfo = registerWebComponent({}, name, constructor as any);
+        const registrationInfo = registerWebComponent(name, constructor as any);
         if (!registrationInfo)
             return;
 
