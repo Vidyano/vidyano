@@ -68,7 +68,7 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
 
     @property({ type: Object })
     @computed("service.language.messages")
-    translations: TypedTranslations<TTranslations>;
+    translations!: TypedTranslations<TTranslations>;
 
     /**
      * Override createProperty to automatically convert camelCase property names to kebab-case attribute names.
@@ -229,6 +229,21 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
         }
 
         return newValue;
+    }
+
+    /**
+     * Translates a message key using the service's language system with optional string formatting.
+     * This method retrieves the translation for the given key and applies String.format with any provided parameters.
+     *
+     * @param key The translation key to look up.
+     * @param params Optional parameters for string formatting (e.g., {0}, {1} placeholders).
+     * @returns The translated and formatted string, or the key itself if translation is not available.
+     */
+    protected translateMessage(key: string, ...params: string[]): string {
+        if (!key || !this.service)
+            return key;
+
+        return this.service.getTranslatedMessage.apply(this.service, [key].concat(params));
     }
 
     /**
