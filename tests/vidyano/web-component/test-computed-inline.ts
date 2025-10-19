@@ -2,16 +2,16 @@ import { html } from "lit";
 import { property } from "lit/decorators.js";
 import { WebComponent, observe, computed } from "../../../src/vidyano/web-components/web-component/web-component.js";
 
-class TestOneSimpleComputed extends WebComponent {
+class TestComputedInline extends WebComponent {
     @property({ type: String })
-    @observe(TestOneSimpleComputed.prototype._firstNameChanged)
+    @observe(TestComputedInline.prototype._firstNameChanged)
     declare firstName: string;
 
     @property({ type: String })
     declare lastName: string;
 
     @property({ type: String })
-    @computed(function(this: TestOneSimpleComputed, firstName: string, lastName: string): string {
+    @computed(function(this: TestComputedInline, firstName: string, lastName: string): string {
         this.computeFullNameCallCount++;
         this.computeFullNameLastArgs = { firstName, lastName };
         const result = `${firstName} ${lastName}`;
@@ -41,7 +41,7 @@ class TestOneSimpleComputed extends WebComponent {
 
     render() {
         return html`
-            <p>Demonstrates a computed property and a single-property observer.</p>
+            <p>Tests @computed decorator with inline function</p>
             <ul>
                 <li>First Name: ${this.firstName}</li>
                 <li>Last Name: ${this.lastName}</li>
@@ -56,4 +56,4 @@ class TestOneSimpleComputed extends WebComponent {
     }
 }
 
-customElements.define("test-one-simple-computed", TestOneSimpleComputed);
+customElements.define("test-computed-inline", TestComputedInline);

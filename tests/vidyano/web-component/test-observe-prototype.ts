@@ -2,13 +2,13 @@ import { html } from "lit";
 import { property } from "lit/decorators.js";
 import { WebComponent, observe } from "../../../src/vidyano/web-components/web-component/web-component.js";
 
-class TestObserveFunction extends WebComponent {
+class TestObservePrototype extends WebComponent {
     @property({ type: Number })
-    @observe(TestObserveFunction.prototype._handleCounterChange)
+    @observe(TestObservePrototype.prototype._handleCounterChange)
     declare counter: number;
 
     @property({ type: String })
-    @observe(TestObserveFunction.prototype._handleNameChange)
+    @observe(TestObservePrototype.prototype._handleNameChange)
     declare name: string;
 
     // Public properties for testing
@@ -27,7 +27,7 @@ class TestObserveFunction extends WebComponent {
 
     render() {
         return html`
-            <p>Tests @observe decorator with function references</p>
+            <p>Tests @observe decorator with prototype method references</p>
             <div>Counter: <span id="counter">${this.counter}</span></div>
             <div>Name: <span id="name">${this.name}</span></div>
             <div>Counter Changes: <span id="counter-changes">${this.counterChangeCallCount}</span></div>
@@ -48,6 +48,6 @@ class TestObserveFunction extends WebComponent {
     }
 }
 
-export { TestObserveFunction };
+export { TestObservePrototype };
 
-customElements.define("test-observe-function", TestObserveFunction);
+customElements.define("test-observe-prototype", TestObservePrototype);
