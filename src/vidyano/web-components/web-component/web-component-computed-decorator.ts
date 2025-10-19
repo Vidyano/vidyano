@@ -105,29 +105,25 @@ export function computed<T extends WebComponent, K extends keyof T>(
         let deps: string[];
         let options: ComputedOptions = {};
 
-        // Check if first parameter is a function (compute function provided)
+        // Parse options from dependencies array
+        let parsedDeps: Array<string | Function>;
+        if (dependencies.length > 0 && typeof dependencies[dependencies.length - 1] === 'object' && !Array.isArray(dependencies[dependencies.length - 1])) {
+            // Last argument is options object
+            options = dependencies[dependencies.length - 1] as ComputedOptions;
+            parsedDeps = dependencies.slice(0, -1) as Array<string | Function>;
+        } else {
+            // All arguments are dependencies
+            parsedDeps = dependencies as Array<string | Function>;
+        }
+
+        // Handle the two cases for computeFunctionOrDependency
         if (typeof computeFunctionOrDependency === 'function') {
             // Store the compute function directly
             computeFunction = computeFunctionOrDependency;
-
-            // Separate remaining dependencies from options
-            if (dependencies.length > 0 && typeof dependencies[dependencies.length - 1] === 'object' && typeof dependencies[dependencies.length - 1] !== 'function' && !Array.isArray(dependencies[dependencies.length - 1])) {
-                // Last argument is options object (not a function)
-                options = dependencies[dependencies.length - 1] as ComputedOptions;
-                deps = dependencies.slice(0, -1).map(dep => typeof dep === 'function' ? dep.name : dep) as string[];
-            } else {
-                // All arguments are dependencies
-                deps = dependencies.map(dep => typeof dep === 'function' ? dep.name : dep) as string[];
-            }
+            deps = parsedDeps.map(dep => typeof dep === 'function' ? dep.name : dep) as string[];
         } else {
             // First parameter is a string dependency (simple property path)
-            // Check if last argument is options
-            if (dependencies.length > 0 && typeof dependencies[dependencies.length - 1] === 'object' && typeof dependencies[dependencies.length - 1] !== 'function' && !Array.isArray(dependencies[dependencies.length - 1])) {
-                options = dependencies[dependencies.length - 1] as ComputedOptions;
-                deps = [computeFunctionOrDependency, ...dependencies.slice(0, -1).map(dep => typeof dep === 'function' ? dep.name : dep)] as string[];
-            } else {
-                deps = [computeFunctionOrDependency, ...dependencies.map(dep => typeof dep === 'function' ? dep.name : dep)] as string[];
-            }
+            deps = [computeFunctionOrDependency, ...parsedDeps.map(dep => typeof dep === 'function' ? dep.name : dep)] as string[];
         }
 
         conf[propertyKey] = {
