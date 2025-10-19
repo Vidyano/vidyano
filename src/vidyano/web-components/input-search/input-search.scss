@@ -3,12 +3,16 @@
     line-height: var(--theme-h2);
     position: relative;
 
-    form {
+    .form-container {
+        display: flex;
+        flex-direction: row;
         margin: 0;
         flex: 1;
     }
 
-    input {
+    .input {
+        flex: 1;
+        min-width: 0;
         border: none;
         outline: none;
         box-sizing: border-box;
