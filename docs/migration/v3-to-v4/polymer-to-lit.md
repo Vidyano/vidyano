@@ -1,81 +1,12 @@
-# Migrating from Vidyano v3 to v4
-
-This guide helps you migrate your custom Vidyano web components from v3 to v4.
+# Vidyano Polymer to Lit Migration Guide
 
 ## Overview
 
-Vidyano v4 ships a new Lit-based `WebComponent` while keeping the Polymer equivalent available. The default `WebComponent` export now points to the Lit implementation, and the previous Polymer version lives under `Polymer.WebComponent`. You can keep your Polymer components running with a small import change, or adopt Lit to take advantage of the new features.
+Vidyano v4 introduces a new Lit-based `WebComponent` as the default, while keeping the Polymer equivalent available for compatibility. This guide covers the complete migration process from Polymer to Lit, including template conversion, property system changes, lifecycle method updates, and advanced patterns.
 
-```typescript
-// v3 (Polymer-based WebComponent)
-import { WebComponent } from "@vidyano/vidyano";  // Was Polymer-based
+## Quick Reference
 
-export class MyComponent extends WebComponent { }
-
-// v4 (Lit-based WebComponent)
-import { WebComponent } from "@vidyano/vidyano";  // Now Lit-based!
-
-export class MyComponent extends WebComponent { }
-
-// v4 (Polymer compatibility)
-import { Polymer } from "@vidyano/vidyano";
-
-export class MyComponent extends Polymer.WebComponent { }  // Polymer-based
-```
-
-The Lit-based default brings:
-
-- **Modern standards**: Lit follows current Web Component best practices
-- **Better performance**: Smaller bundle sizes and faster rendering
-- **Active development**: Lit is actively maintained by Google
-- **Improved DX**: Better TypeScript support and debugging experience
-
-## Choose Your Path
-
-- **Path 1 – Keep using Polymer (Compatibility Mode):** Update your imports to `Polymer.WebComponent` and continue working exactly as before. You can ignore the Lit-specific guidance until you're ready to migrate.
-- **Path 2 – Adopt Lit-based Web Components:** Switch to the Lit `WebComponent` for better performance and tooling. The remainder of this document walks through the full migration.
-
-## Path 1: Continue with Polymer (Compatibility Mode)
-
-If you aren't ready to migrate from Polymer to Lit yet, follow these steps:
-
-1. Import `Polymer` from `@vidyano/vidyano`.
-2. Extend `Polymer.WebComponent` instead of `WebComponent`.
-3. Use the `@Polymer.WebComponent.register()` decorator when registering the element.
-
-That's all—your existing Polymer code, templates, and behaviours continue to work for now. You can revisit Path 2 whenever you decide to move to Lit.
-
-```typescript
-// Before (v3)
-import { WebComponent } from "@vidyano/vidyano";
-
-@WebComponent.register({
-    properties: { /* ... */ }
-}, "vi-my-component")
-export class MyComponent extends WebComponent {
-    // Your existing Polymer code
-}
-
-// After (v4)
-import { Polymer } from "@vidyano/vidyano";
-
-@Polymer.WebComponent.register({
-    properties: { /* ... */ }
-}, "vi-my-component")
-export class MyComponent extends Polymer.WebComponent {
-    // Your existing Polymer code - no other changes needed
-}
-```
-
-> Note: The compatibility API is a short-term bridge. Future major versions will eventually remove Polymer support.
-
-## Path 2: Adopt Lit-based Web Components
-
-The following sections cover the full Lit migration flow.
-
-### Quick Reference
-
-#### Before (v3 - Polymer)
+### Before (v3 - Polymer)
 Classic Polymer component structure with template and metadata decorators:
 
 ```typescript
@@ -97,7 +28,7 @@ export class MyComponent extends WebComponent {
 }
 ```
 
-#### After (v4 - Lit)
+### After (v4 - Lit)
 Lit-based equivalent that inlines the template and styles inside the component:
 
 ```typescript
@@ -125,20 +56,27 @@ export class MyComponent extends WebComponent {
 customElements.define("vi-my-component", MyComponent);
 ```
 
-> Note: To make `import styles from "./my-component.css";` work with TypeScript, include a declaration file in your project (for example `global.d.ts`) that defines the `*.css` module shape, and ensure it is part of your compilation output.
+> Note: To make `import styles from "./my-component.css";` work with TypeScript, include a declaration file in your project (for example `global.d.ts`) that defines the `*.css` module shape, and ensure it is part of your compilation output:
 
-### Lifecycle Methods
+```typescript
+declare module '*.css' {
+  const content: string;
+  export default content;
+}
+```
 
-#### Before (Polymer)
+## Lifecycle Methods
+
+### Before (Polymer)
 - `ready()` → runs once after the template is stamped.
 
-#### After (Lit)
+### After (Lit)
 - `firstUpdated(changedProperties)` → single-run hook after the first render; move `ready()` logic here.
 - `updated(changedProperties)` → runs after every render; inspect `changedProperties` to react to specific updates.
 
-### Migration Steps to Lit
+## Migration Steps
 
-#### 1. Update Imports
+### 1. Update Imports
 
 **Add Lit imports:**
 
@@ -148,26 +86,15 @@ import { property } from "lit/decorators.js";
 import { WebComponent } from "@vidyano/vidyano";
 ```
 
-#### 2. Change Base Class
+### 2. Convert Properties
 
-Switch every component to extend the new Lit-based `WebComponent`.
-
-```typescript
-// Before
-export class MyComponent extends Polymer.WebComponent {
-
-// After
-export class MyComponent extends WebComponent {
-```
-
-#### 3. Convert Properties
-
-##### Simple Properties
+#### Simple Properties
 
 Declare primitives with the `@property` decorator instead of Polymer's `properties` metadata.
 
+**Before:**
+
 ```typescript
-// Before
 @WebComponent.register({
     properties: {
         name: String,
@@ -176,8 +103,11 @@ Declare primitives with the `@property` decorator instead of Polymer's `properti
     }
 }, "vi-my-component")
 export class MyComponent extends WebComponent { }
+```
 
-// After
+**After:**
+
+```typescript
 @property({ type: String })
 name: string;
 
@@ -188,12 +118,13 @@ count: number;
 active: boolean;
 ```
 
-##### Properties with Options
+#### Properties with Options
 
 Translate `reflectToAttribute`, custom observers, and similar settings into decorator options and helper decorators.
 
+**Before:**
+
 ```typescript
-// Before
 @WebComponent.register({
     properties: {
         userId: {
@@ -204,8 +135,11 @@ Translate `reflectToAttribute`, custom observers, and similar settings into deco
     }
 }, "vi-my-component")
 export class MyComponent extends WebComponent { }
+```
 
-// After - Option 1: Prototype method reference
+**After - Option 1: Prototype method reference**
+
+```typescript
 import { observe } from "@vidyano/vidyano";
 
 @property({ type: String, reflect: true })
@@ -215,8 +149,11 @@ userId: string;
 private _userIdChanged(newValue: string, oldValue: string) {
     console.log("User ID changed", newValue);
 }
+```
 
-// After - Option 2: Inline function
+**After - Option 2: Inline function**
+
+```typescript
 @property({ type: String, reflect: true })
 @observe(function(this: MyComponent, newValue: string, oldValue: string) {
     console.log("User ID changed", newValue);
@@ -224,12 +161,13 @@ private _userIdChanged(newValue: string, oldValue: string) {
 userId: string;
 ```
 
-##### Read-Only Properties (Internal State)
+#### Read-Only Properties (Internal State)
 
 Use Lit's `@state()` decorator for internal fields that should not reflect to attributes.
 
+**Before:**
+
 ```typescript
-// Before
 @WebComponent.register({
     properties: {
         isLoading: {
@@ -245,8 +183,11 @@ export class MyComponent extends WebComponent {
         this._setIsLoading(true);
     }
 }
+```
 
-// After - use @state() for internal-only properties
+**After:**
+
+```typescript
 import { state } from "lit/decorators.js";
 
 @state()  // Internal state, not exposed as attribute
@@ -257,12 +198,13 @@ someMethod() {
 }
 ```
 
-##### Two-Way Binding with `notify: true`
+#### Two-Way Binding with `notify: true`
 
 For two-way data binding, use the `@notify()` decorator:
 
+**Before:**
+
 ```typescript
-// Before
 @WebComponent.register({
     properties: {
         checked: {
@@ -279,8 +221,11 @@ export class MyComponent extends WebComponent {
         this.checked = !this.checked;  // Auto-fires event
     }
 }
+```
 
-// After - use @notify() decorator
+**After:**
+
+```typescript
 import { notify } from "@vidyano/vidyano";
 
 @property({ type: Boolean, reflect: true })
@@ -292,19 +237,23 @@ toggle() {
 }
 ```
 
-**Note:** The `@notify()` decorator dispatches a `<propertyName>-changed` event after the property change has been processed and the component has re-rendered.
+**Note:** The `@notify()` decorator dispatches a `<propertyName>-changed` event after the property change has been processed (computed properties updated, observers executed) but before the component has re-rendered.
 
-#### 4. Convert Template
+### 3. Convert Template
 
 Polymer components use external HTML template files. Lit-based components define templates inline using the `render()` method with template literals.
 
+**Before:**
+
 ```typescript
-// Before
 static get template() {
     return Polymer.html`<link rel="import" href="my-component.html">`;
 }
+```
 
-// After
+**After:**
+
+```typescript
 render() {
     return html`
         <!-- Convert your HTML template here -->
@@ -317,94 +266,129 @@ render() {
 
 **Important:** You cannot directly import and use the old Polymer HTML template. You must manually convert it to Lit's template syntax.
 
-##### Template Syntax Reference
+#### Template Syntax Reference
 
 Lit differentiates between attribute values, DOM properties, boolean attributes, and event listeners. Use the appropriate prefix so bindings behave as expected at runtime.
 
-###### Property Binding
+##### Property Binding
 
 Use the `.` prefix to set DOM properties instead of string attributes.
+
+**Before:**
+
 ```html
-<!-- Before -->
 <div>[[propertyName]]</div>
 <input value="{{propertyName}}">
+```
 
-<!-- After -->
+**After:**
+
+```html
 <div>${this.propertyName}</div>
 <input .value=${this.propertyName} @input=${this._handleInput}>
 ```
 
-###### Attribute Binding
+##### Attribute Binding
 
 Use plain attributes when stringifying values is sufficient.
-```html
-<!-- Before -->
-<div class$="[[className]]" aria-label$="[[label]]">Content</div>
 
-<!-- After -->
+**Before:**
+
+```html
+<div class$="[[className]]" aria-label$="[[label]]">Content</div>
+```
+
+**After:**
+
+```html
 <div class=${this.className} aria-label=${this.label}>Content</div>
 ```
 
 **Note:** The `hidden` attribute is no longer available. Use conditional rendering instead:
-```html
-<!-- Before -->
-<div hidden$="[[isHidden]]">Content</div>
 
-<!-- After - use conditional rendering -->
+**Before:**
+
+```html
+<div hidden$="[[isHidden]]">Content</div>
+```
+
+**After:**
+
+```html
 ${!this.isHidden ? html`<div>Content</div>` : nothing}
 ```
 
-###### Boolean Attribute Binding
+##### Boolean Attribute Binding
 
 Use the `?` prefix for boolean attributes so Lit adds or removes the attribute instead of setting string values.
-```html
-<!-- Before -->
-<button disabled$="[[isDisabled]]">Save</button>
 
-<!-- After -->
+**Before:**
+
+```html
+<button disabled$="[[isDisabled]]">Save</button>
+```
+
+**After:**
+
+```html
 <button ?disabled=${this.isDisabled}>Save</button>
 ```
 
 Boolean bindings omit the attribute entirely when the value is falsy.
 
-###### Event Binding
+##### Event Binding
 
 Use the `@` prefix to attach event listeners, pairing it with `.property` bindings when you need access to element values.
-```html
-<!-- Before -->
-<button on-click="_handleClick">
 
-<!-- After -->
+**Before:**
+
+```html
+<button on-click="_handleClick">
+```
+
+**After:**
+
+```html
 <button @click=${this._handleClick}>
 ```
 
 Use the `@` prefix to add event listeners. Combine `@event` with `.property` bindings as needed—for example, `@input=${this._handleInput}` alongside `.value=${this.value}`.
 
-###### Conditional Rendering
+##### Conditional Rendering
 
 Use ternary expressions or the `nothing` directive to control whether blocks render.
+
+**Before:**
+
 ```html
-<!-- Before -->
 <template is="dom-if" if="[[showContent]]">
     <div>Content</div>
 </template>
+```
 
-<!-- After -->
+**After:**
+
+```html
 ${this.showContent ? html`
     <div>Content</div>
 ` : nothing}
 ```
 
-###### Repeating Templates
+##### Repeating Templates
 
 Map over arrays (or use Lit directives like `repeat`) to render lists declaratively.
+
+**Before:**
+
 ```html
-<!-- Before -->
 <template is="dom-repeat" items="[[items]]">
     <div>[[item.name]]</div>
 </template>
+```
 
-<!-- After -->
+**After:**
+
+```html
 ${this.items?.map(item => html`
     <div>${item.name}</div>
 `)}
@@ -420,7 +404,7 @@ ${repeat(this.items, (item) => item.id, (item) => html`
 `)}
 ```
 
-##### Handling Layout Utility Classes
+#### Handling Layout Utility Classes
 
 ⚠️ **IMPORTANT:** Layout utility classes like `layout horizontal`, `layout vertical`, and `flex` are not available in Lit-based components. You must manually add these styles to your component's SCSS file.
 
@@ -439,6 +423,7 @@ ${repeat(this.items, (item) => item.id, (item) => html`
 4. Update the HTML template to use the new semantic class names
 
 **Example - Before:**
+
 ```html
 <div class="layout horizontal center">
     <div class="flex">Content</div>
@@ -449,6 +434,7 @@ ${repeat(this.items, (item) => item.id, (item) => html`
 **Example - After:**
 
 In `component.scss` (create semantic class names):
+
 ```scss
 .container {
     display: flex;
@@ -476,17 +462,21 @@ render() {
 }
 ```
 
-#### 5. Convert Styles
+### 4. Convert Styles
 
 Move styles out of HTML imports and into module-backed stylesheets you can import from TypeScript.
 
+**Before:**
+
 ```typescript
-// Before - styles embedded in HTML file
 static get template() {
     return Polymer.html`<link rel="import" href="my-component.html">`;
 }
+```
 
-// After - styles in separate CSS file
+**After:**
+
+```typescript
 import styles from "./my-component.css";
 
 export class MyComponent extends WebComponent {
@@ -494,18 +484,22 @@ export class MyComponent extends WebComponent {
 }
 ```
 
-#### 6. Update Registration
+### 5. Update Registration
 
 Register Lit components with `customElements.define` instead of Polymer's decorator.
 
+**Before:**
+
 ```typescript
-// Before
 @Polymer.WebComponent.register({
     properties: { /* ... */ }
 }, "vi-my-component")
 export class MyComponent extends Polymer.WebComponent { }
+```
 
-// After
+**After:**
+
+```typescript
 export class MyComponent extends WebComponent {
     // ... class definition
 }
@@ -513,9 +507,9 @@ export class MyComponent extends WebComponent {
 customElements.define("vi-my-component", MyComponent);
 ```
 
-#### 7. Convert Observers
+### 6. Convert Observers
 
-##### Property Observers
+#### Property Observers
 
 Apply the `@observe()` and `@observer()` decorators to replicate Polymer's property watchers.
 
@@ -523,8 +517,9 @@ Apply the `@observe()` and `@observer()` decorators to replicate Polymer's prope
 1. **Prototype method reference**: Reference a class method using `ClassName.prototype.methodName`
 2. **Inline function**: Use an inline function with explicit `this` typing
 
+**Before - single property observer:**
+
 ```typescript
-// Before - single property observer
 @WebComponent.register({
     properties: {
         userId: {
@@ -538,8 +533,11 @@ export class MyComponent extends WebComponent {
         console.log("User ID changed", newValue);
     }
 }
+```
 
-// After - Option 1: Prototype method reference
+**After - Option 1: Prototype method reference**
+
+```typescript
 import { observe } from "@vidyano/vidyano";
 
 @property({ type: String })
@@ -549,8 +547,11 @@ userId: string;
 private _userIdChanged(newValue: string, oldValue: string) {
     console.log("User ID changed", newValue);
 }
+```
 
-// After - Option 2: Inline function
+**After - Option 2: Inline function**
+
+```typescript
 @property({ type: String })
 @observe(function(this: MyComponent, newValue: string, oldValue: string) {
     console.log("User ID changed", newValue);
@@ -558,8 +559,9 @@ private _userIdChanged(newValue: string, oldValue: string) {
 userId: string;
 ```
 
+**Before - multi-property observer:**
+
 ```typescript
-// Before - multi-property observer
 @WebComponent.register({
     properties: {
         open: Boolean,
@@ -573,8 +575,11 @@ userId: string;
 private _onStateChanged(open: boolean, disabled: boolean) {
     // Handle state change
 }
+```
 
-// After
+**After:**
+
+```typescript
 import { observer } from "@vidyano/vidyano";
 
 @property({ type: Boolean })
@@ -599,12 +604,13 @@ private _handleNameChange(firstName: string | undefined, lastName: string | unde
 }
 ```
 
-##### Deep Property Path Observer
+#### Deep Property Path Observer
 
 Observe nested paths directly—no `forwardObservers` list required.
 
+**Before:**
+
 ```typescript
-// Before
 @WebComponent.register({
     properties: {
         query: Object
@@ -616,8 +622,11 @@ Observe nested paths directly—no `forwardObservers` list required.
         "query.labelWithTotalItems"
     ]
 })
+```
 
-// After - no separate forwardObservers needed
+**After:**
+
+```typescript
 import { observer } from "@vidyano/vidyano";
 
 @property({ type: Object })
@@ -631,14 +640,15 @@ private _updateTitle(title: string) {
 }
 ```
 
-##### Observers vs. `updated()` - Avoiding Infinite Loops
+#### Observers vs. `updated()` - Avoiding Infinite Loops
 
 Keep business logic in observers and move DOM-oriented side effects into Lit's lifecycle hooks.
 
 **Avoid using observers for DOM manipulation** - this can cause infinite update loops. Instead, use the `updated()` lifecycle method for DOM side effects.
 
+**Wrong - causes infinite update loop:**
+
 ```typescript
-// Wrong - causes infinite update loop
 @property({ type: String, reflect: true })
 @observe(MyComponent.prototype._updateColor)
 color: string;
@@ -646,8 +656,11 @@ color: string;
 private _updateColor(color: string) {
     this.style.setProperty("--my-color", color);  // Triggers re-render!
 }
+```
 
-// Correct - use updated() for DOM side effects
+**Correct - use updated() for DOM side effects:**
+
+```typescript
 @property({ type: String, reflect: true })
 color: string;
 
@@ -664,9 +677,9 @@ updated(changedProperties: Map<PropertyKey, unknown>) {
 - **Use `@observer()` decorator for:** Business logic, updating other properties, dispatching events, API calls
 - **Use `updated()` lifecycle method for:** DOM manipulation, measuring elements, focus management, any side effects that might trigger re-renders
 
-#### 8. Convert Computed Properties
+### 7. Convert Computed Properties
 
-##### Using `@computed` decorator (for properties that need reflection or external access)
+#### Using `@computed` decorator (for properties that need reflection or external access)
 
 When the computed value must stay reactive (or reflect to attributes), use the `@computed()` decorator to describe its dependencies.
 
@@ -674,8 +687,9 @@ When the computed value must stay reactive (or reflect to attributes), use the `
 1. **Inline function**: Use an inline function with explicit `this` typing (recommended for simple computations)
 2. **Prototype method reference**: Reference a class method using `ClassName.prototype.methodName` (recommended for complex computations)
 
+**Before:**
+
 ```typescript
-// Before
 @WebComponent.register({
     properties: {
         firstName: String,
@@ -691,8 +705,11 @@ export class MyComponent extends WebComponent {
         return `${firstName} ${lastName}`;
     }
 }
+```
 
-// After - Option 1: Inline function (recommended for simple computations)
+**After - Option 1: Inline function (recommended for simple computations)**
+
+```typescript
 import { computed } from "@vidyano/vidyano";
 
 @property({ type: String })
@@ -706,8 +723,11 @@ lastName: string;
     return `${firstName} ${lastName}`;
 }, "firstName", "lastName")
 declare readonly fullName: string;
+```
 
-// After - Option 2: Prototype method reference (recommended for complex computations)
+**After - Option 2: Prototype method reference (recommended for complex computations)**
+
+```typescript
 @property({ type: String })
 @computed(MyComponent.prototype._computeFullName, "firstName", "lastName")
 declare readonly fullName: string;
@@ -733,7 +753,7 @@ declare readonly fullName: string;
 - Use prototype method references for complex computations with multiple lines of logic
 - Always include explicit `this` typing for better IDE support and type checking
 
-##### Using getters (for reactive component properties only)
+#### Using getters (for reactive component properties only)
 
 For simple computations based on component properties, you can use getters.
 
@@ -744,8 +764,9 @@ For simple computations based on component properties, you can use getters.
 
 This is because changes to Vidyano objects won't automatically trigger Lit's update cycle, but the `@computed` decorator watches those objects for changes.
 
+**Before:**
+
 ```typescript
-// Before
 @WebComponent.register({
     properties: {
         error: String,
@@ -760,8 +781,11 @@ export class MyComponent extends WebComponent {
 private _computeHasError(error: string): boolean {
     return !String.isNullOrEmpty(error);
 }
+```
 
-// After - use a getter
+**After - use a getter:**
+
+```typescript
 @property({ type: String })
 error: string;
 
@@ -776,7 +800,7 @@ render() {
 }
 ```
 
-## Common Patterns
+## Advanced Patterns
 
 ### Accessing Shadow DOM Elements
 
@@ -790,11 +814,15 @@ const element = this.shadowRoot.getElementById('myElement');
 
 ### Dispatching Custom Events
 
-```typescript
-// Before
-this.fire('my-event', { detail: data });
+**Before:**
 
-// After
+```typescript
+this.fire('my-event', { detail: data });
+```
+
+**After:**
+
+```typescript
 this.dispatchEvent(new CustomEvent('my-event', {
     detail: data,
     bubbles: true,
@@ -806,8 +834,9 @@ this.dispatchEvent(new CustomEvent('my-event', {
 
 For listening to events on the component itself or its children:
 
+**Before:**
+
 ```typescript
-// Before
 @WebComponent.register({
     listeners: {
         "app-route-activate": "_activate",
@@ -818,8 +847,11 @@ export class MyComponent extends Polymer.WebComponent {
     private _activate(e: CustomEvent) { ... }
     private _deactivate(e: CustomEvent) { ... }
 }
+```
 
-// After - use @listener() decorator
+**After - use @listener() decorator:**
+
+```typescript
 import { listener } from "@vidyano/vidyano";
 
 export class MyComponent extends WebComponent {
@@ -872,20 +904,64 @@ export class MyComponent extends WebComponent {
 
 ### Waiting for Rendering
 
-```typescript
-// Before
-Polymer.flush();  // Force synchronous render
+**Before:**
 
-// After
+```typescript
+Polymer.flush();  // Force synchronous render
+```
+
+**After:**
+
+```typescript
 await this.updateComplete;  // Wait for async render to complete
 ```
 
 ### Clearing Child Elements (Light DOM)
 
-```typescript
-// Before
-this.empty();  // Clears all light DOM child elements
+**Before:**
 
-// After
+```typescript
+this.empty();  // Clears all light DOM child elements
+```
+
+**After:**
+
+```typescript
 this.innerHTML = "";  // Clears all light DOM child elements
 ```
+
+## Troubleshooting
+
+### Common Issues
+
+**Template not rendering:**
+- Ensure you have a `render()` method that returns `html` template
+- Check that all template expressions use `${this.property}` syntax
+- Verify imports include `html` from `lit`
+
+**Properties not updating:**
+- Confirm properties are decorated with `@property()` or `@state()`
+- Check that property types match the decorator configuration
+- Ensure observers are using correct decorator syntax
+
+**Styles not applying:**
+- Verify CSS is imported and assigned to `static styles`
+- Check that `unsafeCSS()` is used for CSS imports
+- Ensure CSS selectors target the correct elements
+
+**Events not firing:**
+- Confirm event bindings use `@event` syntax
+- Check that event handlers are properly bound methods
+- Verify custom events use correct `CustomEvent` constructor
+
+**Layout broken:**
+- Look for missing layout utility classes in template
+- Add equivalent flexbox styles to component CSS
+- Use semantic class names instead of utility classes
+
+### Performance Considerations
+
+- Use `@state()` for internal properties that don't need attribute reflection
+- Consider using `repeat()` directive for large lists
+- Avoid complex computations in `render()` method
+- Use `updated()` lifecycle method sparingly to avoid performance issues
