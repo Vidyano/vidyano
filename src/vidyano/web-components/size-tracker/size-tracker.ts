@@ -47,6 +47,7 @@ resizeObserver = new ResizeObserver(entries => {
 export class SizeTracker extends WebComponent {
     #isActive: boolean;
     #resizeLast: ISize;
+    #observedElement: HTMLElement | null = null;
 
     /**
      * When true, prevents automatic size tracking on connect.
@@ -93,9 +94,10 @@ export class SizeTracker extends WebComponent {
     disconnectedCallback() {
         super.disconnectedCallback();
 
-        if (this.#isActive) {
-            resizeObserver.unobserve(this.#parentElement);
+        if (this.#isActive && this.#observedElement) {
+            resizeObserver.unobserve(this.#observedElement);
             this.#isActive = false;
+            this.#observedElement = null;
         }
     }
 
@@ -111,8 +113,6 @@ export class SizeTracker extends WebComponent {
         }));
     }
 
-    // Note: size-changed event is now automatically dispatched by @notify decorator
-
     /**
      * Starts tracking the parent element's size.
      * If deferred was true, this sets it to false and begins observation.
@@ -120,8 +120,11 @@ export class SizeTracker extends WebComponent {
      */
     measure() {
         if (!this.#isActive) {
-            resizeObserver.observe(this.#parentElement);
-            this.#isActive = true;
+            this.#observedElement = this.#parentElement;
+            if (this.#observedElement) {
+                resizeObserver.observe(this.#observedElement);
+                this.#isActive = true;
+            }
         }
 
         this.deferred = false;
