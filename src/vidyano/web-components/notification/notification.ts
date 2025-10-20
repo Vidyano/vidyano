@@ -2,6 +2,7 @@ import { html, nothing, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
 import { computed, notify, observer, WebComponent } from "components/web-component/web-component";
 import * as Vidyano from "vidyano"
+import DOMPurify from "dompurify";
 import styles from "./notification.css";
 
 const findUriLabel = /\[url:([^|]+)\|((https?:\/\/[-\w]+(\.[-\w]+)*(:\d+)?(\/#?!?[^\.\s]*(\.[^\.\s]+)*)?)|(#!\/)?[^\]]+)]/g;
@@ -15,9 +16,7 @@ export class Notification extends WebComponent {
     serviceObject: Vidyano.ServiceObjectWithActions;
 
     @property({ type: Number, reflect: true })
-    @computed(function(this: Notification): Vidyano.NotificationType {
-        return this.serviceObject?.notificationType;
-    }, "serviceObject.notificationType")
+    @computed("serviceObject.notificationType")
     declare readonly type: Vidyano.NotificationType;
 
     @property({ type: String })
@@ -29,11 +28,17 @@ export class Notification extends WebComponent {
         if (!notification)
             return null;
 
-        const html = this._escapeHTML(notification).replace(findUriLabel, "<a href=\"$2\" title=\"\" target=\"_blank\">$1</a>");
-        if (notification === html)
-            return notification.replace(findUri, "<a href=\"$1\" title=\"\" target=\"_blank\">$1</a>");
+        // First convert markdown-style URLs to HTML links
+        let html = notification.replace(findUriLabel, "<a href=\"$2\" title=\"\" target=\"_blank\">$1</a>");
 
-        return html;
+        // If no markdown URLs found, auto-link plain URLs
+        if (notification === html)
+            html = notification.replace(findUri, "<a href=\"$1\" title=\"\" target=\"_blank\">$1</a>");
+
+        return DOMPurify.sanitize(html, {
+            ALLOWED_TAGS: ["a", "br"],
+            ALLOWED_ATTR: ["href", "target", "title"]
+        });
     }, "serviceObject.notification")
     declare readonly text: string;
 
@@ -67,9 +72,7 @@ export class Notification extends WebComponent {
                 <vi-icon source=${this.icon}></vi-icon>
             </div>
             <div id="textHost" class="text-container" @click=${this._moreInfo}>
-                ${!this.hidden ? html`
-                    <vi-size-tracker @sizechanged=${this._trackerSizeChanged}></vi-size-tracker>
-                ` : nothing}
+                <vi-size-tracker @sizechanged=${this._trackerSizeChanged}></vi-size-tracker>
                 <span id="text" .innerHTML=${this.inlineText || ""}></span>
             </div>
             <vi-button id="close" @click=${this._close} icon="Notification_Close" ?hidden=${this.noClose}></vi-button>
@@ -92,7 +95,7 @@ export class Notification extends WebComponent {
 
         this.app.showMessageDialog({
             title: this.app.translateMessage(this.type),
-            titleIcon: `Notification_${this.type}`,
+            titleIcon: this.icon,
             message: this.text.replace(findNewLine, "<br />"),
             rich: true,
             actions: [this.translations.OK]
@@ -121,12 +124,6 @@ export class Notification extends WebComponent {
         }
 
         text.style.cursor = this.isOverflowing ? "pointer" : "auto";
-    }
-
-    private _escapeHTML(val: string): string {
-        const span = document.createElement("span");
-        span.innerText = val;
-        return span.innerHTML;
     }
 }
 
