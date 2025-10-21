@@ -1,16 +1,6 @@
 {
     "hooks": {
-        "PreToolUse": [
-            {
-                "matcher": "*",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "ccb auto-approve-tools"
-                    }
-                ]
-            }
-        ]
+        "PreToolUse": []
     },
     "statusLine": {
         "type": "command",
