@@ -8,6 +8,11 @@
     vi-action-bar {
         box-shadow: var(--theme-box-shadow);
         z-index: 1;
+
+        &.action-bar {
+            display: flex;
+            align-items: center;
+        }
     }
 
     header {
@@ -19,20 +24,12 @@
         z-index: 0;
     }
 
-    &[no-actions] {
-        > header {
-            box-shadow: var(--theme-box-shadow);
-        }
-
-        vi-action-bar {
-            display: none !important;
-        }
+    &[no-actions] > header {
+        box-shadow: var(--theme-box-shadow);
     }
 
-    &[hide-header] {
-        vi-query-items-presenter {
-            margin: 0;
-        }
+    &[hide-header] vi-query-items-presenter {
+        margin: 0;
     }
 
     vi-query-items-presenter {
