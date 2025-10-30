@@ -1,5 +1,7 @@
 import { ReactiveController } from "lit";
 import type { WebComponent } from "./web-component";
+import { PopupMenuItem } from "components/popup-menu/popup-menu-item";
+import { PopupMenuItemSplit } from "components/popup-menu/popup-menu-item-split";
 
 export interface IConfigurableAction {
     icon: string;
@@ -67,8 +69,23 @@ export class WebComponentConfigurationController implements ReactiveController {
                 composed: true
             }));
 
-            // Mark the event as handled
-            e["vi:configure"] = true;
+            // Create menu items from the actions
+            const configureItems: (PopupMenuItem | PopupMenuItemSplit)[] = [];
+            actions.forEach(action => {
+                let item: PopupMenuItem | PopupMenuItemSplit;
+
+                if (!action.subActions)
+                    item = new PopupMenuItem(action.label, action.icon, action.action);
+                else {
+                    item = new PopupMenuItemSplit(action.label, action.icon, action.action);
+                    action.subActions.forEach(subA => item.appendChild(new PopupMenuItem(subA.label, subA.icon, subA.action)));
+                }
+
+                configureItems.push(item);
+            });
+
+            // Attach menu items to the contextmenu event so the app can display them
+            e["vi:configure"] = configureItems;
         };
 
         this.#host.addEventListener("contextmenu", this.#onContextmenu);
