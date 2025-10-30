@@ -70,12 +70,13 @@ export class WebComponentKeybindingController implements ReactiveController {
         if (Object.keys(this.keybindings).length === 0) return;
 
         this.boundHandler = this.handleKeydown.bind(this);
-        this.host.addEventListener("keydown", this.boundHandler);
+        // Listen at document level in capture phase to catch before browser defaults
+        document.addEventListener("keydown", this.boundHandler, true);
     }
 
     hostDisconnected(): void {
         if (this.boundHandler) {
-            this.host.removeEventListener("keydown", this.boundHandler);
+            document.removeEventListener("keydown", this.boundHandler, true);
             this.boundHandler = null;
         }
     }
@@ -84,8 +85,15 @@ export class WebComponentKeybindingController implements ReactiveController {
         const keyEvent = e as KeyboardEvent;
         const combo = this.buildComboString(keyEvent);
 
+        // Skip if it's just a modifier key
+        if (!combo) return;
+
         for (const [keybinding, methodName] of Object.entries(this.keybindings)) {
             if (this.matchesKeybinding(combo, keybinding)) {
+                // Prevent default and stop propagation immediately when matched
+                keyEvent.preventDefault();
+                keyEvent.stopPropagation();
+
                 const handler = this.host[methodName];
                 if (typeof handler === "function") {
                     handler.call(this.host, keyEvent);
@@ -97,17 +105,20 @@ export class WebComponentKeybindingController implements ReactiveController {
     }
 
     private buildComboString(e: KeyboardEvent): string {
+        const key = e.key.toLowerCase();
+
+        // Skip if it's just a modifier key by itself
+        if (["control", "alt", "shift", "meta"].includes(key)) {
+            return "";
+        }
+
         const parts: string[] = [];
         if (e.ctrlKey) parts.push("ctrl");
         if (e.altKey) parts.push("alt");
         if (e.shiftKey) parts.push("shift");
         if (e.metaKey) parts.push("meta");
 
-        const key = e.key.toLowerCase();
-        // Don't add modifier keys twice
-        if (!["control", "alt", "shift", "meta"].includes(key)) {
-            parts.push(key);
-        }
+        parts.push(key);
 
         return parts.join("+");
     }
