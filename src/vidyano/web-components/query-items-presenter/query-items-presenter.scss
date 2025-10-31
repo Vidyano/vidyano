@@ -18,3 +18,11 @@
         min-width: 0;
     }
 }
+
+.file-drop-container {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+}
