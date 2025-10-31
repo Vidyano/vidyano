@@ -202,16 +202,27 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
      * Traverses up through both regular DOM and shadow DOM boundaries.
      *
      * @param condition A predicate function to test each parent element.
-     * @param parent Optional starting point for the search. Defaults to this element's parent.
+     * @param options Optional configuration for the search.
+     * @param options.parent Optional starting point for the search. Defaults to this element's parent.
+     * @param options.followSlots If true, follows assignedSlot to search within shadow DOM when elements are slotted.
      * @returns The first parent element that matches the condition, or null if none found.
      */
-    protected findParent<T extends HTMLElement>(condition: (element: Node) => boolean = e => !!e, parent?: Node): T | null {
+    protected findParent<T extends HTMLElement>(condition: (element: Node) => boolean = e => !!e, options?: { parent?: Node; followSlots?: boolean }): T | null {
+        let parent = options?.parent;
+
         if (!parent) {
             parent = this.parentElement ||
                      (this.parentNode instanceof ShadowRoot ? (this.parentNode as ShadowRoot).host : null);
         }
 
         while (!!parent && !condition(parent)) {
+            if (options?.followSlots && parent instanceof HTMLElement && parent.assignedSlot) {
+                const slotResult = this.findParent<T>(condition, { parent: (parent as any).assignedSlot, followSlots: options.followSlots });
+                if (slotResult) {
+                    return slotResult;
+                }
+            }
+
             parent = parent.parentElement ||
                      (parent.parentNode instanceof ShadowRoot ? (parent.parentNode as ShadowRoot).host : null);
         }
