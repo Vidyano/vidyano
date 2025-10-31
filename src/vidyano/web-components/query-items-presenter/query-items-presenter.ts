@@ -1,159 +1,37 @@
-import * as Polymer from "polymer"
-import * as Vidyano from "vidyano"
-import { AppServiceHooks } from "components/app-service-hooks/app-service-hooks"
-import { IFileDropDetails } from "components/file-drop/file-drop"
-import { QueryGrid } from "components/query-grid/query-grid"
-import "components/query-grid-gallery/query-grid-gallery"
-import { ConfigurableWebComponent } from "components/web-component/polymer/configurable-web-component"
+import { html, unsafeCSS } from "lit";
+import { property, state } from "lit/decorators.js";
+import * as Vidyano from "vidyano";
+import { AppServiceHooks } from "components/app-service-hooks/app-service-hooks";
+import { IFileDropDetails } from "components/file-drop/file-drop";
+import { QueryGrid } from "components/query-grid/query-grid";
+import "components/query-grid-gallery/query-grid-gallery";
+import { keybinding, listener, observer, WebComponent } from "components/web-component/web-component";
+import { IConfigurableAction, WebComponentConfigurationController } from "components/web-component/web-component-configuration-controller";
+import styles from "./query-items-presenter.css";
 
-@ConfigurableWebComponent.register({
-    properties: {
-        query: Object,
-        loading: {
-            type: Boolean,
-            reflectToAttribute: true,
-            readOnly: true,
-            value: true
-        },
-        templated: {
-            type: Boolean,
-            reflectToAttribute: true,
-            readOnly: true
-        },
-        fileDrop: {
-            type: Boolean,
-            reflectToAttribute: true,
-            readOnly: true
-        }
-    },
-    keybindings: {
-        "f5 ctrl+r": "_refresh",
-        "ctrl+n": "_new",
-        "delete": "_delete",
-        "f2": "_bulkEdit"
-    },
-    observers: [
-        "_renderQuery(query, query.currentChart, isConnected)"
-    ],
-    forwardObservers: [
-        "query.currentChart"
-    ],
-    listeners: {
-        "file-dropped": "_onFileDropped",
-        "vi:configure": "_configure"
-    }
-}, "vi-query-items-presenter")
-export class QueryItemsPresenter extends ConfigurableWebComponent {
-    static get template() { return Polymer.html`<link rel="import" href="query-items-presenter.html">` }
+export class QueryItemsPresenter extends WebComponent {
+    static styles = unsafeCSS(styles);
 
-    private _renderedQuery: Vidyano.Query;
-    readonly loading: boolean; private _setLoading: (loading: boolean) => void;
-    readonly templated: boolean; private _setTemplated: (templated: boolean) => void;
-    readonly fileDrop: boolean; private _setFileDrop: (fileDrop: boolean) => void;
+    #renderedQuery: Vidyano.Query;
+
+    @property({ type: Object })
     query: Vidyano.Query;
 
-    private async _renderQuery(query: Vidyano.Query, currentChart: Vidyano.QueryChart, isConnected: boolean) {
-        if (!isConnected)
+    @state()
+    loading: boolean = true;
+
+    @state()
+    templated: boolean = false;
+
+    @state()
+    fileDrop: boolean = false;
+
+    // Configuration controller to add configurable actions to the context menu
+    readonly #configurable = new WebComponentConfigurationController(this, (actions: IConfigurableAction[]) => {
+        if (this.query?.isSystem)
             return;
 
-        this.empty();
-        this._renderedQuery = null;
-
-        if (!query) {
-            this._setFileDrop(false);
-            this._setTemplated(false);
-
-            return;
-        }
-
-        this._setLoading(true);
-
-        const config = this.app.configuration.getQueryConfig(query);
-
-        this._setFileDrop(!!config && !!config.fileDropAttribute && !!query.actions[config.fileDropAction]);
-        this._setTemplated(!!config && config.hasTemplate);
-
-        if (this.templated) {
-            if (this._renderedQuery !== query) {
-                this.appendChild(config.stamp(query, config.as || "query"));
-                this._renderedQuery = query;
-            }
-        }
-        else {
-            if (!currentChart) {
-                if (query !== this.query || this._renderedQuery === query || !!query.currentChart)
-                    return;
-
-                const grid = new QueryGrid();
-                this._renderedQuery = grid.query = this.query;
-                this.appendChild(grid);
-            }
-            else {
-                const chartConfig = this.app.configuration.getQueryChartConfig(currentChart.type);
-                if (!chartConfig) {
-                    console.error(`No chart configuration found for type '${currentChart.type}'`);
-                    return;
-                }
-
-                if (query !== this.query || this._renderedQuery === query)
-                    return;
-
-                this._renderedQuery = query;
-
-                this.appendChild(chartConfig.stamp(currentChart, chartConfig.as || "chart"));
-            }
-        }
-
-        this._setLoading(false);
-    }
-
-    private async _onFileDropped(e: CustomEvent) {
-        if (!this.fileDrop)
-            return;
-
-        const details: IFileDropDetails[] = e.detail;
-        for (let detail of details) {
-            await (<AppServiceHooks>this.query.service.hooks).onQueryFileDrop(this.query, detail.name, detail.contents);
-        }
-    }
-
-    private _refresh() {
-        if (this.query)
-            this.query.search();
-    }
-
-    private _new() {
-        if (!this.query)
-            return;
-
-        const action = <Vidyano.Action>this.query.actions["New"];
-        if (action)
-            action.execute();
-    }
-
-    private _delete() {
-        if (!this.query || !this.query.selectedItems || this.query.selectedItems.length === 0)
-            return true;
-
-        const action = <Vidyano.Action>this.query.actions["Delete"];
-        if (action)
-            action.execute();
-    }
-
-    private _bulkEdit() {
-        if (!this.query)
-            return;
-
-        const action = <Vidyano.Action>this.query.actions["BulkEdit"];
-        if (action)
-            action.execute();
-    }
-
-    private _configure(e: CustomEvent) {
-        if (this.query.isSystem)
-            return;
-
-        e.detail.push({
+        actions.push({
             label: `Query: ${this.query.label}`,
             icon: "viConfigure",
             action: () => {
@@ -167,5 +45,126 @@ export class QueryItemsPresenter extends ConfigurableWebComponent {
                 }
             }]
         });
+    });
+
+    @observer("query", "query.currentChart", "isConnected")
+    private async _renderQuery(query: Vidyano.Query, currentChart: Vidyano.QueryChart, isConnected: boolean) {
+        if (!isConnected)
+            return;
+
+        this.innerHTML = "";
+        this.#renderedQuery = null;
+
+        if (!query) {
+            this.fileDrop = false;
+            this.templated = false;
+
+            return;
+        }
+
+        this.loading = true;
+
+        const config = this.app.configuration.getQueryConfig(query);
+
+        this.fileDrop = !!config && !!config.fileDropAttribute && !!query.actions[config.fileDropAction];
+        this.templated = !!config && config.hasTemplate;
+
+        if (this.templated) {
+            if (this.#renderedQuery !== query) {
+                // TODO: Migrate to Lit - config.stamp() uses Polymer templates
+                this.appendChild(config.stamp(query, config.as || "query"));
+                this.#renderedQuery = query;
+            }
+        }
+        else {
+            if (!currentChart) {
+                if (query !== this.query || this.#renderedQuery === query || !!query.currentChart)
+                    return;
+
+                // TODO: Migrate to Lit - QueryGrid is Polymer-based
+                const grid = new QueryGrid();
+                this.#renderedQuery = grid.query = this.query;
+                this.appendChild(grid);
+            }
+            else {
+                const chartConfig = this.app.configuration.getQueryChartConfig(currentChart.type);
+                if (!chartConfig) {
+                    console.error(`No chart configuration found for type '${currentChart.type}'`);
+                    return;
+                }
+
+                if (query !== this.query || this.#renderedQuery === query)
+                    return;
+
+                this.#renderedQuery = query;
+
+                // TODO: Migrate to Lit - chartConfig.stamp() uses Polymer templates
+                this.appendChild(chartConfig.stamp(currentChart, chartConfig.as || "chart"));
+            }
+        }
+
+        this.loading = false;
+    }
+
+    @listener("file-dropped")
+    private async _onFileDropped(e: CustomEvent) {
+        if (!this.fileDrop)
+            return;
+
+        const details: IFileDropDetails[] = e.detail;
+        for (let detail of details) {
+            await (<AppServiceHooks>this.query.service.hooks).onQueryFileDrop(this.query, detail.name, detail.contents);
+        }
+    }
+
+    @keybinding("f5")
+    @keybinding("ctrl+r")
+    private _refresh() {
+        this.query?.search();
+    }
+
+    @keybinding("insert")
+    private _new() {
+        if (!this.query)
+            return;
+
+        const action = <Vidyano.Action>this.query.actions["New"];
+        if (action)
+            action.execute();
+    }
+
+    @keybinding("delete")
+    private _delete() {
+        if (!this.query?.selectedItems?.length)
+            return;
+
+        const action = <Vidyano.Action>this.query.actions["Delete"];
+        if (action)
+            action.execute();
+    }
+
+    @keybinding("f2")
+    private _bulkEdit() {
+        if (!this.query)
+            return;
+
+        const action = <Vidyano.Action>this.query.actions["BulkEdit"];
+        if (action)
+            action.execute();
+    }
+
+    render() {
+        return html`
+            ${this.fileDrop ? html`
+                <vi-file-drop class="file-drop-container">
+                    <slot></slot>
+                </vi-file-drop>
+            ` : html`
+                <slot></slot>
+            `}
+            <vi-spinner ?hidden=${!this.loading}></vi-spinner>
+        `;
     }
 }
+
+customElements.define("vi-query-items-presenter", QueryItemsPresenter);
