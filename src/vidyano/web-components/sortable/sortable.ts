@@ -42,15 +42,16 @@ export abstract class Sortable extends WebComponent {
     #autoScrollFrame: number | null = null;
     #documentDragOverHandler: ((e: DragEvent) => void) | null = null;
     #currentScrollDirection: 'up' | 'down' | null = null;
+    #isRegisteredInGroup: boolean = false;
 
     /** Group name for synchronized drag-and-drop across multiple sortable containers */
     @property({ type: String, reflect: true })
-    @observer(function(this: Sortable, newGroup: string, oldGroup: string) {
-        if (oldGroup)
-            _groups.remove(this);
+    @observer(function(this: Sortable) {
+        if (!this.isConnected)
+            return;
 
-        if (newGroup)
-            _groups.push(this);
+        this.#unregisterFromGroup();
+        this.#registerInGroup();
     })
     group: string;
 
@@ -100,14 +101,11 @@ export abstract class Sortable extends WebComponent {
 
     connectedCallback() {
         super.connectedCallback();
-
-        if (this.group)
-            _groups.push(this);
+        this.#registerInGroup();
     }
 
     disconnectedCallback() {
-        if (this.group)
-            _groups.remove(this);
+        this.#unregisterFromGroup();
 
         if (this.#debounceTimer) {
             window.clearTimeout(this.#debounceTimer);
@@ -129,6 +127,26 @@ export abstract class Sortable extends WebComponent {
         const slot = this.shadowRoot?.querySelector('slot');
         if (slot?.assignedElements().length)
             this.#setupDragAndDrop();
+    }
+
+    /**
+     * Registers this sortable in the _groups array if it has a group and isn't already registered
+     */
+    #registerInGroup() {
+        if (this.group && !this.#isRegisteredInGroup) {
+            _groups.push(this);
+            this.#isRegisteredInGroup = true;
+        }
+    }
+
+    /**
+     * Unregisters this sortable from the _groups array if it's currently registered
+     */
+    #unregisterFromGroup() {
+        if (this.#isRegisteredInGroup) {
+            _groups.remove(this);
+            this.#isRegisteredInGroup = false;
+        }
     }
 
     /**
