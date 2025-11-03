@@ -27,6 +27,8 @@ interface DragState {
     lastDropTarget: HTMLElement | null;
     /** The nearest scrollable parent element */
     scrollableParent: HTMLElement | null;
+    /** Cached draggable elements to avoid repeated DOM queries during drag */
+    cachedDraggableElements: HTMLElement[];
 }
 
 export class Sortable extends WebComponent {
@@ -356,7 +358,8 @@ export class Sortable extends WebComponent {
             originalIndex: originalIndex,
             sourceContainer: this,
             lastDropTarget: null,
-            scrollableParent: scrollableParent
+            scrollableParent: scrollableParent,
+            cachedDraggableElements: items
         };
 
         // Add document-level dragover listener for auto-scrolling even when cursor is outside component
@@ -463,7 +466,7 @@ export class Sortable extends WebComponent {
             return;
 
         // Check if we can drop in this container
-        if (this.group && this.#dragState.sourceContainer.group !== this.group)
+        if (this.group && this.#dragState?.sourceContainer.group !== this.group)
             return;
 
         // Determine if we should insert before or after
@@ -636,9 +639,11 @@ export class Sortable extends WebComponent {
 
     /**
      * Gets the drop target element at the current drag position.
+     * Uses cached elements if this is the source container, otherwise queries fresh.
      */
     #getDropTarget(e: DragEvent): HTMLElement | null {
-        const items = this.#getDraggableElements();
+        // Use cached elements if available (source container), otherwise get fresh (cross-container drag)
+        const items = this.#dragState?.cachedDraggableElements ?? this.#getDraggableElements();
         const point = { x: e.clientX, y: e.clientY };
 
         for (const item of items) {
