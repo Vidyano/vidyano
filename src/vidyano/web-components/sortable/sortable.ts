@@ -350,6 +350,12 @@ export class Sortable extends WebComponent {
             return;
         }
 
+        // Set minimal drag data (HTML5 requires some data to be set)
+        if (e.dataTransfer) {
+            e.dataTransfer.effectAllowed = "move";
+            e.dataTransfer.setData("text/plain", originalIndex.toString());
+        }
+
         // Find the scrollable parent once at drag start
         const scrollableParent = this.#findScrollableParent(this);
 
@@ -389,11 +395,6 @@ export class Sortable extends WebComponent {
         });
 
         this._dragStart();
-
-        if (e.dataTransfer) {
-            e.dataTransfer.effectAllowed = "move";
-            e.dataTransfer.setData("text/html", target.innerHTML);
-        }
     }
 
     /**
