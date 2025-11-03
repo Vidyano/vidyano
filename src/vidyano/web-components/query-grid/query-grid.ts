@@ -656,6 +656,9 @@ export class QueryGrid extends Polymer.WebComponent {
         if (details.newIndex == null)
             return;
 
+        if (details.newIndex === details.oldIndex)
+            return;
+
         try {
             await this.query.reorder(
                 (details.element.previousElementSibling as QueryGridRow)?.item as Vidyano.QueryResultItem ?? null,

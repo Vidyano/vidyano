@@ -89,7 +89,11 @@ export class PersistentObjectAttributeMultiString extends PersistentObjectAttrib
         e.stopPropagation();
     }
 
-    private _itemsOrderChanged() {
+    private _itemsOrderChanged(e: CustomEvent) {
+        const details = e.detail;
+        if (details.newIndex === details.oldIndex)
+            return;
+
         const stringsContainer = <HTMLElement>this.shadowRoot.querySelector("#strings");
         this.value = Array.from(stringsContainer.children).filter((i: PersistentObjectAttributeMultiStringItem) => !!i.value).map((i: PersistentObjectAttributeMultiStringItem) => i.value).join("\n");
     }

@@ -429,9 +429,8 @@ export class Sortable extends WebComponent {
         if (this.group)
             _groups.filter(s => s.group === this.group).forEach(s => s.isGroupDragging = false);
 
-        // Dispatch drag-end event
-        if (newIndex !== this.#dragState.originalIndex)
-            this._dragEnd(target, newIndex, this.#dragState.originalIndex);
+        // Dispatch drag-end event (always)
+        this._dragEnd(target, newIndex, this.#dragState.originalIndex);
 
         this.#dragState = null;
     }
