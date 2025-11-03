@@ -1,39 +1,26 @@
-import * as Polymer from "polymer"
-@Polymer.WebComponent.register({
-    properties: {
-        toggled: {
-            type: Boolean,
-            reflectToAttribute: true,
-            notify: true
-        },
-        label: {
-            type: String,
-            value: null
-        },
-        isNull: {
-            type: Boolean,
-            value: true,
-            computed: "_computeIsNull(toggled)"
-        },
-        disabled: {
-            type: Boolean,
-            reflectToAttribute: true
-        }
-    },
-    listeners: {
-        "tap": "toggle"
-    },
-    keybindings: {
-        "space": "_keyToggle"
-    }
-}, "vi-toggle")
-export class Toggle extends Polymer.WebComponent {
-    static get template() { return Polymer.html`<link rel="import" href="toggle.html">`; }
+import { html, nothing, unsafeCSS } from "lit";
+import { property } from "lit/decorators.js";
+import { computed, keybinding, listener, notify, WebComponent } from "components/web-component/web-component";
+import styles from "./toggle.css";
 
+export class Toggle extends WebComponent {
+    static styles = unsafeCSS(styles);
+
+    @property({ type: Boolean, reflect: true })
+    @notify()
     toggled: boolean;
+
+    @property({ type: String })
     label: string;
+
+    @property({ type: Boolean })
+    @computed(function(this: Toggle, toggled: boolean): boolean {
+        return toggled !== false && toggled !== true;
+    }, "toggled")
+    declare readonly isNull: boolean;
+
+    @property({ type: Boolean, reflect: true })
     disabled: boolean;
-    radio: boolean;
 
     connectedCallback() {
         super.connectedCallback();
@@ -41,6 +28,16 @@ export class Toggle extends Polymer.WebComponent {
         this.setAttribute("tabindex", "0");
     }
 
+    render() {
+        return html`
+            <div id="box" part="box">
+                <div id="switch" part="switch"></div>
+            </div>
+            ${!String.isNullOrEmpty(this.label) ? html`<span part="label">${this.label}</span>` : nothing}
+        `;
+    }
+
+    @listener("click")
     toggle() {
         if (this.disabled)
             return;
@@ -48,14 +45,13 @@ export class Toggle extends Polymer.WebComponent {
         this.toggled = !this.toggled;
     }
 
+    @keybinding("space")
     private _keyToggle(e: KeyboardEvent) {
         if (this.app.activeElement !== this)
             return true;
 
         this.toggle();
     }
-
-    private _computeIsNull(toggled: boolean): boolean {
-        return toggled !== false && toggled !== true;
-    }
 }
+
+customElements.define("vi-toggle", Toggle);

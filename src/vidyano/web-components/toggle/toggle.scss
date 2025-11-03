@@ -9,6 +9,7 @@
     }
 
     #box {
+        position: relative;
         padding: 2px;
         border: 1px solid var(--theme-light-border);
         width: var(--theme-h2);
