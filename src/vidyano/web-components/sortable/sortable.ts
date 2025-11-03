@@ -130,26 +130,6 @@ export abstract class Sortable extends WebComponent {
     }
 
     /**
-     * Registers this sortable in the _groups array if it has a group and isn't already registered
-     */
-    #registerInGroup() {
-        if (this.group && !this.#isRegisteredInGroup) {
-            _groups.push(this);
-            this.#isRegisteredInGroup = true;
-        }
-    }
-
-    /**
-     * Unregisters this sortable from the _groups array if it's currently registered
-     */
-    #unregisterFromGroup() {
-        if (this.#isRegisteredInGroup) {
-            _groups.remove(this);
-            this.#isRegisteredInGroup = false;
-        }
-    }
-
-    /**
      * Handles slot content changes and reinitializes drag-and-drop functionality.
      */
     protected _onSlotChange() {
@@ -198,6 +178,26 @@ export abstract class Sortable extends WebComponent {
 
         this.#teardownDragAndDrop();
         this.#setupDragAndDrop();
+    }
+
+    /**
+     * Registers this sortable in the _groups array if it has a group and isn't already registered
+     */
+    #registerInGroup() {
+        if (this.group && !this.#isRegisteredInGroup) {
+            _groups.push(this);
+            this.#isRegisteredInGroup = true;
+        }
+    }
+
+    /**
+     * Unregisters this sortable from the _groups array if it's currently registered
+     */
+    #unregisterFromGroup() {
+        if (this.#isRegisteredInGroup) {
+            _groups.remove(this);
+            this.#isRegisteredInGroup = false;
+        }
     }
 
     /**
