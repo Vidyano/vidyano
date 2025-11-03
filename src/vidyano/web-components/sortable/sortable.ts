@@ -37,7 +37,6 @@ export class Sortable extends WebComponent {
     #dragEndHandler: EventListener;
     #mouseDownHandler: EventListener;
     #itemsWithListeners: Set<HTMLElement> = new Set();
-    #mutationObserver: MutationObserver | null = null;
     #debounceTimer: number | null = null;
     #autoScrollFrame: number | null = null;
     #documentDragOverHandler: ((e: DragEvent) => void) | null = null;
@@ -110,11 +109,6 @@ export class Sortable extends WebComponent {
         if (this.#debounceTimer) {
             window.clearTimeout(this.#debounceTimer);
             this.#debounceTimer = null;
-        }
-
-        if (this.#mutationObserver) {
-            this.#mutationObserver.disconnect();
-            this.#mutationObserver = null;
         }
 
         this.#teardownDragAndDrop();
@@ -359,10 +353,6 @@ export class Sortable extends WebComponent {
             scrollableParent: scrollableParent
         };
 
-        // Temporarily disconnect mutation observer during drag to prevent re-initialization
-        if (this.#mutationObserver)
-            this.#mutationObserver.disconnect();
-
         // Add document-level dragover listener for auto-scrolling even when cursor is outside component
         this.#documentDragOverHandler = (e: DragEvent) => {
             // Just handle auto-scroll, don't touch preventDefault or dropEffect
@@ -438,14 +428,6 @@ export class Sortable extends WebComponent {
         this.isDragging = false;
         if (this.group)
             _groups.filter(s => s.group === this.group).forEach(s => s.isGroupDragging = false);
-
-        // Reconnect mutation observer after drag
-        if (this.#mutationObserver) {
-            this.#mutationObserver.observe(this, {
-                childList: true,
-                subtree: false
-            });
-        }
 
         // Dispatch drag-end event
         if (newIndex !== this.#dragState.originalIndex)
