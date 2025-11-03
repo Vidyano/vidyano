@@ -5,17 +5,27 @@ import styles from "./sortable.css";
 
 const _groups: Sortable[] = [];
 
+/** Details provided in the drag-end event */
 export interface ISortableDragEndDetails {
+    /** The dragged element */
     element: HTMLElement;
+    /** The element's new index position */
     newIndex: number;
+    /** The element's original index position */
     oldIndex: number;
 }
 
+/** Internal state tracking during drag operations */
 interface DragState {
+    /** The element currently being dragged */
     draggedElement: HTMLElement;
+    /** The original index of the dragged element */
     originalIndex: number;
+    /** The sortable container where the drag originated */
     sourceContainer: Sortable;
+    /** The last valid drop target during the drag operation */
     lastDropTarget: HTMLElement | null;
+    /** The nearest scrollable parent element */
     scrollableParent: HTMLElement | null;
 }
 
@@ -33,6 +43,7 @@ export abstract class Sortable extends WebComponent {
     #documentDragOverHandler: ((e: DragEvent) => void) | null = null;
     #currentScrollDirection: 'up' | 'down' | null = null;
 
+    /** Group name for synchronized drag-and-drop across multiple sortable containers */
     @property({ type: String, reflect: true })
     @observer(function(this: Sortable, newGroup: string, oldGroup: string) {
         if (oldGroup)
@@ -43,21 +54,36 @@ export abstract class Sortable extends WebComponent {
     })
     group: string;
 
+    /** CSS selector for elements that should not be draggable */
     @property({ type: String, reflect: true })
     filter: string;
 
+    /** CSS selector for elements that should be draggable. If not specified, all slotted elements are draggable */
     @property({ type: String, reflect: true })
     draggableItems: string;
 
+    /** CSS selector for the drag handle. When specified, dragging is only enabled when the handle is clicked */
     @property({ type: String, reflect: true })
     handle: string;
 
+    /**
+     * Controls whether drag-and-drop functionality is enabled
+     * @default true
+     */
     @property({ type: Boolean, reflect: true })
     enabled: boolean = true;
 
+    /**
+     * Indicates whether this sortable container is currently being dragged
+     * @default false
+     */
     @state()
     isDragging: boolean = false;
 
+    /**
+     * Indicates whether any sortable container in the same group is being dragged
+     * @default false
+     */
     @state()
     isGroupDragging: boolean = false;
 
@@ -101,11 +127,13 @@ export abstract class Sortable extends WebComponent {
         super.firstUpdated(changedProperties);
 
         const slot = this.shadowRoot?.querySelector('slot');
-        if (slot?.assignedElements().length) {
+        if (slot?.assignedElements().length)
             this.#setupDragAndDrop();
-        }
     }
 
+    /**
+     * Handles slot content changes and reinitializes drag-and-drop functionality.
+     */
     protected _onSlotChange() {
         if (this.#debounceTimer)
             clearTimeout(this.#debounceTimer);
@@ -117,6 +145,9 @@ export abstract class Sortable extends WebComponent {
         }, 50) as unknown as number;
     }
 
+    /**
+     * Handles drag start operations and emits the drag-start event.
+     */
     protected _dragStart() {
         this.dispatchEvent(new CustomEvent("drag-start", {
             bubbles: true,
@@ -124,6 +155,9 @@ export abstract class Sortable extends WebComponent {
         }));
     }
 
+    /**
+     * Handles drag end operations and emits the drag-end event.
+     */
     protected _dragEnd(element: HTMLElement, newIndex: number, oldIndex: number) {
         this.dispatchEvent(new CustomEvent("drag-end", {
             detail: {
@@ -136,6 +170,9 @@ export abstract class Sortable extends WebComponent {
         }));
     }
 
+    /**
+     * Reinitializes drag-and-drop when observed properties change.
+     */
     @observer("filter", "draggableItems", "handle", "enabled")
     private _reinitializeDragAndDrop() {
         if (!this.shadowRoot)
@@ -145,6 +182,9 @@ export abstract class Sortable extends WebComponent {
         this.#setupDragAndDrop();
     }
 
+    /**
+     * Sets up drag-and-drop event listeners on draggable elements.
+     */
     #setupDragAndDrop() {
         if (!this.enabled)
             return;
@@ -161,6 +201,9 @@ export abstract class Sortable extends WebComponent {
             this.addEventListener("mousedown", this.#mouseDownHandler, true);
     }
 
+    /**
+     * Removes drag-and-drop event listeners from all elements.
+     */
     #teardownDragAndDrop() {
         this.#itemsWithListeners.forEach(item => {
             item.removeAttribute("draggable");
@@ -173,12 +216,14 @@ export abstract class Sortable extends WebComponent {
             this.removeEventListener("mousedown", this.#mouseDownHandler, true);
     }
 
+    /**
+     * Gets all draggable elements from the slot, filtered by configuration.
+     */
     #getDraggableElements(): HTMLElement[] {
         // Get slotted elements from the shadow DOM slot
         const slot = this.shadowRoot?.querySelector('slot');
-        if (!slot) {
+        if (!slot)
             return [];
-        }
 
         const assignedElements = slot.assignedElements();
 
@@ -201,57 +246,52 @@ export abstract class Sortable extends WebComponent {
         const validElements = elements.filter(el => {
             // Exclude Polymer template helpers (dom-repeat, dom-if, etc.)
             const tagName = el.tagName.toLowerCase();
-            if (tagName === 'dom-repeat' || tagName === 'dom-if' || tagName === 'template') {
+            if (tagName === 'dom-repeat' || tagName === 'dom-if' || tagName === 'template')
                 return false;
-            }
 
             // Exclude elements with no size (hidden, display:none, etc.)
-            if (el.offsetHeight === 0 && el.offsetWidth === 0) {
+            if (el.offsetHeight === 0 && el.offsetWidth === 0)
                 return false;
-            }
 
             return true;
         });
 
         // Filter out elements that match the filter selector
-        if (this.filter) {
+        if (this.filter)
             return validElements.filter(el => !el.matches(this.filter));
-        }
 
         return validElements;
     }
 
+    /**
+     * Handles mousedown events to enable dragging when a handle is clicked.
+     */
     #onMouseDown(e: MouseEvent) {
-        if (!this.handle) {
+        if (!this.handle)
             return;
-        }
 
         // Check if any element in the composed path (including shadow DOM) matches the handle selector
         const composedPath = e.composedPath() as HTMLElement[];
 
         const handleFound = composedPath.some(el => {
-            if (!el || el.nodeType !== Node.ELEMENT_NODE || typeof el.matches !== 'function') {
+            if (!el || el.nodeType !== Node.ELEMENT_NODE || typeof el.matches !== 'function')
                 return false;
-            }
 
             // Check if element matches the handle selector
-            if (el.matches(this.handle)) {
+            if (el.matches(this.handle))
                 return true;
-            }
 
             // Also check by class name (for .reorder -> reorder)
             if (this.handle.startsWith('.')) {
                 const className = this.handle.substring(1);
 
-                if (el.classList && el.classList.contains(className)) {
+                if (el.classList && el.classList.contains(className))
                     return true;
-                }
 
                 // Check part attribute (for shadow parts like part="reorder")
                 const part = el.getAttribute?.('part');
-                if (part && part.split(' ').includes(className)) {
+                if (part && part.split(' ').includes(className))
                     return true;
-                }
             }
 
             return false;
@@ -260,22 +300,24 @@ export abstract class Sortable extends WebComponent {
         // Find the draggable item (the item containing the handle)
         const items = this.#getDraggableElements();
         const draggableItem = composedPath.find(el => {
-            if (!el || el.nodeType !== Node.ELEMENT_NODE) {
+            if (!el || el.nodeType !== Node.ELEMENT_NODE)
                 return false;
-            }
+
             return items.includes(el as HTMLElement);
         }) as HTMLElement | undefined;
 
         // Enable/disable dragging based on whether handle was clicked
         items.forEach(item => {
-            if (handleFound && item === draggableItem) {
+            if (handleFound && item === draggableItem)
                 item.setAttribute("draggable", "true");
-            } else {
+            else
                 item.setAttribute("draggable", "false");
-            }
         });
     }
 
+    /**
+     * Handles the dragstart event to initialize the drag operation.
+     */
     #onDragStart(e: DragEvent) {
         const target = e.target as HTMLElement;
 
@@ -300,9 +342,8 @@ export abstract class Sortable extends WebComponent {
         };
 
         // Temporarily disconnect mutation observer during drag to prevent re-initialization
-        if (this.#mutationObserver) {
+        if (this.#mutationObserver)
             this.#mutationObserver.disconnect();
-        }
 
         // Add document-level dragover listener for auto-scrolling even when cursor is outside component
         this.#documentDragOverHandler = (e: DragEvent) => {
@@ -314,9 +355,8 @@ export abstract class Sortable extends WebComponent {
 
         // Set dragging state
         this.isDragging = true;
-        if (this.group) {
+        if (this.group)
             _groups.filter(s => s.group === this.group).forEach(s => s.isGroupDragging = true);
-        }
 
         // Add dragging class
         this.classList.add('dragging');
@@ -339,6 +379,9 @@ export abstract class Sortable extends WebComponent {
         }
     }
 
+    /**
+     * Handles the dragend event to finalize the drag operation.
+     */
     #onDragEnd(e: DragEvent) {
         const target = e.target as HTMLElement;
 
@@ -370,17 +413,13 @@ export abstract class Sortable extends WebComponent {
         });
 
         // Reset draggable attribute if handle is specified
-        if (this.handle) {
-            items.forEach(item => {
-                item.setAttribute("draggable", "false");
-            });
-        }
+        if (this.handle)
+            items.forEach(item => item.setAttribute("draggable", "false"));
 
         // Set dragging state
         this.isDragging = false;
-        if (this.group) {
+        if (this.group)
             _groups.filter(s => s.group === this.group).forEach(s => s.isGroupDragging = false);
-        }
 
         // Reconnect mutation observer after drag
         if (this.#mutationObserver) {
@@ -391,13 +430,15 @@ export abstract class Sortable extends WebComponent {
         }
 
         // Dispatch drag-end event
-        if (newIndex !== this.#dragState.originalIndex) {
+        if (newIndex !== this.#dragState.originalIndex)
             this._dragEnd(target, newIndex, this.#dragState.originalIndex);
-        }
 
         this.#dragState = null;
     }
 
+    /**
+     * Handles the dragover event to update element positions during drag.
+     */
     @listener("dragover")
     protected _onDragOver(e: DragEvent) {
         if (!this.#dragState)
@@ -405,9 +446,8 @@ export abstract class Sortable extends WebComponent {
 
         e.preventDefault();
 
-        if (e.dataTransfer) {
+        if (e.dataTransfer)
             e.dataTransfer.dropEffect = "move";
-        }
 
         // Handle auto-scrolling
         this.#handleAutoScroll(e);
@@ -417,9 +457,8 @@ export abstract class Sortable extends WebComponent {
             return;
 
         // Check if we can drop in this container
-        if (this.group && this.#dragState.sourceContainer.group !== this.group) {
+        if (this.group && this.#dragState.sourceContainer.group !== this.group)
             return;
-        }
 
         // Determine if we should insert before or after
         const rect = target.getBoundingClientRect();
@@ -445,14 +484,16 @@ export abstract class Sortable extends WebComponent {
         if (insertBefore) {
             parent.insertBefore(draggedElement, target);
         } else {
-            if (target.nextSibling) {
+            if (target.nextSibling)
                 parent.insertBefore(draggedElement, target.nextSibling);
-            } else {
+            else
                 parent.appendChild(draggedElement);
-            }
         }
     }
 
+    /**
+     * Handles the dragenter event to indicate a valid drop zone.
+     */
     @listener("dragenter")
     protected _onDragEnter(e: DragEvent) {
         if (!this.#dragState)
@@ -460,15 +501,21 @@ export abstract class Sortable extends WebComponent {
 
         e.preventDefault();
 
-        if (e.dataTransfer) {
+        if (e.dataTransfer)
             e.dataTransfer.dropEffect = "move";
-        }
+
     }
 
+    /**
+     * Handles the dragleave event when dragging leaves the sortable container.
+     */
     @listener("dragleave")
     protected _onDragLeave(_e: DragEvent) {
     }
 
+    /**
+     * Handles the drop event to complete the drag operation.
+     */
     @listener("drop")
     protected _onDrop(e: DragEvent) {
         if (!this.#dragState)
@@ -489,6 +536,9 @@ export abstract class Sortable extends WebComponent {
         // Element is already in correct position from dragover
     }
 
+    /**
+     * Handles automatic scrolling when dragging near the edges of a scrollable container.
+     */
     #handleAutoScroll(e: DragEvent) {
         if (!this.#dragState || !this.#dragState.scrollableParent)
             return;
@@ -505,12 +555,10 @@ export abstract class Sortable extends WebComponent {
         let newDirection: 'up' | 'down' | null = null;
 
         // Determine scroll direction
-        if (distanceFromTop < scrollZone && scrollableParent.scrollTop > 0) {
+        if (distanceFromTop < scrollZone && scrollableParent.scrollTop > 0)
             newDirection = 'up';
-        }
-        else if (distanceFromBottom < scrollZone && scrollableParent.scrollTop < scrollableParent.scrollHeight - scrollableParent.clientHeight) {
+        else if (distanceFromBottom < scrollZone && scrollableParent.scrollTop < scrollableParent.scrollHeight - scrollableParent.clientHeight)
             newDirection = 'down';
-        }
 
         // Only restart interval if direction changed
         if (newDirection !== this.#currentScrollDirection) {
@@ -525,41 +573,44 @@ export abstract class Sortable extends WebComponent {
             // Start new interval if needed
             if (newDirection === 'up') {
                 this.#autoScrollInterval = setInterval(() => {
-                    if (scrollableParent.scrollTop > 0) {
+                    if (scrollableParent.scrollTop > 0)
                         scrollableParent.scrollTop -= scrollSpeed;
-                    }
                 }, 16) as unknown as number; // ~60fps
             }
             else if (newDirection === 'down') {
                 this.#autoScrollInterval = setInterval(() => {
-                    if (scrollableParent.scrollTop < scrollableParent.scrollHeight - scrollableParent.clientHeight) {
+                    if (scrollableParent.scrollTop < scrollableParent.scrollHeight - scrollableParent.clientHeight)
                         scrollableParent.scrollTop += scrollSpeed;
-                    }
                 }, 16) as unknown as number; // ~60fps
             }
         }
     }
 
+    /**
+     * Stops the automatic scrolling interval.
+     */
     #stopAutoScroll() {
         if (this.#autoScrollInterval) {
             clearInterval(this.#autoScrollInterval);
             this.#autoScrollInterval = null;
         }
+
         this.#currentScrollDirection = null;
     }
 
+    /**
+     * Finds the nearest scrollable parent element.
+     */
     #findScrollableParent(element: HTMLElement): HTMLElement | null {
         return this.findParent<HTMLElement>((node: Node) => {
-            if (!node || node.nodeType !== Node.ELEMENT_NODE) {
+            if (!node || node.nodeType !== Node.ELEMENT_NODE)
                 return false;
-            }
 
             const el = node as HTMLElement;
 
             // Don't go past body
-            if (el.tagName === 'BODY') {
+            if (el.tagName === 'BODY')
                 return false;
-            }
 
             // Check if the element is scrollable
             const style = window.getComputedStyle(el);
@@ -572,6 +623,9 @@ export abstract class Sortable extends WebComponent {
         }, { parent: element, followSlots: true });
     }
 
+    /**
+     * Gets the drop target element at the current drag position.
+     */
     #getDropTarget(e: DragEvent): HTMLElement | null {
         const items = this.#getDraggableElements();
         const point = { x: e.clientX, y: e.clientY };
