@@ -408,12 +408,13 @@ ${repeat(this.items, (item) => item.id, (item) => html`
 
 ⚠️ **IMPORTANT:** Layout utility classes like `layout horizontal`, `layout vertical`, and `flex` are not available in Lit-based components. You must manually add these styles to your component's SCSS file.
 
-**Check your HTML template for these layout classes:**
-- `class="layout horizontal"` or `class="layout vertical"`
-- `class="flex"`
-- `class="layout center"`, `class="layout center-center"`
-- `class="layout wrap"`
-- Any other `layout` or flexbox utility classes
+**Check your HTML template for these utility classes:**
+- `class="layout horizontal"` / `class="layout vertical"` - flexbox containers
+- `class="flex"` - flex: 1 child element
+- `class="layout center"`, `class="layout center-center"` - alignment
+- `class="layout wrap"` - flex-wrap
+- `class="relative"` - position: relative
+- `class="fit"` - position: absolute filling parent (top/right/bottom/left: 0)
 
 **If found, follow these steps:**
 
@@ -438,7 +439,6 @@ In `component.scss` (create semantic class names):
 ```scss
 .container {
     display: flex;
-    flex-direction: row;
     align-items: center;
 
     > .content {
