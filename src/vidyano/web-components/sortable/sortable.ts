@@ -39,7 +39,7 @@ export abstract class Sortable extends WebComponent {
     #itemsWithListeners: Set<HTMLElement> = new Set();
     #mutationObserver: MutationObserver | null = null;
     #debounceTimer: number | null = null;
-    #autoScrollInterval: number | null = null;
+    #autoScrollFrame: number | null = null;
     #documentDragOverHandler: ((e: DragEvent) => void) | null = null;
     #currentScrollDirection: 'up' | 'down' | null = null;
 
@@ -110,7 +110,7 @@ export abstract class Sortable extends WebComponent {
             _groups.remove(this);
 
         if (this.#debounceTimer) {
-            clearTimeout(this.#debounceTimer);
+            window.clearTimeout(this.#debounceTimer);
             this.#debounceTimer = null;
         }
 
@@ -136,13 +136,13 @@ export abstract class Sortable extends WebComponent {
      */
     protected _onSlotChange() {
         if (this.#debounceTimer)
-            clearTimeout(this.#debounceTimer);
+            window.clearTimeout(this.#debounceTimer);
 
-        this.#debounceTimer = setTimeout(() => {
+        this.#debounceTimer = window.setTimeout(() => {
             this.#teardownDragAndDrop();
             this.#setupDragAndDrop();
             this.#debounceTimer = null;
-        }, 50) as unknown as number;
+        }, 50);
     }
 
     /**
@@ -560,39 +560,44 @@ export abstract class Sortable extends WebComponent {
         else if (distanceFromBottom < scrollZone && scrollableParent.scrollTop < scrollableParent.scrollHeight - scrollableParent.clientHeight)
             newDirection = 'down';
 
-        // Only restart interval if direction changed
+        // Only restart animation if direction changed
         if (newDirection !== this.#currentScrollDirection) {
-            // Stop existing interval
-            if (this.#autoScrollInterval) {
-                clearInterval(this.#autoScrollInterval);
-                this.#autoScrollInterval = null;
+            // Stop existing animation
+            if (this.#autoScrollFrame) {
+                cancelAnimationFrame(this.#autoScrollFrame);
+                this.#autoScrollFrame = null;
             }
 
             this.#currentScrollDirection = newDirection;
 
-            // Start new interval if needed
-            if (newDirection === 'up') {
-                this.#autoScrollInterval = setInterval(() => {
-                    if (scrollableParent.scrollTop > 0)
+            // Start new animation if needed
+            if (newDirection) {
+                const scroll = () => {
+                    if (!this.#currentScrollDirection)
+                        return;
+
+                    if (this.#currentScrollDirection === 'up' && scrollableParent.scrollTop > 0) {
                         scrollableParent.scrollTop -= scrollSpeed;
-                }, 16) as unknown as number; // ~60fps
-            }
-            else if (newDirection === 'down') {
-                this.#autoScrollInterval = setInterval(() => {
-                    if (scrollableParent.scrollTop < scrollableParent.scrollHeight - scrollableParent.clientHeight)
+                    }
+                    else if (this.#currentScrollDirection === 'down' && scrollableParent.scrollTop < scrollableParent.scrollHeight - scrollableParent.clientHeight) {
                         scrollableParent.scrollTop += scrollSpeed;
-                }, 16) as unknown as number; // ~60fps
+                    }
+
+                    this.#autoScrollFrame = requestAnimationFrame(scroll);
+                };
+
+                this.#autoScrollFrame = requestAnimationFrame(scroll);
             }
         }
     }
 
     /**
-     * Stops the automatic scrolling interval.
+     * Stops the automatic scrolling animation.
      */
     #stopAutoScroll() {
-        if (this.#autoScrollInterval) {
-            clearInterval(this.#autoScrollInterval);
-            this.#autoScrollInterval = null;
+        if (this.#autoScrollFrame) {
+            cancelAnimationFrame(this.#autoScrollFrame);
+            this.#autoScrollFrame = null;
         }
 
         this.#currentScrollDirection = null;
