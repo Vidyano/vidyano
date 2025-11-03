@@ -410,7 +410,7 @@ ${repeat(this.items, (item) => item.id, (item) => html`
 
 **Check your HTML template for these utility classes:**
 - `class="layout horizontal"` / `class="layout vertical"` - flexbox containers
-- `class="flex"` - flex: 1 child element
+- `class="flex"` - flex: 1 with min-height: 0 and min-width: 0
 - `class="layout center"`, `class="layout center-center"` - alignment
 - `class="layout wrap"` - flex-wrap
 - `class="relative"` - position: relative
