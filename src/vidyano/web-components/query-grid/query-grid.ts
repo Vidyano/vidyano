@@ -172,9 +172,7 @@ const PHYSICAL_UPPER_LIMIT = 100000;
         "column-width-changed": "_columnWidthChanged",
         "item-select": "_itemSelect",
         "query-grid-column:configure": "_onConfigure",
-        "query-grid-column:update": "_onColumnUpdate",
-        "drag-start": "_onReorderStart",
-        "drag-end": "_onReorderEnd"
+        "query-grid-column:update": "_onColumnUpdate"
     },
     observers: [
         "_scrollToTop(query.items)", // Scroll to top when the query items reference changes, for example after search.
@@ -658,6 +656,9 @@ export class QueryGrid extends Polymer.WebComponent {
         if (details.newIndex == null)
             return;
 
+        if (details.newIndex === details.oldIndex)
+            return;
+
         try {
             await this.query.reorder(
                 (details.element.previousElementSibling as QueryGridRow)?.item as Vidyano.QueryResultItem ?? null,
@@ -720,9 +721,4 @@ export class QueryGrid extends Polymer.WebComponent {
         const popup = e.target as Popup;
         popup.querySelector("vi-scroller").innerHTML = "";
     }
-}
-
-@Polymer.WebComponent.register("vi-query-grid-sortable")
-class QueryGridSortable extends Sortable {
-    static get template() { return Polymer.html`<style>:host { display: block; }</style><slot></slot>` }
 }

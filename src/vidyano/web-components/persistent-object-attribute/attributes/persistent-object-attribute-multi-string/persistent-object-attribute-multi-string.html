@@ -15,7 +15,7 @@
         <dom-if if="[[editing]]">
             <template>
                 <vi-scroller no-horizontal class="flex">
-                    <vi-persistent-object-attribute-multi-string-items id="strings" draggable-items="vi-persistent-object-attribute-multi-string-item" handle=".sort-handle" enabled="[[!attribute.parent.isFrozen]]" sensitive="[[sensitive]]" disabled="[[frozen]]"></vi-persistent-object-attribute-multi-string-items>
+                    <vi-sortable id="strings" draggable-items="vi-persistent-object-attribute-multi-string-item" handle=".sort-handle" enabled="[[!attribute.parent.isFrozen]]" sensitive="[[sensitive]]" disabled="[[frozen]]" on-drag-end="_itemsOrderChanged"></vi-sortable>
                     <vi-persistent-object-attribute-multi-string-item disabled="[[frozen]]" is-new hidden$="[[readOnly]]" placeholder="[[placeholder]]" sensitive="[[sensitive]]"></vi-persistent-object-attribute-multi-string-item>
                 </vi-scroller>
                 <vi-persistent-object-attribute-validation-error attribute="[[attribute]]"></vi-persistent-object-attribute-validation-error>

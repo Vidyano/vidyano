@@ -10,8 +10,7 @@ import { Sortable } from "components/sortable/sortable"
         query: Object
     },
     listeners: {
-        "distribute-columns": "_distributeColumns",
-        "reorder-columns": "_reorderColumns"
+        "distribute-columns": "_distributeColumns"
     }
 }, "vi-query-grid-configure-dialog")
 export class QueryGridConfigureDialog extends Dialog {
@@ -45,7 +44,11 @@ export class QueryGridConfigureDialog extends Dialog {
     }
 
     private _reorderColumns(e: CustomEvent) {
-        const list = e.composedPath()[0] as QueryGridConfigureDialogColumnList;
+        const details = e.detail;
+        if (details.newIndex === details.oldIndex)
+            return;
+
+        const list = e.composedPath()[0] as Sortable;
         const children = <QueryGridConfigureDialogColumn[]>Array.from(list.children);
         const offsets = children.orderBy(c => c.column.offset).map(c => c.column.offset);
 
@@ -75,16 +78,5 @@ export class QueryGridConfigureDialog extends Dialog {
         });
 
         this._distributeColumns();
-    }
-}
-
-@Polymer.WebComponent.register({
-}, "vi-query-grid-configure-dialog-column-list")
-export class QueryGridConfigureDialogColumnList extends Sortable {
-    protected _dragEnd() {
-        this.dispatchEvent(new CustomEvent("reorder-columns", {
-            bubbles: true,
-            composed: true
-        }));
     }
 }

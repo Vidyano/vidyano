@@ -6,17 +6,6 @@ import { Sortable } from "components/sortable/sortable"
 import type { Tags } from "components/tags/tags"
 import "components/tags/tags"
 
-@Polymer.WebComponent.register("vi-persistent-object-attribute-multi-string-items")
-export class PersistentObjectAttributeMultiStringItems extends Sortable {
-    protected _dragEnd() {
-        this.dispatchEvent(new CustomEvent("reorder-strings", {
-            detail: {},
-            bubbles: true,
-            composed: true
-        }));
-    }
-}
-
 @Polymer.WebComponent.register({
     properties: {
         maxlength: Number,
@@ -55,8 +44,7 @@ export class PersistentObjectAttributeMultiStringItems extends Sortable {
     ],
     listeners: {
         "multi-string-item-value-new": "_itemValueNew",
-        "multi-string-item-value-changed": "_itemValueChanged",
-        "reorder-strings": "_itemsOrderChanged"
+        "multi-string-item-value-changed": "_itemValueChanged"
     },
     forwardObservers: [
         "attribute.isReadOnly"
@@ -101,7 +89,11 @@ export class PersistentObjectAttributeMultiString extends PersistentObjectAttrib
         e.stopPropagation();
     }
 
-    private _itemsOrderChanged() {
+    private _itemsOrderChanged(e: CustomEvent) {
+        const details = e.detail;
+        if (details.newIndex === details.oldIndex)
+            return;
+
         const stringsContainer = <HTMLElement>this.shadowRoot.querySelector("#strings");
         this.value = Array.from(stringsContainer.children).filter((i: PersistentObjectAttributeMultiStringItem) => !!i.value).map((i: PersistentObjectAttributeMultiStringItem) => i.value).join("\n");
     }

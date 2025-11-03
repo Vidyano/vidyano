@@ -36,10 +36,17 @@
         cursor: -moz-grab;
         cursor: -webkit-grab;
         pointer-events: all;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
 
         &[disabled] {
             fill: #aaa;
         }
+    }
+
+    &.sortable-dragging vi-icon {
+        pointer-events: none !important;
     }
 
     &[is-new] {
