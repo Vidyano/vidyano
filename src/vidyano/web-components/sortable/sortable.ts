@@ -342,6 +342,12 @@ export class Sortable extends WebComponent {
         const items = this.#getDraggableElements();
         const originalIndex = items.indexOf(target);
 
+        // Validate that the element exists in the items array
+        if (originalIndex === -1) {
+            e.preventDefault();
+            return;
+        }
+
         // Find the scrollable parent once at drag start
         const scrollableParent = this.#findScrollableParent(this);
 
@@ -429,7 +435,8 @@ export class Sortable extends WebComponent {
         if (this.group)
             _groups.filter(s => s.group === this.group).forEach(s => s.isGroupDragging = false);
 
-        // Dispatch drag-end event (always)
+        // Always dispatch drag-end event since we validated the drag was valid at start
+        // newIndex may be -1 if element moved to another container or became invalid
         this._dragEnd(target, newIndex, this.#dragState.originalIndex);
 
         this.#dragState = null;
