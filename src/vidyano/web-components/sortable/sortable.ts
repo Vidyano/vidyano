@@ -367,9 +367,9 @@ export abstract class Sortable extends WebComponent {
         });
 
         // Reduce opacity during drag
-        setTimeout(() => {
+        requestAnimationFrame(() => {
             target.style.opacity = "0.4";
-        }, 0);
+        });
 
         this._dragStart();
 
