@@ -722,7 +722,7 @@ export class QueryGrid extends Polymer.WebComponent {
     }
 }
 
-@Polymer.WebComponent.register("vi-query-grid-sortable")
 class QueryGridSortable extends Sortable {
-    static get template() { return Polymer.html`<style>:host { display: block; }</style><slot></slot>` }
 }
+
+customElements.define("vi-query-grid-sortable", QueryGridSortable);

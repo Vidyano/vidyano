@@ -78,13 +78,15 @@ export class QueryGridConfigureDialog extends Dialog {
     }
 }
 
-@Polymer.WebComponent.register({
-}, "vi-query-grid-configure-dialog-column-list")
 export class QueryGridConfigureDialogColumnList extends Sortable {
-    protected _dragEnd() {
+    protected _dragEnd(element: HTMLElement, newIndex: number, oldIndex: number) {
+        super._dragEnd(element, newIndex, oldIndex);
+
         this.dispatchEvent(new CustomEvent("reorder-columns", {
             bubbles: true,
             composed: true
         }));
     }
 }
+
+customElements.define("vi-query-grid-configure-dialog-column-list", QueryGridConfigureDialogColumnList);
