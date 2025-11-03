@@ -609,7 +609,7 @@ export abstract class Sortable extends WebComponent {
             const el = node as HTMLElement;
 
             // Don't go past body
-            if (el.tagName === 'BODY')
+            if (el === document.body)
                 return false;
 
             // Check if the element is scrollable
