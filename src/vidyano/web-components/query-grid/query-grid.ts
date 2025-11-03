@@ -172,9 +172,7 @@ const PHYSICAL_UPPER_LIMIT = 100000;
         "column-width-changed": "_columnWidthChanged",
         "item-select": "_itemSelect",
         "query-grid-column:configure": "_onConfigure",
-        "query-grid-column:update": "_onColumnUpdate",
-        "drag-start": "_onReorderStart",
-        "drag-end": "_onReorderEnd"
+        "query-grid-column:update": "_onColumnUpdate"
     },
     observers: [
         "_scrollToTop(query.items)", // Scroll to top when the query items reference changes, for example after search.
@@ -721,8 +719,3 @@ export class QueryGrid extends Polymer.WebComponent {
         popup.querySelector("vi-scroller").innerHTML = "";
     }
 }
-
-class QueryGridSortable extends Sortable {
-}
-
-customElements.define("vi-query-grid-sortable", QueryGridSortable);

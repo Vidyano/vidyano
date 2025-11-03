@@ -29,7 +29,7 @@ interface DragState {
     scrollableParent: HTMLElement | null;
 }
 
-export abstract class Sortable extends WebComponent {
+export class Sortable extends WebComponent {
     static styles = unsafeCSS(styles);
 
     #dragState: DragState | null = null;
@@ -667,3 +667,5 @@ export abstract class Sortable extends WebComponent {
         return null;
     }
 }
+
+customElements.define("vi-sortable", Sortable);
