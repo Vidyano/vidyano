@@ -8,13 +8,13 @@ import "components/tags/tags"
 
 export class PersistentObjectAttributeMultiStringItems extends Sortable {
     protected _dragEnd(element: HTMLElement, newIndex: number, oldIndex: number) {
-        super._dragEnd(element, newIndex, oldIndex);
-
         this.dispatchEvent(new CustomEvent("reorder-strings", {
             detail: {},
             bubbles: true,
             composed: true
         }));
+
+        super._dragEnd(element, newIndex, oldIndex);
     }
 }
 

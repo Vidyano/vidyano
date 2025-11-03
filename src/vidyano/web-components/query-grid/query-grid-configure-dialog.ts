@@ -80,12 +80,12 @@ export class QueryGridConfigureDialog extends Dialog {
 
 export class QueryGridConfigureDialogColumnList extends Sortable {
     protected _dragEnd(element: HTMLElement, newIndex: number, oldIndex: number) {
-        super._dragEnd(element, newIndex, oldIndex);
-
         this.dispatchEvent(new CustomEvent("reorder-columns", {
             bubbles: true,
             composed: true
         }));
+
+        super._dragEnd(element, newIndex, oldIndex);
     }
 }
 
