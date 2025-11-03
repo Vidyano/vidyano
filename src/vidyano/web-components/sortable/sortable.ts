@@ -1,5 +1,5 @@
 import { property, state } from "lit/decorators.js";
-import { WebComponent, observer } from "components/web-component/web-component";
+import { WebComponent, observer, listener } from "components/web-component/web-component";
 import { html, unsafeCSS } from "lit";
 import styles from "./sortable.css";
 
@@ -23,7 +23,10 @@ export abstract class Sortable extends WebComponent {
     static styles = unsafeCSS(styles);
 
     #dragState: DragState | null = null;
-    #boundHandlers: Map<string, EventListener> = new Map();
+    #dragStartHandler: EventListener;
+    #dragEndHandler: EventListener;
+    #mouseDownHandler: EventListener;
+    #itemsWithListeners: Set<HTMLElement> = new Set();
     #mutationObserver: MutationObserver | null = null;
     #debounceTimer: number | null = null;
     #autoScrollInterval: number | null = null;
@@ -58,8 +61,15 @@ export abstract class Sortable extends WebComponent {
     @state()
     isGroupDragging: boolean = false;
 
+    constructor() {
+        super();
+        this.#dragStartHandler = this.#onDragStart.bind(this);
+        this.#dragEndHandler = this.#onDragEnd.bind(this);
+        this.#mouseDownHandler = this.#onMouseDown.bind(this);
+    }
+
     render() {
-        return html`<slot></slot>`;
+        return html`<slot @slotchange=${this._onSlotChange}></slot>`;
     }
 
     connectedCallback() {
@@ -90,26 +100,21 @@ export abstract class Sortable extends WebComponent {
     firstUpdated(changedProperties: Map<PropertyKey, unknown>) {
         super.firstUpdated(changedProperties);
 
-        // Watch for changes to slotted content
         const slot = this.shadowRoot?.querySelector('slot');
-        if (slot) {
-            // Setup on slotchange to ensure content is slotted before we initialize
-            slot.addEventListener('slotchange', () => {
-                if (this.#debounceTimer)
-                    clearTimeout(this.#debounceTimer);
-
-                this.#debounceTimer = setTimeout(() => {
-                    this.#teardownDragAndDrop();
-                    this.#setupDragAndDrop();
-                    this.#debounceTimer = null;
-                }, 50) as unknown as number;
-            });
-
-            // Do initial setup if content is already slotted
-            if (slot.assignedElements().length > 0) {
-                this.#setupDragAndDrop();
-            }
+        if (slot?.assignedElements().length) {
+            this.#setupDragAndDrop();
         }
+    }
+
+    protected _onSlotChange() {
+        if (this.#debounceTimer)
+            clearTimeout(this.#debounceTimer);
+
+        this.#debounceTimer = setTimeout(() => {
+            this.#teardownDragAndDrop();
+            this.#setupDragAndDrop();
+            this.#debounceTimer = null;
+        }, 50) as unknown as number;
     }
 
     protected _dragStart() {
@@ -141,84 +146,31 @@ export abstract class Sortable extends WebComponent {
     }
 
     #setupDragAndDrop() {
-        if (!this.enabled) {
+        if (!this.enabled)
             return;
-        }
 
-        // Get all potential draggable items
         const items = this.#getDraggableElements();
-
         items.forEach(item => {
-            // When handle is specified, start with draggable="false"
-            // We'll enable it dynamically on mousedown if the handle is clicked
             item.setAttribute("draggable", this.handle ? "false" : "true");
-
-            const dragStartHandler = this.#onDragStart.bind(this);
-            const dragEndHandler = this.#onDragEnd.bind(this);
-
-            item.addEventListener("dragstart", dragStartHandler);
-            item.addEventListener("dragend", dragEndHandler);
-
-            this.#boundHandlers.set(`${item.id || items.indexOf(item)}-dragstart`, dragStartHandler);
-            this.#boundHandlers.set(`${item.id || items.indexOf(item)}-dragend`, dragEndHandler);
+            item.addEventListener("dragstart", this.#dragStartHandler);
+            item.addEventListener("dragend", this.#dragEndHandler);
+            this.#itemsWithListeners.add(item);
         });
 
-        // Add mousedown listener when handle is specified
-        if (this.handle) {
-            const mouseDownHandler = this.#onMouseDown.bind(this);
-            this.addEventListener("mousedown", mouseDownHandler, true); // Use capture phase
-            this.#boundHandlers.set("mousedown", mouseDownHandler);
-        }
-
-        const dragOverHandler = this.#onDragOver.bind(this);
-        const dropHandler = this.#onDrop.bind(this);
-        const dragEnterHandler = this.#onDragEnter.bind(this);
-        const dragLeaveHandler = this.#onDragLeave.bind(this);
-
-        this.addEventListener("dragover", dragOverHandler);
-        this.addEventListener("drop", dropHandler);
-        this.addEventListener("dragenter", dragEnterHandler);
-        this.addEventListener("dragleave", dragLeaveHandler);
-
-        this.#boundHandlers.set("dragover", dragOverHandler);
-        this.#boundHandlers.set("drop", dropHandler);
-        this.#boundHandlers.set("dragenter", dragEnterHandler);
-        this.#boundHandlers.set("dragleave", dragLeaveHandler);
+        if (this.handle)
+            this.addEventListener("mousedown", this.#mouseDownHandler, true);
     }
 
     #teardownDragAndDrop() {
-        const items = this.#getDraggableElements();
-
-        items.forEach(item => {
+        this.#itemsWithListeners.forEach(item => {
             item.removeAttribute("draggable");
-
-            const dragStartHandler = this.#boundHandlers.get(`${item.id || items.indexOf(item)}-dragstart`);
-            const dragEndHandler = this.#boundHandlers.get(`${item.id || items.indexOf(item)}-dragend`);
-
-            if (dragStartHandler)
-                item.removeEventListener("dragstart", dragStartHandler as EventListener);
-            if (dragEndHandler)
-                item.removeEventListener("dragend", dragEndHandler as EventListener);
+            item.removeEventListener("dragstart", this.#dragStartHandler);
+            item.removeEventListener("dragend", this.#dragEndHandler);
         });
+        this.#itemsWithListeners.clear();
 
-        const mouseDownHandler = this.#boundHandlers.get("mousedown");
-        const dragOverHandler = this.#boundHandlers.get("dragover");
-        const dropHandler = this.#boundHandlers.get("drop");
-        const dragEnterHandler = this.#boundHandlers.get("dragenter");
-        const dragLeaveHandler = this.#boundHandlers.get("dragleave");
-
-        if (mouseDownHandler)
-            this.removeEventListener("mousedown", mouseDownHandler as EventListener, true);
-        if (dragOverHandler)
-            this.removeEventListener("dragover", dragOverHandler as EventListener);
-        if (dropHandler)
-            this.removeEventListener("drop", dropHandler as EventListener);
-        if (dragEnterHandler)
-            this.removeEventListener("dragenter", dragEnterHandler as EventListener);
-        if (dragLeaveHandler)
-            this.removeEventListener("dragleave", dragLeaveHandler as EventListener);
-
-        this.#boundHandlers.clear();
+        if (this.handle)
+            this.removeEventListener("mousedown", this.#mouseDownHandler, true);
     }
 
     #getDraggableElements(): HTMLElement[] {
@@ -446,7 +398,8 @@ export abstract class Sortable extends WebComponent {
         this.#dragState = null;
     }
 
-    #onDragOver(e: DragEvent) {
+    @listener("dragover")
+    protected _onDragOver(e: DragEvent) {
         if (!this.#dragState)
             return;
 
@@ -500,7 +453,8 @@ export abstract class Sortable extends WebComponent {
         }
     }
 
-    #onDragEnter(e: DragEvent) {
+    @listener("dragenter")
+    protected _onDragEnter(e: DragEvent) {
         if (!this.#dragState)
             return;
 
@@ -511,11 +465,12 @@ export abstract class Sortable extends WebComponent {
         }
     }
 
-    #onDragLeave(_e: DragEvent) {
-        // Handle drag leave if needed
+    @listener("dragleave")
+    protected _onDragLeave(_e: DragEvent) {
     }
 
-    #onDrop(e: DragEvent) {
+    @listener("drop")
+    protected _onDrop(e: DragEvent) {
         if (!this.#dragState)
             return;
 
