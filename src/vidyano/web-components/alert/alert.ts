@@ -1,10 +1,21 @@
-import * as Polymer from "polymer"
-import * as Vidyano from "vidyano"
+import { unsafeCSS } from "lit";
+import { WebComponent } from "components/web-component/web-component";
+import * as Vidyano from "vidyano";
+import styles from "./alert.css";
 
-@Polymer.WebComponent.register("vi-alert")
-export class Alert extends Polymer.WebComponent {
-    static get template() { return Polymer.html`<link rel="import" href="alert.html">`; }
+export class Alert extends WebComponent {
+    static styles = unsafeCSS(styles);
 
+    /**
+     * Displays a toast notification message with an animated slide-in/slide-out effect.
+     * The notification appears from the right side of the screen, stays visible for the specified duration,
+     * and then slides out automatically.
+     *
+     * @param message The message text to display in the notification.
+     * @param type The notification type that determines the visual styling (Error, Warning, Notice, or OK).
+     * @param wait The duration in milliseconds to display the notification before it slides out.
+     * @returns A promise that resolves when the notification has been removed from the DOM.
+     */
     async log(message: string, type: Vidyano.NotificationType, wait: number) {
         const log = document.createElement("article");
         log.className = `log-${type.toLowerCase()}`;
@@ -35,3 +46,5 @@ export class Alert extends Polymer.WebComponent {
         this.shadowRoot.removeChild(log);
     }
 }
+
+customElements.define("vi-alert", Alert);
