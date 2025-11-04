@@ -805,6 +805,82 @@ render() {
 
 ## Advanced Patterns
 
+### Configurable Components (Context Menu Actions)
+
+If your component extends `ConfigurableWebComponent` to add custom configuration actions to the Ctrl+RightClick context menu, you need to migrate to using `WebComponentConfigurationController`.
+
+**Before:**
+
+```typescript
+import { ConfigurableWebComponent } from "components/web-component/polymer/configurable-web-component";
+
+@ConfigurableWebComponent.register({
+    properties: { /* ... */ },
+    listeners: {
+        "vi:configure": "_configure"
+    }
+}, "vi-my-component")
+export class MyComponent extends ConfigurableWebComponent {
+    private _configure(e: CustomEvent) {
+        const actions = e.detail;
+
+        actions.push({
+            label: `My Action: ${this.myProperty}`,
+            icon: "viConfigure",
+            action: () => {
+                // Handle action
+            },
+            subActions: [{
+                label: "Sub Action",
+                icon: "viConfigure",
+                action: () => {
+                    // Handle sub action
+                }
+            }]
+        });
+    }
+}
+```
+
+**After:**
+
+```typescript
+import { WebComponent } from "components/web-component/web-component";
+import { IConfigurableAction, WebComponentConfigurationController } from "components/web-component/web-component-configuration-controller";
+
+export class MyComponent extends WebComponent {
+    // Create a configuration controller instance
+    readonly #configurable = new WebComponentConfigurationController(this, (actions: IConfigurableAction[]) => {
+        // Add your configurable actions here
+        actions.push({
+            label: `My Action: ${this.myProperty}`,
+            icon: "viConfigure",
+            action: () => {
+                // Handle action
+            },
+            subActions: [{
+                label: "Sub Action",
+                icon: "viConfigure",
+                action: () => {
+                    // Handle sub action
+                }
+            }]
+        });
+    });
+}
+
+customElements.define("vi-my-component", MyComponent);
+```
+
+**Key changes:**
+1. Change base class from `ConfigurableWebComponent` to `WebComponent`
+2. Remove the `listeners` configuration and `_configure` method
+3. Create a `WebComponentConfigurationController` instance (usually as a private field like `#configurable`)
+4. Pass a callback function to the controller that receives the actions array directly
+5. The callback function is called when Ctrl+RightClick occurs on the component
+
+**Note:** The controller automatically handles the `vi:configure` event lifecycle, so you don't need to manually add or remove event listeners.
+
 ### Accessing Shadow DOM Elements
 
 ```typescript
