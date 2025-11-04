@@ -883,6 +883,8 @@ customElements.define("vi-my-component", MyComponent);
 
 ### Accessing Shadow DOM Elements
 
+Both Polymer and Lit support the `$` property for accessing shadow DOM elements:
+
 ```typescript
 // Both versions support the $ property
 const element = this.$.myElement;
@@ -890,6 +892,47 @@ const element = this.$.myElement;
 // Equivalent to
 const element = this.shadowRoot.getElementById('myElement');
 ```
+
+**Recommended: Use `@query` decorator (Lit only)**
+
+For better type safety and clarity, use the `@query` decorator to declare shadow DOM element references:
+
+```typescript
+import { query } from 'lit/decorators.js';
+
+export class MyComponent extends WebComponent {
+    @query('#myElement')
+    private myElement!: HTMLElement;
+
+    someMethod() {
+        // Type-safe access to shadow DOM element
+        this.myElement.doSomething();
+    }
+}
+```
+
+Benefits of `@query`:
+- **Type-safe**: TypeScript knows the element type
+- **Declarative**: Element references are declared at the top of the class
+- **Clear intent**: Makes shadow DOM dependencies explicit
+- **Better IDE support**: Autocomplete and refactoring work better
+
+**Important:** In Lit, rendering is asynchronous. If you need to access shadow DOM elements immediately after component construction (e.g., in a method called right after instantiation), wait for the first render to complete:
+
+```typescript
+async myMethod() {
+    // Wait for first render to complete
+    await this.updateComplete;
+
+    // Now it's safe to access shadow DOM elements
+    this.myElement.doSomething();
+}
+```
+
+This is especially important when:
+- Accessing elements in methods called from outside the component
+- Working with programmatically created components
+- Elements are needed before `firstUpdated()` lifecycle hook runs
 
 ### Dispatching Custom Events
 
