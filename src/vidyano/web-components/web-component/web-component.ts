@@ -280,6 +280,15 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
     }
 
     /**
+     * Returns a promise that resolves after the specified number of milliseconds.
+     * @param milliseconds The number of milliseconds to wait.
+     * @returns A promise that resolves after the delay.
+     */
+    protected sleep(milliseconds: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, milliseconds));
+    }
+
+    /**
      * Listens for the global "app-changed" event and updates the app property.
      */
     #listenForApp() {
