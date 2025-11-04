@@ -10,7 +10,7 @@
     <dom-if if="[[canSave]]">
         <template>
             <vi-popup-menu-item icon="Filter_Save" label="[[saveCurrentLabel]]" on-tap="_save"></vi-popup-menu-item>
-            <vi-popup-menu-item icon-space label="[[translations.SaveAs]]" on-tap="_saveAs"></vi-popup-menu-item>
+            <vi-popup-menu-item force-icon-space label="[[translations.SaveAs]]" on-tap="_saveAs"></vi-popup-menu-item>
         </template>
     </dom-if>
     <dom-if if="[[canSaveAs]]">
@@ -23,10 +23,10 @@
             <vi-popup-menu-item-separator hidden$="[[op_none(canReset, canSave, canSaveAs)]]"></vi-popup-menu-item-separator>
             <dom-repeat items="[[userFilters]]" as="filter" filter="_hasGroupName">
                 <template>
-                    <vi-popup-menu-item icon-space label="[[filter.groupName]]" icon="Folder" on-tap="_catchGroupTap">
+                    <vi-popup-menu-item label="[[filter.groupName]]" icon="Folder" on-tap="_catchGroupTap">
                         <dom-repeat items="[[filter.children]]" as="filter">
                             <template>
-                                <vi-popup-menu-item-with-actions icon-space label="[[_filterNonGroupName(filter.filter.name)]]" on-tap="_load">
+                                <vi-popup-menu-item-with-actions force-icon-space label="[[_filterNonGroupName(filter.filter.name)]]" on-tap="_load">
                                     <vi-button slot="button" icon="Action_Edit" inverse on-tap="_edit"></vi-button>
                                     <vi-button slot="button" icon="Action_Delete" inverse on-tap="_delete"></vi-button>
                                 </vi-popup-menu-item-with-actions>
@@ -37,7 +37,7 @@
             </dom-repeat>
             <dom-repeat items="[[userFilters]]" as="filter" filter="_hasNoGroupName">
                 <template>
-                    <vi-popup-menu-item-with-actions icon-space label="[[filter.filter.name]]" on-tap="_load">
+                    <vi-popup-menu-item-with-actions force-icon-space label="[[filter.filter.name]]" on-tap="_load">
                         <vi-button slot="button" icon="Action_Edit" inverse on-tap="_edit"></vi-button>
                         <vi-button slot="button" icon="Action_Delete" inverse on-tap="_delete"></vi-button>
                     </vi-popup-menu-item-with-actions>
@@ -52,10 +52,10 @@
                 <template>
                     <dom-if if="[[filter.groupName]]">
                         <template>
-                            <vi-popup-menu-item icon-space label="[[filter.groupName]]" icon="Folder">
+                            <vi-popup-menu-item label="[[filter.groupName]]" icon="Folder">
                                 <dom-repeat items="[[filter.children]]" as="filter">
                                     <template>
-                                        <vi-popup-menu-item-split icon-space label="[[_filterNonGroupName(filter.filter.name)]]" on-tap="_load"></vi-popup-menu-item-split>
+                                        <vi-popup-menu-item-split force-icon-space label="[[_filterNonGroupName(filter.filter.name)]]" on-tap="_load"></vi-popup-menu-item-split>
                                     </template>
                                 </dom-repeat>
                             </vi-popup-menu-item>
@@ -63,7 +63,7 @@
                     </dom-if>
                     <dom-if if="[[!filter.groupName]]">
                         <template>
-                            <vi-popup-menu-item-split icon-space label="[[_filterNonGroupName(filter.filter.name)]]" on-tap="_load"></vi-popup-menu-item-split>
+                            <vi-popup-menu-item-split force-icon-space label="[[_filterNonGroupName(filter.filter.name)]]" on-tap="_load"></vi-popup-menu-item-split>
                         </template>
                     </dom-if>
                 </template>

@@ -1,65 +1,83 @@
-import * as Polymer from "polymer"
-import * as IconRegister from "components/icon/icon-register"
-import { Popup } from "components/popup/popup"
+import { html, nothing, unsafeCSS } from "lit";
+import { property, state } from "lit/decorators.js";
+import { listener, WebComponent } from "components/web-component/web-component";
+import * as IconRegister from "components/icon/icon-register";
+import { Popup } from "components/popup/popup";
+import styles from "./popup-menu-item-split.css";
 
-@Polymer.WebComponent.register({
-    properties: {
-        label: String,
-        icon: String,
-        iconSpace: {
-            type: Boolean,
-            reflectToAttribute: true
-        },
-        checked: {
-            type: Boolean,
-            reflectToAttribute: true,
-            value: false
-        },
-        hasChildren: {
-            type: Boolean,
-            reflectToAttribute: true,
-            value: false,
-            readOnly: true
-        }
-    },
-    listeners: {
-        "tap": "_onTap"
-    }
-}, "vi-popup-menu-item-split")
-export class PopupMenuItemSplit extends Polymer.WebComponent {
-    static get template() { return Polymer.html`<link rel="import" href="popup-menu-item-split.html">`; }
+export class PopupMenuItemSplit extends WebComponent {
+    static styles = unsafeCSS(styles);
 
-    private _observer: Polymer.FlattenedNodesObserver;
-    readonly hasChildren: boolean; private _setHasChildren: (hasChildren: boolean) => void;
+    /** The text label displayed for the menu item. */
+    @property({ type: String })
+    label?: string;
+
+    /** The icon identifier to display before the label. */
+    @property({ type: String })
+    icon?: string;
+
+    /** Whether to reserve space for an icon even if this item has none. */
+    @property({ type: Boolean, reflect: true })
     iconSpace: boolean;
-    checked: boolean;
 
-    constructor(public label?: string, public icon?: string, private _action?: () => void) {
+    /** Whether to always show icon space, ignoring auto-calculation. */
+    @property({ type: Boolean })
+    forceIconSpace: boolean;
+
+    /** Whether the menu item is in a checked state. */
+    @property({ type: Boolean, reflect: true })
+    checked: boolean = false;
+
+    @state()
+    hasChildren: boolean = false;
+
+    /**
+     * Creates a new split popup menu item with separate main and submenu actions.
+     * @param label - The text label for the menu item.
+     * @param icon - The icon identifier to display.
+     * @param _action - The action to execute when the main button is clicked.
+     */
+    constructor(label?: string, icon?: string, private _action?: () => void) {
         super();
+        this.label = label;
+        this.icon = icon;
     }
 
-    connectedCallback() {
-        super.connectedCallback();
+    /**
+     * Renders the split popup menu item with separate clickable areas.
+     * @returns The Lit template for the split menu item.
+     */
+    render() {
+        const showIcon = IconRegister.exists(this.icon);
+        const showIconSpace = this.forceIconSpace || this.iconSpace;
 
-        const subItems = <HTMLSlotElement>this.$.subItems;
-        this._observer = new Polymer.FlattenedNodesObserver(this.$.subItems, info => {
-            this._setHasChildren(subItems.assignedNodes({ flatten: true }).length > 0);
-        });
+        return html`
+            <vi-button ?inverse=${!this.checked}>
+                ${showIcon ? html`<vi-icon id="icon" source=${this.icon}></vi-icon>` : showIconSpace ? html`<div class="icon-space"></div>` : nothing}
+                <span class="label">${this.label}</span>
+            </vi-button>
+            <vi-popup .openOnHover=${true} placement="right-start" ?hidden=${!this.hasChildren}>
+                <vi-button id="split" class="flex" slot="header" icon="Forward" @click=${this._onSplitClick} inverse>
+                    <vi-icon source="Forward"></vi-icon>
+                </vi-button>
+                <div>
+                    <slot id="subItems" @slotchange=${this._onSubItemsChange}></slot>
+                </div>
+            </vi-popup>
+        `;
     }
 
-    disconnectedCallback() {
-        this._observer.disconnect();
-        super.disconnectedCallback();
-    }
+    private _onSubItemsChange(e: Event) {
+        const slot = e.target as HTMLSlotElement;
+        this.hasChildren = slot.assignedNodes({ flatten: true }).length > 0;
 
-    private _popupMenuIconSpaceHandler(e: Event) {
-        const elements = (e.target as HTMLSlotElement).assignedElements() as any[];
+        const elements = slot.assignedElements() as any[];
         const iconSpace = elements.some(e => e.icon && IconRegister.exists(e.icon));
-    
-        elements.forEach(e => e.iconSpace = iconSpace && (!e.icon || !IconRegister.exists(e.icon)));
+        elements.forEach(e => e.iconSpace = e.forceIconSpace || (iconSpace && (!e.icon || !IconRegister.exists(e.icon))));
     }
 
-    private _onTap(e: Polymer.Gestures.TapEvent) {
+    @listener("click")
+    private _onClick(e: MouseEvent) {
         if (this._action) {
             this._action();
             Popup.closeAll();
@@ -69,7 +87,9 @@ export class PopupMenuItemSplit extends Polymer.WebComponent {
         }
     }
 
-    private _splitTap(e: Event) {
+    private _onSplitClick(e: Event) {
         e.stopPropagation();
     }
 }
+
+customElements.define("vi-popup-menu-item-split", PopupMenuItemSplit);

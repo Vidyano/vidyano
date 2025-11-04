@@ -3,6 +3,10 @@
 :host {
     display: flex;
 
+    vi-popup[hidden] {
+        display: none;
+    }
+
     #split {
         height: var(--vi-popup-menu-item-height, var(--theme-h1));
         width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));

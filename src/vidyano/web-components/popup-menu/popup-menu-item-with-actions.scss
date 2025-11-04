@@ -5,9 +5,10 @@
     color: var(--color);
     fill: var(--color);
 
-    > div {
+    .container {
         position: relative;
         z-index: 0;
+        display: flex;
         flex: 1 0 auto;
         height: var(--vi-popup-menu-item-height, var(--theme-h1));
         line-height: var(--vi-popup-menu-item-height, var(--theme-h1));
@@ -20,15 +21,17 @@
             vertical-align: top;
         }
 
-        span {
-            flex: 1 0 auto;
+        .label {
+            flex: 1;
+            min-height: 0;
+            min-width: 0;
             padding: 0 var(--theme-h5) !important;
             height: var(--vi-popup-menu-item-height, var(--theme-h1));
             line-height: var(--vi-popup-menu-item-height, var(--theme-h1));
         }
     }
 
-    &:not([disabled]):hover > div::before {
+    &:not([disabled]):hover .container::before {
         position: absolute;
         inset: 0;
         content: " ";

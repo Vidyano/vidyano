@@ -1,66 +1,84 @@
-import * as Polymer from "polymer"
-import * as IconRegister from "components/icon/icon-register"
-import { Popup } from "components/popup/popup"
-import { PopupMenu } from "./popup-menu"
+import { html, nothing, unsafeCSS } from "lit";
+import { property, query, state } from "lit/decorators.js";
+import { listener, WebComponent } from "components/web-component/web-component";
+import * as IconRegister from "components/icon/icon-register";
+import { Popup } from "components/popup/popup";
+import styles from "./popup-menu-item.css";
 
-@Polymer.WebComponent.register({
-    properties: {
-        label: String,
-        icon: String,
-        iconSpace: {
-            type: Boolean,
-            reflectToAttribute: true
-        },
-        checked: {
-            type: Boolean,
-            reflectToAttribute: true,
-            value: false
-        },
-        hasChildren: {
-            type: Boolean,
-            reflectToAttribute: true,
-            value: false,
-            readOnly: true
-        }
-    },
-    listeners: {
-        "tap": "_onTap"
-    }
-}, "vi-popup-menu-item")
-export class PopupMenuItem extends Polymer.WebComponent {
-    static get template() { return Polymer.html`<link rel="import" href="popup-menu-item.html">`; }
+export class PopupMenuItem extends WebComponent {
+    static styles = unsafeCSS(styles);
 
-    private _observer: Polymer.FlattenedNodesObserver;
-    readonly hasChildren: boolean; private _setHasChildren: (hasChildren: boolean) => void;
+    @query('#popup')
+    private popupElement!: Popup;
+
+    /** The text label displayed for the menu item. */
+    @property({ type: String })
+    label?: string;
+
+    /** The icon identifier to display before the label. */
+    @property({ type: String })
+    icon?: string;
+
+    /** Whether to reserve space for an icon even if this item has none. */
+    @property({ type: Boolean, reflect: true })
     iconSpace: boolean;
-    checked: boolean;
 
-    constructor(public label?: string, public icon?: string, private _action?: () => void) {
+    /** Whether to always show icon space, ignoring auto-calculation. */
+    @property({ type: Boolean })
+    forceIconSpace: boolean;
+
+    /** Whether the menu item is in a checked state. */
+    @property({ type: Boolean, reflect: true })
+    checked: boolean = false;
+
+    @state()
+    hasChildren: boolean = false;
+
+    /**
+     * Creates a new popup menu item.
+     * @param label - The text label for the menu item.
+     * @param icon - The icon identifier to display.
+     * @param _action - The action to execute when the item is clicked.
+     */
+    constructor(label?: string, icon?: string, private _action?: () => void) {
         super();
+        this.label = label;
+        this.icon = icon;
     }
 
-    connectedCallback() {
-        super.connectedCallback();
+    /**
+     * Renders the popup menu item with optional submenu support.
+     * @returns The Lit template for the menu item.
+     */
+    render() {
+        const showIcon = IconRegister.exists(this.icon);
+        const showIconSpace = this.forceIconSpace || this.iconSpace;
 
-        const subItems = <HTMLSlotElement>this.$.subItems;
-        this._observer = new Polymer.FlattenedNodesObserver(this.$.subItems, info => {
-            this._setHasChildren(subItems.assignedNodes({ flatten: true }).length > 0);
-        });
+        return html`
+            <vi-popup open-on-hover class="flex" id="popup" placement="right-start">
+                <vi-button slot="header" ?inverse=${!this.checked} @click=${this._catchClick}>
+                    ${showIcon ? html`<vi-icon id="icon" source=${this.icon}></vi-icon>` : showIconSpace ? html`<div class="icon-space"></div>` : nothing}
+                    <span class="label">${this.label}</span>
+                    ${this.hasChildren ? html`<vi-icon source="Forward"></vi-icon>` : nothing}
+                </vi-button>
+                <div>
+                    <slot id="subItems" @slotchange=${this._onSubItemsChange}></slot>
+                </div>
+            </vi-popup>
+        `;
     }
 
-    disconnectedCallback() {
-        this._observer.disconnect();
-        super.disconnectedCallback();
-    }
+    private _onSubItemsChange(e: Event) {
+        const slot = e.target as HTMLSlotElement;
+        this.hasChildren = slot.assignedNodes({ flatten: true }).length > 0;
 
-    private _popupMenuIconSpaceHandler(e: Event) {
-        const elements = (e.target as HTMLSlotElement).assignedElements() as any[];
+        const elements = slot.assignedElements() as any[];
         const iconSpace = elements.some(e => e.icon && IconRegister.exists(e.icon));
-    
-        elements.forEach(e => e.iconSpace = iconSpace && (!e.icon || !IconRegister.exists(e.icon)));
+        elements.forEach(e => e.iconSpace = e.forceIconSpace || (iconSpace && (!e.icon || !IconRegister.exists(e.icon))));
     }
 
-    private _onTap(e: Polymer.Gestures.TapEvent) {
+    @listener("click")
+    private _onClick(e: MouseEvent) {
         if (this._action) {
             this._action();
             Popup.closeAll();
@@ -70,14 +88,16 @@ export class PopupMenuItem extends Polymer.WebComponent {
         }
     }
 
-    private _catchTap(e: Polymer.Gestures.TapEvent) {
+    private _catchClick(e: MouseEvent) {
         if (!this.hasChildren)
             return;
 
-        if ((<PopupMenu>this.$.popup).open) {
+        if (this.popupElement.open) {
             e.stopPropagation();
             e.stopImmediatePropagation();
             e.preventDefault();
         }
     }
 }
+
+customElements.define("vi-popup-menu-item", PopupMenuItem);
