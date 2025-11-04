@@ -117,3 +117,29 @@ Example:
 2. **Mark complete with [x]** - Before moving on
 4. **Document as you go** - Add notes while working
 5. **Build only when needed** - For library changes only
+
+## Code Style
+
+**Block Statements:**
+- Single-line block bodies should omit braces and place the statement on a new line
+- When a conditional block (if/else) is followed by additional statements, ensure exactly one blank line separates them
+
+## Commit Message Guidelines
+
+**Format:** `<type>: <description>`
+
+**Rules:**
+- Maximum 80 characters total (including type and colon)
+- No scopes - keep it simple and unscoped
+- Use imperative mood ("Add" not "Added" or "Adds")
+- Capitalize first letter of description
+- No period at the end
+
+**Types:**
+- `feat` - New feature
+- `fix` - Bug fix
+- `refactor` - Code change that neither fixes a bug nor adds a feature
+- `perf` - Performance improvement
+- `test` - Adding or updating tests
+- `docs` - Documentation changes
+- `chore` - Maintenance tasks, dependencies, tooling, formatting, style changes
