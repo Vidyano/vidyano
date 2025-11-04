@@ -2,6 +2,25 @@
     display: flex;
     box-sizing: border-box;
 
+    .button-content {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .button-content-full {
+        @extend .button-content;
+        flex: 1;
+        min-height: 0;
+        min-width: 0;
+    }
+
+    .label-flex {
+        flex: 1;
+        min-height: 0;
+        min-width: 0;
+    }
+
     vi-button {
         justify-content: start;
         padding: 0 var(--theme-h5);
@@ -23,6 +42,7 @@
         .icon-space {
             height: var(--theme-h1);
             width: var(--theme-h2);
+            display: none;
         }
 
         span {
@@ -85,6 +105,11 @@
 
         vi-icon.action-icon, .icon-space {
             background-color: rgba(0, 0, 0, 0.04);
+        }
+
+        .button-content .icon-space,
+        .button-content-full .icon-space {
+            display: var(--has-icon-child, none);
         }
     }
 
