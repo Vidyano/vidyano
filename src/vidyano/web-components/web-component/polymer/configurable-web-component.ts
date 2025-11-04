@@ -33,9 +33,9 @@ export abstract class ConfigurableWebComponent extends Polymer.WebComponent {
             if (actions.length === 0)
                 return;
 
-            const configureItems: Polymer.WebComponent[] = [];
+            const configureItems: HTMLElement[] = [];
             actions.forEach(action => {
-                let item: Polymer.WebComponent;
+                let item: HTMLElement;
 
                 if (!action.subActions)
                     item = new PopupMenuItem(action.label, action.icon, action.action);
