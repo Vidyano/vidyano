@@ -3,8 +3,15 @@ const path = require("path");
 const { exec } = require('child_process');
 
 const version = process.argv[2];
+const gitHash = process.argv[3];
+
 if (!version) {
     console.error("Error: Must provide a version as the first argument (e.g., 1.2.3)");
+    process.exit(1);
+}
+
+if (!gitHash) {
+    console.error("Error: Must provide a git hash as the second argument (e.g., abc123def456)");
     process.exit(1);
 }
 
@@ -24,13 +31,17 @@ async function cleanDistSubdirectory(subDirPath) {
     }
 }
 
-async function bumpVersion(filePath, newVersion) {
+async function bumpVersion(filePath, newVersion, gitHash = null) {
     console.info(`Updating version to ${newVersion} in ${filePath}`);
 
     const content = await fs.readFile(filePath, "utf8");
     const packageData = JSON.parse(content);
 
     packageData.version = newVersion;
+    if (gitHash && !filePath.endsWith("package-lock.json")) {
+        packageData.gitHash = gitHash;
+        console.info(`  Adding gitHash: ${gitHash}`);
+    }
     if (filePath.endsWith("package-lock.json") && packageData.packages && packageData.packages[""]) {
         packageData.packages[""].version = newVersion;
     }
@@ -79,7 +90,7 @@ function execCommand(command, options) {
 
         for (const subDir of subPackageDirs) {
             const packageJsonPath = path.join(distDir, subDir, "package.json");
-            await bumpVersion(packageJsonPath, version);
+            await bumpVersion(packageJsonPath, version, gitHash);
         }
 
         await execCommand("npx sass --no-source-map src:src -q");
