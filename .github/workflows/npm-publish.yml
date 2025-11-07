@@ -321,13 +321,18 @@ jobs:
 
           npm publish $FLAGS --provenance --access public --tag "$TAG"
 
-          if [ "${{ inputs.dry_run }}" != "true" ]; then
-            [ -n "$VERSION_TAG" ] && npm dist-tag add "$PKG@${{ inputs.version }}" "$VERSION_TAG" && echo "✅ Added tag: $VERSION_TAG"
-            [ -n "$NEXT_TAG" ] && npm dist-tag add "$PKG@${{ inputs.version }}" "$NEXT_TAG" && echo "✅ Added tag: $NEXT_TAG"
-          else
-            [ -n "$VERSION_TAG" ] && echo "🔍 DRY RUN: Would also add tag $VERSION_TAG"
-            [ -n "$NEXT_TAG" ] && echo "🔍 DRY RUN: Would also add tag $NEXT_TAG"
-          fi
+          # NOTE: Additional dist-tags disabled until npm supports OIDC for dist-tag commands
+          # npm dist-tag add requires traditional NPM_TOKEN authentication, which we're avoiding
+          # by using trusted publishing with OIDC. For now, packages get only the primary tag.
+          # See: https://github.com/orgs/community/discussions/161015
+          #
+          # if [ "${{ inputs.dry_run }}" != "true" ]; then
+          #   [ -n "$VERSION_TAG" ] && npm dist-tag add "$PKG@${{ inputs.version }}" "$VERSION_TAG" && echo "✅ Added tag: $VERSION_TAG"
+          #   [ -n "$NEXT_TAG" ] && npm dist-tag add "$PKG@${{ inputs.version }}" "$NEXT_TAG" && echo "✅ Added tag: $NEXT_TAG"
+          # else
+          #   [ -n "$VERSION_TAG" ] && echo "🔍 DRY RUN: Would also add tag $VERSION_TAG"
+          #   [ -n "$NEXT_TAG" ] && echo "🔍 DRY RUN: Would also add tag $NEXT_TAG"
+          # fi
 
   finalize:
     name: Create Git Tag
