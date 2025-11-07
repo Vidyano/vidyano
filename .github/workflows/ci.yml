@@ -1,0 +1,74 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    paths:
+      - '.github/workflows/ci.yml'
+      - 'dev/**'
+      - 'src/**'
+      - 'tests/**'
+      - 'package-lock.json'
+      - 'package.json'
+      - 'playwright.config.ts'
+      - 'tsconfig.json'
+  pull_request:
+    paths:
+      - '.github/workflows/ci.yml'
+      - 'dev/**'
+      - 'src/**'
+      - 'tests/**'
+      - 'package-lock.json'
+      - 'package.json'
+      - 'playwright.config.ts'
+      - 'tsconfig.json'
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run build
+        run: npm run build
+
+      - name: Start dev server
+        run: |
+          dotnet run --project dev/Dev.csproj &
+          echo $! > server.pid
+          # Wait for server to be ready
+          for i in {1..30}; do
+            if curl -s -o /dev/null -w '%{http_code}' --head http://localhost:5000 | grep -q "200"; then
+              echo "Server is ready!"
+              break
+            fi
+            echo "Waiting for server... ($i/30)"
+            sleep 2
+          done
+
+      - name: Run tests
+        run: npm test
+
+      - name: Stop dev server
+        if: always()
+        run: |
+          if [ -f server.pid ]; then
+            kill $(cat server.pid) || true
+            rm server.pid
+          fi
