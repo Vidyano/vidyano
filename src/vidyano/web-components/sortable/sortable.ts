@@ -1,5 +1,5 @@
 import { property, state } from "lit/decorators.js";
-import { WebComponent, observer, listener } from "components/web-component/web-component";
+import { WebComponent, observer } from "components/web-component/web-component";
 import { html, unsafeCSS } from "lit";
 import styles from "./sortable.css";
 
@@ -23,27 +23,33 @@ interface DragState {
     originalIndex: number;
     /** The sortable container where the drag originated */
     sourceContainer: Sortable;
-    /** The last valid drop target during the drag operation */
-    lastDropTarget: HTMLElement | null;
     /** The nearest scrollable parent element */
     scrollableParent: HTMLElement | null;
     /** Cached draggable elements to avoid repeated DOM queries during drag */
     cachedDraggableElements: HTMLElement[];
+    /** The pointer ID for this drag operation */
+    pointerId: number;
+    /** Initial pointer position */
+    startX: number;
+    startY: number;
+    /** Current pointer position */
+    currentX: number;
+    currentY: number;
 }
 
 export class Sortable extends WebComponent {
     static styles = unsafeCSS(styles);
 
     #dragState: DragState | null = null;
-    #dragStartHandler: EventListener;
-    #dragEndHandler: EventListener;
-    #mouseDownHandler: EventListener;
-    #itemsWithListeners: Set<HTMLElement> = new Set();
+    #pointerDownHandler: EventListener;
+    #pointerMoveHandler: EventListener;
+    #pointerUpOrCancelHandler: EventListener;
     #debounceTimer: number | null = null;
     #autoScrollFrame: number | null = null;
-    #documentDragOverHandler: ((e: DragEvent) => void) | null = null;
     #currentScrollDirection: 'up' | 'down' | null = null;
     #isRegisteredInGroup: boolean = false;
+    #dragDelayTimeout: number | null = null;
+    #pendingDragState: { element: HTMLElement; event: PointerEvent; items: HTMLElement[] } | null = null;
 
     /** Group name for synchronized drag-and-drop across multiple sortable containers */
     @property({ type: String, reflect: true })
@@ -68,6 +74,10 @@ export class Sortable extends WebComponent {
     @property({ type: String, reflect: true })
     handle: string;
 
+    /** Delay in milliseconds before drag mode activates. If not set or 0, dragging activates immediately */
+    @property({ type: Number, reflect: true })
+    dragDelay: number;
+
     /**
      * Controls whether drag-and-drop functionality is enabled
      * @default true
@@ -91,9 +101,9 @@ export class Sortable extends WebComponent {
 
     constructor() {
         super();
-        this.#dragStartHandler = this.#onDragStart.bind(this);
-        this.#dragEndHandler = this.#onDragEnd.bind(this);
-        this.#mouseDownHandler = this.#onMouseDown.bind(this);
+        this.#pointerDownHandler = this.#onPointerDown.bind(this);
+        this.#pointerMoveHandler = this.#onPointerMove.bind(this);
+        this.#pointerUpOrCancelHandler = this.#onPointerUpOrCancel.bind(this);
     }
 
     render() {
@@ -111,6 +121,12 @@ export class Sortable extends WebComponent {
         if (this.#debounceTimer) {
             window.clearTimeout(this.#debounceTimer);
             this.#debounceTimer = null;
+        }
+
+        if (this.#dragDelayTimeout) {
+            window.clearTimeout(this.#dragDelayTimeout);
+            this.#dragDelayTimeout = null;
+            this.#pendingDragState = null;
         }
 
         this.#teardownDragAndDrop();
@@ -167,7 +183,7 @@ export class Sortable extends WebComponent {
     /**
      * Reinitializes drag-and-drop when observed properties change.
      */
-    @observer("filter", "draggableItems", "handle", "enabled")
+    @observer("filter", "draggableItems", "handle", "enabled", { allowUndefined: true })
     private _reinitializeDragAndDrop() {
         if (!this.shadowRoot)
             return;
@@ -203,31 +219,20 @@ export class Sortable extends WebComponent {
         if (!this.enabled)
             return;
 
-        const items = this.#getDraggableElements();
-        items.forEach(item => {
-            item.setAttribute("draggable", this.handle ? "false" : "true");
-            item.addEventListener("dragstart", this.#dragStartHandler);
-            item.addEventListener("dragend", this.#dragEndHandler);
-            this.#itemsWithListeners.add(item);
-        });
-
-        if (this.handle)
-            this.addEventListener("mousedown", this.#mouseDownHandler, true);
+        this.addEventListener("pointerdown", this.#pointerDownHandler, { capture: true });
+        this.addEventListener("pointermove", this.#pointerMoveHandler, { capture: true });
+        this.addEventListener("pointerup", this.#pointerUpOrCancelHandler, { capture: true });
+        this.addEventListener("pointercancel", this.#pointerUpOrCancelHandler, { capture: true });
     }
 
     /**
      * Removes drag-and-drop event listeners from all elements.
      */
     #teardownDragAndDrop() {
-        this.#itemsWithListeners.forEach(item => {
-            item.removeAttribute("draggable");
-            item.removeEventListener("dragstart", this.#dragStartHandler);
-            item.removeEventListener("dragend", this.#dragEndHandler);
-        });
-        this.#itemsWithListeners.clear();
-
-        if (this.handle)
-            this.removeEventListener("mousedown", this.#mouseDownHandler, true);
+        this.removeEventListener("pointerdown", this.#pointerDownHandler, { capture: true });
+        this.removeEventListener("pointermove", this.#pointerMoveHandler, { capture: true });
+        this.removeEventListener("pointerup", this.#pointerUpOrCancelHandler, { capture: true });
+        this.removeEventListener("pointercancel", this.#pointerUpOrCancelHandler, { capture: true });
     }
 
     /**
@@ -278,103 +283,64 @@ export class Sortable extends WebComponent {
     }
 
     /**
-     * Handles mousedown events to enable dragging when a handle is clicked.
+     * Checks if a handle element was clicked in the event path.
+     * Returns true if a handle was clicked, false otherwise.
      */
-    #onMouseDown(e: MouseEvent) {
+    #checkHandleClick(composedPath: EventTarget[]): boolean {
         if (!this.handle)
-            return;
+            return true;
 
-        // Check if any element in the composed path (including shadow DOM) matches the handle selector
-        const composedPath = e.composedPath() as HTMLElement[];
-
-        const handleFound = composedPath.some(el => {
-            if (!el || el.nodeType !== Node.ELEMENT_NODE || typeof el.matches !== 'function')
+        return composedPath.some(el => {
+            if (!el || (el as Node).nodeType !== Node.ELEMENT_NODE || typeof (el as HTMLElement).matches !== 'function')
                 return false;
 
+            const element = el as HTMLElement;
+
             // Check if element matches the handle selector
-            if (el.matches(this.handle))
+            if (element.matches(this.handle))
                 return true;
 
             // Also check by class name (for .reorder -> reorder)
             if (this.handle.startsWith('.')) {
                 const className = this.handle.substring(1);
 
-                if (el.classList && el.classList.contains(className))
+                if (element.classList && element.classList.contains(className))
                     return true;
 
                 // Check part attribute (for shadow parts like part="reorder")
-                const part = el.getAttribute?.('part');
+                const part = element.getAttribute?.('part');
                 if (part && part.split(' ').includes(className))
                     return true;
             }
 
             return false;
         });
-
-        // Find the draggable item (the item containing the handle)
-        const items = this.#getDraggableElements();
-        const draggableItem = composedPath.find(el => {
-            if (!el || el.nodeType !== Node.ELEMENT_NODE)
-                return false;
-
-            return items.includes(el as HTMLElement);
-        }) as HTMLElement | undefined;
-
-        // Enable/disable dragging based on whether handle was clicked
-        items.forEach(item => {
-            if (handleFound && item === draggableItem)
-                item.setAttribute("draggable", "true");
-            else
-                item.setAttribute("draggable", "false");
-        });
     }
 
     /**
-     * Handles the dragstart event to initialize the drag operation.
+     * Activates drag mode after delay (if configured) has elapsed.
      */
-    #onDragStart(e: DragEvent) {
-        const target = e.target as HTMLElement;
+    #activateDragMode(draggableElement: HTMLElement, items: HTMLElement[], e: PointerEvent) {
+        const originalIndex = items.indexOf(draggableElement);
 
-        // Check if the element should be filtered
-        if (this.filter && target.matches(this.filter)) {
-            e.preventDefault();
-            return;
-        }
-
-        const items = this.#getDraggableElements();
-        const originalIndex = items.indexOf(target);
-
-        // Validate that the element exists in the items array
-        if (originalIndex === -1) {
-            e.preventDefault();
-            return;
-        }
-
-        // Set minimal drag data (HTML5 requires some data to be set)
-        if (e.dataTransfer) {
-            e.dataTransfer.effectAllowed = "move";
-            e.dataTransfer.setData("text/plain", originalIndex.toString());
-        }
+        // Capture the pointer on sortable to receive all events even if pointer moves outside
+        this.setPointerCapture(e.pointerId);
 
         // Find the scrollable parent once at drag start
         const scrollableParent = this.#findScrollableParent(this);
 
         this.#dragState = {
-            draggedElement: target,
+            draggedElement: draggableElement,
             originalIndex: originalIndex,
             sourceContainer: this,
-            lastDropTarget: null,
             scrollableParent: scrollableParent,
-            cachedDraggableElements: items
+            cachedDraggableElements: items,
+            pointerId: e.pointerId,
+            startX: e.clientX,
+            startY: e.clientY,
+            currentX: e.clientX,
+            currentY: e.clientY
         };
-
-        // Add document-level dragover listener for auto-scrolling even when cursor is outside component
-        this.#documentDragOverHandler = (e: DragEvent) => {
-            // Just handle auto-scroll, don't touch preventDefault or dropEffect
-            // Let the component's own dragover handler manage the cursor
-            this.#handleAutoScroll(e);
-        };
-        document.addEventListener("dragover", this.#documentDragOverHandler);
 
         // Set dragging state
         this.isDragging = true;
@@ -389,75 +355,98 @@ export class Sortable extends WebComponent {
             item.classList.add('sortable-dragging');
         });
 
-        // Reduce opacity during drag
+        // Add ghost class to reduce opacity during drag
         requestAnimationFrame(() => {
-            target.style.opacity = "0.4";
+            draggableElement.classList.add('sortable-ghost');
         });
 
         this._dragStart();
+
+        // Clear pending state
+        this.#pendingDragState = null;
+        this.#dragDelayTimeout = null;
     }
 
     /**
-     * Handles the dragend event to finalize the drag operation.
+     * Handles the pointerdown event to initialize the drag operation.
      */
-    #onDragEnd(e: DragEvent) {
+    #onPointerDown(e: PointerEvent) {
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        // Prevent starting a new drag if one is already in progress or pending
+        if (this.#dragState || this.#pendingDragState)
+            return;
+
         const target = e.target as HTMLElement;
 
-        if (!this.#dragState)
+        // Only handle primary button (left mouse button or touch)
+        if (e.button !== 0)
             return;
 
-        // Stop auto-scrolling
-        this.#stopAutoScroll();
+        const items = this.#getDraggableElements();
 
-        // Remove document-level dragover listener
-        if (this.#documentDragOverHandler) {
-            document.removeEventListener("dragover", this.#documentDragOverHandler);
-            this.#documentDragOverHandler = null;
+        // Find the actual draggable item (might be the target or a parent)
+        let draggableElement: HTMLElement | undefined = target;
+        if (!items.includes(draggableElement)) {
+            draggableElement = items.find(item => item.contains(target));
+            if (!draggableElement)
+                return;
         }
 
-        // Restore opacity
-        target.style.opacity = "";
+        // Check if the element should be filtered
+        if (this.filter && draggableElement.matches(this.filter))
+            return;
 
-        // Remove dragging class
-        this.classList.remove('dragging');
+        // Check if handle is required and was clicked
+        if (this.handle) {
+            const composedPath = e.composedPath();
+            if (!this.#checkHandleClick(composedPath))
+                return;
+        }
 
-        // Get final position
-        const items = this.#getDraggableElements();
-        const newIndex = items.indexOf(target);
+        // If dragDelay is configured, wait before activating drag mode
+        if (this.dragDelay && this.dragDelay > 0) {
+            // Store pending drag state
+            this.#pendingDragState = {
+                element: draggableElement,
+                event: e,
+                items: items
+            };
 
-        // Remove sortable-dragging class from all items
-        items.forEach(item => {
-            item.classList.remove('sortable-dragging');
-        });
-
-        // Reset draggable attribute if handle is specified
-        if (this.handle)
-            items.forEach(item => item.setAttribute("draggable", "false"));
-
-        // Set dragging state
-        this.isDragging = false;
-        if (this.group)
-            _groups.filter(s => s.group === this.group).forEach(s => s.isGroupDragging = false);
-
-        // Always dispatch drag-end event since we validated the drag was valid at start
-        // newIndex may be -1 if element moved to another container or became invalid
-        this._dragEnd(target, newIndex, this.#dragState.originalIndex);
-
-        this.#dragState = null;
+            // Set timeout to activate drag mode after delay
+            this.#dragDelayTimeout = window.setTimeout(() => {
+                if (this.#pendingDragState) {
+                    this.#activateDragMode(
+                        this.#pendingDragState.element,
+                        this.#pendingDragState.items,
+                        this.#pendingDragState.event
+                    );
+                }
+            }, this.dragDelay);
+        } else {
+            // No delay configured - activate drag mode immediately
+            this.#activateDragMode(draggableElement, items, e);
+        }
     }
 
     /**
-     * Handles the dragover event to update element positions during drag.
+     * Handles the pointermove event during drag operation.
      */
-    @listener("dragover")
-    protected _onDragOver(e: DragEvent) {
-        if (!this.#dragState)
+    #onPointerMove(e: PointerEvent) {
+        // Do nothing if we're in pending state (waiting for delay to complete)
+        if (this.#pendingDragState)
             return;
 
-        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
 
-        if (e.dataTransfer)
-            e.dataTransfer.dropEffect = "move";
+        if (!this.#dragState || e.pointerId !== this.#dragState.pointerId)
+            return;
+
+        // Update current position
+        this.#dragState.currentX = e.clientX;
+        this.#dragState.currentY = e.clientY;
 
         // Handle auto-scrolling
         this.#handleAutoScroll(e);
@@ -466,25 +455,33 @@ export class Sortable extends WebComponent {
         if (!target || target === this.#dragState.draggedElement)
             return;
 
-        // Check if we can drop in this container
-        if (this.group && this.#dragState?.sourceContainer.group !== this.group)
+        // Check if we can drop in this container - find which sortable container contains the target
+        const targetSortable = _groups.find(s => {
+            const items = s.#getDraggableElements();
+            return items.includes(target);
+        }) || this;
+
+        if (this.group && this.#dragState?.sourceContainer.group !== targetSortable.group)
             return;
-
-        // Determine if we should insert before or after
-        const rect = target.getBoundingClientRect();
-        const midpoint = rect.top + rect.height / 2;
-        const insertBefore = e.clientY < midpoint;
-
-        // Determine the actual insertion point
-        const insertionPoint = insertBefore ? target : target.nextSibling;
-
-        // Only move if the insertion point has changed
-        if (this.#dragState.lastDropTarget === insertionPoint)
-            return;
-
-        this.#dragState.lastDropTarget = insertionPoint as HTMLElement | null;
 
         const draggedElement = this.#dragState.draggedElement;
+
+        // Get items from the target container to compare indices
+        const items = targetSortable.#getDraggableElements();
+        const draggedIndex = items.indexOf(draggedElement);
+        const targetIndex = items.indexOf(target);
+
+        // Determine insertion position based on index comparison
+        // If dragging forward (down the list), insert after target to leap over it
+        // If dragging backward (up the list), insert before target to take its spot
+        const insertBefore = draggedIndex > targetIndex;
+
+        // Only move if we're not already in the correct position
+        if (insertBefore && draggedElement.nextSibling === target)
+            return;
+        else if (!insertBefore && draggedElement.previousSibling === target)
+            return;
+
         const parent = target.parentNode;
 
         if (!parent)
@@ -502,54 +499,77 @@ export class Sortable extends WebComponent {
     }
 
     /**
-     * Handles the dragenter event to indicate a valid drop zone.
+     * Handles the pointerup and pointercancel events to finalize or cancel the drag operation.
      */
-    @listener("dragenter")
-    protected _onDragEnter(e: DragEvent) {
-        if (!this.#dragState)
+    #onPointerUpOrCancel(e: PointerEvent) {
+        // Check if we have a pending drag (timeout active but not yet dragging)
+        if (this.#pendingDragState && this.#dragDelayTimeout !== null) {
+            // Clear the timeout
+            window.clearTimeout(this.#dragDelayTimeout);
+            this.#dragDelayTimeout = null;
+            this.#pendingDragState = null;
+
+            // Allow the event to propagate normally (enables clicks/taps)
             return;
+        }
 
-        e.preventDefault();
-
-        if (e.dataTransfer)
-            e.dataTransfer.dropEffect = "move";
-
-    }
-
-    /**
-     * Handles the dragleave event when dragging leaves the sortable container.
-     */
-    @listener("dragleave")
-    protected _onDragLeave(_e: DragEvent) {
-    }
-
-    /**
-     * Handles the drop event to complete the drag operation.
-     */
-    @listener("drop")
-    protected _onDrop(e: DragEvent) {
-        if (!this.#dragState)
-            return;
-
-        e.preventDefault();
         e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        if (!this.#dragState || e.pointerId !== this.#dragState.pointerId)
+            return;
+
+        this.#endDrag();
+    }
+
+    /**
+     * Common logic to end a drag operation.
+     */
+    #endDrag() {
+        if (!this.#dragState)
+            return;
+
+        const draggedElement = this.#dragState.draggedElement;
+
+        // Release pointer capture from sortable
+        if (this.hasPointerCapture(this.#dragState.pointerId))
+            this.releasePointerCapture(this.#dragState.pointerId);
 
         // Stop auto-scrolling
         this.#stopAutoScroll();
 
-        // Remove document-level dragover listener
-        if (this.#documentDragOverHandler) {
-            document.removeEventListener("dragover", this.#documentDragOverHandler);
-            this.#documentDragOverHandler = null;
-        }
+        // Remove ghost class
+        draggedElement.classList.remove('sortable-ghost');
 
-        // Element is already in correct position from dragover
+        // Remove dragging class
+        this.classList.remove('dragging');
+
+        // Get final position
+        const items = this.#getDraggableElements();
+        const newIndex = items.indexOf(draggedElement);
+
+        // Remove sortable-dragging class from all items
+        items.forEach(item => {
+            item.classList.remove('sortable-dragging');
+        });
+
+        // Set dragging state
+        this.isDragging = false;
+        if (this.group)
+            _groups.filter(s => s.group === this.group).forEach(s => s.isGroupDragging = false);
+
+        // Always dispatch drag-end event since we validated the drag was valid at start
+        // newIndex may be -1 if element moved to another container or became invalid
+        this._dragEnd(draggedElement, newIndex, this.#dragState.originalIndex);
+
+        this.#dragState = null;
     }
+
 
     /**
      * Handles automatic scrolling when dragging near the edges of a scrollable container.
      */
-    #handleAutoScroll(e: DragEvent) {
+    #handleAutoScroll(e: PointerEvent) {
         if (!this.#dragState || !this.#dragState.scrollableParent)
             return;
 
@@ -642,7 +662,7 @@ export class Sortable extends WebComponent {
      * Gets the drop target element at the current drag position.
      * Uses cached elements if this is the source container, otherwise queries fresh.
      */
-    #getDropTarget(e: DragEvent): HTMLElement | null {
+    #getDropTarget(e: PointerEvent): HTMLElement | null {
         // Use cached elements if available (source container), otherwise get fresh (cross-container drag)
         const items = this.#dragState?.cachedDraggableElements ?? this.#getDraggableElements();
         const point = { x: e.clientX, y: e.clientY };
