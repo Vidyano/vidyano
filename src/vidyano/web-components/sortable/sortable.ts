@@ -374,6 +374,10 @@ export class Sortable extends WebComponent {
         e.stopPropagation();
         e.stopImmediatePropagation();
 
+        // Prevent starting a new drag if one is already in progress or pending
+        if (this.#dragState || this.#pendingDragState)
+            return;
+
         const target = e.target as HTMLElement;
 
         // Only handle primary button (left mouse button or touch)
