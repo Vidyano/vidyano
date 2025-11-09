@@ -355,9 +355,9 @@ export class Sortable extends WebComponent {
             item.classList.add('sortable-dragging');
         });
 
-        // Reduce opacity during drag
+        // Add ghost class to reduce opacity during drag
         requestAnimationFrame(() => {
-            draggableElement.style.opacity = "0.4";
+            draggableElement.classList.add('sortable-ghost');
         });
 
         this._dragStart();
@@ -534,8 +534,8 @@ export class Sortable extends WebComponent {
         // Stop auto-scrolling
         this.#stopAutoScroll();
 
-        // Restore opacity
-        draggedElement.style.opacity = "";
+        // Remove ghost class
+        draggedElement.classList.remove('sortable-ghost');
 
         // Remove dragging class
         this.classList.remove('dragging');

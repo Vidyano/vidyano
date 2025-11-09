@@ -16,3 +16,7 @@
 :host ::slotted(.sortable-dragging) {
     pointer-events: none;
 }
+
+:host ::slotted(.sortable-ghost) {
+    opacity: 0.4;
+}
