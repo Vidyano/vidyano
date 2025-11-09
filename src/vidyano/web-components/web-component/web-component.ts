@@ -7,7 +7,7 @@ import { WebComponentListenerController, getListenersConfig } from "./web-compon
 import { WebComponentKeybindingController, getKeybindingsConfig } from "./web-component-keybinding-decorator";
 import { registerWebComponent } from "./web-component-registration";
 import { WebComponentTranslationController } from "./web-component-translation-controller";
-import { getComputedConfig } from "./web-component-computed-decorator";
+import { getComputedConfig, computed } from "./web-component-computed-decorator";
 import { getMethodObserversConfig, getPropertyObserversConfig } from "./web-component-observer-decorator";
 
 export { listener } from "./web-component-listener-decorator";
@@ -78,16 +78,16 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
     }
 
     @property({ type: Object })
-    get translations(): TypedTranslations<TTranslations> {
-        // Lazily create translation controller if it doesn't exist yet
+    @computed(function(this: WebComponent<TTranslations>, messages: Record<string, string>) {
         if (!this[TRANSLATION_CONTROLLER_SYMBOL])
             this[TRANSLATION_CONTROLLER_SYMBOL] = new WebComponentTranslationController(this, {} as TTranslations);
 
+        // Update the controller with the new messages
+        this[TRANSLATION_CONTROLLER_SYMBOL].updateMessages(messages);
+
         return this[TRANSLATION_CONTROLLER_SYMBOL].translations;
-    }
-    set translations(_value: TypedTranslations<TTranslations>) {
-        // Setter required by @property decorator for reactivity
-    }
+    }, "service.language.messages")
+    declare translations: TypedTranslations<TTranslations>;
 
     /**
      * Override createProperty to automatically convert camelCase property names to kebab-case attribute names.

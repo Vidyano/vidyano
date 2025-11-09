@@ -1188,18 +1188,10 @@ test('TestTranslations: component-specific translations with fallback to global'
     const component = await setupComponentTest(page, 'test-translations');
     await expect(component).toBeVisible();
 
-    // Mock the service with language support
+    // Create mock service with Observable support
     await component.evaluate(node => {
         const inst = node as any;
-        inst.service = {
-            language: {
-                culture: 'en',
-                messages: {
-                    'OK': 'Global OK',
-                    'Cancel': 'Global Cancel'
-                }
-            }
-        };
+        inst.setMockService('en', { 'OK': 'Global OK', 'Cancel': 'Global Cancel' });
     });
 
     // Wait for component to update with service
