@@ -47,7 +47,6 @@ export class Sortable extends WebComponent {
     #pointerMoveHandler: EventListener;
     #pointerUpHandler: EventListener;
     #pointerCancelHandler: EventListener;
-    #itemsWithListeners: Set<HTMLElement> = new Set();
     #debounceTimer: number | null = null;
     #autoScrollFrame: number | null = null;
     #currentScrollDirection: 'up' | 'down' | null = null;
@@ -238,7 +237,6 @@ export class Sortable extends WebComponent {
         this.removeEventListener("pointermove", this.#pointerMoveHandler, { capture: true });
         this.removeEventListener("pointerup", this.#pointerUpHandler, { capture: true });
         this.removeEventListener("pointercancel", this.#pointerCancelHandler, { capture: true });
-        this.#itemsWithListeners.clear();
     }
 
     /**
