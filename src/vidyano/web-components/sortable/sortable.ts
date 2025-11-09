@@ -476,7 +476,11 @@ export class Sortable extends WebComponent {
         const isLeft = e.clientX < targetMidpointX;
         const isAbove = e.clientY < targetMidpointY;
 
-        const insertBefore = isLeft || isAbove;
+// Detect layout orientation to determine which axis to use
+        const draggedRect = draggedElement.getBoundingClientRect();
+        const isHorizontalLayout = Math.abs(targetRect.top - draggedRect.top) < Math.abs(targetRect.left - draggedRect.left);
+
+        const insertBefore = isHorizontalLayout ? isLeft : isAbove;
 
         // Determine the actual insertion point
         const insertionPoint = insertBefore ? target : target.nextSibling;
