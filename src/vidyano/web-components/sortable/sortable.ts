@@ -23,8 +23,6 @@ interface DragState {
     originalIndex: number;
     /** The sortable container where the drag originated */
     sourceContainer: Sortable;
-    /** The last valid drop target during the drag operation */
-    lastDropTarget: HTMLElement | null;
     /** The nearest scrollable parent element */
     scrollableParent: HTMLElement | null;
     /** Cached draggable elements to avoid repeated DOM queries during drag */
@@ -327,8 +325,8 @@ export class Sortable extends WebComponent {
     #activateDragMode(draggableElement: HTMLElement, items: HTMLElement[], e: PointerEvent) {
         const originalIndex = items.indexOf(draggableElement);
 
-        // Capture the pointer to receive all events even if pointer moves outside element
-        draggableElement.setPointerCapture(e.pointerId);
+        // Capture the pointer on sortable to receive all events even if pointer moves outside
+        this.setPointerCapture(e.pointerId);
 
         // Find the scrollable parent once at drag start
         const scrollableParent = this.#findScrollableParent(this);
@@ -337,7 +335,6 @@ export class Sortable extends WebComponent {
             draggedElement: draggableElement,
             originalIndex: originalIndex,
             sourceContainer: this,
-            lastDropTarget: null,
             scrollableParent: scrollableParent,
             cachedDraggableElements: items,
             pointerId: e.pointerId,
@@ -467,29 +464,21 @@ export class Sortable extends WebComponent {
 
         const draggedElement = this.#dragState.draggedElement;
 
-        // Determine if we should insert before or after based on pointer position relative to target midpoints
-        const targetRect = target.getBoundingClientRect();
+        // Get items from the target container to compare indices
+        const items = targetSortable.#getDraggableElements();
+        const draggedIndex = items.indexOf(draggedElement);
+        const targetIndex = items.indexOf(target);
 
-        const targetMidpointX = targetRect.left + targetRect.width / 2;
-        const targetMidpointY = targetRect.top + targetRect.height / 2;
+        // Determine insertion position based on index comparison
+        // If dragging forward (down the list), insert after target to leap over it
+        // If dragging backward (up the list), insert before target to take its spot
+        const insertBefore = draggedIndex > targetIndex;
 
-        const isLeft = e.clientX < targetMidpointX;
-        const isAbove = e.clientY < targetMidpointY;
-
-// Detect layout orientation to determine which axis to use
-        const draggedRect = draggedElement.getBoundingClientRect();
-        const isHorizontalLayout = Math.abs(targetRect.top - draggedRect.top) < Math.abs(targetRect.left - draggedRect.left);
-
-        const insertBefore = isHorizontalLayout ? isLeft : isAbove;
-
-        // Determine the actual insertion point
-        const insertionPoint = insertBefore ? target : target.nextSibling;
-
-        // Only move if the insertion point has changed
-        if (this.#dragState.lastDropTarget === insertionPoint)
+        // Only move if we're not already in the correct position
+        if (insertBefore && draggedElement.nextSibling === target)
             return;
-
-        this.#dragState.lastDropTarget = insertionPoint as HTMLElement | null;
+        else if (!insertBefore && draggedElement.previousSibling === target)
+            return;
 
         const parent = target.parentNode;
 
@@ -562,9 +551,9 @@ export class Sortable extends WebComponent {
 
         const draggedElement = this.#dragState.draggedElement;
 
-        // Release pointer capture
-        if (draggedElement.hasPointerCapture(this.#dragState.pointerId))
-            draggedElement.releasePointerCapture(this.#dragState.pointerId);
+        // Release pointer capture from sortable
+        if (this.hasPointerCapture(this.#dragState.pointerId))
+            this.releasePointerCapture(this.#dragState.pointerId);
 
         // Stop auto-scrolling
         this.#stopAutoScroll();
