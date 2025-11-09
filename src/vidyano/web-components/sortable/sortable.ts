@@ -43,8 +43,7 @@ export class Sortable extends WebComponent {
     #dragState: DragState | null = null;
     #pointerDownHandler: EventListener;
     #pointerMoveHandler: EventListener;
-    #pointerUpHandler: EventListener;
-    #pointerCancelHandler: EventListener;
+    #pointerUpOrCancelHandler: EventListener;
     #debounceTimer: number | null = null;
     #autoScrollFrame: number | null = null;
     #currentScrollDirection: 'up' | 'down' | null = null;
@@ -104,8 +103,7 @@ export class Sortable extends WebComponent {
         super();
         this.#pointerDownHandler = this.#onPointerDown.bind(this);
         this.#pointerMoveHandler = this.#onPointerMove.bind(this);
-        this.#pointerUpHandler = this.#onPointerUp.bind(this);
-        this.#pointerCancelHandler = this.#onPointerCancel.bind(this);
+        this.#pointerUpOrCancelHandler = this.#onPointerUpOrCancel.bind(this);
     }
 
     render() {
@@ -223,8 +221,8 @@ export class Sortable extends WebComponent {
 
         this.addEventListener("pointerdown", this.#pointerDownHandler, { capture: true });
         this.addEventListener("pointermove", this.#pointerMoveHandler, { capture: true });
-        this.addEventListener("pointerup", this.#pointerUpHandler, { capture: true });
-        this.addEventListener("pointercancel", this.#pointerCancelHandler, { capture: true });
+        this.addEventListener("pointerup", this.#pointerUpOrCancelHandler, { capture: true });
+        this.addEventListener("pointercancel", this.#pointerUpOrCancelHandler, { capture: true });
     }
 
     /**
@@ -233,8 +231,8 @@ export class Sortable extends WebComponent {
     #teardownDragAndDrop() {
         this.removeEventListener("pointerdown", this.#pointerDownHandler, { capture: true });
         this.removeEventListener("pointermove", this.#pointerMoveHandler, { capture: true });
-        this.removeEventListener("pointerup", this.#pointerUpHandler, { capture: true });
-        this.removeEventListener("pointercancel", this.#pointerCancelHandler, { capture: true });
+        this.removeEventListener("pointerup", this.#pointerUpOrCancelHandler, { capture: true });
+        this.removeEventListener("pointercancel", this.#pointerUpOrCancelHandler, { capture: true });
     }
 
     /**
@@ -497,9 +495,9 @@ export class Sortable extends WebComponent {
     }
 
     /**
-     * Handles the pointerup event to finalize the drag operation.
+     * Handles the pointerup and pointercancel events to finalize or cancel the drag operation.
      */
-    #onPointerUp(e: PointerEvent) {
+    #onPointerUpOrCancel(e: PointerEvent) {
         // Check if we have a pending drag (timeout active but not yet dragging)
         if (this.#pendingDragState && this.#dragDelayTimeout !== null) {
             // Clear the timeout
@@ -508,28 +506,6 @@ export class Sortable extends WebComponent {
             this.#pendingDragState = null;
 
             // Allow the event to propagate normally (enables clicks/taps)
-            return;
-        }
-
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-
-        if (!this.#dragState || e.pointerId !== this.#dragState.pointerId)
-            return;
-
-        this.#endDrag();
-    }
-
-    /**
-     * Handles the pointercancel event to cancel the drag operation.
-     */
-    #onPointerCancel(e: PointerEvent) {
-        // Check if we have a pending drag (timeout active but not yet dragging)
-        if (this.#pendingDragState && this.#dragDelayTimeout !== null) {
-            // Clear the timeout
-            window.clearTimeout(this.#dragDelayTimeout);
-            this.#dragDelayTimeout = null;
-            this.#pendingDragState = null;
             return;
         }
 
