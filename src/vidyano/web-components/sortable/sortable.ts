@@ -176,7 +176,7 @@ export class Sortable extends WebComponent {
     /**
      * Reinitializes drag-and-drop when observed properties change.
      */
-    @observer("filter", "draggableItems", "handle", "enabled")
+    @observer("filter", "draggableItems", "handle", "enabled", { allowUndefined: true })
     private _reinitializeDragAndDrop() {
         if (!this.shadowRoot)
             return;
@@ -212,20 +212,20 @@ export class Sortable extends WebComponent {
         if (!this.enabled)
             return;
 
-        const items = this.#getDraggableElements();
-        items.forEach(item => {
-            item.addEventListener("pointerdown", this.#pointerDownHandler);
-            this.#itemsWithListeners.add(item);
-        });
+        this.addEventListener("pointerdown", this.#pointerDownHandler, { capture: true });
+        this.addEventListener("pointermove", this.#pointerMoveHandler, { capture: true });
+        this.addEventListener("pointerup", this.#pointerUpHandler, { capture: true });
+        this.addEventListener("pointercancel", this.#pointerCancelHandler, { capture: true });
     }
 
     /**
      * Removes drag-and-drop event listeners from all elements.
      */
     #teardownDragAndDrop() {
-        this.#itemsWithListeners.forEach(item => {
-            item.removeEventListener("pointerdown", this.#pointerDownHandler);
-        });
+        this.removeEventListener("pointerdown", this.#pointerDownHandler, { capture: true });
+        this.removeEventListener("pointermove", this.#pointerMoveHandler, { capture: true });
+        this.removeEventListener("pointerup", this.#pointerUpHandler, { capture: true });
+        this.removeEventListener("pointercancel", this.#pointerCancelHandler, { capture: true });
         this.#itemsWithListeners.clear();
     }
 
@@ -315,6 +315,9 @@ export class Sortable extends WebComponent {
      * Handles the pointerdown event to initialize the drag operation.
      */
     #onPointerDown(e: PointerEvent) {
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
         const target = e.target as HTMLElement;
 
         // Only handle primary button (left mouse button or touch)
@@ -364,11 +367,6 @@ export class Sortable extends WebComponent {
             currentY: e.clientY
         };
 
-        // Add document-level pointer move and up listeners
-        document.addEventListener("pointermove", this.#pointerMoveHandler);
-        document.addEventListener("pointerup", this.#pointerUpHandler);
-        document.addEventListener("pointercancel", this.#pointerCancelHandler);
-
         // Set dragging state
         this.isDragging = true;
         if (this.group)
@@ -394,6 +392,9 @@ export class Sortable extends WebComponent {
      * Handles the pointermove event during drag operation.
      */
     #onPointerMove(e: PointerEvent) {
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
         if (!this.#dragState || e.pointerId !== this.#dragState.pointerId)
             return;
 
@@ -452,6 +453,9 @@ export class Sortable extends WebComponent {
      * Handles the pointerup event to finalize the drag operation.
      */
     #onPointerUp(e: PointerEvent) {
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
         if (!this.#dragState || e.pointerId !== this.#dragState.pointerId)
             return;
 
@@ -462,6 +466,9 @@ export class Sortable extends WebComponent {
      * Handles the pointercancel event to cancel the drag operation.
      */
     #onPointerCancel(e: PointerEvent) {
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
         if (!this.#dragState || e.pointerId !== this.#dragState.pointerId)
             return;
 
@@ -483,11 +490,6 @@ export class Sortable extends WebComponent {
 
         // Stop auto-scrolling
         this.#stopAutoScroll();
-
-        // Remove document-level pointer listeners
-        document.removeEventListener("pointermove", this.#pointerMoveHandler);
-        document.removeEventListener("pointerup", this.#pointerUpHandler);
-        document.removeEventListener("pointercancel", this.#pointerCancelHandler);
 
         // Restore opacity
         draggedElement.style.opacity = "";
