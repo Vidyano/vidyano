@@ -467,10 +467,18 @@ export class Sortable extends WebComponent {
         if (this.group && this.#dragState?.sourceContainer.group !== targetSortable.group)
             return;
 
-        // Determine if we should insert before or after
-        const rect = target.getBoundingClientRect();
-        const midpoint = rect.top + rect.height / 2;
-        const insertBefore = e.clientY < midpoint;
+        const draggedElement = this.#dragState.draggedElement;
+
+        // Determine if we should insert before or after based on pointer position relative to target midpoints
+        const targetRect = target.getBoundingClientRect();
+
+        const targetMidpointX = targetRect.left + targetRect.width / 2;
+        const targetMidpointY = targetRect.top + targetRect.height / 2;
+
+        const isLeft = e.clientX < targetMidpointX;
+        const isAbove = e.clientY < targetMidpointY;
+
+        const insertBefore = isLeft || isAbove;
 
         // Determine the actual insertion point
         const insertionPoint = insertBefore ? target : target.nextSibling;
@@ -481,7 +489,6 @@ export class Sortable extends WebComponent {
 
         this.#dragState.lastDropTarget = insertionPoint as HTMLElement | null;
 
-        const draggedElement = this.#dragState.draggedElement;
         const parent = target.parentNode;
 
         if (!parent)
