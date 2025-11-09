@@ -52,6 +52,8 @@ export class Sortable extends WebComponent {
     #autoScrollFrame: number | null = null;
     #currentScrollDirection: 'up' | 'down' | null = null;
     #isRegisteredInGroup: boolean = false;
+    #dragDelayTimeout: number | null = null;
+    #pendingDragState: { element: HTMLElement; event: PointerEvent; items: HTMLElement[] } | null = null;
 
     /** Group name for synchronized drag-and-drop across multiple sortable containers */
     @property({ type: String, reflect: true })
@@ -75,6 +77,10 @@ export class Sortable extends WebComponent {
     /** CSS selector for the drag handle. When specified, dragging is only enabled when the handle is clicked */
     @property({ type: String, reflect: true })
     handle: string;
+
+    /** Delay in milliseconds before drag mode activates. If not set or 0, dragging activates immediately */
+    @property({ type: Number, reflect: true })
+    dragDelay: number;
 
     /**
      * Controls whether drag-and-drop functionality is enabled
@@ -120,6 +126,12 @@ export class Sortable extends WebComponent {
         if (this.#debounceTimer) {
             window.clearTimeout(this.#debounceTimer);
             this.#debounceTimer = null;
+        }
+
+        if (this.#dragDelayTimeout) {
+            window.clearTimeout(this.#dragDelayTimeout);
+            this.#dragDelayTimeout = null;
+            this.#pendingDragState = null;
         }
 
         this.#teardownDragAndDrop();
@@ -312,39 +324,9 @@ export class Sortable extends WebComponent {
     }
 
     /**
-     * Handles the pointerdown event to initialize the drag operation.
+     * Activates drag mode after delay (if configured) has elapsed.
      */
-    #onPointerDown(e: PointerEvent) {
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-
-        const target = e.target as HTMLElement;
-
-        // Only handle primary button (left mouse button or touch)
-        if (e.button !== 0)
-            return;
-
-        const items = this.#getDraggableElements();
-
-        // Find the actual draggable item (might be the target or a parent)
-        let draggableElement: HTMLElement | undefined = target;
-        if (!items.includes(draggableElement)) {
-            draggableElement = items.find(item => item.contains(target));
-            if (!draggableElement)
-                return;
-        }
-
-        // Check if the element should be filtered
-        if (this.filter && draggableElement.matches(this.filter))
-            return;
-
-        // Check if handle is required and was clicked
-        if (this.handle) {
-            const composedPath = e.composedPath();
-            if (!this.#checkHandleClick(composedPath))
-                return;
-        }
-
+    #activateDragMode(draggableElement: HTMLElement, items: HTMLElement[], e: PointerEvent) {
         const originalIndex = items.indexOf(draggableElement);
 
         // Capture the pointer to receive all events even if pointer moves outside element
@@ -386,12 +368,79 @@ export class Sortable extends WebComponent {
         });
 
         this._dragStart();
+
+        // Clear pending state
+        this.#pendingDragState = null;
+        this.#dragDelayTimeout = null;
+    }
+
+    /**
+     * Handles the pointerdown event to initialize the drag operation.
+     */
+    #onPointerDown(e: PointerEvent) {
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        const target = e.target as HTMLElement;
+
+        // Only handle primary button (left mouse button or touch)
+        if (e.button !== 0)
+            return;
+
+        const items = this.#getDraggableElements();
+
+        // Find the actual draggable item (might be the target or a parent)
+        let draggableElement: HTMLElement | undefined = target;
+        if (!items.includes(draggableElement)) {
+            draggableElement = items.find(item => item.contains(target));
+            if (!draggableElement)
+                return;
+        }
+
+        // Check if the element should be filtered
+        if (this.filter && draggableElement.matches(this.filter))
+            return;
+
+        // Check if handle is required and was clicked
+        if (this.handle) {
+            const composedPath = e.composedPath();
+            if (!this.#checkHandleClick(composedPath))
+                return;
+        }
+
+        // If dragDelay is configured, wait before activating drag mode
+        if (this.dragDelay && this.dragDelay > 0) {
+            // Store pending drag state
+            this.#pendingDragState = {
+                element: draggableElement,
+                event: e,
+                items: items
+            };
+
+            // Set timeout to activate drag mode after delay
+            this.#dragDelayTimeout = window.setTimeout(() => {
+                if (this.#pendingDragState) {
+                    this.#activateDragMode(
+                        this.#pendingDragState.element,
+                        this.#pendingDragState.items,
+                        this.#pendingDragState.event
+                    );
+                }
+            }, this.dragDelay);
+        } else {
+            // No delay configured - activate drag mode immediately
+            this.#activateDragMode(draggableElement, items, e);
+        }
     }
 
     /**
      * Handles the pointermove event during drag operation.
      */
     #onPointerMove(e: PointerEvent) {
+        // Do nothing if we're in pending state (waiting for delay to complete)
+        if (this.#pendingDragState)
+            return;
+
         e.stopPropagation();
         e.stopImmediatePropagation();
 
@@ -453,6 +502,17 @@ export class Sortable extends WebComponent {
      * Handles the pointerup event to finalize the drag operation.
      */
     #onPointerUp(e: PointerEvent) {
+        // Check if we have a pending drag (timeout active but not yet dragging)
+        if (this.#pendingDragState && this.#dragDelayTimeout !== null) {
+            // Clear the timeout
+            window.clearTimeout(this.#dragDelayTimeout);
+            this.#dragDelayTimeout = null;
+            this.#pendingDragState = null;
+
+            // Allow the event to propagate normally (enables clicks/taps)
+            return;
+        }
+
         e.stopPropagation();
         e.stopImmediatePropagation();
 
@@ -466,6 +526,15 @@ export class Sortable extends WebComponent {
      * Handles the pointercancel event to cancel the drag operation.
      */
     #onPointerCancel(e: PointerEvent) {
+        // Check if we have a pending drag (timeout active but not yet dragging)
+        if (this.#pendingDragState && this.#dragDelayTimeout !== null) {
+            // Clear the timeout
+            window.clearTimeout(this.#dragDelayTimeout);
+            this.#dragDelayTimeout = null;
+            this.#pendingDragState = null;
+            return;
+        }
+
         e.stopPropagation();
         e.stopImmediatePropagation();
 
