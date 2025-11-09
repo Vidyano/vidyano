@@ -7,7 +7,7 @@ import { WebComponentListenerController, getListenersConfig } from "./web-compon
 import { WebComponentKeybindingController, getKeybindingsConfig } from "./web-component-keybinding-decorator";
 import { registerWebComponent } from "./web-component-registration";
 import { WebComponentTranslationController } from "./web-component-translation-controller";
-import { getComputedConfig, computed } from "./web-component-computed-decorator";
+import { getComputedConfig } from "./web-component-computed-decorator";
 import { getMethodObserversConfig, getPropertyObserversConfig } from "./web-component-observer-decorator";
 
 export { listener } from "./web-component-listener-decorator";
@@ -33,6 +33,17 @@ type Translations<T> = { [K in keyof T]: string };
  * with a general `Record<string, string>` for the global keys.
  */
 export type TypedTranslations<T> = Translations<T> & Record<string, string>;
+
+/**
+ * Options for configuring a WebComponent instance.
+ */
+export interface WebComponentOptions<TTranslations extends Record<string, any>> {
+    /**
+     * Component-specific translations that override client messages.
+     * Format: { TranslationKey: { "en": "English", "nl": "Dutch", ... } }
+     */
+    translations?: TTranslations;
+}
 
 /**
  * Base class for all lit-based web components in a Vidyano application.
@@ -67,8 +78,16 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
     }
 
     @property({ type: Object })
-    @computed("service.language.messages")
-    translations!: TypedTranslations<TTranslations>;
+    get translations(): TypedTranslations<TTranslations> {
+        // Lazily create translation controller if it doesn't exist yet
+        if (!this[TRANSLATION_CONTROLLER_SYMBOL])
+            this[TRANSLATION_CONTROLLER_SYMBOL] = new WebComponentTranslationController(this, {} as TTranslations);
+
+        return this[TRANSLATION_CONTROLLER_SYMBOL].translations;
+    }
+    set translations(_value: TypedTranslations<TTranslations>) {
+        // Setter required by @property decorator for reactivity
+    }
 
     /**
      * Override createProperty to automatically convert camelCase property names to kebab-case attribute names.
@@ -94,13 +113,14 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
 
     /**
      * Creates a new instance of the WebComponent class.
-     * @param translations - Optional translations object that contains key-value pairs for translations.
+     * @param options - Optional configuration options for the component.
      */
-    constructor(translations?: TTranslations) {
+    constructor(options?: WebComponentOptions<TTranslations>) {
         super();
 
-        if (translations)
-            this[TRANSLATION_CONTROLLER_SYMBOL] = new WebComponentTranslationController(this, translations);
+        // Only create translation controller if translations are provided
+        if (options?.translations)
+            this[TRANSLATION_CONTROLLER_SYMBOL] = new WebComponentTranslationController(this, options.translations);
 
         const listenerConfig = getListenersConfig(this);
         if (Object.keys(listenerConfig).length > 0) {

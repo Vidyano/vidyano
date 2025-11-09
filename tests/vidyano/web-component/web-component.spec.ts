@@ -1183,3 +1183,130 @@ test('TestKeybinding: @keybinding decorator with keyboard shortcuts', async ({ p
     });
     expect(state.escapeCallCount).toBe(2);
 });
+
+test('TestTranslations: component-specific translations with fallback to global', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-translations');
+    await expect(component).toBeVisible();
+
+    // Mock the service with language support
+    await component.evaluate(node => {
+        const inst = node as any;
+        inst.service = {
+            language: {
+                culture: 'en',
+                messages: {
+                    'OK': 'Global OK',
+                    'Cancel': 'Global Cancel'
+                }
+            }
+        };
+    });
+
+    // Wait for component to update with service
+    await page.waitForTimeout(100);
+
+    // --- Initial state verification (English culture) ---
+    await expect(component.locator('#title')).toContainText('Custom Title in English');
+    await expect(component.locator('#submit')).toContainText('Submit');
+    await expect(component.locator('#cancel')).toContainText('Cancel');
+    await expect(component.locator('#ok-button')).toContainText('Global OK'); // Fallback to global
+    await expect(component.locator('#missing')).toContainText('[[NonExistentKey]]'); // Missing translation
+
+    // --- Act: Change culture to Dutch ---
+    await component.evaluate(node => {
+        const inst = node as any;
+        inst.service.language.culture = 'nl';
+        inst.service.language.messages = { 'OK': 'OK (NL)', 'Cancel': 'Annuleer (NL)' };
+        inst.requestUpdate();
+    });
+
+    await page.waitForTimeout(100);
+
+    // --- Verification: Dutch translations should be used ---
+    await expect(component.locator('#title')).toContainText('Aangepaste Titel in het Nederlands');
+    await expect(component.locator('#submit')).toContainText('Verzenden');
+    await expect(component.locator('#cancel')).toContainText('Annuleren');
+    await expect(component.locator('#ok-button')).toContainText('OK (NL)'); // Fallback to global Dutch
+
+    // --- Act: Change culture to French ---
+    await component.evaluate(node => {
+        const inst = node as any;
+        inst.service.language.culture = 'fr';
+        inst.service.language.messages = { 'OK': 'OK (FR)' };
+        inst.requestUpdate();
+    });
+
+    await page.waitForTimeout(100);
+
+    // --- Verification: French translations should be used ---
+    await expect(component.locator('#title')).toContainText('Titre personnalisé en français');
+    await expect(component.locator('#submit')).toContainText('Soumettre');
+    await expect(component.locator('#cancel')).toContainText('Annuler');
+    await expect(component.locator('#ok-button')).toContainText('OK (FR)');
+});
+
+test('TestTranslations: updates when service.language.messages or culture changes via Observable', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-translations');
+    await expect(component).toBeVisible();
+
+    // Create mock service with Observable support using helper method
+    await component.evaluate((node) => {
+        const inst = node as any;
+        inst.setMockService('en', { 'OK': 'Original OK' });
+    });
+
+    await page.waitForTimeout(100);
+
+    // --- Initial state verification (English culture) ---
+    await expect(component.locator('#title')).toContainText('Custom Title in English');
+    await expect(component.locator('#submit')).toContainText('Submit');
+    await expect(component.locator('#ok-button')).toContainText('Original OK');
+
+    // --- Act: Change only service.language.messages (via Observable setter) ---
+    await component.evaluate(node => {
+        const inst = node as any;
+        inst.service.language.messages = {
+            'OK': 'Updated OK',
+            'Cancel': 'Updated Cancel'
+        };
+    });
+
+    await page.waitForTimeout(100);
+
+    // --- Verification: Should update to new messages ---
+    await expect(component.locator('#title')).toContainText('Custom Title in English'); // Component translation unchanged
+    await expect(component.locator('#ok-button')).toContainText('Updated OK'); // Global translation updated
+
+    // --- Act: Change culture to Dutch (via Observable setter) ---
+    // When culture changes, messages should also change to trigger the observer
+    await component.evaluate(node => {
+        const inst = node as any;
+        // Change culture first
+        inst.service.language.culture = 'nl';
+        // Then update messages to match the new culture (simulating real behavior)
+        inst.service.language.messages = { 'OK': 'OK (NL)' };
+    });
+
+    await page.waitForTimeout(100);
+
+    // --- Verification: Should update to Dutch translations ---
+    await expect(component.locator('#title')).toContainText('Aangepaste Titel in het Nederlands');
+    await expect(component.locator('#submit')).toContainText('Verzenden');
+    await expect(component.locator('#cancel')).toContainText('Annuleren');
+    await expect(component.locator('#ok-button')).toContainText('OK (NL)');
+
+    // --- Act: Change culture to French ---
+    await component.evaluate(node => {
+        const inst = node as any;
+        inst.service.language.culture = 'fr';
+        inst.service.language.messages = { 'OK': 'OK (FR)' };
+    });
+
+    await page.waitForTimeout(100);
+
+    // --- Verification: Should update to French translations ---
+    await expect(component.locator('#title')).toContainText('Titre personnalisé en français');
+    await expect(component.locator('#submit')).toContainText('Soumettre');
+    await expect(component.locator('#cancel')).toContainText('Annuler');
+    await expect(component.locator('#ok-button')).toContainText('OK (FR)');
+});

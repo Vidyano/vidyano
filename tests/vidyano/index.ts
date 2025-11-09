@@ -17,3 +17,4 @@ import "./web-component/test-computed-undefined-blocking.js";
 import "./web-component/test-computed-allow-undefined.js";
 import "./web-component/test-observer-property-prototype.js";
 import "./web-component/test-observer-property-inline.js";
+import "./web-component/test-translations.js";
