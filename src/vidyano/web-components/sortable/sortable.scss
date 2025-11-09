@@ -1,3 +1,18 @@
 :host {
     display: block;
 }
+
+:host ::slotted(*) {
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+:host(.dragging) ::slotted(*) {
+    cursor: grabbing;
+    -webkit-cursor: grabbing;
+}
+
+:host ::slotted(.sortable-dragging) {
+    pointer-events: none;
+}
