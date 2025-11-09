@@ -278,13 +278,13 @@ export class Sortable extends WebComponent {
 
     /**
      * Checks if a handle element was clicked in the event path.
-     * Returns the draggable item if a valid handle was clicked.
+     * Returns true if a handle was clicked, false otherwise.
      */
-    #checkHandleClick(composedPath: EventTarget[]): HTMLElement | null {
+    #checkHandleClick(composedPath: EventTarget[]): boolean {
         if (!this.handle)
-            return null;
+            return true;
 
-        const handleFound = composedPath.some(el => {
+        return composedPath.some(el => {
             if (!el || (el as Node).nodeType !== Node.ELEMENT_NODE || typeof (el as HTMLElement).matches !== 'function')
                 return false;
 
@@ -309,20 +309,6 @@ export class Sortable extends WebComponent {
 
             return false;
         });
-
-        if (!handleFound)
-            return null;
-
-        // Find the draggable item (the item containing the handle)
-        const items = this.#getDraggableElements();
-        const draggableItem = composedPath.find(el => {
-            if (!el || (el as Node).nodeType !== Node.ELEMENT_NODE)
-                return false;
-
-            return items.includes(el as HTMLElement);
-        }) as HTMLElement | undefined;
-
-        return draggableItem || null;
     }
 
     /**
@@ -335,35 +321,28 @@ export class Sortable extends WebComponent {
         if (e.button !== 0)
             return;
 
-        // Check if handle is required and was clicked
-        if (this.handle) {
-            const composedPath = e.composedPath();
-            const draggableItem = this.#checkHandleClick(composedPath);
-            if (!draggableItem || draggableItem !== target.closest('[data-sortable-item]') && !this.#getDraggableElements().includes(target))
+        const items = this.#getDraggableElements();
+
+        // Find the actual draggable item (might be the target or a parent)
+        let draggableElement: HTMLElement | undefined = target;
+        if (!items.includes(draggableElement)) {
+            draggableElement = items.find(item => item.contains(target));
+            if (!draggableElement)
                 return;
         }
 
         // Check if the element should be filtered
-        if (this.filter && target.matches(this.filter)) {
+        if (this.filter && draggableElement.matches(this.filter))
             return;
-        }
 
-        const items = this.#getDraggableElements();
-
-        // Find the actual draggable item (might be the target or a parent)
-        let draggableElement = target;
-        if (!items.includes(draggableElement)) {
-            const found = items.find(item => item.contains(draggableElement));
-            if (!found)
+        // Check if handle is required and was clicked
+        if (this.handle) {
+            const composedPath = e.composedPath();
+            if (!this.#checkHandleClick(composedPath))
                 return;
-            draggableElement = found;
         }
 
         const originalIndex = items.indexOf(draggableElement);
-
-        // Validate that the element exists in the items array
-        if (originalIndex === -1)
-            return;
 
         // Capture the pointer to receive all events even if pointer moves outside element
         draggableElement.setPointerCapture(e.pointerId);
