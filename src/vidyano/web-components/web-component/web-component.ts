@@ -1,14 +1,14 @@
-import { AppBase } from "components/app/app";
+import type { AppBase } from "components/app/app";
 import { LitElement, PropertyValueMap } from "lit";
-import { property } from "lit/decorators.js";
 import { Service } from "vidyano";
 import { WebComponentReactiveController } from "./web-component-reactive-controller";
 import { WebComponentListenerController, getListenersConfig } from "./web-component-listener-decorator";
 import { WebComponentKeybindingController, getKeybindingsConfig } from "./web-component-keybinding-decorator";
 import { registerWebComponent } from "./web-component-registration";
 import { WebComponentTranslationController } from "./web-component-translation-controller";
-import { getComputedConfig, computed } from "./web-component-computed-decorator";
+import { getComputedConfig } from "./web-component-computed-decorator";
 import { getMethodObserversConfig, getPropertyObserversConfig } from "./web-component-observer-decorator";
+import { getNotifyConfig } from "./web-component-notify-decorator";
 
 export { listener } from "./web-component-listener-decorator";
 export { keybinding } from "./web-component-keybinding-decorator";
@@ -52,42 +52,41 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
     #app: AppBase;
     #service: Service;
 
-    @property({ attribute: false })
     get app(): AppBase {
         return this.#app;
     }
-    set app(value: AppBase) {
+    set app(app: AppBase) {
         const oldValue = this.#app;
-        this.#app = value;
-        if (value && !value.service) {
-            this.#listenForService(value);
-        } else if (value?.service) {
-            this.service = value.service;
-        }
-        this.requestUpdate("app", oldValue);
+        this.#app = app;
+
+        // Check if oldValue and new value are the same to avoid unnecessary updates, but undefined vs null should not trigger an update
+        if (oldValue !== app && !(oldValue == null && app == null))
+            this.requestUpdate("app", oldValue);
+
+        this.service = app?.service;
+        if (!app?.service)
+            this.#listenForService(app);
     }
 
-    @property({ attribute: false })
     get service(): Service {
         return this.#service;
     }
     set service(value: Service) {
         const oldValue = this.#service;
         this.#service = value;
-        this.requestUpdate("service", oldValue);
+
+        // Check if oldValue and new value are the same to avoid unnecessary updates, but undefined vs null should not trigger an update
+        if (oldValue !== value && !(oldValue == null && value == null))
+            this.requestUpdate("service", oldValue);
     }
 
-    @property({ type: Object })
-    @computed(function(this: WebComponent<TTranslations>, messages: Record<string, string>) {
+    get translations(): TypedTranslations<TTranslations> {
+        // Lazily create translation controller if it doesn't exist yet
         if (!this[TRANSLATION_CONTROLLER_SYMBOL])
             this[TRANSLATION_CONTROLLER_SYMBOL] = new WebComponentTranslationController(this, {} as TTranslations);
 
-        // Update the controller with the new messages
-        this[TRANSLATION_CONTROLLER_SYMBOL].updateMessages(messages);
-
         return this[TRANSLATION_CONTROLLER_SYMBOL].translations;
-    }, "service.language.messages")
-    declare translations: TypedTranslations<TTranslations>;
+    }
 
     /**
      * Override createProperty to automatically convert camelCase property names to kebab-case attribute names.
@@ -134,17 +133,16 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
 
         if (Object.keys(getComputedConfig(this)).length > 0 ||
             Object.keys(getPropertyObserversConfig(this)).length > 0 ||
-            Object.keys(getMethodObserversConfig(this)).length > 0) {
+            Object.keys(getMethodObserversConfig(this)).length > 0 ||
+            Object.keys(getNotifyConfig(this)).length > 0) {
             this[REACTIVE_CONTROLLER_SYMBOL] = new WebComponentReactiveController(this);
         }
     }
 
     override connectedCallback() {
         if (!this.app) {
-            // @ts-ignore
-            if (window.app) {
-                // @ts-ignore
-                this.app = window.app;
+            if (Symbol.for("Vidyano.App") in window) {
+                this.app = window[Symbol.for("Vidyano.App")];
             } else {
                 this.#listenForApp();
             }
@@ -316,13 +314,8 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
             window.removeEventListener("app-changed", this[APP_CHANGE_LISTENER_SYMBOL]);
             this[APP_CHANGE_LISTENER_SYMBOL] = null;
 
-            const oldApp = this.app;
-            // @ts-ignore - window.app is set but not typed
-            this.app = window.app;
-            this.requestUpdate("app", oldApp);
-
-            if (!this.app.service)
-                this.#listenForService(this.app);
+            if (Symbol.for("Vidyano.App") in window)
+                this.app = window[Symbol.for("Vidyano.App")];
         });
     }
 
@@ -335,9 +328,7 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
             app.removeEventListener("service-changed", this[SERVICE_CHANGE_LISTENER_SYMBOL]);
             this[SERVICE_CHANGE_LISTENER_SYMBOL] = null;
 
-            const oldService = this.service;
             this.service = app.service;
-            this.requestUpdate("service", oldService);
         });
     }
 }

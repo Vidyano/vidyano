@@ -206,7 +206,7 @@ export abstract class AppBase extends Polymer.WebComponent {
         super();
         
         // @ts-ignore window.app is set but not typed
-        window.app = this;
+        window.app = window[Symbol.for("Vidyano.App")] = this;
         window.dispatchEvent(new CustomEvent("app-changed", { detail: { value: this }}));
 
         if (!this.uri && document.location.hash)
