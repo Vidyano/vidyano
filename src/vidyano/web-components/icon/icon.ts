@@ -19,9 +19,14 @@ export class Icon extends WebComponent {
 
     #loadedSource: string;
     #aliases: string[] = [];
+    #baseStyleSheets: CSSStyleSheet[];
 
     connectedCallback() {
         super.connectedCallback();
+
+        // Store the base component stylesheets to restore when icon source changes
+        if (!this.#baseStyleSheets)
+            this.#baseStyleSheets = [...this.shadowRoot.adoptedStyleSheets];
 
         if (this.name && !IconRegister.exists(this.name))
             IconRegister.add(this);
@@ -41,10 +46,8 @@ export class Icon extends WebComponent {
 
     @observer("source", "isConnected")
     private async _load(source: string, isConnected: boolean) {
-        if (isConnected === undefined || source === undefined)
-            return;
-
-        if (this.#loadedSource === source)
+        // Only load when connected and source is defined, and source has changed
+        if (!isConnected || !source || this.#loadedSource === source)
             return;
 
         await this.updateComplete;
@@ -70,8 +73,21 @@ export class Icon extends WebComponent {
         if (!resource)
             return;
 
+        // Reset to base stylesheets before adding icon-specific styles
+        this.shadowRoot.adoptedStyleSheets = [...this.#baseStyleSheets];
+
         Array.from(resource.children).forEach((child: HTMLElement) => {
-            svgHost.appendChild(child.cloneNode(true));
+            const clonedChild = child.cloneNode(true) as HTMLElement;
+
+            // Style tags need to be adopted at the shadow root level using adoptedStyleSheets
+            if (clonedChild.tagName === "STYLE") {
+                const sheet = new CSSStyleSheet();
+                sheet.replaceSync(clonedChild.textContent);
+                this.shadowRoot.adoptedStyleSheets = [...this.shadowRoot.adoptedStyleSheets, sheet];
+            }
+            else {
+                svgHost.appendChild(clonedChild);
+            }
         });
 
         svgHost.querySelectorAll("svg").forEach(svg => svg.setAttribute("part", "svg"));
