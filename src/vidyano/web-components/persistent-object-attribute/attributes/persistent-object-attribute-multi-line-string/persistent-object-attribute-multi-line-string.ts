@@ -1,13 +1,13 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { PersistentObjectAttribute } from "polymer"
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
 
 @Polymer.WebComponent.register({
     properties: {
         maxlength: Number
     }
 }, "vi-persistent-object-attribute-multi-line-string")
-export class PersistentObjectAttributeMultiLineString extends PersistentObjectAttribute {
+export class PersistentObjectAttributeMultiLineString extends Polymer.PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-multi-line-string.html">`; }
 
     maxlength: number;
@@ -27,4 +27,4 @@ export class PersistentObjectAttributeMultiLineString extends PersistentObjectAt
     }
 }
 
-PersistentObjectAttribute.registerAttributeType("MultiLineString", PersistentObjectAttributeMultiLineString);
+PersistentObjectAttributeRegister.add("MultiLineString", PersistentObjectAttributeMultiLineString);

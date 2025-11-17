@@ -1,6 +1,6 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { PersistentObjectAttribute } from "polymer"
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
 import "components/select/select"
 import "components/checkbox/checkbox"
 
@@ -24,7 +24,7 @@ import "components/checkbox/checkbox"
         },
     }
 }, "vi-persistent-object-attribute-drop-down")
-export class PersistentObjectAttributeDropDown extends PersistentObjectAttribute {
+export class PersistentObjectAttributeDropDown extends Polymer.PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-drop-down.html">`; }
 
     protected _valueChanged(newValue: any) {
@@ -67,4 +67,4 @@ export class PersistentObjectAttributeDropDown extends PersistentObjectAttribute
     }
 }
 
-PersistentObjectAttribute.registerAttributeType("DropDown", PersistentObjectAttributeDropDown);
+PersistentObjectAttributeRegister.add("DropDown", PersistentObjectAttributeDropDown);

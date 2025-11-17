@@ -209,16 +209,4 @@ export abstract class PersistentObjectAttribute extends Polymer.WebComponent {
     private _gridAreaChanged(gridArea: string) {
         this.style.gridArea = gridArea;
     }
-
-    static registerAttributeType(attributeType: string, constructor: PersistentObjectAttributeConstructor) {
-        registeredAttributeTypes[attributeType] = constructor;
-    }
-
-    static getAttributeConstructor(attributeType: string) {
-        return registeredAttributeTypes[attributeType];
-    }
 }
-
-export type PersistentObjectAttributeConstructor = new (...args:any[]) => PersistentObjectAttribute;
-
-const registeredAttributeTypes: { [attributeType: string]: PersistentObjectAttributeConstructor} = {};

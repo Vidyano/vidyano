@@ -3,7 +3,7 @@ import * as Vidyano from "vidyano"
 import { Scroller } from "components/scroller/scroller"
 import { SelectReferenceDialog } from "components/select-reference-dialog/select-reference-dialog"
 import "./persistent-object-attribute-as-detail-row"
-import { PersistentObjectAttribute } from "polymer"
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
 
 @Polymer.WebComponent.register({
     properties: {
@@ -63,7 +63,7 @@ import { PersistentObjectAttribute } from "polymer"
         "attribute.objects.*.isDeleted"
     ]
 }, "vi-persistent-object-attribute-as-detail")
-export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute {
+export class PersistentObjectAttributeAsDetail extends Polymer.PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-as-detail.html">`; }
 
     #_unfrozenActiveObjectIndex: number;
@@ -265,4 +265,4 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
     }
 }
 
-PersistentObjectAttribute.registerAttributeType("AsDetail", PersistentObjectAttributeAsDetail);
+PersistentObjectAttributeRegister.add("AsDetail", PersistentObjectAttributeAsDetail);

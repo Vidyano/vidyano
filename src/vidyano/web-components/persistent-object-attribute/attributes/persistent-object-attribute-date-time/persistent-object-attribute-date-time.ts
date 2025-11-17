@@ -2,7 +2,7 @@ import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import * as Keyboard from "components/utils/keyboard"
 import "components/masked-input/masked-input"
-import { PersistentObjectAttribute } from "polymer"
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
 import type { TimePicker } from '../../../time-picker/time-picker.js'
 import '../../../time-picker/time-picker.js'
 import type { DatePicker } from '../../../date-picker/date-picker.js'
@@ -68,7 +68,7 @@ import '../../../date-picker/date-picker.js'
         "attribute.typeHints"
     ]
 }, "vi-persistent-object-attribute-date-time")
-export class PersistentObjectAttributeDateTime extends PersistentObjectAttribute {
+export class PersistentObjectAttributeDateTime extends Polymer.PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-date-time.html">`; }
 
     private _valueChangedBlock: boolean;
@@ -516,7 +516,6 @@ export class PersistentObjectAttributeDateTime extends PersistentObjectAttribute
                 this._setIsInvalid(false);
         }
 
-
         if (this._pendingRefresh) {
             this._pendingRefresh = false;
             this.attribute.setValue(this.value, true);
@@ -631,4 +630,4 @@ export class PersistentObjectAttributeDateTime extends PersistentObjectAttribute
     }
 }
 
-PersistentObjectAttribute.registerAttributeType("DateTime", PersistentObjectAttributeDateTime);
+PersistentObjectAttributeRegister.add("DateTime", PersistentObjectAttributeDateTime);

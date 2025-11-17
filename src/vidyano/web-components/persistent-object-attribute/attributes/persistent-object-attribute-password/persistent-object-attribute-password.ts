@@ -1,6 +1,6 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { PersistentObjectAttribute } from "polymer"
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
 
 @Polymer.WebComponent.register({
     properties: {
@@ -10,7 +10,7 @@ import { PersistentObjectAttribute } from "polymer"
         }
     }
 }, "vi-persistent-object-attribute-password")
-export class PersistentObjectAttributePassword extends PersistentObjectAttribute {
+export class PersistentObjectAttributePassword extends Polymer.PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-password.html">`; }
 
     readonly autocomplete: string; private _setAutocomplete: (maxlength: string) => void;
@@ -30,4 +30,4 @@ export class PersistentObjectAttributePassword extends PersistentObjectAttribute
     }
 }
 
-PersistentObjectAttribute.registerAttributeType("Password", PersistentObjectAttributePassword);
+PersistentObjectAttributeRegister.add("Password", PersistentObjectAttributePassword);

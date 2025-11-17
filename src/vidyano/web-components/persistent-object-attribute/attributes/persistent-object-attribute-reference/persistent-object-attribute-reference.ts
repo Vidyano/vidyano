@@ -1,7 +1,7 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import { Path } from "libs/pathjs/pathjs"
-import { PersistentObjectAttribute } from "polymer"
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
 import { SelectReferenceDialog } from "components/select-reference-dialog/select-reference-dialog"
 import type { Select } from "components/select/select"
 import "components/select/select"
@@ -59,7 +59,7 @@ import "components/select/select"
         "_update(attribute.isReadOnly, sensitive, isConnected)"
     ]
 }, "vi-persistent-object-attribute-reference")
-export class PersistentObjectAttributeReference extends PersistentObjectAttribute {
+export class PersistentObjectAttributeReference extends Polymer.PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-reference.html">`; }
 
     readonly canClear: boolean; private _setCanClear: (val: boolean) => void;
@@ -233,4 +233,4 @@ export class PersistentObjectAttributeReference extends PersistentObjectAttribut
     }
 }
 
-PersistentObjectAttribute.registerAttributeType("Reference", PersistentObjectAttributeReference);
+PersistentObjectAttributeRegister.add("Reference", PersistentObjectAttributeReference);

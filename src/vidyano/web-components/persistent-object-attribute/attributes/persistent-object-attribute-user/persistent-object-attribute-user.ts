@@ -2,7 +2,7 @@ import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import "components/button/button"
 import { SelectReferenceDialog } from "components/select-reference-dialog/select-reference-dialog"
-import { PersistentObjectAttribute } from "polymer"
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
 
 @Polymer.WebComponent.register({
     properties: {
@@ -20,7 +20,7 @@ import { PersistentObjectAttribute } from "polymer"
         }
     }
 }, "vi-persistent-object-attribute-user")
-export class PersistentObjectAttributeUser extends PersistentObjectAttribute {
+export class PersistentObjectAttributeUser extends Polymer.PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-user.html">`; }
 
     private async _browseReference() {
@@ -56,4 +56,4 @@ export class PersistentObjectAttributeUser extends PersistentObjectAttribute {
     }
 }
 
-PersistentObjectAttribute.registerAttributeType("User", PersistentObjectAttributeUser);
+PersistentObjectAttributeRegister.add("User", PersistentObjectAttributeUser);

@@ -1,6 +1,6 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { PersistentObjectAttribute } from "polymer"
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
 import "components/select/select"
 
 @Polymer.WebComponent.register({
@@ -11,7 +11,7 @@ import "components/select/select"
         }
     }
 }, "vi-persistent-object-attribute-nullable-boolean")
-export class PersistentObjectAttributeNullableBoolean extends PersistentObjectAttribute {
+export class PersistentObjectAttributeNullableBoolean extends Polymer.PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-nullable-boolean.html">`; }
 
     private _computeBooleanOptions(attribute: Vidyano.PersistentObjectAttribute): Vidyano.KeyValuePair<boolean, string>[] {
@@ -48,4 +48,4 @@ export class PersistentObjectAttributeNullableBoolean extends PersistentObjectAt
     }
 }
 
-PersistentObjectAttribute.registerAttributeType("NullableBoolean", PersistentObjectAttributeNullableBoolean);
+PersistentObjectAttributeRegister.add("NullableBoolean", PersistentObjectAttributeNullableBoolean);

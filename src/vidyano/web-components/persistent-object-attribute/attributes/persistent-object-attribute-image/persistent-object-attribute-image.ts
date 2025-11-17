@@ -1,6 +1,6 @@
 import * as Polymer from "polymer"
 import "components/button/button"
-import { PersistentObjectAttribute } from "polymer"
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
 import { PersistentObjectAttributeImageDialog } from "./persistent-object-attribute-image-dialog"
 
 @Polymer.WebComponent.register({
@@ -19,7 +19,7 @@ import { PersistentObjectAttributeImageDialog } from "./persistent-object-attrib
         }
     }
 }, "vi-persistent-object-attribute-image")
-export class PersistentObjectAttributeImage extends PersistentObjectAttribute {
+export class PersistentObjectAttributeImage extends Polymer.PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-image.html">`; }
 
     private _pasteListener: EventListener;
@@ -124,4 +124,4 @@ export class PersistentObjectAttributeImage extends PersistentObjectAttribute {
     }
 }
 
-PersistentObjectAttribute.registerAttributeType("Image", PersistentObjectAttributeImage);
+PersistentObjectAttributeRegister.add("Image", PersistentObjectAttributeImage);

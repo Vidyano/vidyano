@@ -1,7 +1,7 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import { Observable, ISubjectDisposer } from "vidyano"
-import { PersistentObjectAttribute } from "polymer"
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
 import "components/persistent-object-attribute/attributes/persistent-object-attribute-as-detail/persistent-object-attribute-as-detail"
 import "components/persistent-object-attribute/attributes/persistent-object-attribute-binary-file/persistent-object-attribute-binary-file"
 import "components/persistent-object-attribute/attributes/persistent-object-attribute-boolean/persistent-object-attribute-boolean"
@@ -163,7 +163,7 @@ export class PersistentObjectAttributePresenter extends ConfigurableWebComponent
 
     private _developerToggleDisposer: ISubjectDisposer;
     private _renderedAttribute: Vidyano.PersistentObjectAttribute;
-    private _renderedAttributeElement: PersistentObjectAttribute;
+    private _renderedAttributeElement: Polymer.PersistentObjectAttribute;
     private _focusQueued: boolean;
     private _customTemplate: new (p0?: object) => Polymer.Templatize.TemplateInstanceBase;
     readonly loading: boolean; private _setLoading: (loading: boolean) => void;
@@ -290,7 +290,7 @@ export class PersistentObjectAttributePresenter extends ConfigurableWebComponent
                 if (!!config && config.hasTemplate)
                     this.appendChild(config.stamp(attribute, config.as || "attribute"));
                 else {
-                    this._renderedAttributeElement = <PersistentObjectAttribute>new (PersistentObjectAttribute.getAttributeConstructor(attributeType) ?? PersistentObjectAttributeString)();
+                    this._renderedAttributeElement = <Polymer.PersistentObjectAttribute>new (PersistentObjectAttributeRegister.get(attributeType) ?? PersistentObjectAttributeString)();
                     this._renderedAttributeElement.classList.add("attribute");
                     this._renderedAttributeElement.attribute = attribute;
                     this._renderedAttributeElement.nonEdit = this.nonEdit;

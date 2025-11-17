@@ -1,6 +1,6 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { PersistentObjectAttribute } from "polymer"
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
 import { PersistentObjectAttributeMultiStringItem } from "./persistent-object-attribute-multi-string-item"
 import { Sortable } from "components/sortable/sortable"
 import type { Tags } from "components/tags/tags"
@@ -50,7 +50,7 @@ import "components/tags/tags"
         "attribute.isReadOnly"
     ]
 }, "vi-persistent-object-attribute-multi-string")
-export class PersistentObjectAttributeMultiString extends PersistentObjectAttribute {
+export class PersistentObjectAttributeMultiString extends Polymer.PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-multi-string.html">`; }
 
     readonly isTags: boolean;
@@ -176,4 +176,4 @@ export class PersistentObjectAttributeMultiString extends PersistentObjectAttrib
     }
 }
 
-PersistentObjectAttribute.registerAttributeType("MultiString", PersistentObjectAttributeMultiString);
+PersistentObjectAttributeRegister.add("MultiString", PersistentObjectAttributeMultiString);

@@ -22,7 +22,7 @@ export { IronListElement } from "@polymer/iron-list"
 import "@polymer/iron-media-query"
 
 export { WebComponent } from "components/web-component/polymer/web-component"
-export { PersistentObjectAttribute, PersistentObjectAttributeConstructor } from "components/persistent-object-attribute/polymer/persistent-object-attribute"
+export { PersistentObjectAttribute } from "components/persistent-object-attribute/polymer/persistent-object-attribute"
 
 declare module "@polymer/polymer/lib/utils/gestures" {
     export interface GestureEvent extends Event {

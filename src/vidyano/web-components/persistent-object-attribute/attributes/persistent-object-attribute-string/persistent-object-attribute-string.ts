@@ -1,6 +1,6 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { PersistentObjectAttribute } from "polymer"
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
 
 @Polymer.WebComponent.register({
     properties: {
@@ -47,7 +47,7 @@ import { PersistentObjectAttribute } from "polymer"
         }
     },
 }, "vi-persistent-object-attribute-string")
-export class PersistentObjectAttributeString extends PersistentObjectAttribute {
+export class PersistentObjectAttributeString extends Polymer.PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-string.html">`; }
 
     private _suggestionsSeparator: string;
@@ -178,4 +178,4 @@ export class PersistentObjectAttributeString extends PersistentObjectAttribute {
     }
 }
 
-PersistentObjectAttribute.registerAttributeType("String", PersistentObjectAttributeString);
+PersistentObjectAttributeRegister.add("String", PersistentObjectAttributeString);

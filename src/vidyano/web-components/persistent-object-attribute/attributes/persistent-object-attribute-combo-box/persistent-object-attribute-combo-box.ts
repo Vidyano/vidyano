@@ -1,6 +1,6 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { PersistentObjectAttribute } from "polymer"
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
 import { Select } from '../../../select/select.js'
 import "components/select/select"
 
@@ -21,7 +21,7 @@ import "components/select/select"
         }
     }
 }, "vi-persistent-object-attribute-combo-box")
-export class PersistentObjectAttributeComboBox extends PersistentObjectAttribute {
+export class PersistentObjectAttributeComboBox extends Polymer.PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-combo-box.html">`; }
 
     readonly comboBoxOptions: string[]; private _setComboBoxOptions: (options: string[]) => void;
@@ -73,4 +73,4 @@ export class PersistentObjectAttributeComboBox extends PersistentObjectAttribute
     }
 }
 
-PersistentObjectAttribute.registerAttributeType("ComboBox", PersistentObjectAttributeComboBox);
+PersistentObjectAttributeRegister.add("ComboBox", PersistentObjectAttributeComboBox);

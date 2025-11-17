@@ -1,7 +1,7 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import "components/button/button"
-import { PersistentObjectAttribute } from "polymer"
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
 
 @Polymer.WebComponent.register({
     properties: {
@@ -15,7 +15,7 @@ import { PersistentObjectAttribute } from "polymer"
         }
     }
 }, "vi-persistent-object-attribute-binary-file")
-export class PersistentObjectAttributeBinaryFile extends PersistentObjectAttribute {
+export class PersistentObjectAttributeBinaryFile extends Polymer.PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-binary-file.html">`; }
 
     focus() {
@@ -33,7 +33,6 @@ export class PersistentObjectAttributeBinaryFile extends PersistentObjectAttribu
                 await this.attribute.triggerRefresh(true);
         }
     }
-
 
     private async _clear() {
         this.value = null;
@@ -66,4 +65,4 @@ export class PersistentObjectAttributeBinaryFile extends PersistentObjectAttribu
     }
 }
 
-PersistentObjectAttribute.registerAttributeType("BinaryFile", PersistentObjectAttributeBinaryFile);
+PersistentObjectAttributeRegister.add("BinaryFile", PersistentObjectAttributeBinaryFile);

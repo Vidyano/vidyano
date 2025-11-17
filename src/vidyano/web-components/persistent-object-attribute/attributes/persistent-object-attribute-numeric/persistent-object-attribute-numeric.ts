@@ -2,7 +2,7 @@ import * as Polymer from "polymer"
 import BigNumber from 'bignumber.js';
 import * as Vidyano from "vidyano"
 import * as Keyboard from "components/utils/keyboard"
-import { PersistentObjectAttribute } from "polymer"
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
 
 @Polymer.WebComponent.register({
     properties: {
@@ -27,7 +27,7 @@ import { PersistentObjectAttribute } from "polymer"
         }
     }    
 }, "vi-persistent-object-attribute-numeric")
-export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute {
+export class PersistentObjectAttributeNumeric extends Polymer.PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-numeric.html">`; }
 
     private _allowDecimal: boolean;
@@ -327,6 +327,6 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
     }
 }
 
-PersistentObjectAttribute.registerAttributeType("Numeric", PersistentObjectAttributeNumeric);
+PersistentObjectAttributeRegister.add("Numeric", PersistentObjectAttributeNumeric);
 
 const numericSynonyms: { [type: string]: string } = {};

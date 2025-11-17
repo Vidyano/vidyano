@@ -1,6 +1,6 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { PersistentObjectAttribute } from "polymer"
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
 import { PersistentObjectAttributeTranslatedStringDialog } from "./persistent-object-attribute-translated-string-dialog"
 
 export interface ITranslatedString {
@@ -26,7 +26,7 @@ export interface ITranslatedString {
         }
     }
 }, "vi-persistent-object-attribute-translated-string")
-export class PersistentObjectAttributeTranslatedString extends PersistentObjectAttribute {
+export class PersistentObjectAttributeTranslatedString extends Polymer.PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-translated-string.html">`; }
 
     private _defaultLanguage: string;
@@ -102,4 +102,4 @@ export class PersistentObjectAttributeTranslatedString extends PersistentObjectA
     }
 }
 
-PersistentObjectAttribute.registerAttributeType("TranslatedString", PersistentObjectAttributeTranslatedString);
+PersistentObjectAttributeRegister.add("TranslatedString", PersistentObjectAttributeTranslatedString);

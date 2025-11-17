@@ -2,7 +2,7 @@ import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import "components/checkbox/checkbox"
 import "components/toggle/toggle"
-import { PersistentObjectAttribute } from "polymer"
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
 
 @Polymer.WebComponent.register({
     properties: {
@@ -20,7 +20,7 @@ import { PersistentObjectAttribute } from "polymer"
         }
     }
 }, "vi-persistent-object-attribute-boolean")
-export class PersistentObjectAttributeBoolean extends PersistentObjectAttribute {
+export class PersistentObjectAttributeBoolean extends Polymer.PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-boolean.html">`; }
 
     readonly defaultInputtype: string; private _setDefaultInputtype: (defaultInputtype: string) => void;
@@ -49,4 +49,4 @@ export class PersistentObjectAttributeBoolean extends PersistentObjectAttribute 
     }
 }
 
-PersistentObjectAttribute.registerAttributeType("Boolean", PersistentObjectAttributeBoolean);
+PersistentObjectAttributeRegister.add("Boolean", PersistentObjectAttributeBoolean);

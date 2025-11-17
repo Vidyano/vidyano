@@ -1,10 +1,10 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import  { PersistentObjectAttribute } from "polymer"
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
 import "components/marked/marked"
 
 @Polymer.WebComponent.register("vi-persistent-object-attribute-common-mark")
-export class PersistentObjectAttributeCommonMark extends PersistentObjectAttribute {
+export class PersistentObjectAttributeCommonMark extends Polymer.PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-common-mark.html">`; }
 
     private _editTextAreaBlur() {
@@ -13,4 +13,4 @@ export class PersistentObjectAttributeCommonMark extends PersistentObjectAttribu
     }
 }
 
-PersistentObjectAttribute.registerAttributeType("CommonMark", PersistentObjectAttributeCommonMark);
+PersistentObjectAttributeRegister.add("CommonMark", PersistentObjectAttributeCommonMark);

@@ -1,6 +1,6 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { PersistentObjectAttribute } from "polymer"
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
 import "components/select/select"
 import "components/checkbox/checkbox"
 
@@ -29,7 +29,7 @@ import "components/checkbox/checkbox"
         },
     }    
 }, "vi-persistent-object-attribute-key-value-list")
-export class PersistentObjectAttributeKeyValueList extends PersistentObjectAttribute {
+export class PersistentObjectAttributeKeyValueList extends Polymer.PersistentObjectAttribute {
     static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-key-value-list.html">`; }
 
     protected _valueChanged(newValue: any) {
@@ -76,4 +76,4 @@ export class PersistentObjectAttributeKeyValueList extends PersistentObjectAttri
     }
 }
 
-PersistentObjectAttribute.registerAttributeType("KeyValueList", PersistentObjectAttributeKeyValueList);
+PersistentObjectAttributeRegister.add("KeyValueList", PersistentObjectAttributeKeyValueList);
