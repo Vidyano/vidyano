@@ -1,79 +1,67 @@
-import * as Polymer from "polymer"
-import * as Vidyano from "vidyano"
-import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
+import { html, nothing, unsafeCSS } from "lit";
+import { property, state } from "lit/decorators.js";
+import * as Vidyano from "vidyano";
+import { computed, observer } from "components/web-component/web-component";
+import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute";
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register";
+import styles from "./persistent-object-attribute-string.css";
 
-@Polymer.WebComponent.register({
-    properties: {
-        characterCasing: {
-            type: String,
-            readOnly: true,
-            observer: "_characterCasingChanged"
-        },
-        editInputStyle: {
-            type: String,
-            readOnly: true
-        },
-        suggestions: {
-            type: Array,
-            readOnly: true
-        },
-        hasSuggestions: {
-            type: Boolean,
-            computed: "_computeHasSuggestions(filteredSuggestions, readOnly)"
-        },
-        filteredSuggestions: {
-            type: Array,
-            computed: "_computeFilteredSuggestions(suggestions, value)"
-        },
-        inputtype: {
-            type: String,
-            readOnly: true
-        },
-        maxlength: {
-            type: Number,
-            readOnly: true
-        },
-        autocomplete: {
-            type: String,
-            readOnly: true
-        },
-        link: {
-            type: String,
-            computed: "_computeLink(attribute, attribute.value)"
-        },
-        linkTitle: {
-            type: String,
-            computed: "_computeLinkTitle(attribute.displayValue, sensitive)"
-        }
-    },
-}, "vi-persistent-object-attribute-string")
-export class PersistentObjectAttributeString extends Polymer.PersistentObjectAttribute {
-    static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-string.html">`; }
+export class PersistentObjectAttributeString extends PersistentObjectAttribute {
+    static styles = [super.styles, unsafeCSS(styles)];
 
     private _suggestionsSeparator: string;
-    readonly editInputStyle: string; private _setEditInputStyle: (style: string) => void;
-    readonly suggestions: string[]; private _setSuggestions: (suggestions: string[]) => void;
-    readonly inputtype: string; private _setInputtype: (inputtype: string) => void;
-    readonly characterCasing: string; private _setCharacterCasing: (characterCasing: string) => void;
-    readonly maxlength: number; private _setMaxlength: (maxlength: number) => void;
-    readonly autocomplete: string; private _setAutocomplete: (maxlength: string) => void;
+
+    @state()
+    @observer(PersistentObjectAttributeString.prototype._characterCasingChanged)
+    characterCasing: string;
+
+    @state()
+    editInputStyle: string;
+
+    @state()
+    suggestions: string[];
+
+    get filteredSuggestions(): string[] {
+        return this._computeFilteredSuggestions(this.suggestions, this.value);
+    }
+
+    get hasSuggestions(): boolean {
+        return this._computeHasSuggestions(this.filteredSuggestions, this.readOnly);
+    }
+
+    @state()
+    inputtype: string;
+
+    @state()
+    maxlength: number;
+
+    @state()
+    autocomplete: string;
+
+    @property({ type: String })
+    @computed(PersistentObjectAttributeString.prototype._computeLink, "attribute", "attribute.value")
+    declare readonly link: string;
+
+    @property({ type: String })
+    @computed(PersistentObjectAttributeString.prototype._computeLinkTitle, "attribute.displayValue", "sensitive")
+    declare readonly linkTitle: string;
 
     protected _attributeChanged() {
         super._attributeChanged();
 
         if (this.attribute instanceof Vidyano.PersistentObjectAttribute) {
-            this._setCharacterCasing(this.attribute.getTypeHint("CharacterCasing", "Normal"));
-            this._setInputtype(this.attribute.getTypeHint("InputType", "text"));
+            this.characterCasing = this.attribute.getTypeHint("CharacterCasing", "Normal");
+            this.inputtype = this.attribute.getTypeHint("InputType", "text");
             const maxlength = parseInt(this.attribute.getTypeHint("MaxLength", "0"), 10);
-            this._setMaxlength(maxlength > 0 ? maxlength : null);
+            this.maxlength = maxlength > 0 ? maxlength : null;
 
             // Sets the autocomplete attribute on the input (https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete)
-            this._setAutocomplete(this.attribute.getTypeHint("Autocomplete"));
+            this.autocomplete = this.attribute.getTypeHint("Autocomplete");
 
             this._suggestionsSeparator = this.attribute.getTypeHint("SuggestionsSeparator");
             if (this._suggestionsSeparator != null && this.attribute.options != null && this.attribute.options.length > 0) {
                 const value = <string>this.attribute.value;
-                this._setSuggestions((<string[]>this.attribute.options).filter(o => !String.isNullOrEmpty(o) && (value == null || !value.contains(o))));
+                this.suggestions = (<string[]>this.attribute.options).filter(o => !String.isNullOrEmpty(o) && (value == null || !value.contains(o)));
             }
         }
     }
@@ -113,6 +101,7 @@ export class PersistentObjectAttributeString extends Polymer.PersistentObjectAtt
         });
     }
 
+    @observer("value")
     protected _valueChanged(value: any, oldValue: any) {
         let selection: number[];
         let input: HTMLInputElement;
@@ -120,16 +109,20 @@ export class PersistentObjectAttributeString extends Polymer.PersistentObjectAtt
         if (this.editing && value && this.characterCasing !== "Normal") {
             value = this.characterCasing === "Upper" ? value.toUpperCase() : value.toLowerCase();
             if (value !== this.value) {
-                input = <HTMLInputElement>this.$.input || <HTMLInputElement>this.shadowRoot.querySelector("input");
+                input = <HTMLInputElement>this.shadowRoot.querySelector("input");
                 if (input != null)
                     selection = [input.selectionStart, input.selectionEnd];
             }
         }
 
-        if (value === this.value)
-            super._valueChanged(value, oldValue);
-        else
+        if (value === this.value) {
+            // Value observer from base class will handle this
+            if (this.attribute && value !== this.attribute.value)
+                this.attribute.setValue(value, false).catch(Vidyano.noop);
+        }
+        else {
             this.attribute.setValue(value, false).catch(Vidyano.noop);
+        }
 
         if (selection != null) {
             input.selectionStart = selection[0];
@@ -139,15 +132,15 @@ export class PersistentObjectAttributeString extends Polymer.PersistentObjectAtt
 
     private _characterCasingChanged(casing: string) {
         if (casing === "Upper")
-            this._setEditInputStyle("text-transform: uppercase;");
+            this.editInputStyle = "text-transform: uppercase;";
         else if (casing === "Lower")
-            this._setEditInputStyle("text-transform: lowercase;");
+            this.editInputStyle = "text-transform: lowercase;";
         else
-            this._setEditInputStyle(undefined);
+            this.editInputStyle = undefined;
     }
 
-    private _addSuggestion(e: Polymer.Gestures.TapEvent) {
-        const suggestion = e.model.suggestion;
+    private _addSuggestion(e: MouseEvent) {
+        const suggestion = (e.currentTarget as HTMLElement).textContent;
         this.attribute.setValue(String.isNullOrEmpty(this.value) ? suggestion : (this.value.endsWith(this._suggestionsSeparator) ? this.value + suggestion : this.value + this._suggestionsSeparator + suggestion)).catch(Vidyano.noop);
     }
 
@@ -176,6 +169,67 @@ export class PersistentObjectAttributeString extends Polymer.PersistentObjectAtt
     private _computeLinkTitle(displayValue: string, sensitive: boolean): string {
         return !sensitive ? displayValue : "";
     }
+
+    render() {
+        return html`
+            ${!this.editing ? html`
+                ${!this.link ? html`
+                    <vi-sensitive disabled=${!this.sensitive}>
+                        <span>${this.attribute?.displayValue}</span>
+                    </vi-sensitive>
+                ` : html`
+                    <a href=${this.link} title=${this.linkTitle} rel="external noopener" target="_blank">
+                        <vi-sensitive disabled=${!this.sensitive}>
+                            <span>${this.attribute?.displayValue}</span>
+                        </vi-sensitive>
+                        ${this.attribute?.value ? html`
+                            <vi-icon source="ArrowUpRight" class="size-h4"></vi-icon>
+                        ` : nothing}
+                        <div class="spacer"></div>
+                    </a>
+                `}
+            ` : html`
+                <vi-persistent-object-attribute-edit .attribute=${this.attribute}>
+                    <vi-sensitive disabled=${!this.sensitive}>
+                        <input
+                            .value=${this.value || ""}
+                            @input=${(e: InputEvent) => this.value = (e.target as HTMLInputElement).value}
+                            type=${this.inputtype}
+                            maxlength=${this.maxlength || nothing}
+                            autocomplete=${this.autocomplete || nothing}
+                            style=${this.editInputStyle || nothing}
+                            @focus=${this._editInputFocus}
+                            @blur=${this._editInputBlur}
+                            @paste=${this._editInputPaste}
+                            ?readonly=${this.readOnly}
+                            tabindex=${this.readOnlyTabIndex || nothing}
+                            placeholder=${this.placeholder || nothing}
+                            ?disabled=${this.frozen}>
+                    </vi-sensitive>
+                    ${this.link ? html`
+                        <a class="button" href=${this.link} title=${this.linkTitle} tabindex="-1" rel="external noopener" target="_blank">
+                            <vi-icon source="ArrowUpRight"></vi-icon>
+                        </a>
+                    ` : nothing}
+                    <slot name="button" slot="right"></slot>
+                    ${this.hasSuggestions ? html`
+                        <vi-popup slot="right" id="suggestions" placement="bottom-end">
+                            <vi-icon source="Add" slot="header"></vi-icon>
+                            <vi-scroller>
+                                <ul>
+                                    ${this.filteredSuggestions?.map(suggestion => html`
+                                        <li @click=${this._addSuggestion}>${suggestion}</li>
+                                    `)}
+                                </ul>
+                            </vi-scroller>
+                        </vi-popup>
+                    ` : nothing}
+                </vi-persistent-object-attribute-edit>
+            `}
+        `;
+    }
 }
+
+customElements.define("vi-persistent-object-attribute-string", PersistentObjectAttributeString);
 
 PersistentObjectAttributeRegister.add("String", PersistentObjectAttributeString);

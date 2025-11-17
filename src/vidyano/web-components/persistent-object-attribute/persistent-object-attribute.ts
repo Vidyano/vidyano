@@ -1,4 +1,4 @@
-import { unsafeCSS } from "lit";
+import { unsafeCSS, type CSSResultGroup } from "lit";
 import { property } from "lit/decorators.js";
 import * as Vidyano from "vidyano";
 import type { Select } from "components/select/select";
@@ -6,7 +6,7 @@ import { computed, notify, observer, WebComponent } from "components/web-compone
 import styles from "./persistent-object-attribute.css";
 
 export abstract class PersistentObjectAttribute extends WebComponent {
-    static styles = unsafeCSS(styles);
+    static styles: CSSResultGroup = unsafeCSS(styles);
 
     private _foreground: string;
 
