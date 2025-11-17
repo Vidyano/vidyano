@@ -160,4 +160,14 @@ export abstract class PersistentObjectAttribute extends WebComponent {
 
         // element.focus();
     }
+
+    render() {
+        return !this.editing ? this.renderDisplay() : this.renderEdit();
+    }
+
+    protected abstract renderDisplay();
+
+    protected renderEdit() {
+        return this.renderDisplay();
+    }
 }

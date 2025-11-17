@@ -170,62 +170,65 @@ export class PersistentObjectAttributeString extends PersistentObjectAttribute {
         return !sensitive ? displayValue : "";
     }
 
-    render() {
+    protected renderDisplay() {
+        if (!this.link)
+            return html`
+                <vi-sensitive disabled=${!this.sensitive}>
+                    <span>${this.attribute?.displayValue}</span>
+                </vi-sensitive>
+            `;
+
         return html`
-            ${!this.editing ? html`
-                ${!this.link ? html`
-                    <vi-sensitive disabled=${!this.sensitive}>
-                        <span>${this.attribute?.displayValue}</span>
-                    </vi-sensitive>
-                ` : html`
-                    <a href=${this.link} title=${this.linkTitle} rel="external noopener" target="_blank">
-                        <vi-sensitive disabled=${!this.sensitive}>
-                            <span>${this.attribute?.displayValue}</span>
-                        </vi-sensitive>
-                        ${this.attribute?.value ? html`
-                            <vi-icon source="ArrowUpRight" class="size-h4"></vi-icon>
-                        ` : nothing}
-                        <div class="spacer"></div>
+            <a href=${this.link} title=${this.linkTitle} rel="external noopener" target="_blank">
+                <vi-sensitive disabled=${!this.sensitive}>
+                    <span>${this.attribute?.displayValue}</span>
+                </vi-sensitive>
+                ${this.attribute?.value ? html`
+                    <vi-icon source="ArrowUpRight" class="size-h4"></vi-icon>
+                ` : nothing}
+                <div class="spacer"></div>
+            </a>
+        `;
+    }
+
+    protected renderEdit() {
+        return html`
+            <vi-persistent-object-attribute-edit .attribute=${this.attribute}>
+                <vi-sensitive disabled=${!this.sensitive}>
+                    <input
+                        .value=${this.value || ""}
+                        @input=${(e: InputEvent) => this.value = (e.target as HTMLInputElement).value}
+                        type=${this.inputtype}
+                        maxlength=${this.maxlength || nothing}
+                        autocomplete=${this.autocomplete || nothing}
+                        style=${this.editInputStyle || nothing}
+                        @focus=${this._editInputFocus}
+                        @blur=${this._editInputBlur}
+                        @paste=${this._editInputPaste}
+                        ?readonly=${this.readOnly}
+                        tabindex=${this.readOnlyTabIndex || nothing}
+                        placeholder=${this.placeholder || nothing}
+                        ?disabled=${this.frozen}>
+                </vi-sensitive>
+                ${this.link ? html`
+                    <a class="button" href=${this.link} title=${this.linkTitle} tabindex="-1" rel="external noopener" target="_blank">
+                        <vi-icon source="ArrowUpRight"></vi-icon>
                     </a>
-                `}
-            ` : html`
-                <vi-persistent-object-attribute-edit .attribute=${this.attribute}>
-                    <vi-sensitive disabled=${!this.sensitive}>
-                        <input
-                            .value=${this.value || ""}
-                            @input=${(e: InputEvent) => this.value = (e.target as HTMLInputElement).value}
-                            type=${this.inputtype}
-                            maxlength=${this.maxlength || nothing}
-                            autocomplete=${this.autocomplete || nothing}
-                            style=${this.editInputStyle || nothing}
-                            @focus=${this._editInputFocus}
-                            @blur=${this._editInputBlur}
-                            @paste=${this._editInputPaste}
-                            ?readonly=${this.readOnly}
-                            tabindex=${this.readOnlyTabIndex || nothing}
-                            placeholder=${this.placeholder || nothing}
-                            ?disabled=${this.frozen}>
-                    </vi-sensitive>
-                    ${this.link ? html`
-                        <a class="button" href=${this.link} title=${this.linkTitle} tabindex="-1" rel="external noopener" target="_blank">
-                            <vi-icon source="ArrowUpRight"></vi-icon>
-                        </a>
-                    ` : nothing}
-                    <slot name="button" slot="right"></slot>
-                    ${this.hasSuggestions ? html`
-                        <vi-popup slot="right" id="suggestions" placement="bottom-end">
-                            <vi-icon source="Add" slot="header"></vi-icon>
-                            <vi-scroller>
-                                <ul>
-                                    ${this.filteredSuggestions?.map(suggestion => html`
-                                        <li @click=${this._addSuggestion}>${suggestion}</li>
-                                    `)}
-                                </ul>
-                            </vi-scroller>
-                        </vi-popup>
-                    ` : nothing}
-                </vi-persistent-object-attribute-edit>
-            `}
+                ` : nothing}
+                <slot name="button" slot="right"></slot>
+                ${this.hasSuggestions ? html`
+                    <vi-popup slot="right" id="suggestions" placement="bottom-end">
+                        <vi-icon source="Add" slot="header"></vi-icon>
+                        <vi-scroller>
+                            <ul>
+                                ${this.filteredSuggestions?.map(suggestion => html`
+                                    <li @click=${this._addSuggestion}>${suggestion}</li>
+                                `)}
+                            </ul>
+                        </vi-scroller>
+                    </vi-popup>
+                ` : nothing}
+            </vi-persistent-object-attribute-edit>
         `;
     }
 }
