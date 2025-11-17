@@ -1,5 +1,5 @@
 import * as Polymer from "polymer"
-import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute"
+import { PersistentObjectAttribute } from "polymer"
 import "./persistent-object-attribute-flags-enum-flag"
 
 @Polymer.WebComponent.register("vi-persistent-object-attribute-flags-enum")

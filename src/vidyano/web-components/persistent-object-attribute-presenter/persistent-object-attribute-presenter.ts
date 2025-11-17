@@ -1,7 +1,7 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import { Observable, ISubjectDisposer } from "vidyano"
-import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute"
+import { PersistentObjectAttribute } from "polymer"
 import "components/persistent-object-attribute/attributes/persistent-object-attribute-as-detail/persistent-object-attribute-as-detail"
 import "components/persistent-object-attribute/attributes/persistent-object-attribute-binary-file/persistent-object-attribute-binary-file"
 import "components/persistent-object-attribute/attributes/persistent-object-attribute-boolean/persistent-object-attribute-boolean"

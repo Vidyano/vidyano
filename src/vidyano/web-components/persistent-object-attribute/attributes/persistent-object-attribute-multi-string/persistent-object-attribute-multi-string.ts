@@ -1,6 +1,6 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute"
+import { PersistentObjectAttribute } from "polymer"
 import { PersistentObjectAttributeMultiStringItem } from "./persistent-object-attribute-multi-string-item"
 import { Sortable } from "components/sortable/sortable"
 import type { Tags } from "components/tags/tags"

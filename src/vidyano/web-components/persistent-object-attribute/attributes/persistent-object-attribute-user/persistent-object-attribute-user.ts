@@ -2,7 +2,7 @@ import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import "components/button/button"
 import { SelectReferenceDialog } from "components/select-reference-dialog/select-reference-dialog"
-import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute"
+import { PersistentObjectAttribute } from "polymer"
 
 @Polymer.WebComponent.register({
     properties: {

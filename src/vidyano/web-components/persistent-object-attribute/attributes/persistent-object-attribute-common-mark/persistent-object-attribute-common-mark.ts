@@ -1,6 +1,6 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import  { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute"
+import  { PersistentObjectAttribute } from "polymer"
 import "components/marked/marked"
 
 @Polymer.WebComponent.register("vi-persistent-object-attribute-common-mark")

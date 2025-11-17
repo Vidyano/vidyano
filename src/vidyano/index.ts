@@ -79,7 +79,6 @@ export * from "./web-components/persistent-object-attribute/attributes/persisten
 export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-translated-string/persistent-object-attribute-translated-string-dialog"
 export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-translated-string/persistent-object-attribute-translated-string"
 export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-user/persistent-object-attribute-user"
-export * from "./web-components/persistent-object-attribute/persistent-object-attribute"
 export * from "./web-components/persistent-object-dialog/persistent-object-dialog"
 export * from "./web-components/persistent-object-group/persistent-object-group"
 export * from "./web-components/persistent-object-presenter/persistent-object-presenter"

@@ -1,7 +1,7 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import { Path } from "libs/pathjs/pathjs"
-import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute"
+import { PersistentObjectAttribute } from "polymer"
 import { SelectReferenceDialog } from "components/select-reference-dialog/select-reference-dialog"
 import type { Select } from "components/select/select"
 import "components/select/select"
