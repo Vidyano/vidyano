@@ -1,6 +1,6 @@
 import type { AppBase } from "components/app/app";
 import { LitElement, PropertyValueMap } from "lit";
-import { Service } from "vidyano";
+import { Service, ServiceBus } from "vidyano";
 import { WebComponentReactiveController } from "./web-component-reactive-controller";
 import { WebComponentListenerController, getListenersConfig } from "./web-component-listener-decorator";
 import { WebComponentKeybindingController, getKeybindingsConfig } from "./web-component-keybinding-decorator";
@@ -24,6 +24,8 @@ const TRANSLATION_CONTROLLER_SYMBOL = Symbol("WebComponent.translationController
 const APP_CHANGE_LISTENER_SYMBOL = Symbol("WebComponent.appChangeListener");
 const SERVICE_CHANGE_LISTENER_SYMBOL = Symbol("WebComponent.serviceChangeListener");
 const DOLLAR_PROXY_SYMBOL = Symbol("WebComponent.dollarProxy");
+const IS_APP_SENSITIVE_SYMBOL = Symbol("WebComponent.isAppSensitive");
+const IS_APP_SENSITIVE_SUBSCRIPTION_SYMBOL = Symbol("WebComponent.isAppSensitiveSubscription");
 
 // A mapped type to get the shape of the specific translations.
 type Translations<T> = { [K in keyof T]: string };
@@ -78,6 +80,29 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
         // Check if oldValue and new value are the same to avoid unnecessary updates, but undefined vs null should not trigger an update
         if (oldValue !== value && !(oldValue == null && value == null))
             this.requestUpdate("service", oldValue);
+    }
+
+    get isAppSensitive(): boolean {
+        if (this[IS_APP_SENSITIVE_SYMBOL] === undefined) {
+            this[IS_APP_SENSITIVE_SYMBOL] = false;
+
+            let isInitializing = true;
+
+            this[IS_APP_SENSITIVE_SUBSCRIPTION_SYMBOL] = ServiceBus.subscribe("vi-app:sensitive-changed", (_, __, sensitive: boolean) => {
+                const oldValue = this[IS_APP_SENSITIVE_SYMBOL];
+                if (oldValue !== sensitive) {
+                    this[IS_APP_SENSITIVE_SYMBOL] = sensitive;
+
+                    // Only trigger requestUpdate if we're not initializing
+                    if (!isInitializing)
+                        this.requestUpdate("isAppSensitive", oldValue);
+                }
+            }, true); // receiveLast = true to get current value
+
+            isInitializing = false;
+        }
+
+        return this[IS_APP_SENSITIVE_SYMBOL];
     }
 
     get translations(): TypedTranslations<TTranslations> {
@@ -165,6 +190,11 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
         if (this[SERVICE_CHANGE_LISTENER_SYMBOL]) {
             this.app.removeEventListener("service-changed", this[SERVICE_CHANGE_LISTENER_SYMBOL]);
             this[SERVICE_CHANGE_LISTENER_SYMBOL] = null;
+        }
+
+        if (this[IS_APP_SENSITIVE_SUBSCRIPTION_SYMBOL]) {
+            this[IS_APP_SENSITIVE_SUBSCRIPTION_SYMBOL]();
+            this[IS_APP_SENSITIVE_SUBSCRIPTION_SYMBOL] = null;
         }
     }
 
