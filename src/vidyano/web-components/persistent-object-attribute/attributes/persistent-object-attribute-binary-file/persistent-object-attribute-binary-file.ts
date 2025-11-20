@@ -1,68 +1,87 @@
-import * as Polymer from "polymer"
-import * as Vidyano from "vidyano"
-import "components/button/button"
-import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
+import { html, nothing, unsafeCSS } from "lit";
+import { property } from "lit/decorators.js";
+import { computed } from "components/web-component/web-component";
+import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute";
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register";
+import styles from "./persistent-object-attribute-binary-file.css";
 
-@Polymer.WebComponent.register({
-    properties: {
-        canClear: {
-            type: Boolean,
-            computed: "_computeCanClear(value, readOnly)"
-        },
-        fileName: {
-            type: String,
-            computed: "_computeFileName(value, editing)"
-        }
-    }
-}, "vi-persistent-object-attribute-binary-file")
-export class PersistentObjectAttributeBinaryFile extends Polymer.PersistentObjectAttribute {
-    static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-binary-file.html">`; }
+export class PersistentObjectAttributeBinaryFile extends PersistentObjectAttribute {
+    static styles = [super.styles, unsafeCSS(styles)];
+
+    @property({ type: Boolean })
+    @computed(function(this: PersistentObjectAttributeBinaryFile, value: string, readOnly: boolean): boolean {
+        return !readOnly && !String.isNullOrEmpty(value);
+    }, "value", "readOnly")
+    declare readonly canClear: boolean;
+
+    @property({ type: String })
+    @computed(function(this: PersistentObjectAttributeBinaryFile, value: string, editing: boolean): string {
+        if (String.isNullOrEmpty(value))
+            return editing ? "" : "—";
+
+        return value.split("|")[0];
+    }, "value", "editing")
+    declare readonly fileName: string;
 
     focus() {
-        const input = this.shadowRoot.querySelector("input[type='file']") as HTMLInputElement;
-        input?.focus();
+        (this.shadowRoot.querySelector("input[type='file']") as HTMLInputElement)?.focus();
     }
 
     private async _change(e: Event) {
         const targetInput = <HTMLInputElement>e.target;
-        if (targetInput.files && targetInput.files.length > 0) {
-            const file = targetInput.files[0];
-            this.value = file.name;
-            this.attribute.file = file;
-            if (this.attribute.triggersRefresh)
-                await this.attribute.triggerRefresh(true);
-        }
+        if (targetInput.files?.length !== 1)
+            return;
+        
+        const file = targetInput.files[0];
+        this.value = file.name;
+        this.attribute.file = file;
+        if (this.attribute.triggersRefresh)
+            await this.attribute.triggerRefresh(true);
     }
 
     private async _clear() {
         this.value = null;
         this.attribute.file = null;
-        
+
         const input = this.shadowRoot.querySelector("input[type='file']") as HTMLInputElement;
         if (input)
             input.value = null;
 
-        if(this.attribute?.triggersRefresh)
+        if (this.attribute?.triggersRefresh)
             await this.attribute.triggerRefresh(true);
     }
 
-    private _computeCanClear(value: string, readOnly: boolean): boolean {
-        return !readOnly && !String.isNullOrEmpty(value);
-    }
-
-    private _computeFileName(value: string, editing: boolean): string {
-        if (String.isNullOrEmpty(value))
-            return editing ? "" : "—";
-
-        return value.split("|")[0];
-    }
-
-    private _computeAccept(attribute: Vidyano.PersistentObjectAttribute): string {
-        if (!attribute)
+    private _computeAccept(): string {
+        if (!this.attribute)
             return "";
-        
-        return attribute.getTypeHint("accept", "");
+
+        return this.attribute.getTypeHint("accept", "");
+    }
+
+    protected renderDisplay() {
+        return super.renderDisplay(html`<span>${this.fileName}</span>`);
+    }
+
+    protected renderEdit() {
+        return super.renderEdit(html`
+            <vi-sensitive ?disabled=${!this.sensitive}>
+                <input .value=${this.fileName} type="text" readonly placeholder=${this.placeholder}>
+            </vi-sensitive>
+            ${!this.readOnly ? html`
+                <button class="browse" slot="right">
+                    <vi-icon source="FileUpload"></vi-icon>
+                    <input type="file" accept=${this._computeAccept()} @change=${this._change}>
+                </button>
+            ` : nothing}
+            ${this.canClear ? html`
+                <button slot="right" @click=${this._clear} tabindex="-1">
+                    <vi-icon source="Remove"></vi-icon>
+                </button>
+            ` : nothing}
+        `);
     }
 }
+
+customElements.define("vi-persistent-object-attribute-binary-file", PersistentObjectAttributeBinaryFile);
 
 PersistentObjectAttributeRegister.add("BinaryFile", PersistentObjectAttributeBinaryFile);
