@@ -1,516 +1,483 @@
-import * as Polymer from "polymer"
-import * as Vidyano from "vidyano"
+import { html, nothing, unsafeCSS } from "lit";
+import { property, state, query } from "lit/decorators.js";
+import { unsafeHTML } from "lit/directives/unsafe-html.js";
+import { WebComponent, computed, observer, listener, notify } from "components/web-component/web-component";
 import * as Keyboard from "components/utils/keyboard"
 import { Popup } from '../popup/popup.js';
 import { Scroller } from "components/scroller/scroller";
+import styles from "./select.css";
+import { SelectOptionItem, ISelectItem, SelectOption } from "./select-option-item";
 
-export type SelectOption = Vidyano.KeyValuePair<any, string>;
+export { ISelectItem, SelectOptionItem, SelectOption };
 
-export interface ISelectItem {
-    displayValue: string;
-    group: string;
-    groupFirst: boolean;
-    option: string | SelectOption;
-}
+export class Select extends WebComponent {
+    static styles = unsafeCSS(styles);
 
-@Polymer.WebComponent.register({
-    properties: {
-        options: {
-            type: Array,
-            value: null
-        },
-        hasOptions: {
-            type: Boolean,
-            computed: "_computeHasOptions(options, readonly)"
-        },
-        keepUnmatched: {
-            type: Boolean,
-            reflectToAttribute: true,
-            value: false
-        },
-        selectedOption: {
-            type: Object,
-            observer: "_selectedOptionChanged",
-            notify: true
-        },
-        suggestion: {
-            type: Object,
-            readOnly: true,
-            observer: "_suggestionChanged"
-        },
-        groupSeparator: {
-            type: String,
-            value: null
-        },
-        ungroupedOptions: {
-            type: Array,
-            computed: "_computeUngroupedOptions(options, groupSeparator)"
-        },
-        items: {
-            type: Array,
-            computed: "_computeItems(options, ungroupedOptions)"
-        },
-        filteredItems: {
-            type: Array,
-            computed: "_computeFilteredItems(items, inputValue, filtering, selectedOption)"
-        },
-        selectedItem: {
-            type: Object,
-            readOnly: true,
-            observer: "_selectedItemChanged"
-        },
-        inputValue: {
-            type: String,
-            notify: true,
-            computed: "_forwardComputed(_inputValue)"
-        },
-        _inputValue: {
-            type: String,
-            notify: true,
-            value: ""
-        },
-        filtering: {
-            type: Boolean,
-            readOnly: true,
-            value: false
-        },
-        readonly: {
-            type: Boolean,
-            reflectToAttribute: true,
-            value: false
-        },
-        isReadonlyInput: {
-            type: Boolean,
-            computed: "_computeIsReadonlyInput(readonly, hasOptions, keepUnmatched, disableFiltering)"
-        },
-        inputTabindex: {
-            type: String,
-            computed: "_computeInputTabIndex(isReadonlyInput)"
-        },
-        disabled: {
-            type: Boolean,
-            reflectToAttribute: true,
-            value: false,
-            observer: "_disabledChanged"
-        },
-        disableFiltering: {
-            type: Boolean,
-            reflectToAttribute: true,
-            value: false
-        },
-        sensitive: {
-            type: Boolean,
-            reflectToAttribute: true,
-            value: false
-        },
-        placeholder: String,
-        lazy: {
-            type: Boolean,
-            readOnly: true,
-            value: true
-        }
-    },
-    listeners: {
-        "keydown": "_keydown"
-    },
-    observers: [
-        "_computeSuggestionFeedback(inputValue, suggestion, filtering)"
-    ]
-}, "vi-select")
-export class Select extends Polymer.WebComponent {
-    static get template() { return Polymer.html`<link rel="import" href="select.html">` }
+    @query("#input")
+    private _inputEl: HTMLInputElement;
 
-    private items: ISelectItem[];
-    private filteredItems: ISelectItem[];
-    private _lastMatchedInputValue: string;
-    private _inputValue: string;
-    private _pendingSelectedOption: string;
-    readonly suggestion: ISelectItem; private _setSuggestion: (suggestion: ISelectItem) => void;
-    readonly filtering: boolean; private _setFiltering: (filtering: boolean) => void;
-    readonly selectedItem: ISelectItem; private _setSelectedItem: (item: ISelectItem) => void;
-    readonly lazy: boolean; private _setLazy: (lazy: boolean) => void;
-    ungroupedOptions: string[] | SelectOption[];
-    selectedOption: string;
-    keepUnmatched: boolean;
-    readonly: boolean;
-    groupSeparator: string;
+    @query("#match")
+    private _matchEl: HTMLElement;
+
+    @query("#remainder")
+    private _remainderEl: HTMLElement;
+
+    @query("#popup")
+    private _popup: Popup;
+
+    @query("#scroller")
+    private _scroller: Scroller;
+
+    @property({ type: Array })
+    options: (string | SelectOption)[] = [];
+
+    @property({ type: Boolean })
+    @computed(function(this: Select, options: (string | SelectOption)[], readonly: boolean): boolean {
+        return !readonly && Array.isArray(options) && options.length > 0;
+    }, "options", "readonly")
+    declare readonly hasOptions: boolean;
+
+    @property({ type: Boolean, reflect: true })
+    keepUnmatched: boolean = false;
+
+    @property({ type: Object })
+    @notify()
+    @observer(function(this: Select) {
+        this.filtering = false;
+        this._highlightedItem = null;
+    })
+    selectedOption: string | number | SelectOption;
+
+    @state()
+    suggestion: ISelectItem;
+
+    @property({ type: String })
+    groupSeparator: string = null;
+
+    @property({ type: Array })
+    @computed(function(this: Select, options: (string | SelectOption)[], groupSeparator: string): ISelectItem[] {
+        if (!options || options.length === 0)
+            return [];
+
+        const result: ISelectItem[] = [];
+        const groupsSeen = new Map<string, boolean>();
+
+        options.forEach(opt => {
+            let display = "";
+            let key: string | number = "";
+            let group = "";
+            let rawOption = opt;
+
+            if (typeof opt === "string") {
+                display = opt;
+                key = opt;
+            } else if (opt && typeof opt === "object") {
+                display = opt.value || "";
+                key = opt.key;
+            }
+
+            if (groupSeparator && display.includes(groupSeparator)) {
+                const parts = display.split(groupSeparator, 2);
+                if (parts.length === 2) {
+                    group = parts[0];
+                    display = parts[1];
+                }
+            }
+
+            let isGroupHeader = false;
+            if (group) {
+                if (!groupsSeen.has(group)) {
+                    isGroupHeader = true;
+                    groupsSeen.set(group, true);
+                }
+            }
+
+            result.push({
+                displayValue: display,
+                group: group,
+                isGroupHeader: isGroupHeader,
+                option: rawOption,
+                key: key
+            });
+        });
+
+        return result;
+    }, "options", "groupSeparator")
+    declare readonly items: ISelectItem[];
+
+    @property({ type: Array })
+    @computed(function(this: Select, items: ISelectItem[], inputValue: string, filtering: boolean): ISelectItem[] {
+        if (!items || items.length === 0)
+            return [];
+        if (!filtering || !inputValue)
+            return items;
+
+        const lowerInput = inputValue.toLowerCase();
+        return items.filter(item =>
+            item.displayValue && item.displayValue.toLowerCase().includes(lowerInput)
+        );
+    }, "items", "_inputValue", "filtering")
+    declare readonly filteredItems: ISelectItem[];
+
+    @property({ type: Object })
+    @computed(function(this: Select, items: ISelectItem[], selectedOption: string | number | SelectOption): ISelectItem {
+        if (!items || items.length === 0)
+            return undefined;
+
+        const searchKey = (selectedOption && typeof selectedOption === "object")
+            ? (selectedOption as SelectOption).key
+            : selectedOption;
+        return items.find(i => i.key === searchKey);
+    }, "items", "selectedOption")
+    @observer(function(this: Select, selectedItem: ISelectItem) {
+        if (this.filtering)
+            return;
+
+        this._inputValue = selectedItem?.displayValue ?? "";
+        this.suggestion = selectedItem;
+    })
+    declare readonly selectedItem: ISelectItem;
+
+    @property({ type: String })
+    @notify()
+    @computed(function(this: Select, _inputValue: string): string {
+        return _inputValue;
+    }, "_inputValue")
+    declare readonly inputValue: string;
+
+    @property({ type: String })
+    _inputValue: string = "";
+
+    @state()
+    filtering: boolean = false;
+
+    @state()
+    private _highlightedItem: ISelectItem;
+
+    @property({ type: Boolean, reflect: true })
+    readonly: boolean = false;
+
+    @property({ type: Boolean })
+    @computed(function(this: Select, readonly: boolean, hasOptions: boolean, keepUnmatched: boolean, disableFiltering: boolean): boolean {
+        return readonly || (!keepUnmatched && (!hasOptions || disableFiltering));
+    }, "readonly", "hasOptions", "keepUnmatched", "disableFiltering")
+    declare readonly isReadonlyInput: boolean;
+
+    @property({ type: String })
+    @computed(function(this: Select, isReadonlyInput: boolean): string {
+        return isReadonlyInput ? "-1" : "0";
+    }, "isReadonlyInput")
+    declare readonly inputTabindex: string;
+
+    @property({ type: Boolean, reflect: true })
+    @observer(function(this: Select, newValue: boolean) {
+        if (newValue && this._popup?.open)
+            this._popup.close();
+    })
+    disabled: boolean = false;
+
+    @property({ type: Boolean, reflect: true })
+    disableFiltering: boolean = false;
+
+    @property({ type: Boolean, reflect: true })
+    sensitive: boolean = false;
+
+    @property({ type: String })
+    placeholder: string;
+
+    @state()
+    lazy: boolean = true;
+
+
+    render() {
+        return html`
+            <vi-popup id="popup"
+                      @popup-opened=${this._popupOpened}
+                      @popup-closed=${this._popupClosed}
+                      sticky
+                      auto-width
+                      ?disabled=${this.readonly || this.disabled || this.sensitive}>
+
+                <div slot="header">
+                    <slot name="left"></slot>
+
+                    ${this.filtering ? html`
+                        <div class="suggestions">
+                            <span id="match"></span><span id="remainder"></span>
+                        </div>
+                    ` : nothing}
+
+                    <vi-sensitive ?disabled=${!this.sensitive}>
+                        <input id="input"
+                               .value=${this._inputValue}
+                               @input=${this._onInput}
+                               @blur=${this._blur}
+                               @keydown=${this._keydown}
+                               @keyup=${this._keyup}
+                               ?readonly=${this.isReadonlyInput}
+                               tabindex=${this.inputTabindex}
+                               placeholder=${this.placeholder || ''}
+                               part="input"
+                               ?disabled=${this.disabled}
+                               autocomplete="off">
+                    </vi-sensitive>
+
+                    ${this.hasOptions ? html`
+                        <vi-icon source="CaretDown" part="icon"></vi-icon>
+                    ` : nothing}
+                    <slot name="right"></slot>
+                </div>
+
+                ${!this.lazy ? html`
+                    <vi-scroller id="scroller" content ?filtering=${this.filtering} @select-option=${this._onOptionSelected}>
+                        ${this.filteredItems?.map(item => html`
+                            ${item.isGroupHeader ? html`
+                                <div class="group">${item.group}</div>
+                            ` : nothing}
+
+                            <vi-select-option-item
+                                ?suggested=${item.option === this.suggestion?.option}
+                                ?selected=${!this.filtering && item.option === (this._highlightedItem ?? this.selectedItem)?.option}
+                                .item=${item}>
+                                ${unsafeHTML(this.#computeItemDisplayValue(item.displayValue, this._inputValue))}
+                            </vi-select-option-item>
+                        `)}
+                    </vi-scroller>
+                ` : nothing}
+            </vi-popup>
+        `;
+    }
 
     open() {
         if (this.readonly || !this.items || this.items.length === 0)
             return;
 
-        this.popup.popup();
+        this._popup?.popup();
     }
 
     focus() {
-        this.shadowRoot.querySelector("input").focus();
+        if (this._inputEl)
+            this._inputEl.focus();
     }
 
-    private get popup(): Popup {
-        return <Popup>this.$.popup;
+    private _onInput(e: InputEvent) {
+        this._inputValue = (e.target as HTMLInputElement).value;
     }
 
+    @listener("keydown")
     private _keydown(e: KeyboardEvent) {
-        if (!this.ungroupedOptions || this.ungroupedOptions.length === 0)
+        if (!this.items || this.items.length === 0)
             return;
 
-        if (this.items && this.items.length > 0) {
-            const currentIndex = this.filteredItems.indexOf(this.filtering ? this.suggestion : this.selectedItem);
-
-            if (e.key === Keyboard.Keys.ArrowDown) {
-                this.popup.popup();
-
-                if (currentIndex + 1 < this.filteredItems.length) {
-                    if (this.filtering)
-                        this._setSuggestion(this.filteredItems[currentIndex + 1]);
-                    else
-                        this._setSelectedItem(this.filteredItems[currentIndex + 1]);
-                }
-
-                e.stopPropagation();
+        switch (e.key) {
+            case Keyboard.Keys.ArrowDown:
+                this.#navigate(1);
                 e.preventDefault();
-            }
-            else if (e.key === Keyboard.Keys.ArrowUp) {
-                this.popup.popup();
-
-                if (currentIndex > 0) {
-                    if (this.filtering)
-                        this._setSuggestion(this.filteredItems[currentIndex - 1]);
-                    else
-                        this._setSelectedItem(this.filteredItems[currentIndex - 1]);
-                }
-
                 e.stopPropagation();
+                break;
+
+            case Keyboard.Keys.ArrowUp:
+                this.#navigate(-1);
                 e.preventDefault();
-            }
-            else if (e.key === Keyboard.Keys.Enter || e.key === Keyboard.Keys.Tab) {
-                this.popup.close();
+                e.stopPropagation();
+                break;
 
-                if (this.suggestion !== this.selectedItem)
-                    this._setSelectedItem(this.suggestion);
-                else
-                    this._selectedItemChanged();
-
+            case Keyboard.Keys.Enter:
+            case Keyboard.Keys.Tab:
+                this.#confirmSelection();
                 if (e.key === Keyboard.Keys.Enter) {
-                    e.stopPropagation();
                     e.preventDefault();
+                    e.stopPropagation();
                 }
-            }
-            else if (e.key === Keyboard.Keys.Escape) {
-                this.popup.close();
+                break;
 
-                if (this.filtering)
-                    this._setFiltering(false);
-
-                const currentSelectedItem = this.selectedItem;
-                this._setSelectedItem(this._getItem(this.selectedOption));
-                if (currentSelectedItem === this.selectedItem)
-                    this._selectedItemChanged();
-
-                e.stopPropagation();
+            case Keyboard.Keys.Escape:
+                this.#cancelSelection();
                 e.preventDefault();
-            }
+                e.stopPropagation();
+                break;
         }
     }
 
     private _keyup(e: KeyboardEvent) {
-        if (this._lastMatchedInputValue !== this._inputValue && !this.filtering && e.key !== Keyboard.Keys.Enter && e.key !== Keyboard.Keys.Tab && e.key !== Keyboard.Keys.Escape)
-            this._setFiltering(true);
+        if (this.disableFiltering)
+            return;
+
+        const ignoredKeys = [
+            Keyboard.Keys.Enter, Keyboard.Keys.Tab, Keyboard.Keys.Escape,
+            Keyboard.Keys.ArrowUp, Keyboard.Keys.ArrowDown, Keyboard.Keys.ArrowLeft, Keyboard.Keys.ArrowRight
+        ];
+
+        if (!this.filtering && !ignoredKeys.includes(e.key)) {
+            this.filtering = true;
+        }
     }
 
     private _blur() {
         if (this.keepUnmatched)
             return;
 
-        if (!this.popup.open)
-            this._selectedItemChanged();
+        if (!this._popup?.open) {
+            this.filtering = false;
+            this._inputValue = this.selectedItem?.displayValue ?? "";
+        }
     }
 
-    private _popupOpened() {
+    private async _popupOpened() {
         if (this.lazy) {
-            this._setLazy(false);
-            Polymer.flush();
+            this.lazy = false;
+            await this.updateComplete;
         }
-
-        this._scrollItemIntoView();
+        this.#scrollItemIntoView(this._highlightedItem ?? this.selectedItem);
     }
 
     private _popupClosed() {
-        if (this._pendingSelectedOption) {
-            const pendingSelectedOption = this._pendingSelectedOption;
-            this._pendingSelectedOption = undefined;
-
-            this._setSelectedItem(this._getItem(pendingSelectedOption));
-        }
+        this._highlightedItem = null;
     }
 
-    private _scrollItemIntoView() {
-        if (!this.selectedItem)
+    private _onOptionSelected(e: CustomEvent) {
+        e.stopPropagation();
+        this.#setSelectedOption(e.detail.option);
+        this._popup?.close();
+    }
+
+    #navigate(direction: number) {
+        this._popup?.popup();
+
+        const list = this.filteredItems;
+        if (!list || list.length === 0)
             return;
 
-        const scroller = this.shadowRoot.getElementById(`${this.groupSeparator ? "grouped-" : ""}scroller`) as Scroller;
-        if (scroller != null) {
-            const options = <SelectOptionItem[]>(Array.from(scroller.querySelectorAll("vi-select-option-item")) as any);
-            options.find(option => option.item === this.selectedItem)?.scrollIntoView();
-        }
-    }
+        const activeItem = this.filtering
+            ? this.suggestion
+            : (this._highlightedItem ?? this.selectedItem);
+        const currentIndex = list.indexOf(activeItem);
 
-    private _computeHasOptions(options: string[], readonly: boolean): boolean {
-        return !readonly && !!options && options.length > 0;
-    }
+        let newIndex = currentIndex + direction;
 
-    private _computeUngroupedOptions(options: string[] | SelectOption[], groupSeparator: string): string[] | SelectOption[] {
-        if (!groupSeparator || !options || options.length === 0)
-            return options;
+        if (newIndex < 0)
+            newIndex = 0;
+        if (newIndex >= list.length)
+            newIndex = list.length - 1;
 
-        if ((<any[]>options).some(o => typeof o === "string"))
-            return (<string[]>options).map(o => o ? o.split(groupSeparator, 2)[1] : o);
-        else
-            return (<SelectOption[]>options).map(kvp => {
-                return {
-                    key: kvp.key,
-                    value: kvp && kvp.value ? kvp.value.split(groupSeparator, 2)[1] : ""
-                };
-            });
-    }
-
-    private _computeItems(options: string[] | SelectOption[], ungroupedOptions: string[] | SelectOption[]): ISelectItem[] {
-        if (!options || options.length === 0)
-            return [];
-
-        const isKvp = !(<any[]>options).some(o => typeof o === "string");
-
-        let groupFirstOptions: Map<any, any>;
-        if (this.groupSeparator) {
-            let optionsByGroup: Vidyano.KeyValuePair<string, any>[];
-
-            if (!isKvp)
-                optionsByGroup = (<string[]>options).groupBy(o => {
-                    const parts = o ? o.split(this.groupSeparator, 2) : [];
-                    return parts.length === 2 ? parts[0] || null : null;
-                });
-            else {
-                optionsByGroup = (<SelectOption[]>options).groupBy(kvp => {
-                    const displayValue = kvp ? kvp.value : null;
-                    const displayParts = displayValue ? displayValue.split(this.groupSeparator, 2) : [];
-                    return displayParts.length === 2 ? displayParts[0] || null : null;
-                });
+        if (newIndex !== currentIndex || !activeItem) {
+            const newItem = list[newIndex];
+            if (this.filtering) {
+                this.suggestion = newItem;
+            } else {
+                this._highlightedItem = newItem;
             }
-
-            groupFirstOptions = new Map();
-            optionsByGroup.forEach(g => {
-                g.value.forEach((o, n) => groupFirstOptions.set(o, { name: g.key, first: n === 0 }));
-            });
+            this.#scrollItemIntoView(newItem);
         }
-
-        let result: ISelectItem[];
-        if (!isKvp )
-            result = (<string[]>options).map((o, n) => {
-                const group = groupFirstOptions ? groupFirstOptions.get(o) : null;
-                return {
-                    displayValue: <string>ungroupedOptions[n],
-                    group: group ? group.name : null,
-                    groupFirst: group ? group.first : null,
-                    option: ungroupedOptions[n]
-                };
-            });
-        else {
-            result = (<SelectOption[]>options).map((kvp, index) => {
-                const ungroupedKvp = <SelectOption>ungroupedOptions[index];
-                const group = groupFirstOptions ? groupFirstOptions.get(kvp) : null;
-
-                return {
-                    displayValue: ungroupedKvp ? ungroupedKvp.value : "",
-                    group: group ? group.name : null,
-                    groupFirst: group ? group.first : null,
-                    option: ungroupedKvp
-                };
-            });
-        }
-
-        return result;
     }
 
-    private _computeFilteredItems(items: ISelectItem[], inputValue: string, filtering: boolean, selectedOption: string): ISelectItem[] {
-        let result = items;
-        if (result.length === 0)
-            return result;
+    #confirmSelection() {
+        const itemToSelect = this.filtering
+            ? this.suggestion
+            : (this._highlightedItem ?? this.selectedItem);
 
-        if (filtering) {
-            if (!String.isNullOrEmpty(inputValue)) {
-                const lowerInputValue = inputValue.toLowerCase();
-                result = result.filter(r => r != null && r.displayValue && r.displayValue.toLowerCase().contains(lowerInputValue));
+        this._popup?.close();
 
-                if (!this.suggestion || result.indexOf(this.suggestion) < 0)
-                    this._setSuggestion(result[0] !== undefined && result[0].displayValue.toLowerCase().startsWith(lowerInputValue) ? result[0] : null);
-            }
-            else {
-                let suggestion: ISelectItem;
-                if (result[0].option == null)
-                    suggestion = result[0];
-                else if (typeof result[0].option === "string") {
-                    suggestion = result.find(o => o.option == null);
-                    if (!suggestion)
-                        suggestion = result.find(o => (<string>o.option).length === 0);
-                }
-                else {
-                    suggestion = result.find(o => (<SelectOption>o.option).key == null);
-                    if (!suggestion)
-                        suggestion = result.find(o => (<SelectOption>o.option).key.length === 0);
-                }
-
-                this._setSuggestion(suggestion);
-            }
-
-            if (!this.popup.open && result.length > 1)
-                this.popup.popup();
+        if (itemToSelect) {
+            this.#setSelectedOption(itemToSelect.option);
         }
-        else if (!this.selectedItem)
-            this._setSelectedItem(this._getItem(this.selectedOption));
-
-        return result;
     }
 
-    private _computeSuggestionFeedback(inputValue: string, suggestion: ISelectItem, filtering: boolean) {
-        let suggestionMatch = "";
-        let suggestionRemainder = "";
-
-        if (filtering && suggestion && suggestion.displayValue) {
-            suggestionMatch = inputValue;
-            suggestionRemainder = suggestion.displayValue.substr(inputValue.length);
-        }
-
-        this.$.match.innerHTML = this._escapeHTML(suggestionMatch).replace(" ", "&nbsp;");
-        this.$.remainder.innerHTML = this._escapeHTML(suggestionRemainder).replace(" ", "&nbsp;");
+    #cancelSelection() {
+        this._popup?.close();
+        this.filtering = false;
+        this._highlightedItem = null;
+        this._inputValue = this.selectedItem?.displayValue ?? "";
     }
 
-    private _computeItemDisplayValue(displayValue: string, inputValue: string): string {
+    @observer("filteredItems", "filtering")
+    private _filteredItemsChanged(filteredItems: ISelectItem[], filtering: boolean) {
+        if (!filtering)
+            return;
+
+        if (!filteredItems || filteredItems.length === 0) {
+            this.suggestion = null;
+            return;
+        }
+
+        const lowerInput = this._inputValue ? this._inputValue.toLowerCase() : "";
+
+        const exactStart = filteredItems.find(i => i.displayValue.toLowerCase().startsWith(lowerInput));
+        const autoSuggest = exactStart || filteredItems[0];
+
+        this.suggestion = autoSuggest;
+
+        if (!this._popup?.open && filteredItems.length > 0) {
+            this._popup?.popup();
+        }
+    }
+
+    @observer("_inputValue", "suggestion", "filtering")
+    private _updateSuggestionFeedback(inputValue: string, suggestion: ISelectItem, filtering: boolean) {
+        const matchEl = this._matchEl;
+        const remainEl = this._remainderEl;
+
+        if (!matchEl || !remainEl)
+            return;
+
+        if (!filtering || !suggestion || !suggestion.displayValue || !inputValue) {
+            matchEl.innerHTML = "";
+            remainEl.innerHTML = "";
+            return;
+        }
+
+        if (suggestion.displayValue.toLowerCase().startsWith(inputValue.toLowerCase())) {
+            const matchTxt = suggestion.displayValue.substr(0, inputValue.length);
+            const remainTxt = suggestion.displayValue.substr(inputValue.length);
+
+            matchEl.innerHTML = this.#escapeHTML(matchTxt).replace(/ /g, "&nbsp;");
+            remainEl.innerHTML = this.#escapeHTML(remainTxt).replace(/ /g, "&nbsp;");
+        } else {
+            matchEl.innerHTML = "";
+            remainEl.innerHTML = "";
+        }
+    }
+
+    #computeItemDisplayValue(displayValue: string, inputValue: string): string {
         if (!displayValue)
-            return displayValue;
+            return "";
+        const escaped = this.#escapeHTML(displayValue);
+        if (!inputValue || !this.filtering)
+            return escaped;
 
-        const escapedDisplayValue = this._escapeHTML(displayValue);
-
-        if (!inputValue)
-            return escapedDisplayValue;
-
-        inputValue = inputValue.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-        const exp = new RegExp(`(${inputValue})`, "gi");
-
-        return escapedDisplayValue.replace(exp, "<span class='match'>$1</span>");
-    }
-    
-    private _disabledChanged(newValue: boolean, oldValue: boolean) {
-        if (newValue && (<Popup>this.$.popup).open)
-            (<Popup>this.$.popup).close();
+        try {
+            const safeInput = inputValue.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+            const exp = new RegExp(`(${safeInput})`, "gi");
+            return escaped.replace(exp, "<span class='match'>$1</span>");
+        } catch {
+            return escaped;
+        }
     }
 
-    private _setSelectedOption(option: string | SelectOption, force?: boolean) {
-        if (option && typeof option !== "string")
-            option = (<SelectOption>option).key;
+    #setSelectedOption(option: string | SelectOption) {
+        const key = (option && typeof option === "object")
+            ? (option as SelectOption).key
+            : option as string;
 
-        if (this.popup.open && !force) {
-            this._pendingSelectedOption = <string>option;
-            this._scrollItemIntoView();
+        this.selectedOption = key;
+    }
 
+    #scrollItemIntoView(item: ISelectItem) {
+        if (!item || !this._scroller)
             return;
-        }
 
-        this.selectedOption = <string>option;
-    }
-
-    private _selectedItemChanged() {
-        this._setFiltering(false);
-
-        if (this.selectedItem) {
-            if (!this.selectedItem.option || typeof this.selectedItem.option === "string") {
-                this._setSelectedOption((<string[]>this.ungroupedOptions).find(o => o === this.selectedItem.option));
-                this._inputValue = <string>this.selectedItem.option;
-            }
-            else {
-                this._setSelectedOption((<SelectOption[]>this.ungroupedOptions).find(o => o.key === (<SelectOption>this.selectedItem.option).key));
-                this._inputValue = (<SelectOption>this.selectedItem.option).value;
-            }
-
-            this._lastMatchedInputValue = this._inputValue;
-            this._setSuggestion(this.selectedItem);
-        }
-        else {
-            this._setSuggestion(null);
-            this._inputValue = "";
+        const elements = Array.from(this._scroller.querySelectorAll("vi-select-option-item")) as SelectOptionItem[];
+        const target = elements.find(el => el.item === item);
+        if (target) {
+            target.scrollIntoView({ block: "nearest" });
         }
     }
 
-    private _selectedOptionChanged() {
-        this._setFiltering(false);
-
-        this._setSelectedItem(this._getItem(this.selectedOption));
-        this._scrollItemIntoView();
-    }
-
-    private _suggestionChanged() {
-        if (!this.filtering && this.suggestion)
-            this._setSelectedOption(this.suggestion.option);
-    }
-
-    private _getItem(key: string, items: ISelectItem[] = this.items): ISelectItem {
-        if (!items)
-            return undefined;
-
-        return items.find(i => {
-            if (!i.option || typeof i.option === "string")
-                return i.option === key;
-            else
-                return (<SelectOption>i.option).key === key;
-        });
-    }
-
-    private _select(e: CustomEvent, detail: any) {
-        this._setSelectedOption(detail.option, true);
-        this.popup.close();
-
-        e.stopPropagation();
-    }
-
-    private _computeIsReadonlyInput(readonly: boolean, hasOptions: boolean, keepUnmatched: boolean, disableFiltering: boolean): boolean {
-        return readonly || (!keepUnmatched && (!hasOptions || disableFiltering));
-    }
-
-    private _computeInputTabIndex(isReadonlyInput: boolean): string {
-        return isReadonlyInput ? "-1" : "0";
+    #escapeHTML(str: string): string {
+        const div = document.createElement("div");
+        div.textContent = str;
+        return div.innerHTML;
     }
 }
 
-@Polymer.WebComponent.register({
-    properties: {
-        suggested: {
-            type: Boolean,
-            reflectToAttribute: true
-        },
-        selected: {
-            type: Boolean,
-            reflectToAttribute: true
-        },
-        item: Object,
-        group: {
-            type: String,
-            reflectToAttribute: true,
-            computed: "item.group"
-        }
-    },
-    listeners: {
-        "tap": "_onTap"
-    }
-}, "vi-select-option-item")
-export class SelectOptionItem extends Polymer.WebComponent {
-    item: ISelectItem;
-
-    private _onTap(e: Polymer.Gestures.TapEvent) {
-        this.dispatchEvent(new CustomEvent("select-option", {
-            detail: { option: this.item.option },
-            bubbles: true,
-            composed: true
-        }));
-
-        e.stopPropagation();
-    }
-}
+customElements.define("vi-select", Select);

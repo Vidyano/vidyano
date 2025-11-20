@@ -1,6 +1,8 @@
 $border-color: #ddd;
 
 :host {
+    --_vi-select-item-height: var(--vi-select-item-height, var(--theme-h2));
+
     display: flex;
     position: relative;
     border: 1px solid $border-color;
@@ -15,100 +17,81 @@ $border-color: #ddd;
             transform: translate(0, 1px);
         }
 
+        // Header Area (Input + Icons)
         [slot="header"] {
             flex: 1;
             min-height: 0;
             min-width: 0;
             display: flex;
             position: relative;
+            align-items: center;
 
             .suggestions {
                 z-index: 1;
                 padding-left: var(--theme-h5);
                 position: absolute;
                 left: 0;
-                height: calc(var(--theme-h2) - 2px);
-                line-height: calc(var(--theme-h2) - 2px);
+                top: 0;
+                height: var(--_vi-select-item-height);
+                line-height: var(--_vi-select-item-height);
+                display: flex;
+                pointer-events: none; // Let clicks pass through to input
 
-                span {
-                    float: left;
-
-                    &:first-child {
-                        color: transparent;
-                    }
-
-                    &:nth-child(2) {
-                        color: #CCC;
-                    }
+                #match {
+                    color: transparent; // Hidden behind input text
+                }
+                #remainder {
+                    color: #CCC;
                 }
             }
 
             input {
+                flex: 1;
                 border: none;
-                height: calc(var(--theme-h2) - 2px);
-                line-height: calc(var(--theme-h2) - 2px);
+                height: var(--_vi-select-item-height);
+                line-height: var(--_vi-select-item-height);
                 padding-left: var(--theme-h5);
                 background-color: transparent;
                 outline: none;
+                z-index: 2; // Above suggestions
+
+                &[readonly] {
+                    cursor: pointer;
+                }
 
                 &[disabled] {
                     color: inherit !important;
+                    cursor: default;
                 }
             }
 
             vi-icon {
-                height: calc(var(--theme-h2) - 2px);
-                width: calc(var(--theme-h2) - 2px);
+                height: var(--_vi-select-item-height);
+                width: var(--_vi-select-item-height);
                 fill: var(--vi-select-icon-color, var(--theme-foreground));
+                flex-shrink: 0;
             }
         }
 
+        // Dropdown Content
         [content] {
-            max-height: calc(var(--theme-h2) * 10);
+            max-height: calc(var(--_vi-select-item-height) * 10);
             padding: 0;
             margin: 0;
             list-style: none;
-
-            .group, vi-select-option-item {
-                display: block;
-                line-height: calc(var(--theme-h2) - 2px);
-                height: calc(var(--theme-h2) - 2px);
-                white-space: nowrap;
-            }
+            overflow-y: auto;
 
             .group {
+                display: block;
+                line-height: var(--_vi-select-item-height);
+                height: var(--_vi-select-item-height);
+                white-space: nowrap;
+                box-sizing: border-box;
                 padding-left: var(--theme-h5);
                 color: #888;
-            }
-
-            vi-select-option-item {
-                padding-left: var(--theme-h3);
-                cursor: pointer;
-
-                &:hover {
-                    background-color: var(--color-faint);
-                }
-            }
-
-            vi-select-option-item[suggested], &:not([filtering]) vi-select-option-item[selected] {
-                color: white;
-                background-color: var(--color);
-
-                &:hover {
-                    background-color: var(--color-light);
-                }
-            }
-
-            &[filtering] {
-                vi-select-option-item {
-                    span {
-                        &.match {
-                            background-color: rgba(255, 255, 0, 0.5);
-                            font-weight: bold;
-                            pointer-events: none;
-                        }
-                    }
-                }
+                font-weight: bold;
+                font-size: 0.9em;
+                background-color: #f9f9f9;
             }
         }
 
@@ -118,6 +101,7 @@ $border-color: #ddd;
         }
     }
 
+    // Sensitive Data Masking
     &[sensitive] {
         input, vi-select-option-item {
             filter: blur(5px);
