@@ -1,4 +1,4 @@
-import { unsafeCSS, type CSSResultGroup } from "lit";
+import { html, nothing, TemplateResult, unsafeCSS, type CSSResultGroup } from "lit";
 import { property } from "lit/decorators.js";
 import * as Vidyano from "vidyano";
 import type { Select } from "components/select/select";
@@ -165,9 +165,19 @@ export abstract class PersistentObjectAttribute extends WebComponent {
         return !this.editing ? this.renderDisplay() : this.renderEdit();
     }
 
-    protected abstract renderDisplay();
+    protected renderDisplay(innerTemplate?: TemplateResult) {
+        if (innerTemplate)
+            return html`<vi-sensitive ?disabled=${!this.sensitive}>${innerTemplate}</vi-sensitive>`;
 
-    protected renderEdit() {
-        return this.renderDisplay();
+        console.warn(`${this.constructor.name} does not implement renderDisplay().`);
+
+        return nothing;
+    }
+
+    protected renderEdit(innerTemplate?: TemplateResult) {
+        if (innerTemplate)
+            return html`<vi-persistent-object-attribute-edit .attribute=${this.attribute}>${innerTemplate}</vi-persistent-object-attribute-edit>`;
+
+        return this.renderDisplay(innerTemplate);
     }
 }

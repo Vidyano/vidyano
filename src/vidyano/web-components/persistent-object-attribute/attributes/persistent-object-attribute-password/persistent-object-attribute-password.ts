@@ -34,20 +34,18 @@ export class PersistentObjectAttributePassword extends PersistentObjectAttribute
     }
 
     protected renderEdit() {
-        return html`
-            <vi-persistent-object-attribute-edit .attribute=${this.attribute}>
-                <vi-sensitive ?disabled=${!this.sensitive}>
-                    <input type="password"
-                        .value=${this.value || ""}
-                        autocomplete=${this.autocomplete || ""}
-                        ?readonly=${this.readOnly}
-                        tabindex=${this.readOnlyTabIndex}
-                        placeholder=${this.placeholder || ""}
-                        @input=${(e: InputEvent) => this.value = (e.target as HTMLInputElement).value}
-                        @blur=${this._editInputBlur}>
-                </vi-sensitive>
-            </vi-persistent-object-attribute-edit>
-        `;
+        return super.renderEdit(html`
+            <vi-sensitive ?disabled=${!this.sensitive}>
+                <input type="password"
+                    .value=${this.value || ""}
+                    autocomplete=${this.autocomplete || ""}
+                    ?readonly=${this.readOnly}
+                    tabindex=${this.readOnlyTabIndex}
+                    placeholder=${this.placeholder || ""}
+                    @input=${(e: InputEvent) => this.value = (e.target as HTMLInputElement).value}
+                    @blur=${this._editInputBlur}>
+            </vi-sensitive>
+        `);
     }
 }
 

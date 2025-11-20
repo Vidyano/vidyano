@@ -49,31 +49,25 @@ export class PersistentObjectAttributeUser extends PersistentObjectAttribute {
     }
 
     protected renderDisplay() {
-        return html`
-            <vi-sensitive disabled=${!this.sensitive}>
-                <span>${this.friendlyName}</span>
-            </vi-sensitive>
-        `;
+        return super.renderDisplay(html`<span>${this.friendlyName}</span>`);
     }
 
     protected renderEdit() {
-        return html`
-            <vi-persistent-object-attribute-edit .attribute=${this.attribute}>
-                <vi-sensitive disabled=${!this.sensitive}>
-                    <input .value=${this.friendlyName} readonly>
-                </vi-sensitive>
-                ${!this.readOnly ? html`
-                    <vi-button slot="right" @click=${this._browseReference} tabindex="-1">
-                        <vi-icon source="Ellipsis"></vi-icon>
-                    </vi-button>
-                ` : nothing}
-                ${this.canClear ? html`
-                    <vi-button slot="right" @click=${this._clearReference} tabindex="-1">
-                        <vi-icon source="Remove"></vi-icon>
-                    </vi-button>
-                ` : nothing}
-            </vi-persistent-object-attribute-edit>
-        `;
+        return super.renderEdit(html`
+            <vi-sensitive disabled=${!this.sensitive}>
+                <input .value=${this.friendlyName} readonly>
+            </vi-sensitive>
+            ${!this.readOnly ? html`
+                <vi-button slot="right" @click=${this._browseReference} tabindex="-1">
+                    <vi-icon source="Ellipsis"></vi-icon>
+                </vi-button>
+            ` : nothing}
+            ${this.canClear ? html`
+                <vi-button slot="right" @click=${this._clearReference} tabindex="-1">
+                    <vi-icon source="Remove"></vi-icon>
+                </vi-button>
+            ` : nothing}
+        `);
     }
 }
 

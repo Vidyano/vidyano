@@ -172,11 +172,7 @@ export class PersistentObjectAttributeString extends PersistentObjectAttribute {
 
     protected renderDisplay() {
         if (!this.link)
-            return html`
-                <vi-sensitive disabled=${!this.sensitive}>
-                    <span>${this.attribute?.displayValue}</span>
-                </vi-sensitive>
-            `;
+            return super.renderDisplay(html`<span>${this.attribute?.displayValue}</span>`);
 
         return html`
             <a href=${this.link} title=${this.linkTitle} rel="external noopener" target="_blank">
@@ -192,44 +188,42 @@ export class PersistentObjectAttributeString extends PersistentObjectAttribute {
     }
 
     protected renderEdit() {
-        return html`
-            <vi-persistent-object-attribute-edit .attribute=${this.attribute}>
-                <vi-sensitive disabled=${!this.sensitive}>
-                    <input
-                        .value=${this.value || ""}
-                        @input=${(e: InputEvent) => this.value = (e.target as HTMLInputElement).value}
-                        type=${this.inputtype}
-                        maxlength=${this.maxlength || nothing}
-                        autocomplete=${this.autocomplete || nothing}
-                        style=${this.editInputStyle || nothing}
-                        @focus=${this._editInputFocus}
-                        @blur=${this._editInputBlur}
-                        @paste=${this._editInputPaste}
-                        ?readonly=${this.readOnly}
-                        tabindex=${this.readOnlyTabIndex || nothing}
-                        placeholder=${this.placeholder || nothing}
-                        ?disabled=${this.frozen}>
-                </vi-sensitive>
-                ${this.link ? html`
-                    <a class="button" href=${this.link} title=${this.linkTitle} tabindex="-1" rel="external noopener" target="_blank">
-                        <vi-icon source="ArrowUpRight"></vi-icon>
-                    </a>
-                ` : nothing}
-                <slot name="button" slot="right"></slot>
-                ${this.hasSuggestions ? html`
-                    <vi-popup slot="right" id="suggestions" placement="bottom-end">
-                        <vi-icon source="Add" slot="header"></vi-icon>
-                        <vi-scroller>
-                            <ul>
-                                ${this.filteredSuggestions?.map(suggestion => html`
-                                    <li @click=${this._addSuggestion}>${suggestion}</li>
-                                `)}
-                            </ul>
-                        </vi-scroller>
-                    </vi-popup>
-                ` : nothing}
-            </vi-persistent-object-attribute-edit>
-        `;
+        return super.renderEdit(html`
+            <vi-sensitive disabled=${!this.sensitive}>
+                <input
+                    .value=${this.value || ""}
+                    @input=${(e: InputEvent) => this.value = (e.target as HTMLInputElement).value}
+                    type=${this.inputtype}
+                    maxlength=${this.maxlength || nothing}
+                    autocomplete=${this.autocomplete || nothing}
+                    style=${this.editInputStyle || nothing}
+                    @focus=${this._editInputFocus}
+                    @blur=${this._editInputBlur}
+                    @paste=${this._editInputPaste}
+                    ?readonly=${this.readOnly}
+                    tabindex=${this.readOnlyTabIndex || nothing}
+                    placeholder=${this.placeholder || nothing}
+                    ?disabled=${this.frozen}>
+            </vi-sensitive>
+            ${this.link ? html`
+                <a class="button" href=${this.link} title=${this.linkTitle} tabindex="-1" rel="external noopener" target="_blank">
+                    <vi-icon source="ArrowUpRight"></vi-icon>
+                </a>
+            ` : nothing}
+            <slot name="button" slot="right"></slot>
+            ${this.hasSuggestions ? html`
+                <vi-popup slot="right" id="suggestions" placement="bottom-end">
+                    <vi-icon source="Add" slot="header"></vi-icon>
+                    <vi-scroller>
+                        <ul>
+                            ${this.filteredSuggestions?.map(suggestion => html`
+                                <li @click=${this._addSuggestion}>${suggestion}</li>
+                            `)}
+                        </ul>
+                    </vi-scroller>
+                </vi-popup>
+            ` : nothing}
+        `);
     }
 }
 
