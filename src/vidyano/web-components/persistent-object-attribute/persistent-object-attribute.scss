@@ -1,24 +1,39 @@
-:host {
-    textarea {
-        overflow: auto;
-        resize: none;
-        padding: var(--theme-h5);
-        line-height: var(--theme-h3);
-    }
+button,
+input,
+optgroup,
+select,
+textarea {
+    margin: 0;
+    font-family: inherit;
+}
 
-    input, *::part(input) {
-        padding: 0 var(--theme-h5);
-        line-height: calc(var(--theme-h2) - 2px);
-    }
+button {
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+}
 
-    input, textarea, *::part(input) {
-        background-color: transparent;
-        box-sizing: border-box;
-        margin: 0;
-        border: none;
-        outline: none;
-        color: #333;
-        width: 100%;
-        font-family: inherit;
-    }
+textarea {
+    overflow: auto;
+    resize: none;
+    padding: var(--theme-h5);
+    line-height: var(--theme-h3);
+}
+
+input, *::part(input) {
+    padding: 0 var(--theme-h5);
+    line-height: calc(var(--theme-h2) - 2px);
+}
+
+input, textarea, *::part(input) {
+    background-color: transparent;
+    box-sizing: border-box;
+    margin: 0;
+    border: none;
+    outline: none;
+    color: var(--theme-foreground);
+    width: 100%;
+    font-family: inherit;
 }
