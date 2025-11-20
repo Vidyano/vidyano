@@ -160,8 +160,12 @@ declare readonly fullName: string;
 3. Handle layout classes:
    - Find all `class="layout horizontal"`, `class="layout vertical"`, `class="flex"`, etc.
    - Create semantic class names in SCSS (e.g., `.container`, `.content`, `.header`)
-   - Add flexbox styles to SCSS
-   - Update template to use semantic names
+   - Add flexbox styles to SCSS:
+     - `layout horizontal` → `display: flex; flex-direction: row;`
+     - `layout vertical` → `display: flex; flex-direction: column;`
+     - `flex` → `flex: 1; min-width: 0;` (for row) or `flex: 1; min-height: 0;` (for column)
+   - Important: Always add `min-width: 0` (row) or `min-height: 0` (column) when using `flex: 1` to prevent overflow issues
+   - Update template to use semantic names or remove classes entirely if styling the element directly
 
 ### Styles
 1. Move styles from HTML to CSS/SCSS file
