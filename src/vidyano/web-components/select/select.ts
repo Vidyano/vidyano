@@ -127,8 +127,14 @@ export class Select extends WebComponent {
         const searchKey = (selectedOption && typeof selectedOption === "object")
             ? (selectedOption as SelectOption).key
             : selectedOption;
-        return items.find(i => i.key === searchKey);
-    }, "items", "selectedOption")
+
+        let found = items.find(i => i.key === searchKey);
+
+        if (!found && this.groupSeparator)
+            found = items.find(i => i.displayValue === searchKey);
+
+        return found;
+    }, "items", "selectedOption", "groupSeparator")
     @observer(function(this: Select, selectedItem: ISelectItem) {
         if (this.filtering)
             return;
@@ -459,7 +465,10 @@ export class Select extends WebComponent {
             ? (option as SelectOption).key
             : option as string;
 
-        this.selectedOption = key;
+        if (this.groupSeparator && typeof key === "string" && key.includes(this.groupSeparator))
+            this.selectedOption = key.split(this.groupSeparator, 2)[1];
+        else
+            this.selectedOption = key;
     }
 
     #scrollItemIntoView(item: ISelectItem) {

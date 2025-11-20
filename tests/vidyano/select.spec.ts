@@ -374,3 +374,60 @@ test('Select: fires input-value-changed event', async ({ page }) => {
     const eventValue = await eventPromise;
     expect(eventValue).toBe('Option 3');
 });
+
+test('Select: matches selectedOption by displayValue when groupSeparator is used', async ({ page }) => {
+    const component = await setupSelectTest(page, ['Custom.TestPinned', 'Custom.OtherOption', 'Vidyano.Delete']);
+
+    await component.evaluate(node => {
+        (node as any).groupSeparator = '.';
+    });
+
+    // Set selectedOption to display value (without group prefix)
+    await component.evaluate(node => {
+        (node as any).selectedOption = 'TestPinned';
+    });
+
+    const state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            selectedOption: inst.selectedOption,
+            selectedItem: inst.selectedItem ? {
+                displayValue: inst.selectedItem.displayValue,
+                key: inst.selectedItem.key,
+                group: inst.selectedItem.group
+            } : null,
+            inputValue: inst.inputValue
+        };
+    });
+
+    expect(state.selectedItem).not.toBeNull();
+    expect(state.selectedItem?.displayValue).toBe('TestPinned');
+    expect(state.selectedItem?.group).toBe('Custom');
+    expect(state.inputValue).toBe('TestPinned');
+});
+
+test('Select: propagates ungrouped value when selecting with groupSeparator', async ({ page }) => {
+    const component = await setupSelectTest(page, ['Custom.TestPinned', 'Custom.OtherOption', 'Vidyano.Delete']);
+
+    await component.evaluate(node => {
+        (node as any).groupSeparator = '.';
+    });
+
+    // Open popup and select second option
+    const input = component.locator('#input');
+    await input.press('ArrowDown');
+    await input.press('ArrowDown');
+    await input.press('Enter');
+
+    const state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            selectedOption: inst.selectedOption,
+            inputValue: inst.inputValue
+        };
+    });
+
+    // selectedOption should be ungrouped value, not full key
+    expect(state.selectedOption).toBe('OtherOption');
+    expect(state.inputValue).toBe('OtherOption');
+});
