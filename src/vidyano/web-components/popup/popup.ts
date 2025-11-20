@@ -127,6 +127,7 @@ export class Popup extends WebComponent {
                      @click=${this._onContentClick}
                      @mouseenter=${this._onContentMouseEnter}
                      @mouseleave=${this._onContentMouseLeave}
+                     @toggle=${this._onPopoverToggle}
                      popover="">
                     <vi-size-tracker @sizechanged=${this.refit} part="popup-size-tracker"></vi-size-tracker>
                     <slot part="content"></slot>
@@ -419,6 +420,13 @@ export class Popup extends WebComponent {
     private _onPopupparent(e: CustomEvent) {
         e.detail.popup = this;
         e.stopPropagation();
+    }
+
+    private _onPopoverToggle(e: ToggleEvent) {
+        // Sync component state when native popover closes via light dismiss
+        if (e.newState === "closed" && this.open) {
+            this.close();
+        }
     }
 
     /**
