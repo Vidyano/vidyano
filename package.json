@@ -57,6 +57,6 @@
     "build": "npm run build:sass && npm run build:ts && npm run build:rollup",
     "dist": "node build.js",
     "dev": "[ \"$(curl -s -o /dev/null -w '%{http_code}' --head http://localhost:5000)\" != \"200\" ] && dotnet run --project dev/Dev.csproj || echo 'Server already running'",
-    "test": "npx playwright test"
+    "test": "npx playwright test --project=vidyano && npx playwright test --project=core"
   }
 }
