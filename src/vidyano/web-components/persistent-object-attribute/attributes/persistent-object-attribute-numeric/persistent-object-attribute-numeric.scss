@@ -5,6 +5,18 @@
         color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
     }
 
+    .input-container {
+        display: flex;
+        flex-direction: row;
+        flex: 1;
+        min-width: 0;
+
+        input {
+            flex: 1;
+            min-width: 0;
+        }
+    }
+
     vi-persistent-object-attribute-edit span {
         position: relative;
         width: calc(var(--theme-h2) - 2px);

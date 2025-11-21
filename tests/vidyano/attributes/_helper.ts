@@ -209,17 +209,28 @@ export async function setupPage(
 export async function setupAttribute(
     page: Page,
     componentTag: string,
-    attributeName: string
+    attributeName: string,
+    options?: { startInEditMode?: boolean; useBackendOpenInEdit?: boolean }
 ) {
     const componentId = `component-${Math.random().toString(36).substring(2, 15)}`;
 
     // Wait for the custom element to be defined
     await page.waitForFunction((tag) => !!customElements.get(tag), componentTag, { timeout: 10000 });
 
-    await page.evaluate(async ({ componentTag, componentId, attributeName }) => {
+    await page.evaluate(async ({ componentTag, componentId, attributeName, startInEditMode, useBackendOpenInEdit }) => {
         const randomObjectId = Math.random().toString(36).substring(2, 15);
+        // Note: The backend is configured with StateBehavior.OpenInEdit, so the object will be in edit mode by default
+        // We skip this by default for most tests, unless explicitly requested with useBackendOpenInEdit
         const persistentObject = await (window as any).service.getPersistentObject(null, "Mock_Attribute", randomObjectId);
         const attribute = persistentObject.getAttribute(attributeName);
+
+        // By default, cancel backend's OpenInEdit behavior (unless explicitly requested)
+        if (!useBackendOpenInEdit && persistentObject.isEditing)
+            persistentObject.cancelEdit();
+
+        // Optionally start in edit mode (for manual testing)
+        if (startInEditMode && !persistentObject.isEditing)
+            persistentObject.beginEdit();
 
         // Create and add component to the page
         const container = document.getElementById('test-container');
@@ -236,7 +247,7 @@ export async function setupAttribute(
         (window as any).attributeMap[componentId] = attribute;
 
         container.appendChild(component);
-    }, { componentTag, componentId, attributeName });
+    }, { componentTag, componentId, attributeName, startInEditMode: options?.startInEditMode, useBackendOpenInEdit: options?.useBackendOpenInEdit });
 
     return page.locator(`#${componentId}`);
 }
@@ -277,5 +288,13 @@ export async function unfreeze(page: Page, component: any) {
     await page.evaluate((id) => {
         const attribute = (window as any).attributeMap[id];
         attribute.parent.unfreeze();
+    }, componentId);
+}
+
+export async function isDirty(page: Page, component: any): Promise<boolean> {
+    const componentId = await component.getAttribute('id');
+    return await page.evaluate((id) => {
+        const attribute = (window as any).attributeMap[id];
+        return attribute.parent.isDirty;
     }, componentId);
 }

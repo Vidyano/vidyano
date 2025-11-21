@@ -1,42 +1,38 @@
-import * as Polymer from "polymer"
+import { html, nothing, unsafeCSS } from "lit";
+import { property, state } from "lit/decorators.js";
 import BigNumber from 'bignumber.js';
 import * as Vidyano from "vidyano"
 import * as Keyboard from "components/utils/keyboard"
+import { observer } from "components/web-component/web-component";
+import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute";
 import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
+import styles from "./persistent-object-attribute-numeric.css";
 
-@Polymer.WebComponent.register({
-    properties: {
-        inputtype: {
-            type: String,
-            readOnly: true
-        },
-        unitBefore: {
-            type: String,
-            reflectToAttribute: true,
-            value: null
-        },
-        unitAfter: {
-            type: String,
-            reflectToAttribute: true,
-            value: null
-        },
-        focused: {
-            type: Boolean,
-            reflectToAttribute: true,
-            readOnly: true
-        }
-    }    
-}, "vi-persistent-object-attribute-numeric")
-export class PersistentObjectAttributeNumeric extends Polymer.PersistentObjectAttribute {
-    static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-numeric.html">`; }
+export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute {
+    static styles = [super.styles, unsafeCSS(styles)];
 
     private _allowDecimal: boolean;
     private _isNullable: boolean;
     private _decimalSeparator: string;
-    readonly focused: boolean; private _setFocused: (val: boolean) => void;
-    readonly inputtype: string; private _setInputtype: (inputtype: string) => void;
-    unitBefore: string;
-    unitAfter: string;
+
+    @state()
+    inputtype: string;
+
+    @property({ type: String, reflect: true })
+    unitBefore: string = null;
+
+    @property({ type: String, reflect: true })
+    unitAfter: string = null;
+
+    @property({ type: Boolean, reflect: true })
+    focused: boolean = false;
+
+    // Override value property to use only our custom observer (not the base class observer)
+    @property({ type: Object })
+    @observer(function(this: PersistentObjectAttributeNumeric, newValue: any, oldValue: any) {
+        this._valueChanged(newValue, oldValue);
+    })
+    declare value: any;
 
     private static _decimalTypes = ["NullableDecimal", "Decimal", "NullableSingle", "Single", "NullableDouble", "Double"];
     private static _unsignedTypes = ["Byte", "NullableByte", "UInt16", "NullableUInt16", "UInt32", "NullableUInt32", "UInt64", "NullableUInt64"];
@@ -58,13 +54,15 @@ export class PersistentObjectAttributeNumeric extends Polymer.PersistentObjectAt
 
             const inputtype = this.attribute.getTypeHint("inputtype", null, null);
             if (inputtype)
-                this._setInputtype(inputtype);
+                this.inputtype = inputtype;
         }
     }
 
     protected _attributeValueChanged() {
         if (this.attribute.value == null) {
-            this.value = "";
+            if (this.value !== "")
+                this.value = "";
+
             return;
         }
 
@@ -83,10 +81,11 @@ export class PersistentObjectAttributeNumeric extends Polymer.PersistentObjectAt
         if (!!myValue && this._canParse(myValue) && new BigNumber(myValue).eq(this.attribute.value))
             return;
 
-        if (this._decimalSeparator !== ".")
-            this.value = attributeValue.replace(".", this._decimalSeparator);
-        else
-            this.value = attributeValue;
+        const newDisplayValue = this._decimalSeparator !== "." ? attributeValue.replace(".", this._decimalSeparator) : attributeValue;
+
+        // Only update if the value is actually different
+        if (this.value !== newDisplayValue)
+            this.value = newDisplayValue;
     }
 
     protected async _valueChanged(newValue: string, oldValue: string) {
@@ -109,6 +108,11 @@ export class PersistentObjectAttributeNumeric extends Polymer.PersistentObjectAt
 
             if (!this._canParse(newValue)) {
                 this.value = oldValue;
+                // Manually update the input element's value to reflect the revert
+                const input = this.shadowRoot?.querySelector("input");
+                if (input && input.value !== (oldValue || ""))
+                    input.value = oldValue || "";
+
                 return;
             }
 
@@ -117,13 +121,13 @@ export class PersistentObjectAttributeNumeric extends Polymer.PersistentObjectAt
                 return;
 
             await this.attribute.setValue(bigNumberValue, false).catch(Vidyano.noop);
-        } catch (e) {
-            this.notifyPath("value", this.attribute.value);
+        } catch {
+            this.value = this.attribute.value;
         }
     }
 
-    private _editInputBlur(e: Event) {
-        this._setFocused(false);
+    private _editInputBlur() {
+        this.focused = false;
 
         if (!this.attribute)
             return;
@@ -146,7 +150,7 @@ export class PersistentObjectAttributeNumeric extends Polymer.PersistentObjectAt
     }
 
     private _editInputFocus(e: Event) {
-        this._setFocused(true);
+        this.focused = true;
 
         const input = <HTMLInputElement>e.target;
         if (!input.value || !this.attribute.getTypeHint("SelectAllOnFocus"))
@@ -212,8 +216,6 @@ export class PersistentObjectAttributeNumeric extends Polymer.PersistentObjectAt
     }
 
     private _keypress(e: KeyboardEvent): void {
-        const keyCode = e.key;
-
         if (e.key === Keyboard.Keys.Tab || e.key === Keyboard.Keys.Shift || e.key === Keyboard.Keys.Control || e.key === Keyboard.Keys.Alt || e.key === Keyboard.Keys.ArrowLeft || e.key === Keyboard.Keys.ArrowRight || e.key === Keyboard.Keys.ArrowUp || e.key === Keyboard.Keys.ArrowDown || e.key === Keyboard.Keys.Backspace)
             return;
 
@@ -261,7 +263,7 @@ export class PersistentObjectAttributeNumeric extends Polymer.PersistentObjectAt
 
         // Remove thousand separators but preserve decimal separator
         let cleanedText = pastedText.replace(new RegExp(`\\${thousandSeparator}`, 'g'), '');
-        
+
         // Replace any potential decimal separator that isn't matching the current culture with the correct one
         if (decimalSeparator !== "." && cleanedText.includes("."))
             cleanedText = cleanedText.replace(/\./g, decimalSeparator);
@@ -280,52 +282,73 @@ export class PersistentObjectAttributeNumeric extends Polymer.PersistentObjectAt
         const selEnd = input.selectionEnd || 0;
         const currentValue = input.value;
         const newValue = currentValue.substring(0, selStart) + cleanedText + currentValue.substring(selEnd);
-        
+
         if (this._canParse(newValue)) {
             e.preventDefault();
-            
+
             // Update the input value
             input.value = newValue;
-            
+
             // Set the cursor position after inserted text
             const newPosition = selStart + cleanedText.length;
             input.setSelectionRange(newPosition, newPosition);
-            
+
             // Trigger input event to ensure value changes are processed
             input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
         }
     }
 
-    private _computeDisplayValueWithUnit(value: number, displayValue: string, unit: string, unitPosition: string): string {
-        let result = value != null && unit && unitPosition && unitPosition.toLowerCase() === "before" ? unit + " " : "";
-
-        result += displayValue;
-        result += value != null && unit && unitPosition && unitPosition.toLowerCase() === "after" ? " " + unit : "";
-
-        return result;
+    protected renderDisplay() {
+        return super.renderDisplay(html`<span>${this.attribute?.displayValue}</span>`);
     }
 
-    private _computeBeforeUnit(unit: string, position: string, value: number, hideOnNoValue?: boolean): string {
-        if (!unit || !position)
-            return unit;
+    private _onInput(e: InputEvent) {
+        const input = e.target as HTMLInputElement;
+        const newValue = input.value;
+        const oldValue = this.value;
 
-        if (hideOnNoValue && !value)
-            return "";
+        // Update the value property
+        this.value = newValue;
 
-        return position === "before" ? unit : "";
+        // If validation fails, revert the input element's value immediately
+        setTimeout(() => {
+            if (this.value !== newValue && this.value === oldValue) {
+                input.value = oldValue || "";
+            }
+        }, 0);
     }
 
-    private _computeAfterUnit(unit: string, position: string): string {
-        if (!unit || !position)
-            return unit;
-
-        return position === "after" ? unit : "";
+    protected renderEdit() {
+        return super.renderEdit(html`
+            <slot name="left" slot="left"></slot>
+            <div class="input-container">
+                ${this.unitBefore ? html`<span class="before">${this.unitBefore}</span>` : nothing}
+                <vi-sensitive ?disabled=${!this.sensitive}>
+                    <input
+                        .value=${this.value || ""}
+                        @input=${this._onInput}
+                        type=${this.inputtype || nothing}
+                        @keypress=${this._keypress}
+                        @paste=${this._onPaste}
+                        @focus=${this._editInputFocus}
+                        @blur=${this._editInputBlur}
+                        ?readonly=${this.readOnly}
+                        tabindex=${this.readOnlyTabIndex || nothing}
+                        placeholder=${this.placeholder || nothing}
+                        ?disabled=${this.frozen}>
+                </vi-sensitive>
+                ${this.unitAfter ? html`<span class="after">${this.unitAfter}</span>` : nothing}
+            </div>
+            <slot name="right" slot="right"></slot>
+        `);
     }
 
     static registerNumericAttributeType(attributeType: string, numericType: string): void {
         numericSynonyms[attributeType] = numericType;
     }
 }
+
+customElements.define("vi-persistent-object-attribute-numeric", PersistentObjectAttributeNumeric);
 
 PersistentObjectAttributeRegister.add("Numeric", PersistentObjectAttributeNumeric);
 
