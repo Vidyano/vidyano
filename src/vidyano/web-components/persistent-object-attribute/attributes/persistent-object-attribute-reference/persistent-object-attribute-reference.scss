@@ -55,6 +55,11 @@
     }
 
     &[editing] {
+        input {
+            flex: 1;
+            min-width: 0;
+        }
+
         vi-select {
             border: none;
 
