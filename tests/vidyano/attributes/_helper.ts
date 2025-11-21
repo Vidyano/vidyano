@@ -1,7 +1,23 @@
-import { Page } from '@playwright/test';
+import { Page, TestInfo } from '@playwright/test';
 import { spawn, ChildProcess, execSync } from 'child_process';
 
-export async function startBackend(csFilePath: string): Promise<ChildProcess> {
+export async function startBackend(testInfoOrPath: TestInfo | string): Promise<ChildProcess> {
+    let csFilePath: string;
+
+    if (typeof testInfoOrPath === 'string') {
+        csFilePath = testInfoOrPath;
+    } else {
+        // Get test file path and construct path to .cs file
+        const testFile = testInfoOrPath.file;
+        const dir = testFile.substring(0, testFile.lastIndexOf('/'));
+        const csFile = execSync(`find "${dir}" -maxdepth 1 -name "*.cs" -type f`, { encoding: 'utf-8' }).trim();
+        if (!csFile)
+            throw new Error('No .cs file found in test directory');
+
+        csFilePath = execSync(`realpath --relative-to="$(pwd)" "${csFile}"`, { encoding: 'utf-8' }).trim();
+    }
+
+    // Start the backend process
     // Gracefully stop any existing process on port 44355
     try {
         const pidOutput = execSync('lsof -ti:44355 2>/dev/null', { encoding: 'utf-8' }).trim();

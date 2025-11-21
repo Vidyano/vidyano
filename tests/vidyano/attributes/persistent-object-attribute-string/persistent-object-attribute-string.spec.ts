@@ -1,12 +1,11 @@
 import { test, expect, Page } from '@playwright/test';
-import { setupPage, setupAttribute, beginEdit, cancelEdit, save, startBackend, stopBackend } from './_helper';
-import { ChildProcess } from 'child_process';
+import { setupPage, setupAttribute, beginEdit, cancelEdit, save, startBackend, stopBackend } from '../_helper';
 
 test.describe.serial('String Attribute Tests', () => {
-    let sharedBackend: ChildProcess;
+    let sharedBackend: Awaited<ReturnType<typeof startBackend>>;
 
-    test.beforeAll(async () => {
-        sharedBackend = await startBackend('tests/vidyano/attributes/vi-persistent-object-attribute-string.cs');
+    test.beforeAll(async ({}, testInfo) => {
+        sharedBackend = await startBackend(testInfo);
     });
 
     test.afterAll(async () => {
