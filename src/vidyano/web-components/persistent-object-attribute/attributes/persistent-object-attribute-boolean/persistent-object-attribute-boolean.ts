@@ -24,7 +24,7 @@ export class PersistentObjectAttributeBoolean extends PersistentObjectAttribute 
         super._attributeChanged();
 
         if (this.attribute instanceof Vidyano.PersistentObjectAttribute) {
-            const defaultInputtype = this.app.configuration.getSetting("vi-persistent-object-attribute-boolean.inputtype", "toggle").toLowerCase();
+            const defaultInputtype = this.app?.configuration.getSetting("vi-persistent-object-attribute-boolean.inputtype", "toggle").toLowerCase() || "toggle";
             this.inputtype = this.attribute.getTypeHint("inputtype", defaultInputtype, undefined);
         }
     }

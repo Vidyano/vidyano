@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { setupPage, setupAttribute, beginEdit, cancelEdit, save, startBackend, stopBackend } from '../_helper';
+import { setupPage, setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze, startBackend, stopBackend } from '../_helper';
 
 test.describe.serial('String Attribute Tests', () => {
     let sharedBackend: Awaited<ReturnType<typeof startBackend>>;
@@ -362,6 +362,54 @@ test.describe('StringUpper Attribute', () => {
             const span = component.locator('span');
             await expect(span).toHaveText('TEST');
             await expect(component.locator('input')).toHaveCount(0);
+        });
+    });
+});
+
+test.describe('String Attribute (Frozen)', () => {
+    let sharedPage: Page;
+
+    test.beforeAll(async ({ browser }) => {
+        sharedPage = await browser.newPage();
+        await setupPage(sharedPage);
+    });
+
+    test.afterAll(async () => {
+        await sharedPage.close();
+    });
+
+    test.describe('Edit mode', () => {
+        test('input becomes disabled when parent is frozen', async () => {
+            const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-string', 'String');
+
+            await beginEdit(sharedPage, component);
+
+            const input = component.locator('input');
+            await expect(input).toBeVisible();
+
+            let disabled = await input.getAttribute('disabled');
+            expect(disabled).toBeNull();
+
+            await freeze(sharedPage, component);
+
+            disabled = await input.getAttribute('disabled');
+            expect(disabled).not.toBeNull();
+        });
+
+        test('input becomes enabled when parent is unfrozen', async () => {
+            const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-string', 'String');
+
+            await beginEdit(sharedPage, component);
+            await freeze(sharedPage, component);
+
+            const input = component.locator('input');
+            let disabled = await input.getAttribute('disabled');
+            expect(disabled).not.toBeNull();
+
+            await unfreeze(sharedPage, component);
+
+            disabled = await input.getAttribute('disabled');
+            expect(disabled).toBeNull();
         });
     });
 });

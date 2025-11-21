@@ -263,3 +263,19 @@ export async function save(page: Page, component: any) {
         return attribute.value;
     }, componentId);
 }
+
+export async function freeze(page: Page, component: any) {
+    const componentId = await component.getAttribute('id');
+    await page.evaluate((id) => {
+        const attribute = (window as any).attributeMap[id];
+        attribute.parent.freeze();
+    }, componentId);
+}
+
+export async function unfreeze(page: Page, component: any) {
+    const componentId = await component.getAttribute('id');
+    await page.evaluate((id) => {
+        const attribute = (window as any).attributeMap[id];
+        attribute.parent.unfreeze();
+    }, componentId);
+}
