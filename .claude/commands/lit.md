@@ -149,11 +149,13 @@ declare readonly fullName: string;
 
 2. Convert template syntax:
    - `[[property]]` → `${this.property}`
-   - `{{property}}` → `${this.property}`
+   - `{{property}}` → `${this.property}` (for native elements like input)
    - `on-click` → `@click`
    - `class$="[[className]]"` → `class=${this.className}`
    - `disabled$="[[disabled]]"` → `?disabled=${this.disabled}`
-   - `value="{{value}}"` → `.value=${this.value}`
+   - `value="{{value}}"` → `.value=${this.value}` (for native input elements)
+   - Two-way bindings on custom elements: `property="{{x}}"` → `.property=${this.x} @property-changed=${(e: CustomEvent) => this.x = e.detail.value}`
+     - Example: `checked="{{value}}"` → `.checked=${this.value} @checked-changed=${(e: CustomEvent) => this.value = e.detail.value}`
    - `<template is="dom-if" if="[[condition]]">...</template>` → `${this.condition ? html`...` : nothing}`
    - `<template is="dom-repeat" items="[[items]]">...</template>` → `${this.items?.map(item => html`...`)}`
 
