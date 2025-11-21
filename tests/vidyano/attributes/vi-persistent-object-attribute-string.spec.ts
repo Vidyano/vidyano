@@ -1,7 +1,19 @@
 import { test, expect, Page } from '@playwright/test';
-import { setupPage, setupAttribute, beginEdit, cancelEdit, save } from './_helper';
+import { setupPage, setupAttribute, beginEdit, cancelEdit, save, startBackend, stopBackend } from './_helper';
+import { ChildProcess } from 'child_process';
 
-test.describe.serial('String Attribute', () => {
+test.describe.serial('String Attribute Tests', () => {
+    let sharedBackend: ChildProcess;
+
+    test.beforeAll(async () => {
+        sharedBackend = await startBackend('tests/vidyano/attributes/vi-persistent-object-attribute-string.cs');
+    });
+
+    test.afterAll(async () => {
+        await stopBackend(sharedBackend);
+    });
+
+test.describe('String Attribute', () => {
     let sharedPage: Page;
 
     test.beforeAll(async ({ browser }) => {
@@ -85,8 +97,9 @@ test.describe.serial('String Attribute', () => {
             await input.clear();
             await input.fill('Updated Value');
 
-            await save(sharedPage, component);
+            const savedValue = await save(sharedPage, component);
 
+            expect(savedValue).toBe('Updated Value');
             const span = component.locator('span');
             await expect(span).toHaveText('Updated Value');
             await expect(component.locator('input')).toHaveCount(0);
@@ -110,7 +123,7 @@ test.describe.serial('String Attribute', () => {
     });
 });
 
-test.describe.serial('StringLower Attribute', () => {
+test.describe('StringLower Attribute', () => {
     let sharedPage: Page;
 
     test.beforeAll(async ({ browser }) => {
@@ -206,8 +219,9 @@ test.describe.serial('StringLower Attribute', () => {
             await input.clear();
             await input.pressSequentially('UPPERCASE INPUT');
 
-            await save(sharedPage, component);
+            const savedValue = await save(sharedPage, component);
 
+            expect(savedValue).toBe('uppercase input');
             const span = component.locator('span');
             await expect(span).toHaveText('uppercase input');
             await expect(component.locator('input')).toHaveCount(0);
@@ -231,7 +245,7 @@ test.describe.serial('StringLower Attribute', () => {
     });
 });
 
-test.describe.serial('StringUpper Attribute', () => {
+test.describe('StringUpper Attribute', () => {
     let sharedPage: Page;
 
     test.beforeAll(async ({ browser }) => {
@@ -327,8 +341,9 @@ test.describe.serial('StringUpper Attribute', () => {
             await input.clear();
             await input.pressSequentially('lowercase input');
 
-            await save(sharedPage, component);
+            const savedValue = await save(sharedPage, component);
 
+            expect(savedValue).toBe('LOWERCASE INPUT');
             const span = component.locator('span');
             await expect(span).toHaveText('LOWERCASE INPUT');
             await expect(component.locator('input')).toHaveCount(0);
@@ -351,3 +366,5 @@ test.describe.serial('StringUpper Attribute', () => {
         });
     });
 });
+
+}); // End of String Attribute Tests wrapper
