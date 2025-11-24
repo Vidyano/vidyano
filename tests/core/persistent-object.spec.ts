@@ -221,8 +221,12 @@ test.describe("PersistentObject", () => {
             firstPersistentObject.freeze();
             expect(firstPersistentObject.isFrozen).toBe(true);
 
-            const returnedValue = await firstPersistentObject.setAttributeValue("FirstName", "NewName");
-            expect(returnedValue).toBe(originalFirstName);
+            // Attempting to set value on frozen object should throw
+            await expect(async () => {
+                await firstPersistentObject.setAttributeValue("FirstName", "NewName");
+            }).rejects.toThrow(/frozen/i);
+
+            // Value should not have changed
             expect(firstPersistentObject.getAttributeValue("FirstName")).toBe(originalFirstName);
 
             firstPersistentObject.unfreeze();
@@ -230,15 +234,19 @@ test.describe("PersistentObject", () => {
 
             await firstPersistentObject.setAttributeValue("FirstName", "NewName");
             expect(firstPersistentObject.getAttributeValue("FirstName")).toBe("NewName");
-            
+
             // Test multiple freeze/unfreeze cycles
             await firstPersistentObject.setAttributeValue("FirstName", originalFirstName);
-            
+
             for (let i = 1; i <= 2; i++) {
                 firstPersistentObject.freeze();
                 expect(firstPersistentObject.isFrozen).toBe(true);
-                const cycleResult = await firstPersistentObject.setAttributeValue("FirstName", `Cycle${i}`);
-                expect(cycleResult).toBe(originalFirstName);
+
+                // Attempting to set value on frozen object should throw
+                await expect(async () => {
+                    await firstPersistentObject.setAttributeValue("FirstName", `Cycle${i}`);
+                }).rejects.toThrow(/frozen/i);
+
                 expect(firstPersistentObject.getAttributeValue("FirstName")).toBe(originalFirstName);
                 firstPersistentObject.unfreeze();
                 expect(firstPersistentObject.isFrozen).toBe(false);
@@ -443,28 +451,35 @@ test.describe("PersistentObject", () => {
             // preventing concurrent edits during the action
             const refreshTest = await service.getPersistentObject(null, "Dev.Feature_RefreshAttribute", undefined, true);
             refreshTest.beginEdit();
-            
+
             const firstName = refreshTest.getAttribute("FirstName");
             const lastName = refreshTest.getAttribute("LastName");
-            
+
             // Fill in required fields
             await firstName.setValue("BeforeSave");
             await lastName.setValue("LastNameValue");
-            
+
             // Start save (takes 1 second on backend)
             const savePromise = refreshTest.save();
-            
+
             // Try to edit firstName while save is in progress (object should be frozen)
             await new Promise(resolve => setTimeout(resolve, 50)); // Small delay to ensure save has started
             const currentValue = firstName.value;
-            await firstName.setValue("EditDuringSave");
-            const editSucceeded = firstName.value !== currentValue;
-            
+
+            // Attempting to set value on frozen object should throw
+            let editFailed = false;
+            try {
+                await firstName.setValue("EditDuringSave");
+            } catch (error) {
+                editFailed = true;
+                expect((error as Error).message).toContain("frozen");
+            }
+
             // Wait for save to complete
             const saveResult = await savePromise;
-            
+
             // Verify the object was frozen during save (edit should have failed)
-            expect(editSucceeded).toBe(false);
+            expect(editFailed).toBe(true);
             expect(firstName.value).toBe("BeforeSave"); // Value should not have changed
             
             // After save, resultWins=true applies, and the object should not be dirty

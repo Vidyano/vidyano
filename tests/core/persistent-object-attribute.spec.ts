@@ -105,13 +105,17 @@ test.describe("Standard Attributes", () => {
         const fullNameAttr = person.getAttribute("FullName");
         expect(fullNameAttr).toBeInstanceOf(PersistentObjectAttribute);
         expect(fullNameAttr.isReadOnly).toBe(true);
-        
+
         // FullName is computed server-side and cannot be set directly
         person.beginEdit();
         const originalValue = fullNameAttr.value;
-        
-        // Attempting to set a read-only value should not change it
-        fullNameAttr.value = "New Name";
+
+        // Attempting to set a read-only value should throw an error
+        expect(() => {
+            fullNameAttr.value = "New Name";
+        }).toThrow(/read-only/i);
+
+        // Value should not have changed
         expect(fullNameAttr.value).toBe(originalValue);
     });
 
@@ -747,32 +751,116 @@ test.describe("Attribute Refresh Behavior", () => {
     test("should respect server's isValueChanged flag when value hasn't changed during refresh", async ({ service }) => {
         // Server can mark an attribute as changed even when the visible value hasn't changed
         // (e.g., updating a non-visible translation in a TranslatedString)
-        
+
         const refreshTest = await service.getPersistentObject(null, "Dev.Feature_RefreshAttribute", undefined, true);
 
         const firstName = refreshTest.getAttribute("FirstName");
         const translatedString = refreshTest.getAttribute("TranslatedString");
-        
+
         expect(translatedString.isValueChanged).toBe(false);
-        
+
         const initialValue = translatedString.value;
         const initialOptions = translatedString.options;
-        
+
         // Trigger refresh - server will update Dutch translation but not English
         await firstName.setValue("John");
-        
+
         // Visible value (English) unchanged
         expect(translatedString.value).toBe(initialValue);
-        
+
         // Verify Dutch translation was updated
         const updatedTranslations = JSON.parse(translatedString.options[0] as string);
         const initialTranslations = JSON.parse(initialOptions[0] as string);
         expect(updatedTranslations.en).toBe("English");
         expect(updatedTranslations.nl).not.toBe(initialTranslations.nl);
         expect(updatedTranslations.nl).toContain("Nederlands +");
-        
+
         // Server marked attribute as changed despite visible value being unchanged
         expect(translatedString.isValueChanged).toBe(true);
         expect(refreshTest.isDirty).toBe(true);
+    });
+});
+
+test.describe("Error Handling for setValue", () => {
+    test("should throw error when setting value without entering edit mode", async ({ person }) => {
+        // Person is not in edit mode initially
+        expect(person.isEditing).toBe(false);
+
+        const emailAttr = person.getAttribute("Email");
+        expect(emailAttr).toBeInstanceOf(PersistentObjectAttribute);
+
+        // Attempt to set value without entering edit mode should throw
+        await expect(async () => {
+            await emailAttr.setValue("newemail@example.com");
+        }).rejects.toThrow(/not in edit mode/i);
+
+        // Verify the error message contains helpful information
+        try {
+            await emailAttr.setValue("newemail@example.com");
+            expect(true).toBe(false); // Should not reach here
+        } catch (error) {
+            expect((error as Error).message).toContain("Email");
+            expect((error as Error).message).toContain("Person");
+            expect((error as Error).message).toContain("beginEdit");
+        }
+    });
+
+    test("should throw error when setting value via property assignment without edit mode", async ({ person }) => {
+        // Person is not in edit mode initially
+        expect(person.isEditing).toBe(false);
+
+        const emailAttr = person.getAttribute("Email");
+        const originalValue = emailAttr.value;
+
+        // Direct property assignment throws synchronously when validation fails
+        expect(() => {
+            emailAttr.value = "newemail@example.com";
+        }).toThrow(/not in edit mode/i);
+
+        // Value should not have changed
+        expect(emailAttr.value).toBe(originalValue);
+    });
+
+    test("should throw error when setting value on readonly attribute", async ({ person }) => {
+        const fullNameAttr = person.getAttribute("FullName");
+        expect(fullNameAttr).toBeInstanceOf(PersistentObjectAttribute);
+        expect(fullNameAttr.isReadOnly).toBe(true);
+
+        // Enter edit mode
+        person.beginEdit();
+        expect(person.isEditing).toBe(true);
+
+        const originalValue = fullNameAttr.value;
+
+        // Attempting to set a read-only value should throw
+        await expect(async () => {
+            await fullNameAttr.setValue("New Name");
+        }).rejects.toThrow(/read-only|readonly/i);
+
+        // Verify the error message contains helpful information
+        try {
+            await fullNameAttr.setValue("New Name");
+            expect(true).toBe(false); // Should not reach here
+        } catch (error) {
+            expect((error as Error).message).toContain("FullName");
+            expect((error as Error).message).toContain("read-only");
+        }
+
+        // Value should not have changed
+        expect(fullNameAttr.value).toBe(originalValue);
+    });
+
+    test("should allow setting value when in edit mode (normal flow)", async ({ person }) => {
+        // Enter edit mode
+        person.beginEdit();
+        expect(person.isEditing).toBe(true);
+
+        const emailAttr = person.getAttribute("Email");
+        const originalValue = emailAttr.value;
+
+        // Setting value in edit mode should work without errors
+        await emailAttr.setValue("newemail@example.com");
+        expect(emailAttr.value).toBe("newemail@example.com");
+        expect(emailAttr.value).not.toBe(originalValue);
     });
 });
