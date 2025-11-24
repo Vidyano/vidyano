@@ -433,7 +433,8 @@ export class PersistentObjectAttribute extends ServiceObject {
     }
 
     set value(val: any) {
-        this.setValue(val).catch(() => {});
+        this.#validateCanSetValue();
+        this.#setValueInternal(val).catch(error => console.error(error));
     }
 
     /**
@@ -443,10 +444,36 @@ export class PersistentObjectAttribute extends ServiceObject {
      * @param allowRefresh - Optional flag to allow refresh.
      * @returns A promise resolving to the updated value.
      */
-    async setValue(val: any, allowRefresh: boolean = true): Promise<any> {
-        if (!this.parent.isEditing || this.parent.isFrozen || this.isReadOnly)
-            return this.value;
+    setValue(val: any, allowRefresh: boolean = true): Promise<any> {
+        this.#validateCanSetValue();
+        return this.#setValueInternal(val, allowRefresh);
+    }
 
+    /**
+     * Validates that the attribute value can be set, throwing an error if not.
+     */
+    #validateCanSetValue(): void {
+        if (!this.parent.isEditing)
+            this.#throwSetValueError("The persistent object is not in edit mode. Call beginEdit() before setting attribute values.");
+
+        if (this.parent.isFrozen)
+            this.#throwSetValueError("The persistent object is frozen.");
+
+        if (this.isReadOnly)
+            this.#throwSetValueError("The attribute is read-only.");
+    }
+
+    /**
+     * Throws a setValue validation error with the full error message.
+     */
+    #throwSetValueError(reason: string): never {
+        throw new Error(`Cannot set value on attribute '${this.name}' of PersistentObject '${this.parent.type}' (id: ${this.parent.objectId}): ${reason}`);
+    }
+
+    /**
+     * Internal method that performs the actual value setting logic.
+     */
+    async #setValueInternal(val: any, allowRefresh: boolean = true): Promise<any> {
         this.validationError = null;
 
         if (val && typeof val === "string") {
