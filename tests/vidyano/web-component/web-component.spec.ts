@@ -1,6 +1,6 @@
 import { test, expect, Page, Locator } from '@playwright/test';
 
-async function setupComponentTest(page: Page, componentTag: string) {
+async function setupComponentTest(page: Page, componentTag: string, options?: { beforeWait?: () => Promise<void> }) {
     await page.addScriptTag({ path: "dev/wwwroot/index.js", type: 'module' });
 
     await page.setContent(`
@@ -19,6 +19,9 @@ async function setupComponentTest(page: Page, componentTag: string) {
       </body>
     </html>
   `);
+
+    if (options?.beforeWait)
+        await options.beforeWait();
 
     await page.waitForFunction((tag) => !!customElements.get(tag), componentTag, { timeout: 10000 });
     return page.locator(componentTag);
@@ -1301,4 +1304,109 @@ test('TestTranslations: updates when service.language.messages or culture change
     await expect(component.locator('#submit')).toContainText('Soumettre');
     await expect(component.locator('#cancel')).toContainText('Annuler');
     await expect(component.locator('#ok-button')).toContainText('OK (FR)');
+});
+
+test('TestDecoratorInheritance: derived class overrides base class @observer and @computed', async ({ page }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', msg => {
+        if (msg.type() === 'error') {
+            const text = msg.text();
+            if (text.includes('test-decorator-inheritance')) {
+                consoleErrors.push(text);
+            }
+        }
+    });
+
+    const component = await setupComponentTest(page, 'test-decorator-inheritance', {
+        beforeWait: async () => {
+            await page.evaluate(() => {
+                (window as any).registerDecoratorInheritanceComponents();
+            });
+        }
+    });
+    await expect(component).toBeVisible();
+
+    // --- Verification: Console errors should be logged during registration ---
+    // Wait a bit for registration to complete and errors to be logged
+    await page.waitForTimeout(100);
+
+    // Should have 2 console errors: one for property observer conflict, one for computed property conflict
+    expect(consoleErrors.length).toBeGreaterThanOrEqual(2);
+
+    // Verify error messages contain the expected text
+    const hasPropertyObserverError = consoleErrors.some(err =>
+        err.includes('Property observer conflict') && err.includes('value')
+    );
+    const hasComputedPropertyError = consoleErrors.some(err =>
+        err.includes('Computed property conflict') && err.includes('displayName')
+    );
+
+    expect(hasPropertyObserverError).toBe(true);
+    expect(hasComputedPropertyError).toBe(true);
+
+    // --- Initial state verification ---
+    await expect(component.locator('#display-name')).toContainText('Derived: John Doe');
+    await expect(component.locator('#value')).toContainText('initial');
+
+    let state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            lastName: inst.lastName,
+            value: inst.value,
+            displayName: inst.displayName,
+            baseValueObserverCallCount: inst.baseValueObserverCallCount,
+            derivedValueObserverCallCount: inst.derivedValueObserverCallCount,
+            baseComputedCallCount: inst.baseComputedCallCount,
+            derivedComputedCallCount: inst.derivedComputedCallCount
+        };
+    });
+
+    expect(state.firstName).toBe('John');
+    expect(state.lastName).toBe('Doe');
+    expect(state.value).toBe('initial');
+    expect(state.displayName).toBe('Derived: John Doe');
+
+    // CRITICAL: Only derived class observers/computed should run, NOT base class
+    expect(state.baseValueObserverCallCount).toBe(0); // Base observer should NOT run
+    expect(state.derivedValueObserverCallCount).toBe(1); // Derived observer should run
+    expect(state.baseComputedCallCount).toBe(0); // Base computed should NOT run
+    expect(state.derivedComputedCallCount).toBeGreaterThanOrEqual(1); // Derived computed should run
+
+    // --- Act: Change value property ---
+    await component.evaluate(node => { (node as any).value = 'updated'; });
+    await expect(component.locator('#value')).toContainText('updated');
+
+    const valueState = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            value: inst.value,
+            baseValueObserverCallCount: inst.baseValueObserverCallCount,
+            derivedValueObserverCallCount: inst.derivedValueObserverCallCount
+        };
+    });
+
+    expect(valueState.value).toBe('updated');
+    expect(valueState.baseValueObserverCallCount).toBe(0); // Base observer should still NOT run
+    expect(valueState.derivedValueObserverCallCount).toBe(2); // Derived observer should run again
+
+    // --- Act: Change firstName to trigger computed property ---
+    const initialDerivedComputedCount = await component.evaluate(node => (node as any).derivedComputedCallCount);
+    await component.evaluate(node => { (node as any).firstName = 'Jane'; });
+    await expect(component.locator('#display-name')).toContainText('Derived: Jane Doe');
+
+    const computedState = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            displayName: inst.displayName,
+            baseComputedCallCount: inst.baseComputedCallCount,
+            derivedComputedCallCount: inst.derivedComputedCallCount
+        };
+    });
+
+    expect(computedState.firstName).toBe('Jane');
+    expect(computedState.displayName).toBe('Derived: Jane Doe');
+    expect(computedState.baseComputedCallCount).toBe(0); // Base computed should still NOT run
+    expect(computedState.derivedComputedCallCount).toBeGreaterThan(initialDerivedComputedCount); // Derived computed should run again
 });

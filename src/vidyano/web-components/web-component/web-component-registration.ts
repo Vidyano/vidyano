@@ -55,12 +55,22 @@ export function registerWebComponent<T extends typeof WebComponent>(tagName: str
     const inheritedKeybindingsConfig = parentClass[KEYBINDINGS_CONFIG_SYMBOL] || {};
     const inheritedSensitive = parentClass[SENSITIVE_CONFIG_SYMBOL];
 
-    // Process the decorated configurations from the target class.
-    const decoratedComputedConfig = targetClass[COMPUTED_CONFIG_SYMBOL] || {};
-    const decoratedPropertyObserversConfig = targetClass[PROPERTY_OBSERVERS_CONFIG_SYMBOL] || {};
-    const decoratedMethodObserversConfig = targetClass[METHOD_OBSERVERS_CONFIG_SYMBOL] || {};
-    const decoratedListenersConfig = targetClass[LISTENERS_CONFIG_SYMBOL] || {};
-    const decoratedKeybindingsConfig = targetClass[KEYBINDINGS_CONFIG_SYMBOL] || {};
+    // Check hasOwnProperty to avoid false conflict warnings from prototype chain inheritance
+    const decoratedComputedConfig = targetClass.hasOwnProperty(COMPUTED_CONFIG_SYMBOL) ? targetClass[COMPUTED_CONFIG_SYMBOL] : {};
+    const decoratedPropertyObserversConfig = targetClass.hasOwnProperty(PROPERTY_OBSERVERS_CONFIG_SYMBOL) ? targetClass[PROPERTY_OBSERVERS_CONFIG_SYMBOL] : {};
+    const decoratedMethodObserversConfig = targetClass.hasOwnProperty(METHOD_OBSERVERS_CONFIG_SYMBOL) ? targetClass[METHOD_OBSERVERS_CONFIG_SYMBOL] : {};
+    const decoratedListenersConfig = targetClass.hasOwnProperty(LISTENERS_CONFIG_SYMBOL) ? targetClass[LISTENERS_CONFIG_SYMBOL] : {};
+    const decoratedKeybindingsConfig = targetClass.hasOwnProperty(KEYBINDINGS_CONFIG_SYMBOL) ? targetClass[KEYBINDINGS_CONFIG_SYMBOL] : {};
+
+    // Detect duplicate computed properties (derived class redefining same property as parent)
+    const duplicateComputedProps = Object.keys(inheritedComputedConfig).filter(key => key in decoratedComputedConfig);
+    if (duplicateComputedProps.length > 0)
+        console.error(`[${tagName}] Computed property conflict: derived class overrides parent computed properties: ${duplicateComputedProps.join(', ')}. Only derived class computed property will be used.`);
+
+    // Detect duplicate property observers (derived class redefining same property as parent)
+    const duplicatePropertyObservers = Object.keys(inheritedPropertyObserversConfig).filter(key => key in decoratedPropertyObserversConfig);
+    if (duplicatePropertyObservers.length > 0)
+        console.error(`[${tagName}] Property observer conflict: derived class overrides parent observer for properties: ${duplicatePropertyObservers.join(', ')}. Only derived class observer will run.`);
 
     // Merge new configs with inherited configs and decorator-provided configs. Child-specific config wins.
     (targetClass as WebComponentConstructor)[COMPUTED_CONFIG_SYMBOL] = { ...inheritedComputedConfig, ...decoratedComputedConfig };
