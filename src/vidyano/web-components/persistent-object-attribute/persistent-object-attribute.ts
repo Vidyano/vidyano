@@ -61,8 +61,7 @@ export abstract class PersistentObjectAttribute extends WebComponent {
     @property({ type: Object })
     @notify()
     @observer(function(this: PersistentObjectAttribute, newValue: any, oldValue: any) {
-        if (this.attribute && newValue !== this.attribute.value)
-            this.attribute.setValue(newValue, false).catch(Vidyano.noop);
+        void this._valueChanged(newValue, oldValue);
     })
     value: any;
 
@@ -107,6 +106,11 @@ export abstract class PersistentObjectAttribute extends WebComponent {
     @observer("attribute.value")
     protected _attributeValueChanged() {
         this.value = this.attribute.value !== undefined ? this.attribute.value : null;
+    }
+
+    protected _valueChanged(newValue: any, oldValue: any): void | Promise<void> {
+        if (this.attribute && newValue !== this.attribute.value)
+            this.attribute.setValue(newValue, false).catch(Vidyano.noop);
     }
 
     protected _optionsChanged(options: string[] | Vidyano.PersistentObjectAttributeOption[]) {
