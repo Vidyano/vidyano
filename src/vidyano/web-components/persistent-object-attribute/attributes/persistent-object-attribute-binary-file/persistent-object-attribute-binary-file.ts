@@ -68,13 +68,13 @@ export class PersistentObjectAttributeBinaryFile extends PersistentObjectAttribu
                 <input .value=${this.fileName} type="text" readonly placeholder=${this.placeholder}>
             </vi-sensitive>
             ${!this.readOnly ? html`
-                <button class="browse" slot="right">
+                <button id="browse" class="browse" slot="right" ?disabled=${this.frozen}>
                     <vi-icon source="FileUpload"></vi-icon>
                     <input type="file" accept=${this._computeAccept()} @change=${this._change}>
                 </button>
             ` : nothing}
             ${this.canClear ? html`
-                <button slot="right" @click=${this._clear} tabindex="-1">
+                <button id="clear" slot="right" @click=${this._clear} tabindex="-1" ?disabled=${this.frozen}>
                     <vi-icon source="Remove"></vi-icon>
                 </button>
             ` : nothing}
