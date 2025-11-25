@@ -200,17 +200,5 @@
         "tests/**/*.js": true,
         "**/data": true
     },
-    "liveSassCompile.settings.formats": [
-    
-        {
-            "format": "expanded",
-            "extensionName": ".css",
-            "savePath": null,
-            "savePathReplacementPairs": null
-        }
-    ],
-    "liveSassCompile.settings.generateMap": false,
-    "liveSassCompile.settings.autoprefix": false,
-    "liveSassCompile.settings.watchOnLaunch": true,
-    "liveSassCompile.settings.showOutputWindowOn": "Error"
+    "dotnet.projects.enableFileBasedPrograms": true
 }
