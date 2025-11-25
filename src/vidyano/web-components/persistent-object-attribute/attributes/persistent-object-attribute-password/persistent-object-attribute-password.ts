@@ -42,6 +42,7 @@ export class PersistentObjectAttributePassword extends PersistentObjectAttribute
                     ?readonly=${this.readOnly}
                     tabindex=${this.readOnlyTabIndex}
                     placeholder=${this.placeholder || ""}
+                    ?disabled=${this.frozen}
                     @input=${(e: InputEvent) => this.value = (e.target as HTMLInputElement).value}
                     @blur=${this._editInputBlur}>
             </vi-sensitive>
