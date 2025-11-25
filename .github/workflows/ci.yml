@@ -2,6 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
+    branches:
+      - v4.0
+      - v5.0
     paths:
       - '.github/workflows/ci.yml'
       - 'dev/**'
@@ -12,6 +15,9 @@ on:
       - 'playwright.config.ts'
       - 'tsconfig.json'
   pull_request:
+    branches:
+      - v4.0
+      - v5.0
     paths:
       - '.github/workflows/ci.yml'
       - 'dev/**'
