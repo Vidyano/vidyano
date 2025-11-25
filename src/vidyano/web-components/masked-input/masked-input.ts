@@ -1,276 +1,390 @@
-import * as Polymer from "polymer"
-@Polymer.WebComponent.register({
-    properties: {
-        format: {
-            type: String,
-            observer: "_resetField",
-            value: ""
-        },
-        separator: {
-            type: String,
-            observer: "_resetField",
-            value: "\/:-"
-        },
-        allowed: {
-            type: String,
-            observer: "_resetField",
-            value: "0123456789"
-        },
-        open: {
-            type: String,
-            observer: "_resetField",
-            value: "_YMDhms"
-        },
-        disabled: {
-            type: Boolean,
-            reflectToAttribute: true
-        },
-        preserve: {
-            type: Boolean,
-            reflectToAttribute: true
-        },
-        size: {
-            type: Number,
-            computed: "_computeSize(format)"
-        },
-        value: {
-            type: String,
-            notify: true
-        }
-    }
-}, "vi-masked-input")
-export class MaskedInput extends Polymer.WebComponent {
-    static get template() {  return Polymer.html`<link rel="import" href="masked-input.html">` }
+import { html, PropertyValues, unsafeCSS } from "lit";
+import { property, query } from "lit/decorators.js";
+import { notify, WebComponent } from "components/web-component/web-component";
+import styles from "./masked-input.css";
 
-    private _startText: string;
-    format: string;
-    separator: string;
-    allowed: string;
-    open: string;
-    disabled: boolean;
-    preserve: boolean;
+export interface MaskedInputEventDetail {
     value: string;
+    originalEvent?: Event;
+}
 
-    connectedCallback() {
-        super.connectedCallback();
+export class MaskedInput extends WebComponent {
+    static styles = [unsafeCSS(styles)];
 
-        if (!this.preserve || this.input.value === "")
+    // We must track selection state manually because InputEvent fires AFTER the DOM changes,
+    // at which point we"ve lost the information about what range was selected/replaced.
+    #cachedSelection = { start: 0, end: 0 };
+
+    @property({ type: String })
+    format: string = "";
+    
+    @property({ type: String })
+    separator: string = "/:- ()";
+    
+    @property({ type: String })
+    allowed: string = "0123456789";
+    
+    @property({ type: String })
+    open: string = "_YMDhms#";
+    
+    @property({ type: String, reflect: true })
+    @notify()
+    value: string = "";
+    
+    @property({ type: Boolean })
+    insertMode: boolean = false;
+    
+    @property({ type: Boolean, reflect: true })
+    invalid: boolean = false;
+
+    @property({ type: Boolean, reflect: true })
+    disabled: boolean = false;
+
+    @query("input")
+    inputElement!: HTMLInputElement;
+
+    #getDataSlots(): number[] {
+        return [...this.format].map((c, i) => this.open.includes(c) ? i : -1).filter(i => i !== -1);
+    }
+
+    protected firstUpdated(changedProperties: PropertyValues): void {
+        super.firstUpdated(changedProperties);
+
+        if (!this.value && this.format)
             this.value = this.format;
     }
 
-    get input() {
-        return this.$.input as HTMLInputElement;
+    protected updated(changedProperties: PropertyValues): void {
+        super.updated(changedProperties);
+
+        // When format changes, reinitialize the value
+        if (changedProperties.has("format") && changedProperties.get("format") !== undefined)
+            this.value = this.format;
     }
 
-    focus() {
-        this.$.input.focus();
+    #dispatchChange(originalEvent?: Event) {
+        this.dispatchEvent(new CustomEvent<MaskedInputEventDetail>("value-changed", {
+            bubbles: true,
+            composed: true,
+            detail: { value: this.value, originalEvent }
+        }));
     }
 
-    private static otherKeys = ["Tab", "Enter", "ArrowUp", "ArrowLeft", "ArrowDown", "ArrowRight"];
-    private _isOther(key: string) {
-        return MaskedInput.otherKeys.indexOf(key) >= 0;
-    }
+    #checkFilled() {
+        const hasEmptySlot = [...this.format].some((formatChar, i) =>
+            this.open.includes(formatChar) && this.value[i] === formatChar
+        );
 
-    private _isGoodOnes(key: string) {
-        return this.allowed.indexOf(key) !== -1 || key === "Backspace" || key === "Delete" || this._isOther(key);
-    }
-
-    private _isFilled() {
-        // Check if any typeon characters are left
-        // Work from end of string as it's usually last filled
-        for (let a = this.input.value.length - 1; a >= 0; a--) {
-            // Check against each typeon character
-            for (let c = 0, d = this.open.length; c < d; c++) {
-                // If one matches we don't need to check anymore
-                if (this.input.value[a] === this.open[c])
-                    return false;
-            }
-        }
-
-        return true;
-    }
-
-    private _resetCursor() {
-        if (!!this.input.value && this.input.value !== this.format)
+        if (hasEmptySlot)
             return;
 
-        setTimeout(() => {
-            this._setTextCursor(0);
-        }, 1);
+        this.dispatchEvent(new CustomEvent<MaskedInputEventDetail>("filled", {
+            bubbles: true,
+            composed: true,
+            detail: { value: this.value }
+        }));
     }
 
-    private _getTextCursor() {
-        try {
-            this.input.focus();
-            if (this.input.selectionStart >= 0)
-                return this.input.selectionStart;
+    #replaceAt(str: string, index: number, replacement: string) {
+        return `${str.slice(0, index)}${replacement}${str.slice(index + 1)}`;
+    }
 
-            return -1;
+    #shiftCharactersLeft(value: string, fromIndex: number): string {
+        let result = value;
+        const dataSlots = this.#getDataSlots();
+
+        // Find the index in dataSlots array where we start shifting
+        const startSlotIndex = dataSlots.findIndex(slot => slot >= fromIndex);
+        if (startSlotIndex === -1)
+            return result;
+
+        // Shift all characters from this position onwards
+        for (let i = startSlotIndex; i < dataSlots.length - 1; i++) {
+            const currentSlot = dataSlots[i];
+            const nextSlot = dataSlots[i + 1];
+            result = this.#replaceAt(result, currentSlot, result[nextSlot]);
         }
-        catch (e) {
-            return -1;
+
+        // Clear the last data slot
+        const lastSlot = dataSlots[dataSlots.length - 1];
+        result = this.#replaceAt(result, lastSlot, this.format[lastSlot]);
+
+        return result;
+    }
+
+    #shiftCharactersRight(value: string, fromIndex: number, charToInsert: string): { value: string; success: boolean } {
+        let result = value;
+        const dataSlots = this.#getDataSlots();
+
+        // Find the index in dataSlots array where we start shifting
+        const startSlotIndex = dataSlots.findIndex(slot => slot >= fromIndex);
+        if (startSlotIndex === -1)
+            return { value: result, success: false };
+
+        // Check if last slot is empty (to prevent overflow)
+        const lastSlot = dataSlots[dataSlots.length - 1];
+        const isLastSlotEmpty = result[lastSlot] === this.format[lastSlot];
+        if (!isLastSlotEmpty)
+            return { value: result, success: false }; // Would overflow
+
+        // Shift all characters from the end backwards
+        for (let i = dataSlots.length - 1; i > startSlotIndex; i--) {
+            const currentSlot = dataSlots[i];
+            const prevSlot = dataSlots[i - 1];
+            result = this.#replaceAt(result, currentSlot, result[prevSlot]);
+        }
+
+        // Insert the new character at the start position
+        result = this.#replaceAt(result, fromIndex, charToInsert);
+
+        return { value: result, success: true };
+    }
+
+    /**
+     * Updates our internal cache of where the cursor/selection is.
+     * We call this on keydown/click/select to ensure we have the state BEFORE input changes.
+     */
+    #updateSelectionCache() {
+        if (this.inputElement) {
+            this.#cachedSelection = {
+                start: this.inputElement.selectionStart || 0,
+                end: this.inputElement.selectionEnd || 0
+            };
         }
     }
 
-    private _setTextCursor(pos: number) {
-        try {
-            if (this.input.selectionStart) {
-                this.input.focus();
-                this.input.setSelectionRange(pos, pos);
+    #signalInvalidInput() {
+        const input = this.inputElement;
+        input.classList.remove("invalid");
+        // Force reflow to restart animation
+        void input.offsetWidth;
+        input.classList.add("invalid");
+    }
+
+    #findNextDataSlot(fromIndex: number): number {
+        for (let i = fromIndex; i < this.format.length; i++) {
+            if (this.open.includes(this.format[i]))
+                return i;
+        }
+        return -1;
+    }
+
+    #clearSelection(value: string, start: number, end: number): string {
+        return value.substring(0, start) + this.format.substring(start, end) + value.substring(end);
+    }
+
+    #skipSeparators(fromIndex: number): number {
+        let pos = fromIndex;
+        while (pos < this.format.length && !this.open.includes(this.format[pos]))
+            pos++;
+
+        return pos;
+    }
+
+    #handleDeletion(inputType: string, oldValue: string, start: number, end: number ): { value: string; cursorPos: number } {
+        const isSelection = start !== end;
+
+        if (isSelection)
+            return { value: this.#clearSelection(oldValue, start, end), cursorPos: start };
+
+        // Single character delete
+        if (inputType === "deleteContentBackward") {
+            const targetIndex = start - 1;
+            if (targetIndex < 0)
+                return { value: oldValue, cursorPos: start };
+
+            const isSeparator = !this.open.includes(this.format[targetIndex]);
+
+            if (isSeparator) {
+                // Jump over separator, delete previous valid slot
+                let scan = targetIndex - 1;
+                while (scan >= 0 && !this.open.includes(this.format[scan]))
+                    scan--;
+
+                if (scan >= 0) {
+                    const newValue = this.insertMode
+                        ? this.#shiftCharactersLeft(oldValue, scan)
+                        : this.#replaceAt(oldValue, scan, this.format[scan]);
+                    return { value: newValue, cursorPos: scan };
+                }
+
+                return { value: oldValue, cursorPos: targetIndex };
+            }
+
+            // Standard data delete
+            const newValue = this.insertMode
+                ? this.#shiftCharactersLeft(oldValue, targetIndex)
+                : this.#replaceAt(oldValue, targetIndex, this.format[targetIndex]);
+            return { value: newValue, cursorPos: targetIndex };
+        }
+
+        // Delete key forward
+        const targetIndex = start;
+        if (targetIndex >= this.format.length)
+            return { value: oldValue, cursorPos: start };
+
+        const isSeparator = !this.open.includes(this.format[targetIndex]);
+
+        if (isSeparator) {
+            // Jump over separator, delete next valid slot
+            let scan = targetIndex + 1;
+            while (scan < this.format.length && !this.open.includes(this.format[scan]))
+                scan++;
+
+            if (scan < this.format.length) {
+                const newValue = this.insertMode
+                    ? this.#shiftCharactersLeft(oldValue, scan)
+                    : this.#replaceAt(oldValue, scan, this.format[scan]);
+                return { value: newValue, cursorPos: start };
+            }
+
+            return { value: oldValue, cursorPos: start };
+        }
+
+        // Standard data delete
+        const newValue = this.insertMode
+            ? this.#shiftCharactersLeft(oldValue, targetIndex)
+            : this.#replaceAt(oldValue, targetIndex, this.format[targetIndex]);
+        return { value: newValue, cursorPos: start };
+    }
+
+    #handleInsertion(char: string, oldValue: string, start: number,end: number): { value: string; cursorPos: number; valid: boolean } {
+        const isSelection = start !== end;
+        let value = isSelection ? this.#clearSelection(oldValue, start, end) : oldValue;
+        let cursorPos = start;
+
+        if (!this.allowed.includes(char))
+            return { value: oldValue, cursorPos: start, valid: false };
+
+        const targetSlot = this.#findNextDataSlot(cursorPos);
+        if (targetSlot === -1)
+            return { value, cursorPos, valid: false };
+
+        if (this.insertMode) {
+            const result = this.#shiftCharactersRight(value, targetSlot, char);
+            if (result.success) {
+                value = result.value;
+                cursorPos = this.#skipSeparators(targetSlot + 1);
+            }
+        } else {
+            value = this.#replaceAt(value, targetSlot, char);
+            cursorPos = this.#skipSeparators(targetSlot + 1);
+        }
+
+        return { value, cursorPos, valid: true };
+    }
+
+    #handlePaste(data: string, oldValue: string, start: number, end: number): { value: string; cursorPos: number } {
+        const isSelection = start !== end;
+        let value = isSelection ? this.#clearSelection(oldValue, start, end) : oldValue;
+        let cursorPos = start;
+
+        const pastedChars = [...data].filter(c => this.allowed.includes(c));
+
+        for (let i = cursorPos; i < this.format.length && pastedChars.length > 0; i++) {
+            if (this.open.includes(this.format[i])) {
+                value = this.#replaceAt(value, i, pastedChars.shift()!);
+                cursorPos = i + 1;
             }
         }
-        catch (e) {
-            return false;
-        }
 
-        return true;
+        return { value, cursorPos: this.#skipSeparators(cursorPos) };
     }
 
-    private _update(key: string) {
-        let p = this._getTextCursor(),
-				c = this.input.value,
-				val = "";
+    private _handleInput(e: InputEvent) {
+        const input = this.inputElement;
+        const oldValue = this.value;
+        const { start, end } = this.#cachedSelection;
 
-        if (this.allowed.indexOf(key) !== -1) {
-            p++;
+        let result: { value: string; cursorPos: number };
 
-            // If text cursor at end
-            if (p > this.format.length)
-                return false;
+        if (e.inputType === "deleteContentBackward" || e.inputType === "deleteContentForward")
+            result = this.#handleDeletion(e.inputType, oldValue, start, end);
+        else if (e.inputType === "insertText" && e.data) {
+            const insertion = this.#handleInsertion(e.data, oldValue, start, end);
+            if (!insertion.valid)
+                this.#signalInvalidInput();
 
-            // Handle cases where user places cursor before separator
-            while (this.separator.indexOf(c.charAt(p - 1)) !== -1 && p <= this.format.length)
-                p++;
-
-            val = c.substr(0, p - 1) + key + c.substr(p);
-
-            // Move cursor up a spot if next char is a separator char
-            if (this.allowed.indexOf(c.charAt(p)) === -1 && this.open.indexOf(c.charAt(p)) === -1)
-                p++;
+            result = insertion;
         }
-        else if (key === "Backspace") {
-            p--;
-
-            // At start of field
-            if (p < 0)
-                return false;
-
-            // If previous char is a separator, move a little more
-            while (this.allowed.indexOf(c.charAt(p)) === -1 && this.open.indexOf(c.charAt(p)) === -1 && p > 1)
-                p--;
-
-            val = c.substr(0, p) + this.format.substr(p, 1) + c.substr(p + 1);
-        }
-        else if (key === "Delete") {
-            // At end of field
-            if (p >= c.length)
-                return false;
-
-            // If next char is a separator and not the end of the text field
-            while (this.separator.indexOf(c.charAt(p)) !== -1 && c.charAt(p) !== '')
-                p++;
-
-            val = c.substr(0, p) + this.format.substr(p, 1) + c.substr(p + 1);
-            p++;
-        }
-        else if (this._isOther(key))
-            return true;
+        else if (e.inputType === "insertFromPaste" && e.data)
+            result = this.#handlePaste(e.data, oldValue, start, end);
         else
-            return false;
+            result = { value: oldValue, cursorPos: start };
 
-        this.value = "";
-        this.value = val;
-        this._setTextCursor(p);
-        
-        return false;
+        // Apply changes
+        this.value = result.value;
+        input.value = result.value;
+        input.setSelectionRange(result.cursorPos, result.cursorPos);
+
+        // Update cache immediately to the new state
+        this.#cachedSelection = { start: result.cursorPos, end: result.cursorPos };
+
+        this.#dispatchChange(e);
+        this.#checkFilled();
     }
 
-    private _keydown(e: KeyboardEvent) {
-        if (this.disabled)
-            return true;
+    private _handleKeyDown(e: KeyboardEvent) {
+        // Capture selection before the action takes place
+        this.#updateSelectionCache();
 
-        // Allow for OS commands
-        if (e.metaKey || e.ctrlKey)
-            return true;
+        if (e.key === "Backspace") {
+            const { start, end } = this.#cachedSelection;
 
-        if (!this.input.value) {
-            this.value = this.format;
-            this._setTextCursor(0);
-        }
-
-        // Only do update for backspace and delete
-        if (e.key === "Backspace" || e.key === "Delete") {
-            this._update(e.key);
-            
-            e.preventDefault();
-            return false;
-        }
-
-        return true;
-    }
-
-    private _keypress(e: KeyboardEvent) {
-        if (this.disabled)
-            return true;
-
-        if (this._isOther(e.key) || e.metaKey || e.ctrlKey || e.altKey)
-            return true;
-
-        if (e.key !== "Backspace" && e.key !== "Delete" && e.key !== "shift") {
-            if (!this._isGoodOnes(e.key)) {
-                e.preventDefault();
-                return false;
+            // If we are doing a single backspace (no selection)
+            // and we are standing right after a separator, jump back.
+            if (start === end && start > 0) {
+                const prevCharIsSeparator = !this.open.includes(this.format[start - 1]);
+                if (prevCharIsSeparator) {
+                    let scan = start - 1;
+                    while (scan > 0 && !this.open.includes(this.format[scan - 1])) {
+                        scan--;
+                    }
+                    // Move cursor there, so the "input" event (deleteContentBackward)
+                    // sees the cursor at the number, not the separator.
+                    this.inputElement.setSelectionRange(scan, scan);
+                    this.#cachedSelection = { start: scan, end: scan };
+                }
             }
-
-            if (this._update(e.key)) {
-                if (this._isFilled())
-                    this.dispatchEvent(new CustomEvent("filled", {
-                        bubbles: true,
-                        composed: true
-                    }));
-
-                e.preventDefault();
-                return true;
-            }
-
-            if (this._isFilled())
-                this.dispatchEvent(new CustomEvent("filled", {
-                    bubbles: true,
-                    composed: true
-                }));
-
-            e.preventDefault();
-            return false;
         }
-
-        return false;
     }
 
-    private _tap() {
-        this._resetCursor();
+    // Hook into other events that change selection
+    private _handleSelectionChange() {
+        this.#updateSelectionCache();
     }
 
-    private _focus() {
-        this._resetCursor();
-        this._startText = this.input.value;
+    private _handleMouseDown(e: MouseEvent) {
+        // If the value equals the format (nothing entered yet), position caret at first editable slot
+        if (this.value === this.format) {
+            e.preventDefault(); // Prevent default browser caret placement
+            this.inputElement.focus();
+            const firstOpenSlot = [...this.format].findIndex(char => this.open.includes(char));
+            if (firstOpenSlot !== -1) {
+                this.inputElement.setSelectionRange(firstOpenSlot, firstOpenSlot);
+                this.#cachedSelection = { start: firstOpenSlot, end: firstOpenSlot };
+            }
+        }
     }
 
-    private _blur() {
-        if (this.input.value !== this._startText && this.input.onchange)
-            this.input.dispatchEvent(new Event("change"));
-    }
-
-    private _preventCutPaste(e: Event) {
-        e.preventDefault();
-        return false;
-    }
-
-    private _resetField() {
-        this.value = this.format;
-    }
-
-    private _computeSize(format: string) {
-        // Don't return zero
-        return format?.length || undefined;
+    render() {
+        return html`
+            <input
+                type="text"
+                part="input"
+                .value=${this.value}
+                aria-label=${this.format}
+                autocomplete="off"
+                ?disabled=${this.disabled}
+                @input=${this._handleInput}
+                @keydown=${this._handleKeyDown}
+                @mouseup=${this._handleSelectionChange}
+                @focus=${this._handleSelectionChange}
+                @select=${this._handleSelectionChange}
+                @mousedown=${this._handleMouseDown}
+            />
+        `;
     }
 }
+
+customElements.define("vi-masked-input", MaskedInput);
