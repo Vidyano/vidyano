@@ -1,7 +1,7 @@
 import { html, nothing, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
 import * as Vidyano from "vidyano";
-import { computed, observer } from "components/web-component/web-component";
+import { computed } from "components/web-component/web-component";
 import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute";
 import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register";
 import styles from "./persistent-object-attribute-string.css";
@@ -12,58 +12,98 @@ export class PersistentObjectAttributeString extends PersistentObjectAttribute {
     private _suggestionsSeparator: string;
 
     @state()
-    @observer(PersistentObjectAttributeString.prototype._characterCasingChanged)
-    characterCasing: string;
-
-    @state()
-    editInputStyle: string;
-
-    @state()
     suggestions: string[];
 
-    get filteredSuggestions(): string[] {
-        return this._computeFilteredSuggestions(this.suggestions, this.value);
-    }
+    @computed(function(this: PersistentObjectAttributeString): string {
+        return this.attribute?.getTypeHint("CharacterCasing", "Normal") || "Normal";
+    }, "attribute.typeHints")
+    declare readonly characterCasing: string;
 
-    get hasSuggestions(): boolean {
-        return this._computeHasSuggestions(this.filteredSuggestions, this.readOnly);
-    }
+    @computed(function(this: PersistentObjectAttributeString): string {
+        return this.attribute?.getTypeHint("InputType", "text") || "text";
+    }, "attribute.typeHints")
+    declare readonly inputtype: string;
 
-    @state()
-    inputtype: string;
+    @computed(function(this: PersistentObjectAttributeString): number | null {
+        const maxlength = parseInt(this.attribute?.getTypeHint("MaxLength", "0") || "0", 10);
+        return maxlength > 0 ? maxlength : null;
+    }, "attribute.typeHints")
+    declare readonly maxlength: number | null;
 
-    @state()
-    maxlength: number;
-
-    @state()
-    autocomplete: string;
+    @computed(function(this: PersistentObjectAttributeString): string | undefined {
+        return this.attribute?.getTypeHint("Autocomplete");
+    }, "attribute.typeHints")
+    declare readonly autocomplete: string | undefined;
 
     @property({ type: String })
-    @computed(PersistentObjectAttributeString.prototype._computeLink, "attribute", "attribute.value")
+    @computed(function(this: PersistentObjectAttributeString, attribute: Vidyano.PersistentObjectAttribute, value: string): string {
+        const link = attribute.getTypeHint("Link", "").toLowerCase();
+        if (!link)
+            return null;
+
+        return link === "email" ? `mailto:${value}` : (!!value ? value : null);
+    }, "attribute", "attribute.value")
     declare readonly link: string;
 
     @property({ type: String })
-    @computed(PersistentObjectAttributeString.prototype._computeLinkTitle, "attribute.displayValue", "sensitive")
+    @computed(function(this: PersistentObjectAttributeString, displayValue: string, sensitive: boolean): string {
+        return !sensitive ? displayValue : "";
+    }, "attribute.displayValue", "sensitive")
     declare readonly linkTitle: string;
 
-    protected _attributeChanged() {
+    get editInputStyle(): string | undefined {
+        if (this.characterCasing === "Upper")
+            return "text-transform: uppercase;";
+        if (this.characterCasing === "Lower")
+            return "text-transform: lowercase;";
+
+        return undefined;
+    }
+
+    get filteredSuggestions(): string[] {
+        if (!this.suggestions || this.suggestions.length === 0)
+            return [];
+
+        if (String.isNullOrEmpty(this.value))
+            return this.suggestions;
+
+        return this.suggestions.filter(s => this.value.indexOf(s) < 0);
+    }
+
+    get hasSuggestions(): boolean {
+        return !this.readOnly && this.filteredSuggestions?.length > 0;
+    }
+
+    protected override _attributeChanged() {
         super._attributeChanged();
 
         if (this.attribute instanceof Vidyano.PersistentObjectAttribute) {
-            this.characterCasing = this.attribute.getTypeHint("CharacterCasing", "Normal");
-            this.inputtype = this.attribute.getTypeHint("InputType", "text");
-            const maxlength = parseInt(this.attribute.getTypeHint("MaxLength", "0"), 10);
-            this.maxlength = maxlength > 0 ? maxlength : null;
-
-            // Sets the autocomplete attribute on the input (https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete)
-            this.autocomplete = this.attribute.getTypeHint("Autocomplete");
-
             this._suggestionsSeparator = this.attribute.getTypeHint("SuggestionsSeparator");
             if (this._suggestionsSeparator != null && this.attribute.options != null && this.attribute.options.length > 0) {
                 const value = <string>this.attribute.value;
                 this.suggestions = (<string[]>this.attribute.options).filter(o => !String.isNullOrEmpty(o) && (value == null || !value.contains(o)));
             }
         }
+    }
+
+    private _onInput(e: InputEvent) {
+        const input = e.target as HTMLInputElement;
+        let value = input.value;
+
+        // Transform based on character casing
+        if (this.editing && this.characterCasing !== "Normal") {
+            const transformed = this.characterCasing === "Upper" ? value.toUpperCase() : value.toLowerCase();
+            if (transformed !== value) {
+                const start = input.selectionStart;
+                const end = input.selectionEnd;
+                input.value = transformed;
+                input.selectionStart = start;
+                input.selectionEnd = end;
+                value = transformed;
+            }
+        }
+
+        this.value = value;
     }
 
     private _editInputBlur() {
@@ -101,76 +141,12 @@ export class PersistentObjectAttributeString extends PersistentObjectAttribute {
         });
     }
 
-    @observer("value")
-    protected _valueChanged(value: any, oldValue: any) {
-        let selection: number[];
-        let input: HTMLInputElement;
-
-        if (this.editing && value && this.characterCasing !== "Normal") {
-            value = this.characterCasing === "Upper" ? value.toUpperCase() : value.toLowerCase();
-            if (value !== this.value) {
-                input = <HTMLInputElement>this.shadowRoot.querySelector("input");
-                if (input != null)
-                    selection = [input.selectionStart, input.selectionEnd];
-            }
-        }
-
-        if (value === this.value) {
-            // Value observer from base class will handle this
-            if (this.attribute && value !== this.attribute.value)
-                this.attribute.setValue(value, false).catch(Vidyano.noop);
-        }
-        else {
-            this.attribute.setValue(value, false).catch(Vidyano.noop);
-        }
-
-        if (selection != null) {
-            input.selectionStart = selection[0];
-            input.selectionEnd = selection[1];
-        }
-    }
-
-    private _characterCasingChanged(casing: string) {
-        if (casing === "Upper")
-            this.editInputStyle = "text-transform: uppercase;";
-        else if (casing === "Lower")
-            this.editInputStyle = "text-transform: lowercase;";
-        else
-            this.editInputStyle = undefined;
-    }
-
     private _addSuggestion(e: MouseEvent) {
         const suggestion = (e.currentTarget as HTMLElement).textContent;
         this.attribute.setValue(String.isNullOrEmpty(this.value) ? suggestion : (this.value.endsWith(this._suggestionsSeparator) ? this.value + suggestion : this.value + this._suggestionsSeparator + suggestion)).catch(Vidyano.noop);
     }
 
-    private _computeFilteredSuggestions(suggestions: string[], value: string): string[] {
-        if (!suggestions || suggestions.length === 0)
-            return [];
-
-        if (String.isNullOrEmpty(value))
-            return suggestions;
-
-        return suggestions.filter(s => value.indexOf(s) < 0);
-    }
-
-    private _computeHasSuggestions(suggestions: string[], readOnly: boolean): boolean {
-        return !readOnly && suggestions && suggestions.length > 0;
-    }
-
-    private _computeLink(attribute: Vidyano.PersistentObjectAttribute, value: string): string {
-        const link = attribute.getTypeHint("Link", "").toLowerCase();
-        if (!link)
-            return null;
-
-        return link === "email" ? `mailto:${value}` : (!!value ? value : null);
-    }
-
-    private _computeLinkTitle(displayValue: string, sensitive: boolean): string {
-        return !sensitive ? displayValue : "";
-    }
-
-    protected renderDisplay() {
+    protected override renderDisplay() {
         if (!this.link)
             return super.renderDisplay(html`<span>${this.attribute?.displayValue}</span>`);
 
@@ -187,12 +163,12 @@ export class PersistentObjectAttributeString extends PersistentObjectAttribute {
         `;
     }
 
-    protected renderEdit() {
+    protected override renderEdit() {
         return super.renderEdit(html`
             <vi-sensitive disabled=${!this.sensitive}>
                 <input
                     .value=${this.value || ""}
-                    @input=${(e: InputEvent) => this.value = (e.target as HTMLInputElement).value}
+                    @input=${this._onInput}
                     type=${this.inputtype}
                     maxlength=${this.maxlength || nothing}
                     autocomplete=${this.autocomplete || nothing}
