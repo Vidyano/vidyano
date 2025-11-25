@@ -1,106 +1,344 @@
-import * as Polymer from "polymer"
-import * as Vidyano from "vidyano"
-import * as Keyboard from "components/utils/keyboard"
-import "components/masked-input/masked-input"
-import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
-import type { TimePicker } from '../../../time-picker/time-picker.js'
-import '../../../time-picker/time-picker.js'
-import type { DatePicker } from '../../../date-picker/date-picker.js'
-import '../../../date-picker/date-picker.js'
+import { html, nothing, unsafeCSS } from "lit";
+import { property, query, state } from "lit/decorators.js";
+import * as Vidyano from "vidyano";
+import "components/masked-input/masked-input";
+import { computed, observer } from "components/web-component/web-component";
+import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute";
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register";
+import type { TimePicker } from "../../../time-picker/time-picker.js";
+import "../../../time-picker/time-picker.js";
+import type { DatePicker } from "../../../date-picker/date-picker.js";
+import "../../../date-picker/date-picker.js";
+import type { MaskedInput } from "../../../masked-input/masked-input.js";
+import styles from "./persistent-object-attribute-date-time.css";
 
-@Polymer.WebComponent.register({
-    properties: {
-        selectedDate: Object,
-        selectedTime: Object,
-        hasDateComponent: {
-            type: Boolean,
-            computed: "_computeHasComponent(attribute, 'Date', isConnected)"
-        },
-        hasTimeComponent: {
-            type: Boolean,
-            computed: "_computeHasComponent(attribute, 'Time', isConnected)"
-        },
-        dateFormat: {
-            type: String,
-            computed: "_computeDateFormat(isConnected)"
-        },
-        dateSeparator: {
-            type: String,
-            computed: "_computeDateSeparator(isConnected)"
-        },
-        timeFormat: {
-            type: String,
-            computed: "_computeTimeFormat(isConnected)"
-        },
-        timeSeparator: {
-            type: String,
-            computed: "_computeTimeSeparator(isConnected)"
-        },
-        isInvalid: {
-            type: Boolean,
-            readOnly: true,
-            reflectToAttribute: true
-        },
-        canClear: {
-            type: Boolean,
-            computed: "_computeCanClear(attribute.value, attribute.isRequired)"
-        },
-        monthMode: {
-            type: Boolean,
-            computed: "_computeMonthMode(attribute)"
-        },
-        minDate: {
-            type: Object,
-            computed: "_computeMinMaxDate(attribute, 'mindate')"
-        },
-        maxDate: {
-            type: Object,
-            computed: "_computeMinMaxDate(attribute, 'maxdate')"
-        }
-    },
-    observers: [
-        "_selectedDateChanged(selectedDate, hasDateComponent, hasTimeComponent)",
-        "_selectedTimeChanged(selectedTime, hasDateComponent, hasTimeComponent)",
-        "_renderDate(selectedDate, hasDateComponent, readOnly, editing, isConnected)",
-        "_renderTime(selectedTime, hasDateComponent, hasTimeComponent, readOnly, editing, isConnected)"
-    ],
-    forwardObservers: [
-        "attribute.typeHints"
-    ]
-}, "vi-persistent-object-attribute-date-time")
-export class PersistentObjectAttributeDateTime extends Polymer.PersistentObjectAttribute {
-    static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-date-time.html">`; }
+export class PersistentObjectAttributeDateTime extends PersistentObjectAttribute {
+    static styles = [super.styles, unsafeCSS(styles)];
 
     private _valueChangedBlock: boolean;
-    private _dateInput: HTMLInputElement;
-    private _timeInput: HTMLInputElement;
     private _pendingRefresh: boolean;
-    readonly isInvalid: boolean; private _setIsInvalid: (invalid: boolean) => void;
-    readonly hasTimeComponent: boolean;
-    readonly hasDateComponent: boolean;
-    readonly monthMode: boolean;
-    readonly dateFormat: string;
-    readonly dateSeparator: string;
-    readonly timeFormat: string;
-    readonly timeSeparator: string;
-    readonly minDate: Date;
-    readonly maxDate: Date;
+    private _latestSetValue: Date | string | null = null;
+
+    @state()
     selectedDate: Date;
+
+    @state()
     selectedTime: Date;
 
-    private _formatDate(date: Date, pattern: string): string {
+    @state()
+    private _dateInvalid: boolean = false;
+
+    @state()
+    private _timeInvalid: boolean = false;
+
+    @property({ type: Boolean, reflect: true })
+    @computed(function(this: PersistentObjectAttributeDateTime): boolean {
+        return this._dateInvalid || this._timeInvalid;
+    }, "_dateInvalid", "_timeInvalid")
+    declare readonly isInvalid: boolean;
+
+    @property({ type: Boolean })
+    @computed(function(this: PersistentObjectAttributeDateTime): boolean {
+        return this.attribute?.type?.contains("Date") ?? false;
+    }, "attribute.type")
+    declare readonly hasDateComponent: boolean;
+
+    @property({ type: Boolean })
+    @computed(function(this: PersistentObjectAttributeDateTime): boolean {
+        return this.attribute?.type?.contains("Time") ?? false;
+    }, "attribute.type")
+    declare readonly hasTimeComponent: boolean;
+
+    get #culture(): Vidyano.CultureInfo {
+        return Vidyano.CultureInfo.currentCulture || Vidyano.CultureInfo.invariantCulture;
+    }
+
+    get dateFormat(): string {
+        return this.#culture.dateFormat.shortDatePattern.toLowerCase().replace(/[ymd]/g, "_");
+    }
+
+    get dateSeparator(): string {
+        return this.#culture.dateFormat.dateSeparator;
+    }
+
+    get timeFormat(): string {
+        return "__" + this.#culture.dateFormat.timeSeparator + "__";
+    }
+
+    get timeSeparator(): string {
+        return this.#culture.dateFormat.timeSeparator;
+    }
+
+    get #dateDisplayValue(): string {
+        const pattern = this.#culture.dateFormat.shortDatePattern;
+
+        if (this.selectedDate)
+            return this.#formatDate(this.selectedDate, pattern);
+
+        return this.readOnly ? "—" : this.dateFormat;
+    }
+
+    get #timeDisplayValue(): string {
+        if (this.selectedTime)
+            return String.format(`{0:D2}${this.timeSeparator}{1:D2}`, this.selectedTime.getHours(), this.selectedTime.getMinutes());
+
+        return this.readOnly ? (this.hasDateComponent ? "" : "—") : this.timeFormat;
+    }
+
+    @property({ type: Boolean })
+    @computed(function(this: PersistentObjectAttributeDateTime): boolean {
+        return this.attribute?.value != null && !this.attribute?.isRequired;
+    }, "attribute.value", "attribute.isRequired")
+    declare readonly canClear: boolean;
+
+    @property({ type: Boolean })
+    @computed(function(this: PersistentObjectAttributeDateTime): boolean {
+        return this.attribute?.getTypeHint("displayformat", "").toLowerCase() === "{0:y}";
+    }, "attribute.typeHints")
+    declare readonly monthMode: boolean;
+
+    @property({ type: Object })
+    @computed(function(this: PersistentObjectAttributeDateTime): Date | null {
+        return this.#parseMinMaxDate(this.attribute?.getTypeHint("mindate"));
+    }, "attribute.typeHints")
+    declare readonly minDate: Date | null;
+
+    @property({ type: Object })
+    @computed(function(this: PersistentObjectAttributeDateTime): Date | null {
+        return this.#parseMinMaxDate(this.attribute?.getTypeHint("maxdate"));
+    }, "attribute.typeHints")
+    declare readonly maxDate: Date | null;
+
+    @query("vi-masked-input.date")
+    private declare readonly dateInput: MaskedInput;
+
+    @query("vi-masked-input.time")
+    private declare readonly timeInput: MaskedInput;
+
+    @query("#datepicker")
+    private declare readonly datePicker: DatePicker;
+
+    @query("#timepicker")
+    private declare readonly timePicker: TimePicker;
+
+    override focus() {
+        if (this.app.activeElement instanceof HTMLInputElement) {
+            const input = this.app.activeElement as HTMLInputElement;
+            if (input.getRootNode() instanceof ShadowRoot && (input.getRootNode() as ShadowRoot).host === this.timeInput)
+                return;
+        }
+
+        (this.dateInput || this.timeInput)?.focus();
+    }
+
+    protected override _editingChanged() {
+        super._editingChanged();
+
+        this._latestSetValue = null;
+        if (this.editing) {
+            this._dateInvalid = false;
+            this._timeInvalid = false;
+        }
+    }
+
+    protected override _valueChanged(value: Date, oldValue: any) {
+        // Skip stale callbacks from out-of-order async setValue responses
+        if (this._latestSetValue !== null && this.editing && !this.readOnly) {
+            const latestTime = this._latestSetValue instanceof Date ? this._latestSetValue.getTime() : null;
+            const valueTime = value instanceof Date ? value.getTime() : null;
+
+            if (latestTime !== valueTime)
+                return;
+        }
+
+        super._valueChanged(value, oldValue);
+
+        try {
+            this._valueChangedBlock = true;
+            if (this.attribute && value instanceof Date) {
+                this.selectedDate = this.attribute.type.contains("Date") ? new Date(value.getTime()) : null;
+
+                if (this.attribute.type === "Time" || this.attribute.type === "NullableTime")
+                    this.selectedTime = this.#parseTime(this.value);
+                else {
+                    this.selectedTime = this.attribute.type.contains("Time") ? new Date(value.getTime()) : null;
+                }
+            }
+            else {
+                this.selectedDate = this.selectedTime = null;
+            }
+        }
+        finally {
+            // Only reset invalid states when not in editing mode.
+            // In editing mode, the fill handlers manage invalid states.
+            // Resetting here would cause race conditions with async server responses.
+            if (!this.editing) {
+                this._dateInvalid = false;
+                this._timeInvalid = false;
+            }
+            this._valueChangedBlock = false;
+        }
+    }
+
+    @observer("selectedDate", "hasDateComponent", "hasTimeComponent")
+    private _selectedDateChanged(selectedDate: Date, hasDateComponent: boolean, hasTimeComponent: boolean) {
+        if (!this.editing || this.readOnly || !hasDateComponent || this._valueChangedBlock)
+            return;
+
+        // Don't update attribute value if time component is invalid
+        if (hasTimeComponent && this._timeInvalid)
+            return;
+
+        if (selectedDate) {
+            const newValue = new Date(selectedDate.getTime());
+            if (this.hasTimeComponent) {
+                if (this.selectedTime) {
+                    newValue.setHours(this.selectedTime.getHours(), this.selectedTime.getMinutes(), this.selectedTime.getSeconds(), this.selectedTime.getMilliseconds());
+                } else if (typeof this.attribute.typeHints.newtime === "string") {
+                    const time = this.attribute.typeHints.newtime.split(/[:.]/);
+
+                    while (time.length < 4)
+                        time.push("0");
+
+                    newValue.setHours(parseInt(time[0], 10), parseInt(time[1], 10), parseInt(time[2], 10), parseInt(time[3].substring(0, 3), 10));
+                } else
+                    newValue.setHours(0, 0, 0, 0);
+            } else
+                newValue.setHours(0, 0, 0, 0);
+
+            this.#updateAttributeValue(newValue);
+        } else {
+            this.#updateAttributeValue(null);
+        }
+    }
+
+    @observer("selectedTime", "hasDateComponent", "hasTimeComponent")
+    private _selectedTimeChanged(selectedTime: Date, hasDateComponent: boolean, hasTimeComponent: boolean) {
+        if (!this.editing || this.readOnly || !hasTimeComponent || this._valueChangedBlock)
+            return;
+
+        // Don't update attribute value if date component is invalid
+        if (hasDateComponent && this._dateInvalid)
+            return;
+
+        if (hasDateComponent) {
+            if (selectedTime) {
+                const baseDate = this.selectedDate || new Date();
+                const newValue = new Date(baseDate.getTime());
+                newValue.setHours(selectedTime.getHours(), selectedTime.getMinutes(), selectedTime.getSeconds(), selectedTime.getMilliseconds());
+                this.#updateAttributeValue(newValue);
+            } else if (this.selectedDate) {
+                const newValue = new Date(this.selectedDate.getTime());
+                newValue.setHours(0, 0, 0, 0);
+                this.#updateAttributeValue(newValue);
+            } else {
+                this.#updateAttributeValue(null);
+            }
+        } else if (selectedTime) {
+            // Format as .NET TimeSpan: "d:HH:MM:SS.fff0000" (days=0, padded trailing zeros for ticks)
+            const newTimeValue = String.format("0:{0:D2}:{1:D2}:{2:D2}.{3:D3}0000", selectedTime.getHours(), selectedTime.getMinutes(), selectedTime.getSeconds(), selectedTime.getMilliseconds());
+            // Compare excluding trailing precision digits to avoid unnecessary updates
+            if (!this.value || (this.value as string).substring(0, newTimeValue.length - 4) !== newTimeValue.substring(0, newTimeValue.length - 4))
+                this.#updateAttributeValue(newTimeValue);
+        } else {
+            this.#updateAttributeValue(null);
+        }
+    }
+
+    #normalizeForComparison(date: Date, useTime: boolean, isMaxBound: boolean = false): Date {
+        if (useTime)
+            return new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds());
+
+        // For date-only comparisons, max bounds use end-of-day
+        if (isMaxBound)
+            return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999);
+
+        return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+    }
+
+    #isDateInRange(date: Date): boolean {
+        const normalized = this.#normalizeForComparison(date, this.hasTimeComponent);
+
+        if (this.minDate) {
+            const min = this.#normalizeForComparison(this.minDate, this.hasTimeComponent);
+            if (normalized < min)
+                return false;
+        }
+
+        if (this.maxDate) {
+            const max = this.#normalizeForComparison(this.maxDate, this.hasTimeComponent, true);
+            if (normalized > max)
+                return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Determines if we should trigger an immediate server refresh when setting a value.
+     *
+     * We want immediate refresh when:
+     * - monthMode: Navigation buttons change the value discretely, so refresh immediately
+     * - First value: Setting a value when none existed indicates a completed selection
+     * - Picker open: User is actively selecting from the date/time picker popup
+     *
+     * We defer refresh when the user is actively typing in the masked input fields
+     * to avoid disruptive server round-trips mid-edit. The _focusout handler will
+     * trigger pending refresh when the user leaves the inputs.
+     */
+    #shouldTriggerImmediateRefresh(newValue: Date | string | null): boolean {
+        // Month mode always refreshes immediately - uses discrete navigation buttons
+        if (this.monthMode)
+            return true;
+
+        // Setting a value when none existed - user completed initial selection
+        if (newValue != null && this.value == null)
+            return true;
+
+        // Picker popup is open - user is actively selecting
+        if ((this.hasTimeComponent && this.timePicker?.isOpen) || (this.hasDateComponent && this.datePicker?.isOpen))
+            return true;
+
+        // Defer refresh - _focusout will trigger pending refresh when user leaves
+        return false;
+    }
+
+    #updateAttributeValue(value: Date | string | null) {
+        if (value instanceof Date) {
+            if (!this.#isDateInRange(value)) {
+                this._dateInvalid = true;
+                return;
+            }
+
+            if (this.value instanceof Date) {
+                const valueNorm = this.#normalizeForComparison(value, this.hasTimeComponent);
+                const currentNorm = this.#normalizeForComparison(this.value, this.hasTimeComponent);
+                if (valueNorm.getTime() === currentNorm.getTime())
+                    return;
+            }
+        }
+
+        this._dateInvalid = false;
+
+        const allowRefresh = this.#shouldTriggerImmediateRefresh(value);
+        this._pendingRefresh = this.attribute.triggersRefresh && !allowRefresh;
+        this._latestSetValue = value;
+        this.attribute.setValue(value, allowRefresh);
+    }
+
+    #formatDate(date: Date, pattern: string): string {
         let p = pattern;
         p = p.replace(/yyyy/g, date.getFullYear().toString());
-        p = p.replace(/yy/g, (date.getFullYear() % 100).toString().padStart(2, '0'));
-        p = p.replace(/MM/g, (date.getMonth() + 1).toString().padStart(2, '0'));
+        p = p.replace(/yy/g, (date.getFullYear() % 100).toString().padStart(2, "0"));
+        p = p.replace(/MM/g, (date.getMonth() + 1).toString().padStart(2, "0"));
         p = p.replace(/M/g, (date.getMonth() + 1).toString());
-        p = p.replace(/dd/g, date.getDate().toString().padStart(2, '0'));
+        p = p.replace(/dd/g, date.getDate().toString().padStart(2, "0"));
         p = p.replace(/d/g, date.getDate().toString());
-        
+
         return p;
     }
 
-    private _parseDate(dateString: string, pattern: string, separator: string): Date | null {
+    #parseDate(dateString: string, pattern: string, separator: string): Date | null {
         const patternParts = pattern.split(separator);
         const dateParts = dateString.split(separator);
 
@@ -134,17 +372,11 @@ export class PersistentObjectAttributeDateTime extends Polymer.PersistentObjectA
                 if (parsedYear)
                     return null;
 
-                year = val;
-                if ((pPart === "yy" || pPart === "y") && val >= 0 && val <= 99) {
-                    const currentFullYear = new Date().getFullYear();
-                    const currentCentury = Math.floor(currentFullYear / 100) * 100;
-                    year = currentCentury + val;
-                    if (year > currentFullYear + 10) {
-                        year -= 100;
-                    }
-                } else if (pPart === "yyyy" && (val < 100 || val > 9999))
+                // Only accept 4-digit years to avoid ambiguity
+                if (val < 1 || val > 9999)
                     return null;
 
+                year = val;
                 parsedYear = true;
             }
         }
@@ -156,242 +388,57 @@ export class PersistentObjectAttributeDateTime extends Polymer.PersistentObjectA
             return null;
 
         const tempDate = new Date(year, month, day);
-        if (tempDate.getFullYear() !== year || tempDate.getMonth() !== month || tempDate.getDate() !== day) {
+        if (tempDate.getFullYear() !== year || tempDate.getMonth() !== month || tempDate.getDate() !== day)
             return null;
-        }
 
         return tempDate;
     }
 
-    get dateInput(): HTMLInputElement {
-        if (!this._dateInput) {
-            Polymer.flush();
-            this._dateInput = <HTMLInputElement>this.shadowRoot.querySelector("vi-masked-input.date");
+    #parseTime(value: Date | string): Date | null {
+        if (typeof value === "string") {
+            // Parse .NET TimeSpan string format: "d:HH:MM:SS.fffffff" (e.g., "0:14:30:00.0000000")
+            // Split on both ':' and '.' to get [days, hours, minutes, seconds, fractional]
+            const parts = value.split(/[:.]/);
+            if (parts.length < 4)
+                return null;
+
+            // Take last 4 parts to get hours, minutes, seconds, milliseconds
+            const startIndex = parts.length - 4;
+            const time = new Date();
+            time.setHours(
+                parseInt(parts[startIndex], 10),      // hours
+                parseInt(parts[startIndex + 1], 10),  // minutes
+                parseInt(parts[startIndex + 2], 10),  // seconds
+                parseInt(parts[startIndex + 3].substring(0, 3), 10)  // milliseconds (first 3 digits)
+            );
+            return time;
         }
 
-        return this._dateInput;
+        // For Date objects, copy the time but use today's date
+        const today = new Date();
+        const time = new Date(value.getTime());
+        time.setFullYear(today.getFullYear(), today.getMonth(), today.getDate());
+        return time;
     }
 
-    get timeInput(): HTMLInputElement {
-        if (!this._timeInput) {
-            Polymer.flush();
-            this._timeInput = <HTMLInputElement>this.shadowRoot.querySelector("vi-masked-input.time");
-        }
+    #parseMinMaxDate(dateStr: string | undefined): Date | null {
+        if (!dateStr)
+            return null;
 
-        return this._timeInput;
-    }
+        const parts = dateStr.split("-");
+        if (parts.length === 3) {
+            const year = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1;
+            const day = parseInt(parts[2], 10);
+            if (!isNaN(year) && !isNaN(month) && month >= 0 && month <= 11 && !isNaN(day) && day >= 1 && day <= 31) {
+                const d = new Date(year, month, day);
 
-    focus() {
-        if (this.app.activeElement instanceof HTMLInputElement) {
-            const input = <HTMLInputElement>this.app.activeElement;
-            if (input.getRootNode() instanceof ShadowRoot && (input.getRootNode() as ShadowRoot).host === this._timeInput)
-                return;
-        }
-
-        (this._dateInput || this._timeInput)?.focus();
-    }
-
-    protected _editingChanged() {
-        super._editingChanged();
-        
-        Polymer.flush();
-        if (this.editing)
-            this._setIsInvalid(false);
-    }
-
-    protected _valueChanged(value: Date, oldValue: any) {
-        super._valueChanged(value, oldValue);
-
-        try {
-            this._valueChangedBlock = true;
-            if (this.attribute && value instanceof Date) {
-                this.selectedDate = this.attribute.type.contains("Date") ? new Date(value.getTime()) : null;
-
-                if (this.attribute.type === "Time" || this.attribute.type === "NullableTime") {
-                    if (typeof this.value === "string") {
-                        const parts = (<string>this.value).split(/[:.]/);
-                        if (parts.length >= 4) {
-                             const startIndex = parts.length - 4;
-                             const time = new Date();
-                             time.setHours(parseInt(parts[startIndex], 10), parseInt(parts[startIndex + 1], 10), parseInt(parts[startIndex + 2], 10), parseInt(parts[startIndex + 3].substr(0, 3), 10));
-                             this.selectedTime = time;
-                        } else {
-                            this.selectedTime = null;
-                        }
-                    } else {
-                         this.selectedTime = new Date(value.getTime());
-                         this.selectedTime.setDate(new Date().getDate());
-                    }
-                }
-                else
-                    this.selectedTime = this.attribute.type.contains("Time") ? new Date(value.getTime()) : null;
-            }
-            else
-                this.selectedDate = this.selectedTime = null;
-        }
-        finally {
-            this._setIsInvalid(false);
-            this._valueChangedBlock = false;
-        }
-    }
-
-    private _selectedDateChanged(selectedDate: Date, hasDateComponent: boolean, hasTimeComponent: boolean) {
-        if (!this.editing || this.readOnly || !hasDateComponent || this._valueChangedBlock)
-            return;
-
-        if (selectedDate) {
-            const newValue = new Date(selectedDate.getTime());
-            if (this.hasTimeComponent) {
-                if (this.selectedTime) {
-                    newValue.setHours(this.selectedTime.getHours(), this.selectedTime.getMinutes(), this.selectedTime.getSeconds(), this.selectedTime.getMilliseconds());
-                } else if (typeof this.attribute.typeHints.newtime === "string") {
-                    const time = this.attribute.typeHints.newtime.split(/[:.]/);
-                    
-                    while (time.length < 4)
-                        time.push("0");
-                    
-                    newValue.setHours(parseInt(time[0], 10), parseInt(time[1], 10), parseInt(time[2], 10), parseInt(time[3].substr(0, 3), 10));
-                } else
-                    newValue.setHours(0, 0, 0, 0);
-            } else
-                newValue.setHours(0, 0, 0, 0);
-
-            this._guardedSetValue(newValue);
-        } else
-            this._guardedSetValue(null);
-    }
-
-    private _selectedTimeChanged(selectedTime: Date, hasDateComponent: boolean, hasTimeComponent: boolean) {
-        if (!this.editing || this.readOnly || !hasTimeComponent || this._valueChangedBlock)
-            return;
-
-        if (hasDateComponent) {
-            if (selectedTime) {
-                const baseDate = this.selectedDate || new Date(); 
-                const newValue = new Date(baseDate.getTime());
-                newValue.setHours(selectedTime.getHours(), selectedTime.getMinutes(), selectedTime.getSeconds(), selectedTime.getMilliseconds());
-                this._guardedSetValue(newValue);
-            } else if (this.selectedDate) {
-                const newValue = new Date(this.selectedDate.getTime());
-                newValue.setHours(0,0,0,0);
-                this._guardedSetValue(newValue);
-            } else {
-                this._guardedSetValue(null);
-            }
-        } else if (selectedTime) {
-            const newTimeValue = String.format("0:{0:D2}:{1:D2}:{2:D2}.{3:D3}0000", selectedTime.getHours(), selectedTime.getMinutes(), selectedTime.getSeconds(), selectedTime.getMilliseconds());
-            if (!this.value || (<string>this.value).substr(0, newTimeValue.length - 4) !== newTimeValue.substr(0, newTimeValue.length - 4))
-                this._guardedSetValue(newTimeValue);
-        } else {
-            this._guardedSetValue(null);
-        }
-    }
-
-    private _guardedSetValue(value: Date | string) {
-        if (value instanceof Date) {
-            const valueForCompare = new Date(value.getFullYear(), value.getMonth(), value.getDate(), this.hasTimeComponent ? value.getHours() : 0, this.hasTimeComponent ? value.getMinutes() : 0, this.hasTimeComponent ? value.getSeconds() : 0, this.hasTimeComponent ? value.getMilliseconds() : 0);
-            
-            if (this.minDate) {
-                const min = new Date(this.minDate.getFullYear(), this.minDate.getMonth(), this.minDate.getDate(), this.hasTimeComponent ? this.minDate.getHours() : 0, this.hasTimeComponent ? this.minDate.getMinutes() : 0, this.hasTimeComponent ? this.minDate.getSeconds() : 0, this.hasTimeComponent ? this.minDate.getMilliseconds() : 0);
-                if (valueForCompare < min)
-                    return this._setIsInvalid(true);
-            }
-
-            if (this.maxDate) {
-                const max = new Date(this.maxDate.getFullYear(), this.maxDate.getMonth(), this.maxDate.getDate(), this.hasTimeComponent ? this.maxDate.getHours() : 23, this.hasTimeComponent ? this.maxDate.getMinutes() : 59, this.hasTimeComponent ? this.maxDate.getSeconds() : 59, this.hasTimeComponent ? this.maxDate.getMilliseconds() : 999);
-                if (valueForCompare > max)
-                    return this._setIsInvalid(true);
-            }
-            
-            if (this.value instanceof Date) {
-                const currentValueForCompare = new Date(this.value.getFullYear(), this.value.getMonth(), this.value.getDate(), this.hasTimeComponent ? this.value.getHours() : 0, this.hasTimeComponent ? this.value.getMinutes() : 0, this.hasTimeComponent ? this.value.getSeconds() : 0, this.hasTimeComponent ? this.value.getMilliseconds() : 0);
-                if (valueForCompare.getTime() === currentValueForCompare.getTime())
-                    return;
-            }
-        }
-        this._setIsInvalid(false);
-
-        let allowRefresh = this.monthMode;
-        if (!allowRefresh && !this.isInvalid) {
-            allowRefresh = value != null && this.value == null;
-            if (!allowRefresh && value != null && this.value != null) {
-                allowRefresh = (this.hasTimeComponent && (<TimePicker>this.shadowRoot.querySelector("#timepicker"))?.isOpen) || (this.hasDateComponent && (<DatePicker>this.shadowRoot.querySelector("#datepicker"))?.isOpen);
-                if (!allowRefresh)
-                    allowRefresh = document.activeElement !== this.dateInput && document.activeElement !== this.timeInput;
+                if (d.getFullYear() === year && d.getMonth() === month && d.getDate() === day)
+                    return d;
             }
         }
 
-        this._pendingRefresh = this.attribute.triggersRefresh && !allowRefresh;
-        this.attribute.setValue(value, allowRefresh);
-    }
-
-    private _renderDate(selectedDate: Date, hasDateComponent: boolean, readOnly: boolean, editing: boolean, isConnected: boolean) {
-        if (!isConnected || !this.dateInput)
-            return;
-
-        if (!editing && hasDateComponent && !this.monthMode) {
-            this._setInputValue(this.dateInput, selectedDate ? this._formatDate(selectedDate, Vidyano.CultureInfo.currentCulture.dateFormat.shortDatePattern) : "—");
-            return;
-        }
-
-        if (!editing && this.monthMode && selectedDate) {
-            this._setInputValue(this.dateInput, this._formatDate(selectedDate, "MM/yyyy"));
-            return;
-        }
-
-        if (!editing || !hasDateComponent || this.monthMode)
-            return;
-
-        let newDate: string;
-        if (selectedDate)
-            newDate = this._formatDate(selectedDate, Vidyano.CultureInfo.currentCulture.dateFormat.shortDatePattern);
-        else if (!readOnly)
-            newDate = this.dateFormat;
-        else
-            newDate = "—";
-
-        this._setInputValue(this.dateInput, newDate);
-    }
-
-    private _renderTime(selectedTime: Date, hasDateComponent: boolean, hasTimeComponent: boolean, readOnly: boolean, editing: boolean, isConnected: boolean) {
-        if (!isConnected || !this.timeInput) return;
-
-        if (!editing && hasTimeComponent) {
-            let timeStr = "—";
-            
-            if (selectedTime)
-                timeStr = String.format(`{0:D2}${Vidyano.CultureInfo.currentCulture.dateFormat.timeSeparator}{1:D2}`, selectedTime.getHours(), selectedTime.getMinutes());
-            else if (hasDateComponent)
-                timeStr = "";
-
-            this._setInputValue(this.timeInput, timeStr);
-            return;
-        }
-        
-        if (!editing || !hasTimeComponent)
-            return;
-
-        let newTime: string;
-        if (selectedTime)
-            newTime = String.format(`{0:D2}${Vidyano.CultureInfo.currentCulture.dateFormat.timeSeparator}{1:D2}`, selectedTime.getHours(), selectedTime.getMinutes());
-        else if (!readOnly)
-            newTime = this.timeFormat;
-        else
-            newTime = hasDateComponent ? "" : "—";
-
-        this._setInputValue(this.timeInput, newTime);
-    }
-
-    private _setInputValue(input: HTMLInputElement, value: string) {
-        if (!input || input.value === value)
-            return;
-
-        const selection = document.activeElement === input ? { start: input.selectionStart, end: input.selectionEnd } : null;
-        input.value = value;
-        if (selection != null) {
-            input.selectionStart = Math.min(selection.start ?? 0, value.length);
-            input.selectionEnd = Math.min(selection.end ?? 0, value.length);
-        }
+        return null;
     }
 
     private _clear() {
@@ -399,36 +446,35 @@ export class PersistentObjectAttributeDateTime extends Polymer.PersistentObjectA
     }
 
     private _dateFilled() {
-        if (!this.dateInput) return;
-        const culture = Vidyano.CultureInfo.currentCulture.dateFormat;
-        const parsedDate = this._parseDate(this.dateInput.value, culture.shortDatePattern, culture.dateSeparator);
+        if (!this.dateInput)
+            return;
 
-        if (parsedDate) {
-            const valueForCompare = new Date(parsedDate.getFullYear(), parsedDate.getMonth(), parsedDate.getDate(), this.hasTimeComponent && this.selectedTime ? this.selectedTime.getHours() : 0, this.hasTimeComponent && this.selectedTime ? this.selectedTime.getMinutes() : 0, 0, 0);
-            if (this.minDate) {
-                const min = new Date(this.minDate.getFullYear(), this.minDate.getMonth(), this.minDate.getDate(), this.hasTimeComponent ? this.minDate.getHours() : 0, this.hasTimeComponent ? this.minDate.getMinutes() : 0, 0, 0);
-                
-                if (valueForCompare < min)
-                    return this._setIsInvalid(true);
-            }
+        const dateFormat = this.#culture.dateFormat;
+        const parsedDate = this.#parseDate(this.dateInput.value, dateFormat.shortDatePattern, dateFormat.dateSeparator);
 
-            if (this.maxDate) {
-                const max = new Date(this.maxDate.getFullYear(), this.maxDate.getMonth(), this.maxDate.getDate(), this.hasTimeComponent ? this.maxDate.getHours() : 23, this.hasTimeComponent ? this.maxDate.getMinutes() : 59, 59, 999);
-                
-                if (valueForCompare > max)
-                    return this._setIsInvalid(true);
-            }
+        if (!parsedDate) {
+            this._dateInvalid = true;
+            return;
+        }
 
-            this._setIsInvalid(false);
-            this.selectedDate = parsedDate;
+        // Apply current time component if available for range validation
+        const dateWithTime = new Date(parsedDate.getTime());
+        if (this.hasTimeComponent && this.selectedTime)
+            dateWithTime.setHours(this.selectedTime.getHours(), this.selectedTime.getMinutes(), 0, 0);
 
-            if (this.hasTimeComponent && this.timeInput) {
-                this._focusElement(this.timeInput);
-                this.timeInput.selectionStart = 0;
-                this.timeInput.selectionEnd = this.timeInput.value?.length || 0;
-            }
-        } else
-            this._setIsInvalid(true);
+        if (!this.#isDateInRange(dateWithTime)) {
+            this._dateInvalid = true;
+            return;
+        }
+
+        this._dateInvalid = false;
+        this.selectedDate = parsedDate;
+
+        if (this.hasTimeComponent && this.timeInput) {
+            this.timeInput.focus();
+            this.timeInput.inputElement.selectionStart = 0;
+            this.timeInput.inputElement.selectionEnd = this.timeInput.value?.length || 0;
+        }
     }
 
     private _timeFilled() {
@@ -444,76 +490,38 @@ export class PersistentObjectAttributeDateTime extends Polymer.PersistentObjectA
                 const newTime = new Date();
                 newTime.setHours(hours, minutes, 0, 0);
 
-                this._setIsInvalid(false);
+                this._timeInvalid = false;
                 this.selectedTime = newTime;
-            } else
-                this._setIsInvalid(true);
-        } else
-            this._setIsInvalid(true);
-    }
-
-    private _keydown(e: KeyboardEvent) {
-        if (!this.editing || this.readOnly)
-            return;
-
-        const input = <HTMLInputElement>e.target;        
-        if (!input.value)
-            return;
-
-        if (input === this.timeInput && (e.key === Keyboard.Keys.Backspace || e.key === Keyboard.Keys.ArrowLeft)) {
-            if (input.selectionStart === 0 && input.selectionEnd === 0 && this.hasDateComponent && this.dateInput) {
-                this._focusElement(this.dateInput);
-                this.dateInput.selectionStart = this.dateInput.selectionEnd = this.dateInput.value?.length || 0;
-                e.stopImmediatePropagation(); e.preventDefault(); return;
+            } else {
+                this._timeInvalid = true;
             }
-        }
-
-        if (input === this.dateInput && input.value && e.key === Keyboard.Keys.ArrowRight) {
-            if (input.selectionStart === input.value.length && input.selectionEnd === input.value.length && this.hasTimeComponent && this.timeInput) {
-                this._focusElement(this.timeInput);
-                this.timeInput.selectionStart = this.timeInput.selectionEnd = 0;
-                e.stopImmediatePropagation(); e.preventDefault(); return;
-            }
-        }
-
-        if (e.key === Keyboard.Keys.Backspace && input.selectionStart === 0 && input.selectionEnd === input.value.length) {
-            input.value = input === this.dateInput ? this.dateFormat : this.timeFormat;
-            input.selectionStart = input.selectionEnd = 0;
+        } else {
+            this._timeInvalid = true;
         }
     }
 
-    private _keyup(e: KeyboardEvent) {
-        if (e.key === Keyboard.Keys.Backspace && this.attribute.type.startsWith("Nullable")) {
-            const dateInputEmpty = !this.hasDateComponent || (this.dateInput && (this.dateInput.value === this.dateFormat || this.dateInput.value === ""));
-            const timeInputEmpty = !this.hasTimeComponent || (this.timeInput && (this.timeInput.value === this.timeFormat || this.timeInput.value === ""));
-            
-            if (dateInputEmpty && timeInputEmpty)
-                this._guardedSetValue(null);
-        }
-    }
-
-    private _blur(e: FocusEvent) {
+    private _focusout(e: FocusEvent) {
         if (!this.editing || this.readOnly)
             return;
 
         const related = e.relatedTarget as Node;
-        const datePicker = this.shadowRoot.querySelector("#datepicker") as DatePicker;
-        const timePicker = this.shadowRoot.querySelector("#timepicker") as TimePicker;
-        
-        if (related && (datePicker?.contains(related) || timePicker?.contains(related) || related === this.dateInput || related === this.timeInput))
+
+        if (related && (this.datePicker?.contains(related) || this.timePicker?.contains(related) || related === this.dateInput || related === this.timeInput))
             return;
-        
-        this._renderDate(this.selectedDate, this.hasDateComponent, this.readOnly, this.editing, this.isConnected);
-        this._renderTime(this.selectedTime, this.hasDateComponent, this.hasTimeComponent, this.readOnly, this.editing, this.isConnected);
+
+        // Force re-render to sync displayed values with selectedDate/selectedTime
+        this.requestUpdate();
 
         const dateValue = this.dateInput?.value;
         const timeValue = this.timeInput?.value;
         const dateIsMask = this.hasDateComponent && dateValue === this.dateFormat;
         const timeIsMask = this.hasTimeComponent && timeValue === this.timeFormat;
 
-        if ((!this.hasDateComponent || dateIsMask || dateValue === "") &&  (!this.hasTimeComponent || timeIsMask || timeValue === "")) {
-            if (!this.attribute.isRequired)
-                this._setIsInvalid(false);
+        if ((!this.hasDateComponent || dateIsMask || dateValue === "") && (!this.hasTimeComponent || timeIsMask || timeValue === "")) {
+            if (!this.attribute.isRequired) {
+                this._dateInvalid = false;
+                this._timeInvalid = false;
+            }
         }
 
         if (this._pendingRefresh) {
@@ -522,112 +530,113 @@ export class PersistentObjectAttributeDateTime extends Polymer.PersistentObjectA
         }
     }
 
-    private _computeHasComponent(target: Vidyano.PersistentObjectAttribute, component: string, isConnected: boolean): boolean {
-        if (!isConnected)
-            return false;
-
-        Polymer.flush();
-        return target && target.type.contains(component);
-    }
-
-    private _computeDateFormat(isConnected: boolean): string {
-        if (!isConnected)
-            return "__/__/____";
-
-        return Vidyano.CultureInfo.currentCulture.dateFormat.shortDatePattern.toLowerCase().replace(/[ymd]/g, "_");
-    }
-
-    private _computeDateSeparator(isConnected: boolean): string {
-        if (!isConnected)
-            return "/";
-
-        return Vidyano.CultureInfo.currentCulture.dateFormat.dateSeparator;
-    }
-
-    private _computeTimeFormat(isConnected: boolean): string {
-        if (!isConnected)
-            return "__:__";
-
-        return "__" + Vidyano.CultureInfo.currentCulture.dateFormat.timeSeparator + "__";
-    }
-
-    private _computeTimeSeparator(isConnected: boolean): string {
-        if (!isConnected)
-            return ":";
-
-        return Vidyano.CultureInfo.currentCulture.dateFormat.timeSeparator;
-    }
-
-    private _computeCanClear(value: Date, required: boolean): boolean {
-        return value != null && !required;
-    }
-
-    private _computeMonthMode(attribute: Vidyano.PersistentObjectAttribute): boolean {
-        return attribute?.getTypeHint("displayformat", "").toLowerCase() === "{0:y}";
-    }
-
-    private _computeMinMaxDate(attribute: Vidyano.PersistentObjectAttribute, hint: string): Date | null {
-        const dateStr = attribute?.getTypeHint(hint);
-        if (!dateStr)
-            return null;
-
-        const parts = dateStr.split('-');
-        if (parts.length === 3) {
-            const year = parseInt(parts[0], 10);
-            const month = parseInt(parts[1], 10) - 1;
-            const day = parseInt(parts[2], 10);
-            if (!isNaN(year) && !isNaN(month) && month >= 0 && month <= 11 && !isNaN(day) && day >= 1 && day <= 31) {
-                const d = new Date(year, month, day);
-                
-                if (d.getFullYear() === year && d.getMonth() === month && d.getDate() === day)
-                    return d;
-            }
-        }
-
-        return null;
-    }
-
-    private _previousMonth() {
+    #navigateMonth(delta: -1 | 1) {
         const today = new Date();
         const current = this.selectedDate ? new Date(this.selectedDate.getTime()) : new Date(today.getFullYear(), today.getMonth(), 1);
         const originalDay = current.getDate();
-        
+
         current.setDate(1);
-        current.setMonth(current.getMonth() - 1);
-        
+        current.setMonth(current.getMonth() + delta);
+
         const daysInTargetMonth = new Date(current.getFullYear(), current.getMonth() + 1, 0).getDate();
         current.setDate(Math.min(originalDay, daysInTargetMonth));
 
-        if (this.minDate) {
+        if (delta === -1 && this.minDate) {
             const minCheck = new Date(this.minDate.getFullYear(), this.minDate.getMonth(), this.minDate.getDate());
-            
             if (current < minCheck)
                 return;
         }
 
-        this.selectedDate = current;
-    }
-
-    private _nextMonth() {
-        const today = new Date();
-        const current = this.selectedDate ? new Date(this.selectedDate.getTime()) : new Date(today.getFullYear(), today.getMonth(), 1);
-        const originalDay = current.getDate();
-        
-        current.setDate(1);
-        current.setMonth(current.getMonth() + 1);
-        
-        const daysInTargetMonth = new Date(current.getFullYear(), current.getMonth() + 1, 0).getDate();
-        current.setDate(Math.min(originalDay, daysInTargetMonth));
-
-        if (this.maxDate) {
+        if (delta === 1 && this.maxDate) {
             const maxCheck = new Date(this.maxDate.getFullYear(), this.maxDate.getMonth(), this.maxDate.getDate(), 23, 59, 59, 999);
-            
             if (current > maxCheck)
                 return;
         }
 
         this.selectedDate = current;
     }
+
+    private _previousMonth() {
+        this.#navigateMonth(-1);
+    }
+
+    private _nextMonth() {
+        this.#navigateMonth(1);
+    }
+
+    protected override renderDisplay() {
+        return super.renderDisplay(html`<span>${this.attribute?.displayValue}</span>`);
+    }
+
+    protected override renderEdit() {
+        return super.renderEdit(html`
+            <vi-sensitive ?disabled=${!this.sensitive}>
+                ${!this.monthMode ? html`
+                    ${this.hasDateComponent ? html`
+                        <vi-masked-input class="date"
+                            .format=${this.dateFormat}
+                            .separator=${this.dateSeparator}
+                            .value=${this.#dateDisplayValue}
+                            ?disabled=${this.readOnly || this.frozen}
+                            ?invalid=${this._dateInvalid}
+                            tabindex=${this.readOnlyTabIndex || nothing}
+                            ?flex=${!this.hasTimeComponent}
+                            @filled=${this._dateFilled}
+                            @focusout=${this._focusout}>
+                        </vi-masked-input>
+                    ` : nothing}
+                    ${this.hasTimeComponent ? html`
+                        <vi-masked-input class="time"
+                            .format=${this.timeFormat}
+                            .separator=${this.timeSeparator}
+                            .value=${this.#timeDisplayValue}
+                            ?disabled=${this.readOnly || this.frozen}
+                            ?invalid=${this._timeInvalid}
+                            tabindex=${this.readOnlyTabIndex || nothing}
+                            @filled=${this._timeFilled}
+                            @focusout=${this._focusout}>
+                        </vi-masked-input>
+                    ` : nothing}
+                ` : html`
+                    <vi-sensitive ?hidden=${!this.hasDateComponent} ?disabled=${!this.sensitive}>
+                        <span id="monthMode">${this.attribute?.displayValue}</span>
+                    </vi-sensitive>
+                `}
+            </vi-sensitive>
+            ${!this.readOnly ? html`
+                ${this.hasDateComponent ? html`
+                    ${this.monthMode && this.selectedDate ? html`
+                        <vi-button slot="right" @click=${this._previousMonth}>
+                            <vi-icon source="ChevronLeft"></vi-icon>
+                        </vi-button>
+                        <vi-button slot="right" @click=${this._nextMonth}>
+                            <vi-icon source="ChevronRight"></vi-icon>
+                        </vi-button>
+                    ` : nothing}
+                    <vi-date-picker slot="right" id="datepicker"
+                        .selectedDate=${this.selectedDate}
+                        @selected-date-changed=${(e: CustomEvent) => this.selectedDate = e.detail.value}
+                        ?month-mode=${this.monthMode}
+                        .minDate=${this.minDate}
+                        .maxDate=${this.maxDate}>
+                    </vi-date-picker>
+                ` : nothing}
+                ${this.hasTimeComponent ? html`
+                    <vi-time-picker slot="right" id="timepicker"
+                        .time=${this.selectedTime}
+                        @time-changed=${(e: CustomEvent) => this.selectedTime = e.detail.value}>
+                    </vi-time-picker>
+                ` : nothing}
+                ${this.canClear ? html`
+                    <vi-button id="clearButton" slot="right" @click=${this._clear} tabindex="-1">
+                        <vi-icon source="Remove"></vi-icon>
+                    </vi-button>
+                ` : nothing}
+            ` : nothing}
+        `);
+    }
 }
+
+customElements.define("vi-persistent-object-attribute-date-time", PersistentObjectAttributeDateTime);
 
 PersistentObjectAttributeRegister.add("DateTime", PersistentObjectAttributeDateTime);

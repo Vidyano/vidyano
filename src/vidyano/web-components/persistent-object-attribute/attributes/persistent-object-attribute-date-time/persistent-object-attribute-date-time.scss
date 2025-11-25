@@ -24,10 +24,8 @@
             }
         }
 
-        &[is-invalid] {
-            vi-masked-input::part(input), span#monthMode {
-                color: red;
-            }
+        vi-masked-input[invalid]::part(input), &[is-invalid] span#monthMode {
+            color: red;
         }
     }
 
