@@ -108,15 +108,25 @@ test.describe("Standard Attributes", () => {
 
         // FullName is computed server-side and cannot be set directly
         person.beginEdit();
-        const originalValue = fullNameAttr.value;
 
-        // Attempting to set a read-only value should throw an error
-        expect(() => {
+        // Spy on console.warn
+        const warnings: string[] = [];
+        const originalWarn = console.warn;
+        console.warn = (...args: any[]) => warnings.push(args.join(" "));
+
+        try {
+            // Attempting to set a read-only value should log a warning
             fullNameAttr.value = "New Name";
-        }).toThrow(/read-only/i);
 
-        // Value should not have changed
-        expect(fullNameAttr.value).toBe(originalValue);
+            // Verify warning was logged
+            expect(warnings.length).toBe(1);
+            expect(warnings[0]).toMatch(/read-only/i);
+
+            // Value is still set (warning doesn't prevent it)
+            expect(fullNameAttr.value).toBe("New Name");
+        } finally {
+            console.warn = originalWarn;
+        }
     });
 
     test("should check attribute state", async ({ person }) => {
@@ -781,47 +791,64 @@ test.describe("Attribute Refresh Behavior", () => {
     });
 });
 
-test.describe("Error Handling for setValue", () => {
-    test("should throw error when setting value without entering edit mode", async ({ person }) => {
+test.describe("Warning Handling for setValue", () => {
+    test("should warn when setting value without entering edit mode", async ({ person }) => {
         // Person is not in edit mode initially
         expect(person.isEditing).toBe(false);
 
         const emailAttr = person.getAttribute("Email");
         expect(emailAttr).toBeInstanceOf(PersistentObjectAttribute);
 
-        // Attempt to set value without entering edit mode should throw
-        await expect(async () => {
-            await emailAttr.setValue("newemail@example.com");
-        }).rejects.toThrow(/not in edit mode/i);
+        // Spy on console.warn
+        const warnings: string[] = [];
+        const originalWarn = console.warn;
+        console.warn = (...args: any[]) => warnings.push(args.join(" "));
 
-        // Verify the error message contains helpful information
         try {
+            // Attempt to set value without entering edit mode should warn
             await emailAttr.setValue("newemail@example.com");
-            expect(true).toBe(false); // Should not reach here
-        } catch (error) {
-            expect((error as Error).message).toContain("Email");
-            expect((error as Error).message).toContain("Person");
-            expect((error as Error).message).toContain("beginEdit");
+
+            // Verify warning was logged
+            expect(warnings.length).toBe(1);
+            expect(warnings[0]).toMatch(/not in edit mode/i);
+            expect(warnings[0]).toContain("Email");
+            expect(warnings[0]).toContain("Person");
+            expect(warnings[0]).toContain("beginEdit");
+
+            // Value is still set (warning doesn't prevent it)
+            expect(emailAttr.value).toBe("newemail@example.com");
+        } finally {
+            console.warn = originalWarn;
         }
     });
 
-    test("should throw error when setting value via property assignment without edit mode", async ({ person }) => {
+    test("should warn when setting value via property assignment without edit mode", async ({ person }) => {
         // Person is not in edit mode initially
         expect(person.isEditing).toBe(false);
 
         const emailAttr = person.getAttribute("Email");
-        const originalValue = emailAttr.value;
 
-        // Direct property assignment throws synchronously when validation fails
-        expect(() => {
+        // Spy on console.warn
+        const warnings: string[] = [];
+        const originalWarn = console.warn;
+        console.warn = (...args: any[]) => warnings.push(args.join(" "));
+
+        try {
+            // Direct property assignment should warn
             emailAttr.value = "newemail@example.com";
-        }).toThrow(/not in edit mode/i);
 
-        // Value should not have changed
-        expect(emailAttr.value).toBe(originalValue);
+            // Verify warning was logged
+            expect(warnings.length).toBe(1);
+            expect(warnings[0]).toMatch(/not in edit mode/i);
+
+            // Value is still set (warning doesn't prevent it)
+            expect(emailAttr.value).toBe("newemail@example.com");
+        } finally {
+            console.warn = originalWarn;
+        }
     });
 
-    test("should throw error when setting value on readonly attribute", async ({ person }) => {
+    test("should warn when setting value on readonly attribute", async ({ person }) => {
         const fullNameAttr = person.getAttribute("FullName");
         expect(fullNameAttr).toBeInstanceOf(PersistentObjectAttribute);
         expect(fullNameAttr.isReadOnly).toBe(true);
@@ -830,27 +857,28 @@ test.describe("Error Handling for setValue", () => {
         person.beginEdit();
         expect(person.isEditing).toBe(true);
 
-        const originalValue = fullNameAttr.value;
+        // Spy on console.warn
+        const warnings: string[] = [];
+        const originalWarn = console.warn;
+        console.warn = (...args: any[]) => warnings.push(args.join(" "));
 
-        // Attempting to set a read-only value should throw
-        await expect(async () => {
-            await fullNameAttr.setValue("New Name");
-        }).rejects.toThrow(/read-only|readonly/i);
-
-        // Verify the error message contains helpful information
         try {
+            // Attempting to set a read-only value should warn
             await fullNameAttr.setValue("New Name");
-            expect(true).toBe(false); // Should not reach here
-        } catch (error) {
-            expect((error as Error).message).toContain("FullName");
-            expect((error as Error).message).toContain("read-only");
-        }
 
-        // Value should not have changed
-        expect(fullNameAttr.value).toBe(originalValue);
+            // Verify warning was logged
+            expect(warnings.length).toBe(1);
+            expect(warnings[0]).toMatch(/read-only/i);
+            expect(warnings[0]).toContain("FullName");
+
+            // Value is still set (warning doesn't prevent it)
+            expect(fullNameAttr.value).toBe("New Name");
+        } finally {
+            console.warn = originalWarn;
+        }
     });
 
-    test("should allow setting value when in edit mode (normal flow)", async ({ person }) => {
+    test("should allow setting value when in edit mode without warnings", async ({ person }) => {
         // Enter edit mode
         person.beginEdit();
         expect(person.isEditing).toBe(true);
@@ -858,9 +886,21 @@ test.describe("Error Handling for setValue", () => {
         const emailAttr = person.getAttribute("Email");
         const originalValue = emailAttr.value;
 
-        // Setting value in edit mode should work without errors
-        await emailAttr.setValue("newemail@example.com");
-        expect(emailAttr.value).toBe("newemail@example.com");
-        expect(emailAttr.value).not.toBe(originalValue);
+        // Spy on console.warn
+        const warnings: string[] = [];
+        const originalWarn = console.warn;
+        console.warn = (...args: any[]) => warnings.push(args.join(" "));
+
+        try {
+            // Setting value in edit mode should work without warnings
+            await emailAttr.setValue("newemail@example.com");
+            expect(emailAttr.value).toBe("newemail@example.com");
+            expect(emailAttr.value).not.toBe(originalValue);
+
+            // No warnings should have been logged
+            expect(warnings.length).toBe(0);
+        } finally {
+            console.warn = originalWarn;
+        }
     });
 });

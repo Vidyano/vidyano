@@ -450,24 +450,25 @@ export class PersistentObjectAttribute extends ServiceObject {
     }
 
     /**
-     * Validates that the attribute value can be set, throwing an error if not.
+     * Validates that the attribute value can be set.
      */
     #validateCanSetValue(): void {
         if (!this.parent.isEditing)
-            this.#throwSetValueError("The persistent object is not in edit mode. Call beginEdit() before setting attribute values.");
+            this.#warnSetValueError("The persistent object is not in edit mode. Call beginEdit() before setting attribute values.");
 
         if (this.parent.isFrozen)
-            this.#throwSetValueError("The persistent object is frozen.");
+            this.#warnSetValueError("The persistent object is frozen.");
 
         if (this.isReadOnly)
-            this.#throwSetValueError("The attribute is read-only.");
+            this.#warnSetValueError("The attribute is read-only.");
     }
 
     /**
-     * Throws a setValue validation error with the full error message.
+     * Logs a setValue validation warning.
+     * Important: In the next major version, this will throw an error instead to enforce proper edit mode usage.
      */
-    #throwSetValueError(reason: string): never {
-        throw new Error(`Cannot set value on attribute '${this.name}' of PersistentObject '${this.parent.type}' (id: ${this.parent.objectId}): ${reason}`);
+    #warnSetValueError(reason: string): void {
+        console.warn(`Should not set value on attribute '${this.name}' of PersistentObject '${this.parent.type}' (id: ${this.parent.objectId}): ${reason}`);
     }
 
     /**
