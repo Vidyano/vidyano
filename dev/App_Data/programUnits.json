@@ -541,6 +541,21 @@
           "Group": {
             "$ref": "ProgramUnitItemGroup:3afaa3db-8ed3-43f1-9993-5334a747155e"
           }
+        },
+        {
+          "ObjectId": "Month;NullableMonth",
+          "Offset": 270,
+          "Title": {
+            "en": "Month",
+            "nl": ""
+          },
+          "Name": "Month",
+          "PersistentObject": {
+            "$ref": "PersistentObject:1cc61676-3aa6-450f-884b-bdc425c7b232"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:984c5be2-1058-451b-a10e-cbe86dd00a3d"
+          }
         }
       ]
     },

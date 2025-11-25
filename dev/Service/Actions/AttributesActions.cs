@@ -139,6 +139,7 @@ public partial class AttributesActions
                     DateTime = DateTime.Now,
                     DateTimeOffset = DateTimeOffset.Now,
                     Time = DateTime.Now.TimeOfDay,
+                    Month = DateTime.Today,
                     User = Manager.Current.GetUser("Admin")!.Id,
                     Group = Manager.Current.GetGroup("Administrators")!.Id,
                     Image = image,
@@ -295,6 +296,10 @@ public class Attributes
     public DateTimeOffset? NullableDateTimeOffset { get; set; } = null;
 
     public TimeSpan? NullableTime { get; set; } = null;
+
+    public DateTime Month { get; set; }
+
+    public DateTime? NullableMonth { get; set; } = null;
 
     public Guid User { get; set; }
 

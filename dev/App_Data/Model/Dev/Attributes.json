@@ -537,6 +537,29 @@
         }
       },
       {
+        "$id": "PersistentObjectAttribute:05d756de-9560-3fa8-99bb-98bd871c4c65",
+        "Id": "05d756de-9560-3fa8-99bb-98bd871c4c65",
+        "Offset": 1220,
+        "Rules": "Required",
+        "Name": "Month",
+        "DataTypeHints": "DisplayFormat={0:y}",
+        "Label": {
+          "en": "Month",
+          "nl": "Month mode"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Date"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
+        }
+      },
+      {
         "$id": "PersistentObjectAttribute:943cd92a-5164-444f-9046-55a174a32c33",
         "Id": "943cd92a-5164-444f-9046-55a174a32c33",
         "Offset": 1,
@@ -825,6 +848,28 @@
         "ColumnSpan": 1,
         "DataType": {
           "$ref": "DataType:NullableInt64"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:20f0f796-d9f3-4492-8bef-0169fe7f4b4c"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:45949e75-dca3-348d-b4f2-b40edc54920b",
+        "Id": "45949e75-dca3-348d-b4f2-b40edc54920b",
+        "Offset": 1230,
+        "Name": "NullableMonth",
+        "DataTypeHints": "DisplayFormat={0:y}",
+        "Label": {
+          "en": "Nullable month",
+          "nl": "Nullable month mode"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:NullableDate"
         },
         "Group": {
           "$ref": "PersistentObjectAttributeGroup:8bd1052f-34a4-46a6-bf80-d8b42cd0bd26"
