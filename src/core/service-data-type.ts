@@ -12,8 +12,6 @@ export abstract class DataType {
         return [
             "NullableDate",
             "Date",
-            "NullableTime",
-            "Time",
             "NullableDateTime",
             "DateTime",
             "NullableDateTimeOffset",
