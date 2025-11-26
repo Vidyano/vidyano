@@ -36,6 +36,10 @@ export async function setupAttribute(
         component.id = componentId;
         (component as any).attribute = attribute;
 
+        // Set app reference for components that need app.showDialog
+        if ((window as any).app)
+            (component as any).app = (window as any).app;
+
         // Store attribute reference by component ID for later operations
         if (!(window as any).attributeMap)
             (window as any).attributeMap = {};
@@ -92,4 +96,50 @@ export async function isDirty(page: Page, component: any): Promise<boolean> {
         const attribute = (window as any).attributeMap[id];
         return attribute.parent.isDirty;
     }, componentId);
+}
+
+export type BrowseReferenceMockBehavior = 'selectFirst' | 'cancel';
+
+/**
+ * Mocks browse reference dialog to automatically search and select from the dialog's query.
+ * Uses real backend data by searching the dialog's query and selecting the first result.
+ * @param page - Playwright page
+ * @param behavior - 'selectFirst' to search and return first item, 'cancel' to return null
+ * @param itemSelector - Optional callback that receives items array and context, returns the item to select.
+ *                       The function is serialized and executed in the browser context.
+ *                       Example: `async (items, ctx) => await items.findAsync(item => item.id !== ctx.currentValue)`
+ * @param selectorContext - Optional context object passed to the itemSelector callback (must be serializable)
+ */
+export async function mockBrowseReference(page: Page, behavior: BrowseReferenceMockBehavior = 'selectFirst', itemSelector?: (items: any[], context: any) => Promise<any> | any, selectorContext?: any) {
+    const itemSelectorStr = itemSelector?.toString();
+
+    await page.evaluate(async ({ behavior, itemSelectorStr, selectorContext }) => {
+        const app = (window as any).app;
+        if (!app)
+            throw new Error('window.app is not available');
+
+        app.showDialog = async (dialog: any) => {
+            if (behavior === 'cancel')
+                return null;
+
+            // Get the query from the dialog and search it to get real backend data
+            if (dialog?.query) {
+                await dialog.query.search();
+                if (dialog.query.items?.length > 0) {
+                    const items = dialog.query.items;
+
+                    if (itemSelectorStr) {
+                        // Reconstruct the function from its string representation and call it
+                        const selector = eval(`(${itemSelectorStr})`);
+                        const selected = await selector(items, selectorContext);
+                        return selected ? [selected] : null;
+                    }
+
+                    // Default: return first item
+                    return [items[0]];
+                }
+            }
+            return null;
+        };
+    }, { behavior, itemSelectorStr, selectorContext });
 }

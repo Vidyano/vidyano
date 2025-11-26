@@ -57,5 +57,17 @@ export async function setupPage(
         await service.initialize();
         await service.signInUsingCredentials("admin", "admin");
         (window as any).service = service;
+
+        // Create a minimal app mock for components that need app.showDialog
+        // Includes addEventListener/removeEventListener stubs for component initialization
+        (window as any).app = {
+            showDialog: async () => null,
+            service: service,
+            addEventListener: () => {},
+            removeEventListener: () => {}
+        };
+
+        // Set the Symbol reference that components look for in connectedCallback
+        (window as any)[Symbol.for("Vidyano.App")] = (window as any).app;
     });
 }
