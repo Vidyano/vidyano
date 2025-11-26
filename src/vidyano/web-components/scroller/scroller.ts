@@ -304,7 +304,7 @@ export class Scroller extends WebComponent {
      * Updates the vertical scrollbar size and position.
      */
     #updateVerticalScrollbar(outerHeight: number, innerHeight: number, verticalScrollOffset: number, noVertical: boolean) {
-        let height = innerHeight > outerHeight ? outerHeight / innerHeight * outerHeight : 0;
+        let height = innerHeight > Math.ceil(outerHeight) ? outerHeight / innerHeight * outerHeight : 0;
 
         if (height > 0 && height < Scroller.#minBarSize)
             height = Scroller.#minBarSize;
@@ -337,7 +337,7 @@ export class Scroller extends WebComponent {
      * Updates the horizontal scrollbar size and position.
      */
     #updateHorizontalScrollbar(outerWidth: number, innerWidth: number, horizontalScrollOffset: number, noHorizontal: boolean) {
-        let width = innerWidth > outerWidth ? outerWidth / innerWidth * outerWidth : 0;
+        let width = innerWidth > Math.ceil(outerWidth) ? outerWidth / innerWidth * outerWidth : 0;
 
         if (width > 0 && width < Scroller.#minBarSize)
             width = Scroller.#minBarSize;
