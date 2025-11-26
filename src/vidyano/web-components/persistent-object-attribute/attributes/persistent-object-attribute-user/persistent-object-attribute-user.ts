@@ -58,12 +58,12 @@ export class PersistentObjectAttributeUser extends PersistentObjectAttribute {
                 <input .value=${this.friendlyName} readonly>
             </vi-sensitive>
             ${!this.readOnly ? html`
-                <vi-button slot="right" @click=${this._browseReference} tabindex="-1">
+                <vi-button slot="right" @click=${this._browseReference} tabindex="-1" ?disabled=${this.frozen}>
                     <vi-icon source="Ellipsis"></vi-icon>
                 </vi-button>
             ` : nothing}
             ${this.canClear ? html`
-                <vi-button slot="right" @click=${this._clearReference} tabindex="-1">
+                <vi-button slot="right" @click=${this._clearReference} tabindex="-1" ?disabled=${this.frozen}>
                     <vi-icon source="Remove"></vi-icon>
                 </vi-button>
             ` : nothing}
