@@ -12,23 +12,51 @@ const selectHtml = `
         </style>
       </head>
       <body>
-        <vi-select></vi-select>
+        <div id="test-container"></div>
       </body>
     </html>
 `;
 
-async function setupSelectTest(page: Page, options: string[] = ['Option 1', 'Option 2', 'Option 3']) {
+async function setupPage(page: Page) {
     await page.setContent(selectHtml);
     await page.addScriptTag({ path: "dev/wwwroot/index.js", type: 'module' });
-
     await page.waitForFunction(() => !!customElements.get('vi-select'), { timeout: 10000 });
+}
 
-    const component = page.locator('vi-select');
-    await component.evaluate((node, opts) => {
-        (node as any).options = opts;
-    }, options);
+async function createSelect(page: Page, options: string[] | object[] = ['Option 1', 'Option 2', 'Option 3'], config?: { groupSeparator?: string; keepUnmatched?: boolean; disableFiltering?: boolean; placeholder?: string; readonly?: boolean; disabled?: boolean }) {
+    const componentId = `component-${Math.random().toString(36).substring(2, 15)}`;
 
-    return component;
+    await page.evaluate(({ componentId, options, config }) => {
+        const container = document.getElementById('test-container');
+        if (!container)
+            throw new Error('Test container not found');
+
+        const component = document.createElement('vi-select') as any;
+        component.id = componentId;
+        component.options = options;
+
+        if (config?.groupSeparator !== undefined)
+            component.groupSeparator = config.groupSeparator;
+
+        if (config?.keepUnmatched !== undefined)
+            component.keepUnmatched = config.keepUnmatched;
+
+        if (config?.disableFiltering !== undefined)
+            component.disableFiltering = config.disableFiltering;
+
+        if (config?.placeholder !== undefined)
+            component.placeholder = config.placeholder;
+
+        if (config?.readonly !== undefined)
+            component.readonly = config.readonly;
+
+        if (config?.disabled !== undefined)
+            component.disabled = config.disabled;
+
+        container.appendChild(component);
+    }, { componentId, options, config });
+
+    return page.locator(`#${componentId}`);
 }
 
 async function getSelectState(component: Locator) {
@@ -45,389 +73,362 @@ async function getSelectState(component: Locator) {
     });
 }
 
-test('Select: renders with options', async ({ page }) => {
-    const component = await setupSelectTest(page);
-    await expect(component).toBeVisible();
+test.describe.serial('Select Tests', () => {
+    let sharedPage: Page;
 
-    const state = await getSelectState(component);
-    expect(state.hasOptions).toBe(true);
-    expect(state.items).toBe(3);
-});
-
-test('Select: displays selected option', async ({ page }) => {
-    const component = await setupSelectTest(page);
-
-    await component.evaluate(node => {
-        (node as any).selectedOption = 'Option 2';
+    test.beforeAll(async ({ browser }) => {
+        sharedPage = await browser.newPage();
+        await setupPage(sharedPage);
     });
 
-    const state = await getSelectState(component);
-    expect(state.selectedOption).toBe('Option 2');
-    expect(state.inputValue).toBe('Option 2');
-});
-
-test('Select: opens popup on arrow down', async ({ page }) => {
-    const component = await setupSelectTest(page);
-
-    const input = component.locator('#input');
-    await input.press('ArrowDown');
-
-    const popup = component.locator('vi-popup#popup');
-    await expect(popup).toHaveAttribute('open', '');
-});
-
-test('Select: navigates options with arrow keys', async ({ page }) => {
-    const component = await setupSelectTest(page);
-
-    const input = component.locator('#input');
-    await input.press('ArrowDown');
-    await input.press('ArrowDown');
-    await input.press('Enter');
-
-    const state = await getSelectState(component);
-    expect(state.selectedOption).toBe('Option 2');
-});
-
-test('Select: confirms selection with Enter', async ({ page }) => {
-    const component = await setupSelectTest(page);
-
-    await component.evaluate(node => {
-        (node as any).selectedOption = 'Option 1';
+    test.afterAll(async () => {
+        await sharedPage.close();
     });
 
-    const input = component.locator('#input');
-    await input.press('ArrowDown');
-    await input.press('ArrowDown');
-    await input.press('Enter');
+    test('renders with options', async () => {
+        const component = await createSelect(sharedPage);
+        await expect(component).toBeVisible();
 
-    const state = await getSelectState(component);
-    expect(state.selectedOption).toBe('Option 3');
-});
-
-test('Select: cancels selection with Escape', async ({ page }) => {
-    const component = await setupSelectTest(page);
-
-    await component.evaluate(node => {
-        (node as any).selectedOption = 'Option 1';
+        const state = await getSelectState(component);
+        expect(state.hasOptions).toBe(true);
+        expect(state.items).toBe(3);
     });
 
-    const input = component.locator('#input');
-    await input.press('ArrowDown');
-    await input.press('ArrowDown');
-    await input.press('Escape');
+    test('displays selected option', async () => {
+        const component = await createSelect(sharedPage);
 
-    const state = await getSelectState(component);
-    expect(state.selectedOption).toBe('Option 1');
-});
+        await component.evaluate(node => {
+            (node as any).selectedOption = 'Option 2';
+        });
 
-test('Select: filters options when typing', async ({ page }) => {
-    const component = await setupSelectTest(page, ['Apple', 'Banana', 'Cherry', 'Apricot']);
+        const state = await getSelectState(component);
+        expect(state.selectedOption).toBe('Option 2');
+        expect(state.inputValue).toBe('Option 2');
+    });
 
-    const input = component.locator('#input');
-    await input.focus();
-    await input.pressSequentially('Ap');
+    test('opens popup on arrow down', async () => {
+        const component = await createSelect(sharedPage);
 
-    await page.waitForTimeout(100);
+        const input = component.locator('#input');
+        await input.press('ArrowDown');
 
-    const state = await getSelectState(component);
-    expect(state.filtering).toBe(true);
-    expect(state.filteredItems).toBe(2); // Apple and Apricot
-});
+        const popup = component.locator('vi-popup#popup');
+        await expect(popup).toHaveAttribute('open', '');
+    });
 
-test('Select: selects filtered option', async ({ page }) => {
-    const component = await setupSelectTest(page, ['Apple', 'Banana', 'Cherry']);
+    test('navigates options with arrow keys', async () => {
+        const component = await createSelect(sharedPage);
 
-    const input = component.locator('#input');
-    await input.focus();
-    await input.pressSequentially('Ban');
-    await page.waitForTimeout(100);
-    await input.press('Enter');
+        const input = component.locator('#input');
+        await input.press('ArrowDown');
+        await input.press('ArrowDown');
+        await input.press('Enter');
 
-    const state = await getSelectState(component);
-    expect(state.selectedOption).toBe('Banana');
-});
+        const state = await getSelectState(component);
+        expect(state.selectedOption).toBe('Option 2');
+    });
 
-test('Select: works with object options', async ({ page }) => {
-    await page.setContent(selectHtml);
-    await page.addScriptTag({ path: "dev/wwwroot/index.js", type: 'module' });
+    test('confirms selection with Enter', async () => {
+        const component = await createSelect(sharedPage);
 
-    await page.waitForFunction(() => !!customElements.get('vi-select'), { timeout: 10000 });
+        await component.evaluate(node => {
+            (node as any).selectedOption = 'Option 1';
+        });
 
-    const component = page.locator('vi-select');
-    await component.evaluate(node => {
-        (node as any).options = [
+        const input = component.locator('#input');
+        await input.press('ArrowDown');
+        await input.press('ArrowDown');
+        await input.press('Enter');
+
+        const state = await getSelectState(component);
+        expect(state.selectedOption).toBe('Option 3');
+    });
+
+    test('cancels selection with Escape', async () => {
+        const component = await createSelect(sharedPage);
+
+        await component.evaluate(node => {
+            (node as any).selectedOption = 'Option 1';
+        });
+
+        const input = component.locator('#input');
+        await input.press('ArrowDown');
+        await input.press('ArrowDown');
+        await input.press('Escape');
+
+        const state = await getSelectState(component);
+        expect(state.selectedOption).toBe('Option 1');
+    });
+
+    test('filters options when typing', async () => {
+        const component = await createSelect(sharedPage, ['Apple', 'Banana', 'Cherry', 'Apricot']);
+
+        const input = component.locator('#input');
+        await input.focus();
+        await input.pressSequentially('Ap');
+
+        await sharedPage.waitForTimeout(100);
+
+        const state = await getSelectState(component);
+        expect(state.filtering).toBe(true);
+        expect(state.filteredItems).toBe(2); // Apple and Apricot
+    });
+
+    test('selects filtered option', async () => {
+        const component = await createSelect(sharedPage, ['Apple', 'Banana', 'Cherry']);
+
+        const input = component.locator('#input');
+        await input.focus();
+        await input.pressSequentially('Ban');
+        await sharedPage.waitForTimeout(100);
+        await input.press('Enter');
+
+        const state = await getSelectState(component);
+        expect(state.selectedOption).toBe('Banana');
+    });
+
+    test('works with object options', async () => {
+        const component = await createSelect(sharedPage, [
             { key: 1, value: 'First' },
             { key: 2, value: 'Second' },
             { key: 3, value: 'Third' }
-        ];
+        ]);
+
+        await component.evaluate(node => {
+            (node as any).selectedOption = 2;
+        });
+
+        const state = await getSelectState(component);
+        expect(state.selectedOption).toBe(2);
+        expect(state.inputValue).toBe('Second');
     });
 
-    await component.evaluate(node => {
-        (node as any).selectedOption = 2;
+    test('respects readonly property', async () => {
+        const component = await createSelect(sharedPage, ['Option 1', 'Option 2', 'Option 3'], { readonly: true });
+
+        const state = await component.evaluate(node => ({
+            readonly: (node as any).readonly,
+            isReadonlyInput: (node as any).isReadonlyInput
+        }));
+
+        expect(state.readonly).toBe(true);
+        expect(state.isReadonlyInput).toBe(true);
     });
 
-    const state = await getSelectState(component);
-    expect(state.selectedOption).toBe(2);
-    expect(state.inputValue).toBe('Second');
-});
+    test('respects disabled property', async () => {
+        const component = await createSelect(sharedPage, ['Option 1', 'Option 2', 'Option 3'], { disabled: true });
 
-test('Select: respects readonly property', async ({ page }) => {
-    const component = await setupSelectTest(page);
+        const state = await component.evaluate(node => ({
+            disabled: (node as any).disabled
+        }));
 
-    await component.evaluate(node => {
-        (node as any).readonly = true;
+        expect(state.disabled).toBe(true);
     });
 
-    const state = await component.evaluate(node => ({
-        readonly: (node as any).readonly,
-        isReadonlyInput: (node as any).isReadonlyInput
-    }));
+    test('handles group separator', async () => {
+        const component = await createSelect(sharedPage, ['Fruits|Apple', 'Fruits|Banana', 'Vegetables|Carrot'], { groupSeparator: '|' });
 
-    expect(state.readonly).toBe(true);
-    expect(state.isReadonlyInput).toBe(true);
-});
+        const state = await component.evaluate(node => {
+            const inst = node as any;
+            return {
+                items: inst.items.map((i: any) => ({
+                    displayValue: i.displayValue,
+                    group: i.group,
+                    isGroupHeader: i.isGroupHeader
+                }))
+            };
+        });
 
-test('Select: respects disabled property', async ({ page }) => {
-    const component = await setupSelectTest(page);
-
-    await component.evaluate(node => {
-        (node as any).disabled = true;
+        expect(state.items[0].group).toBe('Fruits');
+        expect(state.items[0].isGroupHeader).toBe(true);
+        expect(state.items[0].displayValue).toBe('Apple');
+        expect(state.items[1].isGroupHeader).toBe(false);
+        expect(state.items[2].group).toBe('Vegetables');
+        expect(state.items[2].isGroupHeader).toBe(true);
     });
 
-    const state = await component.evaluate(node => ({
-        disabled: (node as any).disabled
-    }));
+    test('fires selected-option-changed event', async () => {
+        const component = await createSelect(sharedPage);
 
-    expect(state.disabled).toBe(true);
-});
-
-test('Select: handles group separator', async ({ page }) => {
-    const component = await setupSelectTest(page, ['Fruits|Apple', 'Fruits|Banana', 'Vegetables|Carrot']);
-
-    await component.evaluate(node => {
-        (node as any).groupSeparator = '|';
-    });
-
-    const state = await component.evaluate(node => {
-        const inst = node as any;
-        return {
-            items: inst.items.map((i: any) => ({
-                displayValue: i.displayValue,
-                group: i.group,
-                isGroupHeader: i.isGroupHeader
-            }))
-        };
-    });
-
-    expect(state.items[0].group).toBe('Fruits');
-    expect(state.items[0].isGroupHeader).toBe(true);
-    expect(state.items[0].displayValue).toBe('Apple');
-    expect(state.items[1].isGroupHeader).toBe(false);
-    expect(state.items[2].group).toBe('Vegetables');
-    expect(state.items[2].isGroupHeader).toBe(true);
-});
-
-test('Select: fires selected-option-changed event', async ({ page }) => {
-    const component = await setupSelectTest(page);
-
-    const eventPromise = component.evaluate(node => {
-        return new Promise<any>(resolve => {
-            node.addEventListener('selected-option-changed', (e: any) => {
-                resolve(e.detail.value);
+        const eventPromise = component.evaluate(node => {
+            return new Promise<any>(resolve => {
+                node.addEventListener('selected-option-changed', (e: any) => {
+                    resolve(e.detail.value);
+                });
             });
         });
+
+        await component.evaluate(node => {
+            (node as any).selectedOption = 'Option 2';
+        });
+
+        const eventValue = await eventPromise;
+        expect(eventValue).toBe('Option 2');
     });
 
-    await component.evaluate(node => {
-        (node as any).selectedOption = 'Option 2';
+    test('Tab confirms selection', async () => {
+        const component = await createSelect(sharedPage);
+
+        const input = component.locator('#input');
+        await input.press('ArrowDown');
+        await input.press('ArrowDown');
+        await input.press('Tab');
+
+        const state = await getSelectState(component);
+        expect(state.selectedOption).toBe('Option 2');
     });
 
-    const eventValue = await eventPromise;
-    expect(eventValue).toBe('Option 2');
-});
+    test('opens popup on click', async () => {
+        const component = await createSelect(sharedPage);
 
-test('Select: Tab confirms selection', async ({ page }) => {
-    const component = await setupSelectTest(page);
+        await component.click();
 
-    const input = component.locator('#input');
-    await input.press('ArrowDown');
-    await input.press('ArrowDown');
-    await input.press('Tab');
-
-    const state = await getSelectState(component);
-    expect(state.selectedOption).toBe('Option 2');
-});
-
-test('Select: opens popup on click', async ({ page }) => {
-    const component = await setupSelectTest(page);
-
-    await component.click();
-
-    const popup = component.locator('vi-popup#popup');
-    await expect(popup).toHaveAttribute('open', '');
-});
-
-test('Select: closes popup on click outside', async ({ page }) => {
-    const component = await setupSelectTest(page);
-
-    const input = component.locator('#input');
-    await input.press('ArrowDown');
-
-    const popup = component.locator('vi-popup#popup');
-    await expect(popup).toHaveAttribute('open', '');
-
-    await page.click('body', { position: { x: 10, y: 10 } });
-
-    await expect(popup).not.toHaveAttribute('open', '');
-});
-
-test('Select: selects option on mouse click', async ({ page }) => {
-    const component = await setupSelectTest(page);
-
-    const input = component.locator('#input');
-    await input.press('ArrowDown');
-
-    const popup = component.locator('vi-popup#popup');
-    await expect(popup).toHaveAttribute('open', '');
-
-    const option = component.locator('vi-select-option-item').nth(1);
-    await option.click();
-
-    const state = await getSelectState(component);
-    expect(state.selectedOption).toBe('Option 2');
-
-    await expect(popup).not.toHaveAttribute('open', '');
-});
-
-test('Select: shows placeholder text', async ({ page }) => {
-    const component = await setupSelectTest(page);
-
-    await component.evaluate(node => {
-        (node as any).placeholder = 'Select an option...';
+        const popup = component.locator('vi-popup#popup');
+        await expect(popup).toHaveAttribute('open', '');
     });
 
-    const input = component.locator('#input');
-    await expect(input).toHaveAttribute('placeholder', 'Select an option...');
-});
+    test('closes popup on click outside', async () => {
+        const component = await createSelect(sharedPage);
 
-test('Select: keep-unmatched allows custom values', async ({ page }) => {
-    const component = await setupSelectTest(page);
+        const input = component.locator('#input');
+        await input.press('ArrowDown');
 
-    await component.evaluate(node => {
-        (node as any).keepUnmatched = true;
+        const popup = component.locator('vi-popup#popup');
+        await expect(popup).toHaveAttribute('open', '');
+
+        await sharedPage.click('body', { position: { x: 10, y: 10 } });
+
+        await expect(popup).not.toHaveAttribute('open', '');
     });
 
-    const input = component.locator('#input');
-    await input.focus();
-    await input.fill('Custom Value');
+    test('selects option on mouse click', async () => {
+        const component = await createSelect(sharedPage);
 
-    // Click outside to blur - keepUnmatched preserves value on blur
-    await page.click('body', { position: { x: 10, y: 10 } });
+        const input = component.locator('#input');
+        await input.press('ArrowDown');
 
-    const state = await component.evaluate(node => ({
-        inputValue: (node as any).inputValue
-    }));
+        const popup = component.locator('vi-popup#popup');
+        await expect(popup).toHaveAttribute('open', '');
 
-    expect(state.inputValue).toBe('Custom Value');
-});
+        const option = component.locator('vi-select-option-item').nth(1);
+        await option.click();
 
-test('Select: disable-filtering prevents filtering on keypress', async ({ page }) => {
-    const component = await setupSelectTest(page, ['Apple', 'Banana', 'Cherry']);
+        const state = await getSelectState(component);
+        expect(state.selectedOption).toBe('Option 2');
 
-    await component.evaluate(node => {
-        (node as any).disableFiltering = true;
+        await expect(popup).not.toHaveAttribute('open', '');
     });
 
-    // Verify input is readonly
-    const readonlyState = await component.evaluate(node => ({
-        isReadonlyInput: (node as any).isReadonlyInput
-    }));
-    expect(readonlyState.isReadonlyInput).toBe(true);
+    test('shows placeholder text', async () => {
+        const component = await createSelect(sharedPage, ['Option 1', 'Option 2', 'Option 3'], { placeholder: 'Select an option...' });
 
-    // Open popup and try to type
-    const input = component.locator('#input');
-    await input.press('ArrowDown');
-    await input.press('a');
-    await page.waitForTimeout(100);
+        const input = component.locator('#input');
+        await expect(input).toHaveAttribute('placeholder', 'Select an option...');
+    });
 
-    // Verify filtering didn't trigger
-    const state = await getSelectState(component);
-    expect(state.filtering).toBe(false);
-    expect(state.filteredItems).toBe(3);
-});
+    test('keep-unmatched allows custom values', async () => {
+        const component = await createSelect(sharedPage, ['Option 1', 'Option 2', 'Option 3'], { keepUnmatched: true });
 
-test('Select: fires input-value-changed event', async ({ page }) => {
-    const component = await setupSelectTest(page);
+        const input = component.locator('#input');
+        await input.focus();
+        await input.fill('Custom Value');
 
-    const eventPromise = component.evaluate(node => {
-        return new Promise<string>(resolve => {
-            node.addEventListener('input-value-changed', (e: any) => {
-                resolve(e.detail.value);
+        // Click outside to blur - keepUnmatched preserves value on blur
+        await sharedPage.click('body', { position: { x: 10, y: 10 } });
+
+        const state = await component.evaluate(node => ({
+            inputValue: (node as any).inputValue
+        }));
+
+        expect(state.inputValue).toBe('Custom Value');
+    });
+
+    test('disable-filtering prevents filtering on keypress', async () => {
+        const component = await createSelect(sharedPage, ['Apple', 'Banana', 'Cherry'], { disableFiltering: true });
+
+        // Verify input is readonly
+        const readonlyState = await component.evaluate(node => ({
+            isReadonlyInput: (node as any).isReadonlyInput
+        }));
+        expect(readonlyState.isReadonlyInput).toBe(true);
+
+        // Open popup and try to type
+        const input = component.locator('#input');
+        await input.press('ArrowDown');
+        await input.press('a');
+        await sharedPage.waitForTimeout(100);
+
+        // Verify filtering didn't trigger
+        const state = await getSelectState(component);
+        expect(state.filtering).toBe(false);
+        expect(state.filteredItems).toBe(3);
+    });
+
+    test('fires input-value-changed event', async () => {
+        const component = await createSelect(sharedPage);
+
+        const eventPromise = component.evaluate(node => {
+            return new Promise<string>(resolve => {
+                node.addEventListener('input-value-changed', (e: any) => {
+                    resolve(e.detail.value);
+                });
             });
         });
+
+        await component.evaluate(node => {
+            (node as any).selectedOption = 'Option 3';
+        });
+
+        const eventValue = await eventPromise;
+        expect(eventValue).toBe('Option 3');
     });
 
-    await component.evaluate(node => {
-        (node as any).selectedOption = 'Option 3';
+    test('matches selectedOption by displayValue when groupSeparator is used', async () => {
+        const component = await createSelect(sharedPage, ['Custom.TestPinned', 'Custom.OtherOption', 'Vidyano.Delete'], { groupSeparator: '.' });
+
+        // Set selectedOption to display value (without group prefix)
+        await component.evaluate(node => {
+            (node as any).selectedOption = 'TestPinned';
+        });
+
+        const state = await component.evaluate(node => {
+            const inst = node as any;
+            return {
+                selectedOption: inst.selectedOption,
+                selectedItem: inst.selectedItem ? {
+                    displayValue: inst.selectedItem.displayValue,
+                    key: inst.selectedItem.key,
+                    group: inst.selectedItem.group
+                } : null,
+                inputValue: inst.inputValue
+            };
+        });
+
+        expect(state.selectedItem).not.toBeNull();
+        expect(state.selectedItem?.displayValue).toBe('TestPinned');
+        expect(state.selectedItem?.group).toBe('Custom');
+        expect(state.inputValue).toBe('TestPinned');
     });
 
-    const eventValue = await eventPromise;
-    expect(eventValue).toBe('Option 3');
-});
+    test('propagates ungrouped value when selecting with groupSeparator', async () => {
+        const component = await createSelect(sharedPage, ['Custom.TestPinned', 'Custom.OtherOption', 'Vidyano.Delete'], { groupSeparator: '.' });
 
-test('Select: matches selectedOption by displayValue when groupSeparator is used', async ({ page }) => {
-    const component = await setupSelectTest(page, ['Custom.TestPinned', 'Custom.OtherOption', 'Vidyano.Delete']);
+        // Open popup and select second option
+        const input = component.locator('#input');
+        await input.press('ArrowDown');
+        await input.press('ArrowDown');
+        await input.press('Enter');
 
-    await component.evaluate(node => {
-        (node as any).groupSeparator = '.';
+        const state = await component.evaluate(node => {
+            const inst = node as any;
+            return {
+                selectedOption: inst.selectedOption,
+                inputValue: inst.inputValue
+            };
+        });
+
+        // selectedOption should be ungrouped value, not full key
+        expect(state.selectedOption).toBe('OtherOption');
+        expect(state.inputValue).toBe('OtherOption');
     });
-
-    // Set selectedOption to display value (without group prefix)
-    await component.evaluate(node => {
-        (node as any).selectedOption = 'TestPinned';
-    });
-
-    const state = await component.evaluate(node => {
-        const inst = node as any;
-        return {
-            selectedOption: inst.selectedOption,
-            selectedItem: inst.selectedItem ? {
-                displayValue: inst.selectedItem.displayValue,
-                key: inst.selectedItem.key,
-                group: inst.selectedItem.group
-            } : null,
-            inputValue: inst.inputValue
-        };
-    });
-
-    expect(state.selectedItem).not.toBeNull();
-    expect(state.selectedItem?.displayValue).toBe('TestPinned');
-    expect(state.selectedItem?.group).toBe('Custom');
-    expect(state.inputValue).toBe('TestPinned');
-});
-
-test('Select: propagates ungrouped value when selecting with groupSeparator', async ({ page }) => {
-    const component = await setupSelectTest(page, ['Custom.TestPinned', 'Custom.OtherOption', 'Vidyano.Delete']);
-
-    await component.evaluate(node => {
-        (node as any).groupSeparator = '.';
-    });
-
-    // Open popup and select second option
-    const input = component.locator('#input');
-    await input.press('ArrowDown');
-    await input.press('ArrowDown');
-    await input.press('Enter');
-
-    const state = await component.evaluate(node => {
-        const inst = node as any;
-        return {
-            selectedOption: inst.selectedOption,
-            inputValue: inst.inputValue
-        };
-    });
-
-    // selectedOption should be ungrouped value, not full key
-    expect(state.selectedOption).toBe('OtherOption');
-    expect(state.inputValue).toBe('OtherOption');
 });
