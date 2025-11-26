@@ -46,6 +46,10 @@ export async function setupAttribute(
         (window as any).attributeMap[componentId] = attribute;
 
         container.appendChild(component);
+
+        // Wait for Lit component to complete its update cycle
+        if (typeof (component as any).updateComplete !== 'undefined')
+            await (component as any).updateComplete;
     }, { componentTag, componentId, attributeName, startInEditMode: options?.startInEditMode, useBackendOpenInEdit: options?.useBackendOpenInEdit });
 
     return page.locator(`#${componentId}`);

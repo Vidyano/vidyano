@@ -64,7 +64,10 @@ export async function setupPage(
             showDialog: async () => null,
             service: service,
             addEventListener: () => {},
-            removeEventListener: () => {}
+            removeEventListener: () => {},
+            configuration: {
+                getSetting: (_key: string, defaultValue?: string) => defaultValue
+            }
         };
 
         // Set the Symbol reference that components look for in connectedCallback
