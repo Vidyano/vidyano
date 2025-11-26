@@ -1,20 +1,22 @@
 :host {
     display: flex;
     overflow: hidden;
+}
 
-    vi-marked {
-        flex: 1;
-        min-height: 0;
-        min-width: 0;
-        resize: none;
-    }
+vi-scroller {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+}
 
-    vi-marked, textarea {
-        color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
-    }
+vi-marked, textarea {
+    color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
+}
 
-    textarea {
-        white-space: pre-wrap;
-        -ms-overflow-style: -ms-autohiding-scrollbar;
-    }
+textarea {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    white-space: pre-wrap;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
 }
