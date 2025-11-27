@@ -12,6 +12,7 @@ export interface ISelectItem {
     isGroupHeader: boolean;
     option: string | SelectOption;
     key: string | number;
+    isFreeText?: boolean;
 }
 
 export class SelectOptionItem extends WebComponent {
@@ -22,6 +23,12 @@ export class SelectOptionItem extends WebComponent {
 
     @property({ type: Boolean, reflect: true })
     selected: boolean;
+
+    @property({ type: Boolean, reflect: true })
+    highlighted: boolean;
+
+    @property({ type: Boolean, reflect: true, attribute: "free-text" })
+    freeText: boolean;
 
     @property({ type: Object })
     item: ISelectItem;

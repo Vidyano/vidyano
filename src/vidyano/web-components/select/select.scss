@@ -1,5 +1,9 @@
 $border-color: #ddd;
 
+vi-select-option-item[free-text] {
+    font-style: italic;
+}
+
 :host {
     --_vi-select-item-height: var(--vi-select-item-height, var(--theme-h2));
 

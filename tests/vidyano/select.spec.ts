@@ -23,7 +23,7 @@ async function setupPage(page: Page) {
     await page.waitForFunction(() => !!customElements.get('vi-select'), { timeout: 10000 });
 }
 
-async function createSelect(page: Page, options: string[] | object[] = ['Option 1', 'Option 2', 'Option 3'], config?: { groupSeparator?: string; keepUnmatched?: boolean; disableFiltering?: boolean; placeholder?: string; readonly?: boolean; disabled?: boolean }) {
+async function createSelect(page: Page, options: string[] | object[] = ['Option 1', 'Option 2', 'Option 3'], config?: { groupSeparator?: string; allowFreeText?: boolean; disableFiltering?: boolean; placeholder?: string; readonly?: boolean; disabled?: boolean }) {
     const componentId = `component-${Math.random().toString(36).substring(2, 15)}`;
 
     await page.evaluate(({ componentId, options, config }) => {
@@ -38,8 +38,8 @@ async function createSelect(page: Page, options: string[] | object[] = ['Option 
         if (config?.groupSeparator !== undefined)
             component.groupSeparator = config.groupSeparator;
 
-        if (config?.keepUnmatched !== undefined)
-            component.keepUnmatched = config.keepUnmatched;
+        if (config?.allowFreeText !== undefined)
+            component.allowFreeText = config.allowFreeText;
 
         if (config?.disableFiltering !== undefined)
             component.disableFiltering = config.disableFiltering;
@@ -326,21 +326,96 @@ test.describe.serial('Select Tests', () => {
         await expect(input).toHaveAttribute('placeholder', 'Select an option...');
     });
 
-    test('keep-unmatched allows custom values', async () => {
-        const component = await createSelect(sharedPage, ['Option 1', 'Option 2', 'Option 3'], { keepUnmatched: true });
+    test('allowFreeText commits custom value on blur', async () => {
+        const component = await createSelect(sharedPage, ['Option 1', 'Option 2', 'Option 3'], { allowFreeText: true });
 
         const input = component.locator('#input');
         await input.focus();
         await input.fill('Custom Value');
 
-        // Click outside to blur - keepUnmatched preserves value on blur
+        // Click outside to blur - allowFreeText should commit the value
         await sharedPage.click('body', { position: { x: 10, y: 10 } });
 
         const state = await component.evaluate(node => ({
+            selectedOption: (node as any).selectedOption,
             inputValue: (node as any).inputValue
         }));
 
+        expect(state.selectedOption).toBe('Custom Value');
         expect(state.inputValue).toBe('Custom Value');
+    });
+
+    test('allowFreeText: Enter accepts exact input, Tab accepts suggestion', async () => {
+        const component = await createSelect(sharedPage, ['Option 1', 'Option 2'], { allowFreeText: true });
+
+        const input = component.locator('#input');
+
+        // Type partial match (use pressSequentially to trigger filtering)
+        await input.focus();
+        await input.pressSequentially('Option');
+        await sharedPage.waitForTimeout(100);
+
+        // Press Enter - should accept "Option" (exact input)
+        await input.press('Enter');
+
+        const state = await component.evaluate(node => ({
+            selectedOption: (node as any).selectedOption,
+            inputValue: (node as any).inputValue
+        }));
+
+        expect(state.selectedOption).toBe('Option');
+        expect(state.inputValue).toBe('Option');
+    });
+
+    test('allowFreeText: Tab accepts suggestion instead of exact input', async () => {
+        const component = await createSelect(sharedPage, ['Option 1', 'Option 2'], { allowFreeText: true });
+
+        const input = component.locator('#input');
+
+        // Type partial match (use pressSequentially to trigger filtering)
+        await input.focus();
+        await input.pressSequentially('Option');
+        await sharedPage.waitForTimeout(100);
+
+        // Press Tab - should accept suggestion "Option 1"
+        await input.press('Tab');
+
+        const state = await component.evaluate(node => ({
+            selectedOption: (node as any).selectedOption,
+            inputValue: (node as any).inputValue
+        }));
+
+        expect(state.selectedOption).toBe('Option 1');
+        expect(state.inputValue).toBe('Option 1');
+    });
+
+    test('allowFreeText: editing existing value and pressing Enter keeps edited value', async () => {
+        const component = await createSelect(sharedPage, ['Bla', 'Other'], { allowFreeText: true });
+
+        // First select "Bla"
+        await component.evaluate(node => {
+            (node as any).selectedOption = 'Bla';
+        });
+
+        const input = component.locator('#input');
+        await expect(input).toHaveValue('Bla');
+
+        // Edit the value by removing the "a"
+        await input.focus();
+        await input.press('End');
+        await input.press('Backspace');
+        await sharedPage.waitForTimeout(100);
+
+        // Press Enter - should accept "Bl" (the edited value)
+        await input.press('Enter');
+
+        const state = await component.evaluate(node => ({
+            selectedOption: (node as any).selectedOption,
+            inputValue: (node as any).inputValue
+        }));
+
+        expect(state.selectedOption).toBe('Bl');
+        expect(state.inputValue).toBe('Bl');
     });
 
     test('disable-filtering prevents filtering on keypress', async () => {
@@ -430,5 +505,31 @@ test.describe.serial('Select Tests', () => {
         // selectedOption should be ungrouped value, not full key
         expect(state.selectedOption).toBe('OtherOption');
         expect(state.inputValue).toBe('OtherOption');
+    });
+
+    test('allowFreeText: navigating to different option with arrow keys and Enter selects that option', async () => {
+        const component = await createSelect(sharedPage, ['Option 1', 'Option 2', 'Option 3'], { allowFreeText: true });
+
+        // Set a free text value that's not in the options
+        await component.evaluate(node => {
+            (node as any).selectedOption = 'Custom Value';
+        });
+
+        const input = component.locator('#input');
+        await expect(input).toHaveValue('Custom Value');
+
+        // Navigate down to select a different option (not filtering, just navigating)
+        await input.press('ArrowDown');
+        await input.press('ArrowDown');
+        await input.press('Enter');
+
+        const state = await component.evaluate(node => ({
+            selectedOption: (node as any).selectedOption,
+            inputValue: (node as any).inputValue
+        }));
+
+        // Should select the navigated option, not keep the free text value
+        expect(state.selectedOption).toBe('Option 2');
+        expect(state.inputValue).toBe('Option 2');
     });
 });

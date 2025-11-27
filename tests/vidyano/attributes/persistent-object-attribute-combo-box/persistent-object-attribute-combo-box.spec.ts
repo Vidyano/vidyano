@@ -69,39 +69,7 @@ test.describe('ComboBox Attribute (Standard)', () => {
             await expect(input).toHaveValue('Custom Value');
         });
 
-        test('displays add button when typing new value not in options', async () => {
-            const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-combo-box', 'ComboBox');
-
-            await beginEdit(sharedPage, component);
-
-            const select = component.locator('vi-select');
-            const input = select.locator('input');
-
-            await input.clear();
-            await input.fill('New Custom Value');
-
-            // Add button should appear
-            const addButton = component.locator('vi-button#add');
-            await expect(addButton).toBeVisible();
-        });
-
-        test('hides add button when value matches existing option', async () => {
-            const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-combo-box', 'ComboBox');
-
-            await beginEdit(sharedPage, component);
-
-            const select = component.locator('vi-select');
-            const input = select.locator('input');
-
-            await input.clear();
-            await input.fill('Option B');
-
-            // Add button should be hidden
-            const addButton = component.locator('vi-button#add');
-            await expect(addButton).toBeHidden();
-        });
-
-        test('adds custom value to options when clicking add button', async () => {
+        test('Enter commits custom value', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-combo-box', 'ComboBox');
 
             await beginEdit(sharedPage, component);
@@ -111,14 +79,10 @@ test.describe('ComboBox Attribute (Standard)', () => {
 
             await input.clear();
             await input.fill('Brand New Option');
+            await input.press('Enter');
 
-            const addButton = component.locator('vi-button#add');
-            await expect(addButton).toBeVisible();
-            await addButton.click();
-
-            // After adding, the value should be set and add button hidden
+            // After Enter, the value should be set
             await expect(input).toHaveValue('Brand New Option');
-            await expect(addButton).toBeHidden();
         });
     });
 
@@ -170,7 +134,7 @@ test.describe('ComboBox Attribute (Standard)', () => {
         test('custom value disappears from options when selecting a default option after save', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-combo-box', 'ComboBox');
 
-            // Step 1: Add and save a custom value
+            // Step 1: Add and save a custom value using Enter
             await beginEdit(sharedPage, component);
 
             const select = component.locator('vi-select');
@@ -178,9 +142,7 @@ test.describe('ComboBox Attribute (Standard)', () => {
 
             await input.clear();
             await input.fill('My Custom Value');
-
-            const addButton = component.locator('vi-button#add');
-            await addButton.click();
+            await input.press('Enter');
 
             await save(sharedPage, component);
 
@@ -256,7 +218,7 @@ test.describe('ComboBox Attribute (Standard)', () => {
             await expect(component.locator('vi-select')).toHaveCount(0);
         });
 
-        test('saves custom value after adding', async () => {
+        test('saves custom value after pressing Enter', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-combo-box', 'ComboBox');
 
             await beginEdit(sharedPage, component);
@@ -266,9 +228,7 @@ test.describe('ComboBox Attribute (Standard)', () => {
 
             await input.clear();
             await input.fill('My Custom Entry');
-
-            const addButton = component.locator('vi-button#add');
-            await addButton.click();
+            await input.press('Enter');
 
             const savedValue = await save(sharedPage, component);
 
@@ -319,15 +279,6 @@ test.describe('ComboBox Attribute (ReadOnly)', () => {
             const select = component.locator('vi-select');
             const input = select.locator('input');
             await expect(input).toHaveAttribute('readonly');
-        });
-
-        test('does not display add button when readonly', async () => {
-            const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-combo-box', 'ComboBoxReadOnly');
-
-            await beginEdit(sharedPage, component);
-
-            const addButton = component.locator('vi-button#add');
-            await expect(addButton).toHaveCount(0);
         });
     });
 });
@@ -425,27 +376,6 @@ test.describe('ComboBox Attribute (Frozen)', () => {
             await unfreeze(sharedPage, component);
 
             await expect(select).not.toHaveAttribute('disabled');
-        });
-
-        test('add button becomes disabled when parent is frozen', async () => {
-            const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-combo-box', 'ComboBox');
-
-            await beginEdit(sharedPage, component);
-
-            const select = component.locator('vi-select');
-            const input = select.locator('input');
-
-            await input.clear();
-            await input.fill('Frozen Test Value');
-
-            const addButton = component.locator('vi-button#add');
-            await expect(addButton).toBeVisible();
-            await expect(addButton).not.toHaveAttribute('disabled');
-
-            await freeze(sharedPage, component);
-
-            // Note: The add button may be hidden when frozen or disabled
-            // Check the actual behavior - if hidden, this test may need adjustment
         });
     });
 });

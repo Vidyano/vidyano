@@ -38,7 +38,7 @@ export class Select extends WebComponent {
     declare readonly hasOptions: boolean;
 
     @property({ type: Boolean, reflect: true })
-    keepUnmatched: boolean = false;
+    allowFreeText: boolean = false;
 
     @property({ type: Object })
     @notify()
@@ -55,54 +55,82 @@ export class Select extends WebComponent {
     groupSeparator: string = null;
 
     @property({ type: Array })
-    @computed(function(this: Select, options: (string | SelectOption)[], groupSeparator: string): ISelectItem[] {
-        if (!options || options.length === 0)
-            return [];
-
+    @computed(function(this: Select, options: (string | SelectOption)[], groupSeparator: string, allowFreeText: boolean, selectedOption: string | number | SelectOption): ISelectItem[] {
         const result: ISelectItem[] = [];
         const groupsSeen = new Map<string, boolean>();
 
-        options.forEach(opt => {
-            let display = "";
-            let key: string | number = "";
-            let group = "";
-            let rawOption = opt;
+        if (options && options.length > 0) {
+            options.forEach(opt => {
+                let display = "";
+                let key: string | number = "";
+                let group = "";
+                let rawOption = opt;
 
-            if (typeof opt === "string") {
-                display = opt;
-                key = opt;
-            } else if (opt && typeof opt === "object") {
-                display = opt.value || "";
-                key = opt.key;
-            }
-
-            if (groupSeparator && display.includes(groupSeparator)) {
-                const parts = display.split(groupSeparator, 2);
-                if (parts.length === 2) {
-                    group = parts[0];
-                    display = parts[1];
+                if (typeof opt === "string") {
+                    display = opt;
+                    key = opt;
+                } else if (opt && typeof opt === "object") {
+                    display = opt.value || "";
+                    key = opt.key;
                 }
-            }
 
-            let isGroupHeader = false;
-            if (group) {
-                if (!groupsSeen.has(group)) {
-                    isGroupHeader = true;
-                    groupsSeen.set(group, true);
+                if (groupSeparator && display.includes(groupSeparator)) {
+                    const parts = display.split(groupSeparator, 2);
+                    if (parts.length === 2) {
+                        group = parts[0];
+                        display = parts[1];
+                    }
                 }
-            }
 
-            result.push({
-                displayValue: display,
-                group: group,
-                isGroupHeader: isGroupHeader,
-                option: rawOption,
-                key: key
+                let isGroupHeader = false;
+                if (group) {
+                    if (!groupsSeen.has(group)) {
+                        isGroupHeader = true;
+                        groupsSeen.set(group, true);
+                    }
+                }
+
+                result.push({
+                    displayValue: display,
+                    group: group,
+                    isGroupHeader: isGroupHeader,
+                    option: rawOption,
+                    key: key
+                });
             });
-        });
+        }
+
+        // When allowFreeText is enabled and selectedOption is not in options, add it as a free text item
+        if (allowFreeText && selectedOption != null && selectedOption !== "") {
+            const searchKey = (selectedOption && typeof selectedOption === "object")
+                ? (selectedOption as SelectOption).key
+                : selectedOption;
+
+            const existsInOptions = result.some(item => item.key === searchKey);
+            if (!existsInOptions) {
+                const freeTextDisplay = typeof selectedOption === "object"
+                    ? (selectedOption as SelectOption).value || String(searchKey)
+                    : String(selectedOption);
+
+                // Find position after empty option (if exists), otherwise insert at beginning
+                let insertIndex = 0;
+                const emptyIndex = result.findIndex(item => item.key === null || item.key === "");
+                if (emptyIndex >= 0)
+                    insertIndex = emptyIndex + 1;
+
+                result.splice(insertIndex, 0, {
+                    displayValue: freeTextDisplay,
+                    group: "",
+                    isGroupHeader: false,
+                    option: typeof selectedOption === "object" ? selectedOption : String(selectedOption),
+                    key: typeof searchKey === "object" ? searchKey.key : searchKey,
+                    isFreeText: true
+                });
+            }
+        }
 
         return result;
-    }, "options", "groupSeparator")
+    }, "options", "groupSeparator", "allowFreeText", "selectedOption", { allowUndefined: true })
     declare readonly items: ISelectItem[];
 
     @property({ type: Array })
@@ -114,7 +142,7 @@ export class Select extends WebComponent {
 
         const lowerInput = inputValue.toLowerCase();
         return items.filter(item =>
-            item.displayValue && item.displayValue.toLowerCase().includes(lowerInput)
+            !item.isFreeText && item.displayValue && item.displayValue.toLowerCase().includes(lowerInput)
         );
     }, "items", "_inputValue", "filtering")
     declare readonly filteredItems: ISelectItem[];
@@ -139,8 +167,16 @@ export class Select extends WebComponent {
         if (this.filtering)
             return;
 
-        this._inputValue = selectedItem?.displayValue ?? "";
-        this.suggestion = selectedItem;
+        if (selectedItem) {
+            this._inputValue = selectedItem.displayValue;
+            this.suggestion = selectedItem;
+        } else if (this.allowFreeText && typeof this.selectedOption === "string") {
+            this._inputValue = this.selectedOption;
+            this.suggestion = null;
+        } else {
+            this._inputValue = "";
+            this.suggestion = null;
+        }
     })
     declare readonly selectedItem: ISelectItem;
 
@@ -164,9 +200,9 @@ export class Select extends WebComponent {
     readonly: boolean = false;
 
     @property({ type: Boolean })
-    @computed(function(this: Select, readonly: boolean, hasOptions: boolean, keepUnmatched: boolean, disableFiltering: boolean): boolean {
-        return readonly || (!keepUnmatched && (!hasOptions || disableFiltering));
-    }, "readonly", "hasOptions", "keepUnmatched", "disableFiltering")
+    @computed(function(this: Select, readonly: boolean, hasOptions: boolean, allowFreeText: boolean, disableFiltering: boolean): boolean {
+        return readonly || (!allowFreeText && (!hasOptions || disableFiltering));
+    }, "readonly", "hasOptions", "allowFreeText", "disableFiltering")
     declare readonly isReadonlyInput: boolean;
 
     @property({ type: String })
@@ -242,8 +278,10 @@ export class Select extends WebComponent {
                             ` : nothing}
 
                             <vi-select-option-item
+                                ?free-text=${item.isFreeText}
                                 ?suggested=${item.option === this.suggestion?.option}
-                                ?selected=${!this.filtering && item.option === (this._highlightedItem ?? this.selectedItem)?.option}
+                                ?selected=${item.option === this.selectedItem?.option}
+                                ?highlighted=${!this.filtering && this._highlightedItem != null && item.option === this._highlightedItem?.option}
                                 .item=${item}>
                                 ${unsafeHTML(this.#computeItemDisplayValue(item.displayValue, this._inputValue))}
                             </vi-select-option-item>
@@ -290,7 +328,7 @@ export class Select extends WebComponent {
 
             case Keyboard.Keys.Enter:
             case Keyboard.Keys.Tab:
-                this.#confirmSelection();
+                this.#confirmSelection(e.key === Keyboard.Keys.Enter);
                 if (e.key === Keyboard.Keys.Enter) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -320,10 +358,13 @@ export class Select extends WebComponent {
     }
 
     private _blur() {
-        if (this.keepUnmatched)
+        if (this._popup?.open)
             return;
 
-        if (!this._popup?.open) {
+        if (this.allowFreeText && this._inputValue) {
+            this.filtering = false;
+            this.#setSelectedOption(this._inputValue);
+        } else {
             this.filtering = false;
             this._inputValue = this.selectedItem?.displayValue ?? "";
         }
@@ -377,16 +418,26 @@ export class Select extends WebComponent {
         }
     }
 
-    #confirmSelection() {
-        const itemToSelect = this.filtering
-            ? this.suggestion
-            : (this._highlightedItem ?? this.selectedItem);
+    #confirmSelection(acceptExactInput: boolean = false) {
+        let selectedOption: string | SelectOption;
+
+        // When not filtering and user navigated to a highlighted item, use that
+        if (!this.filtering && this._highlightedItem) {
+            selectedOption = this._highlightedItem.option;
+        } else if (this.allowFreeText && acceptExactInput && this._inputValue) {
+            selectedOption = this._inputValue;
+        } else {
+            const itemToSelect = this.filtering
+                ? this.suggestion
+                : (this._highlightedItem ?? this.selectedItem);
+            selectedOption = itemToSelect?.option;
+        }
 
         this._popup?.close();
+        this.filtering = false;
 
-        if (itemToSelect) {
-            this.#setSelectedOption(itemToSelect.option);
-        }
+        if (selectedOption !== undefined)
+            this.#setSelectedOption(selectedOption);
     }
 
     #cancelSelection() {
