@@ -19,7 +19,15 @@ npm run dist         # Production build
 
 # Check if backend is running
 curl -s -o /dev/null -w '%{http_code}' --head http://localhost:5000
+
+# Check if rollup watch is running
+pgrep -f rollup
 ```
+
+### Build Warning
+**NEVER run `npm run build` when rollup is running in watch mode.** The watch mode (started via VS Code task "rollup: watch") automatically rebuilds on file changes. Running the build command simultaneously will cause conflicts.
+
+Check if rollup is running before building: `pgrep -f rollup` (returns PIDs if running, empty if not).
 
 ### Documentation Map
 | Component | Documentation | Tests |

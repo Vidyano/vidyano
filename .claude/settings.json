@@ -1,4 +1,10 @@
 {
+    "permissions": {
+        "allow": [
+            "Bash(pgrep -f rollup:*)",
+            "Bash(curl -s -o /dev/null -w '%{http_code}' --head http://localhost:5000:*)"
+        ]
+    },
     "hooks": {
         "PreToolUse": []
     },
