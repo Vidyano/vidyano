@@ -39,7 +39,11 @@
         }
     }
 
-    input, span {
+    .header span {
+        padding-left: var(--theme-h5);
+    }
+
+    span {
         color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
     }    
 
