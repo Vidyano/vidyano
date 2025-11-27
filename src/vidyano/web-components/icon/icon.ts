@@ -46,8 +46,8 @@ export class Icon extends WebComponent {
 
     @observer("source", "isConnected")
     private async _load(source: string, isConnected: boolean) {
-        // Only load when connected and source is defined, and source has changed
-        if (!isConnected || !source || this.#loadedSource === source)
+        // Only load when connected and source has changed
+        if (!isConnected || this.#loadedSource === source)
             return;
 
         await this.updateComplete;
@@ -56,13 +56,20 @@ export class Icon extends WebComponent {
         if (!svgHost)
             return;
 
+        // Clear existing content
         if (svgHost.children.length > 0)
             svgHost.innerHTML = "";
 
         this.#loadedSource = source;
 
+        // If source is empty/null, just clear and return
+        if (!source) {
+            this.unresolved = true;
+            return;
+        }
+
         let resource: Icon;
-        if (!source || source.indexOf(":") < 0) {
+        if (source.indexOf(":") < 0) {
             resource = IconRegister.load(source);
             this.unresolved = !resource;
         } else {
