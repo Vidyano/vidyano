@@ -27,11 +27,11 @@ test.describe('BinaryFile Attribute', () => {
     });
 
     test.describe('Non-edit mode', () => {
-        test('displays initial filename "Vidyano.png" in span', async () => {
+        test('displays initial filename "black-pixel.png" in span', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-binary-file', 'BinaryFile');
 
             const span = component.locator('span');
-            await expect(span).toHaveText('Vidyano.png');
+            await expect(span).toHaveText('black-pixel.png');
         });
 
         test('does not render file input element', async () => {
@@ -56,7 +56,7 @@ test.describe('BinaryFile Attribute', () => {
             await beginEdit(sharedPage, component);
 
             const textInput = component.locator('input[type="text"]');
-            await expect(textInput).toHaveValue('Vidyano.png');
+            await expect(textInput).toHaveValue('black-pixel.png');
             await expect(textInput).toHaveAttribute('readonly');
         });
 
@@ -149,7 +149,7 @@ test.describe('BinaryFile Attribute', () => {
             await cancelEdit(sharedPage, component);
 
             const span = component.locator('span');
-            await expect(span).toHaveText('Vidyano.png');
+            await expect(span).toHaveText('black-pixel.png');
             await expect(component.locator('input[type="file"]')).toHaveCount(0);
         });
     });
@@ -231,11 +231,11 @@ test.describe('BinaryFile Attribute (ReadOnly)', () => {
     });
 
     test.describe('Non-edit mode', () => {
-        test('displays initial filename "Vidyano.png" in span', async () => {
+        test('displays initial filename "black-pixel.png" in span', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-binary-file', 'BinaryFileReadOnly');
 
             const span = component.locator('span');
-            await expect(span).toHaveText('Vidyano.png');
+            await expect(span).toHaveText('black-pixel.png');
         });
     });
 
@@ -246,7 +246,7 @@ test.describe('BinaryFile Attribute (ReadOnly)', () => {
             await beginEdit(sharedPage, component);
 
             const textInput = component.locator('input[type="text"]');
-            await expect(textInput).toHaveValue('Vidyano.png');
+            await expect(textInput).toHaveValue('black-pixel.png');
             await expect(textInput).toHaveAttribute('readonly');
         });
 
