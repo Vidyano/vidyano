@@ -102,6 +102,41 @@ export async function isDirty(page: Page, component: any): Promise<boolean> {
     }, componentId);
 }
 
+export interface RefreshTracker {
+    /** Whether a refresh request has been detected */
+    readonly called: boolean;
+    /** Stops tracking and removes the request listener */
+    dispose: () => void;
+}
+
+/**
+ * Creates a tracker that monitors for PersistentObject.Refresh requests.
+ * @param page - Playwright page
+ * @returns RefreshTracker with `called` property and `dispose` method
+ */
+export function trackRefresh(page: Page): RefreshTracker {
+    let refreshCalled = false;
+
+    const requestHandler = (request: any) => {
+        if (request.url().includes('ExecuteAction') && request.method() === 'POST') {
+            const postData = request.postData();
+            if (postData && postData.includes('PersistentObject.Refresh'))
+                refreshCalled = true;
+        }
+    };
+
+    page.on('request', requestHandler);
+
+    return {
+        get called() {
+            return refreshCalled;
+        },
+        dispose: () => {
+            page.off('request', requestHandler);
+        }
+    };
+}
+
 export type BrowseReferenceMockBehavior = 'selectFirst' | 'cancel';
 
 /**

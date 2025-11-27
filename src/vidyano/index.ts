@@ -68,7 +68,6 @@ export * from "./web-components/persistent-object-attribute/attributes/persisten
 export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-image/persistent-object-attribute-image"
 export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-key-value-list/persistent-object-attribute-key-value-list"
 export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-multi-line-string/persistent-object-attribute-multi-line-string"
-export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-multi-string/persistent-object-attribute-multi-string-item"
 export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-multi-string/persistent-object-attribute-multi-string"
 export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-nullable-boolean/persistent-object-attribute-nullable-boolean"
 export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-numeric/persistent-object-attribute-numeric"

@@ -1,17 +1,28 @@
 :host {
     display: flex;
+    flex-direction: column;
+
+    vi-scroller.flex {
+        flex: 1;
+        min-height: 0;
+    }
+
+    vi-tags.flex {
+        flex: 1;
+        min-height: 0;
+    }
 
     #strings:empty {
         background-color: red;
     }
 
-    #strings:empty + vi-persistent-object-attribute-multi-string-item::part(icon) {
+    #strings:empty + .string-item::part(icon) {
         display: none;
     }
 
-    #strings:not([enabled]) {
-        > vi-persistent-object-attribute-multi-string-item {
-            ::content vi-icon[source="Hamburger"] {
+    vi-sortable:not([enabled]) {
+        .string-item {
+            vi-icon[source="Hamburger"] {
                 opacity: 0.25;
                 cursor: default;
             }
@@ -41,10 +52,70 @@
             li {
                 padding: 0 var(--theme-h4);
                 text-align: left;
+                cursor: pointer;
 
                 &:hover {
                     background-color: var(--color-faint);
                 }
+            }
+        }
+    }
+
+    // String item styles (merged from separate component)
+    .string-item {
+        display: flex;
+        margin-bottom: 2px;
+
+        input {
+            flex: 1;
+            min-width: 0;
+            border: 1px solid var(--theme-light-border);
+            box-sizing: border-box;
+            height: var(--theme-h2);
+            line-height: var(--theme-h2);
+            transition: border-color 0.2s ease-in-out;
+            padding: 0 6px;
+            outline: none;
+
+            &:focus {
+                border-color: var(--color-lighter);
+            }
+
+            &:disabled {
+                background-color: #eee;
+            }
+
+            &[readonly] {
+                background-color: var(--theme-read-only);
+            }
+        }
+
+        vi-sensitive {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+        }
+
+        vi-icon {
+            align-self: center;
+            margin-right: var(--theme-h5);
+            fill: #666;
+            cursor: grab;
+            pointer-events: all;
+            user-select: none;
+
+            &[disabled] {
+                fill: #aaa;
+            }
+        }
+
+        &.sortable-dragging vi-icon {
+            pointer-events: none !important;
+        }
+
+        &.new-item {
+            input {
+                border-style: dashed;
             }
         }
     }
