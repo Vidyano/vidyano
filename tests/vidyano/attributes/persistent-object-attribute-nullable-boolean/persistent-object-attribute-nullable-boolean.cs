@@ -12,7 +12,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddVidyanoMinimal<MockContext>(vidyano => vidyano
     .WithUrls("http://localhost:44355")
     .WithDefaultAdmin()
-    .WithSchemaRights()
+    .WithDefaultUser("Admin")
+    .WithSchemaRights()    
     .WithMenuItem(nameof(MockContext.Attributes))
     .WithModel(builder =>
         {

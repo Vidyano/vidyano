@@ -55,7 +55,6 @@ export async function setupPage(
 
         const service = new Service("http://localhost:44355");
         await service.initialize();
-        await service.signInUsingCredentials("admin", "admin");
         (window as any).service = service;
 
         // Create a minimal app mock for components that need app.showDialog

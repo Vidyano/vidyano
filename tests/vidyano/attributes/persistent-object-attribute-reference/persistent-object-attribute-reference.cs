@@ -18,6 +18,7 @@ builder.AddVidyanoMinimal<MockContext>(vidyano =>
     vidyano
         .WithUrls("http://localhost:44355")
         .WithDefaultAdmin()
+        .WithDefaultUser("Admin")
         .WithSchemaRights()
         .WithMenuItem(nameof(MockContext.Attributes))
         .WithModel(builder =>
@@ -27,7 +28,7 @@ builder.AddVidyanoMinimal<MockContext>(vidyano =>
             var referenceReadOnly = po.GetOrCreateAttribute(nameof(Mock_Attribute.ReferenceReadOnly));
             referenceReadOnly.IsReadOnly = true;
 
-            var referenceSelectInPlace = po.GetOrCreateAttribute(nameof(Mock_Attribute.ReferenceSelectInPlace)) as PersistentObjectAttributeWithReferenceBuilder;
+            var referenceSelectInPlace = (PersistentObjectAttributeWithReferenceBuilder)po.GetOrCreateAttribute(nameof(Mock_Attribute.ReferenceSelectInPlace));
             referenceSelectInPlace.SelectInPlace = true;
         });
 });
