@@ -1,6 +1,12 @@
 :host {
     display: flex;
 
+    .relative {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+    }
+
     vi-select {
         border: none;
     }
