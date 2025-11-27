@@ -320,8 +320,10 @@ test.describe('User Attribute (Nullable)', () => {
             await mockBrowseReference(sharedPage, 'selectFirst');
             const browseButton = component.locator('vi-button:has(vi-icon[source="Ellipsis"])');
             await browseButton.click();
-            // Get the selected value before saving
+
+            // Wait for the input to be updated with the selected value (not the empty em-dash)
             const input = component.locator('input');
+            await expect(input).not.toHaveValue('—');
             const selectedValue = await input.inputValue();
 
             await save(sharedPage, component);
