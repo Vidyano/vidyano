@@ -33,12 +33,24 @@ vi-persistent-object-attribute-edit {
     vi-icon {
         aspect-ratio: 1 / 1;
     }
+
+    .value:has(vi-icon:not([unresolved])) {
+        padding-left: var(--theme-h5);
+    }
 }
 
 .value {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     gap: var(--theme-h5);
 
     vi-icon:not([unresolved]) + span {
         line-height: var(--theme-h2);
+    }
+
+    input.flex {
+        flex: 1;
+        min-width: 0;
     }
 }
