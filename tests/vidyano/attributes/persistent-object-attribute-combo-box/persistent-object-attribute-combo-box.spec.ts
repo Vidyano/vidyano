@@ -380,4 +380,115 @@ test.describe('ComboBox Attribute (Frozen)', () => {
     });
 });
 
+test.describe('ComboBox Attribute (Clear button)', () => {
+    let sharedPage: Page;
+
+    test.beforeAll(async ({ browser }) => {
+        sharedPage = await browser.newPage();
+        await setupPage(sharedPage);
+    });
+
+    test.afterAll(async () => {
+        await sharedPage.close();
+    });
+
+    test('should show clear button for non-required field with value', async () => {
+        const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-combo-box', 'ComboBox');
+
+        await beginEdit(sharedPage, component);
+
+        const clearButton = component.locator('vi-button vi-icon[source="Remove"]');
+        await expect(clearButton).toBeVisible();
+    });
+
+    test('should hide clear button for required field', async () => {
+        const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-combo-box', 'ComboBoxRequired');
+
+        await beginEdit(sharedPage, component);
+
+        const clearButton = component.locator('vi-button vi-icon[source="Remove"]');
+        await expect(clearButton).not.toBeVisible();
+    });
+
+    test('should hide clear button for readonly field', async () => {
+        const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-combo-box', 'ComboBoxReadOnly');
+
+        await beginEdit(sharedPage, component);
+
+        const clearButton = component.locator('vi-button vi-icon[source="Remove"]');
+        await expect(clearButton).not.toBeVisible();
+    });
+
+    test('should hide clear button when value is empty', async () => {
+        const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-combo-box', 'ComboBoxEmpty');
+
+        await beginEdit(sharedPage, component);
+
+        const clearButton = component.locator('vi-button vi-icon[source="Remove"]');
+        await expect(clearButton).not.toBeVisible();
+    });
+
+    test('should clear value when clear button is clicked', async () => {
+        const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-combo-box', 'ComboBox');
+
+        await beginEdit(sharedPage, component);
+
+        const select = component.locator('vi-select');
+        const input = select.locator('input');
+
+        // Verify has value
+        await expect(input).toHaveValue('Option A');
+
+        // Click clear button
+        const clearButton = component.locator('vi-button').filter({ has: sharedPage.locator('vi-icon[source="Remove"]') });
+        await expect(clearButton).toBeVisible();
+        await clearButton.click();
+
+        // Verify value cleared
+        await expect(input).toHaveValue('');
+
+        // Verify clear button is now hidden
+        await expect(clearButton).not.toBeVisible();
+    });
+
+    test('should disable clear button when frozen', async () => {
+        const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-combo-box', 'ComboBox');
+
+        await beginEdit(sharedPage, component);
+
+        await freeze(sharedPage, component);
+
+        const clearButton = component.locator('vi-button').filter({ has: sharedPage.locator('vi-icon[source="Remove"]') });
+        await expect(clearButton).toBeVisible();
+        await expect(clearButton).toHaveAttribute('disabled');
+    });
+
+    test('clear button should hide after clearing and reappear when value is set again', async () => {
+        const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-combo-box', 'ComboBox');
+
+        await beginEdit(sharedPage, component);
+
+        const select = component.locator('vi-select');
+        const input = select.locator('input');
+        const clearButton = component.locator('vi-button').filter({ has: sharedPage.locator('vi-icon[source="Remove"]') });
+
+        // Initially has value and clear button is visible
+        await expect(input).toHaveValue('Option A');
+        await expect(clearButton).toBeVisible();
+
+        // Clear the value
+        await clearButton.click();
+        await expect(input).toHaveValue('');
+        await expect(clearButton).not.toBeVisible();
+
+        // Set a new value
+        await input.fill('New Value');
+        await input.press('Enter');
+        await expect(input).toHaveValue('New Value');
+
+        // Clear button should reappear
+        await expect(clearButton).toBeVisible();
+    });
+});
+
 }); // End of ComboBox Attribute Tests wrapper

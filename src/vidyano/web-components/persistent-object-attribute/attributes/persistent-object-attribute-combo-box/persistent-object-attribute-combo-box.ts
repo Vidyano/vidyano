@@ -15,6 +15,12 @@ export class PersistentObjectAttributeComboBox extends PersistentObjectAttribute
     @computed("attribute.options")
     private declare _options: string[];
 
+    @property({ type: Boolean })
+    @computed(function(this: PersistentObjectAttributeComboBox, readOnly: boolean, isRequired: boolean, value: string): boolean {
+        return !readOnly && !isRequired && !String.isNullOrEmpty(value);
+    }, "readOnly", "attribute.isRequired", "value")
+    declare readonly canClear: boolean;
+
     protected override _valueChanged(newValue: any, _oldValue: any) {
         if (this.attribute && newValue !== this.attribute.value)
             this.attribute.setValue(newValue, true).catch(Vidyano.noop);
@@ -28,24 +34,31 @@ export class PersistentObjectAttributeComboBox extends PersistentObjectAttribute
         select?.focus();
     }
 
+    private _clear() {
+        this.attribute.setValue(null, true).catch(Vidyano.noop);
+    }
+
     protected override renderDisplay() {
         return super.renderDisplay(html`<span>${this.attribute?.displayValue}</span>`);
     }
 
     protected override renderEdit() {
         return super.renderEdit(html`
-            <div class="relative">
-                <vi-select
-                    .options=${this._options}
-                    .selectedOption=${this.value}
-                    @selected-option-changed=${(e: CustomEvent) => this.value = e.detail.value}
-                    allow-free-text
-                    ?readonly=${this.readOnly}
-                    ?disabled=${this.frozen}
-                    placeholder=${this.placeholder || nothing}
-                    ?sensitive=${this.sensitive}>
-                </vi-select>
-            </div>
+            <vi-select
+                .options=${this._options}
+                .selectedOption=${this.value}
+                @selected-option-changed=${(e: CustomEvent) => this.value = e.detail.value}
+                allow-free-text
+                ?readonly=${this.readOnly}
+                ?disabled=${this.frozen}
+                placeholder=${this.placeholder || nothing}
+                ?sensitive=${this.sensitive}>
+            </vi-select>
+            ${this.canClear ? html`
+                <vi-button slot="right" @click=${this._clear} tabindex="-1" ?disabled=${this.frozen}>
+                    <vi-icon source="Remove"></vi-icon>
+                </vi-button>
+            ` : nothing}
         `);
     }
 }
