@@ -23,6 +23,7 @@
       "IconName": "Edit"
     },
     "CancelEdit": {
+      "Intent": 1,
       "IsSystem": true,
       "DisplayName": {
         "en": "Cancel",
@@ -31,6 +32,7 @@
       "IconName": "CancelEdit"
     },
     "CancelSave": {
+      "Intent": 1,
       "IsSystem": true,
       "DisplayName": {
         "en": "Cancel",
@@ -52,6 +54,7 @@
       "IconName": "Delete"
     },
     "DialogCancel": {
+      "Intent": 1,
       "IsSystem": true,
       "DisplayName": {
         "en": "Cancel",
@@ -60,6 +63,7 @@
       "IconName": "Cancel"
     },
     "DialogOk": {
+      "Intent": 1,
       "IsSystem": true,
       "SelectionRule": "> 0",
       "DisplayName": {
@@ -89,6 +93,7 @@
     "ExportToCsv": {
       "Offset": 30001,
       "ShowedOn": 2,
+      "Intent": 1,
       "IsSystem": true,
       "DisplayName": {
         "en": "Export",
@@ -99,6 +104,7 @@
     "ExportToExcel": {
       "Offset": 30000,
       "ShowedOn": 2,
+      "Intent": 1,
       "IsSystem": true,
       "DisplayName": {
         "en": "Export",
@@ -204,6 +210,7 @@
     "ShowHelp": {
       "Offset": 60000,
       "ShowedOn": 7,
+      "Intent": 1,
       "IsSystem": true,
       "DisplayName": {
         "en": "Help",
@@ -297,6 +304,7 @@
     "viLoadAdvancedSearch": {
       "Offset": 1600,
       "ShowedOn": 2,
+      "Intent": 1,
       "IsSystem": true,
       "DisplayName": {
         "en": "Load",
@@ -317,6 +325,7 @@
     "viSearch": {
       "Offset": 1500,
       "ShowedOn": 2,
+      "Intent": 1,
       "IsSystem": true,
       "DisplayName": {
         "en": "Search",
@@ -707,7 +716,7 @@
     }
   },
   "Verbose": true,
-  "ServiceVersion": "6.0.20250923.6107+281c7bc.281c7bccf1d2faf369c588a20607fd6651e7bf0d",
+  "ServiceVersion": "6.0.20251127.6193+09543cd.09543cda66f3edc508047618fca65ef4edda9b4f",
   "ModelHash": "Ild6MBYJvDXByB5kqjZuYwljWSmz9AWzZah+n/zUkK4=",
-  "SeederHash": "D2B670mzO2AzftVwpFZDBOm1YX/PQj0gvyEc5WBef18="
+  "SeederHash": "CxNWnvxpKqZT2PB5Jm9ISZdPs7DNRjgTvKKsnwo3wnM="
 }

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- Enables Dynamic PGO: https://github.com/dotnet/runtime/blob/main/docs/design/features/DynamicPgo.md -->
@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Bogus" Version="35.6.3" />
-    <PackageReference Include="Vidyano" Version="6.0.20250923.6107" />
+    <PackageReference Include="Vidyano" Version="6.0.20251127.6193" />
     <PackageReference Include="Vidyano.SourceGenerators" Version="2.23.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
   </ItemGroup>
 
