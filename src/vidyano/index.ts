@@ -62,7 +62,6 @@ export * from "./web-components/persistent-object-attribute/attributes/persisten
 export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-common-mark/persistent-object-attribute-common-mark"
 export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-date-time/persistent-object-attribute-date-time"
 export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-drop-down/persistent-object-attribute-drop-down"
-export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-flags-enum/persistent-object-attribute-flags-enum-flag"
 export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-flags-enum/persistent-object-attribute-flags-enum"
 export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-icon/persistent-object-attribute-icon"
 export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-image/persistent-object-attribute-image-dialog"

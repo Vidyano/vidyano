@@ -1,6 +1,21 @@
 :host {
     display: flex;
 
+    .header {
+        display: flex;
+        flex-direction: row;
+        flex: 1;
+        min-width: 0;
+
+        span {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+
     ul {
         list-style-type: none;
         padding: 0;
