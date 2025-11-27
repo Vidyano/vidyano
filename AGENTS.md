@@ -123,6 +123,7 @@ Example:
 
 1. **One task at a time** - Never skip ahead
 2. **Mark complete with [x]** - Before moving on
+3. **Test first (TDD)** - Write failing tests before implementing code changes when tests already exist for the component or when adding significant new behavior
 4. **Document as you go** - Add notes while working
 5. **Build only when needed** - For library changes only
 
