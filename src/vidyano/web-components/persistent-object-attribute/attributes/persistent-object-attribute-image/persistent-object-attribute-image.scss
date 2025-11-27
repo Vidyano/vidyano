@@ -4,17 +4,32 @@
     outline: none;
 
     img {
-        position: absolute;
+        display: block;
         max-height: 100%;
         max-width: 100%;
+        object-fit: contain;
 
         &[can-open] {
             cursor: zoom-in;
         }
     }
 
+    vi-sensitive {
+        display: flex;
+        position: absolute;
+        inset: 0;
+    }
+
     .image-container {
+        flex: 1;
+        min-width: 0;
+        position: relative;
         padding: var(--theme-h5);
+
+        vi-sensitive {
+            position: absolute;
+            inset: var(--theme-h5);
+        }
     }
 
     .browse {

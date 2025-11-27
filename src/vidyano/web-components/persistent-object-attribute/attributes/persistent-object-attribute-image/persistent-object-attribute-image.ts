@@ -1,45 +1,51 @@
-import * as Polymer from "polymer"
-import "components/button/button"
-import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
-import { PersistentObjectAttributeImageDialog } from "./persistent-object-attribute-image-dialog"
+import { html, nothing, unsafeCSS } from "lit";
+import * as Vidyano from "vidyano";
+import "components/button/button";
+import "components/icon/icon";
+import { computed } from "components/web-component/web-component";
+import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute";
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register";
+import { PersistentObjectAttributeImageDialog } from "./persistent-object-attribute-image-dialog";
+import styles from "./persistent-object-attribute-image.css";
 
-@Polymer.WebComponent.register({
-    properties: {
-        hasValue: {
-            type: Boolean,
-            computed: "_computeHasValue(value)"
-        },
-        image: {
-            type: String,
-            computed: "_computeImage(value)"
-        },
-        canOpen: {
-            type: Boolean,
-            computed: "_computeCanOpen(hasValue, sensitive)"
+export class PersistentObjectAttributeImage extends PersistentObjectAttribute {
+    static styles = [super.styles, unsafeCSS(styles)];
+
+    #pasteListener: EventListener;
+
+    @computed(function(this: PersistentObjectAttributeImage): boolean {
+        return !String.isNullOrEmpty(this.value);
+    }, "value")
+    declare readonly hasValue: boolean;
+
+    @computed(function(this: PersistentObjectAttributeImage): string {
+        return this.value ? this.value.asDataUri() : "";
+    }, "value")
+    declare readonly image: string;
+
+    @computed(function(this: PersistentObjectAttributeImage): boolean {
+        return this.hasValue && !this.sensitive;
+    }, "hasValue", "sensitive")
+    declare readonly canOpen: boolean;
+
+    protected override _attributeChanged() {
+        super._attributeChanged();
+
+        if (this.#pasteListener) {
+            document.removeEventListener("paste", this.#pasteListener, false);
+            this.#pasteListener = null;
+        }
+
+        if (this.attribute instanceof Vidyano.PersistentObjectAttribute && this.attribute.getTypeHint("AllowPaste") === "true") {
+            this.#pasteListener = this._pasteAuto.bind(this);
+            document.addEventListener("paste", this.#pasteListener, false);
         }
     }
-}, "vi-persistent-object-attribute-image")
-export class PersistentObjectAttributeImage extends Polymer.PersistentObjectAttribute {
-    static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-image.html">`; }
 
-    private _pasteListener: EventListener;
-
-    _attributeChanged() {
-        if (this._pasteListener) {
-            document.removeEventListener("paste", this._pasteListener, false);
-            this._pasteListener = null;
-        }
-
-        if (this.attribute && this.attribute.getTypeHint("AllowPaste") === "true") {
-            this._pasteListener = this._pasteAuto.bind(this);
-            document.addEventListener("paste", this._pasteListener, false);
-        }
-    }
-
-    disconnectedCallback() {
-        if (this._pasteListener) {
-            document.removeEventListener("paste", this._pasteListener, false);
-            this._pasteListener = null;
+    override disconnectedCallback() {
+        if (this.#pasteListener) {
+            document.removeEventListener("paste", this.#pasteListener, false);
+            this.#pasteListener = null;
         }
 
         super.disconnectedCallback();
@@ -69,18 +75,6 @@ export class PersistentObjectAttributeImage extends Polymer.PersistentObjectAttr
         this.value = null;
     }
 
-    private _computeHasValue(value: string): boolean {
-        return !String.isNullOrEmpty(value);
-    }
-
-    private _computeImage(value: string): string {
-        return value ? value.asDataUri() : "";
-    }
-
-    private _computeCanOpen(hasValue: boolean, sensitive: boolean): boolean {
-        return hasValue && !sensitive;
-    }
-
     private _pasteAuto(e: ClipboardEvent) {
         if (this.readOnly || !this.editing)
             return;
@@ -90,10 +84,10 @@ export class PersistentObjectAttributeImage extends Polymer.PersistentObjectAttr
             if (items) {
                 for (let i = 0; i < items.length; i++) {
                     if (items[i].type.indexOf("image") !== -1) {
-                        const blob = (<any>items[i]).getAsFile();
+                        const blob = items[i].getAsFile();
                         const URLObj = window["URL"] || window["webkitURL"];
                         const source = URLObj.createObjectURL(blob);
-                        this._pasteCreateImage(source);
+                        this.#pasteCreateImage(source);
 
                         e.preventDefault();
                     }
@@ -102,7 +96,7 @@ export class PersistentObjectAttributeImage extends Polymer.PersistentObjectAttr
         }
     }
 
-    private _pasteCreateImage(source) {
+    #pasteCreateImage(source: string) {
         const pastedImage = new Image();
         pastedImage.onload = () => {
             const canvas = document.createElement("canvas");
@@ -122,6 +116,35 @@ export class PersistentObjectAttributeImage extends Polymer.PersistentObjectAttr
 
         this.app.showDialog(new PersistentObjectAttributeImageDialog(this.attribute.label, this.value.asDataUri()));
     }
+
+    protected override renderDisplay() {
+        return super.renderDisplay(html`
+            <img src=${this.image || nothing} @click=${this._showDialog} ?can-open=${this.canOpen} />
+        `);
+    }
+
+    protected override renderEdit() {
+        return super.renderEdit(html`
+            <div class="image-container">
+                <vi-sensitive ?disabled=${!this.sensitive}>
+                    <img src=${this.image || nothing} @click=${this._showDialog} ?can-open=${this.canOpen} />
+                </vi-sensitive>
+            </div>
+            ${!this.readOnly ? html`
+                <vi-button slot="right" class="browse bottom-border" ?disabled=${this.frozen}>
+                    <vi-icon source="ImageUpload"></vi-icon>
+                    <input type="file" accept="image/*" capture="environment" @change=${this._change}>
+                </vi-button>
+                ${this.hasValue ? html`
+                    <vi-button slot="right" class="bottom-border" @click=${this._clear} tabindex="-1" ?disabled=${this.frozen}>
+                        <vi-icon source="Remove"></vi-icon>
+                    </vi-button>
+                ` : nothing}
+            ` : nothing}
+        `);
+    }
 }
+
+customElements.define("vi-persistent-object-attribute-image", PersistentObjectAttributeImage);
 
 PersistentObjectAttributeRegister.add("Image", PersistentObjectAttributeImage);
