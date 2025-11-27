@@ -185,6 +185,10 @@ src/vidyano/web-components/persistent-object-attribute/attributes/persistent-obj
    - Use standard DOM queries (locator('input'), locator('span'), etc.)
    - Avoid framework-specific APIs
    - Test behavior, not implementation details
+   - **Important:** Polymer's `dom-if` doesn't remove DOM elements when the condition becomes false - it adds a `hidden` attribute that sets `display: none`. Lit's conditional rendering actually adds/removes elements from the DOM. When testing visibility:
+     - Use `.toBeVisible()` / `.toBeHidden()` to test visibility (works for both)
+     - Avoid `.toHaveCount(0)` for hidden elements (will fail in Polymer)
+     - The element should be functionally invisible in both cases
 
 7. **Test Patterns to Follow**
    - Use `setupAttribute()` to create component instances
