@@ -1083,6 +1083,82 @@ test('TestObserverPropertyInline: @observer on properties with inline functions'
     expect(nameState.nameChangeLastArgs).toEqual({ newValue: 'updated', oldValue: 'initial' });
 });
 
+test('TestKeybindingInput: delete/insert keys should not trigger keybinding when in input field', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-keybinding-input');
+    await expect(component).toBeVisible();
+
+    const input = component.locator('input');
+
+    // --- Initial state verification ---
+    let state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            deleteCallCount: inst.deleteCallCount,
+            insertCallCount: inst.insertCallCount
+        };
+    });
+    expect(state.deleteCallCount).toBe(0);
+    expect(state.insertCallCount).toBe(0);
+
+    // --- Act: Press Delete outside of input (should trigger keybinding) ---
+    await component.press('Delete');
+    state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            deleteCallCount: inst.deleteCallCount,
+            insertCallCount: inst.insertCallCount
+        };
+    });
+    expect(state.deleteCallCount).toBe(1);
+
+    // --- Act: Type in input and press Delete (should NOT trigger keybinding) ---
+    await input.fill('123');
+    await expect(input).toHaveValue('123');
+
+    // Focus input and move caret to beginning
+    await input.focus();
+    await page.keyboard.press('Home');
+
+    // Press Delete - should delete first character, not trigger keybinding
+    await page.keyboard.press('Delete');
+
+    // Verify character was deleted (value should be '23')
+    await expect(input).toHaveValue('23');
+
+    // Verify keybinding was NOT triggered again
+    state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            deleteCallCount: inst.deleteCallCount,
+            insertCallCount: inst.insertCallCount
+        };
+    });
+    expect(state.deleteCallCount).toBe(1); // Still 1, not incremented
+
+    // --- Act: Press Insert in input (should NOT trigger keybinding) ---
+    await page.keyboard.press('Insert');
+    state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            deleteCallCount: inst.deleteCallCount,
+            insertCallCount: inst.insertCallCount
+        };
+    });
+    expect(state.insertCallCount).toBe(0); // Should NOT have been triggered
+
+    // --- Act: Press Insert outside of input (should trigger keybinding) ---
+    await component.focus();
+    await component.press('Insert');
+    state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            deleteCallCount: inst.deleteCallCount,
+            insertCallCount: inst.insertCallCount
+        };
+    });
+    expect(state.insertCallCount).toBe(1); // Now should be triggered
+});
+
 test('TestKeybinding: @keybinding decorator with keyboard shortcuts', async ({ page }) => {
     const component = await setupComponentTest(page, 'test-keybinding');
     await expect(component).toBeVisible();

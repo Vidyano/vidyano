@@ -88,6 +88,10 @@ export class WebComponentKeybindingController implements ReactiveController {
         // Skip if it's just a modifier key
         if (!combo) return;
 
+        // Skip text-editing keys when focus is in an editable element
+        if (this.isEditableElement(keyEvent) && this.isTextEditingKey(keyEvent))
+            return;
+
         for (const [keybinding, methodName] of Object.entries(this.keybindings)) {
             if (this.matchesKeybinding(combo, keybinding)) {
                 // Prevent default and stop propagation immediately when matched
@@ -126,5 +130,31 @@ export class WebComponentKeybindingController implements ReactiveController {
     private matchesKeybinding(combo: string, keybinding: string): boolean {
         const normalized = keybinding.toLowerCase().replace(/\s+/g, "");
         return combo === normalized;
+    }
+
+    private isEditableElement(e: KeyboardEvent): boolean {
+        const target = e.composedPath()[0] as Element;
+        if (!target)
+            return false;
+
+        const tagName = target.tagName?.toLowerCase();
+        if (tagName === "input" || tagName === "textarea")
+            return true;
+
+        if (target instanceof HTMLElement && target.isContentEditable)
+            return true;
+
+        return false;
+    }
+
+    private isTextEditingKey(e: KeyboardEvent): boolean {
+        // Only consider it a text-editing key if no modifier keys are pressed
+        // (except Shift, which is commonly used with text editing)
+        if (e.ctrlKey || e.altKey || e.metaKey)
+            return false;
+
+        const key = e.key.toLowerCase();
+        const textEditingKeys = ["delete", "insert", "backspace"];
+        return textEditingKeys.includes(key);
     }
 }
