@@ -143,16 +143,6 @@ export class QueryItemsPresenter extends WebComponent {
             action.execute();
     }
 
-    @keybinding("f2")
-    private _bulkEdit() {
-        if (!this.query)
-            return;
-
-        const action = <Vidyano.Action>this.query.actions["BulkEdit"];
-        if (action)
-            action.execute();
-    }
-
     render() {
         return html`
             ${this.fileDrop ? html`
