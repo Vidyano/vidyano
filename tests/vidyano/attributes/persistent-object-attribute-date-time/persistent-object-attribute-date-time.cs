@@ -17,7 +17,7 @@ builder.AddVidyanoMinimal<MockContext>(vidyano => vidyano
     .WithMenuItem(nameof(MockContext.Attributes))
     .WithModel(builder =>
         {
-            var po = builder.GetOrCreatePersistentObject($"Mock.{nameof(Mock_Attribute)}");
+            var po = builder.GetOrCreatePersistentObject(nameof(Mock_Attribute));
 
             var dateTimeReadOnly = po.GetOrCreateAttribute(nameof(Mock_Attribute.DateTimeReadOnly));
             dateTimeReadOnly.IsReadOnly = true;
