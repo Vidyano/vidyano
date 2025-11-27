@@ -139,7 +139,7 @@ document.addEventListener("keyup", e => {
         }
     },
     listeners: {
-        "tap": "_onTap",
+        "click": "_onClick",
         "vi:configure": "_configure"
     },
     observers: [
@@ -197,8 +197,16 @@ export class PersistentObjectAttributePresenter extends ConfigurableWebComponent
         super.disconnectedCallback();
     }
 
-    private _onTap(e: Polymer.Gestures.TapEvent) {
+    private _onClick(e: MouseEvent) {
         if (this.editing && typeof this._renderedAttributeElement?.focus === "function") {
+            // Check if the click originated from within the rendered attribute element
+            // If so, the user clicked on something inside it and we shouldn't redirect focus
+            const path = e.composedPath();
+            const attributeIndex = path.indexOf(this._renderedAttributeElement);
+            const presenterIndex = path.indexOf(this);
+            if (attributeIndex >= 0 && attributeIndex < presenterIndex)
+                return;
+
             const currentActiveElement = this.app.activeElement;
             this._renderedAttributeElement.focus();
 
