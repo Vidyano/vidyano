@@ -1,7 +1,12 @@
 :host {
     display: flex;
 
+    vi-scroller {
+        flex: 1;
+    }
+
     textarea {
+        flex: 1;
         resize: none;
         white-space: pre-wrap;
         -ms-overflow-style: -ms-autohiding-scrollbar;
@@ -12,6 +17,8 @@
     }
 
     pre {
+        margin: 0;
+        font-family: inherit;
         white-space: pre-line;
     }
 }
