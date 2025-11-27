@@ -1,70 +1,157 @@
-import * as Polymer from "polymer"
-import * as Vidyano from "vidyano"
-import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
-import "components/select/select"
-import "components/checkbox/checkbox"
+import { html, nothing, unsafeCSS } from "lit";
+import { property } from "lit/decorators.js";
+import * as Vidyano from "vidyano";
+import { computed } from "components/web-component/web-component";
+import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute";
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register";
+import "components/select/select";
+import "components/checkbox/checkbox";
+import styles from "./persistent-object-attribute-drop-down.css";
 
-@Polymer.WebComponent.register({
-    properties: {
-        inputtype: {
-            type: String,
-            computed: "_computeInputType(attribute)"
-        },
-        orientation: {
-            type: String,
-            computed: "_computeOrientation(attribute)"
-        },
-        groupSeparator: {
-            type: String,
-            computed: "_computeGroupSeparator(attribute)"
-        },
-        showEditable: {
-            type: Boolean,
-            computed: "_computeShowEditable(editing, sensitive)"
-        },
+export class PersistentObjectAttributeDropDown extends PersistentObjectAttribute {
+    static styles = [super.styles, unsafeCSS(styles)];
+
+    @computed(function(this: PersistentObjectAttributeDropDown): string {
+        return this.attribute?.getTypeHint("inputtype", "select") || "select";
+    }, "attribute.typeHints")
+    declare readonly inputtype: string;
+
+    @computed(function(this: PersistentObjectAttributeDropDown): string {
+        return this.attribute?.getTypeHint("orientation", "vertical") || "vertical";
+    }, "attribute.typeHints")
+    declare readonly orientation: string;
+
+    @computed(function(this: PersistentObjectAttributeDropDown): string | null {
+        return this.attribute?.getTypeHint("groupseparator", null) || null;
+    }, "attribute.typeHints")
+    declare readonly groupSeparator: string | null;
+
+    @property({ type: Array })
+    @computed("attribute.options")
+    private declare _options: (string | Vidyano.PersistentObjectAttributeOption)[];
+
+    @computed(function(this: PersistentObjectAttributeDropDown, readOnly: boolean, isRequired: boolean, value: string): boolean {
+        return !readOnly && !isRequired && !String.isNullOrEmpty(value);
+    }, "readOnly", "attribute.isRequired", "value")
+    declare readonly canClear: boolean;
+
+    get showEditable(): boolean {
+        return this.editing && !this.sensitive;
     }
-}, "vi-persistent-object-attribute-drop-down")
-export class PersistentObjectAttributeDropDown extends Polymer.PersistentObjectAttribute {
-    static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-drop-down.html">`; }
 
-    protected _valueChanged(newValue: any) {
+    protected override _valueChanged(newValue: any, oldValue: any) {
         if (this.attribute && newValue !== this.attribute.value)
             this.attribute.setValue(newValue, true).catch(Vidyano.noop);
     }
 
-    private _computeShowEditable(editing: boolean, sensitive: boolean): boolean {
-        return editing && !sensitive;
+    private _clear() {
+        this.attribute.setValue(null, true).catch(Vidyano.noop);
     }
 
-    private _computeInputType(attribute: Vidyano.PersistentObjectAttribute): string {
-        return attribute && attribute.getTypeHint("inputtype", "select", undefined)?.toLowerCase();
+    #optionLabel(option: string | Vidyano.PersistentObjectAttributeOption): string {
+        if (!option)
+            return "—";
+        return typeof option === "string" ? option : option.value;
     }
 
-    private _computeOrientation(attribute: Vidyano.PersistentObjectAttribute): string {
-        return attribute && attribute.getTypeHint("orientation", "vertical", undefined);
+    #isChecked(option: string | Vidyano.PersistentObjectAttributeOption, value: string): boolean {
+        const optionValue = typeof option === "string" ? option : option?.value;
+        return optionValue === value || (!optionValue && !value);
     }
 
-    private _computeGroupSeparator(attribute: Vidyano.PersistentObjectAttribute): string {
-        return attribute && attribute.getTypeHint("groupseparator", null, undefined);
+    #isUnchecked(option: string | Vidyano.PersistentObjectAttributeOption, value: string): boolean {
+        return !this.#isChecked(option, value);
     }
 
-    private _optionLabel(option: string): string {
-        return option != null ? option : "—";
-    }
-
-    private _isChecked(option: string, value: string): boolean {
-        return option === value || (!option && !value);
-    }
-
-    private _isUnchecked(option: string, value: string): boolean {
-        return !this._isChecked(option, value);
-    }
-
-    private _select(e: CustomEvent) {
+    private _select(e: Event) {
         e.stopPropagation();
 
-        this.attribute.setValue((<any>e).model.option, true).catch(Vidyano.noop);
+        const target = e.currentTarget as HTMLElement;
+        const option = (target as any).option || (target as any).label;
+        this.attribute.setValue(option, true).catch(Vidyano.noop);
+    }
+
+    protected override renderDisplay() {
+        return super.renderDisplay(html`<span>${this.attribute?.displayValue}</span>`);
+    }
+
+    protected override renderEdit() {
+        if (!this.showEditable)
+            return this.renderDisplay();
+
+        // Select input type
+        if (this.inputtype === "select")
+            return this.#renderSelect();
+
+        // Radio input type
+        if (this.inputtype === "radio")
+            return this.#renderRadio();
+
+        // Chip input type
+        if (this.inputtype === "chip")
+            return this.#renderChip();
+
+        return nothing;
+    }
+
+    #renderSelect() {
+        return super.renderEdit(html`
+            <vi-select
+                .options=${this._options}
+                .selectedOption=${this.value}
+                @selected-option-changed=${(e: CustomEvent) => this.value = e.detail.value}
+                ?readonly=${this.readOnly}
+                ?disabled=${this.frozen}
+                placeholder=${this.placeholder || nothing}
+                group-separator=${this.groupSeparator || nothing}
+                ?sensitive=${this.sensitive}>
+            </vi-select>
+            ${this.canClear ? html`
+                <vi-button slot="right" @click=${this._clear} tabindex="-1" ?disabled=${this.frozen}>
+                    <vi-icon source="Remove"></vi-icon>
+                </vi-button>
+            ` : nothing}
+        `);
+    }
+
+    #renderRadio() {
+        const options = this.required ? this._options : ["", ...(this._options || [])];
+        return html`
+            <div id="radiobuttons" orientation=${this.orientation}>
+                ${options?.map(option => html`
+                    <vi-checkbox
+                        label=${this.#optionLabel(option)}
+                        .checked=${this.#isChecked(option, this.value)}
+                        @changed=${this._select}
+                        .option=${option}
+                        radio
+                        part="radio"
+                        ?disabled=${this.frozen}>
+                    </vi-checkbox>
+                `)}
+            </div>
+        `;
+    }
+
+    #renderChip() {
+        const options = this.required ? this._options : ["", ...(this._options || [])];
+        return html`
+            <div id="chips" orientation=${this.orientation}>
+                ${options?.map(option => html`
+                    <vi-button
+                        label=${this.#optionLabel(option)}
+                        .option=${option}
+                        ?inverse=${this.#isUnchecked(option, this.value)}
+                        @tap=${this._select}
+                        part="chip"
+                        ?disabled=${this.frozen}>
+                    </vi-button>
+                `)}
+            </div>
+        `;
     }
 }
+
+customElements.define("vi-persistent-object-attribute-drop-down", PersistentObjectAttributeDropDown);
 
 PersistentObjectAttributeRegister.add("DropDown", PersistentObjectAttributeDropDown);

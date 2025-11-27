@@ -79,7 +79,7 @@ test.describe('DropDown Attribute (Select)', () => {
             await popup.click();
 
             const options = select.locator('vi-select-option-item');
-            await expect(options).toHaveCount(8); // empty option + Monday through Sunday
+            await expect(options).toHaveCount(7); // Monday through Sunday (no empty option, clear button instead)
         });
 
         test('selects option from dropdown', async () => {
@@ -97,6 +97,33 @@ test.describe('DropDown Attribute (Select)', () => {
 
             const input = select.locator('input');
             await expect(input).toHaveValue('Wednesday');
+        });
+
+        test('displays clear button when value is set and not required', async () => {
+            const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-drop-down', 'DropDown');
+
+            await beginEdit(sharedPage, component);
+
+            // Should have clear button since it has a value (Monday) and is not required
+            const clearButton = component.locator('vi-button').filter({ has: sharedPage.locator('vi-icon[source="Remove"]') });
+            await expect(clearButton).toBeVisible();
+        });
+
+        test('clears value when clear button is clicked', async () => {
+            const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-drop-down', 'DropDown');
+
+            await beginEdit(sharedPage, component);
+
+            const select = component.locator('vi-select');
+            const input = select.locator('input');
+            await expect(input).toHaveValue('Monday');
+
+            // Click clear button
+            const clearButton = component.locator('vi-button').filter({ has: sharedPage.locator('vi-icon[source="Remove"]') });
+            await clearButton.click();
+
+            // Value should be cleared
+            await expect(input).toHaveValue('');
         });
     });
 
@@ -417,6 +444,16 @@ test.describe('DropDown Attribute (Required)', () => {
 
             const input = select.locator('input');
             await expect(input).toHaveValue('');
+        });
+
+        test('does not display clear button when required', async () => {
+            const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-drop-down', 'DropDownRequired');
+
+            await beginEdit(sharedPage, component);
+
+            // Should NOT have clear button since attribute is required
+            const clearButton = component.locator('vi-button').filter({ has: sharedPage.locator('vi-icon[source="Remove"]') });
+            await expect(clearButton).toHaveCount(0);
         });
 
         test('can select value from options', async () => {
