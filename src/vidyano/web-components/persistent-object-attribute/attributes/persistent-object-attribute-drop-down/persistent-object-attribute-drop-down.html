@@ -22,7 +22,7 @@
                 <div id="radiobuttons" orientation$="[[orientation]]">
                     <dom-repeat items="[[options]]" as="option">
                         <template>
-                            <vi-checkbox label="[[_optionLabel(option)]]" checked="[[_isChecked(option, value)]]" on-changed="_select" radio part="radio"></vi-checkbox>
+                            <vi-checkbox label="[[_optionLabel(option)]]" checked="[[_isChecked(option, value)]]" on-changed="_select" radio part="radio" disabled="[[attribute.parent.isFrozen]]"></vi-checkbox>
                         </template>
                     </dom-repeat>
                 </div>
@@ -33,7 +33,7 @@
                 <div id="chips" orientation$="[[orientation]]">
                     <dom-repeat items="[[options]]" as="option">
                         <template>
-                            <vi-button label="[[_optionLabel(option)]]" inverse="[[_isUnchecked(option, value)]]" on-tap="_select" part="chip"></vi-button>
+                            <vi-button label="[[_optionLabel(option)]]" inverse="[[_isUnchecked(option, value)]]" on-tap="_select" part="chip" disabled="[[attribute.parent.isFrozen]]"></vi-button>
                         </template>
                     </dom-repeat>
                 </div>
