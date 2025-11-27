@@ -2,6 +2,7 @@
 #:property PublishAot=false
 #:package Vidyano@6.0.*
 
+using Vidyano.Core.Services;
 using Vidyano.Service;
 using Vidyano.Service.Repository;
 
@@ -53,26 +54,35 @@ public class MockContext : NullTargetContext
         var attribute = attributes.FirstOrDefault(a => a.Id == objectId);
 
         if (attribute == null)
-        {
-            attribute = new Mock_Attribute
-            {
-                Id = objectId,
-                Boolean = true,
-                BooleanCheckbox = false,
-                BooleanReadOnly = true,
-                BooleanCheckboxReadOnly = false,
-                BooleanRequired = false
-            };
-            attributes.Add(attribute);
-        }
+            attributes.Add(attribute = new Mock_Attribute { Id = objectId });
 
         return attribute;
     }
+
+    public override void AddObject(PersistentObject obj, object entity)
+    {
+        if (entity is Mock_Attribute attribute)
+            attribute.Id ??= (attributes.Count + 1).ToString();
+
+        base.AddObject(obj, entity);
+    }
 }
 
-public class Mock_AttributeActions(MockContext context) : PersistentObjectActions<MockContext, object>(context)
+public class MockWeb: CustomApiController
 {
-    public override object? GetEntity(PersistentObject obj)
+    public override void GetWebsiteContent(WebsiteArgs args)
+    {
+        base.GetWebsiteContent(args);
+
+        var frontEndUrl = ServiceLocator.GetService<IConfiguration>()["frontend:url"];
+        if (!string.IsNullOrEmpty(frontEndUrl))
+            args.Contents = args.Contents.Replace("https://unpkg.com/@vidyano/vidyano/index.min.js", frontEndUrl);
+    }
+}
+
+public class Mock_AttributeActions(MockContext context) : PersistentObjectActions<MockContext, Mock_Attribute>(context)
+{
+    public override Mock_Attribute? GetEntity(PersistentObject obj)
     {
         if (string.IsNullOrEmpty(obj.ObjectId))
             throw new ArgumentException("ObjectId cannot be null or empty", nameof(obj));
@@ -85,13 +95,13 @@ public class Mock_Attribute
 {
     public string Id { get; set; } = null!;
 
-    public bool Boolean { get; set; }
+    public bool Boolean { get; set; } = true;
 
-    public bool BooleanCheckbox { get; set; }
+    public bool BooleanCheckbox { get; set; } = false;
 
-    public bool BooleanReadOnly { get; set; }
+    public bool BooleanReadOnly { get; set; } = true;
 
-    public bool BooleanCheckboxReadOnly { get; set; }
+    public bool BooleanCheckboxReadOnly { get; set; } = false;
 
-    public bool BooleanRequired { get; set; }
+    public bool BooleanRequired { get; set; } = false;
 }

@@ -3,6 +3,7 @@
 #:package Vidyano@6.0.*
 
 using System.ComponentModel.DataAnnotations;
+using Vidyano.Core.Services;
 using Vidyano.Service;
 using Vidyano.Service.Repository;
 
@@ -56,30 +57,35 @@ public class MockContext : NullTargetContext
         var attribute = attributes.FirstOrDefault(a => a.Id == objectId);
 
         if (attribute == null)
-        {
-            attribute = new Mock_Attribute
-            {
-                Id = objectId,
-                DateTime = DateTime.Now,
-                NullableDateTime = null,
-                DateTimeReadOnly = DateTime.Now,
-                DateTimeRequired = DateTime.Now,
-                Month = DateTime.Now,
-                NullableMonth = null,
-                DateTimeMinMax = new DateTime(2024, 6, 15),
-                Date = DateTime.Today,
-                NullableDate = null,
-            };
-            attributes.Add(attribute);
-        }
+            attributes.Add(attribute = new Mock_Attribute { Id = objectId });
 
         return attribute;
     }
+
+    public override void AddObject(PersistentObject obj, object entity)
+    {
+        if (entity is Mock_Attribute attribute)
+            attribute.Id ??= (attributes.Count + 1).ToString();
+
+        base.AddObject(obj, entity);
+    }
 }
 
-public class Mock_AttributeActions(MockContext context) : PersistentObjectActions<MockContext, object>(context)
+public class MockWeb: CustomApiController
 {
-    public override object? GetEntity(PersistentObject obj)
+    public override void GetWebsiteContent(WebsiteArgs args)
+    {
+        base.GetWebsiteContent(args);
+
+        var frontEndUrl = ServiceLocator.GetService<IConfiguration>()["frontend:url"];
+        if (!string.IsNullOrEmpty(frontEndUrl))
+            args.Contents = args.Contents.Replace("https://unpkg.com/@vidyano/vidyano/index.min.js", frontEndUrl);
+    }
+}
+
+public class Mock_AttributeActions(MockContext context) : PersistentObjectActions<MockContext, Mock_Attribute>(context)
+{
+    public override Mock_Attribute? GetEntity(PersistentObject obj)
     {
         if (string.IsNullOrEmpty(obj.ObjectId))
             throw new ArgumentException("ObjectId cannot be null or empty", nameof(obj));
@@ -92,23 +98,23 @@ public class Mock_Attribute
 {
     public string Id { get; set; } = null!;
 
-    public DateTime DateTime { get; set; }
+    public DateTime DateTime { get; set; } = DateTime.Now;
 
-    public DateTime? NullableDateTime { get; set; }
+    public DateTime? NullableDateTime { get; set; } = null;
 
-    public DateTime DateTimeReadOnly { get; set; }
+    public DateTime DateTimeReadOnly { get; set; } = DateTime.Now;
 
-    public DateTime DateTimeRequired { get; set; }
+    public DateTime DateTimeRequired { get; set; } = DateTime.Now;
 
     [DataType(DataTypes.Date)]
-    public DateTime Month { get; set; }
+    public DateTime Month { get; set; } = DateTime.Now;
 
     [DataType(DataTypes.NullableDate)]
-    public DateTime? NullableMonth { get; set; }
+    public DateTime? NullableMonth { get; set; } = null;
 
-    public DateTime DateTimeMinMax { get; set; }
+    public DateTime DateTimeMinMax { get; set; } = new DateTime(2024, 6, 15);
 
-    public DateTime Date { get; set; }
+    public DateTime Date { get; set; } = DateTime.Today;
 
-    public DateTime? NullableDate { get; set; }
+    public DateTime? NullableDate { get; set; } = null;
 }

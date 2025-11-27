@@ -2,6 +2,7 @@
 #:property PublishAot=false
 #:package Vidyano@6.0.*
 
+using Vidyano.Core.Services;
 using Vidyano.Service;
 using Vidyano.Service.Repository;
 
@@ -43,26 +44,35 @@ public class MockContext : NullTargetContext
         var attribute = attributes.FirstOrDefault(a => a.Id == objectId);
 
         if (attribute == null)
-        {
-            attribute = new Mock_Attribute
-            {
-                Id = objectId,
-                CommonMark = "**Hello world!**",
-                CommonMarkReadOnly = "**Read only content**",
-                CommonMarkHeading = "# Test Heading",
-                CommonMarkList = "- Item 1\n- Item 2\n- Item 3",
-                CommonMarkLink = "[Example](https://example.com)"
-            };
-            attributes.Add(attribute);
-        }
+            attributes.Add(attribute = new Mock_Attribute { Id = objectId });
 
         return attribute;
     }
+
+    public override void AddObject(PersistentObject obj, object entity)
+    {
+        if (entity is Mock_Attribute attribute)
+            attribute.Id ??= (attributes.Count + 1).ToString();
+
+        base.AddObject(obj, entity);
+    }
 }
 
-public class Mock_AttributeActions(MockContext context) : PersistentObjectActions<MockContext, object>(context)
+public class MockWeb: CustomApiController
 {
-    public override object? GetEntity(PersistentObject obj)
+    public override void GetWebsiteContent(WebsiteArgs args)
+    {
+        base.GetWebsiteContent(args);
+
+        var frontEndUrl = ServiceLocator.GetService<IConfiguration>()["frontend:url"];
+        if (!string.IsNullOrEmpty(frontEndUrl))
+            args.Contents = args.Contents.Replace("https://unpkg.com/@vidyano/vidyano/index.min.js", frontEndUrl);
+    }
+}
+
+public class Mock_AttributeActions(MockContext context) : PersistentObjectActions<MockContext, Mock_Attribute>(context)
+{
+    public override Mock_Attribute? GetEntity(PersistentObject obj)
     {
         if (string.IsNullOrEmpty(obj.ObjectId))
             throw new ArgumentException("ObjectId cannot be null or empty", nameof(obj));
@@ -75,13 +85,13 @@ public class Mock_Attribute
 {
     public string Id { get; set; } = null!;
 
-    public string? CommonMark { get; set; }
+    public string? CommonMark { get; set; } = "**Hello world!**";
 
-    public string? CommonMarkReadOnly { get; set; }
+    public string? CommonMarkReadOnly { get; set; } = "**Read only content**";
 
-    public string? CommonMarkHeading { get; set; }
+    public string? CommonMarkHeading { get; set; } = "# Test Heading";
 
-    public string? CommonMarkList { get; set; }
+    public string? CommonMarkList { get; set; } = "- Item 1\n- Item 2\n- Item 3";
 
-    public string? CommonMarkLink { get; set; }
+    public string? CommonMarkLink { get; set; } = "[Example](https://example.com)";
 }

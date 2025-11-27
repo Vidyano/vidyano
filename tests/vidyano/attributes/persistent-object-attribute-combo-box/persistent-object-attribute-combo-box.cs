@@ -3,6 +3,7 @@
 #:package Vidyano@6.0.*
 
 using System.ComponentModel.DataAnnotations;
+using Vidyano.Core.Services;
 using Vidyano.Service;
 using Vidyano.Service.Repository;
 
@@ -66,6 +67,18 @@ public class MockContext : NullTargetContext
             attribute.Id ??= (attributes.Count + 1).ToString();
 
         base.AddObject(obj, entity);
+    }
+}
+
+public class MockWeb: CustomApiController
+{
+    public override void GetWebsiteContent(WebsiteArgs args)
+    {
+        base.GetWebsiteContent(args);
+
+        var frontEndUrl = ServiceLocator.GetService<IConfiguration>()["frontend:url"];
+        if (!string.IsNullOrEmpty(frontEndUrl))
+            args.Contents = args.Contents.Replace("https://unpkg.com/@vidyano/vidyano/index.min.js", frontEndUrl);
     }
 }
 

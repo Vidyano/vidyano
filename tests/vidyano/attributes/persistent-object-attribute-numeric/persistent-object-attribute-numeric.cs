@@ -2,6 +2,7 @@
 #:property PublishAot=false
 #:package Vidyano@6.0.*
 
+using Vidyano.Core.Services;
 using Vidyano.Service;
 using Vidyano.Service.Repository;
 
@@ -57,29 +58,35 @@ public class MockContext : NullTargetContext
         var attribute = attributes.FirstOrDefault(a => a.Id == objectId);
 
         if (attribute == null)
-        {
-            attribute = new Mock_Attribute
-            {
-                Id = objectId,
-                Int32 = Int32.MinValue,
-                Int32ReadOnly = Int32.MinValue,
-                Int32Required = 0,
-                Decimal = 1234567890123.456789M,
-                UInt64 = 1234567890123456789UL,
-                Byte = 128,
-                DecimalCurrency = 99.99M,
-                DecimalWeight = 75.5M
-            };
-            attributes.Add(attribute);
-        }
+            attributes.Add(attribute = new Mock_Attribute { Id = objectId });
 
         return attribute;
     }
+
+    public override void AddObject(PersistentObject obj, object entity)
+    {
+        if (entity is Mock_Attribute attribute)
+            attribute.Id ??= (attributes.Count + 1).ToString();
+
+        base.AddObject(obj, entity);
+    }
 }
 
-public class Mock_AttributeActions(MockContext context) : PersistentObjectActions<MockContext, object>(context)
+public class MockWeb: CustomApiController
 {
-    public override object? GetEntity(PersistentObject obj)
+    public override void GetWebsiteContent(WebsiteArgs args)
+    {
+        base.GetWebsiteContent(args);
+
+        var frontEndUrl = ServiceLocator.GetService<IConfiguration>()["frontend:url"];
+        if (!string.IsNullOrEmpty(frontEndUrl))
+            args.Contents = args.Contents.Replace("https://unpkg.com/@vidyano/vidyano/index.min.js", frontEndUrl);
+    }
+}
+
+public class Mock_AttributeActions(MockContext context) : PersistentObjectActions<MockContext, Mock_Attribute>(context)
+{
+    public override Mock_Attribute? GetEntity(PersistentObject obj)
     {
         if (string.IsNullOrEmpty(obj.ObjectId))
             throw new ArgumentException("ObjectId cannot be null or empty", nameof(obj));
@@ -92,19 +99,19 @@ public class Mock_Attribute
 {
     public string Id { get; set; } = null!;
 
-    public Int32 Int32 { get; set; }
+    public Int32 Int32 { get; set; } = Int32.MinValue;
 
-    public Int32 Int32ReadOnly { get; set; }
+    public Int32 Int32ReadOnly { get; set; } = Int32.MinValue;
 
-    public Int32 Int32Required { get; set; }
+    public Int32 Int32Required { get; set; } = 0;
 
-    public Decimal Decimal { get; set; }
+    public Decimal Decimal { get; set; } = 1234567890123.456789M;
 
-    public UInt64 UInt64 { get; set; }
+    public UInt64 UInt64 { get; set; } = 1234567890123456789UL;
 
-    public Byte Byte { get; set; }
+    public Byte Byte { get; set; } = 128;
 
-    public Decimal DecimalCurrency { get; set; }
+    public Decimal DecimalCurrency { get; set; } = 99.99M;
 
-    public Decimal DecimalWeight { get; set; }
+    public Decimal DecimalWeight { get; set; } = 75.5M;
 }

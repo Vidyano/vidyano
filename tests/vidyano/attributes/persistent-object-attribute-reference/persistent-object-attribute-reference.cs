@@ -4,6 +4,7 @@
 #:package Bogus@35.*
 
 using Bogus;
+using Vidyano.Core.Services;
 using Vidyano.Service;
 using Vidyano.Service.Repository;
 using Vidyano.Service.Repository.Builder;
@@ -64,33 +65,42 @@ public class MockContext : NullTargetContext
     public IQueryable<Mock_Attribute> Attributes => Query<Mock_Attribute>();
     public IQueryable<Category> Categories => Query<Category>();
 
+    public static List<Category> GetCategories() => categories;
+
     public static Mock_Attribute GetOrCreateAttribute(string objectId)
     {
         var attribute = attributes.FirstOrDefault(a => a.Id == objectId);
 
         if (attribute == null)
-        {
-            // Use the first category ("Electronics") as the default reference
-            var defaultCategory = categories.First();
-
-            attribute = new Mock_Attribute
-            {
-                Id = objectId,
-                Reference = defaultCategory.Id,
-                ReferenceReadOnly = defaultCategory.Id,
-                ReferenceSelectInPlace = defaultCategory.Id,
-                NullableReference = null
-            };
-            attributes.Add(attribute);
-        }
+            attributes.Add(attribute = new Mock_Attribute { Id = objectId });
 
         return attribute;
     }
+
+    public override void AddObject(PersistentObject obj, object entity)
+    {
+        if (entity is Mock_Attribute attribute)
+            attribute.Id ??= (attributes.Count + 1).ToString();
+
+        base.AddObject(obj, entity);
+    }
 }
 
-public class Mock_AttributeActions(MockContext context) : PersistentObjectActions<MockContext, object>(context)
+public class MockWeb: CustomApiController
 {
-    public override object? GetEntity(PersistentObject obj)
+    public override void GetWebsiteContent(WebsiteArgs args)
+    {
+        base.GetWebsiteContent(args);
+
+        var frontEndUrl = ServiceLocator.GetService<IConfiguration>()["frontend:url"];
+        if (!string.IsNullOrEmpty(frontEndUrl))
+            args.Contents = args.Contents.Replace("https://unpkg.com/@vidyano/vidyano/index.min.js", frontEndUrl);
+    }
+}
+
+public class Mock_AttributeActions(MockContext context) : PersistentObjectActions<MockContext, Mock_Attribute>(context)
+{
+    public override Mock_Attribute? GetEntity(PersistentObject obj)
     {
         if (string.IsNullOrEmpty(obj.ObjectId))
             throw new ArgumentException("ObjectId cannot be null or empty", nameof(obj));
@@ -101,19 +111,21 @@ public class Mock_AttributeActions(MockContext context) : PersistentObjectAction
 
 public class Mock_Attribute
 {
+    private static readonly string DefaultCategoryId = MockContext.GetCategories().First().Id;
+
     public string Id { get; set; } = null!;
 
     [Reference(typeof(Category))]
-    public string Reference { get; set; } = null!;
+    public string Reference { get; set; } = DefaultCategoryId;
 
     [Reference(typeof(Category))]
-    public string ReferenceReadOnly { get; set; } = null!;
+    public string ReferenceReadOnly { get; set; } = DefaultCategoryId;
 
     [Reference(typeof(Category))]
-    public string ReferenceSelectInPlace { get; set; } = null!;
+    public string ReferenceSelectInPlace { get; set; } = DefaultCategoryId;
 
     [Reference(typeof(Category))]
-    public string? NullableReference { get; set; }
+    public string? NullableReference { get; set; } = null;
 }
 
 public class Category

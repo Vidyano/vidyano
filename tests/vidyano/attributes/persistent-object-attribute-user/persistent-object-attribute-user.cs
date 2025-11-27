@@ -5,6 +5,7 @@
 
 using Bogus;
 using System.ComponentModel.DataAnnotations;
+using Vidyano.Core.Services;
 using Vidyano.Service;
 using Vidyano.Service.Repository;
 
@@ -60,23 +61,35 @@ public class MockContext : NullTargetContext
         var attribute = attributes.FirstOrDefault(a => a.Id == objectId);
 
         if (attribute == null)
-        {
-            attribute = new Mock_Attribute
-            {
-                Id = objectId,
-                User = Manager.Current.GetUser("admin")!.Id,
-                UserReadOnly = Manager.Current.GetUser("admin")!.Id
-            };
-            attributes.Add(attribute);
-        }
+            attributes.Add(attribute = new Mock_Attribute { Id = objectId });
 
         return attribute;
     }
+
+    public override void AddObject(PersistentObject obj, object entity)
+    {
+        if (entity is Mock_Attribute attribute)
+            attribute.Id ??= (attributes.Count + 1).ToString();
+
+        base.AddObject(obj, entity);
+    }
 }
 
-public class Mock_AttributeActions(MockContext context) : PersistentObjectActions<MockContext, object>(context)
+public class MockWeb: CustomApiController
 {
-    public override object? GetEntity(PersistentObject obj)
+    public override void GetWebsiteContent(WebsiteArgs args)
+    {
+        base.GetWebsiteContent(args);
+
+        var frontEndUrl = ServiceLocator.GetService<IConfiguration>()["frontend:url"];
+        if (!string.IsNullOrEmpty(frontEndUrl))
+            args.Contents = args.Contents.Replace("https://unpkg.com/@vidyano/vidyano/index.min.js", frontEndUrl);
+    }
+}
+
+public class Mock_AttributeActions(MockContext context) : PersistentObjectActions<MockContext, Mock_Attribute>(context)
+{
+    public override Mock_Attribute? GetEntity(PersistentObject obj)
     {
         if (string.IsNullOrEmpty(obj.ObjectId))
             throw new ArgumentException("ObjectId cannot be null or empty", nameof(obj));
@@ -87,14 +100,16 @@ public class Mock_AttributeActions(MockContext context) : PersistentObjectAction
 
 public class Mock_Attribute
 {
+    private static readonly Guid DefaultUserId = Manager.Current.GetUser("admin")!.Id;
+
     public string Id { get; set; } = null!;
 
     [DataType(DataTypes.User)]
-    public Guid User { get; set; }
+    public Guid User { get; set; } = DefaultUserId;
 
     [DataType(DataTypes.User)]
-    public Guid UserReadOnly { get; set; }
+    public Guid UserReadOnly { get; set; } = DefaultUserId;
 
     [DataType(DataTypes.NullableUser)]
-    public Guid? NullableUser { get; set; }
+    public Guid? NullableUser { get; set; } = null;
 }
