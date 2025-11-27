@@ -174,6 +174,11 @@ export class PersistentObjectAttributeReference extends PersistentObjectAttribut
         selectInPlace.open();
     }
 
+    private _selectInPlaceChanged(e: CustomEvent) {
+        if (e.detail.value !== this.attribute.objectId)
+            this.attribute.changeReference([e.detail.value]);
+    }
+
     private async _open(e: Event) {
         if (!this.app || !('getUrlForPersistentObject' in this.app) || this.attribute.parent.isNew || !this.attribute.lookup.canRead)
             return;
@@ -205,7 +210,7 @@ export class PersistentObjectAttributeReference extends PersistentObjectAttribut
 
     #renderEditSelectDefault() {
         return super.renderEdit(html`
-            <vi-select id="selectInPlace" class="fit" .options=${this.options} .selectedOption=${this.objectId} @selected-option-changed=${(e: CustomEvent) => this.attribute.changeReference([e.detail.value])} ?readonly=${this.readOnly} placeholder=${this.placeholder || nothing} ?sensitive=${this.sensitive} ?disabled=${this.frozen}></vi-select>
+            <vi-select id="selectInPlace" class="fit" .options=${this.options} .selectedOption=${this.objectId} @selected-option-changed=${this._selectInPlaceChanged} ?readonly=${this.readOnly} placeholder=${this.placeholder || nothing} ?sensitive=${this.sensitive} ?disabled=${this.frozen}></vi-select>
             <vi-button slot="right" @click=${this._openSelect} ?hidden=${!this.canOpenSelect} tabindex="-1" ?disabled=${this.frozen}>
                 <vi-icon source="CaretDown"></vi-icon>
             </vi-button>

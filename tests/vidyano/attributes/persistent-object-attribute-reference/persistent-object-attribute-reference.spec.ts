@@ -491,6 +491,38 @@ test.describe('Reference Attribute (SelectInPlace)', () => {
     });
 
     test.describe('Edit mode', () => {
+        test('does not trigger SelectReference action when entering edit mode', async () => {
+            const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-reference', 'ReferenceSelectInPlace');
+            const componentId = await component.getAttribute('id') as string;
+
+            // Spy on changeReference to detect if it's called
+            const changeReferenceCalled = await sharedPage.evaluate((id) => {
+                const attribute = (window as any).attributeMap[id];
+                let called = false;
+                const originalChangeReference = attribute.changeReference.bind(attribute);
+                attribute.changeReference = async (...args: any[]) => {
+                    called = true;
+                    (window as any).__changeReferenceCalled = true;
+                    return originalChangeReference(...args);
+                };
+                (window as any).__changeReferenceCalled = false;
+                return false;
+            }, componentId);
+
+            // Enter edit mode - this should NOT trigger changeReference/SelectReference
+            await beginEdit(sharedPage, component);
+
+            // Wait for any async operations to complete
+            await sharedPage.waitForTimeout(500);
+
+            // Check if changeReference was called
+            const wasChangeReferenceCalled = await sharedPage.evaluate(() => {
+                return (window as any).__changeReferenceCalled;
+            });
+
+            expect(wasChangeReferenceCalled).toBe(false);
+        });
+
         test('displays vi-select component in edit mode', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-reference', 'ReferenceSelectInPlace');
 
