@@ -1,16 +1,23 @@
 :host {
     display: flex;
 
+    vi-scroller {
+        flex: 1;
+        min-width: 0;
+    }
+
     .wrap-container {
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
+        gap: .8ch;
     }
 
     vi-sortable {
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
+        gap: .8ch;
     }
 
     &:not([disabled]) {
@@ -29,10 +36,10 @@
         display: flex;
         flex-direction: row;
         align-items: center;
-        margin: 0 4px 4px 0;
+        padding-block: 4px;
         background-color: var(--color);
         color: white;
-        border-radius: var(--theme-h5);
+        border-radius: calc(var(--theme-h5) / 2);
         text-align: center;
         justify-content: center;
 
@@ -49,7 +56,7 @@
         }
 
         .delete {
-            padding: 5px 5px 3px 0;
+            padding-inline-end: 5px;
             cursor: pointer;
             fill: white;
         }
