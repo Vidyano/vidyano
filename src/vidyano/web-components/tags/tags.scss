@@ -13,7 +13,7 @@
         flex-wrap: wrap;
     }
 
-    &:not([readonly]) {
+    &:not([disabled]) {
         cursor: text;
     }
 

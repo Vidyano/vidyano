@@ -242,7 +242,7 @@ export class PersistentObjectAttributeMultiString extends PersistentObjectAttrib
     protected override renderDisplay() {
         if (this.isTags) {
             return html`
-                <vi-tags content .tags=${this.tags} readonly ?sensitive=${this.sensitive}></vi-tags>
+                <vi-tags content .tags=${this.tags} disabled ?sensitive=${this.sensitive}></vi-tags>
             `;
         }
 
@@ -258,7 +258,7 @@ export class PersistentObjectAttributeMultiString extends PersistentObjectAttrib
     protected override renderEdit() {
         if (this.isTags) {
             return super.renderEdit(html`
-                <vi-tags content .tags=${this.tags} @tags-changed=${this._onTagsChanged} ?readonly=${this.isTagsReadonly} ?sensitive=${this.sensitive}></vi-tags>
+                <vi-tags content .tags=${this.tags} @tags-changed=${this._onTagsChanged} ?disabled=${this.isTagsReadonly} ?sensitive=${this.sensitive}></vi-tags>
                 ${this.hasSuggestions ? html`
                     <vi-popup id="suggestions" slot="right">
                         <vi-icon source="Add" slot="header"></vi-icon>

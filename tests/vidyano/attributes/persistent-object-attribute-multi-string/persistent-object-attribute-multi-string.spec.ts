@@ -395,13 +395,13 @@ test.describe('MultiString Attribute (Tags Mode ReadOnly)', () => {
     });
 
     test.describe('Edit mode', () => {
-        test('tags are readonly when attribute is readonly', async () => {
+        test('tags are disabled when attribute is readonly', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-multi-string', 'MultiStringTagsReadOnly');
 
             await beginEdit(sharedPage, component);
 
             const tags = component.locator('vi-tags');
-            await expect(tags).toHaveAttribute('readonly');
+            await expect(tags).toHaveAttribute('disabled');
         });
     });
 });

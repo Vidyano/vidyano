@@ -21,7 +21,7 @@ async function setupPage(page: Page) {
     await page.waitForFunction(() => !!customElements.get('vi-tags'), { timeout: 10000 });
 }
 
-async function createTags(page: Page, initialTags?: string[], config?: { readonly?: boolean; sensitive?: boolean }) {
+async function createTags(page: Page, initialTags?: string[], config?: { disabled?: boolean; sensitive?: boolean }) {
     const componentId = `component-${Math.random().toString(36).substring(2, 15)}`;
 
     await page.evaluate(({ componentId, initialTags, config }) => {
@@ -35,8 +35,8 @@ async function createTags(page: Page, initialTags?: string[], config?: { readonl
         if (initialTags !== undefined)
             component.tags = initialTags;
 
-        if (config?.readonly !== undefined)
-            component.readonly = config.readonly;
+        if (config?.disabled !== undefined)
+            component.disabled = config.disabled;
 
         if (config?.sensitive !== undefined)
             component.sensitive = config.sensitive;
@@ -53,7 +53,7 @@ async function getTagsState(component: Locator) {
         return {
             tags: inst.tags,
             input: inst.input,
-            readonly: inst.readonly,
+            disabled: inst.disabled,
             sensitive: inst.sensitive
         };
     });
@@ -81,7 +81,7 @@ test.describe.serial('Tags Tests', () => {
 
         const state = await getTagsState(component);
         expect(state.tags).toEqual([]);
-        expect(state.readonly).toBe(false);
+        expect(state.disabled).toBe(false);
         expect(state.sensitive).toBe(true);
     });
 
@@ -259,8 +259,8 @@ test.describe.serial('Tags Tests', () => {
         expect(finalState.tags).toEqual(['second', 'third', 'first']);
     });
 
-    test('readonly mode hides input', async () => {
-        const component = await createTags(sharedPage, ['tag1', 'tag2'], { readonly: true });
+    test('disabled mode hides input', async () => {
+        const component = await createTags(sharedPage, ['tag1', 'tag2'], { disabled: true });
 
         await sharedPage.waitForTimeout(50);
 
@@ -268,8 +268,8 @@ test.describe.serial('Tags Tests', () => {
         await expect(input).toHaveCount(0);
     });
 
-    test('readonly mode hides delete buttons', async () => {
-        const component = await createTags(sharedPage, ['tag1', 'tag2'], { readonly: true });
+    test('disabled mode hides delete buttons', async () => {
+        const component = await createTags(sharedPage, ['tag1', 'tag2'], { disabled: true });
 
         await sharedPage.waitForTimeout(50);
 
@@ -277,25 +277,25 @@ test.describe.serial('Tags Tests', () => {
         await expect(deleteButtons).toHaveCount(0);
     });
 
-    test('readonly mode sets readonly property', async () => {
-        const component = await createTags(sharedPage, ['tag1', 'tag2'], { readonly: true });
+    test('disabled mode sets disabled property', async () => {
+        const component = await createTags(sharedPage, ['tag1', 'tag2'], { disabled: true });
 
         await sharedPage.waitForTimeout(50);
 
         const state = await component.evaluate(() => {
             const inst = document.querySelector('vi-tags:last-child') as any;
             return {
-                readonly: inst.readonly,
-                hasReadonlyAttr: inst.hasAttribute('readonly')
+                disabled: inst.disabled,
+                hasDisabledAttr: inst.hasAttribute('disabled')
             };
         });
 
-        expect(state.readonly).toBe(true);
-        expect(state.hasReadonlyAttr).toBe(true);
+        expect(state.disabled).toBe(true);
+        expect(state.hasDisabledAttr).toBe(true);
     });
 
-    test('readonly mode prevents drag-and-drop reordering', async () => {
-        const component = await createTags(sharedPage, ['first', 'second', 'third'], { readonly: true });
+    test('disabled mode prevents drag-and-drop reordering', async () => {
+        const component = await createTags(sharedPage, ['first', 'second', 'third'], { disabled: true });
 
         await sharedPage.waitForTimeout(50);
 
@@ -496,11 +496,11 @@ test.describe.serial('Tags Tests', () => {
         expect(inputValue).toBe('');
     });
 
-    test('readonly clears input on blur', async () => {
+    test('disabled clears input on blur', async () => {
         const component = await createTags(sharedPage);
 
         await component.evaluate(node => {
-            (node as any).readonly = false;
+            (node as any).disabled = false;
         });
 
         const input = await getInputElement(component);
@@ -508,7 +508,7 @@ test.describe.serial('Tags Tests', () => {
         await input.fill('test');
 
         await component.evaluate(node => {
-            (node as any).readonly = true;
+            (node as any).disabled = true;
         });
 
         await sharedPage.click('body', { position: { x: 10, y: 10 } });

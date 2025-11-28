@@ -25,7 +25,7 @@ export class Tags extends WebComponent {
     tags: string[] = [];
 
     @property({ type: Boolean, reflect: true })
-    readonly: boolean = false;
+    disabled: boolean = false;
 
     @property({ type: Boolean, reflect: true })
     sensitive: boolean = true;
@@ -47,7 +47,7 @@ export class Tags extends WebComponent {
     }
 
     private _passFocus(e: MouseEvent) {
-        if (this.readonly)
+        if (this.disabled)
             return;
 
         if (!this.tagsInput)
@@ -70,7 +70,7 @@ export class Tags extends WebComponent {
     }
 
     private _onInputBlur() {
-        if (!this.input || this.readonly) {
+        if (!this.input || this.disabled) {
             this.input = "";
             return;
         }
@@ -129,7 +129,7 @@ export class Tags extends WebComponent {
         const details = e.detail;
         this._dragInProgress = false;
 
-        if (this.readonly || details.newIndex === details.oldIndex || details.newIndex < 0)
+        if (this.disabled || details.newIndex === details.oldIndex || details.newIndex < 0)
             return;
 
         // Reorder the _tagItems array using the indices from the event
@@ -151,11 +151,11 @@ export class Tags extends WebComponent {
         return html`
             <vi-scroller id="scroller" no-horizontal @click=${this._passFocus}>
                 <div class="wrap-container">
-                    <vi-sortable id="sortable-tags" draggable-items=".tag" .enabled=${!this.readonly} @drag-start=${this._onDragStart} @drag-end=${this._onDragEnd}>
+                    <vi-sortable id="sortable-tags" draggable-items=".tag" .enabled=${!this.disabled} @drag-start=${this._onDragStart} @drag-end=${this._onDragEnd}>
                         ${repeat(this._tagItems, (item) => item.id, (item) => html`
                             <div class="tag">
                                 <vi-sensitive ?disabled=${!this.sensitive}><span class="tag-value">${item.value}</span></vi-sensitive>
-                                ${!this.readonly ? html`
+                                ${!this.disabled ? html`
                                     <div @click=${() => this._onDeleteTap(item.value)} class="delete">
                                         <vi-icon source="Remove"></vi-icon>
                                     </div>
@@ -163,7 +163,7 @@ export class Tags extends WebComponent {
                             </div>
                         `)}
                     </vi-sortable>
-                    ${!this.readonly ? html`
+                    ${!this.disabled ? html`
                         <input id="tagsInput" type="text" .value=${this.input ?? ""} @input=${this._handleInput} @keyup=${this._checkKeyPress} @blur=${this._onInputBlur} />
                     ` : nothing}
                 </div>
