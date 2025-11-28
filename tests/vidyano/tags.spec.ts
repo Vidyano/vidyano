@@ -63,7 +63,7 @@ async function getInputElement(component: Locator) {
     return component.locator('#tagsInput');
 }
 
-test.describe('Tags Tests', () => {
+test.describe('Tags', () => {
     let sharedPage: Page;
 
     test.beforeAll(async ({ browser }) => {

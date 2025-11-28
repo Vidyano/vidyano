@@ -3,7 +3,7 @@ import { setupPage } from '../helpers/page';
 import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze } from '../helpers/persistent-object';
 import { startBackend, stopBackend, BackendProcess } from '../helpers/backend';
 
-test.describe.serial('FlagsEnum Attribute Tests', () => {
+test.describe.serial('FlagsEnum Attribute', () => {
     let sharedBackend: BackendProcess;
     let sharedPage: Page;
 
@@ -16,13 +16,12 @@ test.describe.serial('FlagsEnum Attribute Tests', () => {
         await setupPage(sharedPage, '', sharedBackend.port);
     });
 
-
     test.afterAll(async () => {
         await sharedPage?.close();
         await stopBackend(sharedBackend);
     });
 
-test.describe('FlagsEnum Attribute', () => {
+test.describe('Default', () => {
     test.describe('Non-edit mode', () => {
         test('displays initial value "Email" in span', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-flags-enum', 'FlagsEnum');
@@ -180,9 +179,7 @@ test.describe('FlagsEnum Attribute', () => {
     });
 });
 
-test.describe('FlagsEnum Attribute (Multiple Flags)', () => {
-
-
+test.describe('Multiple Flags', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays combined value "Email, SMS, Push" in span', async () => {
@@ -239,9 +236,7 @@ test.describe('FlagsEnum Attribute (Multiple Flags)', () => {
     });
 });
 
-test.describe('FlagsEnum Attribute (None)', () => {
-
-
+test.describe('None', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays "None" when no flags selected', async () => {
@@ -319,9 +314,7 @@ test.describe('FlagsEnum Attribute (None)', () => {
     });
 });
 
-test.describe('FlagsEnum Attribute (ReadOnly)', () => {
-
-
+test.describe('ReadOnly', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial value in span', async () => {
@@ -355,9 +348,7 @@ test.describe('FlagsEnum Attribute (ReadOnly)', () => {
     });
 });
 
-test.describe('FlagsEnum Attribute (Frozen)', () => {
-
-
+test.describe('Frozen', () => {
 
     test.describe('Edit mode', () => {
         test('vi-popup becomes disabled when parent is frozen', async () => {
@@ -391,4 +382,4 @@ test.describe('FlagsEnum Attribute (Frozen)', () => {
     });
 });
 
-}); // End of FlagsEnum Attribute Tests wrapper
+}); // End of FlagsEnum Attribute wrapper

@@ -3,7 +3,7 @@ import { setupPage } from '../helpers/page';
 import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze, mockBrowseReference } from '../helpers/persistent-object';
 import { startBackend, stopBackend, BackendProcess } from '../helpers/backend';
 
-test.describe.serial('User Attribute Tests', () => {
+test.describe.serial('User Attribute', () => {
     let sharedBackend: BackendProcess;
     let sharedPage: Page;
 
@@ -16,13 +16,12 @@ test.describe.serial('User Attribute Tests', () => {
         await setupPage(sharedPage, '', sharedBackend.port);
     });
 
-
     test.afterAll(async () => {
         await sharedPage?.close();
         await stopBackend(sharedBackend);
     });
 
-test.describe('User Attribute (Standard)', () => {
+test.describe('Standard', () => {
     test.describe('Non-edit mode', () => {
         test('displays initial friendly name in span', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-user', 'User');
@@ -140,8 +139,10 @@ test.describe('User Attribute (Standard)', () => {
             }, { currentValue });
             const browseButton = component.locator('vi-button:has(vi-icon[source="Ellipsis"])');
             await browseButton.click();
-            // Get the new value from the input before saving
+
+            // Wait for the input value to change from the current value
             const input = component.locator('input');
+            await expect(input).not.toHaveValue('admin');
             const newValue = await input.inputValue();
 
             await save(sharedPage, component);
@@ -177,9 +178,7 @@ test.describe('User Attribute (Standard)', () => {
     });
 });
 
-test.describe('User Attribute (ReadOnly)', () => {
-
-
+test.describe('ReadOnly', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial friendly name in span', async () => {
@@ -221,9 +220,7 @@ test.describe('User Attribute (ReadOnly)', () => {
     });
 });
 
-test.describe('User Attribute (Nullable)', () => {
-
-
+test.describe('Nullable', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays em-dash when value is null', async () => {
@@ -315,9 +312,7 @@ test.describe('User Attribute (Nullable)', () => {
     });
 });
 
-test.describe('User Attribute (Frozen)', () => {
-
-
+test.describe('Frozen', () => {
 
     test.describe('Edit mode', () => {
         test('browse button becomes disabled when parent is frozen', async () => {
@@ -377,4 +372,4 @@ test.describe('User Attribute (Frozen)', () => {
     });
 });
 
-}); // End of User Attribute Tests wrapper
+}); // End of User Attribute wrapper

@@ -3,7 +3,7 @@ import { setupPage } from '../helpers/page';
 import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze, mockBrowseReference } from '../helpers/persistent-object';
 import { startBackend, stopBackend, BackendProcess } from '../helpers/backend';
 
-test.describe.serial('Reference Attribute Tests', () => {
+test.describe.serial('Reference Attribute', () => {
     let sharedBackend: BackendProcess;
     let sharedPage: Page;
 
@@ -16,13 +16,12 @@ test.describe.serial('Reference Attribute Tests', () => {
         await setupPage(sharedPage, '', sharedBackend.port);
     });
 
-
     test.afterAll(async () => {
         await sharedPage?.close();
         await stopBackend(sharedBackend);
     });
 
-test.describe('Reference Attribute (Standard)', () => {
+test.describe('Standard', () => {
     test.describe('Non-edit mode', () => {
         test('displays initial display value in span', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-reference', 'Reference');
@@ -199,9 +198,7 @@ test.describe('Reference Attribute (Standard)', () => {
     });
 });
 
-test.describe('Reference Attribute (ReadOnly)', () => {
-
-
+test.describe('ReadOnly', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial display value in span', async () => {
@@ -243,9 +240,7 @@ test.describe('Reference Attribute (ReadOnly)', () => {
     });
 });
 
-test.describe('Reference Attribute (Nullable)', () => {
-
-
+test.describe('Nullable', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays em-dash when value is null', async () => {
@@ -347,9 +342,7 @@ test.describe('Reference Attribute (Nullable)', () => {
     });
 });
 
-test.describe('Reference Attribute (Frozen)', () => {
-
-
+test.describe('Frozen', () => {
 
     test.describe('Edit mode', () => {
         test('input becomes disabled when parent is frozen', async () => {
@@ -442,9 +435,7 @@ test.describe('Reference Attribute (Frozen)', () => {
     });
 });
 
-test.describe('Reference Attribute (SelectInPlace)', () => {
-
-
+test.describe('SelectInPlace', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial display value in span', async () => {
@@ -588,4 +579,4 @@ test.describe('Reference Attribute (SelectInPlace)', () => {
     });
 });
 
-}); // End of Reference Attribute Tests wrapper
+}); // End of Reference Attribute wrapper

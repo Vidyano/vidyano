@@ -3,7 +3,7 @@ import { setupPage } from '../helpers/page';
 import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze } from '../helpers/persistent-object';
 import { startBackend, stopBackend, BackendProcess } from '../helpers/backend';
 
-test.describe.serial('Password Attribute Tests', () => {
+test.describe.serial('Password Attribute', () => {
     let sharedBackend: BackendProcess;
     let sharedPage: Page;
 
@@ -16,13 +16,12 @@ test.describe.serial('Password Attribute Tests', () => {
         await setupPage(sharedPage, '', sharedBackend.port);
     });
 
-
     test.afterAll(async () => {
         await sharedPage?.close();
         await stopBackend(sharedBackend);
     });
 
-test.describe('Password Attribute', () => {
+test.describe('Default', () => {
     test.describe('Non-edit mode', () => {
         test('displays masked value "●●●●●●" instead of actual password', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-password', 'Password');
@@ -154,9 +153,7 @@ test.describe('Password Attribute', () => {
     });
 });
 
-test.describe('Password Attribute (ReadOnly)', () => {
-
-
+test.describe('ReadOnly', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays masked value "●●●●●●"', async () => {
@@ -225,9 +222,7 @@ test.describe('Password Attribute (ReadOnly)', () => {
     });
 });
 
-test.describe('Password Attribute (Required)', () => {
-
-
+test.describe('Required', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays masked value "●●●●●●"', async () => {
@@ -281,9 +276,7 @@ test.describe('Password Attribute (Required)', () => {
     });
 });
 
-test.describe('Password Attribute (Frozen)', () => {
-
-
+test.describe('Frozen', () => {
 
     test.describe('Edit mode', () => {
         test('input becomes disabled when parent is frozen', async () => {
@@ -335,4 +328,4 @@ test.describe('Password Attribute (Frozen)', () => {
     });
 });
 
-}); // End of Password Attribute Tests wrapper
+}); // End of Password Attribute wrapper

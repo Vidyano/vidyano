@@ -3,7 +3,7 @@ import { setupPage } from '../helpers/page';
 import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze } from '../helpers/persistent-object';
 import { startBackend, stopBackend, BackendProcess } from '../helpers/backend';
 
-test.describe.serial('CommonMark Attribute Tests', () => {
+test.describe.serial('CommonMark Attribute', () => {
     let sharedBackend: BackendProcess;
     let sharedPage: Page;
 
@@ -16,13 +16,12 @@ test.describe.serial('CommonMark Attribute Tests', () => {
         await setupPage(sharedPage, '', sharedBackend.port);
     });
 
-
     test.afterAll(async () => {
         await sharedPage?.close();
         await stopBackend(sharedBackend);
     });
 
-test.describe('CommonMark Attribute', () => {
+test.describe('Default', () => {
     test.describe('Non-edit mode', () => {
         test('displays rendered markdown via vi-marked component', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-common-mark', 'CommonMark');
@@ -130,9 +129,7 @@ test.describe('CommonMark Attribute', () => {
     });
 });
 
-test.describe('CommonMark Attribute (ReadOnly)', () => {
-
-
+test.describe('ReadOnly', () => {
 
     test.describe('Edit mode', () => {
         test('displays readonly textarea when attribute is readonly', async () => {
@@ -149,9 +146,7 @@ test.describe('CommonMark Attribute (ReadOnly)', () => {
     });
 });
 
-test.describe('CommonMark Attribute (Frozen)', () => {
-
-
+test.describe('Frozen', () => {
 
     test.describe('Edit mode', () => {
         test('textarea becomes disabled when parent is frozen', async () => {
@@ -189,9 +184,7 @@ test.describe('CommonMark Attribute (Frozen)', () => {
     });
 });
 
-test.describe('CommonMark Attribute (Markdown Rendering)', () => {
-
-
+test.describe('Markdown Rendering', () => {
 
     test('renders heading markdown correctly', async () => {
         const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-common-mark', 'CommonMarkHeading');
@@ -219,4 +212,4 @@ test.describe('CommonMark Attribute (Markdown Rendering)', () => {
     });
 });
 
-}); // End of CommonMark Attribute Tests wrapper
+}); // End of CommonMark Attribute wrapper

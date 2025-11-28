@@ -3,7 +3,7 @@ import { setupPage } from '../helpers/page';
 import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze } from '../helpers/persistent-object';
 import { startBackend, stopBackend, BackendProcess } from '../helpers/backend';
 
-test.describe.serial('Icon Attribute Tests', () => {
+test.describe.serial('Icon Attribute', () => {
     let sharedBackend: BackendProcess;
     let sharedPage: Page;
 
@@ -16,13 +16,12 @@ test.describe.serial('Icon Attribute Tests', () => {
         await setupPage(sharedPage, '', sharedBackend.port);
     });
 
-
     test.afterAll(async () => {
         await sharedPage?.close();
         await stopBackend(sharedBackend);
     });
 
-test.describe('Icon Attribute (Standard)', () => {
+test.describe('Standard', () => {
     test.describe('Non-edit mode', () => {
         test('displays initial value "Action_Edit" in span', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-icon', 'Icon');
@@ -240,9 +239,7 @@ test.describe('Icon Attribute (Standard)', () => {
     });
 });
 
-test.describe('Icon Attribute (ReadOnly)', () => {
-
-
+test.describe('ReadOnly', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial value in span', async () => {
@@ -282,9 +279,7 @@ test.describe('Icon Attribute (ReadOnly)', () => {
     });
 });
 
-test.describe('Icon Attribute (Required)', () => {
-
-
+test.describe('Required', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays em-dash when value is empty', async () => {
@@ -342,9 +337,7 @@ test.describe('Icon Attribute (Required)', () => {
     });
 });
 
-test.describe('Icon Attribute (Empty)', () => {
-
-
+test.describe('Empty', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays em-dash when value is null', async () => {
@@ -373,9 +366,7 @@ test.describe('Icon Attribute (Empty)', () => {
     });
 });
 
-test.describe('Icon Attribute (Frozen)', () => {
-
-
+test.describe('Frozen', () => {
 
     test.describe('Edit mode', () => {
         test('input becomes disabled when parent is frozen', async () => {
@@ -413,4 +404,4 @@ test.describe('Icon Attribute (Frozen)', () => {
     });
 });
 
-}); // End of Icon Attribute Tests wrapper
+}); // End of Icon Attribute wrapper

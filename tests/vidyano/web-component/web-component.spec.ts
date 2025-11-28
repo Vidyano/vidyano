@@ -322,7 +322,6 @@ test('TestObserverMethod: @observer on methods for multi-property observation', 
     const initialObserverCount = state.counterOrDoubledChangedCallCount;
     expect(state.counterOrDoubledChangedLastArgs).toEqual({ counter: 1, doubled: 2 });
 
-
     // --- Act: Change counter property ---
     await component.evaluate(node => { (node as any).counter = 5; });
     await expect(component.locator('#counter')).toContainText('5');

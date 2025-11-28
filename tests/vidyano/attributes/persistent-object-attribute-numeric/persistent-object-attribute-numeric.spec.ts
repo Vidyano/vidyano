@@ -3,7 +3,7 @@ import { setupPage } from '../helpers/page';
 import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze, isDirty } from '../helpers/persistent-object';
 import { startBackend, stopBackend, BackendProcess } from '../helpers/backend';
 
-test.describe.serial('Numeric Attribute Tests', () => {
+test.describe.serial('Numeric Attribute', () => {
     let sharedBackend: BackendProcess;
     let sharedPage: Page;
 
@@ -16,13 +16,12 @@ test.describe.serial('Numeric Attribute Tests', () => {
         await setupPage(sharedPage, '', sharedBackend.port);
     });
 
-
     test.afterAll(async () => {
         await sharedPage?.close();
         await stopBackend(sharedBackend);
     });
 
-test.describe('Int32 Attribute', () => {
+test.describe('Int32', () => {
     test.describe('Non-edit mode', () => {
         test('displays initial value "-2147483648" in span', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-numeric', 'Int32');
@@ -190,9 +189,7 @@ test.describe('Int32 Attribute', () => {
     });
 });
 
-test.describe('Decimal Attribute', () => {
-
-
+test.describe('Decimal', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "1234567890123.456789" in span', async () => {
@@ -420,9 +417,7 @@ test.describe('Decimal Attribute', () => {
     });
 });
 
-test.describe('UInt64 Attribute', () => {
-
-
+test.describe('UInt64', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "1234567890123456789" in span', async () => {
@@ -524,9 +519,7 @@ test.describe('UInt64 Attribute', () => {
     });
 });
 
-test.describe('Byte Attribute', () => {
-
-
+test.describe('Byte', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "128" in span', async () => {
@@ -629,9 +622,7 @@ test.describe('Byte Attribute', () => {
     });
 });
 
-test.describe('Int32 Attribute (ReadOnly)', () => {
-
-
+test.describe('Int32 - ReadOnly', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "-2147483648" in span', async () => {
@@ -673,9 +664,7 @@ test.describe('Int32 Attribute (ReadOnly)', () => {
     });
 });
 
-test.describe('Int32 Attribute (Required)', () => {
-
-
+test.describe('Int32 - Required', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "0" in span', async () => {
@@ -741,9 +730,7 @@ test.describe('Int32 Attribute (Required)', () => {
     });
 });
 
-test.describe('Int32 Attribute (Frozen)', () => {
-
-
+test.describe('Int32 - Frozen', () => {
 
     test.describe('Edit mode', () => {
         test('input becomes disabled when parent is frozen', async () => {
@@ -781,9 +768,7 @@ test.describe('Int32 Attribute (Frozen)', () => {
     });
 });
 
-test.describe('Decimal Attribute with Unit Before (Currency)', () => {
-
-
+test.describe('Decimal with Unit Before (Currency)', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays value with currency symbol', async () => {
@@ -850,9 +835,7 @@ test.describe('Decimal Attribute with Unit Before (Currency)', () => {
     });
 });
 
-test.describe('Decimal Attribute with Unit After (Weight)', () => {
-
-
+test.describe('Decimal with Unit After (Weight)', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays value with unit symbol', async () => {
@@ -920,8 +903,6 @@ test.describe('Decimal Attribute with Unit After (Weight)', () => {
 });
 
 test.describe('Numeric Input Validation', () => {
-
-
 
     test.describe('Int32 - Invalid Input Rejection', () => {
         test('rejects non-numeric text input', async () => {
@@ -1064,4 +1045,4 @@ test.describe('Numeric Input Validation', () => {
     });
 });
 
-}); // End of Numeric Attribute Tests wrapper
+}); // End of Numeric Attribute wrapper

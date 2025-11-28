@@ -75,7 +75,7 @@ async function setSelection(input: Locator, start: number, end: number) {
     }, { s: start, e: end });
 }
 
-test.describe.serial('MaskedInput Tests', () => {
+test.describe.serial('MaskedInput', () => {
     let sharedPage: Page;
 
     test.beforeAll(async ({ browser }) => {

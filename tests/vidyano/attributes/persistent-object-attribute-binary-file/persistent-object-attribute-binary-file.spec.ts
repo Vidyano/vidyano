@@ -3,7 +3,7 @@ import { setupPage } from '../helpers/page';
 import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze } from '../helpers/persistent-object';
 import { startBackend, stopBackend, BackendProcess } from '../helpers/backend';
 
-test.describe.serial('BinaryFile Attribute Tests', () => {
+test.describe.serial('BinaryFile Attribute', () => {
     let sharedBackend: BackendProcess;
     let sharedPage: Page;
 
@@ -16,13 +16,12 @@ test.describe.serial('BinaryFile Attribute Tests', () => {
         await setupPage(sharedPage, '', sharedBackend.port);
     });
 
-
     test.afterAll(async () => {
         await sharedPage?.close();
         await stopBackend(sharedBackend);
     });
 
-test.describe('BinaryFile Attribute', () => {
+test.describe('Default', () => {
     test.describe('Non-edit mode', () => {
         test('displays initial filename "black-pixel.png" in span', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-binary-file', 'BinaryFile');
@@ -152,9 +151,7 @@ test.describe('BinaryFile Attribute', () => {
     });
 });
 
-test.describe('BinaryFile Attribute (Empty)', () => {
-
-
+test.describe('Empty', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays em dash "—" when no file', async () => {
@@ -207,9 +204,7 @@ test.describe('BinaryFile Attribute (Empty)', () => {
     });
 });
 
-test.describe('BinaryFile Attribute (ReadOnly)', () => {
-
-
+test.describe('ReadOnly', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial filename "black-pixel.png" in span', async () => {
@@ -251,9 +246,7 @@ test.describe('BinaryFile Attribute (ReadOnly)', () => {
     });
 });
 
-test.describe('BinaryFile Attribute (Frozen)', () => {
-
-
+test.describe('Frozen', () => {
 
     test.describe('Edit mode', () => {
         test('browse button becomes disabled when parent is frozen', async () => {
@@ -324,9 +317,7 @@ test.describe('BinaryFile Attribute (Frozen)', () => {
     });
 });
 
-test.describe('BinaryFile Attribute (Required)', () => {
-
-
+test.describe('Required', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial filename "default.txt" in span', async () => {
@@ -382,9 +373,7 @@ test.describe('BinaryFile Attribute (Required)', () => {
     });
 });
 
-test.describe('BinaryFile Attribute (Accept)', () => {
-
-
+test.describe('Accept', () => {
 
     test.describe('Edit mode', () => {
         test('file input has accept attribute for images', async () => {
@@ -419,4 +408,4 @@ test.describe('BinaryFile Attribute (Accept)', () => {
     });
 });
 
-}); // End of BinaryFile Attribute Tests wrapper
+}); // End of BinaryFile Attribute wrapper

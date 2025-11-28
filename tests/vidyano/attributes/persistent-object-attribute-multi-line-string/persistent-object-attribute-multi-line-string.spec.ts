@@ -3,7 +3,7 @@ import { setupPage } from '../helpers/page';
 import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze } from '../helpers/persistent-object';
 import { startBackend, stopBackend, BackendProcess } from '../helpers/backend';
 
-test.describe.serial('MultiLineString Attribute Tests', () => {
+test.describe.serial('MultiLineString Attribute', () => {
     let sharedBackend: BackendProcess;
     let sharedPage: Page;
 
@@ -16,13 +16,12 @@ test.describe.serial('MultiLineString Attribute Tests', () => {
         await setupPage(sharedPage, '', sharedBackend.port);
     });
 
-
     test.afterAll(async () => {
         await sharedPage?.close();
         await stopBackend(sharedBackend);
     });
 
-test.describe('MultiLineString Attribute', () => {
+test.describe('Default', () => {
     test.describe('Non-edit mode', () => {
         test('displays initial multi-line value in pre element', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-multi-line-string', 'MultiLineString');
@@ -126,9 +125,7 @@ test.describe('MultiLineString Attribute', () => {
     });
 });
 
-test.describe('MultiLineString Attribute (Frozen)', () => {
-
-
+test.describe('Frozen', () => {
 
     test.describe('Edit mode', () => {
         test('textarea becomes disabled when parent is frozen', async () => {
@@ -166,9 +163,7 @@ test.describe('MultiLineString Attribute (Frozen)', () => {
     });
 });
 
-test.describe('MultiLineString Attribute (ReadOnly)', () => {
-
-
+test.describe('ReadOnly', () => {
 
     test.describe('Edit mode', () => {
         test('displays readonly textarea when attribute is readonly', async () => {
@@ -192,9 +187,7 @@ test.describe('MultiLineString Attribute (ReadOnly)', () => {
     });
 });
 
-test.describe('MultiLineString Attribute (MaxLength)', () => {
-
-
+test.describe('MaxLength', () => {
 
     test.describe('Edit mode', () => {
         test('textarea has maxlength attribute when MaxLength type hint is set', async () => {
@@ -208,4 +201,4 @@ test.describe('MultiLineString Attribute (MaxLength)', () => {
     });
 });
 
-}); // End of MultiLineString Attribute Tests wrapper
+}); // End of MultiLineString Attribute wrapper

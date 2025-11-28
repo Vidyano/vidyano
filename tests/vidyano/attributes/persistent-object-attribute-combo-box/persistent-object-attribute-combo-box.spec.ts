@@ -3,7 +3,7 @@ import { setupPage } from '../helpers/page';
 import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze } from '../helpers/persistent-object';
 import { startBackend, stopBackend, BackendProcess } from '../helpers/backend';
 
-test.describe.serial('ComboBox Attribute Tests', () => {
+test.describe.serial('ComboBox Attribute', () => {
     let sharedBackend: BackendProcess;
     let sharedPage: Page;
 
@@ -16,13 +16,12 @@ test.describe.serial('ComboBox Attribute Tests', () => {
         await setupPage(sharedPage, '', sharedBackend.port);
     });
 
-
     test.afterAll(async () => {
         await sharedPage?.close();
         await stopBackend(sharedBackend);
     });
 
-test.describe('ComboBox Attribute (Standard)', () => {
+test.describe('Standard', () => {
     test.describe('Non-edit mode', () => {
         test('displays initial value "Option A" in span', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-combo-box', 'ComboBox');
@@ -236,9 +235,7 @@ test.describe('ComboBox Attribute (Standard)', () => {
     });
 });
 
-test.describe('ComboBox Attribute (ReadOnly)', () => {
-
-
+test.describe('ReadOnly', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial value in span', async () => {
@@ -272,9 +269,7 @@ test.describe('ComboBox Attribute (ReadOnly)', () => {
     });
 });
 
-test.describe('ComboBox Attribute (Required)', () => {
-
-
+test.describe('Required', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays em-dash when value is empty', async () => {
@@ -317,9 +312,7 @@ test.describe('ComboBox Attribute (Required)', () => {
     });
 });
 
-test.describe('ComboBox Attribute (Frozen)', () => {
-
-
+test.describe('Frozen', () => {
 
     test.describe('Edit mode', () => {
         test('vi-select becomes disabled when parent is frozen', async () => {
@@ -353,9 +346,7 @@ test.describe('ComboBox Attribute (Frozen)', () => {
     });
 });
 
-test.describe('ComboBox Attribute (Clear button)', () => {
-
-
+test.describe('Clear button', () => {
 
     test('should show clear button for non-required field with value', async () => {
         const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-combo-box', 'ComboBox');
@@ -456,4 +447,4 @@ test.describe('ComboBox Attribute (Clear button)', () => {
     });
 });
 
-}); // End of ComboBox Attribute Tests wrapper
+}); // End of ComboBox Attribute wrapper

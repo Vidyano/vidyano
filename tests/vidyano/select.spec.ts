@@ -73,7 +73,7 @@ async function getSelectState(component: Locator) {
     });
 }
 
-test.describe.serial('Select Tests', () => {
+test.describe.serial('Select', () => {
     let sharedPage: Page;
 
     test.beforeAll(async ({ browser }) => {

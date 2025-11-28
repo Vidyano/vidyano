@@ -3,7 +3,7 @@ import { setupPage } from '../helpers/page';
 import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze } from '../helpers/persistent-object';
 import { startBackend, stopBackend, BackendProcess } from '../helpers/backend';
 
-test.describe.serial('Boolean Attribute Tests', () => {
+test.describe.serial('Boolean Attribute', () => {
     let sharedBackend: BackendProcess;
     let sharedPage: Page;
 
@@ -16,13 +16,12 @@ test.describe.serial('Boolean Attribute Tests', () => {
         await setupPage(sharedPage, '', sharedBackend.port);
     });
 
-
     test.afterAll(async () => {
         await sharedPage?.close();
         await stopBackend(sharedBackend);
     });
 
-test.describe('Boolean Attribute (Toggle mode - default)', () => {
+test.describe('Toggle mode - default', () => {
     test.describe('Non-edit mode', () => {
         test('displays initial value "Yes" in span', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-boolean', 'Boolean');
@@ -123,9 +122,7 @@ test.describe('Boolean Attribute (Toggle mode - default)', () => {
     });
 });
 
-test.describe('Boolean Attribute (Checkbox mode)', () => {
-
-
+test.describe('Checkbox mode', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "No" in span', async () => {
@@ -227,9 +224,7 @@ test.describe('Boolean Attribute (Checkbox mode)', () => {
     });
 });
 
-test.describe('Boolean Attribute (ReadOnly - Toggle mode)', () => {
-
-
+test.describe('ReadOnly - Toggle mode', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "Yes" in span', async () => {
@@ -272,9 +267,7 @@ test.describe('Boolean Attribute (ReadOnly - Toggle mode)', () => {
     });
 });
 
-test.describe('Boolean Attribute (ReadOnly - Checkbox mode)', () => {
-
-
+test.describe('ReadOnly - Checkbox mode', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "No" in span', async () => {
@@ -317,9 +310,7 @@ test.describe('Boolean Attribute (ReadOnly - Checkbox mode)', () => {
     });
 });
 
-test.describe('Boolean Attribute (Required)', () => {
-
-
+test.describe('Required', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "No" in span', async () => {
@@ -392,9 +383,7 @@ test.describe('Boolean Attribute (Required)', () => {
     });
 });
 
-test.describe('Boolean Attribute (Frozen - Toggle mode)', () => {
-
-
+test.describe('Frozen - Toggle mode', () => {
 
     test.describe('Edit mode', () => {
         test('toggle becomes disabled when parent is frozen', async () => {
@@ -447,9 +436,7 @@ test.describe('Boolean Attribute (Frozen - Toggle mode)', () => {
     });
 });
 
-test.describe('Boolean Attribute (Frozen - Checkbox mode)', () => {
-
-
+test.describe('Frozen - Checkbox mode', () => {
 
     test.describe('Edit mode', () => {
         test('checkbox becomes disabled when parent is frozen', async () => {
@@ -502,4 +489,4 @@ test.describe('Boolean Attribute (Frozen - Checkbox mode)', () => {
     });
 });
 
-}); // End of Boolean Attribute Tests wrapper
+}); // End of Boolean Attribute wrapper

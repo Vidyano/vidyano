@@ -3,7 +3,7 @@ import { setupPage } from '../helpers/page';
 import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze } from '../helpers/persistent-object';
 import { startBackend, stopBackend } from '../helpers/backend';
 
-test.describe.serial('NullableBoolean Attribute Tests', () => {
+test.describe.serial('NullableBoolean Attribute', () => {
     let sharedBackend: Awaited<ReturnType<typeof startBackend>>;
     let sharedPage: Page;
 
@@ -15,7 +15,6 @@ test.describe.serial('NullableBoolean Attribute Tests', () => {
         sharedPage = await browser.newPage();
         await setupPage(sharedPage, '', sharedBackend.port);
     });
-
 
     test.afterAll(async () => {
         await sharedPage?.close();
@@ -263,9 +262,7 @@ test.describe.serial('NullableBoolean Attribute (Standard)', () => {
     });
 });
 
-test.describe('NullableBoolean Attribute (ReadOnly)', () => {
-
-
+test.describe('ReadOnly', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "Yes" in span', async () => {
@@ -300,9 +297,7 @@ test.describe('NullableBoolean Attribute (ReadOnly)', () => {
     });
 });
 
-test.describe('NullableBoolean Attribute (Required)', () => {
-
-
+test.describe('Required', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "No"', async () => {
@@ -369,9 +364,7 @@ test.describe('NullableBoolean Attribute (Required)', () => {
     });
 });
 
-test.describe('NullableBoolean Attribute (Frozen)', () => {
-
-
+test.describe('Frozen', () => {
 
     test.describe('Edit mode', () => {
         test('vi-select becomes disabled when parent is frozen', async () => {
@@ -405,4 +398,4 @@ test.describe('NullableBoolean Attribute (Frozen)', () => {
     });
 });
 
-}); // End of NullableBoolean Attribute Tests wrapper
+}); // End of NullableBoolean Attribute wrapper

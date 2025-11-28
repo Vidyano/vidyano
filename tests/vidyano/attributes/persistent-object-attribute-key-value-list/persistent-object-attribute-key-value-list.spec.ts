@@ -3,7 +3,7 @@ import { setupPage } from '../helpers/page';
 import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze } from '../helpers/persistent-object';
 import { startBackend, stopBackend, BackendProcess } from '../helpers/backend';
 
-test.describe.serial('KeyValueList Attribute Tests', () => {
+test.describe.serial('KeyValueList Attribute', () => {
     let sharedBackend: BackendProcess;
     let sharedPage: Page;
 
@@ -16,13 +16,12 @@ test.describe.serial('KeyValueList Attribute Tests', () => {
         await setupPage(sharedPage, '', sharedBackend.port);
     });
 
-
     test.afterAll(async () => {
         await sharedPage?.close();
         await stopBackend(sharedBackend);
     });
 
-test.describe('KeyValueList Attribute (Select)', () => {
+test.describe('Select', () => {
     test.describe('Non-edit mode', () => {
         test('displays initial value "One" in span', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-key-value-list', 'KeyValueList');
@@ -168,9 +167,7 @@ test.describe('KeyValueList Attribute (Select)', () => {
     });
 });
 
-test.describe('KeyValueList Attribute (Radio)', () => {
-
-
+test.describe('Radio', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "Two" in span', async () => {
@@ -254,9 +251,7 @@ test.describe('KeyValueList Attribute (Radio)', () => {
     });
 });
 
-test.describe('KeyValueList Attribute (Chip)', () => {
-
-
+test.describe('Chip', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "Three" in span', async () => {
@@ -349,9 +344,7 @@ test.describe('KeyValueList Attribute (Chip)', () => {
     });
 });
 
-test.describe('KeyValueList Attribute (ReadOnly)', () => {
-
-
+test.describe('ReadOnly', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial value in span', async () => {
@@ -385,9 +378,7 @@ test.describe('KeyValueList Attribute (ReadOnly)', () => {
     });
 });
 
-test.describe('KeyValueList Attribute (Required)', () => {
-
-
+test.describe('Required', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "One" in span', async () => {
@@ -453,9 +444,7 @@ test.describe('KeyValueList Attribute (Required)', () => {
     });
 });
 
-test.describe('KeyValueList Attribute (Frozen)', () => {
-
-
+test.describe('Frozen', () => {
 
     test.describe('Edit mode (Select)', () => {
         test('vi-select becomes disabled when parent is frozen', async () => {
@@ -553,9 +542,7 @@ test.describe('KeyValueList Attribute (Frozen)', () => {
     });
 });
 
-test.describe('KeyValueList Attribute (Horizontal orientation)', () => {
-
-
+test.describe('Horizontal orientation', () => {
 
     test.describe('Edit mode (Radio)', () => {
         test('applies horizontal orientation when specified', async () => {
@@ -580,4 +567,4 @@ test.describe('KeyValueList Attribute (Horizontal orientation)', () => {
     });
 });
 
-}); // End of KeyValueList Attribute Tests wrapper
+}); // End of KeyValueList Attribute wrapper

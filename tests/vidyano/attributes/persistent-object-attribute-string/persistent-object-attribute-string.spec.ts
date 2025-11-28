@@ -3,7 +3,7 @@ import { setupPage } from '../helpers/page';
 import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze } from '../helpers/persistent-object';
 import { startBackend, stopBackend, BackendProcess } from '../helpers/backend';
 
-test.describe.serial('String Attribute Tests', () => {
+test.describe.serial('String Attribute', () => {
     let sharedBackend: BackendProcess;
     let sharedPage: Page;
 
@@ -16,13 +16,12 @@ test.describe.serial('String Attribute Tests', () => {
         await setupPage(sharedPage, '', sharedBackend.port);
     });
 
-
     test.afterAll(async () => {
         await sharedPage?.close();
         await stopBackend(sharedBackend);
     });
 
-test.describe('String Attribute', () => {
+test.describe('Default', () => {
     test.describe('Non-edit mode', () => {
         test('displays initial value "Test" in span', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-string', 'String');
@@ -121,9 +120,7 @@ test.describe('String Attribute', () => {
     });
 });
 
-test.describe('StringLower Attribute', () => {
-
-
+test.describe('Lower', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "test" in span', async () => {
@@ -235,9 +232,7 @@ test.describe('StringLower Attribute', () => {
     });
 });
 
-test.describe('StringUpper Attribute', () => {
-
-
+test.describe('Upper', () => {
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "TEST" in span', async () => {
@@ -349,9 +344,7 @@ test.describe('StringUpper Attribute', () => {
     });
 });
 
-test.describe('String Attribute (Frozen)', () => {
-
-
+test.describe('Frozen', () => {
 
     test.describe('Edit mode', () => {
         test('input becomes disabled when parent is frozen', async () => {
@@ -389,4 +382,4 @@ test.describe('String Attribute (Frozen)', () => {
     });
 });
 
-}); // End of String Attribute Tests wrapper
+}); // End of String Attribute wrapper
