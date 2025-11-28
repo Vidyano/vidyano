@@ -276,7 +276,7 @@ export class PersistentObjectAttributeMultiString extends PersistentObjectAttrib
 
         return html`
             <vi-scroller no-horizontal class="flex">
-                <vi-sortable id="strings" draggable-items=".string-item:not(.new-item)" handle=".sort-handle" ?enabled=${!this.frozen} ?sensitive=${this.sensitive} ?disabled=${this.frozen} @drag-start=${this._onDragStart} @drag-end=${this._itemsOrderChanged}>
+                <vi-sortable id="strings" draggable-items=".string-item:not(.new-item)" handle=".sort-handle" ?disabled=${this.frozen} @drag-start=${this._onDragStart} @drag-end=${this._itemsOrderChanged}>
                     ${repeat(this._strings, (item) => item.id, (item, index) => this.#renderStringItem(item, index))}
                 </vi-sortable>
                 ${!this.readOnly ? this.#renderNewItem() : nothing}

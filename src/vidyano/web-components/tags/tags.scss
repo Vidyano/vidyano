@@ -55,7 +55,7 @@
         }
     }
 
-    vi-sortable[enabled] .tag {
+    vi-sortable:not([disabled]) .tag {
         cursor: grab;
         user-select: none;
 

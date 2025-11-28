@@ -79,11 +79,11 @@ export class Sortable extends WebComponent {
     dragDelay: number;
 
     /**
-     * Controls whether drag-and-drop functionality is enabled
-     * @default true
+     * Controls whether drag-and-drop functionality is disabled
+     * @default false
      */
     @property({ type: Boolean, reflect: true })
-    enabled: boolean = true;
+    disabled: boolean = false;
 
     /**
      * Indicates whether this sortable container is currently being dragged
@@ -183,7 +183,7 @@ export class Sortable extends WebComponent {
     /**
      * Reinitializes drag-and-drop when observed properties change.
      */
-    @observer("filter", "draggableItems", "handle", "enabled", { allowUndefined: true })
+    @observer("filter", "draggableItems", "handle", "disabled", { allowUndefined: true })
     private _reinitializeDragAndDrop() {
         if (!this.shadowRoot)
             return;
@@ -216,7 +216,7 @@ export class Sortable extends WebComponent {
      * Sets up drag-and-drop event listeners on draggable elements.
      */
     #setupDragAndDrop() {
-        if (!this.enabled)
+        if (this.disabled)
             return;
 
         this.addEventListener("pointerdown", this.#pointerDownHandler, { capture: true });

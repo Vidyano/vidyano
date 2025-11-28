@@ -151,7 +151,7 @@ export class Tags extends WebComponent {
         return html`
             <vi-scroller id="scroller" no-horizontal @click=${this._passFocus}>
                 <div class="wrap-container">
-                    <vi-sortable id="sortable-tags" draggable-items=".tag" .enabled=${!this.disabled} @drag-start=${this._onDragStart} @drag-end=${this._onDragEnd}>
+                    <vi-sortable id="sortable-tags" draggable-items=".tag" .disabled=${this.disabled} @drag-start=${this._onDragStart} @drag-end=${this._onDragEnd}>
                         ${repeat(this._tagItems, (item) => item.id, (item) => html`
                             <div class="tag">
                                 <vi-sensitive ?disabled=${!this.sensitive}><span class="tag-value">${item.value}</span></vi-sensitive>

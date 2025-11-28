@@ -26,7 +26,7 @@
         display: none;
     }
 
-    vi-sortable:not([enabled]) {
+    vi-sortable[disabled] {
         .string-item {
             vi-icon[source="Hamburger"] {
                 opacity: 0.25;
