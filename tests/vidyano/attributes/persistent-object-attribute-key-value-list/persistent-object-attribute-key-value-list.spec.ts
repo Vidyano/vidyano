@@ -1,31 +1,28 @@
 import { test, expect, Page } from '@playwright/test';
 import { setupPage } from '../helpers/page';
 import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze } from '../helpers/persistent-object';
-import { startBackend, stopBackend } from '../helpers/backend';
+import { startBackend, stopBackend, BackendProcess } from '../helpers/backend';
 
 test.describe.serial('KeyValueList Attribute Tests', () => {
-    let sharedBackend: Awaited<ReturnType<typeof startBackend>>;
+    let sharedBackend: BackendProcess;
+    let sharedPage: Page;
 
     test.beforeAll(async ({}, testInfo) => {
         sharedBackend = await startBackend(testInfo);
     });
 
+    test.beforeAll(async ({ browser }) => {
+        sharedPage = await browser.newPage();
+        await setupPage(sharedPage, '', sharedBackend.port);
+    });
+
+
     test.afterAll(async () => {
+        await sharedPage?.close();
         await stopBackend(sharedBackend);
     });
 
 test.describe('KeyValueList Attribute (Select)', () => {
-    let sharedPage: Page;
-
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
-
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
-
     test.describe('Non-edit mode', () => {
         test('displays initial value "One" in span', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-key-value-list', 'KeyValueList');
@@ -172,16 +169,8 @@ test.describe('KeyValueList Attribute (Select)', () => {
 });
 
 test.describe('KeyValueList Attribute (Radio)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "Two" in span', async () => {
@@ -266,16 +255,8 @@ test.describe('KeyValueList Attribute (Radio)', () => {
 });
 
 test.describe('KeyValueList Attribute (Chip)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "Three" in span', async () => {
@@ -369,16 +350,8 @@ test.describe('KeyValueList Attribute (Chip)', () => {
 });
 
 test.describe('KeyValueList Attribute (ReadOnly)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays initial value in span', async () => {
@@ -413,16 +386,8 @@ test.describe('KeyValueList Attribute (ReadOnly)', () => {
 });
 
 test.describe('KeyValueList Attribute (Required)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "One" in span', async () => {
@@ -489,16 +454,8 @@ test.describe('KeyValueList Attribute (Required)', () => {
 });
 
 test.describe('KeyValueList Attribute (Frozen)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Edit mode (Select)', () => {
         test('vi-select becomes disabled when parent is frozen', async () => {
@@ -597,16 +554,8 @@ test.describe('KeyValueList Attribute (Frozen)', () => {
 });
 
 test.describe('KeyValueList Attribute (Horizontal orientation)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Edit mode (Radio)', () => {
         test('applies horizontal orientation when specified', async () => {

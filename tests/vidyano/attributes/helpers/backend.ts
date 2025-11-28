@@ -1,11 +1,23 @@
 import { TestInfo } from '@playwright/test';
 import { spawn, ChildProcess, execSync } from 'child_process';
 
-export async function startBackend(testInfoOrPath: TestInfo | string): Promise<ChildProcess> {
+// Map worker ID to port to enable parallel test execution
+function getWorkerPort(testInfo: TestInfo): number {
+    const workerId = testInfo.parallelIndex;
+    return 44355 + workerId;
+}
+
+export interface BackendProcess extends ChildProcess {
+    port: number;
+}
+
+export async function startBackend(testInfoOrPath: TestInfo | string): Promise<BackendProcess> {
     let csFilePath: string;
+    let port: number;
 
     if (typeof testInfoOrPath === 'string') {
         csFilePath = testInfoOrPath;
+        port = 44355; // Default port for string path
     } else {
         // Get test file path and construct path to .cs file
         const testFile = testInfoOrPath.file;
@@ -15,12 +27,13 @@ export async function startBackend(testInfoOrPath: TestInfo | string): Promise<C
             throw new Error('No .cs file found in test directory');
 
         csFilePath = execSync(`realpath --relative-to="$(pwd)" "${csFile}"`, { encoding: 'utf-8' }).trim();
+        port = getWorkerPort(testInfoOrPath);
     }
 
     // Start the backend process
-    // Gracefully stop any existing process on port 44355
+    // Gracefully stop any existing process on this port
     try {
-        const pidOutput = execSync('lsof -ti:44355 2>/dev/null', { encoding: 'utf-8' }).trim();
+        const pidOutput = execSync(`lsof -ti:${port} 2>/dev/null`, { encoding: 'utf-8' }).trim();
         if (pidOutput) {
             const pids = pidOutput.split('\n').filter(p => p);
             if (pids.length > 0) {
@@ -31,7 +44,7 @@ export async function startBackend(testInfoOrPath: TestInfo | string): Promise<C
                 for (let i = 0; i < 6; i++) {
                     await new Promise(resolve => setTimeout(resolve, 500));
                     try {
-                        execSync('lsof -ti:44355 2>/dev/null', { stdio: 'ignore' });
+                        execSync(`lsof -ti:${port} 2>/dev/null`, { stdio: 'ignore' });
                     } catch {
                         // Port is free
                         break;
@@ -40,7 +53,7 @@ export async function startBackend(testInfoOrPath: TestInfo | string): Promise<C
 
                 // If still running, force kill
                 try {
-                    execSync('lsof -ti:44355 | xargs -r kill -9 2>/dev/null', { stdio: 'ignore' });
+                    execSync(`lsof -ti:${port} | xargs -r kill -9 2>/dev/null`, { stdio: 'ignore' });
                     await new Promise(resolve => setTimeout(resolve, 500));
                 } catch {
                     // Already stopped
@@ -52,49 +65,52 @@ export async function startBackend(testInfoOrPath: TestInfo | string): Promise<C
     }
 
     return new Promise((resolve, reject) => {
-        const process = spawn('dotnet', ['run', csFilePath], {
+        const backendProcess = spawn('dotnet', ['run', csFilePath], {
             stdio: 'pipe',
-            detached: false
-        });
+            detached: false,
+            env: { ...process.env, ASPNETCORE_URLS: `http://localhost:${port}` }
+        }) as BackendProcess;
+
+        backendProcess.port = port;
 
         let isReady = false;
         const timeout = setTimeout(() => {
             if (!isReady) {
-                process.kill('SIGKILL');
-                reject(new Error('Backend failed to start within timeout period (30s)'));
+                backendProcess.kill('SIGKILL');
+                reject(new Error(`Backend failed to start within timeout period (30s) on port ${port}`));
             }
         }, 30000);
 
         // Wait for "Now listening" in stdout
-        process.stdout?.on('data', (data) => {
+        backendProcess.stdout?.on('data', (data) => {
             const output = data.toString();
 
             if (!isReady && output.includes('Now listening')) {
                 isReady = true;
                 clearTimeout(timeout);
-                resolve(process);
+                resolve(backendProcess);
             }
         });
 
-        process.stderr?.on('data', (data) => {
+        backendProcess.stderr?.on('data', (data) => {
             // Only log errors, suppress warnings and info
             const output = data.toString();
             if (output.toLowerCase().includes('error') || output.toLowerCase().includes('exception')) {
-                console.error(`[Backend Error] ${output.trim()}`);
+                console.error(`[Backend Error on port ${port}] ${output.trim()}`);
             }
         });
 
-        process.on('error', (error) => {
+        backendProcess.on('error', (error) => {
             if (!isReady) {
                 clearTimeout(timeout);
-                reject(new Error(`Backend process error: ${error.message}`));
+                reject(new Error(`Backend process error on port ${port}: ${error.message}`));
             }
         });
 
-        process.on('exit', (code) => {
+        backendProcess.on('exit', (code) => {
             if (!isReady) {
                 clearTimeout(timeout);
-                reject(new Error(`Backend exited with code ${code} before becoming ready`));
+                reject(new Error(`Backend exited with code ${code} before becoming ready on port ${port}`));
             }
         });
     });

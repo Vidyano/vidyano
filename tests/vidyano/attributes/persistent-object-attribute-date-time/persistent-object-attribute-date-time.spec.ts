@@ -1,33 +1,30 @@
 import { test, expect, Page } from '@playwright/test';
 import { setupPage } from '../helpers/page';
 import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze } from '../helpers/persistent-object';
-import { startBackend, stopBackend } from '../helpers/backend';
+import { startBackend, stopBackend, BackendProcess } from '../helpers/backend';
 import { selectDateFromPicker } from '../helpers/date-picker';
 import { selectTimeFromPicker } from '../helpers/time-picker';
 
 test.describe.serial('DateTime Attribute Tests', () => {
-    let sharedBackend: Awaited<ReturnType<typeof startBackend>>;
+    let sharedBackend: BackendProcess;
+    let sharedPage: Page;
 
     test.beforeAll(async ({}, testInfo) => {
         sharedBackend = await startBackend(testInfo);
     });
 
+    test.beforeAll(async ({ browser }) => {
+        sharedPage = await browser.newPage();
+        await setupPage(sharedPage, '', sharedBackend.port);
+    });
+
+
     test.afterAll(async () => {
+        await sharedPage?.close();
         await stopBackend(sharedBackend);
     });
 
 test.describe('DateTime Attribute', () => {
-    let sharedPage: Page;
-
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
-
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
-
     test.describe('Non-edit mode', () => {
         test('displays initial date and time value in span', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-date-time', 'DateTime');
@@ -314,16 +311,8 @@ test.describe('DateTime Attribute', () => {
 });
 
 test.describe('NullableDateTime Attribute', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.afterEach(async () => {
         // Ensure any pending operations complete
@@ -444,16 +433,8 @@ test.describe('NullableDateTime Attribute', () => {
 });
 
 test.describe('DateTime Attribute (ReadOnly)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays initial value in span', async () => {
@@ -514,16 +495,8 @@ test.describe('DateTime Attribute (ReadOnly)', () => {
 });
 
 test.describe('DateTime Attribute (Required)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays initial value in span', async () => {
@@ -601,16 +574,8 @@ test.describe('DateTime Attribute (Required)', () => {
 });
 
 test.describe('DateTime Attribute (Frozen)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Edit mode', () => {
         test('date input becomes disabled when parent is frozen', async () => {
@@ -848,16 +813,8 @@ test.describe('DateTime Attribute (Frozen)', () => {
 });
 
 test.describe('Date Attribute (Date-only)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays initial date value in span', async () => {
@@ -918,16 +875,8 @@ test.describe('Date Attribute (Date-only)', () => {
 });
 
 test.describe('NullableDate Attribute', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays empty dash for null value', async () => {
@@ -957,16 +906,8 @@ test.describe('NullableDate Attribute', () => {
 });
 
 test.describe('DateTime Attribute (Month Mode)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays value in friendly month format', async () => {
@@ -1065,16 +1006,8 @@ test.describe('DateTime Attribute (Month Mode)', () => {
 });
 
 test.describe('NullableMonth Attribute (Month Mode)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Edit mode', () => {
         test('does not display month navigation buttons when value is null', async () => {
@@ -1101,16 +1034,8 @@ test.describe('NullableMonth Attribute (Month Mode)', () => {
 });
 
 test.describe('DateTime Attribute (Min/Max Date)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Edit mode', () => {
         test('date picker receives min and max date constraints', async () => {

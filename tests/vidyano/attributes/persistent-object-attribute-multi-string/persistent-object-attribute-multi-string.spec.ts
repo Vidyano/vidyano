@@ -1,31 +1,28 @@
 import { test, expect, Page } from '@playwright/test';
 import { setupPage } from '../helpers/page';
 import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze, trackRefresh } from '../helpers/persistent-object';
-import { startBackend, stopBackend } from '../helpers/backend';
+import { startBackend, stopBackend, BackendProcess } from '../helpers/backend';
 
 test.describe.serial('MultiString Attribute Tests', () => {
-    let sharedBackend: Awaited<ReturnType<typeof startBackend>>;
+    let sharedBackend: BackendProcess;
+    let sharedPage: Page;
 
     test.beforeAll(async ({}, testInfo) => {
         sharedBackend = await startBackend(testInfo);
     });
 
+    test.beforeAll(async ({ browser }) => {
+        sharedPage = await browser.newPage();
+        await setupPage(sharedPage, '', sharedBackend.port);
+    });
+
+
     test.afterAll(async () => {
+        await sharedPage?.close();
         await stopBackend(sharedBackend);
     });
 
 test.describe('MultiString Attribute', () => {
-    let sharedPage: Page;
-
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
-
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
-
     test.describe('Non-edit mode', () => {
         test('displays initial multi-string value in pre element', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-multi-string', 'MultiString');
@@ -221,16 +218,8 @@ test.describe('MultiString Attribute', () => {
 });
 
 test.describe('MultiString Attribute (ReadOnly)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Edit mode', () => {
         test('displays readonly inputs when attribute is readonly', async () => {
@@ -258,16 +247,8 @@ test.describe('MultiString Attribute (ReadOnly)', () => {
 });
 
 test.describe('MultiString Attribute (Frozen)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Edit mode', () => {
         test('inputs become disabled when parent is frozen', async () => {
@@ -308,16 +289,8 @@ test.describe('MultiString Attribute (Frozen)', () => {
 });
 
 test.describe('MultiString Attribute (Tags Mode)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays tags component in tags mode', async () => {
@@ -348,16 +321,8 @@ test.describe('MultiString Attribute (Tags Mode)', () => {
 });
 
 test.describe('MultiString Attribute (Tags Mode with Options)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Edit mode', () => {
         test('displays suggestions popup when options are available', async () => {
@@ -383,16 +348,8 @@ test.describe('MultiString Attribute (Tags Mode with Options)', () => {
 });
 
 test.describe('MultiString Attribute (Tags Mode ReadOnly)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Edit mode', () => {
         test('tags are disabled when attribute is readonly', async () => {
@@ -407,16 +364,8 @@ test.describe('MultiString Attribute (Tags Mode ReadOnly)', () => {
 });
 
 test.describe('MultiString Attribute (TriggersRefresh)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Edit mode', () => {
         test('editing updates value immediately, blur triggers refresh only when value changed', async () => {

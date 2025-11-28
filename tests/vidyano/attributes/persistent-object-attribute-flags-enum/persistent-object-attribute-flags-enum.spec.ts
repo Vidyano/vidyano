@@ -1,31 +1,28 @@
 import { test, expect, Page } from '@playwright/test';
 import { setupPage } from '../helpers/page';
 import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze } from '../helpers/persistent-object';
-import { startBackend, stopBackend } from '../helpers/backend';
+import { startBackend, stopBackend, BackendProcess } from '../helpers/backend';
 
 test.describe.serial('FlagsEnum Attribute Tests', () => {
-    let sharedBackend: Awaited<ReturnType<typeof startBackend>>;
+    let sharedBackend: BackendProcess;
+    let sharedPage: Page;
 
     test.beforeAll(async ({}, testInfo) => {
         sharedBackend = await startBackend(testInfo);
     });
 
+    test.beforeAll(async ({ browser }) => {
+        sharedPage = await browser.newPage();
+        await setupPage(sharedPage, '', sharedBackend.port);
+    });
+
+
     test.afterAll(async () => {
+        await sharedPage?.close();
         await stopBackend(sharedBackend);
     });
 
 test.describe('FlagsEnum Attribute', () => {
-    let sharedPage: Page;
-
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
-
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
-
     test.describe('Non-edit mode', () => {
         test('displays initial value "Email" in span', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-flags-enum', 'FlagsEnum');
@@ -184,16 +181,8 @@ test.describe('FlagsEnum Attribute', () => {
 });
 
 test.describe('FlagsEnum Attribute (Multiple Flags)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays combined value "Email, SMS, Push" in span', async () => {
@@ -251,16 +240,8 @@ test.describe('FlagsEnum Attribute (Multiple Flags)', () => {
 });
 
 test.describe('FlagsEnum Attribute (None)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays "None" when no flags selected', async () => {
@@ -339,16 +320,8 @@ test.describe('FlagsEnum Attribute (None)', () => {
 });
 
 test.describe('FlagsEnum Attribute (ReadOnly)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays initial value in span', async () => {
@@ -383,16 +356,8 @@ test.describe('FlagsEnum Attribute (ReadOnly)', () => {
 });
 
 test.describe('FlagsEnum Attribute (Frozen)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Edit mode', () => {
         test('vi-popup becomes disabled when parent is frozen', async () => {

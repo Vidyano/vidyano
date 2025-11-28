@@ -1,31 +1,28 @@
 import { test, expect, Page } from '@playwright/test';
 import { setupPage } from '../helpers/page';
 import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze, isDirty } from '../helpers/persistent-object';
-import { startBackend, stopBackend } from '../helpers/backend';
+import { startBackend, stopBackend, BackendProcess } from '../helpers/backend';
 
-test.describe('Numeric Attribute Tests', () => {
-    let sharedBackend: Awaited<ReturnType<typeof startBackend>>;
+test.describe.serial('Numeric Attribute Tests', () => {
+    let sharedBackend: BackendProcess;
+    let sharedPage: Page;
 
     test.beforeAll(async ({}, testInfo) => {
         sharedBackend = await startBackend(testInfo);
     });
 
+    test.beforeAll(async ({ browser }) => {
+        sharedPage = await browser.newPage();
+        await setupPage(sharedPage, '', sharedBackend.port);
+    });
+
+
     test.afterAll(async () => {
+        await sharedPage?.close();
         await stopBackend(sharedBackend);
     });
 
 test.describe('Int32 Attribute', () => {
-    let sharedPage: Page;
-
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
-
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
-
     test.describe('Non-edit mode', () => {
         test('displays initial value "-2147483648" in span', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-numeric', 'Int32');
@@ -194,16 +191,8 @@ test.describe('Int32 Attribute', () => {
 });
 
 test.describe('Decimal Attribute', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "1234567890123.456789" in span', async () => {
@@ -432,16 +421,8 @@ test.describe('Decimal Attribute', () => {
 });
 
 test.describe('UInt64 Attribute', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "1234567890123456789" in span', async () => {
@@ -544,16 +525,8 @@ test.describe('UInt64 Attribute', () => {
 });
 
 test.describe('Byte Attribute', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "128" in span', async () => {
@@ -657,16 +630,8 @@ test.describe('Byte Attribute', () => {
 });
 
 test.describe('Int32 Attribute (ReadOnly)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "-2147483648" in span', async () => {
@@ -709,16 +674,8 @@ test.describe('Int32 Attribute (ReadOnly)', () => {
 });
 
 test.describe('Int32 Attribute (Required)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "0" in span', async () => {
@@ -785,16 +742,8 @@ test.describe('Int32 Attribute (Required)', () => {
 });
 
 test.describe('Int32 Attribute (Frozen)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Edit mode', () => {
         test('input becomes disabled when parent is frozen', async () => {
@@ -833,16 +782,8 @@ test.describe('Int32 Attribute (Frozen)', () => {
 });
 
 test.describe('Decimal Attribute with Unit Before (Currency)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays value with currency symbol', async () => {
@@ -910,16 +851,8 @@ test.describe('Decimal Attribute with Unit Before (Currency)', () => {
 });
 
 test.describe('Decimal Attribute with Unit After (Weight)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays value with unit symbol', async () => {
@@ -987,16 +920,8 @@ test.describe('Decimal Attribute with Unit After (Weight)', () => {
 });
 
 test.describe('Numeric Input Validation', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Int32 - Invalid Input Rejection', () => {
         test('rejects non-numeric text input', async () => {

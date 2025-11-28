@@ -1,31 +1,28 @@
 import { test, expect, Page } from '@playwright/test';
 import { setupPage } from '../helpers/page';
 import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze } from '../helpers/persistent-object';
-import { startBackend, stopBackend } from '../helpers/backend';
+import { startBackend, stopBackend, BackendProcess } from '../helpers/backend';
 
 test.describe.serial('Boolean Attribute Tests', () => {
-    let sharedBackend: Awaited<ReturnType<typeof startBackend>>;
+    let sharedBackend: BackendProcess;
+    let sharedPage: Page;
 
     test.beforeAll(async ({}, testInfo) => {
         sharedBackend = await startBackend(testInfo);
     });
 
+    test.beforeAll(async ({ browser }) => {
+        sharedPage = await browser.newPage();
+        await setupPage(sharedPage, '', sharedBackend.port);
+    });
+
+
     test.afterAll(async () => {
+        await sharedPage?.close();
         await stopBackend(sharedBackend);
     });
 
 test.describe('Boolean Attribute (Toggle mode - default)', () => {
-    let sharedPage: Page;
-
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
-
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
-
     test.describe('Non-edit mode', () => {
         test('displays initial value "Yes" in span', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-boolean', 'Boolean');
@@ -127,16 +124,8 @@ test.describe('Boolean Attribute (Toggle mode - default)', () => {
 });
 
 test.describe('Boolean Attribute (Checkbox mode)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "No" in span', async () => {
@@ -239,16 +228,8 @@ test.describe('Boolean Attribute (Checkbox mode)', () => {
 });
 
 test.describe('Boolean Attribute (ReadOnly - Toggle mode)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "Yes" in span', async () => {
@@ -292,16 +273,8 @@ test.describe('Boolean Attribute (ReadOnly - Toggle mode)', () => {
 });
 
 test.describe('Boolean Attribute (ReadOnly - Checkbox mode)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "No" in span', async () => {
@@ -345,16 +318,8 @@ test.describe('Boolean Attribute (ReadOnly - Checkbox mode)', () => {
 });
 
 test.describe('Boolean Attribute (Required)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "No" in span', async () => {
@@ -428,16 +393,8 @@ test.describe('Boolean Attribute (Required)', () => {
 });
 
 test.describe('Boolean Attribute (Frozen - Toggle mode)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Edit mode', () => {
         test('toggle becomes disabled when parent is frozen', async () => {
@@ -491,16 +448,8 @@ test.describe('Boolean Attribute (Frozen - Toggle mode)', () => {
 });
 
 test.describe('Boolean Attribute (Frozen - Checkbox mode)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Edit mode', () => {
         test('checkbox becomes disabled when parent is frozen', async () => {

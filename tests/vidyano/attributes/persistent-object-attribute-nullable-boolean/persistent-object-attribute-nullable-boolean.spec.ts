@@ -5,27 +5,24 @@ import { startBackend, stopBackend } from '../helpers/backend';
 
 test.describe.serial('NullableBoolean Attribute Tests', () => {
     let sharedBackend: Awaited<ReturnType<typeof startBackend>>;
+    let sharedPage: Page;
 
     test.beforeAll(async ({}, testInfo) => {
         sharedBackend = await startBackend(testInfo);
     });
 
+    test.beforeAll(async ({ browser }) => {
+        sharedPage = await browser.newPage();
+        await setupPage(sharedPage, '', sharedBackend.port);
+    });
+
+
     test.afterAll(async () => {
+        await sharedPage?.close();
         await stopBackend(sharedBackend);
     });
 
-test.describe('NullableBoolean Attribute (Standard)', () => {
-    let sharedPage: Page;
-
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
-
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
-
+test.describe.serial('NullableBoolean Attribute (Standard)', () => {
     test.describe('Non-edit mode', () => {
         test('displays em-dash for null value in span', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-nullable-boolean', 'NullableBoolean');
@@ -267,16 +264,8 @@ test.describe('NullableBoolean Attribute (Standard)', () => {
 });
 
 test.describe('NullableBoolean Attribute (ReadOnly)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "Yes" in span', async () => {
@@ -312,16 +301,8 @@ test.describe('NullableBoolean Attribute (ReadOnly)', () => {
 });
 
 test.describe('NullableBoolean Attribute (Required)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Non-edit mode', () => {
         test('displays initial value "No"', async () => {
@@ -389,16 +370,8 @@ test.describe('NullableBoolean Attribute (Required)', () => {
 });
 
 test.describe('NullableBoolean Attribute (Frozen)', () => {
-    let sharedPage: Page;
 
-    test.beforeAll(async ({ browser }) => {
-        sharedPage = await browser.newPage();
-        await setupPage(sharedPage);
-    });
 
-    test.afterAll(async () => {
-        await sharedPage.close();
-    });
 
     test.describe('Edit mode', () => {
         test('vi-select becomes disabled when parent is frozen', async () => {
