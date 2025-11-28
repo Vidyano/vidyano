@@ -7,6 +7,12 @@
         min-height: 0;
     }
 
+    pre {
+        margin: 0;
+        font-family: inherit;
+        white-space: pre-line;
+    }
+
     vi-tags.flex {
         flex: 1;
         min-height: 0;

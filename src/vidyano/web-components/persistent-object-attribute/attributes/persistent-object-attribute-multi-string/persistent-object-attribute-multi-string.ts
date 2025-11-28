@@ -189,11 +189,6 @@ export class PersistentObjectAttributeMultiString extends PersistentObjectAttrib
         this.value = this._strings.filter(s => !!s.value).map(s => s.value).join("\n");
     }
 
-    @observer("frozen")
-    private _onFrozenChanged() {
-        // Frozen state is handled reactively in the template
-    }
-
     private _onTagsChanged(e: CustomEvent) {
         if (!this.isTags || !this.editing)
             return;
