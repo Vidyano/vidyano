@@ -16,6 +16,7 @@ import type { AppRoutePresenter } from "components/app-route-presenter/app-route
 import { AppServiceHooksBase } from "components/app-service-hooks/app-service-hooks-base"
 import "components/connected-notifier/connected-notifier";
 import * as Keyboard from "components/utils/keyboard"
+import { Dialog } from "components/dialog/dialog"
 import { MessageDialog, IMessageDialogOptions } from "components/message-dialog/message-dialog"
 import "components/sensitive/sensitive"
 import "components/session-presenter/session-presenter"
@@ -186,7 +187,7 @@ export abstract class AppBase extends Polymer.WebComponent {
     #serviceHooksResolver: (hooks: AppServiceHooksBase) => void;
 
     private _keybindingRegistrations: { [key: string]: Keyboard.IKeybindingRegistration[]; } = {};
-    private _activeDialogs: Polymer.Dialog[] = [];
+    private _activeDialogs: (Polymer.Dialog | Dialog)[] = [];
     private _initializeResolve: (app: Vidyano.Application) => void;
     private _initialize: Promise<Vidyano.Application> = new Promise(resolve => { this._initializeResolve = resolve; });
     private _setInitializing: (initializing: boolean) => void;
@@ -377,7 +378,7 @@ export abstract class AppBase extends Polymer.WebComponent {
         Vidyano.ServiceBus.send(this, "path-changed", { path: path });
     }
 
-    async showDialog(dialog: Polymer.Dialog): Promise<any> {
+    async showDialog(dialog: Polymer.Dialog | Dialog): Promise<any> {
         this.shadowRoot.appendChild(dialog);
         this._activeDialogs.push(dialog);
 
@@ -466,7 +467,7 @@ export abstract class AppBase extends Polymer.WebComponent {
     private _registerKeybindings(registration: Keyboard.IKeybindingRegistration) {
         const currentKeys = this.keys ? this.keys.split(" ") : [];
         registration.keys.forEach(key => {
-            registration.scope = <any>this.findParent(e => e instanceof AppRoute || e instanceof Polymer.Dialog, registration.element);
+            registration.scope = <any>this.findParent(e => e instanceof AppRoute || e instanceof Polymer.Dialog || e instanceof Dialog, registration.element);
 
             const registrations = this._keybindingRegistrations[key] || (this._keybindingRegistrations[key] = []);
             registrations.push(registration);
