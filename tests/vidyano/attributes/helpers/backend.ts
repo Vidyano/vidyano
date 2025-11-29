@@ -11,24 +11,30 @@ export interface BackendProcess extends ChildProcess {
     port: number;
 }
 
-export async function startBackend(testInfoOrPath: TestInfo | string): Promise<BackendProcess> {
-    let csFilePath: string;
-    let port: number;
+export async function startBackend(testInfo: TestInfo, backendFile?: string): Promise<BackendProcess> {
+    const testFile = testInfo.file;
+    const dir = testFile.substring(0, testFile.lastIndexOf('/'));
 
-    if (typeof testInfoOrPath === 'string') {
-        csFilePath = testInfoOrPath;
-        port = 44355; // Default port for string path
+    let csFile: string;
+    if (backendFile) {
+        // Use the specified backend file
+        csFile = `${dir}/${backendFile}`;
     } else {
-        // Get test file path and construct path to .cs file
-        const testFile = testInfoOrPath.file;
-        const dir = testFile.substring(0, testFile.lastIndexOf('/'));
-        const csFile = execSync(`find "${dir}" -maxdepth 1 -name "*.cs" -type f`, { encoding: 'utf-8' }).trim();
-        if (!csFile)
-            throw new Error('No .cs file found in test directory');
-
-        csFilePath = execSync(`realpath --relative-to="$(pwd)" "${csFile}"`, { encoding: 'utf-8' }).trim();
-        port = getWorkerPort(testInfoOrPath);
+        // Derive from spec filename: foo.spec.ts -> foo.cs
+        const specFileName = testFile.substring(testFile.lastIndexOf('/') + 1);
+        const csFileName = specFileName.replace('.spec.ts', '.cs');
+        csFile = `${dir}/${csFileName}`;
     }
+
+    // Check if the .cs file exists
+    try {
+        execSync(`test -f "${csFile}"`, { encoding: 'utf-8' });
+    } catch {
+        throw new Error(`No matching .cs file found: ${csFile}`);
+    }
+
+    const csFilePath = execSync(`realpath --relative-to="$(pwd)" "${csFile}"`, { encoding: 'utf-8' }).trim();
+    const port = getWorkerPort(testInfo);
 
     // Start the backend process
     // Gracefully stop any existing process on this port

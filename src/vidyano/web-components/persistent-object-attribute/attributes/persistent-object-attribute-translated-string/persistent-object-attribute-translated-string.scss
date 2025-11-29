@@ -16,6 +16,16 @@
         color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
     }
 
+    input.flex {
+        flex: 1;
+        min-width: 0;
+    }
+
+    vi-scroller.fit {
+        position: absolute;
+        inset: 0;
+    }
+
     &[multiline] {
         #multiline {
             overflow: hidden;

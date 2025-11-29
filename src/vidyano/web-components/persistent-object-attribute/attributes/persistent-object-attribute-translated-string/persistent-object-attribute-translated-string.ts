@@ -1,7 +1,11 @@
-import * as Polymer from "polymer"
-import * as Vidyano from "vidyano"
-import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
-import { PersistentObjectAttributeTranslatedStringDialog } from "./persistent-object-attribute-translated-string-dialog"
+import { html, nothing, unsafeCSS } from "lit";
+import { property, state } from "lit/decorators.js";
+import * as Vidyano from "vidyano";
+import { computed } from "components/web-component/web-component";
+import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute";
+import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register";
+import { PersistentObjectAttributeTranslatedStringDialog } from "./persistent-object-attribute-translated-string-dialog";
+import styles from "./persistent-object-attribute-translated-string.css";
 
 export interface ITranslatedString {
     key: string;
@@ -9,32 +13,37 @@ export interface ITranslatedString {
     value: string;
 }
 
-@Polymer.WebComponent.register({
-    properties: {
-        strings: {
-            type: Array,
-            readOnly: true
-        },
-        multiline: {
-            type: Boolean,
-            reflectToAttribute: true,
-            computed: "_computeMultiline(attribute)"
-        },
-        canShowDialog: {
-            type: Boolean,
-            computed: "_computeCanShowDialog(strings, multiline)"
-        }
-    }
-}, "vi-persistent-object-attribute-translated-string")
-export class PersistentObjectAttributeTranslatedString extends Polymer.PersistentObjectAttribute {
-    static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-translated-string.html">`; }
+export class PersistentObjectAttributeTranslatedString extends PersistentObjectAttribute {
+    static styles = [super.styles, unsafeCSS(styles)];
 
     private _defaultLanguage: string;
-    readonly strings: ITranslatedString[]; private _setStrings: (strings: ITranslatedString[]) => void;
-    multiline: boolean;
 
-    protected _optionsChanged(options: string[] | Vidyano.PersistentObjectAttributeOption[]) {
+    @state()
+    strings: ITranslatedString[] = [];
+
+    @property({ type: Boolean, reflect: true })
+    @computed(function(this: PersistentObjectAttributeTranslatedString): boolean {
+        return this.attribute?.getTypeHint("MultiLine") === "True";
+    }, "attribute.typeHints")
+    declare readonly multiline: boolean;
+
+    @computed(function(this: PersistentObjectAttributeTranslatedString): boolean {
+        return this.strings?.length > 1 || this.multiline;
+    }, "strings", "multiline")
+    declare readonly canShowDialog: boolean;
+
+    protected override _attributeChanged() {
+        super._attributeChanged();
+
+        if (this.attribute?.options)
+            this._optionsChanged(this.attribute.options);
+    }
+
+    protected override _optionsChanged(options: string[] | Vidyano.PersistentObjectAttributeOption[]) {
         super._optionsChanged(options);
+
+        if (!this.attribute?.options || this.attribute.options.length < 3)
+            return;
 
         const strings: ITranslatedString[] = [];
         this._defaultLanguage = <string>this.attribute.options[1];
@@ -49,36 +58,31 @@ export class PersistentObjectAttributeTranslatedString extends Polymer.Persisten
             });
         }
 
-        this._setStrings(strings);
+        this.strings = strings;
     }
 
-    protected _valueChanged(newValue: string, oldValue: string) {
-        if (newValue === this.attribute.value)
+    protected override _valueChanged(newValue: string, oldValue: string) {
+        if (newValue === this.attribute?.value)
             return;
 
         super._valueChanged(newValue, oldValue);
 
-        this.strings.find(s => s.key === this._defaultLanguage).value = newValue;
+        const defaultString = this.strings?.find(s => s.key === this._defaultLanguage);
+        if (defaultString)
+            defaultString.value = newValue;
 
         const newOption = {};
-        this.strings.forEach(val => {
+        this.strings?.forEach(val => {
             newOption[val.key] = val.value;
         });
 
-        this.set("attribute.options.0", JSON.stringify(newOption));
+        if (this.attribute?.options)
+            this.attribute.options[0] = JSON.stringify(newOption);
     }
 
     private _editInputBlur() {
         if (this.attribute && this.attribute.isValueChanged && this.attribute.triggersRefresh)
             this.attribute.setValue(this.value = this.attribute.value, true).catch(Vidyano.noop);
-    }
-
-    private _computeMultiline(attribute: Vidyano.PersistentObjectAttribute): boolean {
-        return attribute && attribute.getTypeHint("MultiLine") === "True";
-    }
-
-    private _computeCanShowDialog(strings: ITranslatedString[], multiline: boolean): boolean {
-        return strings.length > 1 || multiline;
     }
 
     private async _showLanguagesDialog() {
@@ -100,6 +104,51 @@ export class PersistentObjectAttributeTranslatedString extends Polymer.Persisten
 
         await this.attribute.setValue(this.value = this.attribute.value, true);
     }
+
+    protected override renderDisplay() {
+        if (!this.multiline)
+            return super.renderDisplay(html`<span>${this.attribute?.displayValue}</span>`);
+
+        return html`
+            <vi-scroller>
+                <vi-sensitive ?disabled=${!this.sensitive}>
+                    <pre>${this.attribute?.displayValue}</pre>
+                </vi-sensitive>
+            </vi-scroller>
+        `;
+    }
+
+    protected override renderEdit() {
+        return super.renderEdit(html`
+            ${!this.multiline ? html`
+                <vi-sensitive ?disabled=${!this.sensitive}>
+                    <input
+                        class="flex"
+                        .value=${this.value || ""}
+                        @input=${(e: InputEvent) => this.value = (e.target as HTMLInputElement).value}
+                        @blur=${this._editInputBlur}
+                        type="text"
+                        ?readonly=${this.readOnly}
+                        ?disabled=${this.frozen}
+                        tabindex=${this.readOnlyTabIndex || nothing}
+                        placeholder=${this.placeholder || nothing}>
+                </vi-sensitive>
+            ` : html`
+                <vi-scroller class="fit">
+                    <vi-sensitive ?disabled=${!this.sensitive}>
+                        <pre id="multiline">${this.attribute?.value}</pre>
+                    </vi-sensitive>
+                </vi-scroller>
+            `}
+            ${this.canShowDialog ? html`
+                <vi-button slot="right" @click=${this._showLanguagesDialog} tabindex="-1" ?hidden=${this.sensitive}>
+                    <vi-icon source="TranslatedString"></vi-icon>
+                </vi-button>
+            ` : nothing}
+        `);
+    }
 }
+
+customElements.define("vi-persistent-object-attribute-translated-string", PersistentObjectAttributeTranslatedString);
 
 PersistentObjectAttributeRegister.add("TranslatedString", PersistentObjectAttributeTranslatedString);
