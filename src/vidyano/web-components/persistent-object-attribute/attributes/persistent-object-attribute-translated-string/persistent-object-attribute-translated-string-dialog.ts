@@ -1,6 +1,5 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { Dialog } from "components/dialog/dialog"
 import type { ITranslatedString } from "./persistent-object-attribute-translated-string"
 
 @Polymer.WebComponent.register({
@@ -17,8 +16,8 @@ import type { ITranslatedString } from "./persistent-object-attribute-translated
         "ctrl+s": "_keyboardOk"
     }
 }, "vi-persistent-object-attribute-translated-string-dialog")
-export class PersistentObjectAttributeTranslatedStringDialog extends Dialog {
-    static get template() { return Dialog.dialogTemplate(Polymer.html`<link rel="import" href="persistent-object-attribute-translated-string-dialog.html">`) }
+export class PersistentObjectAttributeTranslatedStringDialog extends Polymer.Dialog {
+    static get template() { return Polymer.Dialog.dialogTemplate(Polymer.html`<link rel="import" href="persistent-object-attribute-translated-string-dialog.html">`) }
 
     constructor(public label: string, public strings: ITranslatedString[], public multiline: boolean, public readonly: boolean) {
         super();

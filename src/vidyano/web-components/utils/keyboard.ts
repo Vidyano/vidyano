@@ -1,5 +1,5 @@
 import type { AppRoute } from "components/app-route/app-route"
-import type { Dialog } from "components/dialog/dialog"
+import type * as Polymer from "polymer"
 
 export const Keys = {
     Backspace: "Backspace",
@@ -58,5 +58,5 @@ export interface IKeybindingRegistration {
     listener: (e: IKeysEvent) => void;
     nonExclusive: boolean;
     priority?: number;
-    scope?: AppRoute | Dialog;
+    scope?: AppRoute | Polymer.Dialog;
 }

@@ -1,6 +1,5 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { Dialog } from "components/dialog/dialog"
 
 @Polymer.WebComponent.register({
     properties: {
@@ -12,8 +11,8 @@ import { Dialog } from "components/dialog/dialog"
     },
     mediaQueryAttributes: true
 }, "vi-retry-action-dialog")
-export class RetryActionDialog extends Dialog {
-    static get template() { return Dialog.dialogTemplate(Polymer.html`<link rel="import" href="retry-action-dialog.html">`); }
+export class RetryActionDialog extends Polymer.Dialog {
+    static get template() { return Polymer.Dialog.dialogTemplate(Polymer.html`<link rel="import" href="retry-action-dialog.html">`); }
 
     constructor(public retry: Vidyano.Dto.RetryActionDto) {
         super();

@@ -1,6 +1,5 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { Dialog } from "components/dialog/dialog"
 import { IItemTapEventArgs } from "components/query-grid/query-grid-row"
 import "components/notification/notification"
 
@@ -18,8 +17,8 @@ import "components/notification/notification"
         "_selectedItemsChanged(query.selectedItems)"
     ]
 }, "vi-select-reference-dialog")
-export class SelectReferenceDialog extends Dialog {
-    static get template() { return Dialog.dialogTemplate(Polymer.html`<link rel="import" href="select-reference-dialog.html">`) }
+export class SelectReferenceDialog extends Polymer.Dialog {
+    static get template() { return Polymer.Dialog.dialogTemplate(Polymer.html`<link rel="import" href="select-reference-dialog.html">`) }
 
     canSelect: boolean;
 

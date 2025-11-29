@@ -1,5 +1,4 @@
 import * as Polymer from "polymer"
-import { Dialog } from "components/dialog/dialog"
 import "components/marked/marked"
 
 export interface IMessageDialogOptions {
@@ -38,8 +37,8 @@ export interface IMessageDialogOptions {
         "left": "_keyboardPreviousAction"
     }
 }, "vi-message-dialog")
-export class MessageDialog extends Dialog {
-    static get template() { return Dialog.dialogTemplate(Polymer.html`<link rel="import" href="message-dialog.html">`) }
+export class MessageDialog extends Polymer.Dialog {
+    static get template() { return Polymer.Dialog.dialogTemplate(Polymer.html`<link rel="import" href="message-dialog.html">`) }
 
     readonly options: IMessageDialogOptions; private _setOptions: (options: IMessageDialogOptions) => void;
         readonly activeAction: number; private _setActiveAction: (activeAction: number) => void;
