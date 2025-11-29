@@ -51,7 +51,7 @@ export class PersistentObjectAttributeComboBox extends PersistentObjectAttribute
                 allow-free-text
                 ?readonly=${this.readOnly}
                 ?disabled=${this.frozen}
-                placeholder=${this.placeholder || nothing}
+                placeholder=${this.placeholder || "—"}
                 ?sensitive=${this.sensitive}>
             </vi-select>
             ${this.canClear ? html`

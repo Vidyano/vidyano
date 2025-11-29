@@ -107,8 +107,10 @@ test.describe('Default', () => {
             const clearButton = component.locator('#clear');
             await clearButton.click();
 
+            // Text input should be empty with dash placeholder
             const textInput = component.locator('input[type="text"]');
             await expect(textInput).toHaveValue('');
+            await expect(textInput).toHaveAttribute('placeholder', '—');
 
             // Clear button should no longer be visible after clearing
             await expect(clearButton).toHaveCount(0);

@@ -309,9 +309,10 @@ test.describe('Nullable', () => {
             const clearButton = component.locator('vi-button:has(vi-icon[source="Remove"])');
             await clearButton.click();
 
-            // Input should be empty (null state)
+            // Input should be empty with dash placeholder
             const input = component.locator('input');
             await expect(input).toHaveValue('');
+            await expect(input).toHaveAttribute('placeholder', '—');
 
             // Clear button should disappear
             await expect(component.locator('vi-button vi-icon[source="Remove"]')).toHaveCount(0);

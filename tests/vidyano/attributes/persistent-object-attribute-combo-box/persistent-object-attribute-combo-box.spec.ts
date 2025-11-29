@@ -400,8 +400,9 @@ test.describe('Clear button', () => {
         await expect(clearButton).toBeVisible();
         await clearButton.click();
 
-        // Verify value cleared
+        // Verify value cleared and dash placeholder shown
         await expect(input).toHaveValue('');
+        await expect(input).toHaveAttribute('placeholder', '—');
 
         // Verify clear button is now hidden
         await expect(clearButton).not.toBeVisible();

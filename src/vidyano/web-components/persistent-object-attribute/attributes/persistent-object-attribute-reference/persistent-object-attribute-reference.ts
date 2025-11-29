@@ -210,7 +210,7 @@ export class PersistentObjectAttributeReference extends PersistentObjectAttribut
 
     #renderEditSelectDefault() {
         return super.renderEdit(html`
-            <vi-select id="selectInPlace" class="fit" .options=${this.options} .selectedOption=${this.objectId} @selected-option-changed=${this._selectInPlaceChanged} ?readonly=${this.readOnly} placeholder=${this.placeholder || nothing} ?sensitive=${this.sensitive} ?disabled=${this.frozen}></vi-select>
+            <vi-select id="selectInPlace" class="fit" .options=${this.options} .selectedOption=${this.objectId} @selected-option-changed=${this._selectInPlaceChanged} ?readonly=${this.readOnly} placeholder=${this.placeholder || "—"} ?sensitive=${this.sensitive} ?disabled=${this.frozen}></vi-select>
             <vi-button slot="right" @click=${this._openSelect} ?hidden=${!this.canOpenSelect} tabindex="-1" ?disabled=${this.frozen}>
                 <vi-icon source="CaretDown"></vi-icon>
             </vi-button>
@@ -257,7 +257,7 @@ export class PersistentObjectAttributeReference extends PersistentObjectAttribut
     #renderEditInput() {
         return super.renderEdit(html`
             <vi-sensitive ?disabled=${!this.sensitive}>
-                <input .value=${this.filter || ""} @input=${(e: InputEvent) => this.filter = (e.target as HTMLInputElement).value} @blur=${this._filterBlur} ?readonly=${this.readOnly} tabindex=${this.readOnlyTabIndex || nothing} placeholder=${this.placeholder || nothing} ?disabled=${this.frozen}>
+                <input .value=${this.filter || ""} @input=${(e: InputEvent) => this.filter = (e.target as HTMLInputElement).value} @blur=${this._filterBlur} ?readonly=${this.readOnly} tabindex=${this.readOnlyTabIndex || nothing} placeholder=${this.placeholder || "—"} ?disabled=${this.frozen}>
             </vi-sensitive>
             <a slot="right" href=${this.href || nothing} title=${this.title || nothing} ?disabled=${!this.href} tabindex="-1" @click=${this._open} target=${this.target || nothing}>
                 <vi-icon source="ArrowUpRight"></vi-icon>

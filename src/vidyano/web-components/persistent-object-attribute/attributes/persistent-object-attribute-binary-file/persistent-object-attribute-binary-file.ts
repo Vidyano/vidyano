@@ -65,7 +65,7 @@ export class PersistentObjectAttributeBinaryFile extends PersistentObjectAttribu
     protected renderEdit() {
         return super.renderEdit(html`
             <vi-sensitive ?disabled=${!this.sensitive}>
-                <input .value=${this.fileName} type="text" readonly placeholder=${this.placeholder}>
+                <input .value=${this.fileName} type="text" readonly placeholder=${this.placeholder || "—"}>
             </vi-sensitive>
             ${!this.readOnly ? html`
                 <button id="browse" class="browse" slot="right" ?disabled=${this.frozen}>

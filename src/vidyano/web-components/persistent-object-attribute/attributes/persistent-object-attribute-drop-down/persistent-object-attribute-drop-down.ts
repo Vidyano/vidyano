@@ -102,7 +102,7 @@ export class PersistentObjectAttributeDropDown extends PersistentObjectAttribute
                 @selected-option-changed=${(e: CustomEvent) => this.value = e.detail.value}
                 ?readonly=${this.readOnly}
                 ?disabled=${this.frozen}
-                placeholder=${this.placeholder || nothing}
+                placeholder=${this.placeholder || "—"}
                 group-separator=${this.groupSeparator || nothing}
                 ?sensitive=${this.sensitive}>
             </vi-select>

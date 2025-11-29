@@ -118,8 +118,9 @@ test.describe('Select', () => {
             const clearButton = component.locator('vi-button').filter({ has: sharedPage.locator('vi-icon[source="Remove"]') });
             await clearButton.click();
 
-            // Value should be cleared
+            // Value should be cleared and dash placeholder should be shown
             await expect(input).toHaveValue('');
+            await expect(input).toHaveAttribute('placeholder', '—');
         });
     });
 
