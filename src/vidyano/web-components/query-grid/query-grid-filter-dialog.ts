@@ -1,6 +1,5 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { Dialog } from "components/dialog/dialog"
 import "components/notification/notification"
 import "./query-grid-filter-dialog-name"
 
@@ -15,8 +14,8 @@ import "./query-grid-filter-dialog-name"
         "persistentObject.isBusy"
     ]
 }, "vi-query-grid-filter-dialog")
-export class QueryGridFilterDialog extends Dialog {
-    static get template() { return Dialog.dialogTemplate(Polymer.html`<link rel="import" href="query-grid-filter-dialog.html">`) }
+export class QueryGridFilterDialog extends Polymer.Dialog {
+    static get template() { return Polymer.Dialog.dialogTemplate(Polymer.html`<link rel="import" href="query-grid-filter-dialog.html">`) }
 
     readonly persistentObject: Vidyano.PersistentObject; private _setPersistentObject: (persistentObject: Vidyano.PersistentObject) => void;
 

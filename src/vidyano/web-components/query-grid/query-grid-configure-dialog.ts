@@ -1,6 +1,5 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { Dialog } from "components/dialog/dialog"
 import { QueryGridConfigureDialogColumn } from "./query-grid-configure-dialog-column"
 import { QueryGridUserSettings } from "./query-grid-user-settings"
 import { Sortable } from "components/sortable/sortable"
@@ -13,8 +12,8 @@ import { Sortable } from "components/sortable/sortable"
         "distribute-columns": "_distributeColumns"
     }
 }, "vi-query-grid-configure-dialog")
-export class QueryGridConfigureDialog extends Dialog {
-    static get template() { return Dialog.dialogTemplate(Polymer.html`<link rel="import" href="query-grid-configure-dialog.html">`); }
+export class QueryGridConfigureDialog extends Polymer.Dialog {
+    static get template() { return Polymer.Dialog.dialogTemplate(Polymer.html`<link rel="import" href="query-grid-configure-dialog.html">`); }
     private _elements: QueryGridConfigureDialogColumn[];
 
     constructor(public query: Vidyano.Query, private _settings: QueryGridUserSettings) {

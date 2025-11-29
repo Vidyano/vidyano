@@ -1,6 +1,5 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { Dialog } from "components/dialog/dialog"
 import { Scroller } from "components/scroller/scroller";
 
 type StreamingActionDialogDetails = {
@@ -39,8 +38,8 @@ type StreamingActionDialogDetails = {
         }
     }
 }, "vi-streaming-action-dialog")
-export class StreamingActionDialog extends Dialog {
-    static get template() { return Dialog.dialogTemplate(Polymer.html`<link rel="import" href="streaming-action-dialog.html">`); }
+export class StreamingActionDialog extends Polymer.Dialog {
+    static get template() { return Polymer.Dialog.dialogTemplate(Polymer.html`<link rel="import" href="streaming-action-dialog.html">`); }
 
     readonly content: string; private _setContent: (content: string) => void;
     readonly icon: string; private _setIcon: (icon: string) => void;

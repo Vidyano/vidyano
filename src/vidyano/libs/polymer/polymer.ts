@@ -23,6 +23,7 @@ import "@polymer/iron-media-query"
 
 export { WebComponent } from "components/web-component/polymer/web-component"
 export { PersistentObjectAttribute } from "components/persistent-object-attribute/polymer/persistent-object-attribute"
+export { Dialog, IDialogOptions } from "components/dialog/polymer/dialog"
 
 declare module "@polymer/polymer/lib/utils/gestures" {
     export interface GestureEvent extends Event {

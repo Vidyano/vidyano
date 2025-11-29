@@ -1,5 +1,4 @@
 import * as Polymer from "polymer"
-import { Dialog } from "components/dialog/dialog"
 import { ISize } from "components/size-tracker/size-tracker"
 
 @Polymer.WebComponent.register({
@@ -22,8 +21,8 @@ import { ISize } from "components/size-tracker/size-tracker"
         "_showImage(headerSize, footerSize)"
     ]
 }, "vi-persistent-object-attribute-image-dialog")
-export class PersistentObjectAttributeImageDialog extends Dialog {
-    static get template() { return Dialog.dialogTemplate(Polymer.html`<link rel="import" href="persistent-object-attribute-image-dialog.html">`) }
+export class PersistentObjectAttributeImageDialog extends Polymer.Dialog {
+    static get template() { return Polymer.Dialog.dialogTemplate(Polymer.html`<link rel="import" href="persistent-object-attribute-image-dialog.html">`) }
 
     private _updated: boolean;
         readonly sources: string[];

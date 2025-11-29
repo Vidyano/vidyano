@@ -2,7 +2,6 @@ import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import { App } from "components/app/app"
 import { Button } from "components/button/button"
-import { Dialog } from "components/dialog/dialog"
 import "components/notification/notification"
 import "components/persistent-object-tab-presenter/persistent-object-tab-presenter"
 import { SizeTrackerEvent } from "components/size-tracker/size-tracker"
@@ -64,8 +63,8 @@ export interface IPersistentObjectDialogOptions {
     },
     mediaQueryAttributes: true
 }, "vi-persistent-object-dialog")
-export class PersistentObjectDialog extends Dialog {
-    static get template() { return Dialog.dialogTemplate(Polymer.html`<link rel="import" href="persistent-object-dialog.html">`) }
+export class PersistentObjectDialog extends Polymer.Dialog {
+    static get template() { return Polymer.Dialog.dialogTemplate(Polymer.html`<link rel="import" href="persistent-object-dialog.html">`) }
 
     private _saveHook: (po: Vidyano.PersistentObject) => Promise<any>;
     readonly options: IPersistentObjectDialogOptions; private _setOptions: (options: IPersistentObjectDialogOptions) => void;

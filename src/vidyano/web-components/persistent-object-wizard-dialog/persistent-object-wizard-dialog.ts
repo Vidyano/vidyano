@@ -1,6 +1,5 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
-import { Dialog } from "components/dialog/dialog"
 import { SizeTrackerEvent } from "components/size-tracker/size-tracker"
 
 @Polymer.WebComponent.register({
@@ -45,8 +44,8 @@ import { SizeTrackerEvent } from "components/size-tracker/size-tracker"
     },
     mediaQueryAttributes: true
 }, "vi-persistent-object-wizard-dialog")
-export class PersistentObjectWizardDialog extends Dialog {
-    static get template() { return Dialog.dialogTemplate(Polymer.html`<link rel="import" href="persistent-object-wizard-dialog.html">`); }
+export class PersistentObjectWizardDialog extends Polymer.Dialog {
+    static get template() { return Polymer.Dialog.dialogTemplate(Polymer.html`<link rel="import" href="persistent-object-wizard-dialog.html">`); }
 
     readonly currentTab: Vidyano.PersistentObjectAttributeTab; private _setCurrentTab: (tab: Vidyano.PersistentObjectTab) => void;
     readonly canPrevious: boolean;

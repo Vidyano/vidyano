@@ -3,7 +3,6 @@ import * as Polymer from "polymer"
 import { Path } from "libs/pathjs/pathjs"
 import { AppRoute } from "components/app-route/app-route"
 import { AppServiceHooks } from "components/app-service-hooks/app-service-hooks"
-import { Dialog } from "components/dialog/dialog"
 import "components/error/error"
 
 @Polymer.WebComponent.register({
@@ -109,7 +108,7 @@ export class AppRoutePresenter extends Polymer.WebComponent {
                     return;
             }
 
-            Array.from(this.shadowRoot.querySelectorAll("[dialog]")).forEach((dialog: Dialog) => dialog.close());
+            Array.from(this.shadowRoot.querySelectorAll("[dialog]")).forEach((dialog: Polymer.Dialog) => dialog.close());
 
             const redirect = await (<AppServiceHooks>this.app.service.hooks).onAppRouteChanging(newRoute, this.currentRoute);
             if (redirect) {

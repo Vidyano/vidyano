@@ -1,64 +1,57 @@
-import * as Polymer from "polymer"
+import { CSSResultGroup, html, TemplateResult, unsafeCSS } from "lit";
+import { property, state } from "lit/decorators.js";
+import { keybinding, WebComponent } from "components/web-component/web-component";
 import { PopupMenu } from "components/popup-menu/popup-menu";
-import "components/size-tracker/size-tracker"
+import styles from "./dialog.css";
 
 interface IPosition {
     x: number;
     y: number;
 }
 
-export interface IDialogOptions {
-    omitStyle?: boolean
-}
-
-@Polymer.WebComponent.register({
-    properties: {
-        anchorTag: {
-            type: String,
-            value: "header"
-        },
-        isDragging: {
-            type: Boolean,
-            readOnly: true,
-            reflectToAttribute: true
-        },
-        noCancelOnOutsideClick: {
-            type: Boolean,
-            value: true,
-        },
-        noCancelOnEscKey: Boolean
-    },
-    keybindings: {
-        "esc": "_esc"
-    },
-    mediaQueryAttributes: true
-}, "vi-dialog")
-export abstract class Dialog extends Polymer.WebComponent {
-    static dialogTemplate(innerTemplate: HTMLTemplateElement, options?: IDialogOptions) {
-        const outerTemplate = Polymer.html`<link rel="import" href="dialog.html">`;
-        if (options?.omitStyle)
-            outerTemplate.content.querySelector("style").remove();
-
-        const dialog = outerTemplate.content.querySelector("dialog") as HTMLDialogElement;
-        dialog.appendChild(innerTemplate.content.cloneNode(true));
-
-        return outerTemplate;
-    }
+export abstract class Dialog extends WebComponent {
+    static styles: CSSResultGroup = unsafeCSS(styles);
 
     #result: any;
     #resolve: Function;
     #translatePosition: IPosition;
-    readonly isDragging: boolean; private _setIsDragging: (isDragging: boolean) => void;
+    #abortController: AbortController;
 
-    anchorTag: string;
-    noCancelOnOutsideClick: boolean;
+    @property({ type: String })
+    anchorTag: string = "header";
+
+    @state()
+    isDragging: boolean = false;
+
+    @property({ type: Boolean })
+    noCancelOnOutsideClick: boolean = true;
+
+    @property({ type: Boolean })
     noCancelOnEscKey: boolean;
 
     private get dialog(): HTMLDialogElement {
         return this.shadowRoot.querySelector("dialog") as HTMLDialogElement;
     }
 
+    protected render() {
+        return html`<dialog
+            ?is-dragging=${this.isDragging}
+            @close=${this._onClose}
+            @cancel=${this._onCancel}
+            @click=${this._onClick}
+            @contextmenu=${this._configureContextMenu}
+        >${this.renderContent()}</dialog>`;
+    }
+
+    protected abstract renderContent(): TemplateResult;
+
+    protected renderCloseButton() {
+        return html`<vi-button class="close" @click=${() => this.cancel()} icon="Remove"></vi-button>`;
+    }
+
     async open(): Promise<any> {
+        await this.updateComplete;
+
         this.dialog.showModal();
 
         const promise = new Promise<any>(resolve => {
@@ -67,26 +60,61 @@ export abstract class Dialog extends Polymer.WebComponent {
 
         const anchor = !!this.anchorTag ? <HTMLElement>this.shadowRoot.querySelector(this.anchorTag) : null;
         if (anchor) {
-            const _track = this._track.bind(this);
-            Polymer.Gestures.addListener(anchor, "track", _track);
+            this.#abortController = new AbortController();
+
+            anchor.addEventListener("pointerdown", this._onPointerDown.bind(this), { signal: this.#abortController.signal });
 
             promise.finally(() => {
-                Polymer.Gestures.removeListener(anchor, "track", _track);
+                this.#abortController?.abort();
+                this.#abortController = null;
             });
         }
 
         return promise;
     }
 
-    private _track(e: Polymer.Gestures.TrackEvent) {
-        if (e.detail.state === "track" && this.#translatePosition && this.isDragging) {
+    private _onPointerDown(e: PointerEvent) {
+        const path = e.composedPath();
+
+        // Don't start dragging when clicking interactive elements (like close button)
+        const hasInteractiveElement = path.some(el =>
+            el instanceof HTMLInputElement ||
+            el instanceof HTMLButtonElement ||
+            (el instanceof HTMLElement && el.matches("vi-button, a, [role='button']"))
+        );
+        if (hasInteractiveElement)
+            return;
+
+        const target = e.currentTarget as HTMLElement;
+        if (!target.tagName.startsWith("H")) {
+            e.stopPropagation();
+            e.preventDefault();
+            return;
+        }
+
+        this.isDragging = true;
+        if (!this.#translatePosition)
+            this._translate({ x: 0, y: 0 });
+
+        // Capture initial positions for sticky dragging
+        const initialMouseX = e.clientX;
+        const initialMouseY = e.clientY;
+        const initialTranslateX = this.#translatePosition.x;
+        const initialTranslateY = this.#translatePosition.y;
+
+        target.setPointerCapture(e.pointerId);
+
+        const onPointerMove = (moveEvent: PointerEvent) => {
+            if (!this.isDragging)
+                return;
+
             const rect = this.dialog.getBoundingClientRect();
 
-            // Factor 2 is to align the speed of the dialog with the mouse
-            let x = this.#translatePosition.x + e.detail.ddx * 2;
-            let y = this.#translatePosition.y + e.detail.ddy * 2;
+            // Calculate position based on delta from initial mouse position
+            let x = initialTranslateX + (moveEvent.clientX - initialMouseX);
+            let y = initialTranslateY + (moveEvent.clientY - initialMouseY);
 
-             // Prevent dialog from going outside the screen
+            // Prevent dialog from going outside the screen
             if (x < 0)
                 x = Math.max(x, (window.innerWidth - rect.width) * -1);
             else if (x > 0)
@@ -98,38 +126,27 @@ export abstract class Dialog extends Polymer.WebComponent {
                 y = Math.min(y, window.innerHeight - rect.height);
 
             this._translate({ x, y });
-        }
-        else if (e.detail.state === "start") {
-            const path = e.composedPath();
-            if (path[0] instanceof HTMLInputElement) {
-                e.preventDefault();
-                e.stopPropagation();
-                return;
-            }
+        };
 
-            if (!(<HTMLElement>(e.currentTarget)).tagName.startsWith("H")) {
-                e.stopPropagation();
-                e.preventDefault();
+        const onPointerUp = (upEvent: PointerEvent) => {
+            this.isDragging = false;
+            target.releasePointerCapture(upEvent.pointerId);
+            target.removeEventListener("pointermove", onPointerMove);
+            target.removeEventListener("pointerup", onPointerUp);
+        };
 
-                return;
-            }
-
-            this._setIsDragging(true);
-            if (!this.#translatePosition)
-                this._translate({ x: 0, y: 0 });
-        }
-        else if (e.detail.state === "end")
-            this._setIsDragging(false);
-    } 
+        target.addEventListener("pointermove", onPointerMove);
+        target.addEventListener("pointerup", onPointerUp);
+    }
 
     private _translate(position: IPosition) {
         const { x, y } = this.#translatePosition = position;
 
-        this.dialog.style.left = `${x}px`;
-        this.dialog.style.top = `${y}px`;
+        this.dialog.style.transform = `translate(${x}px, ${y}px)`;
     }
 
-    private _esc(e: KeyboardEvent) {
+    @keybinding("escape")
+    private _esc(_e: KeyboardEvent) {
         if (!this.noCancelOnEscKey)
             this.cancel();
     }
@@ -141,6 +158,11 @@ export abstract class Dialog extends Polymer.WebComponent {
 
     cancel() {
         this.close();
+    }
+
+    protected _focusElement(element: string | HTMLElement) {
+        const target = typeof element === "string" ? <HTMLElement>this.shadowRoot.querySelector(`#${element}`) : element;
+        target?.focus();
     }
 
     private _onClose() {
@@ -161,7 +183,7 @@ export abstract class Dialog extends Polymer.WebComponent {
         const rect = this.dialog.getBoundingClientRect();
         const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
             rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
-        
+
         if (!isInDialog)
             this.dialog.close();
     }
@@ -170,7 +192,7 @@ export abstract class Dialog extends Polymer.WebComponent {
         if (!this.service || !this.service.application)
             return;
 
-        const configureItems: Polymer.WebComponent[] = e["vi:configure"];
+        const configureItems: WebComponent[] = e["vi:configure"];
         if (!this.service.application.hasManagement || !configureItems?.length || window.getSelection().toString()) {
             e.stopImmediatePropagation();
             return;
