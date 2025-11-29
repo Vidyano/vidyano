@@ -4,19 +4,20 @@ export async function setupAttribute(
     page: Page,
     componentTag: string,
     attributeName: string,
-    options?: { startInEditMode?: boolean; useBackendOpenInEdit?: boolean }
+    options?: { startInEditMode?: boolean; useBackendOpenInEdit?: boolean; poType?: string; objectId?: string }
 ) {
     const componentId = `component-${Math.random().toString(36).substring(2, 15)}`;
 
     // Wait for the custom element to be defined
     await page.waitForFunction((tag) => !!customElements.get(tag), componentTag, { timeout: 10000 });
 
-    await page.evaluate(async ({ componentTag, componentId, attributeName, startInEditMode, useBackendOpenInEdit }) => {
+    await page.evaluate(async ({ componentTag, componentId, attributeName, startInEditMode, useBackendOpenInEdit, poType, objectId }) => {
         // Generate truly unique objectId using timestamp + random to prevent any possibility of collision across tests
-        const randomObjectId = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
-        // Note: The backend is configured with StateBehavior.OpenInEdit, so the object will be in edit mode by default
+        // Unless a specific objectId is provided (e.g., for testing existing records)
+        const finalObjectId = objectId ?? `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+        // Note: The backend may be configured with StateBehavior.OpenInEdit, so the object will be in edit mode by default
         // We skip this by default for most tests, unless explicitly requested with useBackendOpenInEdit
-        const persistentObject = await (window as any).service.getPersistentObject(null, "Mock_Attribute", randomObjectId);
+        const persistentObject = await (window as any).service.getPersistentObject(null, poType ?? "Mock_Attribute", finalObjectId);
         const attribute = persistentObject.getAttribute(attributeName);
 
         // By default, cancel backend's OpenInEdit behavior (unless explicitly requested)
@@ -50,7 +51,7 @@ export async function setupAttribute(
         // Wait for Lit component to complete its update cycle
         if (typeof (component as any).updateComplete !== 'undefined')
             await (component as any).updateComplete;
-    }, { componentTag, componentId, attributeName, startInEditMode: options?.startInEditMode, useBackendOpenInEdit: options?.useBackendOpenInEdit });
+    }, { componentTag, componentId, attributeName, startInEditMode: options?.startInEditMode, useBackendOpenInEdit: options?.useBackendOpenInEdit, poType: options?.poType, objectId: options?.objectId });
 
     return page.locator(`#${componentId}`);
 }

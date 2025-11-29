@@ -54,7 +54,6 @@ export * from "./web-components/persistent-object-attribute-edit/persistent-obje
 export * from "./web-components/persistent-object-attribute-label/persistent-object-attribute-label"
 export * from "./web-components/persistent-object-attribute-presenter/persistent-object-attribute-presenter"
 export * from "./web-components/persistent-object-attribute-validation-error/persistent-object-attribute-validation-error"
-export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-as-detail/persistent-object-attribute-as-detail-row"
 export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-as-detail/persistent-object-attribute-as-detail"
 export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-binary-file/persistent-object-attribute-binary-file"
 export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-boolean/persistent-object-attribute-boolean"
