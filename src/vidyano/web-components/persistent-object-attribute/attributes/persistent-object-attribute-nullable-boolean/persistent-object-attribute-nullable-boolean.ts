@@ -13,14 +13,7 @@ export class PersistentObjectAttributeNullableBoolean extends PersistentObjectAt
         if (!attribute)
             return [];
 
-        const options = attribute.type.startsWith("Nullable") ? [
-            {
-                key: null,
-                value: ""
-            }
-        ] : [];
-
-        return options.concat([
+        return [
             {
                 key: true,
                 value: this.translations[attribute.getTypeHint("TrueKey", "Yes")]
@@ -29,13 +22,22 @@ export class PersistentObjectAttributeNullableBoolean extends PersistentObjectAt
                 key: false,
                 value: this.translations[attribute.getTypeHint("FalseKey", "No")]
             }
-        ]);
+        ];
     }, "attribute", "attribute.typeHints", "translations")
     declare readonly booleanOptions: Vidyano.KeyValuePair<boolean, string>[];
+
+    @computed(function(this: PersistentObjectAttributeNullableBoolean, readOnly: boolean, isRequired: boolean, value: boolean): boolean {
+        return !readOnly && !isRequired && value != null;
+    }, "readOnly", "attribute.isRequired", "value")
+    declare readonly canClear: boolean;
 
     protected override _valueChanged(newValue: any, _oldValue: any) {
         if (this.attribute && newValue !== this.attribute.value)
             this.attribute.setValue(newValue, true).catch(Vidyano.noop);
+    }
+
+    private _clear() {
+        this.attribute.setValue(null, true).catch(Vidyano.noop);
     }
 
     protected override renderDisplay() {
@@ -52,8 +54,13 @@ export class PersistentObjectAttributeNullableBoolean extends PersistentObjectAt
                 disable-filtering
                 ?readonly=${this.readOnly}
                 ?disabled=${this.readOnly || this.frozen}
-                placeholder=${this.placeholder || nothing}>
+                placeholder=${this.placeholder || "—"}>
             </vi-select>
+            ${this.canClear ? html`
+                <vi-button slot="right" @click=${this._clear} tabindex="-1" ?disabled=${this.frozen}>
+                    <vi-icon source="Remove"></vi-icon>
+                </vi-button>
+            ` : nothing}
         `);
     }
 }

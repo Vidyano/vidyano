@@ -51,7 +51,7 @@ test.describe.serial('NullableBoolean Attribute (Standard)', () => {
             await expect(input).toHaveValue('');
         });
 
-        test('displays empty placeholder for null value', async () => {
+        test('displays dash placeholder for null value', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-nullable-boolean', 'NullableBoolean');
 
             await beginEdit(sharedPage, component);
@@ -59,6 +59,7 @@ test.describe.serial('NullableBoolean Attribute (Standard)', () => {
             const select = component.locator('vi-select');
             const input = select.locator('input');
             await expect(input).toHaveValue('');
+            await expect(input).toHaveAttribute('placeholder', '—');
         });
     });
 
@@ -77,7 +78,7 @@ test.describe.serial('NullableBoolean Attribute (Standard)', () => {
             await expect(scroller).toBeVisible();
         });
 
-        test('displays two visible options in dropdown: Yes, No', async () => {
+        test('displays two options in dropdown: Yes, No', async () => {
             const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-nullable-boolean', 'NullableBoolean');
 
             await beginEdit(sharedPage, component);
@@ -86,9 +87,37 @@ test.describe.serial('NullableBoolean Attribute (Standard)', () => {
             const popup = select.locator('vi-popup');
             await popup.click();
 
-            // Note: null option exists but is hidden
+            // NullableBoolean has 2 options: Yes (true), No (false) - clear button is used instead of empty option
             const visibleOptions = select.locator('vi-select-option-item:visible');
-            await expect(visibleOptions).toHaveCount(2); // true, false
+            await expect(visibleOptions).toHaveCount(2);
+        });
+
+        test('displays clear button when value is set and not required', async () => {
+            const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-nullable-boolean', 'NullableBooleanWithValue');
+
+            await beginEdit(sharedPage, component);
+
+            // Should have clear button since it has a value (true) and is not required
+            const clearButton = component.locator('vi-button').filter({ has: sharedPage.locator('vi-icon[source="Remove"]') });
+            await expect(clearButton).toBeVisible();
+        });
+
+        test('clears value when clear button is clicked', async () => {
+            const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-nullable-boolean', 'NullableBooleanWithValue');
+
+            await beginEdit(sharedPage, component);
+
+            const select = component.locator('vi-select');
+            const input = select.locator('input');
+            await expect(input).toHaveValue('Yes');
+
+            // Click clear button
+            const clearButton = component.locator('vi-button').filter({ has: sharedPage.locator('vi-icon[source="Remove"]') });
+            await clearButton.click();
+
+            // Value should be cleared and dash placeholder should be shown
+            await expect(input).toHaveValue('');
+            await expect(input).toHaveAttribute('placeholder', '—');
         });
 
         test('selects "Yes" (true) from dropdown', async () => {
@@ -125,37 +154,6 @@ test.describe.serial('NullableBoolean Attribute (Standard)', () => {
             await expect(input).toHaveValue('No');
         });
 
-        test('can select empty (null) option from dropdown', async () => {
-            const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-nullable-boolean', 'NullableBooleanWithValue');
-
-            await beginEdit(sharedPage, component);
-
-            const select = component.locator('vi-select');
-
-            // Verify initial value is "Yes"
-            let input = select.locator('input');
-            await expect(input).toHaveValue('Yes');
-
-            const popup = select.locator('vi-popup');
-            await popup.click();
-
-            // Wait for dropdown to be visible
-            const scroller = select.locator('vi-scroller');
-            await expect(scroller).toBeVisible();
-
-            // Get the first option (empty/null option) and verify it has empty text
-            const options = select.locator('vi-select-option-item');
-            const emptyOption = options.nth(0);
-
-            // Verify the empty option has no text content (only whitespace like \n and spaces)
-            const emptyOptionText = await emptyOption.textContent();
-            expect(emptyOptionText?.trim()).toBe('');
-
-            // Use evaluate to trigger the click event directly
-            await emptyOption.evaluate((el: HTMLElement) => el.click());
-
-            await expect(input).toHaveValue('');
-        });
     });
 
     test.describe('Save and Cancel', () => {
@@ -214,18 +212,9 @@ test.describe.serial('NullableBoolean Attribute (Standard)', () => {
 
             await beginEdit(sharedPage, component);
 
-            const select = component.locator('vi-select');
-            const popup = select.locator('vi-popup');
-            await popup.click();
-
-            // Wait for dropdown to be visible
-            const scroller = select.locator('vi-scroller');
-            await expect(scroller).toBeVisible();
-
-            // Select empty (null) option using JavaScript click
-            const options = select.locator('vi-select-option-item');
-            const emptyOption = options.nth(0);
-            await emptyOption.evaluate((el: HTMLElement) => el.click());
+            // Click clear button to set null value
+            const clearButton = component.locator('vi-button').filter({ has: sharedPage.locator('vi-icon[source="Remove"]') });
+            await clearButton.click();
 
             const savedValue = await save(sharedPage, component);
 
