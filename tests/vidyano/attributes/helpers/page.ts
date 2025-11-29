@@ -7,6 +7,23 @@ export function getAttributeHtml(customStyles = '') {
       <head>
         <meta charset="utf-8" />
         <style>
+          :root {
+            /* Theme variables needed for components */
+            --theme-h1: 40px;
+            --theme-h2: 32px;
+            --theme-h3: 22px;
+            --theme-h4: 12px;
+            --theme-h5: 6px;
+            --theme-foreground: #333;
+            --theme-light-border: #ddd;
+            --theme-read-only: #f5f5f5;
+            --theme-color-error: #f44336;
+            --color: #1a73e8;
+            --color-light: #4285f4;
+            --color-lighter: #8ab4f8;
+            --color-dark: #1557b0;
+            --color-faint: rgba(26, 115, 232, 0.1);
+          }
           :not(:defined) { display: none; }
           * { display: block; padding: 1px; }
           ${customStyles}
