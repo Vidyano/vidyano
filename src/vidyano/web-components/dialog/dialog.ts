@@ -45,6 +45,10 @@ export abstract class Dialog extends WebComponent {
 
     protected abstract renderContent(): TemplateResult;
 
+    protected renderCloseButton() {
+        return html`<vi-button class="close" @click=${() => this.cancel()} icon="Remove"></vi-button>`;
+    }
+
     async open(): Promise<any> {
         await this.updateComplete;
 
@@ -71,11 +75,15 @@ export abstract class Dialog extends WebComponent {
 
     private _onPointerDown(e: PointerEvent) {
         const path = e.composedPath();
-        if (path[0] instanceof HTMLInputElement) {
-            e.preventDefault();
-            e.stopPropagation();
+
+        // Don't start dragging when clicking interactive elements (like close button)
+        const hasInteractiveElement = path.some(el =>
+            el instanceof HTMLInputElement ||
+            el instanceof HTMLButtonElement ||
+            (el instanceof HTMLElement && el.matches("vi-button, a, [role='button']"))
+        );
+        if (hasInteractiveElement)
             return;
-        }
 
         const target = e.currentTarget as HTMLElement;
         if (!target.tagName.startsWith("H")) {
@@ -88,16 +96,23 @@ export abstract class Dialog extends WebComponent {
         if (!this.#translatePosition)
             this._translate({ x: 0, y: 0 });
 
+        // Capture initial positions for sticky dragging
+        const initialMouseX = e.clientX;
+        const initialMouseY = e.clientY;
+        const initialTranslateX = this.#translatePosition.x;
+        const initialTranslateY = this.#translatePosition.y;
+
         target.setPointerCapture(e.pointerId);
 
         const onPointerMove = (moveEvent: PointerEvent) => {
-            if (!this.isDragging || !this.#translatePosition)
+            if (!this.isDragging)
                 return;
 
             const rect = this.dialog.getBoundingClientRect();
 
-            let x = this.#translatePosition.x + moveEvent.movementX;
-            let y = this.#translatePosition.y + moveEvent.movementY;
+            // Calculate position based on delta from initial mouse position
+            let x = initialTranslateX + (moveEvent.clientX - initialMouseX);
+            let y = initialTranslateY + (moveEvent.clientY - initialMouseY);
 
             // Prevent dialog from going outside the screen
             if (x < 0)
@@ -127,8 +142,7 @@ export abstract class Dialog extends WebComponent {
     private _translate(position: IPosition) {
         const { x, y } = this.#translatePosition = position;
 
-        this.dialog.style.left = `${x}px`;
-        this.dialog.style.top = `${y}px`;
+        this.dialog.style.transform = `translate(${x}px, ${y}px)`;
     }
 
     @keybinding("escape")
@@ -146,25 +160,9 @@ export abstract class Dialog extends WebComponent {
         this.close();
     }
 
-    protected _focusElement(element: string | HTMLElement, maxAttempts?: number, interval?: number, attempt: number = 0) {
-        const target = typeof element === "string" ? <HTMLElement>this.shadowRoot.querySelector(`#${element}`) : <HTMLElement>element;
-        if (target) {
-            const oldActiveElementPath = this.app.activeElementPath;
-            if (oldActiveElementPath.some(e => e === target))
-                return;
-
-            target.focus();
-
-            const currentActiveElementPath = this.app.activeElementPath;
-            if (oldActiveElementPath.length !== currentActiveElementPath.length)
-                return;
-
-            if (oldActiveElementPath.some((e, i) => currentActiveElementPath[i] !== e))
-                return;
-        }
-
-        if (attempt < (maxAttempts || 10))
-            setTimeout(() => this._focusElement(target || element, maxAttempts, interval, attempt + 1), interval || 100);
+    protected _focusElement(element: string | HTMLElement) {
+        const target = typeof element === "string" ? <HTMLElement>this.shadowRoot.querySelector(`#${element}`) : element;
+        target?.focus();
     }
 
     private _onClose() {

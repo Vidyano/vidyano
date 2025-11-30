@@ -20,3 +20,4 @@ import "./web-component/test-observer-property-prototype.js";
 import "./web-component/test-observer-property-inline.js";
 import "./web-component/test-translations.js";
 import "./web-component/test-decorator-inheritance.js";
+import "./web-components/dialog/test-dialog.js";

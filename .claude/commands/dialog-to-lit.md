@@ -59,6 +59,26 @@ export class MyDialog extends Dialog {
 }
 ```
 
+### Close Button
+Use the `renderCloseButton()` helper method for the standard close button:
+
+```typescript
+protected renderContent(): TemplateResult {
+    return html`
+        <header>
+            <h4>Title</h4>
+            ${!this.options.noClose ? this.renderCloseButton() : nothing}
+        </header>
+        ...
+    `;
+}
+```
+
+This ensures proper event binding. The helper renders:
+```html
+<vi-button class="close" @click=${() => this.cancel()} icon="Remove"></vi-button>
+```
+
 ### Focus Management
 The `_focusElement` method is available from the `Dialog` base class - no need to implement it.
 
