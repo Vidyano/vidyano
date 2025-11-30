@@ -1,37 +1,13 @@
-:host {
-    main {
-        min-width: 17em;
-        max-width: 70vw;
-        display: flex;
+header {
+    display: flex;
+    align-items: center;
 
-        &:not([rich]) {
-            padding: var(--theme-h4);
-
-            pre {
-                flex: 1;
-                min-height: 0;
-                min-width: 0;
-                white-space: pre-wrap;
-
-                a {
-                    color: inherit;
-                }
-            }
-        }
-
-        &[rich] {
-            vi-marked {
-                overflow: auto;
-                padding: var(--theme-h4);
-
-                p {
-                    margin: 0.5em 0;
-                }
-            }
-        }
+    > h4 {
+        flex: 1;
+        min-width: 0;
     }
 
-    header > vi-icon {
+    > vi-icon {
         padding-right: var(--theme-h4);
         height: var(--theme-h1);
         --vi-icon-width: var(--theme-h3);
@@ -53,4 +29,43 @@
             fill: var(--theme-color-ok);
         }
     }
+}
+
+main {
+    min-width: 17em;
+    max-width: 70vw;
+    display: flex;
+
+    &:not([rich]) {
+        padding: var(--theme-h4);
+    }
+
+    &[rich] {
+        vi-marked {
+            overflow: auto;
+            padding: var(--theme-h4);
+
+            p {
+                margin: 0.5em 0;
+            }
+        }
+    }
+}
+
+pre {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    margin: 0;
+    font-family: inherit;
+    white-space: pre-wrap;
+
+    a {
+        color: inherit;
+    }
+}
+
+footer {
+    display: flex;
+    justify-content: flex-end;
 }

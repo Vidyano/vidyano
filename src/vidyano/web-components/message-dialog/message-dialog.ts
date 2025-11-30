@@ -1,5 +1,9 @@
-import * as Polymer from "polymer"
-import "components/marked/marked"
+import { CSSResultGroup, html, nothing, TemplateResult, unsafeCSS } from "lit";
+import { state } from "lit/decorators.js";
+import { keybinding } from "components/web-component/web-component";
+import { Dialog } from "components/dialog/dialog";
+import "components/marked/marked";
+import styles from "./message-dialog.css";
 
 export interface IMessageDialogOptions {
     noClose?: boolean;
@@ -14,106 +18,107 @@ export interface IMessageDialogOptions {
     rich?: boolean;
 }
 
-@Polymer.WebComponent.register({
-    properties: {
-        options: {
-            type: Object,
-            readOnly: true
-        },
-        activeAction: {
-            type: Number,
-            readOnly: true,
-            value: 0,
-            observer: "_activeActionChanged"
-        },
-        hasHeaderIcon: {
-            type: Boolean,
-            computed: "_computeHasHeaderIcon(options)"
-        }
-    },
-    keybindings: {
-        "tab": "_keyboardNextAction",
-        "right": "_keyboardNextAction",
-        "left": "_keyboardPreviousAction"
+export class MessageDialog extends Dialog {
+    static styles: CSSResultGroup = [Dialog.styles, unsafeCSS(styles)];
+
+    @state()
+    options: IMessageDialogOptions;
+
+    @state()
+    activeAction: number = 0;
+
+    constructor(options: IMessageDialogOptions) {
+        super();
+
+        this.options = options;
+
+        if (options.defaultAction)
+            this.activeAction = options.defaultAction;
     }
-}, "vi-message-dialog")
-export class MessageDialog extends Polymer.Dialog {
-    static get template() { return Polymer.Dialog.dialogTemplate(Polymer.html`<link rel="import" href="message-dialog.html">`) }
 
-    readonly options: IMessageDialogOptions; private _setOptions: (options: IMessageDialogOptions) => void;
-        readonly activeAction: number; private _setActiveAction: (activeAction: number) => void;
+    connectedCallback() {
+        super.connectedCallback();
 
-        constructor(options: IMessageDialogOptions) {
-            super();
+        this.noCancelOnEscKey = this.noCancelOnOutsideClick = !!this.options.noClose;
+    }
 
-            this._setOptions(options);
+    protected renderContent(): TemplateResult {
+        return html`
+            <header>
+                ${this._hasHeaderIcon ? html`<vi-icon source=${this.options.titleIcon}></vi-icon>` : nothing}
+                <h4>${this.options.title}</h4>
+                ${!this.options.noClose ? this.renderCloseButton() : nothing}
+            </header>
+            <main ?rich=${this.options.rich}>
+                ${this.options.rich
+                    ? html`<vi-marked markdown=${this.options.message}></vi-marked>`
+                    : html`<pre>${this.options.message}</pre>`
+                }
+            </main>
+            <footer id="actions">
+                ${this.options.actions?.map((action, index) => html`
+                    <vi-button
+                        @click=${(e: Event) => this._onSelectAction(e, index)}
+                        type=${this._actionType(index) ?? nothing}
+                        ?inverse=${this.activeAction !== index}
+                        label=${action}
+                    ></vi-button>
+                `)}
+            </footer>
+        `;
+    }
 
-            if (options.defaultAction)
-                this._setActiveAction(options.defaultAction);
-        }
+    private get _hasHeaderIcon(): boolean {
+        return this.options && typeof this.options.titleIcon === "string";
+    }
 
-        connectedCallback() {
-            super.connectedCallback();
+    cancel() {
+        if (this.options.cancelAction == null)
+            super.cancel();
+        else
+            super.close(this.options.cancelAction);
+    }
 
-            this.noCancelOnEscKey = this.noCancelOnOutsideClick = this.options.noClose || this.options.cancelAction == null;
-        }
+    async open(): Promise<any> {
+        const result = super.open();
+        await this.updateComplete;
 
-        cancel() {
-            if (this.options.cancelAction == null)
-                super.cancel();
-            else
-                super.close(this.options.cancelAction);
-        }
+        const button = this.$.actions.querySelectorAll("vi-button")[this.activeAction] as HTMLElement;
+        this._focusElement(button);
 
-        async open(): Promise<any> {
-            const focus = setInterval(() => {
-                const button = <HTMLButtonElement>this.$.actions.querySelectorAll("vi-button")[this.activeAction];
-                if (!button)
-                    return;
+        return result;
+    }
 
-                if (this.app.activeElement !== button)
-                    this._focusElement(button);
-                else
-                    clearInterval(focus);
-            }, 100);
+    private _actionType(index: number): string {
+        if (!this.options || !this.options.actionTypes)
+            return undefined;
 
-            return super.open();
-        }
+        return this.options.actionTypes[index];
+    }
 
-        private _computeHasHeaderIcon(options: IMessageDialogOptions): boolean {
-            return options && typeof options.titleIcon === "string";
-        }
+    private _onSelectAction(e: Event, index: number) {
+        this.close(index);
+        e.stopPropagation();
+    }
 
-        private _actionType(options: IMessageDialogOptions, index: number): string {
-            if (!options || !options.actionTypes)
-                return undefined;
+    @keybinding("tab")
+    @keybinding("arrowright")
+    private _keyboardNextAction() {
+        this.activeAction = (this.activeAction + 1) % this.options.actions.length;
+        this._focusActiveAction();
+    }
 
-            return options.actionTypes[index];
-        }
+    @keybinding("arrowleft")
+    private _keyboardPreviousAction() {
+        this.activeAction = (this.activeAction - 1 + this.options.actions.length) % this.options.actions.length;
+        this._focusActiveAction();
+    }
 
-        private _onSelectAction(e: Polymer.Gestures.TapEvent) {
-            this.close(e.model.index);
-
-            e.stopPropagation();
-        }
-
-        private _isFirst(index: number): boolean {
-            return index === 0;
-        }
-
-        private _activeActionChanged(activeAction: number) {
-            const button = <HTMLButtonElement>this.$.actions.querySelector(`button:nth-child(${activeAction + 1})`);
-            if (!button)
-                return;
-
+    private _focusActiveAction() {
+        const button = <HTMLButtonElement>this.$.actions.querySelector(`vi-button:nth-child(${this.activeAction + 1})`);
+        if (button)
             this._focusElement(button);
-        }
-
-        private _keyboardNextAction() {
-            this._setActiveAction((this.activeAction + 1) % this.options.actions.length);
-        }
-
-        private _keyboardPreviousAction() {
-            this._setActiveAction((this.activeAction - 1 + this.options.actions.length) % this.options.actions.length);
-        }
+    }
 }
+
+customElements.define("vi-message-dialog", MessageDialog);
