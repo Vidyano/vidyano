@@ -1,3 +1,14 @@
+header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    h4 {
+        flex: 1;
+        min-width: 0;
+    }
+}
+
 vi-input-search {
     line-height: var(--theme-h2);
     height: var(--theme-h2);
@@ -13,8 +24,25 @@ vi-input-search {
     }
 }
 
-main vi-query-grid {
-    height: 75vh;
+main {
+    min-width: min(var(--vi-select-reference-dialog--content-width, 0px), 90vw);
+    max-width: 90vw;
+
+    vi-query-grid {
+        height: 75vh;
+    }
+}
+
+footer {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+
+    .actions {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
+    }
 }
 
 :host([is-phone]) {
