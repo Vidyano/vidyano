@@ -42,6 +42,7 @@ const PHYSICAL_UPPER_LIMIT = 100000;
     properties: {
         initializing: {
             type: Boolean,
+            notify: true,
             readOnly: true,
             value: true,
             reflectToAttribute: true,
@@ -89,6 +90,7 @@ const PHYSICAL_UPPER_LIMIT = 100000;
             value: 0
         },
         viewportWidth: Number,
+        contentWidth: Number,
         virtualRowCount: {
             type: Number,
             computed: "_computeVirtualRowCount(viewportHeight, rowHeight, query.canReorder, query.totalItems)",
