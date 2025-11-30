@@ -1,29 +1,32 @@
-import * as Polymer from "polymer"
+import { CSSResultGroup, html, TemplateResult, unsafeCSS } from "lit";
+import { property, state } from "lit/decorators.js";
 import * as Vidyano from "vidyano"
 import { IItemTapEventArgs } from "components/query-grid/query-grid-row"
+import { observer } from "components/web-component/web-component";
+import { Dialog } from "components/dialog/dialog";
 import "components/notification/notification"
+import styles from "./select-reference-dialog.css";
 
-@Polymer.WebComponent.register({
-    properties: {
-        query: Object,
-        canSelect: Boolean,
-        canAddNewReference: Boolean,
-        initializing: {
-            type: Boolean,
-            observer: "_initializingChanged"
-        }
-    },
-    forwardObservers: [
-        "_selectedItemsChanged(query.selectedItems)"
-    ]
-}, "vi-select-reference-dialog")
-export class SelectReferenceDialog extends Polymer.Dialog {
-    static get template() { return Polymer.Dialog.dialogTemplate(Polymer.html`<link rel="import" href="select-reference-dialog.html">`) }
+export class SelectReferenceDialog extends Dialog {
+    static styles: CSSResultGroup = [Dialog.styles, unsafeCSS(styles)];
 
+    @property({ type: Object })
+    query: Vidyano.Query;
+
+    @state()
     canSelect: boolean;
 
-    constructor(public query: Vidyano.Query, forceSearch?: boolean, public canAddNewReference: boolean = false, keepFilter?: boolean) {
+    @state()
+    canAddNewReference: boolean;
+
+    @state()
+    private _initializing: boolean = true;
+
+    constructor(query: Vidyano.Query, forceSearch?: boolean, canAddNewReference: boolean = false, keepFilter?: boolean) {
         super();
+
+        this.query = query;
+        this.canAddNewReference = canAddNewReference;
 
         query["_query-grid-vertical-scroll-offset"] = undefined;
 
@@ -37,25 +40,65 @@ export class SelectReferenceDialog extends Polymer.Dialog {
             query.search();
     }
 
-    private _initializingChanged(value: boolean) {
-        if (!value)
-            this._focusElement(this.$.search);
-    }
-
-    private _selectedItemsChanged() {
-        if (!this.isConnected)
-            return;
-
-        this.canSelect = this.query && this.query.selectedItems && this.query.selectedItems.length > 0;
-    }
-
-    private _invalidateCanSelect(selectedItems: Vidyano.QueryResultItem[] = (this.query ? this.query.selectedItems : undefined)) {
+    @observer("query.selectedItems")
+    private _selectedItemsChanged(selectedItems: Vidyano.QueryResultItem[]) {
         this.canSelect = selectedItems && selectedItems.length > 0;
     }
 
-    private _queryPropertyChanged(sender: Vidyano.Query, detail: Vidyano.PropertyChangedArgs) {
-        if (detail.propertyName === "selectedItems")
-            this._invalidateCanSelect(detail.newValue);
+    protected renderContent(): TemplateResult {
+        return html`
+            <header>
+                <h4>${this.query.label}</h4>
+                <vi-input-search
+                    id="search"
+                    .value=${this.query.textSearch}
+                    @value-changed=${this._onSearchValueChanged}
+                    @search=${this._search}
+                    ?hidden=${this._initializing}
+                    autofocus
+                ></vi-input-search>
+            </header>
+            <main>
+                <vi-notification .serviceObject=${this.query}></vi-notification>
+                <vi-query-grid
+                    .query=${this.query}
+                    @item-tap=${this._selectReference}
+                    as-lookup
+                    .initializing=${this._initializing}
+                    @initializing-changed=${this._onInitializingChanged}
+                ></vi-query-grid>
+            </main>
+            <footer>
+                <vi-button
+                    @click=${this._addNew}
+                    ?hidden=${!this.canAddNewReference}
+                    label=${this.translations.NewReference}
+                ></vi-button>
+                <div class="actions">
+                    <vi-button
+                        @click=${this._select}
+                        ?disabled=${!this.canSelect}
+                        label=${this.translations.OK}
+                    ></vi-button>
+                    <vi-button
+                        inverse
+                        @click=${() => this.cancel()}
+                        label=${this.translations.Cancel}
+                    ></vi-button>
+                </div>
+            </footer>
+        `;
+    }
+
+    private _onInitializingChanged(e: CustomEvent) {
+        this._initializing = e.detail.value;
+
+        if (!this._initializing)
+            this._focusElement("search");
+    }
+
+    private _onSearchValueChanged(e: CustomEvent) {
+        this.query.textSearch = e.detail.value;
     }
 
     private _select() {
@@ -69,11 +112,11 @@ export class SelectReferenceDialog extends Polymer.Dialog {
         this.close("AddNewReference");
     }
 
-    private _search(e: CustomEvent, detail: string) {
+    private _search(e: CustomEvent) {
         if (!this.query)
             return;
 
-        this.query.textSearch = detail;
+        this.query.textSearch = e.detail;
         this.query.search();
     }
 
@@ -87,3 +130,5 @@ export class SelectReferenceDialog extends Polymer.Dialog {
             detail.item.isSelected = !detail.item.isSelected;
     }
 }
+
+customElements.define("vi-select-reference-dialog", SelectReferenceDialog);

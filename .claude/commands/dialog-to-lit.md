@@ -80,7 +80,60 @@ This ensures proper event binding. The helper renders:
 ```
 
 ### Focus Management
-The `_focusElement` method is available from the `Dialog` base class - no need to implement it.
+The `_focusElement` method is available from the `Dialog` base class - no need to implement it. Pass either an element ID string or an HTMLElement:
+
+```typescript
+this._focusElement("search"); // Focus element with id="search"
+```
+
+### Translations
+Use `this.translations.Key` with dot notation instead of `translateMessage()`:
+
+```typescript
+// Before (Polymer)
+label="[[translateMessage('OK', isConnected)]]"
+
+// After (Lit)
+label=${this.translations.OK}
+```
+
+### Forward Observers
+Convert Polymer `forwardObservers` to the `@observer` decorator with dot notation paths:
+
+```typescript
+// Before (Polymer)
+@Polymer.WebComponent.register({
+    forwardObservers: [
+        "_selectedItemsChanged(query.selectedItems)"
+    ]
+})
+
+// After (Lit)
+import { observer } from "components/web-component/web-component";
+
+@observer("query.selectedItems")
+private _selectedItemsChanged(selectedItems: Vidyano.QueryResultItem[]) {
+    this.canSelect = selectedItems && selectedItems.length > 0;
+}
+```
+
+### Two-Way Bindings on Custom Elements
+Convert Polymer two-way bindings to property + event handler:
+
+```typescript
+// Before (Polymer)
+<vi-query-grid initializing="{{initializing}}"></vi-query-grid>
+
+// After (Lit)
+<vi-query-grid
+    .initializing=${this._initializing}
+    @initializing-changed=${this._onInitializingChanged}
+></vi-query-grid>
+
+private _onInitializingChanged(e: CustomEvent) {
+    this._initializing = e.detail.value;
+}
+```
 
 ### Registration
 ```typescript
@@ -93,9 +146,12 @@ customElements.define("vi-my-dialog", MyDialog);
 - [ ] Implement `renderContent(): TemplateResult`
 - [ ] Use `CSSResultGroup` type for combined styles
 - [ ] Convert template syntax per `/lit` command
+- [ ] Convert `translateMessage()` calls to `this.translations.Key`
+- [ ] Convert `forwardObservers` to `@observer` decorator
 - [ ] Add layout styles to SCSS (no utility classes)
 - [ ] Delete the old `.html` template file
 
-## Example
+## Examples
 
-See `src/vidyano/web-components/message-dialog/message-dialog.ts` for a complete migrated dialog example.
+- `src/vidyano/web-components/message-dialog/message-dialog.ts` - Simple dialog with actions
+- `src/vidyano/web-components/select-reference-dialog/select-reference-dialog.ts` - Dialog with query grid, forward observers, and two-way bindings
