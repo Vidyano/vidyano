@@ -52,7 +52,7 @@
     </dom-if>
 </header>
 
-<vi-scroller horizontal-scroll-offset="{{horizontalScrollOffset}}" vertical-scroll-offset="{{verticalScrollOffset}}" outer-height="{{viewportHeight}}" outer-width="{{viewportWidth}}">
+<vi-scroller horizontal-scroll-offset="{{horizontalScrollOffset}}" vertical-scroll-offset="{{verticalScrollOffset}}" outer-height="{{viewportHeight}}" outer-width="{{viewportWidth}}" inner-width="{{contentWidth}}">
     <div id="gridWrapper">
         <vi-sortable id="grid" grid$="[[initializing]]" disabled="[[!canReorder]]" handle=".reorder" on-drag-start="_onReorderStart" on-drag-end="_onReorderEnd">
             <dom-repeat items="[[virtualItems]]" id="itemsDomRepeat">
