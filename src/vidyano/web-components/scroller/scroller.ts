@@ -11,6 +11,8 @@ import styles from "./scroller.css";
  *
  * @fires outer-width-changed - Fired when the outer (viewport) width changes
  * @fires outer-height-changed - Fired when the outer (viewport) height changes
+ * @fires inner-width-changed - Fired when the inner (scrollable content) width changes
+ * @fires inner-height-changed - Fired when the inner (scrollable content) height changes
  * @fires vertical-scroll-offset-changed - Fired when the vertical scroll position changes
  * @fires horizontal-scroll-offset-changed - Fired when the horizontal scroll position changes
  */
@@ -66,10 +68,12 @@ export class Scroller extends WebComponent {
 
     /** Width of the scrollable content (inner container) */
     @property({ type: Number })
+    @notify()
     innerWidth: number = 0;
 
     /** Height of the scrollable content (inner container) */
     @property({ type: Number })
+    @notify()
     innerHeight: number = 0;
 
     /** Whether horizontal scrollbar is visible */
