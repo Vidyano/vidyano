@@ -1081,6 +1081,19 @@ this.innerHTML = "";  // Clears all light DOM child elements
 - Add equivalent flexbox styles to component CSS
 - Use semantic class names instead of utility classes
 
+**Template-only property dependencies not updating:**
+- Properties used directly in templates (not in `@computed`) need explicit observers to trigger re-renders
+- This commonly affects properties that were in Polymer's `forwardObservers` list
+- Deep property paths used in `@computed` are automatically tracked, but template-only paths are not
+- Solution: Use `@observer("property.path")` on a method that calls `this.requestUpdate()`
+- Example: If template uses `${this.attribute?.actions?.map(...)}`, add:
+  ```typescript
+  @observer("attribute.actions")
+  private _actionsChanged() {
+      this.requestUpdate();
+  }
+  ```
+
 ### Performance Considerations
 
 - Use `@state()` for internal properties that don't need attribute reflection
