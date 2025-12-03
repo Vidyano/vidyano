@@ -1,4 +1,4 @@
-import { html, nothing, unsafeCSS } from "lit";
+import { html, nothing, unsafeCSS, type TemplateResult } from "lit";
 import { repeat } from "lit/directives/repeat.js";
 import { state } from "lit/decorators.js";
 import * as Vidyano from "vidyano";
@@ -255,7 +255,7 @@ export class PersistentObjectAttributeMultiString extends PersistentObjectAttrib
         `;
     }
 
-    protected override renderEdit() {
+    protected override renderEdit(innerTemplate?: TemplateResult) {
         if (this.isTags) {
             return super.renderEdit(html`
                 <vi-tags content .tags=${this.tags} @tags-changed=${this._onTagsChanged} ?disabled=${this.isTagsReadonly} ?sensitive=${this.sensitive}></vi-tags>

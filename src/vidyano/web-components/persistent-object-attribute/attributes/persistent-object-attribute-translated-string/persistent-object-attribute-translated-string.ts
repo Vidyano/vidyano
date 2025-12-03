@@ -1,4 +1,4 @@
-import { html, nothing, unsafeCSS } from "lit";
+import { html, nothing, unsafeCSS, type TemplateResult } from "lit";
 import { property, state } from "lit/decorators.js";
 import * as Vidyano from "vidyano";
 import { computed } from "components/web-component/web-component";
@@ -118,7 +118,7 @@ export class PersistentObjectAttributeTranslatedString extends PersistentObjectA
         `;
     }
 
-    protected override renderEdit() {
+    protected override renderEdit(innerTemplate?: TemplateResult) {
         return super.renderEdit(html`
             ${!this.multiline ? html`
                 <vi-sensitive ?disabled=${!this.sensitive}>

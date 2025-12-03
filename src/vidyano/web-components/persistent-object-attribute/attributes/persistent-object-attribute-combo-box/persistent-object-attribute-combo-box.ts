@@ -1,4 +1,4 @@
-import { html, nothing, unsafeCSS } from "lit";
+import { html, nothing, unsafeCSS, type TemplateResult } from "lit";
 import { property } from "lit/decorators.js";
 import * as Vidyano from "vidyano";
 import { computed } from "components/web-component/web-component";
@@ -42,7 +42,7 @@ export class PersistentObjectAttributeComboBox extends PersistentObjectAttribute
         return super.renderDisplay(html`<span>${this.attribute?.displayValue}</span>`);
     }
 
-    protected override renderEdit() {
+    protected override renderEdit(innerTemplate?: TemplateResult) {
         return super.renderEdit(html`
             <vi-select
                 .options=${this._options}

@@ -1,4 +1,4 @@
-import { html, nothing, unsafeCSS } from "lit";
+import { html, nothing, unsafeCSS, type TemplateResult } from "lit";
 import { property } from "lit/decorators.js";
 import { computed } from "components/web-component/web-component";
 import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute";
@@ -62,7 +62,7 @@ export class PersistentObjectAttributeBinaryFile extends PersistentObjectAttribu
         return super.renderDisplay(html`<span>${this.fileName}</span>`);
     }
 
-    protected renderEdit() {
+    protected renderEdit(innerTemplate?: TemplateResult) {
         return super.renderEdit(html`
             <vi-sensitive ?disabled=${!this.sensitive}>
                 <input .value=${this.fileName} type="text" readonly placeholder=${this.placeholder || "—"}>

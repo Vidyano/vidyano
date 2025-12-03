@@ -1,4 +1,4 @@
-import { html, nothing, unsafeCSS } from "lit";
+import { html, nothing, unsafeCSS, type TemplateResult } from "lit";
 import { property, query, state } from "lit/decorators.js";
 import * as Vidyano from "vidyano";
 import "components/masked-input/masked-input";
@@ -568,7 +568,7 @@ export class PersistentObjectAttributeDateTime extends PersistentObjectAttribute
         return super.renderDisplay(html`<span>${this.attribute?.displayValue}</span>`);
     }
 
-    protected override renderEdit() {
+    protected override renderEdit(innerTemplate?: TemplateResult) {
         return super.renderEdit(html`
             <vi-sensitive ?disabled=${!this.sensitive}>
                 ${!this.monthMode ? html`

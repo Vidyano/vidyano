@@ -1,4 +1,4 @@
-import { html, nothing, unsafeCSS } from "lit";
+import { html, nothing, unsafeCSS, type TemplateResult } from "lit";
 import { property } from "lit/decorators.js";
 import * as Vidyano from "vidyano";
 import { Path } from "libs/pathjs/pathjs";
@@ -280,7 +280,7 @@ export class PersistentObjectAttributeReference extends PersistentObjectAttribut
         `);
     }
 
-    protected renderEdit() {
+    protected renderEdit(innerTemplate?: TemplateResult) {
         if (this.attribute?.selectInPlace) {
             if (this.inputtype === "default")
                 return this.#renderEditSelectDefault();

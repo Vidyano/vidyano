@@ -1,4 +1,4 @@
-import { html, unsafeCSS } from "lit";
+import { html, unsafeCSS, type TemplateResult } from "lit";
 import { state } from "lit/decorators.js";
 import "components/icon/icon";
 import * as IconRegister from "components/icon/icon-register";
@@ -36,7 +36,7 @@ export class PersistentObjectAttributeIcon extends PersistentObjectAttribute {
         `;
     }
 
-    protected override renderEdit() {
+    protected override renderEdit(innerTemplate?: TemplateResult) {
         return super.renderEdit(html`
             <vi-popup auto-width @popup-opening=${this._onOpening}>
                 <div class="value" slot="header">

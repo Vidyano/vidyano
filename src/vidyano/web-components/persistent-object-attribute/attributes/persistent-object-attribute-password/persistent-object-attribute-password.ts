@@ -1,4 +1,4 @@
-import { html, unsafeCSS } from "lit";
+import { html, unsafeCSS, type TemplateResult } from "lit";
 import { state } from "lit/decorators.js";
 import * as Vidyano from "vidyano";
 import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute";
@@ -33,7 +33,7 @@ export class PersistentObjectAttributePassword extends PersistentObjectAttribute
         return html`●●●●●●`;
     }
 
-    protected renderEdit() {
+    protected renderEdit(innerTemplate?: TemplateResult) {
         return super.renderEdit(html`
             <vi-sensitive ?disabled=${!this.sensitive}>
                 <input type="password"

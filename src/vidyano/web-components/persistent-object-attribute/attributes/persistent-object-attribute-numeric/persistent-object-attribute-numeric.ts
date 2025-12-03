@@ -1,4 +1,4 @@
-import { html, nothing, unsafeCSS } from "lit";
+import { html, nothing, unsafeCSS, type TemplateResult } from "lit";
 import { property, state } from "lit/decorators.js";
 import BigNumber from 'bignumber.js';
 import * as Vidyano from "vidyano"
@@ -389,7 +389,7 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
         }, 0);
     }
 
-    protected override renderEdit() {
+    protected override renderEdit(innerTemplate?: TemplateResult) {
         return super.renderEdit(html`
             <slot name="left" slot="left"></slot>
             <div class="input-container">

@@ -1,4 +1,4 @@
-import { html, nothing, unsafeCSS } from "lit";
+import { html, nothing, unsafeCSS, type TemplateResult } from "lit";
 import * as Vidyano from "vidyano";
 import "components/select/select";
 import { computed } from "components/web-component/web-component";
@@ -44,7 +44,7 @@ export class PersistentObjectAttributeNullableBoolean extends PersistentObjectAt
         return super.renderDisplay(html`<span>${this.attribute?.displayValue}</span>`);
     }
 
-    protected override renderEdit() {
+    protected override renderEdit(innerTemplate?: TemplateResult) {
         return super.renderEdit(html`
             <vi-select
                 .options=${this.booleanOptions}

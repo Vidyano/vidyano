@@ -1,4 +1,4 @@
-import { html, nothing, unsafeCSS } from "lit";
+import { html, nothing, unsafeCSS, type TemplateResult } from "lit";
 import * as Vidyano from "vidyano";
 import "components/marked/marked";
 import { computed } from "components/web-component/web-component";
@@ -28,7 +28,7 @@ export class PersistentObjectAttributeCommonMark extends PersistentObjectAttribu
         `);
     }
 
-    protected override renderEdit() {
+    protected override renderEdit(innerTemplate?: TemplateResult) {
         return super.renderEdit(html`
             <vi-sensitive ?disabled=${!this.sensitive}>
                 <textarea

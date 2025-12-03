@@ -1,4 +1,4 @@
-import { html, nothing, unsafeCSS } from "lit";
+import { html, nothing, unsafeCSS, type TemplateResult } from "lit";
 import * as Vidyano from "vidyano";
 import "components/button/button";
 import "components/icon/icon";
@@ -123,7 +123,7 @@ export class PersistentObjectAttributeImage extends PersistentObjectAttribute {
         `);
     }
 
-    protected override renderEdit() {
+    protected override renderEdit(innerTemplate?: TemplateResult) {
         return super.renderEdit(html`
             <div class="image-container">
                 <vi-sensitive ?disabled=${!this.sensitive}>

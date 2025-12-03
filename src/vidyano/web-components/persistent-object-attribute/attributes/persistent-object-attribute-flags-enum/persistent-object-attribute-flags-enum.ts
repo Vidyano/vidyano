@@ -1,4 +1,4 @@
-import { html, nothing, unsafeCSS } from "lit";
+import { html, nothing, unsafeCSS, type TemplateResult } from "lit";
 import * as Vidyano from "vidyano";
 import "components/checkbox/checkbox";
 import "components/icon/icon";
@@ -14,7 +14,7 @@ export class PersistentObjectAttributeFlagsEnum extends PersistentObjectAttribut
         return super.renderDisplay(html`<span>${this.attribute?.displayValue}</span>`);
     }
 
-    protected override renderEdit() {
+    protected override renderEdit(innerTemplate?: TemplateResult) {
         return super.renderEdit(html`
             <vi-popup sticky ?disabled=${this.readOnly || this.frozen || this.sensitive} auto-width>
                 <div slot="header" class="header">

@@ -1,4 +1,4 @@
-import { html, nothing, unsafeCSS } from "lit";
+import { html, nothing, unsafeCSS, type TemplateResult } from "lit";
 import * as Vidyano from "vidyano";
 import { computed } from "components/web-component/web-component";
 import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute";
@@ -31,7 +31,7 @@ export class PersistentObjectAttributeMultiLineString extends PersistentObjectAt
         `);
     }
 
-    protected override renderEdit() {
+    protected override renderEdit(innerTemplate?: TemplateResult) {
         return super.renderEdit(html`
             <vi-sensitive ?disabled=${!this.sensitive}>
                 <textarea

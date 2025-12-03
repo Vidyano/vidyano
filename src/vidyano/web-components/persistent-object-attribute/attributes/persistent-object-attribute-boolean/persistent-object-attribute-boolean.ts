@@ -1,4 +1,4 @@
-import { html, nothing, unsafeCSS } from "lit";
+import { html, nothing, unsafeCSS, type TemplateResult } from "lit";
 import { property } from "lit/decorators.js";
 import * as Vidyano from "vidyano";
 import "components/checkbox/checkbox";
@@ -27,7 +27,7 @@ export class PersistentObjectAttributeBoolean extends PersistentObjectAttribute 
         return super.renderDisplay(html`<span>${this.attribute?.displayValue}</span>`);
     }
 
-    protected override renderEdit() {
+    protected override renderEdit(innerTemplate?: TemplateResult) {
         if (this.sensitive)
             return this.renderDisplay();
 
