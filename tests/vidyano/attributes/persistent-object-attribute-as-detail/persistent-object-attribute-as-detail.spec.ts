@@ -526,6 +526,44 @@ test.describe.serial('AsDetail Attribute', () => {
             // The button should have busy attribute during the add operation
             await expect(newButton).toHaveAttribute('busy');
         });
+
+        test('New button prevents double-click adding duplicate items', async () => {
+            const component = await setupAsDetailAttribute(sharedPage, { startInEditMode: true });
+
+            // Set up a delayed mock so the operation takes time
+            await sharedPage.evaluate(() => {
+                const app = (window as any).app;
+                app.showDialog = async (dialog: any) => {
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    if (dialog?.query) {
+                        await dialog.query.search();
+                        if (dialog.query.items?.length > 0)
+                            return [dialog.query.items[0]];
+                    }
+                    return null;
+                };
+            });
+
+            const initialCount = await getObjectCount(sharedPage, component);
+            const componentId = await component.getAttribute('id') as string;
+
+            // Double-click the button rapidly using JavaScript to ensure both clicks happen immediately
+            await sharedPage.evaluate((id) => {
+                const component = document.getElementById(id);
+                const button = component?.shadowRoot?.querySelector('vi-button[icon="Action_New"]') as HTMLElement;
+                if (button) {
+                    button.click();
+                    button.click();
+                }
+            }, componentId);
+
+            // Wait for the operation to complete
+            await sharedPage.waitForTimeout(500);
+
+            // Should have added only one item, not two
+            const finalCount = await getObjectCount(sharedPage, component);
+            expect(finalCount).toBe(initialCount + 1);
+        });
     });
 
     test.describe('Cell component', () => {

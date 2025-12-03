@@ -117,8 +117,15 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
     }
 
     private async _add() {
+        if (this.isAdding)
+            return;
+
         try {
             this.isAdding = true;
+
+            // Ensure any pending updates are applied before creating the new object
+            await this.updateComplete;
+
             const po = await this.attribute.newObject();
             if (!po)
                 return;
