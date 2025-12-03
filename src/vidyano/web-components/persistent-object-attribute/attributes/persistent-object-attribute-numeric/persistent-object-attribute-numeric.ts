@@ -1,10 +1,11 @@
 import { html, nothing, unsafeCSS, type TemplateResult } from "lit";
-import { property, state } from "lit/decorators.js";
+import { property } from "lit/decorators.js";
 import BigNumber from 'bignumber.js';
 import * as Vidyano from "vidyano"
 import * as Keyboard from "components/utils/keyboard"
 import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute";
 import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
+import { computed, observer } from "components/web-component/web-component";
 import styles from "./persistent-object-attribute-numeric.css";
 
 export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute {
@@ -15,8 +16,10 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
     private _decimalSeparator: string;
     private _attributeValueChangedBlock: boolean = false;
 
-    @state()
-    inputtype: string;
+    @computed(function(this: PersistentObjectAttributeNumeric): string {
+        return this.attribute?.getTypeHint("inputtype", "numeric", undefined);
+    }, "attribute.typeHints")
+    declare readonly inputtype: string;
 
     @property({ type: String, reflect: true })
     unitBefore: string = null;
@@ -27,28 +30,35 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
     @property({ type: Boolean, reflect: true })
     focused: boolean = false;
 
+    @observer("attribute.typeHints")
+    private _updateDisplayFormat() {
+        if (!(this.attribute instanceof Vidyano.PersistentObjectAttribute))
+            return;
+
+        const displayFormat = this.attribute.getTypeHint("displayformat", null, null);
+        if (displayFormat) {
+            const groups = /^([^{]*)({.+?})(.*)$/.exec(displayFormat);
+            this.unitBefore = groups[1];
+            this.unitAfter = groups[3];
+        }
+        else {
+            this.unitBefore = null;
+            this.unitAfter = null;
+        }
+    }
+
     private static _decimalTypes = ["NullableDecimal", "Decimal", "NullableSingle", "Single", "NullableDouble", "Double"];
     private static _unsignedTypes = ["Byte", "NullableByte", "UInt16", "NullableUInt16", "UInt32", "NullableUInt32", "UInt64", "NullableUInt64"];
 
     protected override _attributeChanged() {
         super._attributeChanged();
 
-        if (this.attribute) {
-            this._allowDecimal = PersistentObjectAttributeNumeric._decimalTypes.indexOf(numericSynonyms[this.attribute.type] || this.attribute.type) >= 0;
-            this._isNullable = (numericSynonyms[this.attribute.type] || this.attribute.type).startsWith("Nullable") && !this.attribute.parent.isBulkEdit;
-            this._decimalSeparator = Vidyano.CultureInfo.currentCulture.numberFormat.numberDecimalSeparator;
+        if (!(this.attribute instanceof Vidyano.PersistentObjectAttribute))
+            return;
 
-            const displayFormat = this.attribute.getTypeHint("displayformat", null, null);
-            if (displayFormat) {
-                const groups = /^([^{]*)({.+?})(.*)$/.exec(displayFormat);
-                this.unitBefore = groups[1];
-                this.unitAfter = groups[3];
-            }
-
-            const inputtype = this.attribute.getTypeHint("inputtype", null, null);
-            if (inputtype)
-                this.inputtype = inputtype;
-        }
+        this._allowDecimal = PersistentObjectAttributeNumeric._decimalTypes.indexOf(numericSynonyms[this.attribute.type] || this.attribute.type) >= 0;
+        this._isNullable = (numericSynonyms[this.attribute.type] || this.attribute.type).startsWith("Nullable") && !this.attribute.parent.isBulkEdit;
+        this._decimalSeparator = Vidyano.CultureInfo.currentCulture.numberFormat.numberDecimalSeparator;
     }
 
     protected override _attributeValueChanged() {
@@ -109,7 +119,7 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
     }
 
     protected override async _valueChanged(newValue: string, oldValue: string) {
-        if (!this.attribute)
+        if (!(this.attribute instanceof Vidyano.PersistentObjectAttribute))
             return;
 
         if (newValue === undefined)
@@ -166,7 +176,7 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
     }
 
     private _editInputBlur() {
-        if (!this.attribute)
+        if (!(this.attribute instanceof Vidyano.PersistentObjectAttribute))
             return;
 
         // Normalize value before blur: remove trailing decimal point
@@ -317,7 +327,7 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
     }
 
     private _onPaste(e: ClipboardEvent): void {
-        if (!this.attribute || !e.clipboardData)
+        if (!(this.attribute instanceof Vidyano.PersistentObjectAttribute) || !e.clipboardData)
             return;
 
         // Get pasted data
@@ -398,7 +408,7 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
                     <input
                         .value=${this.value || ""}
                         @input=${this._onInput}
-                        type=${this.inputtype || nothing}
+                        type=${this.inputtype}
                         @keypress=${this._keypress}
                         @paste=${this._onPaste}
                         @focus=${this._editInputFocus}
