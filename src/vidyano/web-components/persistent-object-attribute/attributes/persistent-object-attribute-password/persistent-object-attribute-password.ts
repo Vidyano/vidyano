@@ -1,4 +1,4 @@
-import { html, unsafeCSS, type TemplateResult } from "lit";
+import { html, nothing, unsafeCSS, type TemplateResult } from "lit";
 import { state } from "lit/decorators.js";
 import * as Vidyano from "vidyano";
 import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute";

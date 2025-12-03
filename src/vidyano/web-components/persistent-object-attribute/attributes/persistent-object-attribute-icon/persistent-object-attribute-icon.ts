@@ -1,4 +1,4 @@
-import { html, unsafeCSS, type TemplateResult } from "lit";
+import { html, nothing, unsafeCSS, type TemplateResult } from "lit";
 import { state } from "lit/decorators.js";
 import "components/icon/icon";
 import * as IconRegister from "components/icon/icon-register";
