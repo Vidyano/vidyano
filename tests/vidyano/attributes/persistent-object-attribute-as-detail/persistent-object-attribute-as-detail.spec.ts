@@ -504,7 +504,7 @@ test.describe.serial('AsDetail Attribute', () => {
 
     test.describe('New button busy state', () => {
         test('New button shows busy state while adding', async () => {
-            const component = await setupAsDetailAttribute(sharedPage, { startInEditMode: true });
+            const component = await setupAsDetailWithLookup(sharedPage, { startInEditMode: true });
 
             // Set up a delayed mock so we can observe the busy state
             await sharedPage.evaluate(() => {
@@ -522,6 +522,9 @@ test.describe.serial('AsDetail Attribute', () => {
 
             const newButton = component.locator('vi-button[icon="Action_New"]').first();
             await newButton.click();
+
+            // Wait for component's update cycle to complete
+            await component.evaluate(el => (el as any).updateComplete);
 
             // The button should have busy attribute during the add operation
             await expect(newButton).toHaveAttribute('busy');
