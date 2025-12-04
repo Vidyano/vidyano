@@ -23,13 +23,16 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
 
         this.#details = attr.details ? this.service.hooks.onConstructQuery(service, attr.details, parent, false, 1) : null;
         this.#lookupAttribute = attr.lookupAttribute;
-        this.#objects = attr.objects ? attr.objects.map(po => {
+
+        const initialObjects = attr.objects ? attr.objects.map(po => {
             const detailObj = this.service.hooks.onConstructPersistentObject(service, po);
             detailObj.parent = parent;
             detailObj.ownerDetailAttribute = this;
 
             return detailObj;
         }) : [];
+
+        this.#objects = this.#createObservableArray(initialObjects);
 
         this.parent.propertyChanged.attach((sender, args) => {
             if (args.propertyName === "isEditing" && args.newValue)
@@ -39,6 +42,113 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
                     this.objects.forEach(obj => obj.freeze());
                 else
                     this.objects.forEach(obj => obj.unfreeze());
+            }
+        });
+    }
+
+    /**
+     * Creates an observable array proxy that notifies about mutations.
+     * @param array - The array to wrap.
+     * @returns A proxied array that notifies on mutations.
+     */
+    #createObservableArray(array: PersistentObject[]): PersistentObject[] {
+        const self = this;
+
+        return new Proxy(array, {
+            set(target, prop, value) {
+                // Handle length changes (these come from mutations, not direct length assignment)
+                if (prop === 'length') {
+                    const oldLength = target.length;
+                    const result = Reflect.set(target, prop, value);
+
+                    // If length decreased, items were removed
+                    if (value < oldLength) {
+                        const removed = target.slice(value, oldLength);
+                        self.notifyArrayChanged("objects", value, removed, 0);
+                        self.notifyPropertyChanged("objects", target as PersistentObject[], target as PersistentObject[]);
+                    }
+
+                    return result;
+                }
+
+                // Handle array index assignment
+                if (typeof prop === 'string' && /^\d+$/.test(prop)) {
+                    const index = parseInt(prop);
+                    const oldValue = target[index];
+                    const result = Reflect.set(target, prop, value);
+
+                    if (oldValue === undefined) {
+                        // New item added
+                        self.notifyArrayChanged("objects", index, [], 1);
+                    } else {
+                        // Item replaced
+                        self.notifyArrayChanged("objects", index, [oldValue], 1);
+                    }
+
+                    self.notifyPropertyChanged("objects", target as PersistentObject[], target as PersistentObject[]);
+                    return result;
+                }
+
+                return Reflect.set(target, prop, value);
+            },
+
+            get(target, prop) {
+                const value = target[prop as keyof typeof target];
+
+                // Intercept mutating array methods
+                if (typeof value === 'function') {
+                    const methodName = prop as string;
+
+                    // Methods that mutate the array
+                    if (['push', 'pop', 'shift', 'unshift', 'splice', 'sort', 'reverse', 'fill', 'copyWithin'].includes(methodName)) {
+                        return function (this: PersistentObject[], ...args: any[]) {
+                            const oldLength = target.length;
+
+                            // Execute the original method
+                            const result = (value as Function).apply(target, args);
+
+                            // Notify based on the method
+                            if (methodName === 'push') {
+                                self.notifyArrayChanged("objects", oldLength, [], args.length);
+                            } else if (methodName === 'pop') {
+                                if (result !== undefined) {
+                                    self.notifyArrayChanged("objects", oldLength - 1, [result], 0);
+                                }
+                            } else if (methodName === 'shift') {
+                                if (result !== undefined) {
+                                    self.notifyArrayChanged("objects", 0, [result], 0);
+                                }
+                            } else if (methodName === 'unshift') {
+                                self.notifyArrayChanged("objects", 0, [], args.length);
+                            } else if (methodName === 'splice') {
+                                const [start, _deleteCount = 0, ...items] = args;
+                                const actualStart = start < 0 ? Math.max(0, oldLength + start) : Math.min(start, oldLength);
+                                self.notifyArrayChanged("objects", actualStart, result as PersistentObject[], items.length);
+                            } else if (methodName === 'sort' || methodName === 'reverse') {
+                                // For sort/reverse, treat as complete array replacement
+                                self.notifyArrayChanged("objects", 0, [], target.length);
+                            } else if (methodName === 'fill') {
+                                const [_fillValue, start = 0, end = target.length] = args;
+                                const actualStart = start < 0 ? Math.max(0, target.length + start) : Math.min(start, target.length);
+                                const actualEnd = end < 0 ? Math.max(0, target.length + end) : Math.min(end, target.length);
+                                const count = Math.max(0, actualEnd - actualStart);
+                                if (count > 0) {
+                                    self.notifyArrayChanged("objects", actualStart, [], count);
+                                }
+                            } else if (methodName === 'copyWithin') {
+                                // Treat as mutation of the affected range
+                                self.notifyArrayChanged("objects", 0, [], target.length);
+                            }
+
+                            // Always notify property changed to trigger forwarder rebinding
+                            self.notifyPropertyChanged("objects", target as PersistentObject[], target as PersistentObject[]);
+
+                            return result;
+                        };
+                    }
+                }
+
+                return value;
             }
         });
     }
@@ -103,7 +213,8 @@ export class PersistentObjectAttributeAsDetail extends PersistentObjectAttribute
         }
 
         const oldObjects = this.objects;
-        this.notifyPropertyChanged("objects", this.#objects = objects, oldObjects);
+        this.#objects = this.#createObservableArray(objects);
+        this.notifyPropertyChanged("objects", this.#objects, oldObjects);
     }
 
     /**

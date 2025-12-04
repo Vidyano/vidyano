@@ -624,30 +624,308 @@ test.describe("Event Handling", () => {
     test("should monitor detail attribute changes", async ({ person }) => {
         const languagesAttr = person.getAttribute("Languages") as PersistentObjectAttributeAsDetail;
         expect(languagesAttr).toBeInstanceOf(PersistentObjectAttributeAsDetail);
-        
+
         let objectsChanged = false;
-        
+
         const disposer = languagesAttr.propertyChanged.attach((sender, args) => {
             if (args.propertyName === "objects") {
                 objectsChanged = true;
             }
         });
-        
+
         person.beginEdit();
-        
+
         // Add a new language
         const newLanguage = await languagesAttr.newObject();
         expect(newLanguage).toBeInstanceOf(PersistentObject);
 
         languagesAttr.objects.push(newLanguage);
         languagesAttr.isValueChanged = true;
-            
-        // The propertyChanged event might not fire for array mutations
-        // so we check the actual change
+
+        // The observable array proxy now properly fires propertyChanged
+        expect(objectsChanged).toBe(true);
         expect(languagesAttr.objects.includes(newLanguage)).toBe(true);
-        
+
         // Clean up
         disposer();
+    });
+});
+
+test.describe("Observable Array Proxy for AsDetail Attributes", () => {
+    test("should notify propertyChanged when items are pushed", async ({ person }) => {
+        const languagesAttr = person.getAttribute("Languages") as PersistentObjectAttributeAsDetail;
+        expect(languagesAttr).toBeInstanceOf(PersistentObjectAttributeAsDetail);
+
+        let propertyChangedCount = 0;
+        const propertyDisposer = languagesAttr.propertyChanged.attach((sender, args) => {
+            if (args.propertyName === "objects") {
+                propertyChangedCount++;
+            }
+        });
+
+        person.beginEdit();
+        const initialLength = languagesAttr.objects.length;
+
+        // Push a new item
+        const newLanguage = await languagesAttr.newObject();
+        languagesAttr.objects.push(newLanguage);
+
+        // Should have notified propertyChanged
+        expect(propertyChangedCount).toBe(1);
+        expect(languagesAttr.objects.length).toBe(initialLength + 1);
+
+        propertyDisposer();
+    });
+
+    test("should notify arrayChanged when items are pushed", async ({ person }) => {
+        const languagesAttr = person.getAttribute("Languages") as PersistentObjectAttributeAsDetail;
+        expect(languagesAttr).toBeInstanceOf(PersistentObjectAttributeAsDetail);
+
+        let arrayChangedCount = 0;
+        let lastArrayChange: any = null;
+        const arrayDisposer = languagesAttr.arrayChanged.attach((sender, args) => {
+            if (args.arrayPropertyName === "objects") {
+                arrayChangedCount++;
+                lastArrayChange = args;
+            }
+        });
+
+        person.beginEdit();
+        const initialLength = languagesAttr.objects.length;
+
+        // Push a new item
+        const newLanguage = await languagesAttr.newObject();
+        languagesAttr.objects.push(newLanguage);
+
+        // Should have notified arrayChanged
+        expect(arrayChangedCount).toBe(1);
+        expect(lastArrayChange).toBeTruthy();
+        expect(lastArrayChange.index).toBe(initialLength);
+        expect(lastArrayChange.removedItems).toEqual([]);
+        expect(lastArrayChange.addedItemCount).toBe(1);
+
+        arrayDisposer();
+    });
+
+    test("should notify when items are removed via pop", async ({ person }) => {
+        const languagesAttr = person.getAttribute("Languages") as PersistentObjectAttributeAsDetail;
+        expect(languagesAttr).toBeInstanceOf(PersistentObjectAttributeAsDetail);
+
+        person.beginEdit();
+        const initialLength = languagesAttr.objects.length;
+        expect(initialLength).toBeGreaterThan(0);
+
+        let arrayChangedCount = 0;
+        let lastArrayChange: any = null;
+        const arrayDisposer = languagesAttr.arrayChanged.attach((sender, args) => {
+            if (args.arrayPropertyName === "objects") {
+                arrayChangedCount++;
+                lastArrayChange = args;
+            }
+        });
+
+        // Pop an item
+        const removed = languagesAttr.objects.pop();
+
+        expect(arrayChangedCount).toBe(1);
+        expect(lastArrayChange.index).toBe(initialLength - 1);
+        expect(lastArrayChange.removedItems).toEqual([removed]);
+        expect(lastArrayChange.addedItemCount).toBe(0);
+        expect(languagesAttr.objects.length).toBe(initialLength - 1);
+
+        arrayDisposer();
+    });
+
+    test("should notify when items are removed via splice", async ({ person }) => {
+        const languagesAttr = person.getAttribute("Languages") as PersistentObjectAttributeAsDetail;
+        expect(languagesAttr).toBeInstanceOf(PersistentObjectAttributeAsDetail);
+
+        person.beginEdit();
+        const initialLength = languagesAttr.objects.length;
+        expect(initialLength).toBeGreaterThan(0);
+
+        let arrayChangedCount = 0;
+        let lastArrayChange: any = null;
+        const arrayDisposer = languagesAttr.arrayChanged.attach((sender, args) => {
+            if (args.arrayPropertyName === "objects") {
+                arrayChangedCount++;
+                lastArrayChange = args;
+            }
+        });
+
+        // Remove first item using splice
+        const removed = languagesAttr.objects.splice(0, 1);
+
+        expect(arrayChangedCount).toBe(1);
+        expect(lastArrayChange.index).toBe(0);
+        expect(lastArrayChange.removedItems).toEqual(removed);
+        expect(lastArrayChange.addedItemCount).toBe(0);
+        expect(languagesAttr.objects.length).toBe(initialLength - 1);
+
+        arrayDisposer();
+    });
+
+    test("should notify when items are added and removed via splice", async ({ person }) => {
+        const languagesAttr = person.getAttribute("Languages") as PersistentObjectAttributeAsDetail;
+        expect(languagesAttr).toBeInstanceOf(PersistentObjectAttributeAsDetail);
+
+        person.beginEdit();
+        const initialLength = languagesAttr.objects.length;
+
+        let arrayChangedCount = 0;
+        let lastArrayChange: any = null;
+        const arrayDisposer = languagesAttr.arrayChanged.attach((sender, args) => {
+            if (args.arrayPropertyName === "objects") {
+                arrayChangedCount++;
+                lastArrayChange = args;
+            }
+        });
+
+        // Replace first item
+        const newLanguage = await languagesAttr.newObject();
+        const removed = languagesAttr.objects.splice(0, 1, newLanguage);
+
+        expect(arrayChangedCount).toBe(1);
+        expect(lastArrayChange.index).toBe(0);
+        expect(lastArrayChange.removedItems).toEqual(removed);
+        expect(lastArrayChange.addedItemCount).toBe(1);
+        expect(languagesAttr.objects.length).toBe(initialLength);
+        expect(languagesAttr.objects[0]).toBe(newLanguage);
+
+        arrayDisposer();
+    });
+
+    test("should notify when array is sorted", async ({ person }) => {
+        const languagesAttr = person.getAttribute("Languages") as PersistentObjectAttributeAsDetail;
+        expect(languagesAttr).toBeInstanceOf(PersistentObjectAttributeAsDetail);
+
+        person.beginEdit();
+        expect(languagesAttr.objects.length).toBeGreaterThan(1);
+
+        let propertyChangedCount = 0;
+        const propertyDisposer = languagesAttr.propertyChanged.attach((sender, args) => {
+            if (args.propertyName === "objects") {
+                propertyChangedCount++;
+            }
+        });
+
+        let arrayChangedCount = 0;
+        const arrayDisposer = languagesAttr.arrayChanged.attach((sender, args) => {
+            if (args.arrayPropertyName === "objects") {
+                arrayChangedCount++;
+            }
+        });
+
+        // Sort the array
+        languagesAttr.objects.sort((a, b) =>
+            a.getAttributeValue("Language").localeCompare(b.getAttributeValue("Language"))
+        );
+
+        // Both events should fire
+        expect(propertyChangedCount).toBe(1);
+        expect(arrayChangedCount).toBe(1);
+
+        propertyDisposer();
+        arrayDisposer();
+    });
+
+    test("should notify when items are added via unshift", async ({ person }) => {
+        const languagesAttr = person.getAttribute("Languages") as PersistentObjectAttributeAsDetail;
+        expect(languagesAttr).toBeInstanceOf(PersistentObjectAttributeAsDetail);
+
+        person.beginEdit();
+        const initialLength = languagesAttr.objects.length;
+
+        let arrayChangedCount = 0;
+        let lastArrayChange: any = null;
+        const arrayDisposer = languagesAttr.arrayChanged.attach((sender, args) => {
+            if (args.arrayPropertyName === "objects") {
+                arrayChangedCount++;
+                lastArrayChange = args;
+            }
+        });
+
+        // Add item at beginning
+        const newLanguage = await languagesAttr.newObject();
+        languagesAttr.objects.unshift(newLanguage);
+
+        expect(arrayChangedCount).toBe(1);
+        expect(lastArrayChange.index).toBe(0);
+        expect(lastArrayChange.removedItems).toEqual([]);
+        expect(lastArrayChange.addedItemCount).toBe(1);
+        expect(languagesAttr.objects.length).toBe(initialLength + 1);
+        expect(languagesAttr.objects[0]).toBe(newLanguage);
+
+        arrayDisposer();
+    });
+
+    test("should notify when items are removed via shift", async ({ person }) => {
+        const languagesAttr = person.getAttribute("Languages") as PersistentObjectAttributeAsDetail;
+        expect(languagesAttr).toBeInstanceOf(PersistentObjectAttributeAsDetail);
+
+        person.beginEdit();
+        const initialLength = languagesAttr.objects.length;
+        expect(initialLength).toBeGreaterThan(0);
+
+        let arrayChangedCount = 0;
+        let lastArrayChange: any = null;
+        const arrayDisposer = languagesAttr.arrayChanged.attach((sender, args) => {
+            if (args.arrayPropertyName === "objects") {
+                arrayChangedCount++;
+                lastArrayChange = args;
+            }
+        });
+
+        // Remove first item
+        const removed = languagesAttr.objects.shift();
+
+        expect(arrayChangedCount).toBe(1);
+        expect(lastArrayChange.index).toBe(0);
+        expect(lastArrayChange.removedItems).toEqual([removed]);
+        expect(lastArrayChange.addedItemCount).toBe(0);
+        expect(languagesAttr.objects.length).toBe(initialLength - 1);
+
+        arrayDisposer();
+    });
+
+    test("should notify when item is set via index assignment", async ({ person }) => {
+        const languagesAttr = person.getAttribute("Languages") as PersistentObjectAttributeAsDetail;
+        expect(languagesAttr).toBeInstanceOf(PersistentObjectAttributeAsDetail);
+
+        person.beginEdit();
+        expect(languagesAttr.objects.length).toBeGreaterThan(0);
+
+        let propertyChangedCount = 0;
+        const propertyDisposer = languagesAttr.propertyChanged.attach((sender, args) => {
+            if (args.propertyName === "objects") {
+                propertyChangedCount++;
+            }
+        });
+
+        let arrayChangedCount = 0;
+        let lastArrayChange: any = null;
+        const arrayDisposer = languagesAttr.arrayChanged.attach((sender, args) => {
+            if (args.arrayPropertyName === "objects") {
+                arrayChangedCount++;
+                lastArrayChange = args;
+            }
+        });
+
+        // Replace first item via index
+        const oldItem = languagesAttr.objects[0];
+        const newLanguage = await languagesAttr.newObject();
+        languagesAttr.objects[0] = newLanguage;
+
+        // Both events should fire
+        expect(propertyChangedCount).toBe(1);
+        expect(arrayChangedCount).toBe(1);
+        expect(lastArrayChange.index).toBe(0);
+        expect(lastArrayChange.removedItems).toEqual([oldItem]);
+        expect(lastArrayChange.addedItemCount).toBe(1);
+        expect(languagesAttr.objects[0]).toBe(newLanguage);
+
+        propertyDisposer();
+        arrayDisposer();
     });
 });
 
