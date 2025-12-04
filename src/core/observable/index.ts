@@ -68,3 +68,4 @@ export interface IPropertyChangedObserver<T> extends ISubjectObserver<T, Propert
 export * from "./event-args.js";
 export * from "./subject.js";
 export { ForwardObservedCallback, ForwardObservedPropertyChangedArgs, ForwardObservedArrayChangedArgs, ForwardObservedChainDisposer } from "./forward-observer.js";
+export { createObservableArray, ArrayMutationCallback } from "./observable-array.js";
