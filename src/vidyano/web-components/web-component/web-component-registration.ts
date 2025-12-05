@@ -1,5 +1,5 @@
 import { PropertyDeclaration } from "lit";
-import type { WebComponent } from "./web-component";
+import { WebComponent } from "./web-component";
 import { PROPERTY_OBSERVERS_CONFIG_SYMBOL, PropertyObserversConfig, METHOD_OBSERVERS_CONFIG_SYMBOL, MethodObserversConfig } from "./web-component-observer-decorator";
 import { COMPUTED_CONFIG_SYMBOL, ComputedConfig } from "./web-component-computed-decorator";
 import { NOTIFY_CONFIG_SYMBOL, NotifyConfig } from "./web-component-notify-decorator";
@@ -39,6 +39,30 @@ export function getSensitiveConfig(component: WebComponent): boolean {
 export type WebComponentRegistration = { tagName: string, targetClass: typeof WebComponent };
 
 /**
+ * Collects decorator configs from the entire prototype chain.
+ * @param targetClass The class to start from.
+ * @param symbol The config symbol to collect.
+ * @returns Merged configs from all ancestors.
+ */
+function collectInheritedConfig<T extends object>(targetClass: WebComponentConstructor, symbol: symbol): T {
+    const configs: T[] = [];
+    let currentClass = Object.getPrototypeOf(targetClass) as WebComponentConstructor;
+
+    // Walk up the prototype chain until we hit WebComponent or null
+    while (currentClass && currentClass !== WebComponent && currentClass.prototype instanceof WebComponent) {
+        // Check if this class has its own config (not inherited from its parent)
+        if (Object.hasOwn(currentClass, symbol)) {
+            configs.push(currentClass[symbol] as T);
+        }
+        currentClass = Object.getPrototypeOf(currentClass) as WebComponentConstructor;
+    }
+
+    // Merge configs from most distant ancestor to closest parent
+    // This ensures child configs override parent configs
+    return configs.reverse().reduce((merged, config) => ({ ...merged, ...config }), {} as T);
+}
+
+/**
  * Registers a web component class with the specified tag name.
  * This function processes and merges decorator configurations from the component class hierarchy.
  * @param tagName The custom element tag name to register.
@@ -48,11 +72,11 @@ export type WebComponentRegistration = { tagName: string, targetClass: typeof We
 export function registerWebComponent<T extends typeof WebComponent>(tagName: string, targetClass: T): WebComponentRegistration | undefined {
     const parentClass = Object.getPrototypeOf(targetClass) as WebComponentConstructor;
 
-    const inheritedComputedConfig = parentClass[COMPUTED_CONFIG_SYMBOL] || {};
-    const inheritedPropertyObserversConfig = parentClass[PROPERTY_OBSERVERS_CONFIG_SYMBOL] || {};
-    const inheritedMethodObserversConfig = parentClass[METHOD_OBSERVERS_CONFIG_SYMBOL] || {};
-    const inheritedListenersConfig = parentClass[LISTENERS_CONFIG_SYMBOL] || {};
-    const inheritedKeybindingsConfig = parentClass[KEYBINDINGS_CONFIG_SYMBOL] || {};
+    const inheritedComputedConfig = collectInheritedConfig<ComputedConfig>(targetClass as WebComponentConstructor, COMPUTED_CONFIG_SYMBOL);
+    const inheritedPropertyObserversConfig = collectInheritedConfig<PropertyObserversConfig>(targetClass as WebComponentConstructor, PROPERTY_OBSERVERS_CONFIG_SYMBOL);
+    const inheritedMethodObserversConfig = collectInheritedConfig<MethodObserversConfig>(targetClass as WebComponentConstructor, METHOD_OBSERVERS_CONFIG_SYMBOL);
+    const inheritedListenersConfig = collectInheritedConfig<ListenersConfig>(targetClass as WebComponentConstructor, LISTENERS_CONFIG_SYMBOL);
+    const inheritedKeybindingsConfig = collectInheritedConfig<KeybindingsConfig>(targetClass as WebComponentConstructor, KEYBINDINGS_CONFIG_SYMBOL);
     const inheritedSensitive = parentClass[SENSITIVE_CONFIG_SYMBOL];
 
     // Check hasOwnProperty to avoid false conflict warnings from prototype chain inheritance
