@@ -211,19 +211,6 @@ export class WebComponentReactiveController implements ReactiveController {
     }
 
     /**
-     * Determines if the update loop should continue for another iteration.
-     * The loop continues if properties were changed in the previous pass, or if it's the
-     * first pass and there are pending deep-path changes.
-     * @param changedInLastPass A map of properties that changed in the previous iteration.
-     * @param isFirstIteration A flag indicating if this is the first iteration of the loop.
-     * @param dirtyPaths The set of deep paths that were marked as dirty for this update cycle.
-     * @returns True if the loop should continue, false otherwise.
-     */
-    #shouldContinueLoop(changedInLastPass: Map<PropertyKey, unknown>, isFirstIteration: boolean, dirtyPaths: Set<string>): boolean {
-        return changedInLastPass.size > 0 || (isFirstIteration && dirtyPaths.size > 0);
-    }
-
-    /**
      * Executes a single pass of the update cycle, which involves updating computed
      * properties and then running all relevant observers.
      * @param changedProperties The properties that changed in the previous pass.
