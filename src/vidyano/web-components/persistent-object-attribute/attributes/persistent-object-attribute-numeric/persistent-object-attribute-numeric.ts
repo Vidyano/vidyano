@@ -17,7 +17,8 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
     private _attributeValueChangedBlock: boolean = false;
 
     @computed(function(this: PersistentObjectAttributeNumeric): string {
-        return this.attribute?.getTypeHint("inputtype", "numeric", undefined);
+        // Don't default to "number" as that would prevent proper handling of decimals and large numbers
+        return this.attribute?.getTypeHint("inputtype", undefined, undefined);
     }, "attribute.typeHints")
     declare readonly inputtype: string;
 
@@ -429,8 +430,17 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
     }
 }
 
-customElements.define("vi-persistent-object-attribute-numeric", PersistentObjectAttributeNumeric);
+// customElements.define("vi-persistent-object-attribute-numeric", PersistentObjectAttributeNumeric);
 
 PersistentObjectAttributeRegister.add("Numeric", PersistentObjectAttributeNumeric);
+
+class Test extends PersistentObjectAttributeNumeric
+{
+    
+}
+
+customElements.define("vi-persistent-object-attribute-numeric", Test);
+
+PersistentObjectAttributeRegister.add("Numeric", Test);
 
 const numericSynonyms: { [type: string]: string } = {};
