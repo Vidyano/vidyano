@@ -82,6 +82,11 @@ export class WebComponentReactiveController implements ReactiveController {
      * this method triggers the process to dispose of the old forwarders and set up new
      * ones on the new root object. This is crucial for preventing memory leaks and
      * ensuring continued observation on the correct data sources.
+     *
+     * This also handles the case where a computed property is a root for other dependencies.
+     * For example, if `referenceAttribute` is a computed property and `referenceAttribute.value`
+     * is a dependency, when `referenceAttribute` changes we need to rebind forwarders.
+     *
      * @param changedProperties The map of properties that have changed in this update cycle.
      */
     #rebindForwardersIfNeeded(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
@@ -228,6 +233,13 @@ export class WebComponentReactiveController implements ReactiveController {
      */
     #executeUpdatePass(changedProperties: Map<PropertyKey, unknown>, dirtyPaths: Set<string>,lastComplexObserverArgs: Map<string, any[]>): ObserverExecutionResult {
         const changedComputedProps = this.#updateComputedProperties(changedProperties, dirtyPaths);
+
+        // If any computed properties changed, check if we need to rebind forwarders
+        // This handles the case where a computed property is a root for other dependencies
+        if (changedComputedProps.size > 0) {
+            this.#rebindForwardersIfNeeded(changedComputedProps);
+        }
+
         const allChangesToObserve = new Map([...changedProperties.entries(), ...changedComputedProps.entries()]);
         
         if (allChangesToObserve.size === 0 && dirtyPaths.size === 0) {

@@ -614,6 +614,65 @@ test('TestComputedDerivedObject: stability with new object instances', async ({ 
     expect(state.computeCallCount).toBe(initialCallCount + 1);
 });
 
+test('TestComputedChainedRoot: computed observing another computed as root', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-computed-chained-root');
+    await expect(component).toBeVisible();
+
+    async function getState(component: Locator) {
+        return component.evaluate(node => {
+            const inst = node as any;
+            return {
+                derivedValue: inst.derivedReference?.value,
+                isOther: inst.isOther,
+                computeCount: inst.isOtherComputeCount
+            };
+        });
+    }
+
+    // --- Initial state: config points to refA which has value "normal" ---
+    await expect(component.locator('#is-other')).toContainText('false');
+    let state = await getState(component);
+    expect(state.derivedValue).toBe('normal');
+    expect(state.isOther).toBe(false);
+    expect(state.computeCount).toBeGreaterThan(0);
+    const initialCount = state.computeCount;
+
+    // --- Act: Change refA's value to "other" ---
+    await component.evaluate(node => { (node as any).refA.value = "other"; });
+    await expect(component.locator('#is-other')).toContainText('true');
+    state = await getState(component);
+    expect(state.derivedValue).toBe('other');
+    expect(state.isOther).toBe(true);
+    expect(state.computeCount).toBeGreaterThan(initialCount);
+    const afterFirstChange = state.computeCount;
+
+    // --- Act: Change refA's value to "another" ---
+    await component.evaluate(node => { (node as any).refA.value = "another"; });
+    await expect(component.locator('#is-other')).toContainText('true');
+    state = await getState(component);
+    expect(state.derivedValue).toBe('another');
+    expect(state.isOther).toBe(true);
+    expect(state.computeCount).toBeGreaterThan(afterFirstChange);
+    const afterSecondChange = state.computeCount;
+
+    // --- Act: Change config to point to refB (which has value "other") ---
+    await component.evaluate(node => { (node as any).config.options = ["refB"]; });
+    await expect(component.locator('#is-other')).toContainText('true');
+    state = await getState(component);
+    expect(state.derivedValue).toBe('other');
+    expect(state.isOther).toBe(true);
+    expect(state.computeCount).toBeGreaterThan(afterSecondChange);
+    const afterConfigChange = state.computeCount;
+
+    // --- Act: Change refB's value to "normal" ---
+    await component.evaluate(node => { (node as any).refB.value = "normal"; });
+    await expect(component.locator('#is-other')).toContainText('false');
+    state = await getState(component);
+    expect(state.derivedValue).toBe('normal');
+    expect(state.isOther).toBe(false);
+    expect(state.computeCount).toBeGreaterThan(afterConfigChange);
+});
+
 test('TestObserverUndefinedBlocking: observer not called when properties are undefined by default', async ({ page }) => {
     const component = await setupComponentTest(page, 'test-observer-undefined-blocking');
     await expect(component).toBeVisible();
