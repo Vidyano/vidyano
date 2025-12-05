@@ -20,5 +20,8 @@ import "./web-component/test-observer-property-prototype.js";
 import "./web-component/test-observer-property-inline.js";
 import "./web-component/test-translations.js";
 import "./web-component/test-decorator-inheritance.js";
+import "./web-component/test-computed-deep-inheritance.js";
+import "./web-component/test-observer-deep-inheritance.js";
+import "./web-component/test-sibling-inheritance.js";
 import "./web-component/test-computed-chained-root.js";
 import "./web-components/dialog/test-dialog.js";

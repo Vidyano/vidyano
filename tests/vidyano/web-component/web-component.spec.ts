@@ -1544,3 +1544,232 @@ test('TestDecoratorInheritance: derived class overrides base class @observer and
     expect(computedState.baseComputedCallCount).toBe(0); // Base computed should still NOT run
     expect(computedState.derivedComputedCallCount).toBeGreaterThan(initialDerivedComputedCount); // Derived computed should run again
 });
+
+test('TestComputedDeepInheritance: child inherits computed properties from grandparent through unregistered parent', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-computed-deep-inheritance');
+    await expect(component).toBeVisible();
+
+    // --- Initial state verification ---
+    // The child component should inherit computed properties from grandparent
+    // even though the parent class was never registered
+    await expect(component.locator('#full-name')).toContainText('John Doe');
+    await expect(component.locator('#active')).toContainText('active');
+
+    let state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            lastName: inst.lastName,
+            fullName: inst.fullName,
+            isActive: inst.isActive,
+            active: inst.active,
+            computeCallCount: inst.computeCallCount
+        };
+    });
+
+    expect(state.firstName).toBe('John');
+    expect(state.lastName).toBe('Doe');
+    expect(state.fullName).toBe('John Doe');
+    expect(state.isActive).toBe(true);
+    expect(state.active).toBe(true);
+    expect(state.computeCallCount).toBeGreaterThanOrEqual(1); // Computed function should have been called
+
+    // --- Act: Change firstName ---
+    const initialComputeCount = state.computeCallCount;
+    await component.evaluate(node => { (node as any).firstName = 'Jane'; });
+    await expect(component.locator('#full-name')).toContainText('Jane Doe');
+
+    const nameState = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            lastName: inst.lastName,
+            fullName: inst.fullName,
+            computeCallCount: inst.computeCallCount
+        };
+    });
+
+    expect(nameState.firstName).toBe('Jane');
+    expect(nameState.lastName).toBe('Doe');
+    expect(nameState.fullName).toBe('Jane Doe');
+    expect(nameState.computeCallCount).toBeGreaterThan(initialComputeCount); // Should have recomputed
+
+    // --- Act: Change isActive ---
+    await component.evaluate(node => { (node as any).isActive = false; });
+    await expect(component.locator('#active')).toContainText('inactive');
+
+    const activeState = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            isActive: inst.isActive,
+            active: inst.active
+        };
+    });
+
+    expect(activeState.isActive).toBe(false);
+    expect(activeState.active).toBe(false);
+});
+
+test('TestObserverDeepInheritance: child inherits observers from grandparent through unregistered parent', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-observer-deep-inheritance');
+    await expect(component).toBeVisible();
+
+    // --- Initial state verification ---
+    // The child component should inherit observers from grandparent and parent
+    await expect(component.locator('#first-name')).toContainText('John');
+    await expect(component.locator('#age')).toContainText('30');
+    await expect(component.locator('#email')).toContainText('john@example.com');
+
+    let state = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            age: inst.age,
+            email: inst.email,
+            firstNameObserverCallCount: inst.firstNameObserverCallCount,
+            ageObserverCallCount: inst.ageObserverCallCount,
+            emailObserverCallCount: inst.emailObserverCallCount
+        };
+    });
+
+    expect(state.firstName).toBe('John');
+    expect(state.age).toBe(30);
+    expect(state.email).toBe('john@example.com');
+    // All observers should have been called at least once during initialization
+    expect(state.firstNameObserverCallCount).toBeGreaterThanOrEqual(1);
+    expect(state.ageObserverCallCount).toBeGreaterThanOrEqual(1);
+    expect(state.emailObserverCallCount).toBeGreaterThanOrEqual(1);
+
+    // --- Act: Change firstName (has observer from grandparent) ---
+    const initialFirstNameCount = state.firstNameObserverCallCount;
+    await component.evaluate(node => { (node as any).firstName = 'Jane'; });
+    await expect(component.locator('#first-name')).toContainText('Jane');
+
+    const firstNameState = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            firstName: inst.firstName,
+            firstNameObserverCallCount: inst.firstNameObserverCallCount
+        };
+    });
+
+    expect(firstNameState.firstName).toBe('Jane');
+    expect(firstNameState.firstNameObserverCallCount).toBeGreaterThan(initialFirstNameCount); // Observer should have fired
+
+    // --- Act: Change age (has observer from parent) ---
+    const initialAgeCount = state.ageObserverCallCount;
+    await component.evaluate(node => { (node as any).age = 35; });
+    await expect(component.locator('#age')).toContainText('35');
+
+    const ageState = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            age: inst.age,
+            ageObserverCallCount: inst.ageObserverCallCount
+        };
+    });
+
+    expect(ageState.age).toBe(35);
+    expect(ageState.ageObserverCallCount).toBeGreaterThan(initialAgeCount); // Observer should have fired
+
+    // --- Act: Change email (has observer from child) ---
+    const initialEmailCount = state.emailObserverCallCount;
+    await component.evaluate(node => { (node as any).email = 'jane@example.com'; });
+    await expect(component.locator('#email')).toContainText('jane@example.com');
+
+    const emailState = await component.evaluate(node => {
+        const inst = node as any;
+        return {
+            email: inst.email,
+            emailObserverCallCount: inst.emailObserverCallCount
+        };
+    });
+
+    expect(emailState.email).toBe('jane@example.com');
+    expect(emailState.emailObserverCallCount).toBeGreaterThan(initialEmailCount); // Observer should have fired
+});
+
+test('TestSiblingInheritance: two children from same parent both inherit correctly without pollution', async ({ page }) => {
+    // Test Child1 first
+    const child1 = await setupComponentTest(page, 'test-sibling-child1');
+    await expect(child1).toBeVisible();
+
+    await expect(child1.locator('#full-name')).toContainText('John Doe');
+    await expect(child1.locator('#age-display')).toContainText('Age: 30');
+    await expect(child1.locator('#child-prop')).toContainText('child1');
+
+    let child1State = await child1.evaluate(node => {
+        const inst = node as any;
+        return {
+            fullName: inst.fullName,
+            ageDisplay: inst.ageDisplay,
+            childProp: inst.child1Prop,
+            firstNameChangedCount: inst.firstNameChangedCount
+        };
+    });
+
+    expect(child1State.fullName).toBe('John Doe');
+    expect(child1State.ageDisplay).toBe('Age: 30');
+    expect(child1State.childProp).toBe('child1');
+    expect(child1State.firstNameChangedCount).toBeGreaterThanOrEqual(1);
+
+    // Change firstName on Child1 to trigger observer
+    const initialChild1Count = child1State.firstNameChangedCount;
+    await child1.evaluate(node => { (node as any).firstName = 'Jane'; });
+    await expect(child1.locator('#full-name')).toContainText('Jane Doe');
+
+    const child1AfterChange = await child1.evaluate(node => {
+        const inst = node as any;
+        return {
+            fullName: inst.fullName,
+            firstNameChangedCount: inst.firstNameChangedCount
+        };
+    });
+
+    expect(child1AfterChange.fullName).toBe('Jane Doe');
+    expect(child1AfterChange.firstNameChangedCount).toBeGreaterThan(initialChild1Count);
+
+    // Now test Child2 - it should have the SAME inherited properties working correctly
+    // This verifies that registering Child1 didn't pollute the parent configs
+    const child2 = await setupComponentTest(page, 'test-sibling-child2');
+    await expect(child2).toBeVisible();
+
+    await expect(child2.locator('#full-name')).toContainText('John Doe');
+    await expect(child2.locator('#age-display')).toContainText('Age: 30');
+    await expect(child2.locator('#child-prop')).toContainText('child2');
+
+    let child2State = await child2.evaluate(node => {
+        const inst = node as any;
+        return {
+            fullName: inst.fullName,
+            ageDisplay: inst.ageDisplay,
+            childProp: inst.child2Prop,
+            firstNameChangedCount: inst.firstNameChangedCount
+        };
+    });
+
+    expect(child2State.fullName).toBe('John Doe');
+    expect(child2State.ageDisplay).toBe('Age: 30');
+    expect(child2State.childProp).toBe('child2');
+    expect(child2State.firstNameChangedCount).toBeGreaterThanOrEqual(1);
+
+    // Change firstName on Child2 to trigger observer
+    const initialChild2Count = child2State.firstNameChangedCount;
+    await child2.evaluate(node => { (node as any).firstName = 'Alice'; });
+    await expect(child2.locator('#full-name')).toContainText('Alice Doe');
+
+    const child2AfterChange = await child2.evaluate(node => {
+        const inst = node as any;
+        return {
+            fullName: inst.fullName,
+            firstNameChangedCount: inst.firstNameChangedCount
+        };
+    });
+
+    expect(child2AfterChange.fullName).toBe('Alice Doe');
+    expect(child2AfterChange.firstNameChangedCount).toBeGreaterThan(initialChild2Count);
+
+    // Success! Both children inherited the same configs from their shared parent correctly
+    // This confirms that registering Child1 didn't pollute or modify the parent's configs
+    // and Child2 was able to independently collect the same configs
+});
