@@ -17,8 +17,7 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
     private _attributeValueChangedBlock: boolean = false;
 
     @computed(function(this: PersistentObjectAttributeNumeric): string {
-        // Don't default to "number" as that would prevent proper handling of decimals and large numbers
-        return this.attribute?.getTypeHint("inputtype", undefined, undefined);
+        return this._computeInputtype();
     }, "attribute.typeHints")
     declare readonly inputtype: string;
 
@@ -174,6 +173,11 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
         } catch {
             this.value = this.attribute.value;
         }
+    }
+
+    protected _computeInputtype(): string {
+        // Don't default to "number" as that would prevent proper handling of decimals and large numbers
+        return this.attribute?.getTypeHint("inputtype", undefined, undefined);
     }
 
     private _editInputBlur() {
