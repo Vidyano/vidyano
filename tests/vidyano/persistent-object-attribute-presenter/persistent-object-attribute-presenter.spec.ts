@@ -125,9 +125,6 @@ test.describe.serial('PersistentObjectAttributePresenter', () => {
         }, { id: componentId, value });
     }
 
-    // ===========================================
-    // TYPE MAPPING TESTS
-    // ===========================================
     test.describe('Type Mapping', () => {
         test('String type renders vi-persistent-object-attribute-string', async () => {
             const presenter = await setupPresenter('String');
@@ -179,9 +176,6 @@ test.describe.serial('PersistentObjectAttributePresenter', () => {
         });
     });
 
-    // ===========================================
-    // ATTRIBUTE REFLECTION TESTS
-    // ===========================================
     test.describe('Attribute Reflection', () => {
         test('reflects attribute name to [name] attribute', async () => {
             const presenter = await setupPresenter('String');
@@ -202,9 +196,6 @@ test.describe.serial('PersistentObjectAttributePresenter', () => {
         });
     });
 
-    // ===========================================
-    // EDITING STATE TESTS
-    // ===========================================
     test.describe('Editing State', () => {
         test('does not have [editing] attribute in non-edit mode', async () => {
             const presenter = await setupPresenter('String');
@@ -240,9 +231,6 @@ test.describe.serial('PersistentObjectAttributePresenter', () => {
         });
     });
 
-    // ===========================================
-    // READ-ONLY STATE TESTS
-    // ===========================================
     test.describe('Read-Only State', () => {
         test('has [read-only] attribute when attribute is read-only', async () => {
             const presenter = await setupPresenter('ReadOnlyString');
@@ -275,9 +263,6 @@ test.describe.serial('PersistentObjectAttributePresenter', () => {
         });
     });
 
-    // ===========================================
-    // REQUIRED STATE TESTS
-    // ===========================================
     test.describe('Required State', () => {
         test('has [required] attribute when attribute is required and value is null', async () => {
             const presenter = await setupPresenter('RequiredString');
@@ -292,9 +277,6 @@ test.describe.serial('PersistentObjectAttributePresenter', () => {
         });
     });
 
-    // ===========================================
-    // HIDDEN STATE TESTS
-    // ===========================================
     test.describe('Hidden State', () => {
         test('has [hidden] attribute when attribute visibility is Never', async () => {
             const presenter = await setupPresenter('HiddenString');
@@ -309,9 +291,6 @@ test.describe.serial('PersistentObjectAttributePresenter', () => {
         });
     });
 
-    // ===========================================
-    // HAS-ERROR STATE TESTS
-    // ===========================================
     test.describe('Has Error State', () => {
         test('does not have [has-error] by default', async () => {
             const presenter = await setupPresenter('String');
@@ -338,9 +317,6 @@ test.describe.serial('PersistentObjectAttributePresenter', () => {
         });
     });
 
-    // ===========================================
-    // HAS-VALUE STATE TESTS
-    // ===========================================
     test.describe('Has Value State', () => {
         test('has [has-value] when attribute has a value', async () => {
             const presenter = await setupPresenter('String');
@@ -363,9 +339,6 @@ test.describe.serial('PersistentObjectAttributePresenter', () => {
         });
     });
 
-    // ===========================================
-    // LABEL TESTS
-    // ===========================================
     test.describe('Label Rendering', () => {
         test('renders label by default', async () => {
             const presenter = await setupPresenter('String');
@@ -389,9 +362,6 @@ test.describe.serial('PersistentObjectAttributePresenter', () => {
         });
     });
 
-    // ===========================================
-    // DISABLED STATE TESTS
-    // ===========================================
     test.describe('Disabled State', () => {
         test('propagates disabled to rendered attribute', async () => {
             const presenter = await setupPresenter('String', { disabled: true });
@@ -405,9 +375,6 @@ test.describe.serial('PersistentObjectAttributePresenter', () => {
         });
     });
 
-    // ===========================================
-    // EVENT TESTS
-    // ===========================================
     test.describe('Events', () => {
         test('fires attribute-loaded event after attribute is rendered', async () => {
             const componentId = `presenter-${Math.random().toString(36).substring(2, 15)}`;
@@ -452,12 +419,8 @@ test.describe.serial('PersistentObjectAttributePresenter', () => {
         });
     });
 
-    // ===========================================
-    // LOADING STATE TESTS
-    // ===========================================
     test.describe('Loading State', () => {
         test('has [loading] attribute initially then removes it', async () => {
-            // This tests the loading state transition
             const componentId = `presenter-${Math.random().toString(36).substring(2, 15)}`;
 
             const result = await sharedPage.evaluate(async (componentId) => {
@@ -495,9 +458,6 @@ test.describe.serial('PersistentObjectAttributePresenter', () => {
         });
     });
 
-    // ===========================================
-    // CONTENT SLOT TESTS
-    // ===========================================
     test.describe('Content Slot', () => {
         test('rendered attribute is slotted into content area', async () => {
             const presenter = await setupPresenter('String');
@@ -515,9 +475,6 @@ test.describe.serial('PersistentObjectAttributePresenter', () => {
         });
     });
 
-    // ===========================================
-    // NON-EDIT MODE TESTS
-    // ===========================================
     test.describe('Non-Edit Mode', () => {
         test('has [non-edit] attribute when nonedit type hint is set', async () => {
             const presenter = await setupPresenter('NonEditString');
@@ -534,6 +491,103 @@ test.describe.serial('PersistentObjectAttributePresenter', () => {
             });
 
             expect(renderedAttribute).toBe(true);
+        });
+    });
+
+    test.describe('Protected Methods', () => {
+        test.describe('createAttributeElement', () => {
+            test('creates correct element for String type', async () => {
+                const presenter = await setupPresenter('String');
+
+                const result = await presenter.evaluate((el) => {
+                    const element = (el as any).createAttributeElement('String');
+                    return element?.tagName?.toLowerCase();
+                });
+
+                expect(result).toBe('vi-persistent-object-attribute-string');
+            });
+
+            test('creates correct element for Numeric type', async () => {
+                const presenter = await setupPresenter('Integer');
+
+                const result = await presenter.evaluate((el) => {
+                    const element = (el as any).createAttributeElement('Numeric');
+                    return element?.tagName?.toLowerCase();
+                });
+
+                expect(result).toBe('vi-persistent-object-attribute-numeric');
+            });
+
+            test('creates correct element for Boolean type', async () => {
+                const presenter = await setupPresenter('Boolean');
+
+                const result = await presenter.evaluate((el) => {
+                    const element = (el as any).createAttributeElement('Boolean');
+                    return element?.tagName?.toLowerCase();
+                });
+
+                expect(result).toBe('vi-persistent-object-attribute-boolean');
+            });
+
+            test('falls back to String for unknown type', async () => {
+                const presenter = await setupPresenter('String');
+
+                const result = await presenter.evaluate((el) => {
+                    const element = (el as any).createAttributeElement('UnknownType');
+                    return element?.tagName?.toLowerCase();
+                });
+
+                expect(result).toBe('vi-persistent-object-attribute-string');
+            });
+        });
+
+        test.describe('renderLabel', () => {
+            test('returns label element when noLabel is false', async () => {
+                const presenter = await setupPresenter('String');
+
+                const hasLabel = await presenter.evaluate((el) => {
+                    const result = (el as any).renderLabel();
+                    // Check if result is not 'nothing' (Lit's nothing symbol)
+                    return result !== null && typeof result === 'object' && 'strings' in result;
+                });
+
+                expect(hasLabel).toBe(true);
+            });
+
+            test('returns nothing when noLabel is true', async () => {
+                const presenter = await setupPresenter('String', { noLabel: true });
+
+                const result = await presenter.evaluate((el) => {
+                    const rendered = (el as any).renderLabel();
+                    // Lit's 'nothing' is a symbol, check if it's not a TemplateResult
+                    return typeof rendered === 'symbol';
+                });
+
+                expect(result).toBe(true);
+            });
+        });
+
+        test.describe('calculateRowSpan', () => {
+            test('returns falsy value when no explicit height is configured', async () => {
+                const presenter = await setupPresenter('String');
+
+                const result = await presenter.evaluate((el) => {
+                    return (el as any).calculateRowSpan((el as any).attribute);
+                });
+
+                expect(result).toBeFalsy();
+            });
+
+            test('returns height property when set', async () => {
+                const presenter = await setupPresenter('String');
+
+                const result = await presenter.evaluate((el) => {
+                    (el as any).height = 3;
+                    return (el as any).calculateRowSpan((el as any).attribute);
+                });
+
+                expect(result).toBe(3);
+            });
         });
     });
 });

@@ -1,6 +1,6 @@
 import * as Vidyano from "vidyano"
 import { Observable, ISubjectDisposer } from "vidyano"
-import { html, nothing, unsafeCSS } from "lit"
+import { html, nothing, unsafeCSS, TemplateResult } from "lit"
 import { property, state } from "lit/decorators.js"
 import { computed, listener, observer, WebComponent } from "components/web-component/web-component"
 import { IConfigurableAction, WebComponentConfigurationController } from "components/web-component/web-component-configuration-controller"
@@ -240,9 +240,7 @@ export class PersistentObjectAttributePresenter extends WebComponent {
 
     render() {
         return html`
-            ${!this.noLabel ? html`
-                <vi-persistent-object-attribute-label .nonEdit=${this.nonEdit} .attribute=${this.attribute} part="label"></vi-persistent-object-attribute-label>
-            ` : nothing}
+            ${this.renderLabel()}
             <div id="content" class="content">
                 ${this.attribute?.parent?.isBulkEdit ? html`
                     <vi-checkbox .checked=${this.attribute.isValueChanged} @checked-changed=${this._onBulkEditCheckboxChanged} ?disabled=${this.readOnly}></vi-checkbox>
@@ -255,6 +253,13 @@ export class PersistentObjectAttributePresenter extends WebComponent {
                 </div>
             ` : nothing}
         `;
+    }
+
+    protected renderLabel(): TemplateResult | typeof nothing {
+        if (this.noLabel)
+            return nothing;
+
+        return html`<vi-persistent-object-attribute-label .nonEdit=${this.nonEdit} .attribute=${this.attribute} part="label"></vi-persistent-object-attribute-label>`;
     }
 
     @listener("click")
@@ -314,7 +319,7 @@ export class PersistentObjectAttributePresenter extends WebComponent {
 
         let focusTarget: HTMLElement;
         try {
-            this._renderedAttributeElement = <PersistentObjectAttribute>new (PersistentObjectAttributeRegister.get(attributeType) ?? PersistentObjectAttributeString)();
+            this._renderedAttributeElement = this.createAttributeElement(attributeType);
             this._renderedAttributeElement.classList.add("attribute");
             this._renderedAttributeElement.attribute = attribute;
             this._renderedAttributeElement.nonEdit = this.nonEdit;
@@ -335,16 +340,24 @@ export class PersistentObjectAttributePresenter extends WebComponent {
         }
     }
 
+    protected createAttributeElement(attributeType: string): PersistentObjectAttribute {
+        return <PersistentObjectAttribute>new (PersistentObjectAttributeRegister.get(attributeType) ?? PersistentObjectAttributeString)();
+    }
+
     @observer("attribute")
     private _updateRowSpan() {
         if (!this.isConnected || !this.attribute)
             return;
 
-        const height = this.height || this.app.configuration.getAttributeConfig(this.attribute)?.calculateHeight(this.attribute);
+        const height = this.calculateRowSpan(this.attribute);
         if (height > 0)
             this.style.setProperty("--vi-persistent-object-attribute-presenter--row-span", `${height}`);
         else
             this.style.removeProperty("--vi-persistent-object-attribute-presenter--row-span");
+    }
+
+    protected calculateRowSpan(attribute: Vidyano.PersistentObjectAttribute): number | null {
+        return this.height || this.app.configuration.getAttributeConfig(attribute)?.calculateHeight(attribute);
     }
 
     private _openAttributeManagement() {
