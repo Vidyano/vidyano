@@ -138,7 +138,7 @@ function _observeArrayWildcardItems(
     effectiveOriginalSource?: any
 ): ForwardObservedChainDisposer[] {
     const itemDisposers: ForwardObservedChainDisposer[] = [];
-    
+
     if (remainingPathForItems) { // Only observe items if there's a sub-path beyond "*"
         arraySource.forEach((item, index) => {
             const itemPathPrefix = _buildPathSegment(currentPathPrefix, index); // e.g., "myArray.0"
@@ -147,7 +147,7 @@ function _observeArrayWildcardItems(
             );
         });
     }
-    
+
     // If no remainingPathForItems (e.g., path is just "myArray.*"), this function does not set up further listeners.
     // Observation of the array "myArray" itself (if it's a property of an observable) is handled by _observeObservableProperty.
     return itemDisposers;
@@ -240,29 +240,62 @@ function _observeObservableProperty(
 ): ForwardObservedChainDisposer {
     let activeSubChainDisposer: ForwardObservedChainDisposer | null = null;
     let activeArrayPropertyListenersDisposer: (() => void) | null = null;
+    // Track individual item observers when observing array item properties (e.g., "items.*.name")
+    let activeItemDisposers: ForwardObservedChainDisposer[] = [];
 
     // Sets up or updates observation based on the property's current value.
     const setupObservationForPropertyValue = (value: any, isInitialSetup: boolean) => {
         // Clean up any existing listeners for the old value
         if (activeSubChainDisposer) activeSubChainDisposer();
         if (activeArrayPropertyListenersDisposer) activeArrayPropertyListenersDisposer();
+        activeItemDisposers.forEach(d => d());
         activeSubChainDisposer = null;
         activeArrayPropertyListenersDisposer = null;
+        activeItemDisposers = [];
 
         if (value !== null && value !== undefined) {
-            if (remainingPath && remainingPath !== "*") {
-                // Observe a nested property: propertyName.remainingPath
+            // Handle paths like "*.property" on arrays - track item observers to properly dispose on removal
+            if (remainingPath && remainingPath.startsWith("*.") && Array.isArray(value) && _isObservableArraySourceCapable(observableSource)) {
+                const itemPropertyPath = remainingPath.substring(2);
+
+                const setupItemObserver = (item: any, index: number): ForwardObservedChainDisposer => {
+                    const itemPathPrefix = _buildPathSegment(propertyAbsolutePath, index);
+                    return forwardObserverImpl(item, itemPropertyPath, itemPathPrefix, observer, notifyInitialState, effectiveOriginalSource);
+                };
+
+                value.forEach((item: any, index: number) => {
+                    activeItemDisposers.push(setupItemObserver(item, index));
+                });
+
+                activeArrayPropertyListenersDisposer = observableSource.arrayChanged!.attach((_s, evDeets) => {
+                    if (evDeets.arrayPropertyName === propertyName) {
+                        observer(new ForwardObservedArrayChangedArgs(propertyAbsolutePath, propertyName, evDeets.index, evDeets.removedItems, evDeets.addedItemCount, value));
+
+                        if (evDeets.removedItems && evDeets.removedItems.length > 0) {
+                            const removedDisposers = activeItemDisposers.splice(evDeets.index, evDeets.removedItems.length);
+                            removedDisposers.forEach(d => d());
+                        }
+
+                        if (evDeets.addedItemCount && evDeets.addedItemCount > 0) {
+                            const newDisposers: ForwardObservedChainDisposer[] = [];
+                            for (let i = 0; i < evDeets.addedItemCount; i++) {
+                                const itemIndex = evDeets.index + i;
+                                const itemPathPrefix = _buildPathSegment(propertyAbsolutePath, itemIndex);
+                                // Don't notify initial state for dynamically added items
+                                newDisposers.push(forwardObserverImpl(value[itemIndex], itemPropertyPath, itemPathPrefix, observer, false, effectiveOriginalSource));
+                            }
+                            activeItemDisposers.splice(evDeets.index, 0, ...newDisposers);
+                        }
+                    }
+                });
+            } else if (remainingPath && remainingPath !== "*") {
                 activeSubChainDisposer = forwardObserverImpl(value, remainingPath, propertyAbsolutePath, observer, notifyInitialState, effectiveOriginalSource);
             } else if (remainingPath === "*") {
-                // Observe array mutations/content: propertyName.*
                 activeArrayPropertyListenersDisposer = _setupArrayPropertyListeners(
                     observableSource, propertyName, value as any[], propertyAbsolutePath,
                     observer, notifyInitialState, isInitialSetup
                 );
             }
-            // If no remainingPath, observation for this propertyName is complete.
-            // Initial value for this property (if notifyInitialState is true and path ends here)
-            // is handled by _notifyInitialValueForSegment in the main forwardObserverImpl.
         } else if (remainingPath && remainingPath !== "*" && notifyInitialState) {
             // Property value is null/undefined, but path continues (e.g., "prop.subProp") and initial state is needed.
             // This will result in notifying undefined for the sub-path.
@@ -288,12 +321,15 @@ function _observeObservableProperty(
     // Return a disposer that cleans up everything set up by this function call.
     return () => {
         propertyChangedEventDisposer();
-        
+
         if (activeSubChainDisposer)
             activeSubChainDisposer();
-        
+
         if (activeArrayPropertyListenersDisposer)
             activeArrayPropertyListenersDisposer();
+
+        activeItemDisposers.forEach(d => d());
+        activeItemDisposers = [];
     };
 }
 

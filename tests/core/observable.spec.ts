@@ -1096,6 +1096,154 @@ test.describe("Observable.forward - array observation", () => {
 
         disposer();
     });
+
+    test("should notify array changes when observing items.*.property and new item is pushed", () => {
+        const container = new ContainerObservable();
+        const item1 = new ItemObservable("item1");
+        container.items.push(item1);
+
+        const notifications: any[] = [];
+
+        const disposer = Observable.forward(container, "items.*.name", (detail) => {
+            notifications.push(detail);
+        });
+
+        // Push a new item AFTER observation is set up
+        const item2 = new ItemObservable("item2");
+        container.items.push(item2);
+
+        // Should get array changed notification
+        const arrayNotification = notifications.find(n => n.arrayPropertyName === "items");
+        expect(arrayNotification).toBeTruthy();
+        expect(arrayNotification.addedItemCount).toBe(1);
+
+        disposer();
+    });
+
+    test("should observe property changes on newly added array items", () => {
+        const container = new ContainerObservable();
+
+        const notifications: any[] = [];
+
+        const disposer = Observable.forward(container, "items.*.name", (detail) => {
+            notifications.push(detail);
+        });
+
+        // Push a new item AFTER observation is set up
+        const item1 = new ItemObservable("item1");
+        container.items.push(item1);
+
+        // Clear notifications from the push
+        const pushNotificationCount = notifications.length;
+
+        // Change the name on the newly added item
+        item1.name = "updated-item1";
+
+        // Should get property changed notification for the new item
+        const propertyNotification = notifications.slice(pushNotificationCount).find(n => n.propertyName === "name");
+        expect(propertyNotification).toBeTruthy();
+        expect(propertyNotification.newValue).toBe("updated-item1");
+
+        disposer();
+    });
+
+    test("should stop observing removed items (no memory leak)", () => {
+        const container = new ContainerObservable();
+        const item1 = new ItemObservable("item1");
+        const item2 = new ItemObservable("item2");
+        container.items.push(item1, item2);
+
+        const notifications: any[] = [];
+
+        const disposer = Observable.forward(container, "items.*.name", (detail) => {
+            notifications.push(detail);
+        });
+
+        // Verify observation works before removal
+        item1.name = "updated-item1";
+        expect(notifications.some(n => n.propertyName === "name" && n.newValue === "updated-item1")).toBe(true);
+
+        // Clear notifications
+        notifications.length = 0;
+
+        // Remove item1 from the array
+        container.items.shift();
+
+        // Clear the array change notification
+        const afterRemovalCount = notifications.length;
+
+        // Change the removed item's name - should NOT trigger notification (memory leak if it does)
+        item1.name = "should-not-notify";
+
+        // Should NOT have any new property notifications for item1
+        const leakedNotification = notifications.slice(afterRemovalCount).find(n => n.propertyName === "name" && n.newValue === "should-not-notify");
+        expect(leakedNotification).toBeFalsy();
+
+        disposer();
+    });
+
+    test("should stop observing dynamically added then removed items", () => {
+        const container = new ContainerObservable();
+
+        const notifications: any[] = [];
+
+        const disposer = Observable.forward(container, "items.*.name", (detail) => {
+            notifications.push(detail);
+        });
+
+        // Add an item dynamically
+        const item1 = new ItemObservable("item1");
+        container.items.push(item1);
+
+        // Verify observation works
+        notifications.length = 0;
+        item1.name = "updated";
+        expect(notifications.some(n => n.propertyName === "name" && n.newValue === "updated")).toBe(true);
+
+        // Remove the item
+        container.items.pop();
+        notifications.length = 0;
+
+        // Change the removed item - should NOT trigger notification
+        item1.name = "should-not-notify";
+        const leakedNotification = notifications.find(n => n.propertyName === "name" && n.newValue === "should-not-notify");
+        expect(leakedNotification).toBeFalsy();
+
+        disposer();
+    });
+
+    test("should correctly track observers when removing from middle of array", () => {
+        const container = new ContainerObservable();
+        const item1 = new ItemObservable("item1");
+        const item2 = new ItemObservable("item2");
+        const item3 = new ItemObservable("item3");
+        container.items.push(item1, item2, item3);
+
+        const notifications: any[] = [];
+
+        const disposer = Observable.forward(container, "items.*.name", (detail) => {
+            notifications.push(detail);
+        });
+
+        // Remove item2 from the middle
+        container.items.splice(1, 1);
+        notifications.length = 0;
+
+        // item1 should still be observed
+        item1.name = "item1-updated";
+        expect(notifications.some(n => n.newValue === "item1-updated")).toBe(true);
+
+        // item3 should still be observed
+        item3.name = "item3-updated";
+        expect(notifications.some(n => n.newValue === "item3-updated")).toBe(true);
+
+        // item2 should NOT be observed (memory leak if it is)
+        notifications.length = 0;
+        item2.name = "should-not-notify";
+        expect(notifications.find(n => n.newValue === "should-not-notify")).toBeFalsy();
+
+        disposer();
+    });
 });
 
 test.describe("Observable.forward - plain objects", () => {
