@@ -1,6 +1,9 @@
-import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
 import { Observable, ISubjectDisposer } from "vidyano"
+import { html, nothing, unsafeCSS } from "lit"
+import { property, state } from "lit/decorators.js"
+import { computed, listener, observer, WebComponent } from "components/web-component/web-component"
+import { IConfigurableAction, WebComponentConfigurationController } from "components/web-component/web-component-configuration-controller"
 import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
 import "components/persistent-object-attribute/attributes/persistent-object-attribute-as-detail/persistent-object-attribute-as-detail"
 import "components/persistent-object-attribute/attributes/persistent-object-attribute-binary-file/persistent-object-attribute-binary-file"
@@ -22,9 +25,9 @@ import "components/persistent-object-attribute/attributes/persistent-object-attr
 import { PersistentObjectAttributeString } from "components/persistent-object-attribute/attributes/persistent-object-attribute-string/persistent-object-attribute-string"
 import "components/persistent-object-attribute/attributes/persistent-object-attribute-translated-string/persistent-object-attribute-translated-string"
 import "components/persistent-object-attribute/attributes/persistent-object-attribute-user/persistent-object-attribute-user"
-import { PersistentObjectAttributeConfig } from '../app/config/persistent-object-attribute-config.js'
 import "components/persistent-object-attribute-label/persistent-object-attribute-label"
-import { ConfigurableWebComponent } from "components/web-component/polymer/configurable-web-component"
+import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute"
+import styles from "./persistent-object-attribute-presenter.css"
 
 class DeveloperShortcut extends Observable<DeveloperShortcut> {
     private _state: boolean = false;
@@ -51,185 +54,27 @@ document.addEventListener("keyup", e => {
     developerShortcut.state = e.ctrlKey && e.altKey;
 });
 
-@ConfigurableWebComponent.register({
-    properties: {
-        attribute: Object,
-        name: {
-            type: String,
-            computed: "attribute.name",
-            reflectToAttribute: true
-        },
-        type: {
-            type: String,
-            computed: "attribute.type",
-            reflectToAttribute: true
-        },
-        noLabel: {
-            type: Boolean,
-            reflectToAttribute: true,
-            value: false
-        },
-        editing: {
-            type: Boolean,
-            reflectToAttribute: true,
-            computed: "_computeEditing(attribute.parent.isEditing, nonEdit)"
-        },
-        nonEdit: {
-            type: Boolean,
-            reflectToAttribute: true,
-            computed: "_computeNonEdit(attribute)",
-            observer: "_nonEditChanged"
-        },
-        required: {
-            type: Boolean,
-            reflectToAttribute: true,
-            computed: "_computeRequired(attribute, attribute.isRequired, attribute.value)"
-        },
-        disabled: {
-            type: Boolean,
-            reflectToAttribute: true,
-            value: false,
-            observer: "_disabledChanged"
-        },
-        readOnly: {
-            type: Boolean,
-            reflectToAttribute: true,
-            computed: "_computeReadOnly(attribute.isReadOnly, attribute.parent.isFrozen, disabled)"
-        },
-        bulkEdit: {
-            type: Boolean,
-            reflectToAttribute: true,
-            computed: "attribute.parent.isBulkEdit"
-        },
-        loading: {
-            type: Boolean,
-            reflectToAttribute: true,
-            readOnly: true,
-            value: true,
-            observer: "_loadingChanged"
-        },
-        height: {
-            type: Number,
-            reflectToAttribute: true,
-            value: null
-        },
-        hidden: {
-            type: Boolean,
-            reflectToAttribute: true,
-            computed: "!attribute.isVisible"
-        },
-        hasError: {
-            type: Boolean,
-            reflectToAttribute: true,
-            computed: "_computeHasError(attribute.validationError)"
-        },
-        hasValue: {
-            type: Boolean,
-            reflectToAttribute: true,
-            computed: "_computeHasValue(attribute.value)"
-        },
-        developer: {
-            type: Boolean,
-            reflectToAttribute: true
-        },
-        gridArea: {
-            type: String,
-            reflectToAttribute: true,
-            observer: "_gridAreaChanged"
-        }
-    },
-    listeners: {
-        "click": "_onClick",
-        "vi:configure": "_configure"
-    },
-    observers: [
-        "_attributeChanged(attribute, isConnected)",
-        "_updateRowSpan(attribute, height, isConnected)"
-    ],
-    forwardObservers: [
-        "attribute.parent.isEditing",
-        "attribute.parent.isFrozen",
-        "attribute.isRequired",
-        "attribute.isReadOnly",
-        "attribute.isVisible",
-        "attribute.value",
-        "attribute.isValueChanged",
-        "attribute.validationError",
-        "attribute.parent.isBulkEdit"
-    ]
-}, "vi-persistent-object-attribute-presenter")
-export class PersistentObjectAttributePresenter extends ConfigurableWebComponent {
-    static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-presenter.html">`; }
+export class PersistentObjectAttributePresenter extends WebComponent {
+    static styles = unsafeCSS(styles);
+
+    readonly #configurable = new WebComponentConfigurationController(this, (actions: IConfigurableAction[]) => {
+        if (this.attribute?.parent?.isSystem)
+            return;
+
+        actions.push({
+            label: `Attribute: ${this.attribute.name}`,
+            icon: "viConfigure",
+            action: this._openAttributeManagement.bind(this)
+        });
+    });
 
     private _developerToggleDisposer: ISubjectDisposer;
     private _renderedAttribute: Vidyano.PersistentObjectAttribute;
-    private _renderedAttributeElement: Polymer.PersistentObjectAttribute;
+    private _renderedAttributeElement: PersistentObjectAttribute;
     private _focusQueued: boolean;
-    private _customTemplate: new (p0?: object) => Polymer.Templatize.TemplateInstanceBase;
-    readonly loading: boolean; private _setLoading: (loading: boolean) => void;
-    attribute: Vidyano.PersistentObjectAttribute;
-    editing: boolean;
-    nonEdit: boolean;
-    noLabel: boolean;
-    disabled: boolean;
-    readOnly: boolean;
-    readonly name: string;
-    readonly type: string;
 
-    async connectedCallback() {
-        super.connectedCallback();
-
-        const customTemplate = <HTMLTemplateElement><any>this.querySelector("template");
-        if (customTemplate) {
-            this._customTemplate = Polymer.Templatize.templatize(customTemplate);
-        }
-
-        if (this.service && this.service.application && this.service.application.hasManagement)
-            this._developerToggleDisposer = developerShortcut.propertyChanged.attach(this._devToggle.bind(this));
-    }
-
-    disconnectedCallback() {
-        if (this._developerToggleDisposer) {
-            this._developerToggleDisposer();
-            this._developerToggleDisposer = null;
-        }
-
-        super.disconnectedCallback();
-    }
-
-    private _onClick(e: MouseEvent) {
-        if (this.editing && typeof this._renderedAttributeElement?.focus === "function") {
-            // Check if the click originated from within the rendered attribute element
-            // If so, the user clicked on something inside it and we shouldn't redirect focus
-            const path = e.composedPath();
-            const attributeIndex = path.indexOf(this._renderedAttributeElement);
-            const presenterIndex = path.indexOf(this);
-            if (attributeIndex >= 0 && attributeIndex < presenterIndex)
-                return;
-
-            const currentActiveElement = this.app.activeElement;
-            this._renderedAttributeElement.focus();
-
-            if (currentActiveElement !== this.app.activeElement) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        }
-    }
-
-    private _devToggle() {
-        this.set("developer", !this.attribute.parent.isSystem && developerShortcut.state);
-    }
-
-    queueFocus() {
-        const activeElement = document.activeElement;
-        this._focusElement(this);
-
-        if (activeElement !== document.activeElement)
-            this._focusQueued = true;
-    }
-
-    private _attributeChanged(attribute: Vidyano.PersistentObjectAttribute, isConnected: boolean) {
+    @property({ type: Object })
+    @observer(function(this: PersistentObjectAttributePresenter, attribute: Vidyano.PersistentObjectAttribute) {
         if (this._renderedAttribute === attribute)
             return;
 
@@ -238,10 +83,10 @@ export class PersistentObjectAttributePresenter extends ConfigurableWebComponent
             this._renderedAttributeElement = this._renderedAttribute = null;
         }
 
-        if (!attribute || !isConnected)
+        if (!attribute || !this.isConnected)
             return;
 
-        this._setLoading(true);
+        this.loading = true;
 
         const nolabel = attribute.getTypeHint("nolabel", undefined, undefined);
         if (nolabel !== undefined)
@@ -279,6 +124,188 @@ export class PersistentObjectAttributePresenter extends ConfigurableWebComponent
         }
 
         this._renderAttribute(attribute, attributeType);
+    })
+    attribute: Vidyano.PersistentObjectAttribute;
+
+    @property({ type: String, reflect: true })
+    @computed("attribute.name")
+    declare readonly name: string;
+
+    @property({ type: String, reflect: true })
+    @computed("attribute.type")
+    declare readonly type: string;
+
+    @property({ type: Boolean, reflect: true })
+    noLabel: boolean = false;
+
+    @property({ type: Boolean, reflect: true })
+    @computed(function(this: PersistentObjectAttributePresenter, isEditing: boolean, nonEdit: boolean): boolean {
+        return !nonEdit && isEditing;
+    }, "attribute.parent.isEditing", "nonEdit")
+    declare readonly editing: boolean;
+
+    @property({ type: Boolean, reflect: true })
+    @computed(function(this: PersistentObjectAttributePresenter, attribute: Vidyano.PersistentObjectAttribute): boolean {
+        return attribute?.getTypeHint("nonedit", "false", undefined) === "true";
+    }, "attribute")
+    @observer(function(this: PersistentObjectAttributePresenter, nonEdit: boolean) {
+        if (this._renderedAttributeElement)
+            this._renderedAttributeElement.nonEdit = nonEdit;
+    })
+    declare readonly nonEdit: boolean;
+
+    @property({ type: Boolean, reflect: true })
+    @computed(function(this: PersistentObjectAttributePresenter, attribute: Vidyano.PersistentObjectAttribute, required: boolean, value: any): boolean {
+        return required && (value == null || (attribute && attribute.rules && attribute.rules.contains("NotEmpty") && value === ""));
+    }, "attribute", "attribute.isRequired", "attribute.value")
+    declare readonly required: boolean;
+
+    @property({ type: Boolean, reflect: true })
+    @observer(function(this: PersistentObjectAttributePresenter, disabled: boolean) {
+        if (this._renderedAttributeElement)
+            this._renderedAttributeElement.disabled = disabled;
+    })
+    disabled: boolean = false;
+
+    @property({ type: Boolean, reflect: true })
+    @computed(function(this: PersistentObjectAttributePresenter, isReadOnly: boolean, isFrozen: boolean, disabled: boolean): boolean {
+        return isReadOnly || disabled || isFrozen;
+    }, "attribute.isReadOnly", "attribute.parent.isFrozen", "disabled")
+    declare readonly readOnly: boolean;
+
+    @property({ type: Boolean, reflect: true })
+    @computed(function(this: PersistentObjectAttributePresenter, isBulkEdit: boolean): boolean {
+        return isBulkEdit;
+    }, "attribute.parent.isBulkEdit")
+    declare readonly bulkEdit: boolean;
+
+    @state()
+    @observer(function(this: PersistentObjectAttributePresenter, loading: boolean) {
+        this.dispatchEvent(new CustomEvent(loading ? "attribute-loading" : "attribute-loaded", {
+            detail: { attribute: this.attribute },
+            bubbles: true,
+            composed: true
+        }));
+    })
+    loading: boolean = true;
+
+    @property({ type: Number, reflect: true })
+    @observer(function(this: PersistentObjectAttributePresenter) {
+        this._updateRowSpan();
+    })
+    height: number = null;
+
+    @property({ type: Boolean, reflect: true })
+    @computed(function(this: PersistentObjectAttributePresenter, isVisible: boolean): boolean {
+        return !isVisible;
+    }, "attribute.isVisible")
+    declare readonly hidden: boolean;
+
+    @property({ type: Boolean, reflect: true })
+    @computed(function(this: PersistentObjectAttributePresenter, validationError: string): boolean {
+        return !String.isNullOrEmpty(validationError);
+    }, "attribute.validationError")
+    declare readonly hasError: boolean;
+
+    @property({ type: Boolean, reflect: true })
+    @computed(function(this: PersistentObjectAttributePresenter, value: any): boolean {
+        return value != null && value !== "";
+    }, "attribute.value")
+    declare readonly hasValue: boolean;
+
+    @property({ type: Boolean, reflect: true })
+    developer: boolean = false;
+
+    @property({ type: String, reflect: true })
+    @observer(function(this: PersistentObjectAttributePresenter, gridArea: string) {
+        this.style.gridArea = gridArea;
+    })
+    gridArea: string;
+
+    async connectedCallback() {
+        super.connectedCallback();
+
+        if (this.service?.application?.hasManagement)
+            this._developerToggleDisposer = developerShortcut.propertyChanged.attach(this._devToggle.bind(this));
+    }
+
+    disconnectedCallback() {
+        if (this._developerToggleDisposer) {
+            this._developerToggleDisposer();
+            this._developerToggleDisposer = null;
+        }
+
+        super.disconnectedCallback();
+    }
+
+    render() {
+        return html`
+            ${!this.noLabel ? html`
+                <vi-persistent-object-attribute-label .nonEdit=${this.nonEdit} .attribute=${this.attribute} part="label"></vi-persistent-object-attribute-label>
+            ` : nothing}
+            <div id="content" class="content">
+                ${this.attribute?.parent?.isBulkEdit ? html`
+                    <vi-checkbox .checked=${this.attribute.isValueChanged} @checked-changed=${this._onBulkEditCheckboxChanged} ?disabled=${this.readOnly}></vi-checkbox>
+                ` : nothing}
+                <slot></slot>
+            </div>
+            ${this.developer ? html`
+                <div id="developer" @click=${this._openAttributeManagement}>
+                    <label>${this.attribute?.name}</label>
+                </div>
+            ` : nothing}
+        `;
+    }
+
+    @listener("click")
+    private _onClick(e: MouseEvent) {
+        if (this.editing && typeof this._renderedAttributeElement?.focus === "function") {
+            const path = e.composedPath();
+            const attributeIndex = path.indexOf(this._renderedAttributeElement);
+            const presenterIndex = path.indexOf(this);
+            if (attributeIndex >= 0 && attributeIndex < presenterIndex)
+                return;
+
+            const currentActiveElement = this.app.activeElement;
+            this._renderedAttributeElement.focus();
+
+            if (currentActiveElement !== this.app.activeElement) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        }
+    }
+
+    private _onBulkEditCheckboxChanged(e: CustomEvent) {
+        this.attribute.isValueChanged = e.detail.value;
+    }
+
+    private _devToggle() {
+        this.developer = !this.attribute?.parent?.isSystem && developerShortcut.state;
+    }
+
+    queueFocus() {
+        const activeElement = document.activeElement;
+        this.#focusElement(this);
+
+        if (activeElement !== document.activeElement)
+            this._focusQueued = true;
+    }
+
+    #focusElement(element: HTMLElement, maxAttempts: number = 10, interval: number = 100, attempt: number = 0) {
+        if (element && typeof element.focus === "function") {
+            const oldActiveElementPath = this.app?.activeElementPath || [];
+            if (oldActiveElementPath.some(e => e === element))
+                return;
+
+            element.focus();
+
+            if (this.app?.activeElementPath?.some(e => e === element))
+                return;
+        }
+
+        if (attempt < maxAttempts)
+            setTimeout(() => this.#focusElement(element, maxAttempts, interval, attempt + 1), interval);
     }
 
     private async _renderAttribute(attribute: Vidyano.PersistentObjectAttribute, attributeType: string) {
@@ -287,112 +314,48 @@ export class PersistentObjectAttributePresenter extends ConfigurableWebComponent
 
         let focusTarget: HTMLElement;
         try {
-            if (this._customTemplate) {
-                const templateInstance = new this._customTemplate({ attribute: attribute });
-                (focusTarget = this.$.content).appendChild(templateInstance.root);
-            }
-            else {
-                const config = <PersistentObjectAttributeConfig>this.app.configuration.getAttributeConfig(attribute);
-                this.noLabel = this.noLabel || (config && !!config.noLabel);
+            this._renderedAttributeElement = <PersistentObjectAttribute>new (PersistentObjectAttributeRegister.get(attributeType) ?? PersistentObjectAttributeString)();
+            this._renderedAttributeElement.classList.add("attribute");
+            this._renderedAttributeElement.attribute = attribute;
+            this._renderedAttributeElement.nonEdit = this.nonEdit;
+            this._renderedAttributeElement.disabled = this.disabled;
 
-                if (!!config && config.hasTemplate)
-                    this.appendChild(config.stamp(attribute, config.as || "attribute"));
-                else {
-                    this._renderedAttributeElement = <Polymer.PersistentObjectAttribute>new (PersistentObjectAttributeRegister.get(attributeType) ?? PersistentObjectAttributeString)();
-                    this._renderedAttributeElement.classList.add("attribute");
-                    this._renderedAttributeElement.attribute = attribute;
-                    this._renderedAttributeElement.nonEdit = this.nonEdit;
-                    this._renderedAttributeElement.disabled = this.disabled;
-
-                    this.appendChild(focusTarget = this._renderedAttributeElement);
-                }
-            }
-
+            this.appendChild(focusTarget = this._renderedAttributeElement);
             this._renderedAttribute = attribute;
         }
         finally {
-            this._setLoading(false);
+            this.loading = false;
 
             if (this._focusQueued) {
-                Polymer.flush();
+                await this.updateComplete;
 
-                this._focusElement(focusTarget);
+                this.#focusElement(focusTarget);
                 this._focusQueued = false;
             }
         }
     }
 
-    private _updateRowSpan(attribute: Vidyano.PersistentObjectAttribute, height: number, isConnected: boolean) {
-        if (!isConnected)
+    @observer("attribute")
+    private _updateRowSpan() {
+        if (!this.isConnected || !this.attribute)
             return;
 
-        height = height || this.app.configuration.getAttributeConfig(attribute).calculateHeight(attribute);
+        const height = this.height || this.app.configuration.getAttributeConfig(this.attribute)?.calculateHeight(this.attribute);
         if (height > 0)
             this.style.setProperty("--vi-persistent-object-attribute-presenter--row-span", `${height}`);
         else
             this.style.removeProperty("--vi-persistent-object-attribute-presenter--row-span");
     }
 
-    private _computeEditing(isEditing: boolean, nonEdit: boolean): boolean {
-        return !nonEdit && isEditing;
-    }
-
-    private _computeNonEdit(attribute: Vidyano.PersistentObjectAttribute) {
-        return attribute?.getTypeHint("nonedit", "false", undefined) === "true";
-    }
-
-    private _nonEditChanged(nonEdit: boolean) {
-        if (this._renderedAttributeElement)
-            this._renderedAttributeElement.nonEdit = nonEdit;
-    }
-
-    private _disabledChanged(disabled: boolean) {
-        if (!this._renderedAttributeElement)
-            return;
-
-        this._renderedAttributeElement.disabled = disabled;
-    }
-
-    private _computeRequired(attribute: Vidyano.PersistentObjectAttribute, required: boolean, value: any): boolean {
-        return required && (value == null || (attribute && attribute.rules && attribute.rules.contains("NotEmpty") && value === ""));
-    }
-
-    private _computeReadOnly(isReadOnly: boolean, isFrozen: boolean, disabled: boolean): boolean {
-        return isReadOnly || disabled || isFrozen;
-    }
-
-    private _computeHasError(validationError: string): boolean {
-        return !String.isNullOrEmpty(validationError);
-    }
-
-    private _computeHasValue(value: any): boolean {
-        return value != null && value !== "";
-    }
-
-    private _loadingChanged(loading: boolean) {
-        this.dispatchEvent(new CustomEvent(loading ? "attribute-loading" : "attribute-loaded", {
-            detail: { attribute: this.attribute },
-            bubbles: true,
-            composed: true
-        }));
-    }
-
     private _openAttributeManagement() {
         this.app.changePath(`Management/PersistentObject.1456569d-e02b-44b3-9d1a-a1e417061c77/${this.attribute.id}`);
     }
 
-    private _configure(e: CustomEvent) {
-        if (this.attribute.parent.isSystem)
-            return;
-
-        e.detail.push({
-            label: `Attribute: ${this.attribute.name}`,
-            icon: "viConfigure",
-            action: this._openAttributeManagement.bind(this)
+    updateStyles(styles: Record<string, string>) {
+        Object.entries(styles).forEach(([key, value]) => {
+            this.style.setProperty(key, value);
         });
     }
-
-    private _gridAreaChanged(gridArea: string) {
-        this.style.gridArea = gridArea;
-    }
 }
+
+customElements.define("vi-persistent-object-attribute-presenter", PersistentObjectAttributePresenter);
