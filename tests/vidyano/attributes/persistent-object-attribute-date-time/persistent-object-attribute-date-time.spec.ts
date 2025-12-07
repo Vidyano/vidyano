@@ -1,9 +1,9 @@
 import { test, expect, Page } from '@playwright/test';
-import { setupPage } from '../helpers/page';
-import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze } from '../helpers/persistent-object';
-import { startBackend, stopBackend, BackendProcess } from '../helpers/backend';
-import { selectDateFromPicker } from '../helpers/date-picker';
-import { selectTimeFromPicker } from '../helpers/time-picker';
+import { setupPage } from '../../_helpers/page';
+import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze } from '../_helpers/attribute';
+import { startBackend, stopBackend, BackendProcess } from '../../_helpers/backend';
+import { selectDateFromPicker } from '../_helpers/date-picker';
+import { selectTimeFromPicker } from '../_helpers/time-picker';
 
 test.describe.serial('DateTime Attribute', () => {
     let sharedBackend: BackendProcess;

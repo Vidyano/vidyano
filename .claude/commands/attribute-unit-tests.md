@@ -79,7 +79,13 @@ src/vidyano/web-components/persistent-object-attribute/attributes/persistent-obj
 4. **Generate Test Spec File**
    Create `tests/vidyano/attributes/{component-name}/{component-name}.spec.ts` with:
 
-   - Import statements (Playwright + _helper utilities)
+   - Import statements:
+     ```typescript
+     import { test, expect, Page } from '@playwright/test';
+     import { setupPage } from '../../_helpers/page';
+     import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze } from '../_helpers/attribute';
+     import { startBackend, stopBackend, BackendProcess } from '../../_helpers/backend';
+     ```
    - Outer `test.describe.serial()` wrapper
    - Shared backend lifecycle (beforeAll/afterAll)
    - Test suite structure with nested describes for different scenarios:

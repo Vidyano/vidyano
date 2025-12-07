@@ -1,7 +1,7 @@
 import { test, expect, Page, Locator } from '@playwright/test';
-import { setupPage } from '../attributes/helpers/page';
-import { setupAttribute, beginEdit, cancelEdit, freeze, unfreeze } from '../attributes/helpers/persistent-object.js';
-import { startBackend, stopBackend, BackendProcess } from '../attributes/helpers/backend';
+import { setupPage } from '../_helpers/page';
+import { setupAttribute, beginEdit, cancelEdit, freeze, unfreeze } from '../attributes/_helpers/attribute';
+import { startBackend, stopBackend, BackendProcess } from '../_helpers/backend';
 
 let backend: BackendProcess | undefined;
 

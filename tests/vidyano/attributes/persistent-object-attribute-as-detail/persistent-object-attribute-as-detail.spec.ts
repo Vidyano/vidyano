@@ -1,7 +1,7 @@
 import { test, expect, Page, Locator } from '@playwright/test';
-import { setupPage } from '../helpers/page';
-import { startBackend, stopBackend, BackendProcess } from '../helpers/backend';
-import { setupAttribute, cancelEdit, save, freeze, unfreeze, mockBrowseReference } from '../helpers/persistent-object';
+import { setupPage } from '../../_helpers/page';
+import { startBackend, stopBackend, BackendProcess } from '../../_helpers/backend';
+import { setupAttribute, cancelEdit, save, freeze, unfreeze, mockBrowseReference } from '../_helpers/attribute';
 
 const COMPONENT_TAG = 'vi-persistent-object-attribute-as-detail';
 const ATTRIBUTE_NAME = 'Category_Products';

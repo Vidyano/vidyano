@@ -1,6 +1,6 @@
 import { Page } from '@playwright/test';
 
-export function getAttributeHtml(customStyles = '') {
+export function getTestHtml(customStyles = '') {
     return `
     <!DOCTYPE html>
     <html>
@@ -57,7 +57,7 @@ export async function setupPage(
     await page.route('**/test-page', route => {
         route.fulfill({
             contentType: 'text/html',
-            body: getAttributeHtml(customStyles)
+            body: getTestHtml(customStyles)
         });
     });
 
@@ -83,7 +83,8 @@ export async function setupPage(
             addEventListener: () => {},
             removeEventListener: () => {},
             configuration: {
-                getSetting: (_key: string, defaultValue?: string) => defaultValue
+                getSetting: (_key: string, defaultValue?: string) => defaultValue,
+                getAttributeConfig: () => ({ calculateHeight: () => 0, noLabel: false, hasTemplate: false })
             }
         };
 

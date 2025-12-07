@@ -1,7 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
-import { setupPage } from '../helpers/page';
-import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze } from '../helpers/persistent-object';
-import { startBackend, stopBackend } from '../helpers/backend';
+import { setupPage } from '../../_helpers/page';
+import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze } from '../_helpers/attribute';
+import { startBackend, stopBackend } from '../../_helpers/backend';
 
 test.describe.serial('NullableBoolean Attribute', () => {
     let sharedBackend: Awaited<ReturnType<typeof startBackend>>;

@@ -1,7 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
-import { setupPage } from '../helpers/page';
-import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze } from '../helpers/persistent-object';
-import { startBackend, stopBackend, BackendProcess } from '../helpers/backend';
+import { setupPage } from '../../_helpers/page';
+import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze } from '../_helpers/attribute';
+import { startBackend, stopBackend, BackendProcess } from '../../_helpers/backend';
 
 // 1x1 black pixel PNG base64
 const blackPixelBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQAAAAA3bvkkAAAACklEQVR4AWNgAAAAAgABc3UBGAAAAABJRU5ErkJggg==';
