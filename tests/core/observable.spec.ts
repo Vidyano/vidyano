@@ -133,6 +133,105 @@ class Level1Observable extends Observable<Level1Observable> {
     }
 }
 
+// Helper classes for nested collection depth testing
+
+class NestedItem extends Observable<NestedItem> {
+    #name: string;
+
+    get name(): string {
+        return this.#name;
+    }
+
+    set name(value: string) {
+        const oldValue = this.#name;
+        if (oldValue !== value) {
+            this.#name = value;
+            this.notifyPropertyChanged("name", value, oldValue);
+        }
+    }
+
+    constructor(name: string) {
+        super();
+        this.#name = name;
+    }
+}
+
+class InnerContainer extends Observable<InnerContainer> {
+    #items: NestedItem[];
+
+    get items(): NestedItem[] {
+        return this.#items;
+    }
+
+    constructor() {
+        super();
+        this.#items = createObservableArray<NestedItem>(
+            [],
+            (index: number, removed: NestedItem[], added: number) => this.notifyArrayChanged("items", index, removed, added)
+        );
+    }
+}
+
+class OuterItem extends Observable<OuterItem> {
+    #title: string;
+    #container: InnerContainer;
+    #tags: string[];
+
+    get title(): string {
+        return this.#title;
+    }
+
+    set title(value: string) {
+        const oldValue = this.#title;
+        if (oldValue !== value) {
+            this.#title = value;
+            this.notifyPropertyChanged("title", value, oldValue);
+        }
+    }
+
+    get container(): InnerContainer {
+        return this.#container;
+    }
+
+    set container(value: InnerContainer) {
+        const oldValue = this.#container;
+        if (oldValue !== value) {
+            this.#container = value;
+            this.notifyPropertyChanged("container", value, oldValue);
+        }
+    }
+
+    get tags(): string[] {
+        return this.#tags;
+    }
+
+    constructor(title: string) {
+        super();
+        this.#title = title;
+        this.#container = new InnerContainer();
+        this.#tags = createObservableArray<string>(
+            [],
+            (index: number, removed: string[], added: number) => this.notifyArrayChanged("tags", index, removed, added)
+        );
+    }
+}
+
+class OuterContainer extends Observable<OuterContainer> {
+    #items: OuterItem[];
+
+    get items(): OuterItem[] {
+        return this.#items;
+    }
+
+    constructor() {
+        super();
+        this.#items = createObservableArray<OuterItem>(
+            [],
+            (index: number, removed: OuterItem[], added: number) => this.notifyArrayChanged("items", index, removed, added)
+        );
+    }
+}
+
 // #endregion
 
 test.describe("Observable", () => {
@@ -1354,6 +1453,225 @@ test.describe("Observable.forward - edge cases", () => {
         expect(notifications.length).toBe(1);
         expect(notifications[0].path).toBe("level2.level3.value");
         expect(notifications[0].newValue).toBe("deep");
+
+        disposer();
+    });
+});
+
+test.describe("Observable.forward - nested collection wildcard depth tests", () => {
+    test("should observe items.*.container.items.* (wildcard → property → wildcard)", () => {
+        const outer = new OuterContainer();
+
+        // Setup structure before observing
+        const outerItem1 = new OuterItem("outer1");
+        outer.items.push(outerItem1);
+
+        const outerItem2 = new OuterItem("outer2");
+        outer.items.push(outerItem2);
+
+        const notifications: any[] = [];
+
+        const disposer = Observable.forward(outer, "items.*.container.items.*", (detail) => {
+            notifications.push(detail);
+        });
+
+        // Add nested item to first outer item's container
+        const nestedItem1 = new NestedItem("nested1");
+        outerItem1.container.items.push(nestedItem1);
+
+        // Should get array change notification for inner collection
+        const innerArrayNotification = notifications.find(n => n.arrayPropertyName === "items" && n.path === "items.0.container.items");
+        expect(innerArrayNotification).toBeTruthy();
+        expect(innerArrayNotification.addedItemCount).toBe(1);
+
+        // Add nested item to second outer item's container
+        const nestedItem2 = new NestedItem("nested2");
+        outerItem2.container.items.push(nestedItem2);
+
+        const innerArrayNotification2 = notifications.find(n => n.arrayPropertyName === "items" && n.path === "items.1.container.items");
+        expect(innerArrayNotification2).toBeTruthy();
+
+        disposer();
+    });
+
+    test("should observe items.*.tags.* (wildcard → wildcard direct)", () => {
+        const outer = new OuterContainer();
+
+        // Setup outer items before observing
+        const outerItem1 = new OuterItem("outer1");
+        outer.items.push(outerItem1);
+
+        const outerItem2 = new OuterItem("outer2");
+        outer.items.push(outerItem2);
+
+        const notifications: any[] = [];
+
+        const disposer = Observable.forward(outer, "items.*.tags.*", (detail) => {
+            notifications.push(detail);
+        });
+
+        // Add tag to first item
+        outerItem1.tags.push("tag1");
+
+        // Should get array change notification for tags collection
+        const tagsArrayNotification = notifications.find(n => n.arrayPropertyName === "tags" && n.path === "items.0.tags");
+        expect(tagsArrayNotification).toBeTruthy();
+        expect(tagsArrayNotification.addedItemCount).toBe(1);
+
+        // Add tag to second item
+        outerItem2.tags.push("tag2");
+
+        const tagsArrayNotification2 = notifications.find(n => n.arrayPropertyName === "tags" && n.path === "items.1.tags");
+        expect(tagsArrayNotification2).toBeTruthy();
+
+        disposer();
+    });
+
+    test("should observe items.*.container.items.*.name (wildcard → property → wildcard → property)", () => {
+        const outer = new OuterContainer();
+
+        // Setup outer items and nested items before observing
+        const outerItem1 = new OuterItem("outer1");
+        outer.items.push(outerItem1);
+
+        const nestedItem1 = new NestedItem("nested1");
+        outerItem1.container.items.push(nestedItem1);
+
+        const outerItem2 = new OuterItem("outer2");
+        outer.items.push(outerItem2);
+
+        const nestedItem2 = new NestedItem("nested2");
+        outerItem2.container.items.push(nestedItem2);
+
+        const notifications: any[] = [];
+
+        const disposer = Observable.forward(outer, "items.*.container.items.*.name", (detail) => {
+            notifications.push(detail);
+        });
+
+        // Change name on first nested item
+        nestedItem1.name = "updated-nested1";
+
+        const nameNotification = notifications.find(n => n.propertyName === "name" && n.newValue === "updated-nested1");
+        expect(nameNotification).toBeTruthy();
+        expect(nameNotification.path).toBe("items.0.container.items.0.name");
+
+        // Change name on second nested item
+        nestedItem2.name = "updated-nested2";
+
+        const nameNotification2 = notifications.find(n => n.propertyName === "name" && n.newValue === "updated-nested2");
+        expect(nameNotification2).toBeTruthy();
+        expect(nameNotification2.path).toBe("items.1.container.items.0.name");
+
+        disposer();
+    });
+
+    test("should notify initial state for nested collections", () => {
+        const outer = new OuterContainer();
+
+        // Setup structure before observing
+        const outerItem1 = new OuterItem("outer1");
+        outer.items.push(outerItem1);
+
+        const nestedItem1 = new NestedItem("initial1");
+        const nestedItem2 = new NestedItem("initial2");
+        outerItem1.container.items.push(nestedItem1, nestedItem2);
+
+        const notifications: any[] = [];
+
+        const disposer = Observable.forward(outer, "items.*.container.items.*.name", (detail) => {
+            notifications.push(detail);
+        }, true);
+
+        // Should receive initial state for both nested items
+        expect(notifications.length).toBe(2);
+        expect(notifications.some(n => n.newValue === "initial1")).toBe(true);
+        expect(notifications.some(n => n.newValue === "initial2")).toBe(true);
+
+        disposer();
+    });
+
+    test("should handle multiple nested items across multiple outer items", () => {
+        const outer = new OuterContainer();
+
+        // Setup multiple outer items with multiple nested items each
+        const outerItem1 = new OuterItem("outer1");
+        outer.items.push(outerItem1);
+
+        const nestedItem1a = new NestedItem("nested1a");
+        const nestedItem1b = new NestedItem("nested1b");
+        outerItem1.container.items.push(nestedItem1a, nestedItem1b);
+
+        const outerItem2 = new OuterItem("outer2");
+        outer.items.push(outerItem2);
+
+        const nestedItem2a = new NestedItem("nested2a");
+        const nestedItem2b = new NestedItem("nested2b");
+        outerItem2.container.items.push(nestedItem2a, nestedItem2b);
+
+        const notifications: any[] = [];
+
+        const disposer = Observable.forward(outer, "items.*.container.items.*.name", (detail) => {
+            notifications.push(detail);
+        });
+
+        // Change all nested items and verify each is observed
+        nestedItem1a.name = "updated1a";
+        nestedItem1b.name = "updated1b";
+        nestedItem2a.name = "updated2a";
+        nestedItem2b.name = "updated2b";
+
+        // Verify all 4 name changes were observed
+        expect(notifications.filter(n => n.propertyName === "name" && n.newValue === "updated1a").length).toBe(1);
+        expect(notifications.filter(n => n.propertyName === "name" && n.newValue === "updated1b").length).toBe(1);
+        expect(notifications.filter(n => n.propertyName === "name" && n.newValue === "updated2a").length).toBe(1);
+        expect(notifications.filter(n => n.propertyName === "name" && n.newValue === "updated2b").length).toBe(1);
+
+        // Verify paths are correct
+        expect(notifications.some(n => n.path === "items.0.container.items.0.name")).toBe(true);
+        expect(notifications.some(n => n.path === "items.0.container.items.1.name")).toBe(true);
+        expect(notifications.some(n => n.path === "items.1.container.items.0.name")).toBe(true);
+        expect(notifications.some(n => n.path === "items.1.container.items.1.name")).toBe(true);
+
+        disposer();
+    });
+
+    test("should observe replacement of intermediate container", () => {
+        const outer = new OuterContainer();
+        const outerItem1 = new OuterItem("outer1");
+        outer.items.push(outerItem1);
+
+        const nestedItem1 = new NestedItem("nested1");
+        outerItem1.container.items.push(nestedItem1);
+
+        const notifications: any[] = [];
+
+        const disposer = Observable.forward(outer, "items.*.container.items.*.name", (detail) => {
+            notifications.push(detail);
+        });
+
+        // Change name - should notify
+        nestedItem1.name = "changed1";
+        expect(notifications.some(n => n.newValue === "changed1")).toBe(true);
+
+        const notificationCountBefore = notifications.length;
+
+        // Replace the container
+        const newContainer = new InnerContainer();
+        const newNestedItem = new NestedItem("new-nested");
+        newContainer.items.push(newNestedItem);
+        outerItem1.container = newContainer;
+
+        // Changes to old nested item should no longer notify
+        nestedItem1.name = "should-not-notify";
+        expect(notifications.length).toBeGreaterThan(notificationCountBefore); // Container change notifications
+
+        const countBeforeNewItemChange = notifications.length;
+
+        // Changes to new nested item should notify
+        newNestedItem.name = "new-changed";
+        expect(notifications.length).toBeGreaterThan(countBeforeNewItemChange);
+        expect(notifications.some(n => n.newValue === "new-changed")).toBe(true);
 
         disposer();
     });
