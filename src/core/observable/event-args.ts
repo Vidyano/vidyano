@@ -1,20 +1,21 @@
 /**
  * Represents an array change event.
+ * @template T - The type of items in the array.
  */
-export class ArrayChangedArgs {
+export class ArrayChangedArgs<T = any> {
     #arrayPropertyName: string;
     #index: number;
-    #removedItems?: any[];
+    #removedItems?: T[];
     #addedItemCount?: number;
 
     /**
      * Creates an instance of ArrayChangedArgs.
      * @param {string} arrayPropertyName - Name of the array property.
      * @param {number} index - Index at which the change occurred.
-     * @param {any[]} [removedItems] - Items that were removed.
+     * @param {T[]} [removedItems] - Items that were removed.
      * @param {number} [addedItemCount] - Number of items added.
      */
-    constructor(arrayPropertyName: string, index: number, removedItems?: any[], addedItemCount?: number) {
+    constructor(arrayPropertyName: string, index: number, removedItems?: T[], addedItemCount?: number) {
         this.#arrayPropertyName = arrayPropertyName;
         this.#index = index;
         this.#removedItems = removedItems;
@@ -38,7 +39,7 @@ export class ArrayChangedArgs {
     /**
      * Gets the removed items.
      */
-    get removedItems(): any[] | undefined {
+    get removedItems(): T[] | undefined {
         return this.#removedItems;
     }
 
