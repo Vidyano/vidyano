@@ -21,8 +21,8 @@ export interface ISubjectDisposer {
  * @template TDetail - The type of detail sent in notifications.
  */
 export class Subject<TSource, TDetail> {
-    #observers: ((sender: TSource, detail: TDetail) => void)[] = [];
-    #weakObserverRegistry: FinalizationRegistry<number>;
+    #observers = new Set<ISubjectObserver<TSource, TDetail>>();
+    #weakObserverRegistry: FinalizationRegistry<ISubjectObserver<TSource, TDetail>>;
 
     /**
      * Creates a new Subject instance.
@@ -30,12 +30,12 @@ export class Subject<TSource, TDetail> {
      */
     constructor(notifier: ISubjectNotifier<TSource, TDetail>) {
         notifier.notify = (source: TSource, detail: TDetail) => {
-            for (const i in this.#observers)
-                this.#observers[i](source, detail);
+            for (const observer of this.#observers)
+                observer(source, detail);
         };
 
-        this.#weakObserverRegistry = new FinalizationRegistry<number>((observerId) => {
-            this.#detach(observerId);
+        this.#weakObserverRegistry = new FinalizationRegistry<ISubjectObserver<TSource, TDetail>>((wrapper) => {
+            this.#observers.delete(wrapper);
         });
     }
 
@@ -46,38 +46,30 @@ export class Subject<TSource, TDetail> {
      * @returns {ISubjectDisposer} A function that detaches the observer.
      */
     attach(observer: ISubjectObserver<TSource, TDetail>, options?: { weak?: boolean }): ISubjectDisposer {
-        const id = this.#observers.length;
-
         if (options?.weak) {
             const weak = new WeakRef(observer);
 
-            const wrapper = (sender: TSource, detail: TDetail) => {
+            const wrapper: ISubjectObserver<TSource, TDetail> = (sender: TSource, detail: TDetail) => {
                 const target = weak.deref();
                 if (target)
                     target(sender, detail);
-                else
-                    this.#detach(id);
+                else {
+                    this.#observers.delete(wrapper);
+                    this.#weakObserverRegistry.unregister(wrapper);
+                }
             };
 
-            this.#weakObserverRegistry.register(observer, id, wrapper);
-            this.#observers[id] = wrapper;
+            this.#weakObserverRegistry.register(observer, wrapper, wrapper);
+            this.#observers.add(wrapper);
 
             return () => {
                 this.#weakObserverRegistry.unregister(wrapper);
-                this.#detach(id);
+                this.#observers.delete(wrapper);
             };
         }
 
-        this.#observers.push(observer);
-        return <ISubjectDisposer>this.#detach.bind(this, id);
-    }
-
-    /**
-     * Detaches an observer from the subject.
-     * @param {number} observerId - The identifier of the observer to detach.
-     */
-    #detach(observerId: number) {
-        delete this.#observers[observerId];
+        this.#observers.add(observer);
+        return () => this.#observers.delete(observer);
     }
 }
 
