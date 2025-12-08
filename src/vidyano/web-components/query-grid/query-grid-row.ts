@@ -292,7 +292,8 @@ export class QueryGridRow extends Polymer.WebComponent {
 
     // TODO: Actions popup displays out of viewport
     private async _onActionsOpening(e: CustomEvent) {
-        if (this.item.query.selectedItems.length > 0 && this.item.query.selectedItems.indexOf(<Vidyano.QueryResultItem>this.item) < 0) {
+        // Always select this row when opening context menu (if not already selected)
+        if (this.item.query.selectedItems.indexOf(<Vidyano.QueryResultItem>this.item) < 0) {
             this.item.query.selectAll.allSelected = this.item.query.selectAll.inverse = false;
             this.item.query.selectedItems = [<Vidyano.QueryResultItem>this.item];
         }
