@@ -149,11 +149,11 @@ export class ActionButton extends WebComponent {
     constructor(item?: Vidyano.QueryResultItem, action?: Vidyano.Action | Vidyano.ActionGroup) {
         super();
 
-        if (item && action) {
-            this.item = item;
-            this.action = action;
+        this.item = item;
+        this.action = action;
+
+        if (item && action)
             this.#applyItemSelection(item, action);
-        }
     }
 
     @observer("action.canExecute", "action.isVisible", "action.options")
