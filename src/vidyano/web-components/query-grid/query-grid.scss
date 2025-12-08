@@ -114,13 +114,17 @@
         display: none !important;
     }
 
-    // Selected row styles and actions-open styles
-    vi-query-grid-row[selected],
-    vi-query-grid-row[actions-open] {
+    // Selected row background (only when not hovered)
+    vi-query-grid-row[selected]:not(:hover),
+    vi-query-grid-row[actions-open]:not(:hover) {
         background: var(--color-faint);
         --vi-query-grid-row-odd-color: var(--color-faint);
         --vi-query-grid-row-even-color: var(--color-faint);
+    }
 
+    // Selected row borders (always visible)
+    vi-query-grid-row[selected],
+    vi-query-grid-row[actions-open] {
         // Top border for selected/actions-open rows not preceded by another selected/actions-open row
         &::before {
             position: absolute;
