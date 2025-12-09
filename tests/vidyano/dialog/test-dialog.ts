@@ -1,6 +1,6 @@
 import { html, TemplateResult } from "lit";
 import { property } from "lit/decorators.js";
-import { Dialog } from "../../../../src/vidyano/web-components/dialog/dialog.js";
+import { Dialog } from "../../../src/vidyano/web-components/dialog/dialog.js";
 
 export class TestDialog extends Dialog {
     @property({ type: String })

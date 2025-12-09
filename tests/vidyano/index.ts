@@ -24,4 +24,4 @@ import "./web-component/test-computed-deep-inheritance.js";
 import "./web-component/test-observer-deep-inheritance.js";
 import "./web-component/test-sibling-inheritance.js";
 import "./web-component/test-computed-chained-root.js";
-import "./web-components/dialog/test-dialog.js";
+import "./dialog/test-dialog.js";
