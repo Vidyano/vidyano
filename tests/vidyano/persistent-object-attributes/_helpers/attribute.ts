@@ -51,6 +51,11 @@ export async function setupAttribute(
         // Wait for Lit component to complete its update cycle
         if (typeof (component as any).updateComplete !== 'undefined')
             await (component as any).updateComplete;
+
+        // Wait for pending microtasks and animation frame to prevent Playwright CDP race condition.
+        // Lit's pending microtasks/animation frames are sometimes causing interference.
+        await new Promise(resolve => setTimeout(resolve, 0));
+        await new Promise(resolve => requestAnimationFrame(resolve));
     }, { componentTag, componentId, attributeName, startInEditMode: options?.startInEditMode, useBackendOpenInEdit: options?.useBackendOpenInEdit, poType: options?.poType, objectId: options?.objectId });
 
     return page.locator(`#${componentId}`);
