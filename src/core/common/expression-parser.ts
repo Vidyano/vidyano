@@ -57,17 +57,17 @@ export class ExpressionParser {
                 if (!isNaN(number)) {
                     switch (operand) {
                         case "<":
-                            return new Function("x", "return x < " + number + ";");
+                            return (x: number) => x < number;
                         case "<=":
-                            return new Function("x", "return x <= " + number + ";");
+                            return (x: number) => x <= number;
                         case ">":
-                            return new Function("x", "return x > " + number + ";");
+                            return (x: number) => x > number;
                         case ">=":
-                            return new Function("x", "return x >= " + number + ";");
+                            return (x: number) => x >= number;
                         case "!=":
-                            return new Function("x", "return x != " + number + ";");
+                            return (x: number) => x != number;
                         default:
-                            return new Function("x", "return x == " + number + ";");
+                            return (x: number) => x == number;
                     }
                 }
             }
