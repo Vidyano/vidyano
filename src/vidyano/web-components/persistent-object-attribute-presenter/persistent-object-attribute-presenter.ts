@@ -4,6 +4,7 @@ import { html, nothing, unsafeCSS, TemplateResult } from "lit"
 import { property, state } from "lit/decorators.js"
 import { computed, listener, observer, WebComponent } from "components/web-component/web-component"
 import { IConfigurableAction, WebComponentConfigurationController } from "components/web-component/web-component-configuration-controller"
+import { AppServiceHooksBase } from "components/app-service-hooks/app-service-hooks-base"
 import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register"
 import "components/persistent-object-attribute/attributes/persistent-object-attribute-as-detail/persistent-object-attribute-as-detail"
 import "components/persistent-object-attribute/attributes/persistent-object-attribute-binary-file/persistent-object-attribute-binary-file"
@@ -350,7 +351,10 @@ export class PersistentObjectAttributePresenter extends WebComponent {
     }
 
     protected calculateRowSpan(attribute: Vidyano.PersistentObjectAttribute): number | null {
-        return this.height || this.app.configuration.getAttributeConfig(attribute)?.calculateHeight(attribute);
+        if (this.height)
+            return this.height;
+
+        return (<AppServiceHooksBase>this.app.service.hooks).calculateAttributeHeight(attribute);
     }
 
     private _openAttributeManagement() {

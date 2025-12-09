@@ -1,5 +1,6 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
+import { AppServiceHooksBase } from "components/app-service-hooks/app-service-hooks-base"
 import { PersistentObjectAttributeConfig } from "components/app/config/persistent-object-attribute-config"
 import { PersistentObjectAttributePresenter } from "components/persistent-object-attribute-presenter/persistent-object-attribute-presenter"
 
@@ -93,7 +94,7 @@ export class PersistentObjectGroup extends Polymer.WebComponent {
                 let item = oldItems.find(i => i.attribute === attr);
                 if (item) {
                     item.x = item.attribute.column;
-                    item.width = Math.min(columns, item.config.calculateWidth(item.attribute));
+                    item.width = Math.min(columns, Math.max(item.attribute.columnSpan, 1));
 
                     oldItems.splice(oldItems.indexOf(item), 1);
                 }
@@ -239,13 +240,15 @@ export class PersistentObjectGroup extends Polymer.WebComponent {
 
     private _itemFromAttribute(attribute: Vidyano.PersistentObjectAttribute): IPersistentObjectGroupItem {
         const config = this.app.configuration.getAttributeConfig(attribute);
+        const hooks = <AppServiceHooksBase>this.app.service.hooks;
+        const height = hooks.calculateAttributeHeight(attribute);
         const item = {
             attribute: attribute,
             config: config,
             area: attribute.name,
             x: attribute.column,
-            width: Math.min(this.columns, config.calculateWidth(attribute)),
-            height: config.calculateHeight(attribute)
+            width: Math.min(this.columns, hooks.calculateAttributeWidth(attribute)),
+            height: height
         };
 
         item.area = item.area.split("").map(c => c.charCodeAt(0) > 255 || (c >= "0" && c <= "9") || (c >= "a" && c <= "z") || (c >= "A" && c <= "Z") ? c : "_").join("");

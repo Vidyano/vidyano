@@ -100,6 +100,44 @@ export class AppServiceHooksBase extends Vidyano.ServiceHooks {
             attributeConfigs.find(c => c.type === attribute.type && !c.parentId && !c.name);
     }
 
+    calculateAttributeHeight(attribute: Vidyano.PersistentObjectAttribute): number {
+        switch (attribute.type) {
+            case "CommonMark":
+            case "MultiLineString":
+            case "MultiString":
+                return parseInt(attribute.getTypeHint("height", "3"));
+
+            case "Image":
+                return parseInt(attribute.getTypeHint("height", "2"));
+
+            case "TranslatedString":
+                return attribute.getTypeHint("MultiLine") === "True" ? 3 : 1;
+
+            case "AsDetail":
+                return attribute.getTypeHint("height", "auto") === "auto" ? 0 : 6;
+
+            case "Reference":
+            case "DropDown":
+            case "KeyValueList":
+            case "Enum": {
+                const inputType = attribute.getTypeHint("inputtype", "");
+                const isRadioOrChip = inputType === "radio" || inputType === "chip";
+
+                if (attribute.type === "Reference")
+                    return (<Vidyano.PersistentObjectAttributeWithReference>attribute).selectInPlace && isRadioOrChip ? 0 : 1;
+
+                return isRadioOrChip ? 0 : 1;
+            }
+
+            default:
+                return 1;
+        }
+    }
+
+    calculateAttributeWidth(attribute: Vidyano.PersistentObjectAttribute): number {
+        return Math.max(attribute.columnSpan, 1);
+    }
+
     getTabConfig(tab: Vidyano.PersistentObjectTab, tabConfigs: PersistentObjectTabConfig[]): PersistentObjectTabConfig {
         return tabConfigs.find(c => c.name === tab.name && (c.type === tab.parent.type || c.type === tab.parent.fullTypeName || c.id === tab.parent.id) && c.objectId === tab.parent.objectId) ||
             tabConfigs.find(c => c.name === tab.name && (c.type === tab.parent.type || c.type === tab.parent.fullTypeName || c.id === tab.parent.id));

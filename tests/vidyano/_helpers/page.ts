@@ -75,6 +75,17 @@ export async function setupPage(
         await service.initialize();
         (window as any).service = service;
 
+        // Add calculateAttributeHeight to service hooks
+        service.hooks.calculateAttributeHeight = (attribute: any) => {
+            if (["CommonMark", "MultiLineString", "MultiString"].includes(attribute.type))
+                return 3;
+            if (attribute.type === "Image")
+                return 2;
+            if (attribute.type === "AsDetail")
+                return 6;
+            return 1;
+        };
+
         // Create a minimal app mock for components that need app.showDialog
         // Includes addEventListener/removeEventListener stubs for component initialization
         (window as any).app = {
@@ -84,7 +95,7 @@ export async function setupPage(
             removeEventListener: () => {},
             configuration: {
                 getSetting: (_key: string, defaultValue?: string) => defaultValue,
-                getAttributeConfig: () => ({ calculateHeight: () => 0, noLabel: false, hasTemplate: false })
+                getAttributeConfig: () => ({ noLabel: false, hasTemplate: false })
             }
         };
 
