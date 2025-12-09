@@ -540,14 +540,14 @@ test.describe.serial('PersistentObjectAttributePresenter', () => {
         });
 
         test.describe('calculateRowSpan', () => {
-            test('returns falsy value when no explicit height is configured', async () => {
+            test('returns default height of 1 when no explicit height is configured', async () => {
                 const presenter = await setupPresenter('String');
 
                 const result = await presenter.evaluate((el) => {
                     return (el as any).calculateRowSpan((el as any).attribute);
                 });
 
-                expect(result).toBeFalsy();
+                expect(result).toBe(1);
             });
 
             test('returns height property when set', async () => {
