@@ -220,15 +220,6 @@ test.describe.serial('PersistentObjectAttributePresenter', () => {
             await cancelEdit(presenter);
             await expect(presenter).not.toHaveAttribute('editing');
         });
-
-        test('nonEdit type hint prevents [editing] even when parent is editing', async () => {
-            const presenter = await setupPresenter('NonEditString');
-
-            await beginEdit(presenter);
-
-            await expect(presenter).toHaveAttribute('non-edit');
-            await expect(presenter).not.toHaveAttribute('editing');
-        });
     });
 
     test.describe('Read-Only State', () => {
@@ -472,25 +463,6 @@ test.describe.serial('PersistentObjectAttributePresenter', () => {
 
             const child = presenter.locator('vi-persistent-object-attribute-string');
             await expect(child).toHaveClass(/attribute/);
-        });
-    });
-
-    test.describe('Non-Edit Mode', () => {
-        test('has [non-edit] attribute when nonedit type hint is set', async () => {
-            const presenter = await setupPresenter('NonEditString');
-
-            await expect(presenter).toHaveAttribute('non-edit');
-        });
-
-        test('propagates nonEdit to rendered attribute', async () => {
-            const presenter = await setupPresenter('NonEditString');
-
-            const renderedAttribute = await presenter.evaluate((el) => {
-                const child = el.querySelector('vi-persistent-object-attribute-string');
-                return child ? (child as any).nonEdit : null;
-            });
-
-            expect(renderedAttribute).toBe(true);
         });
     });
 

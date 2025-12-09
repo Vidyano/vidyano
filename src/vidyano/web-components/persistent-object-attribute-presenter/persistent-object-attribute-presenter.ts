@@ -139,20 +139,10 @@ export class PersistentObjectAttributePresenter extends WebComponent {
     noLabel: boolean = false;
 
     @property({ type: Boolean, reflect: true })
-    @computed(function(this: PersistentObjectAttributePresenter, isEditing: boolean, nonEdit: boolean): boolean {
-        return !nonEdit && isEditing;
-    }, "attribute.parent.isEditing", "nonEdit")
+    @computed(function(this: PersistentObjectAttributePresenter, isEditing: boolean): boolean {
+        return this.computeEditing(isEditing);
+    }, "attribute.parent.isEditing")
     declare readonly editing: boolean;
-
-    @property({ type: Boolean, reflect: true })
-    @computed(function(this: PersistentObjectAttributePresenter, attribute: Vidyano.PersistentObjectAttribute): boolean {
-        return attribute?.getTypeHint("nonedit", "false", undefined) === "true";
-    }, "attribute")
-    @observer(function(this: PersistentObjectAttributePresenter, nonEdit: boolean) {
-        if (this._renderedAttributeElement)
-            this._renderedAttributeElement.nonEdit = nonEdit;
-    })
-    declare readonly nonEdit: boolean;
 
     @property({ type: Boolean, reflect: true })
     @computed(function(this: PersistentObjectAttributePresenter, attribute: Vidyano.PersistentObjectAttribute, required: boolean, value: any): boolean {
@@ -255,11 +245,15 @@ export class PersistentObjectAttributePresenter extends WebComponent {
         `;
     }
 
+    protected computeEditing(isEditing: boolean): boolean {
+        return isEditing;
+    }
+
     protected renderLabel(): TemplateResult | typeof nothing {
         if (this.noLabel)
             return nothing;
 
-        return html`<vi-persistent-object-attribute-label .nonEdit=${this.nonEdit} .attribute=${this.attribute} part="label"></vi-persistent-object-attribute-label>`;
+        return html`<vi-persistent-object-attribute-label .attribute=${this.attribute} part="label"></vi-persistent-object-attribute-label>`;
     }
 
     @listener("click")
@@ -322,7 +316,6 @@ export class PersistentObjectAttributePresenter extends WebComponent {
             this._renderedAttributeElement = this.createAttributeElement(attributeType);
             this._renderedAttributeElement.classList.add("attribute");
             this._renderedAttributeElement.attribute = attribute;
-            this._renderedAttributeElement.nonEdit = this.nonEdit;
             this._renderedAttributeElement.disabled = this.disabled;
 
             this.appendChild(focusTarget = this._renderedAttributeElement);
