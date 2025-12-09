@@ -5,7 +5,8 @@
     box-sizing: border-box;
     overflow: hidden;
 
-    > div {
+    > .container {
+        display: flex;
         gap: var(--theme-h5);
         align-items: center;
     }

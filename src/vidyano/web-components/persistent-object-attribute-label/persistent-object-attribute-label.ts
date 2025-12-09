@@ -1,86 +1,72 @@
-import * as Polymer from "polymer"
 import * as Vidyano from "vidyano"
+import { html, nothing, unsafeCSS } from "lit"
+import { property } from "lit/decorators.js"
+import { computed, WebComponent } from "components/web-component/web-component"
+import styles from "./persistent-object-attribute-label.css"
 
-@Polymer.WebComponent.register({
-    properties: {
-        attribute: Object,
-        editing: {
-            type: Boolean,
-            reflectToAttribute: true,
-            computed: "_computeEditing(attribute.parent.isEditing, nonEdit)"
-        },
-        nonEdit: {
-            type: Boolean,
-            reflectToAttribute: true,
-            value: false
-        },
-        hasToolTip: {
-            type: Boolean,
-            computed: "_computeHasToolTip(attribute.toolTip)"
-        },
-        required: {
-            type: Boolean,
-            reflectToAttribute: true,
-            computed: "_computeRequired(attribute, attribute.isRequired, attribute.value)"
-        },
-        disabled: {
-            type: Boolean,
-            reflectToAttribute: true,
-            value: false
-        },
-        readOnly: {
-            type: Boolean,
-            reflectToAttribute: true,
-            computed: "_computeReadOnly(attribute.isReadOnly, disabled)"
-        },
-        bulkEdit: {
-            type: Boolean,
-            reflectToAttribute: true,
-            computed: "attribute.parent.isBulkEdit"
-        },
-        hasError: {
-            type: Boolean,
-            reflectToAttribute: true,
-            computed: "_computeHasError(attribute.validationError)"
-        }
-    },
-    forwardObservers: [
-        "attribute.parent.isEditing",
-        "attribute.isRequired",
-        "attribute.isReadOnly",
-        "attribute.value",
-        "attribute.validationError",
-        "attribute.parent.isBulkEdit",
-        "attribute.label",
-        "attribute.toolTip",
-    ]
-}, "vi-persistent-object-attribute-label")
-export class PersistentObjectAttributeLabel extends Polymer.WebComponent {
-    static get template() { return Polymer.html`<link rel="import" href="persistent-object-attribute-label.html">`; }
+export class PersistentObjectAttributeLabel extends WebComponent {
+    static styles = unsafeCSS(styles);
 
+    @property({ type: Object })
     attribute: Vidyano.PersistentObjectAttribute;
 
-    private _computeRequired(attribute: Vidyano.PersistentObjectAttribute, required: boolean, value: any): boolean {
-        return required && (value == null || (attribute && attribute.rules && attribute.rules.contains("NotEmpty") && value === ""));
-    }
+    @property({ type: Boolean, reflect: true })
+    @computed(function(this: PersistentObjectAttributeLabel, isEditing: boolean): boolean {
+        return this.computeEditing(isEditing);
+    }, "attribute.parent.isEditing")
+    declare readonly editing: boolean;
 
-    private _computeReadOnly(isReadOnly: boolean, disabled: boolean): boolean {
-        return isReadOnly || disabled;
-    }
-
-    private _computeEditing(isEditing: boolean, nonEdit: boolean): boolean {
-        return !nonEdit && isEditing;
-    }
-
-    private _computeHasError(validationError: string): boolean {
-        return !String.isNullOrEmpty(validationError);
-    }
-
-    private _computeHasToolTip(toolTip: string): boolean {
+    @property({ type: Boolean, reflect: true })
+    @computed(function(this: PersistentObjectAttributeLabel, toolTip: string): boolean {
         return !!toolTip;
+    }, "attribute.toolTip")
+    declare readonly hasToolTip: boolean;
+
+    @property({ type: Boolean, reflect: true })
+    @computed(function(this: PersistentObjectAttributeLabel, attribute: Vidyano.PersistentObjectAttribute, required: boolean, value: any): boolean {
+        return required && (value == null || (attribute && attribute.rules && attribute.rules.contains("NotEmpty") && value === ""));
+    }, "attribute", "attribute.isRequired", "attribute.value")
+    declare readonly required: boolean;
+
+    @property({ type: Boolean, reflect: true })
+    disabled: boolean = false;
+
+    @property({ type: Boolean, reflect: true })
+    @computed(function(this: PersistentObjectAttributeLabel, isReadOnly: boolean, disabled: boolean): boolean {
+        return isReadOnly || disabled;
+    }, "attribute.isReadOnly", "disabled")
+    declare readonly readOnly: boolean;
+
+    @property({ type: Boolean, reflect: true })
+    @computed("attribute.parent.isBulkEdit")
+    declare readonly bulkEdit: boolean;
+
+    @property({ type: Boolean, reflect: true })
+    @computed(function(this: PersistentObjectAttributeLabel, validationError: string): boolean {
+        return !String.isNullOrEmpty(validationError);
+    }, "attribute.validationError")
+    declare readonly hasError: boolean;
+
+    protected computeEditing(isEditing: boolean): boolean {
+        return isEditing;
     }
 
-    private _showTooltip(e: Polymer.Gestures.TapEvent) {
+    render() {
+        return html`
+            <div class="container">
+                <label>${this.attribute?.label}</label>
+                <span class="required">${this.translateMessage("Required")}</span>
+                <div class="locked">
+                    <vi-icon source="Lock"></vi-icon>
+                </div>
+                ${this.hasToolTip ? html`
+                    <vi-button inverse class="info" icon="Info" @click=${this._showTooltip} tabindex="-1"></vi-button>
+                ` : nothing}
+            </div>
+        `;
+    }
+
+    private _showTooltip() {
         this.app.showMessageDialog({
             title: this.attribute.label,
             titleIcon: "Info",
@@ -90,3 +76,5 @@ export class PersistentObjectAttributeLabel extends Polymer.WebComponent {
         });
     }
 }
+
+customElements.define("vi-persistent-object-attribute-label", PersistentObjectAttributeLabel);
