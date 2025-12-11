@@ -77,6 +77,11 @@ export async function setupPage(
 
         // Add calculateAttributeHeight to service hooks
         service.hooks.calculateAttributeHeight = (attribute: any) => {
+            // Check for Height in DataTypeHints
+            const heightHint = attribute.getTypeHint("Height");
+            if (heightHint)
+                return parseInt(heightHint, 10);
+
             if (["CommonMark", "MultiLineString", "MultiString"].includes(attribute.type))
                 return 3;
             if (attribute.type === "Image")

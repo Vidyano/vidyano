@@ -21,10 +21,6 @@
         text-overflow: ellipsis;
     }
 
-    &[no-label] label, label:empty {
-        display: none;
-    }
-
     #grid {
         display: grid;
         grid-template-areas: var(--vi-persistent-object-group--grid-areas, none);
