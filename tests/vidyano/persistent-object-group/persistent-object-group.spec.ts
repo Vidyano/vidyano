@@ -382,6 +382,51 @@ test.describe.serial('PersistentObjectGroup', () => {
         });
     });
 
+    test.describe('Size Tracker Initialization', () => {
+        test('computes columns when starting at zero height then resizing', async () => {
+            const componentId = `group-${Math.random().toString(36).substring(2, 15)}`;
+
+            // Start at 0 height - without trigger-zero, sizechanged won't fire
+            await sharedPage.evaluate(async ({ componentId }) => {
+                const po = await (window as any).service.getPersistentObject(null, 'Grid_Sequential', `${Date.now()}`);
+
+                const container = document.getElementById('test-container');
+                if (!container)
+                    throw new Error('Test container not found');
+
+                const group = document.createElement('vi-persistent-object-group') as any;
+                group.id = componentId;
+                group.style.width = '800px';
+                group.style.height = '0px';
+                group.style.display = 'block';
+                group.group = po.tabs[0].groups[0];
+                group.groupIndex = 0;
+
+                container.appendChild(group);
+
+                await group.updateComplete;
+                await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+            }, { componentId });
+
+            const group = sharedPage.locator(`#${componentId}`);
+
+            // At 0 height, columns should still be computed with trigger-zero
+            // Without trigger-zero, _computedColumns would be undefined
+            let columns = await group.evaluate((el) => (el as any)._computedColumns);
+            expect(columns).toBeDefined();
+            expect(columns).toBe(2); // 800px width should give 2 columns
+
+            // Now resize to have height
+            await group.evaluate(async (el) => {
+                el.style.height = '200px';
+                await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+            });
+
+            columns = await group.evaluate((el) => (el as any).columns);
+            expect(columns).toBe(2); // Still 2 columns
+        });
+    });
+
     test.describe('Columns Auto/Override', () => {
         async function setupGroupWithWidth(
             width: number,

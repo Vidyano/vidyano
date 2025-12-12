@@ -375,7 +375,7 @@ export class PersistentObjectGroup extends WebComponent {
 
     render() {
         return html`
-            <vi-size-tracker @sizechanged=${this._updateColumns}></vi-size-tracker>
+            <vi-size-tracker @sizechanged=${this._updateColumns} trigger-zero></vi-size-tracker>
             ${this.renderLabel()}
             <div id="grid">
                 <slot></slot>
