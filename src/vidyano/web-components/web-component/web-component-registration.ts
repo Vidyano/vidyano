@@ -111,3 +111,20 @@ export function registerWebComponent<T extends typeof WebComponent>(tagName: str
     console.warn(`Custom element ${tagName} is already defined.`);
     return undefined;
 }
+
+const originalDefine = customElements.define;
+customElements.define = function (name, constructor, options) {
+    if (window.VidyanoSettings?.skipElements?.includes(name))
+        return;
+
+    if (constructor.prototype instanceof WebComponent) {
+        const registrationInfo = registerWebComponent(name, constructor as any);
+        if (!registrationInfo)
+            return;
+
+        originalDefine.call(this, registrationInfo.tagName, registrationInfo.targetClass as unknown as CustomElementConstructor, options);
+        return;
+    }
+
+    return originalDefine.call(this, name, constructor, options);
+};

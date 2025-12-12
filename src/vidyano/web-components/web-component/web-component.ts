@@ -4,7 +4,6 @@ import { Service, ServiceBus } from "vidyano";
 import { WebComponentReactiveController } from "./web-component-reactive-controller";
 import { WebComponentListenerController, getListenersConfig } from "./web-component-listener-decorator";
 import { WebComponentKeybindingController, getKeybindingsConfig } from "./web-component-keybinding-decorator";
-import { registerWebComponent } from "./web-component-registration";
 import { WebComponentTranslationController } from "./web-component-translation-controller";
 import { getComputedConfig } from "./web-component-computed-decorator";
 import { getMethodObserversConfig, getPropertyObserversConfig } from "./web-component-observer-decorator";
@@ -362,20 +361,3 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
         });
     }
 }
-
-const originalDefine = customElements.define;
-customElements.define = function (name, constructor, options) {
-    if (window.VidyanoSettings?.skipElements?.includes(name))
-        return;
-
-    if (constructor.prototype instanceof WebComponent) {
-        const registrationInfo = registerWebComponent(name, constructor as any);
-        if (!registrationInfo)
-            return;
-
-        originalDefine.call(this, registrationInfo.tagName, registrationInfo.targetClass as unknown as CustomElementConstructor, options);
-        return;
-    }
-
-    return originalDefine.call(this, name, constructor, options);
-};

@@ -1,4 +1,6 @@
-import * as Polymer from "polymer"
+import { html } from "@polymer/polymer"
+import * as Gestures from "@polymer/polymer/lib/utils/gestures"
+import { WebComponent } from "components/web-component/polymer/web-component"
 import { PopupMenu } from "components/popup-menu/popup-menu";
 import "components/size-tracker/size-tracker"
 
@@ -11,7 +13,7 @@ export interface IDialogOptions {
     omitStyle?: boolean
 }
 
-@Polymer.WebComponent.register({
+@WebComponent.register({
     properties: {
         anchorTag: {
             type: String,
@@ -33,9 +35,9 @@ export interface IDialogOptions {
     },
     mediaQueryAttributes: true
 }, "vi-dialog")
-export abstract class Dialog extends Polymer.WebComponent {
+export abstract class Dialog extends WebComponent {
     static dialogTemplate(innerTemplate: HTMLTemplateElement, options?: IDialogOptions) {
-        const outerTemplate = Polymer.html`<link rel="import" href="dialog.html">`;
+        const outerTemplate = html`<link rel="import" href="dialog.html">`;
         if (options?.omitStyle)
             outerTemplate.content.querySelector("style").remove();
 
@@ -68,17 +70,17 @@ export abstract class Dialog extends Polymer.WebComponent {
         const anchor = !!this.anchorTag ? <HTMLElement>this.shadowRoot.querySelector(this.anchorTag) : null;
         if (anchor) {
             const _track = this._track.bind(this);
-            Polymer.Gestures.addListener(anchor, "track", _track);
+            Gestures.addListener(anchor, "track", _track);
 
             promise.finally(() => {
-                Polymer.Gestures.removeListener(anchor, "track", _track);
+                Gestures.removeListener(anchor, "track", _track);
             });
         }
 
         return promise;
     }
 
-    private _track(e: Polymer.Gestures.TrackEvent) {
+    private _track(e: Gestures.TrackEvent) {
         if (e.detail.state === "track" && this.#translatePosition && this.isDragging) {
             const rect = this.dialog.getBoundingClientRect();
 
@@ -170,7 +172,7 @@ export abstract class Dialog extends Polymer.WebComponent {
         if (!this.service || !this.service.application)
             return;
 
-        const configureItems: Polymer.WebComponent[] = e["vi:configure"];
+        const configureItems: WebComponent[] = e["vi:configure"];
         if (!this.service.application.hasManagement || !configureItems?.length || window.getSelection().toString()) {
             e.stopImmediatePropagation();
             return;
