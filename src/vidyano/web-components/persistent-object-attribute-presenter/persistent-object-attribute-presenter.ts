@@ -213,6 +213,13 @@ export class PersistentObjectAttributePresenter extends WebComponent {
     })
     gridArea: string;
 
+    constructor(attribute?: Vidyano.PersistentObjectAttribute) {
+        super();
+
+        if (attribute)
+            this.attribute = attribute;
+    }
+
     async connectedCallback() {
         super.connectedCallback();
 

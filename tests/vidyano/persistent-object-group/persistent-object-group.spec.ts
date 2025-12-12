@@ -381,4 +381,169 @@ test.describe.serial('PersistentObjectGroup', () => {
             });
         });
     });
+
+    test.describe('Columns Auto/Override', () => {
+        async function setupGroupWithWidth(
+            width: number,
+            customColumns?: number
+        ): Promise<Locator> {
+            const componentId = `group-${Math.random().toString(36).substring(2, 15)}`;
+
+            await sharedPage.waitForFunction(
+                (tag) => !!customElements.get(tag),
+                'vi-persistent-object-group',
+                { timeout: 10000 }
+            );
+
+            await sharedPage.evaluate(async ({ componentId, width, customColumns }) => {
+                const po = await (window as any).service.getPersistentObject(null, 'Grid_Sequential', `${Date.now()}`);
+
+                const container = document.getElementById('test-container');
+                if (!container)
+                    throw new Error('Test container not found');
+
+                const group = document.createElement('vi-persistent-object-group') as any;
+                group.id = componentId;
+                group.style.width = `${width}px`;
+                group.style.display = 'block';
+                group.group = po.tabs[0].groups[0];
+                group.groupIndex = 0;
+
+                if (customColumns !== undefined)
+                    group.setAttribute('columns', String(customColumns));
+
+                container.appendChild(group);
+
+                await group.updateComplete;
+                await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+                if (!(window as any).groupMap)
+                    (window as any).groupMap = {};
+                (window as any).groupMap[componentId] = { group, po };
+            }, { componentId, width, customColumns });
+
+            return sharedPage.locator(`#${componentId}`);
+        }
+
+        test('auto-computes 1 column for width <= 500', async () => {
+            const group = await setupGroupWithWidth(400);
+
+            const columns = await group.evaluate((el) => (el as any).columns);
+
+            expect(columns).toBe(1);
+        });
+
+        test('auto-computes 2 columns for width > 500 and <= 1000', async () => {
+            const group = await setupGroupWithWidth(800);
+
+            const columns = await group.evaluate((el) => (el as any).columns);
+
+            expect(columns).toBe(2);
+        });
+
+        test('auto-computes 3 columns for width > 1000 and < 1500', async () => {
+            const group = await setupGroupWithWidth(1200);
+
+            const columns = await group.evaluate((el) => (el as any).columns);
+
+            expect(columns).toBe(3);
+        });
+
+        test('auto-computes 4 columns for width >= 1500', async () => {
+            const group = await setupGroupWithWidth(1600);
+
+            const columns = await group.evaluate((el) => (el as any).columns);
+
+            expect(columns).toBe(4);
+        });
+
+        test('custom columns attribute overrides auto-computed value', async () => {
+            // Width would normally give 3 columns, but we set 2
+            const group = await setupGroupWithWidth(1200, 2);
+
+            const columns = await group.evaluate((el) => (el as any).columns);
+            const customColumns = await group.evaluate((el) => (el as any)._customColumns);
+
+            expect(columns).toBe(2);
+            expect(customColumns).toBe(2);
+        });
+
+        test('setting columns property overrides auto-computed value', async () => {
+            const group = await setupGroupWithWidth(1200); // Would be 3 columns
+
+            await group.evaluate((el) => {
+                (el as any).columns = 1;
+            });
+
+            const columns = await group.evaluate((el) => (el as any).columns);
+
+            expect(columns).toBe(1);
+        });
+
+        test('setting columns to undefined falls back to auto-computed', async () => {
+            const group = await setupGroupWithWidth(1200, 2); // Custom 2, would be 3
+
+            // Verify custom is active
+            let columns = await group.evaluate((el) => (el as any).columns);
+            expect(columns).toBe(2);
+
+            // Set to undefined to fall back to auto
+            await group.evaluate(async (el) => {
+                (el as any).columns = undefined;
+                await (el as any).updateComplete;
+            });
+
+            columns = await group.evaluate((el) => (el as any).columns);
+            const customColumns = await group.evaluate((el) => (el as any)._customColumns);
+
+            expect(customColumns).toBeUndefined();
+            expect(columns).toBe(3); // Auto-computed based on 1200px width
+        });
+
+        test('removing columns attribute falls back to auto-computed', async () => {
+            const group = await setupGroupWithWidth(1200, 2); // Custom 2, would be 3
+
+            // Verify custom is active
+            let columns = await group.evaluate((el) => (el as any).columns);
+            expect(columns).toBe(2);
+
+            // Remove attribute to fall back to auto
+            await group.evaluate(async (el) => {
+                el.removeAttribute('columns');
+                await (el as any).updateComplete;
+            });
+
+            columns = await group.evaluate((el) => (el as any).columns);
+            const customColumns = await group.evaluate((el) => (el as any)._customColumns);
+
+            expect(customColumns).toBeUndefined();
+            expect(columns).toBe(3); // Auto-computed based on 1200px width
+        });
+
+        test('respects custom CSS breakpoints', async () => {
+            const group = await setupGroupWithWidth(600);
+
+            // Default breakpoint for 2 columns is > 500, so 600px = 2 columns
+            let columns = await group.evaluate((el) => (el as any).columns);
+            expect(columns).toBe(2);
+
+            // Change breakpoint so 600px now gives 1 column
+            // Need to change width to force recalculation, then change back
+            await group.evaluate(async (el) => {
+                el.style.setProperty('--vi-persistent-object-group-columns-2-min-width', '700');
+                // Reset internal width to force recalculation
+                (el as any)._width = 0;
+                el.style.width = '601px'; // Trigger resize
+            });
+
+            // Wait for size tracker to fire
+            await group.evaluate(async (el) => {
+                await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+                await (el as any).updateComplete;
+            });
+
+            columns = await group.evaluate((el) => (el as any).columns);
+            expect(columns).toBe(1);
+        });
+    });
 });

@@ -11,7 +11,7 @@ import { ConfigurableWebComponent } from "components/web-component/polymer/confi
         tab: Object,
         columns: {
             type: Number,
-            computed: "_computeColumns(size, tab.columnCount)"
+            computed: "_computeColumns(tab.columnCount)"
         },
         groups: {
             type: Array,
@@ -61,18 +61,8 @@ export class PersistentObjectTab extends ConfigurableWebComponent {
         this._attributePresenters = this._autofocusTarget = null;
     }
 
-    private _computeColumns(size: ISize, defaultColumnCount: number): number {
-        if (defaultColumnCount)
-            return defaultColumnCount;
-
-        if (size.width >= 1500)
-            return 4;
-        else if (size.width > 1000)
-            return 3;
-        else if (size.width > 500)
-            return 2;
-
-        return 1;
+    private _computeColumns(defaultColumnCount: number): number {
+        return defaultColumnCount || undefined;
     }
 
     private _updateGroups() {

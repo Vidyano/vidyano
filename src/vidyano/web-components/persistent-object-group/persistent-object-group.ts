@@ -4,6 +4,8 @@ import * as Vidyano from "vidyano";
 import { AppServiceHooksBase } from "components/app-service-hooks/app-service-hooks-base";
 import { PersistentObjectAttributeConfig } from "components/app/config/persistent-object-attribute-config";
 import { PersistentObjectAttributePresenter } from "components/persistent-object-attribute-presenter/persistent-object-attribute-presenter";
+import { ISize } from "components/size-tracker/size-tracker";
+import "components/size-tracker/size-tracker";
 import { listener, observer, WebComponent } from "components/web-component/web-component";
 import styles from "./persistent-object-group.css";
 
@@ -26,6 +28,9 @@ export class PersistentObjectGroup extends WebComponent {
     private _presentersLoading: number = 0;
     private _customLabel: string;
     private _computedLabel: string = "";
+    private _computedColumns: number;
+    private _customColumns: number | undefined;
+    private _width: number;
 
     @property({ type: Object })
     group: Vidyano.PersistentObjectAttributeGroup;
@@ -34,7 +39,17 @@ export class PersistentObjectGroup extends WebComponent {
     groupIndex: number = 0;
 
     @property({ type: Number })
-    columns: number;
+    get columns(): number {
+        if (this._customColumns !== undefined && this._customColumns > 0)
+            return this._customColumns;
+
+        return this._computedColumns;
+    }
+    set columns(value: number | undefined) {
+        const old = this.columns;
+        this._customColumns = value;
+        this.requestUpdate("columns", old);
+    }
 
     @property({ type: String })
     get label(): string {
@@ -48,10 +63,46 @@ export class PersistentObjectGroup extends WebComponent {
     @state()
     loading: boolean = true;
 
+    attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null) {
+        super.attributeChangedCallback(name, oldValue, newValue);
+
+        if (name === "columns") {
+            const value = parseInt(newValue, 10);
+            this._customColumns = !isNaN(value) && value > 0 ? value : undefined;
+        }
+    }
+
     disconnectedCallback() {
         super.disconnectedCallback();
         this._asyncHandles.forEach(h => cancelAnimationFrame(h));
         this._asyncHandles = [];
+    }
+
+    private _updateColumns(e: CustomEvent<ISize>) {
+        const newWidth = e.detail.width;
+        if (this._width === newWidth)
+            return;
+
+        this._width = newWidth;
+
+        const styles = getComputedStyle(this);
+        const breakpoint4 = parseInt(styles.getPropertyValue("--vi-persistent-object-group-columns-4-min-width")) || 1_500;
+        const breakpoint3 = parseInt(styles.getPropertyValue("--vi-persistent-object-group-columns-3-min-width")) || 1_000;
+        const breakpoint2 = parseInt(styles.getPropertyValue("--vi-persistent-object-group-columns-2-min-width")) || 500;
+
+        const oldColumns = this.columns;
+
+        if (this._width >= breakpoint4)
+            this._computedColumns = 4;
+        else if (this._width > breakpoint3)
+            this._computedColumns = 3;
+        else if (this._width > breakpoint2)
+            this._computedColumns = 2;
+        else
+            this._computedColumns = 1;
+
+        if (oldColumns !== this.columns)
+            this.requestUpdate("columns", oldColumns);
     }
 
     @observer("group", "groupIndex")
@@ -88,11 +139,6 @@ export class PersistentObjectGroup extends WebComponent {
         if (!attributes.length) {
             this._items = [];
             this.style.removeProperty("--vi-persistent-object-group--grid-areas");
-            return;
-        }
-
-        if (this.columns === undefined) {
-            this.columns = 1;
             return;
         }
 
@@ -320,9 +366,7 @@ export class PersistentObjectGroup extends WebComponent {
     }
 
     protected createPersistentObjectAttributePresenter(attribute: Vidyano.PersistentObjectAttribute) {
-        const presenter = new PersistentObjectAttributePresenter();
-        presenter.attribute = attribute;
-        return presenter;
+        return new PersistentObjectAttributePresenter(attribute);
     }
 
     protected renderLabel() {
@@ -331,6 +375,7 @@ export class PersistentObjectGroup extends WebComponent {
 
     render() {
         return html`
+            <vi-size-tracker @sizechanged=${this._updateColumns}></vi-size-tracker>
             ${this.renderLabel()}
             <div id="grid">
                 <slot></slot>
