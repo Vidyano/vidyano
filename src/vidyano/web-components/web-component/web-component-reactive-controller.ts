@@ -378,9 +378,13 @@ export class WebComponentReactiveController implements ReactiveController {
      */
     #executeComplexObserver(observerIdentifier: string, observersConfig: Record<string, { dependencies: string[], allowUndefined: boolean }>, lastComplexObserverArgs: Map<string, any[]>): void {
         const config = observersConfig[observerIdentifier];
-        const newArgs = config.dependencies.map(dep => this.#resolvePath(dep));
+
+        // Filter out array wildcard dependencies - they are trigger-only and can't be resolved to values
+        const resolvableDeps = config.dependencies.filter(dep => !this.#isArrayWildcardPath(dep));
+        const newArgs = resolvableDeps.map(dep => this.#resolvePath(dep));
 
         // Check for undefined values unless allowUndefined is true
+        // Only check resolvable dependencies (non-wildcard paths)
         if (!config.allowUndefined && newArgs.some(arg => arg === undefined)) {
             return;
         }
@@ -652,5 +656,26 @@ export class WebComponentReactiveController implements ReactiveController {
      */
     #resolvePath(path: string): any {
         return path.split('.').reduce((obj, key) => obj?.[key], this.#host);
+    }
+
+    /**
+     * Checks if a dependency path contains an array wildcard pattern.
+     * A wildcard is only considered an array wildcard if the path segment before '*' resolves to an array.
+     * This distinguishes between array wildcards (e.g., "items.*.name") and objects with a literal '*' property.
+     * @param path The dependency path to check.
+     * @returns True if the path contains an array wildcard, false otherwise.
+     */
+    #isArrayWildcardPath(path: string): boolean {
+        const segments = path.split('.');
+        const wildcardIndex = segments.indexOf('*');
+
+        if (wildcardIndex === -1)
+            return false;
+
+        // Resolve the path up to (but not including) the wildcard
+        const pathBeforeWildcard = segments.slice(0, wildcardIndex).join('.');
+        const valueBeforeWildcard = pathBeforeWildcard ? this.#resolvePath(pathBeforeWildcard) : this.#host;
+
+        return Array.isArray(valueBeforeWildcard);
     }
 }
