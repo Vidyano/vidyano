@@ -130,7 +130,7 @@ export class PersistentObjectGroup extends WebComponent {
         }
     }
 
-    @observer("group.attributes", "columns", "isConnected")
+    @observer("group.attributes.*.isVisible", "columns", "isConnected")
     private _arrange() {
         if (!this.isConnected)
             return;

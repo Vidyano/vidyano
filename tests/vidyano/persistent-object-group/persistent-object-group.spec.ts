@@ -427,6 +427,67 @@ test.describe.serial('PersistentObjectGroup', () => {
         });
     });
 
+    test.describe('Visibility Change Reactivity', () => {
+        test('re-arranges grid when attribute visibility changes from Never to Always', async () => {
+            // Start with Grid_Hidden which has X attribute with visibility="Never"
+            // Grid starts as: A, B (X is hidden)
+            const group = await setupGroup('Grid_Hidden', 0, 3);
+
+            // Verify X is not in the grid initially
+            const initialAreas = await getGridAreas(group);
+            expect(initialAreas).toBe('"A B ."');
+            expect(initialAreas).not.toContain('X');
+
+            // Change X's visibility to "Always" - this should trigger _arrange()
+            await group.evaluate(async (el) => {
+                const groupData = (el as any).group;
+                const attrX = groupData.attributes.find((a: any) => a.name === 'X');
+                if (!attrX)
+                    throw new Error('Attribute X not found');
+
+                // Change visibility from "Never" to "Always"
+                attrX.visibility = 'Always';
+
+                // Wait for the component to update
+                await (el as any).updateComplete;
+                await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+            });
+
+            // The grid should now include X
+            const updatedAreas = await getGridAreas(group);
+            expect(updatedAreas).toContain('X');
+            expect(updatedAreas).toBe('"A X B"');
+        });
+
+        test('re-arranges grid when attribute visibility changes from Always to Never', async () => {
+            // Start with Grid_Sequential which has all visible attributes
+            const group = await setupGroup('Grid_Sequential', 0, 2);
+
+            // Verify initial state
+            const initialAreas = await getGridAreas(group);
+            expect(initialAreas).toBe('"A B" "C D"');
+
+            // Hide attribute B
+            await group.evaluate(async (el) => {
+                const groupData = (el as any).group;
+                const attrB = groupData.attributes.find((a: any) => a.name === 'B');
+                if (!attrB)
+                    throw new Error('Attribute B not found');
+
+                // Change visibility to "Never"
+                attrB.visibility = 'Never';
+
+                await (el as any).updateComplete;
+                await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+            });
+
+            // B should be removed from the grid
+            const updatedAreas = await getGridAreas(group);
+            expect(updatedAreas).not.toContain('B');
+            expect(updatedAreas).toBe('"A C" "D ."');
+        });
+    });
+
     test.describe('Columns Auto/Override', () => {
         async function setupGroupWithWidth(
             width: number,
