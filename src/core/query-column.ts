@@ -42,6 +42,7 @@ export class QueryColumn extends ServiceObject {
     #total: QueryResultItemValue;
     #persistentObjectId: string;
     #tag: any;
+    #includeAllContent: boolean;
 
     offset: number;
     isPinned: boolean;
@@ -71,10 +72,12 @@ export class QueryColumn extends ServiceObject {
         if (col instanceof QueryColumn) {
             this.#selectedDistincts = col.#selectedDistincts;
             this.#selectedDistinctsInversed = col.#selectedDistinctsInversed;
+            this.#includeAllContent = col.#includeAllContent;
         }
         else {
-            this.#selectedDistincts = col.includes || col.excludes || [];
+            this.#selectedDistincts = col.includes?.length > 0 ? col.includes : (col.excludes || []);
             this.#selectedDistinctsInversed = !!col.excludes && col.excludes.length > 0;
+            this.#includeAllContent = !!col.includeAllContent;
         }
         this.#label = col.label;
         this.#name = col.name;
@@ -180,6 +183,17 @@ export class QueryColumn extends ServiceObject {
         this.notifyPropertyChanged("selectedDistinctsInversed", this.#selectedDistinctsInversed = selectedDistinctsInversed, oldSelectedDistinctsInversed);
     }
 
+    /** Gets or sets whether to include all content for this column, overriding QueryMaxContentLength. */
+    get includeAllContent(): boolean {
+        return this.#includeAllContent;
+    }
+
+    set includeAllContent(includeAllContent: boolean) {
+        const oldIncludeAllContent = this.#includeAllContent;
+
+        this.notifyPropertyChanged("includeAllContent", this.#includeAllContent = includeAllContent, oldIncludeAllContent);
+    }
+
     /** Gets or sets the distinct values for the column. */
     get distincts(): IQueryColumnDistincts {
         return this.#distincts;
@@ -239,6 +253,9 @@ export class QueryColumn extends ServiceObject {
 
         serviceObject.includes = !this.selectedDistinctsInversed ? this.selectedDistincts : [];
         serviceObject.excludes = this.selectedDistinctsInversed ? this.selectedDistincts : [];
+
+        if (this.#includeAllContent)
+            serviceObject.includeAllContent = true;
 
         return serviceObject;
     }

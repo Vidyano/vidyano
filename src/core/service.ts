@@ -30,6 +30,31 @@ export { NotificationType } from "./typings/service.js";
 export let version = "vidyano-latest-version";
 
 /**
+ * Represents an override configuration for a query column.
+ */
+export type ColumnOverride = {
+    /**
+     * The name of the column to override.
+     */
+    name: string;
+
+    /**
+     * Optional list of values to include in the filter.
+     */
+    includes?: string[];
+
+    /**
+     * Optional list of values to exclude from the filter.
+     */
+    excludes?: string[];
+
+    /**
+     * If true, includes all content for this column, overriding QueryMaxContentLength.
+     */
+    includeAllContent?: boolean;
+};
+
+/**
  * Options for retrieving a query.
  */
 export type GetQueryOptions = {
@@ -43,22 +68,7 @@ export type GetQueryOptions = {
      * Optional overrides for specific columns in the query.
      * Each override can specify which columns to include or exclude.
      */
-    columnOverrides?: {
-        /**
-         * The name of the column to override.
-         */
-        name: string;
-
-        /**
-         * Optional list of includes.
-         */
-        includes?: string[];
-
-        /**
-         * Optional list excludes.
-         */
-        excludes?: string[];
-    }[];
+    columnOverrides?: ColumnOverride[];
 
     /**
      * Optional parent persistent object if this is a detail query.
@@ -731,6 +741,21 @@ export class Service extends Observable<Service> {
 
         if (query.ownerAttributeWithReference)
             data.forReferenceAttribute = query.ownerAttributeWithReference.name;
+
+        // Build columnOverrides from columns that have filter state or content overrides
+        const columnOverrides: ColumnOverride[] = query.columns
+            .filter(col => col.selectedDistincts?.length > 0 || col.includeAllContent)
+            .map(col => ({
+                name: col.name,
+                includes: !col.selectedDistinctsInversed && col.selectedDistincts?.length > 0
+                    ? col.selectedDistincts : undefined,
+                excludes: col.selectedDistinctsInversed && col.selectedDistincts?.length > 0
+                    ? col.selectedDistincts : undefined,
+                includeAllContent: col.includeAllContent || undefined
+            }));
+
+        if (columnOverrides.length > 0)
+            data.columnOverrides = columnOverrides;
 
         try {
             const result = await this.#postJSON(this.#createUri("ExecuteQuery"), data);

@@ -799,4 +799,148 @@ test.describe("Query", () => {
             expect(peopleQuery.items[10].isSelected).toBe(false);
         });
     });
+
+    test.describe("Column Overrides", () => {
+        test("sets and gets includeAllContent on column", async ({ peopleQuery }) => {
+            const firstNameColumn = peopleQuery.columns.find(c => c.name === "FirstName")!;
+            expect(firstNameColumn).toBeInstanceOf(QueryColumn);
+
+            // Default should be false
+            expect(firstNameColumn.includeAllContent).toBe(false);
+
+            // Set to true
+            firstNameColumn.includeAllContent = true;
+            expect(firstNameColumn.includeAllContent).toBe(true);
+
+            // Set back to false
+            firstNameColumn.includeAllContent = false;
+            expect(firstNameColumn.includeAllContent).toBe(false);
+        });
+
+        test("includeAllContent notifies property changes", async ({ peopleQuery }) => {
+            const firstNameColumn = peopleQuery.columns.find(c => c.name === "FirstName")!;
+            let notificationCount = 0;
+            let lastOldValue: boolean | undefined;
+            let lastNewValue: boolean | undefined;
+
+            const disposer = firstNameColumn.propertyChanged.attach((sender, args) => {
+                if (args.propertyName === "includeAllContent") {
+                    notificationCount++;
+                    lastOldValue = args.oldValue;
+                    lastNewValue = args.newValue;
+                }
+            });
+
+            firstNameColumn.includeAllContent = true;
+            expect(notificationCount).toBe(1);
+            expect(lastOldValue).toBe(false);
+            expect(lastNewValue).toBe(true);
+
+            firstNameColumn.includeAllContent = false;
+            expect(notificationCount).toBe(2);
+            expect(lastOldValue).toBe(true);
+            expect(lastNewValue).toBe(false);
+
+            disposer();
+        });
+
+        test("includeAllContent persists across search", async ({ peopleQuery }) => {
+            const firstNameColumn = peopleQuery.columns.find(c => c.name === "FirstName")!;
+
+            // Set includeAllContent
+            firstNameColumn.includeAllContent = true;
+
+            // Perform search
+            await peopleQuery.search();
+
+            // Verify column still has includeAllContent set
+            const columnAfterSearch = peopleQuery.columns.find(c => c.name === "FirstName")!;
+            expect(columnAfterSearch.includeAllContent).toBe(true);
+        });
+
+        test("includeAllContent is preserved when cloning query", async ({ service }) => {
+            const query = await service.getQuery("People");
+            const column = query.columns.find(c => c.name === "FirstName")!;
+
+            // Set includeAllContent on original
+            column.includeAllContent = true;
+
+            // Clone the query (which creates new QueryColumn instances from existing ones)
+            const clonedQuery = query.clone();
+            const clonedColumn = clonedQuery.columns.find(c => c.name === "FirstName")!;
+
+            // Verify includeAllContent was preserved
+            expect(clonedColumn.includeAllContent).toBe(true);
+        });
+
+        test("selectedDistincts (includes) persists across search", async ({ peopleQuery }) => {
+            const genderColumn = peopleQuery.columns.find(c => c.name === "Gender")!;
+
+            // Get distinct values first
+            await genderColumn.refreshDistincts();
+            const allDistincts = [...(genderColumn.distincts.matching || []), ...(genderColumn.distincts.remaining || [])];
+            expect(allDistincts.length).toBeGreaterThan(0);
+
+            const firstDistinctValue = allDistincts[0];
+
+            // Set selectedDistincts (includes mode - not inversed)
+            genderColumn.selectedDistincts = [firstDistinctValue];
+            expect(genderColumn.selectedDistinctsInversed).toBe(false);
+
+            // Perform search
+            await peopleQuery.search();
+
+            // Verify selectedDistincts is preserved
+            const columnAfterSearch = peopleQuery.columns.find(c => c.name === "Gender")!;
+            expect(columnAfterSearch.selectedDistincts).toEqual([firstDistinctValue]);
+            expect(columnAfterSearch.selectedDistinctsInversed).toBe(false);
+        });
+
+        test("selectedDistincts (excludes) persists across search", async ({ peopleQuery }) => {
+            const genderColumn = peopleQuery.columns.find(c => c.name === "Gender")!;
+
+            // Get distinct values first
+            await genderColumn.refreshDistincts();
+            const allDistincts = [...(genderColumn.distincts.matching || []), ...(genderColumn.distincts.remaining || [])];
+            expect(allDistincts.length).toBeGreaterThan(0);
+
+            const firstDistinctValue = allDistincts[0];
+
+            // Set selectedDistincts in excludes mode (inversed)
+            genderColumn.selectedDistincts = [firstDistinctValue];
+            genderColumn.selectedDistinctsInversed = true;
+
+            // Perform search
+            await peopleQuery.search();
+
+            // Verify selectedDistincts and inversed flag are preserved
+            const columnAfterSearch = peopleQuery.columns.find(c => c.name === "Gender")!;
+            expect(columnAfterSearch.selectedDistincts).toEqual([firstDistinctValue]);
+            expect(columnAfterSearch.selectedDistinctsInversed).toBe(true);
+        });
+
+        test("selectedDistincts is preserved when cloning query", async ({ service }) => {
+            const query = await service.getQuery("People");
+            const genderColumn = query.columns.find(c => c.name === "Gender")!;
+
+            // Get distinct values first
+            await genderColumn.refreshDistincts();
+            const allDistincts = [...(genderColumn.distincts.matching || []), ...(genderColumn.distincts.remaining || [])];
+            expect(allDistincts.length).toBeGreaterThan(0);
+
+            const firstDistinctValue = allDistincts[0];
+
+            // Set selectedDistincts with inversed flag
+            genderColumn.selectedDistincts = [firstDistinctValue];
+            genderColumn.selectedDistinctsInversed = true;
+
+            // Clone the query
+            const clonedQuery = query.clone();
+            const clonedColumn = clonedQuery.columns.find(c => c.name === "Gender")!;
+
+            // Verify selectedDistincts and inversed flag were preserved
+            expect(clonedColumn.selectedDistincts).toEqual([firstDistinctValue]);
+            expect(clonedColumn.selectedDistinctsInversed).toBe(true);
+        });
+    });
 });
