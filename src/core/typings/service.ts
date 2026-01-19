@@ -879,6 +879,11 @@ export declare type QueryColumnDto = {
      * Gets the excludes used for the data filter.
      */
     excludes: string[];
+
+    /**
+     * Indicates whether all content should be included for this column, overriding QueryMaxContentLength.
+     */
+    includeAllContent?: boolean;
 };
 
 export declare type QueryResultDto = {
