@@ -59,7 +59,7 @@
     "build:bootstrap": "npm run build:ts:core && npm run build:core",
     "build:core": "npm run build -w @vidyano/core",
     "build:vidyano": "npm run build -w @vidyano/vidyano",
-    "build:virtual-service": "npm run build:ts:virtual-service && npx rollup -c rollup.config.mjs --bundleConfigAsCjs",
+    "build:virtual-service": "npm run build:ts:virtual-service && npm run build -w @vidyano-labs/virtual-service",
     "build:rollup": "NODE_ENV=production npm run build:core && NODE_ENV=production npm run build:vidyano",
     "build": "npm run build:sass && npm run build:ts && npm run build:rollup && npm run build:virtual-service",
     "dist": "node build.js",
