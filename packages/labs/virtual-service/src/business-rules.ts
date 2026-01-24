@@ -118,7 +118,7 @@ export class BusinessRuleValidator {
             .map(p => {
                 // Try to parse as number
                 const num = Number(p);
-                if (!isNaN(num))
+                if (p !== "" && !isNaN(num))
                     return num;
 
                 // Try to parse as boolean

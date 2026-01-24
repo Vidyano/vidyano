@@ -559,6 +559,40 @@ test("validates multiple failing rules returns first error", async () => {
     expect(email!.validationError).toBe("This field is required");
 });
 
+test("does not convert empty parameter to zero", async () => {
+    const service = new VirtualService();
+
+    // Track what parameters the custom rule receives
+    let receivedParams: any[] = [];
+
+    service.registerBusinessRule("CheckParams", (_value: any, ...params: any[]) => {
+        receivedParams = params;
+    });
+
+    service.registerPersistentObject({
+        type: "Test",
+        label: "Test",
+        stateBehavior: "StayInEdit",
+        attributes: [
+            {
+                name: "Value",
+                type: "String",
+                rules: "CheckParams(,5)",  // Empty first param, numeric second param
+                value: "test"
+            }
+        ]
+    });
+
+    await service.initialize();
+
+    const obj = await service.getPersistentObject(null, "Test", "1");
+    await obj.save();
+
+    // Empty parameter should remain empty string, not be converted to 0
+    expect(receivedParams[0]).toBe("");
+    expect(receivedParams[1]).toBe(5);
+});
+
 test("validates special characters and unicode in strings", async () => {
     const service = new VirtualService();
 
