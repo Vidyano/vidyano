@@ -192,6 +192,9 @@ PublishScripts/
 **/[Pp]ackages/*
 # except build/, which is used as an MSBuild target.
 !**/[Pp]ackages/build/
+# except labs/, which contains @vidyano-labs packages
+!packages/labs/
+!packages/labs/**
 # Uncomment if necessary however generally it will be regenerated when needed
 #!**/[Pp]ackages/repositories.config
 # NuGet v3's project.json files produces more ignorable files
@@ -352,6 +355,9 @@ dev/wwwroot/**/index.*
 dist/**/*.js
 dist/**/*.d.ts
 dist/**/*.tgz
+
+# Package build outputs
+packages/**/dist/
 rollup
 
 src/vidyano/index.js

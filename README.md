@@ -50,6 +50,8 @@ npm test
 
 The `npm run dev` command starts the .NET backend server. It will check if the server is already running and only start it if needed.
 
+**Watch Mode:** For active development, use the VS Code task "rollup: watch" which automatically rebuilds on file changes. Do not run `npm run build` while watch mode is active as this will cause conflicts.
+
 ### Build Commands
 
 | Command | Description |
@@ -58,7 +60,7 @@ The `npm run dev` command starts the .NET backend server. It will check if the s
 | `npm run build:sass` | Compile SCSS to CSS |
 | `npm run build:ts` | Compile TypeScript |
 | `npm run build:rollup` | Bundle with Rollup |
-| `npm run dist <version>` | Create distribution packages with specified version |
+| `npm run dist -- <version> <gitHash>` | Create distribution packages with specified version and git hash |
 | `npm test` | Run Playwright tests |
 
 ## UI Component Structure

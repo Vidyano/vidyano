@@ -45,16 +45,19 @@
     "rollup-plugin-watch": "^1.0.5",
     "sass": "^1.89.2",
     "tslib": "^2.8.1",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "yaml": "^2.8.2"
   },
   "workspaces": [
-    "dist/core"
+    "dist/core",
+    "packages/labs/virtual-service"
   ],
   "scripts": {
     "build:sass": "npx sass --no-source-map src:src",
     "build:ts": "npx tsc",
     "build:rollup": "rollup -c --bundleConfigAsCjs",
-    "build": "npm run build:sass && npm run build:ts && npm run build:rollup",
+    "build:virtual-service": "cd packages/labs/virtual-service && npx tsc && npx rollup -c rollup.config.mjs --bundleConfigAsCjs",
+    "build": "npm run build:sass && npm run build:ts && npm run build:rollup && npm run build:virtual-service",
     "dist": "node build.js",
     "dev": "[ \"$(curl -s -o /dev/null -w '%{http_code}' --head http://localhost:5000)\" != \"200\" ] && dotnet run --project dev/Dev.csproj || echo 'Server already running'",
     "test": "npx playwright test"
