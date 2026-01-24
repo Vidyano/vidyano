@@ -13,7 +13,7 @@ export default [
     },
     // Implementation bundle (from compiled JS)
     {
-        input: 'src/index.js',
+        input: 'dist/index.js',
         external: ["@vidyano/core"],
         plugins: [
             nodeResolve()

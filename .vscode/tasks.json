@@ -13,6 +13,17 @@
             "isBackground": true
         },
         {
+            "type": "typescript",
+            "tsconfig": "packages/labs/virtual-service/tsconfig.json",
+            "option": "watch",
+            "problemMatcher": [
+                "$tsc-watch"
+            ],
+            "group": "build",
+            "label": "typescript: watch (virtual-service)",
+            "isBackground": true
+        },
+        {
             "type": "shell",
             "label": "sass: watch",
             "command": "npx sass --watch --no-source-map src:src --poll",
@@ -45,6 +56,22 @@
             "dependsOn":[
                 "typescript: watch",
                 "sass: watch"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "rollup: watch (virtual-service)",
+            "command": "npx rollup -c rollup.config.mjs -w --bundleConfigAsCjs",
+            "options": {
+                "cwd": "${workspaceFolder}/packages/labs/virtual-service"
+            },
+            "group": "build",
+            "isBackground": true,
+            "problemMatcher": [],
+            "detail": "rollup -c rollup.config.mjs -w --bundleConfigAsCjs",
+            "dependsOn":[
+                "rollup: watch",
+                "typescript: watch (virtual-service)"
             ]
         }
     ]
