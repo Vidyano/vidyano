@@ -205,8 +205,8 @@ export class VirtualPersistentObjectActions {
 
                     // Null handling
                     if (aVal == null && bVal == null) continue;
-                    if (aVal == null) return -1;
-                    if (bVal == null) return 1;
+                    if (aVal == null) return direction === "ASC" ? -1 : 1;
+                    if (bVal == null) return direction === "ASC" ? 1 : -1;
 
                     // Type-aware comparison
                     let cmp = 0;
