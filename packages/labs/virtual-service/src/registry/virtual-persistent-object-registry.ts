@@ -2,7 +2,7 @@ import { Dto } from "@vidyano/core";
 import { VirtualPersistentObjectConfig, VirtualPersistentObjectAttributeConfig, ActionHandler, ActionContext } from "../types.js";
 import { ConversionContext } from "../virtual-persistent-object.js";
 import { BusinessRuleValidator } from "../business-rules.js";
-import { convertFromDtoValue, convertToDtoValue } from "../data-type-conversion.js";
+import { fromServiceValue, toServiceValue } from "../virtual-service-data-type.js";
 import type { VirtualQueryRegistry } from "./virtual-query-registry.js";
 import type { VirtualPersistentObjectActionsRegistry } from "./virtual-persistent-object-actions-registry.js";
 
@@ -268,23 +268,23 @@ export class VirtualPersistentObjectRegistry {
                 if (!attr)
                     return undefined;
 
-                return convertFromDtoValue(attr.value, attr.type);
+                return fromServiceValue(attr.value, attr.type);
             },
 
             setAttributeValue: (name: string, value: any) => {
                 const attr = po.attributes?.find(a => a.name === name);
                 if (attr) {
-                    attr.value = convertToDtoValue(value, attr.type);
+                    attr.value = toServiceValue(value, attr.type);
                     attr.isValueChanged = true;
                 }
             },
 
             getConvertedValue: (attr: Dto.PersistentObjectAttributeDto) => {
-                return convertFromDtoValue(attr.value, attr.type);
+                return fromServiceValue(attr.value, attr.type);
             },
 
             setConvertedValue: (attr: Dto.PersistentObjectAttributeDto, value: any) => {
-                attr.value = convertToDtoValue(value, attr.type);
+                attr.value = toServiceValue(value, attr.type);
                 attr.isValueChanged = true;
             },
 
@@ -314,10 +314,10 @@ export class VirtualPersistentObjectRegistry {
     #createConversionContext(): ConversionContext {
         return {
             getConvertedValue: (attr: Dto.PersistentObjectAttributeDto) => {
-                return convertFromDtoValue(attr.value, attr.type);
+                return fromServiceValue(attr.value, attr.type);
             },
             setConvertedValue: (attr: Dto.PersistentObjectAttributeDto, value: any) => {
-                attr.value = convertToDtoValue(value, attr.type);
+                attr.value = toServiceValue(value, attr.type);
                 attr.isValueChanged = true;
             }
         };

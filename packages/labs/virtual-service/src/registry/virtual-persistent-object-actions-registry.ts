@@ -2,7 +2,7 @@ import { Dto } from "@vidyano/core";
 import { VirtualPersistentObjectActions } from "../virtual-persistent-object-actions.js";
 import { VirtualPersistentObject, VirtualPersistentObjectAttribute, ConversionContext, createVirtualPersistentObject, createVirtualPersistentObjectAttribute, unwrapVirtualPersistentObject } from "../virtual-persistent-object.js";
 import { VirtualQueryExecuteResult } from "../types.js";
-import { convertFromDtoValue, convertToDtoValue } from "../data-type-conversion.js";
+import { fromServiceValue, toServiceValue } from "../virtual-service-data-type.js";
 
 /** Lifecycle methods that can be overridden in VirtualPersistentObjectActions */
 type LifecycleMethod = "onSave" | "onNew" | "onDelete" | "onRefresh" | "onLoad" | "onConstruct" | "onConstructQuery" | "onSelectReference" | "onExecuteQuery" | "getEntities";
@@ -311,10 +311,10 @@ export class VirtualPersistentObjectActionsRegistry {
     #createConversionContext(): ConversionContext {
         return {
             getConvertedValue: (attr: Dto.PersistentObjectAttributeDto) => {
-                return convertFromDtoValue(attr.value, attr.type);
+                return fromServiceValue(attr.value, attr.type);
             },
             setConvertedValue: (attr: Dto.PersistentObjectAttributeDto, value: any) => {
-                attr.value = convertToDtoValue(value, attr.type);
+                attr.value = toServiceValue(value, attr.type);
                 attr.isValueChanged = true;
             }
         };
