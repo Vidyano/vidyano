@@ -48,7 +48,8 @@
     "vitest": "^3.2.4"
   },
   "workspaces": [
-    "dist/core"
+    "dist/core",
+    "packages/labs/virtual-service"
   ],
   "scripts": {
     "build:sass": "npx sass --no-source-map src:src",

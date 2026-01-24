@@ -111,9 +111,7 @@
         "**/PublishScripts/": true,
         "**/*.nupkg": true,
         "**/*.snupkg": true,
-        "**/[Pp]ackages/*": true,
-        "**/[Pp]ackages/build/": false,
-        "**/*.nuget.props": true,
+                "**/*.nuget.props": true,
         "**/*.nuget.targets": true,
         "**/csx/": true,
         "**/*.build.csdef": true,
@@ -198,7 +196,9 @@
         "test/**/*.css": true,
         "test/**/*.css.map": true,
         "tests/**/*.js": true,
-        "**/data": true
+        "**/data": true,
+        "packages/**/dist/": true
     },
-    "dotnet.projects.enableFileBasedPrograms": true
+    "dotnet.projects.enableFileBasedPrograms": true,
+    "explorer.excludeGitIgnore": true
 }
