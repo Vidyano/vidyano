@@ -1,22 +1,9 @@
 {
+  "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "declaration": true,
-    "declarationDir": "dist",
-    "outDir": "dist",
-    "useDefineForClassFields": false,
-    "allowSyntheticDefaultImports": true,
-    "importHelpers": true,
-    "moduleResolution": "node",
-    "lib": [
-      "ES2022",
-      "DOM",
-      "DOM.Iterable"
-    ],
-    "experimentalDecorators": true,
-    "noEmitOnError": false,
     "rootDir": "src",
+    "outDir": "src",
+    "declarationDir": "rollup",
     "strict": false,
     "skipLibCheck": true
   },

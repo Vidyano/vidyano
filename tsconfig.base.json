@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "declaration": true,
+    "useDefineForClassFields": false,
+    "allowSyntheticDefaultImports": true,
+    "importHelpers": true,
+    "moduleResolution": "node",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "experimentalDecorators": true,
+    "noEmitOnError": false,
+    "types": [
+      "bignumber.js"
+    ]
+  },
+  "watchOptions": {
+    "watchFile": "usefsevents",
+    "watchDirectory": "usefsevents"
+  }
+}

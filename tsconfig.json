@@ -1,43 +1,7 @@
 {
-  "compilerOptions": {
-      "target": "ES2022",
-      "module": "ESNext",
-      "declaration": true,
-      "declarationDir": "rollup",
-      "useDefineForClassFields": false,
-      "allowSyntheticDefaultImports": true,
-      "importHelpers": true,
-      "moduleResolution": "node",
-      "lib": [
-          "ES2022",
-          "DOM",
-          "DOM.Iterable"
-      ],
-      "experimentalDecorators": true,
-      "noEmitOnError": false,
-      "rootDir": ".",
-      "types": [
-        "bignumber.js"
-      ],
-      "baseUrl": "src",
-      "paths": {
-        "components/*": [ "vidyano/web-components/*" ],
-        "libs/*": [ "vidyano/libs/*" ],
-        "polymer": [ "vidyano/libs/polymer/polymer" ],
-        "vidyano": [ "core" ],
-      }
-  },
-  "exclude": [
-      "wwwroot/dist",
-      "tests/**/*.spec.ts",
-  ],
-  "include": [
-      "src/core/**/*.ts",
-      "src/vidyano/**/*.ts",
-      "tests/vidyano/index.ts"
-  ],
-  "watchOptions": {
-    "watchFile": "usefsevents",
-    "watchDirectory": "usefsevents"
-  }
+  "files": [],
+  "references": [
+    { "path": "packages/core" },
+    { "path": "packages/vidyano" }
+  ]
 }

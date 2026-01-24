@@ -1,7 +1,7 @@
 # Vidyano Development Guide
 
 ## IMPORTANT
-**When working with @vidyano/core code**, read `docs/core/cheat-sheet.md` first for quick reference on core concepts and coding patterns.
+**When working with @vidyano/core code**, read `packages/core/docs/cheat-sheet.md` first for quick reference on core concepts and coding patterns.
 
 **File Types:** Only work with TypeScript source files (`.ts`). Do NOT modify JavaScript files (`.js`) or TypeScript declaration files (`.d.ts`).
 
@@ -11,8 +11,12 @@
 ```bash
 # Development
 npm run dev          # Start backend (localhost:5000, blocks terminal)
-npm run build        # Build pipeline (only after src/ changes, NOT for test changes)
+npm run build        # Build pipeline (only after packages/ changes, NOT for test changes)
 npm test             # Run Playwright tests
+
+# Package-specific builds
+npm run build:core      # Build @vidyano/core only
+npm run build:vidyano   # Build @vidyano/vidyano only
 
 # Production
 npm run dist         # Production build
@@ -32,30 +36,34 @@ Check if rollup is running before building: `pgrep -f rollup` (returns PIDs if r
 ### Documentation Map
 | Component | Documentation | Tests |
 |-----------|--------------|-------|
-| Action | `docs/core/action.md` | `tests/core/action.spec.ts` |
-| Query | `docs/core/query.md` | `tests/core/query.spec.ts` |
-| QueryFilter | `docs/core/query-filter.md` | `tests/core/query-filter.spec.ts` |
-| PersistentObject | `docs/core/persistent-object.md` | `tests/core/persistent-object.spec.ts` |
-| PersistentObjectAttribute | `docs/core/persistent-object-attribute.md` | `tests/core/persistent-object-attribute.spec.ts` |
-| Service | `docs/core/getting-started.md` | `tests/core/service.spec.ts` |
-| Testing Guide | `tests/core/README` | - |
+| Action | `packages/core/docs/action.md` | `packages/core/tests/action.spec.ts` |
+| Query | `packages/core/docs/query.md` | `packages/core/tests/query.spec.ts` |
+| QueryFilter | `packages/core/docs/query-filter.md` | `packages/core/tests/query-filter.spec.ts` |
+| PersistentObject | `packages/core/docs/persistent-object.md` | `packages/core/tests/persistent-object.spec.ts` |
+| PersistentObjectAttribute | `packages/core/docs/persistent-object-attribute.md` | `packages/core/tests/persistent-object-attribute.spec.ts` |
+| Service | `packages/core/docs/getting-started.md` | `packages/core/tests/service.spec.ts` |
+| Testing Guide | `packages/core/tests/README` | - |
 
 ### Project Structure
 ```
 .
-├─ docs/               # Component documentation
+├─ packages/
+│  ├─ core/            # @vidyano/core - Platform-agnostic core library
+│  │  ├─ src/          # Source code
+│  │  ├─ docs/         # Documentation
+│  │  └─ tests/        # Playwright tests
+│  ├─ vidyano/         # @vidyano/vidyano - Dynamic UI components (Polymer/Lit)
+│  │  ├─ src/          # Source code
+│  │  └─ tests/        # Playwright tests
+│  └─ labs/            # Experimental packages
+│     └─ virtual-service/  # @vidyano-labs/virtual-service
 ├─ dev/                # .NET backend for development
-├─ src/                # Source code (Use for grounding)
-│  ├─ core/            # Platform-agnostic core library
-│  └─ vidyano/         # Dynamic UI components (Polymer/Lit)
-└─ tests/              # Playwright tests
-│  └─ core/            # Core tests
-│  └─ vidyano/         # UI component tests
+└─ docs/               # Additional documentation (migration guides, etc.)
 ```
 
 ### Vidyano Components Structure
-Components in `src/vidyano/` follow this pattern:
-- Each component is in a folder named after the component (e.g., `src/vidyano/my-component/`)
+Components in `packages/vidyano/src/` follow this pattern:
+- Each component is in a folder named after the component (e.g., `packages/vidyano/src/web-components/my-component/`)
 - Component folders can be nested deeper in the directory structure
 - Each component folder contains:
   - **`.ts` file** - TypeScript source (required)

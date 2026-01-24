@@ -179,14 +179,14 @@ jobs:
       - name: Verify build artifacts
         run: |
           echo "Verifying @vidyano/core build outputs..."
-          test -f dist/core/index.js || { echo "❌ dist/core/index.js missing"; exit 1; }
-          test -f dist/core/index.d.ts || { echo "❌ dist/core/index.d.ts missing"; exit 1; }
-          test -f dist/core/index.min.js || { echo "❌ dist/core/index.min.js missing"; exit 1; }
+          test -f packages/core/dist/index.js || { echo "❌ packages/core/dist/index.js missing"; exit 1; }
+          test -f packages/core/dist/index.d.ts || { echo "❌ packages/core/dist/index.d.ts missing"; exit 1; }
+          test -f packages/core/dist/index.min.js || { echo "❌ packages/core/dist/index.min.js missing"; exit 1; }
 
           echo "Verifying @vidyano/vidyano build outputs..."
-          test -f dist/vidyano/index.js || { echo "❌ dist/vidyano/index.js missing"; exit 1; }
-          test -f dist/vidyano/index.d.ts || { echo "❌ dist/vidyano/index.d.ts missing"; exit 1; }
-          test -f dist/vidyano/index.min.js || { echo "❌ dist/vidyano/index.min.js missing"; exit 1; }
+          test -f packages/vidyano/dist/index.js || { echo "❌ packages/vidyano/dist/index.js missing"; exit 1; }
+          test -f packages/vidyano/dist/index.d.ts || { echo "❌ packages/vidyano/dist/index.d.ts missing"; exit 1; }
+          test -f packages/vidyano/dist/index.min.js || { echo "❌ packages/vidyano/dist/index.min.js missing"; exit 1; }
 
           echo "✅ All build artifacts verified successfully"
 
@@ -195,7 +195,7 @@ jobs:
         run: |
           set -Eeuo pipefail
           V_IN="${{ inputs.version }}"
-          for PKG in dist/core/package.json dist/vidyano/package.json; do
+          for PKG in packages/core/package.json packages/vidyano/package.json; do
             node -e "const fs=require('fs');const p='$PKG';const want=process.argv[1];const v=JSON.parse(fs.readFileSync(p,'utf8')).version; if(v!==want){console.error('❌',p,'has wrong version',v,'!=',want); process.exit(1)}" "$V_IN"
           done
           echo "✅ package.json versions OK"
@@ -204,7 +204,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dist-all-${{ inputs.version }}
-          path: dist/
+          path: |
+            packages/core/dist/
+            packages/vidyano/dist/
           retention-days: 7
 
       # Expose tags for downstream matrix jobs
@@ -236,10 +238,10 @@ jobs:
         package:
           - name: core
             npm: "@vidyano/core"
-            path: "dist/core"
+            path: "packages/core/dist"
           - name: vidyano
             npm: "@vidyano/vidyano"
-            path: "dist/vidyano"
+            path: "packages/vidyano/dist"
 
     steps:
       - name: Download dist artifacts
@@ -305,7 +307,7 @@ jobs:
       - name: Publish ${{ matrix.package.npm }}
         shell: bash
         run: |
-          cd "${{ matrix.package.name }}"
+          cd "${{ matrix.package.path }}"
 
           TAG="${{ needs.build.outputs.tag }}"
           VERSION_TAG="${{ needs.build.outputs.version_tag }}"

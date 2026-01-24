@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "src",
+    "declarationDir": "rollup"
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "tests/**/*.spec.ts"
+  ]
+}

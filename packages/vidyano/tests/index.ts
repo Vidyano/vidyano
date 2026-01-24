@@ -1,0 +1,27 @@
+import "../src/index.js";
+export * from "../src/index.js";
+
+import "./web-component/test-computed-inline.js";
+import "./web-component/test-computed-prototype.js";
+import "./web-component/test-computed-derived-object.js";
+import "./web-component/test-computed-path.js";
+import "./web-component/test-computed-sub-path.js";
+import "./web-component/test-async-computed.js";
+import "./web-component/test-observer-method.js";
+import "./web-component/test-event-listeners.js";
+import "./web-component/test-keybinding.js";
+import "./web-component/test-keybinding-input.js";
+import "./web-component/test-computed-observable-path.js";
+import "./web-component/test-observer-undefined-blocking.js";
+import "./web-component/test-observer-allow-undefined.js";
+import "./web-component/test-computed-undefined-blocking.js";
+import "./web-component/test-computed-allow-undefined.js";
+import "./web-component/test-observer-property-prototype.js";
+import "./web-component/test-observer-property-inline.js";
+import "./web-component/test-translations.js";
+import "./web-component/test-decorator-inheritance.js";
+import "./web-component/test-computed-deep-inheritance.js";
+import "./web-component/test-observer-deep-inheritance.js";
+import "./web-component/test-sibling-inheritance.js";
+import "./web-component/test-computed-chained-root.js";
+import "./dialog/test-dialog.js";

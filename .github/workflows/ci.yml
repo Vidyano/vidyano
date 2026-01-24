@@ -8,12 +8,12 @@ on:
     paths:
       - '.github/workflows/ci.yml'
       - 'dev/**'
-      - 'src/**'
-      - 'tests/**'
+      - 'packages/**'
       - 'package-lock.json'
       - 'package.json'
-      - 'playwright.config.ts'
+      - 'playwright.config.js'
       - 'tsconfig.json'
+      - 'tsconfig.base.json'
   pull_request:
     branches:
       - v4.0
@@ -21,12 +21,12 @@ on:
     paths:
       - '.github/workflows/ci.yml'
       - 'dev/**'
-      - 'src/**'
-      - 'tests/**'
+      - 'packages/**'
       - 'package-lock.json'
       - 'package.json'
-      - 'playwright.config.ts'
+      - 'playwright.config.js'
       - 'tsconfig.json'
+      - 'tsconfig.base.json'
 
 jobs:
   build-and-test:
