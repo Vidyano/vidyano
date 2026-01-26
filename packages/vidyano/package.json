@@ -7,8 +7,17 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
-    ".": "./dist/index.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./bundle": {
+      "types": "./dist/index.bundle.d.ts",
+      "default": "./dist/index.bundle.js"
+    }
   },
+  "unpkg": "dist/index.bundle.min.js",
+  "jsdelivr": "dist/index.bundle.min.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/Vidyano/vidyano.git"
