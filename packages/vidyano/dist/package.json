@@ -1,0 +1,35 @@
+{
+  "name": "@vidyano/vidyano",
+  "version": "0.0.0-dev",
+  "description": "The Vidyano library contains all the web components for working with a Vidyano .NET backend.",
+  "type": "module",
+  "main": "index.js",
+  "module": "index.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./bundle": {
+      "types": "./index.bundle.d.ts",
+      "default": "./index.bundle.js"
+    }
+  },
+  "unpkg": "index.bundle.min.js",
+  "jsdelivr": "index.bundle.min.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Vidyano/vidyano.git"
+  },
+  "homepage": "https://vidyano.com",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@vidyano/core": "*",
+    "bignumber.js": "^9.3.0",
+    "lit": "^3.3.0"
+  }
+}

@@ -361,8 +361,10 @@ dist/**/*.js
 dist/**/*.d.ts
 dist/**/*.tgz
 
-# Package build outputs
-packages/**/dist/
+# Package build outputs (ignore contents, keep package.json and README.md)
+packages/**/dist/*
+!packages/**/dist/package.json
+!packages/**/dist/README.md
 packages/**/rollup/
 
 # TypeScript generated directories (from path aliases)

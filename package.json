@@ -69,6 +69,7 @@
     "test:core": "npx playwright test --project=core --workers=1",
     "test:vidyano": "npx playwright test --project=vidyano --workers=4",
     "test:ci": "act push -W .github/workflows/ci.yml -j build-and-test --container-options \"--network bridge\"",
-    "test:npm-publish": "sh -c 'act workflow_dispatch -W .github/workflows/npm-publish.yml -j build --input dry_run=true --input version=\"$1\"' _"
+    "test:npm-publish": "sh -c 'act workflow_dispatch -W .github/workflows/npm-publish.yml -j build --input dry_run=true --input version=\"$1\"' _",
+    "test:npm-publish-lab": "sh -c 'act workflow_dispatch -W .github/workflows/npm-publish-lab.yml -j build --input dry_run=true --input package=\"${1:-virtual-service}\" --input version=\"$2\"' _"
   }
 }

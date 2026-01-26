@@ -51,6 +51,12 @@ async function bumpVersion(filePath, newVersion, gitHash = null) {
         packageData.packages[""].version = newVersion;
     }
 
+    // Update @vidyano/core dependency to match the version being published
+    if (packageData.dependencies && packageData.dependencies["@vidyano/core"]) {
+        packageData.dependencies["@vidyano/core"] = newVersion;
+        console.info(`  Updating @vidyano/core dependency to ${newVersion}`);
+    }
+
     await fs.writeFile(filePath, JSON.stringify(packageData, null, 2) + "\n");
 }
 

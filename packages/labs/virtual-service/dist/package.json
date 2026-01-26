@@ -1,13 +1,13 @@
 {
   "name": "@vidyano-labs/virtual-service",
-  "version": "0.1.0",
+  "version": "0.0.0-dev",
   "description": "Virtual service implementation for testing Vidyano applications",
   "type": "module",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "index.js",
+  "module": "index.js",
+  "types": "index.d.ts",
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./index.js"
   },
   "repository": {
     "type": "git",
@@ -15,12 +15,9 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@vidyano/core": "*"
+    "@vidyano/core": ">=5.0.0-0"
   },
   "publishConfig": {
     "access": "public"
-  },
-  "scripts": {
-    "build": "rollup -c"
   }
 }
