@@ -64,7 +64,9 @@
     "build": "npm run build:sass && npm run build:ts && npm run build:rollup && npm run build:virtual-service",
     "dist": "node build.js",
     "dev": "[ \"$(curl -s -o /dev/null -w '%{http_code}' --head http://localhost:5000)\" != \"200\" ] && dotnet run --project dev/Dev.csproj || echo 'Server already running'",
-    "test": "npx playwright test",
+    "test": "npm run test:core && npm run test:vidyano",
+    "test:core": "npx playwright test --project=core --workers=1",
+    "test:vidyano": "npx playwright test --project=vidyano --workers=4",
     "test:ci": "act push -W .github/workflows/ci.yml -j build-and-test --container-options \"--network bridge\""
   }
 }
