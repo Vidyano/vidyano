@@ -39,8 +39,8 @@ jobs:
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install semver library
-        run: npm install --no-save semver@7
+      - name: Install dependencies
+        run: npm ci
 
       - name: Determine npm tag
         id: npm-tag
@@ -119,9 +119,6 @@ jobs:
       - name: Detect act environment
         id: detect-act
         run: echo "is_act=${{ env.ACT && 'true' || 'false' }}" >> $GITHUB_OUTPUT
-
-      - name: Install dependencies
-        run: npm ci
 
       - name: Install Playwright browsers (act only)
         if: ${{ steps.detect-act.outputs.is_act == 'true' }}
