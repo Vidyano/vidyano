@@ -3,7 +3,7 @@ const require = createRequire(import.meta.url);
 const pjson = require('./package.json');
 
 import nodeResolve from '@rollup/plugin-node-resolve';
-import vulcanize from '../../rollup.vulcanize.js';
+import vulcanize from '../vidyano/rollup.vulcanize.js';
 import { dts } from "rollup-plugin-dts";
 import replace from "@rollup/plugin-replace";
 import terser from '@rollup/plugin-terser';
