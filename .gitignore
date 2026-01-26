@@ -195,6 +195,9 @@ PublishScripts/
 # except labs/, which contains @vidyano-labs packages
 !packages/labs/
 !packages/labs/**
+# except placeholders/, which contains npm namespace placeholder packages
+!packages/placeholders/
+!packages/placeholders/**
 # except core/ and vidyano/, which contain the main packages
 !packages/core/
 !packages/core/**
