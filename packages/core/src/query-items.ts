@@ -519,17 +519,18 @@ export class QueryItemsProxy {
         let i = 0;
         // Continue until we've processed all items
         while (i < this.#query.totalItems || this.#query.hasMore) {
-            // Ensure item is loaded
-            if (items[i] === undefined || items[i] === null) {
-                await this.#atAsync(i);
+            // Ensure item is loaded - use return value to avoid proxy re-access issues
+            let item = items[i];
+            if (item === undefined || item === null) {
+                item = await this.#atAsync(i) as QueryResultItem;
             }
 
             // If item couldn't be loaded (end of results), break
-            if (items[i] === undefined) {
+            if (item == null) {
                 break;
             }
 
-            const result = await callback.call(thisArg, items[i], i, items);
+            const result = await callback.call(thisArg, item, i, items);
             // Allow early termination by returning false
             if (result === false) {
                 break;
@@ -645,17 +646,18 @@ export class QueryItemsProxy {
 
         const results: QueryResultItem[] = [];
         for (let i = actualStart; i < actualEnd; i++) {
-            // Ensure item is loaded
-            if (items[i] === undefined || items[i] === null) {
-                await this.#atAsync(i);
+            // Ensure item is loaded - use return value to avoid proxy re-access issues
+            let item = items[i];
+            if (item === undefined || item === null) {
+                item = await this.#atAsync(i) as QueryResultItem;
             }
 
             // If item couldn't be loaded (end of results), break
-            if (items[i] === undefined) {
+            if (item == null) {
                 break;
             }
 
-            results.push(items[i]);
+            results.push(item);
         }
         return results;
     }
