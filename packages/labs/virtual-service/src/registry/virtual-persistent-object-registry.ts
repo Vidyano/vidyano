@@ -397,7 +397,7 @@ async function buildAttributeDto(
     queryRegistry?: VirtualQueryRegistry
 ): Promise<Dto.PersistentObjectAttributeDto> {
     const baseDto: Dto.PersistentObjectAttributeDto = {
-        id: crypto.randomUUID(),
+        id: config.id || crypto.randomUUID(),
         name: config.name,
         type: config.type || "String",
         label: config.label || config.name,

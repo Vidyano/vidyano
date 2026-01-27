@@ -27,6 +27,30 @@ test("creates attributes with correct defaults", async () => {
     expect(email.isRequired).toBe(true);
 });
 
+test("uses provided id for attribute when specified", async () => {
+    const service = new VirtualService();
+
+    service.registerPersistentObject({
+        type: "Person",
+        attributes: [
+            { id: "fixed-email-id", name: "Email", type: "String" },
+            { name: "FirstName", type: "String" }
+        ]
+    });
+
+    await service.initialize();
+
+    const person = await service.getPersistentObject(null, "Person");
+
+    const email = person.getAttribute("Email");
+    expect(email.id).toBe("fixed-email-id");
+
+    // Attribute without explicit id should get a generated UUID
+    const firstName = person.getAttribute("FirstName");
+    expect(firstName.id).toBeDefined();
+    expect(firstName.id).not.toBe("fixed-email-id");
+});
+
 test("handles attribute visibility for new vs existing objects", async () => {
     const service = new VirtualService();
 

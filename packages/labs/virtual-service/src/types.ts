@@ -5,6 +5,11 @@ import { Dto } from "@vidyano/core";
  */
 export type VirtualPersistentObjectAttributeConfig = {
     /**
+     * Optional fixed id for this attribute. If not provided, a random UUID is generated.
+     */
+    id?: string;
+
+    /**
      * The unique name of the attribute.
      */
     name: string;
