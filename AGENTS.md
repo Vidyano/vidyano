@@ -12,7 +12,20 @@
 # Development
 npm run dev          # Start backend (localhost:5000, blocks terminal)
 npm run build        # Build pipeline (only after packages/ changes, NOT for test changes)
-npm test             # Run Playwright tests
+npm test             # Run ALL Playwright tests (core + vidyano)
+
+# Testing
+npm run test:core           # Run all core tests
+npm run test:vidyano        # Run all vidyano tests
+npm run test:virtual-service # Run all virtual-service tests
+
+# Run specific test file (use package-specific command or npx directly)
+npm run test:core -- path/to/test.spec.ts
+npm run test:virtual-service -- packages/labs/virtual-service/tests/validation.spec.ts
+npx playwright test --project=core path/to/test.spec.ts
+npx playwright test --project=virtual-service packages/labs/virtual-service/tests/validation.spec.ts
+
+# NOTE: Don't use "npm test -- <file>" - it won't work due to command chaining
 
 # Package-specific builds
 npm run build:core      # Build @vidyano/core only
