@@ -13,13 +13,13 @@ test("validates required attributes on save", async () => {
             {
                 name: "FirstName",
                 type: "String",
-                isRequired: true,
-                value: ""
+                rules: "Required",
+                value: null
             },
             {
                 name: "LastName",
                 type: "String",
-                isRequired: true,
+                rules: "Required",
                 value: "Doe"
             }
         ]    });
@@ -28,10 +28,10 @@ test("validates required attributes on save", async () => {
 
     const person = await service.getPersistentObject(null, "Person", "1");
 
-    // Attempt to save with empty required field
+    // Attempt to save with null required field
     await person.save();
 
-    // Check validation error on FirstName
+    // Check validation error on FirstName (null value should fail)
     const firstName = person.getAttribute("FirstName");
     expect(firstName).toBeDefined();
     expect(firstName!.validationError).toBe("This field is required");
@@ -126,7 +126,7 @@ test("validates NotEmpty rule", async () => {
     // Check validation error
     const firstName = person.getAttribute("FirstName");
     expect(firstName).toBeDefined();
-    expect(firstName!.validationError).toBe("This field is required");
+    expect(firstName!.validationError).toBe("This field cannot be empty");
 });
 
 test("validates multiple rules on single attribute", async () => {
@@ -501,8 +501,8 @@ test("validates empty string vs whitespace for NotEmpty", async () => {
 
     const emptyString = person.getAttribute("EmptyString");
     const whitespaceOnly = person.getAttribute("WhitespaceOnly");
-    expect(emptyString!.validationError).toBe("This field is required");
-    expect(whitespaceOnly!.validationError).toBe("This field is required");
+    expect(emptyString!.validationError).toBe("This field cannot be empty");
+    expect(whitespaceOnly!.validationError).toBe("This field cannot be empty");
 });
 
 test("validates non-numeric values for Min/MaxValue rules", async () => {
@@ -556,7 +556,7 @@ test("validates multiple failing rules returns first error", async () => {
     await person.save();
 
     const email = person.getAttribute("Email");
-    expect(email!.validationError).toBe("This field is required");
+    expect(email!.validationError).toBe("This field cannot be empty");
 });
 
 test("does not convert empty parameter to zero", async () => {
@@ -714,4 +714,176 @@ test("custom rule receives converted value not raw DTO value", async () => {
     // The custom rule should receive boolean true, not string "True"
     expect(receivedType).toBe("boolean");
     expect(receivedValue).toBe(true);
+});
+
+test("automatically sets isRequired when NotEmpty rule is present", async () => {
+    const service = new VirtualService();
+
+    service.registerPersistentObject({
+        type: "Person",
+        label: "Person",
+        stateBehavior: "StayInEdit",
+        attributes: [
+            {
+                name: "FirstName",
+                type: "String",
+                rules: "NotEmpty; MaxLength(50)",
+                value: ""
+            }
+        ]
+    });
+
+    await service.initialize();
+
+    const person = await service.getPersistentObject(null, "Person", "1");
+
+    // Attempt to save with empty value
+    await person.save();
+
+    // Check validation error - NotEmpty rule executes and fails
+    const firstName = person.getAttribute("FirstName");
+    expect(firstName).toBeDefined();
+    expect(firstName!.validationError).toBe("This field cannot be empty");
+});
+
+test("automatically sets isRequired when Required rule is present", async () => {
+    const service = new VirtualService();
+
+    service.registerPersistentObject({
+        type: "Person",
+        label: "Person",
+        stateBehavior: "StayInEdit",
+        attributes: [
+            {
+                name: "LastName",
+                type: "String",
+                rules: "Required; MaxLength(50)",
+                value: null
+            }
+        ]
+    });
+
+    await service.initialize();
+
+    const person = await service.getPersistentObject(null, "Person", "1");
+
+    // Attempt to save with null value (should fail Required rule)
+    await person.save();
+
+    // Check validation error - Required rule should fail
+    const lastName = person.getAttribute("LastName");
+    expect(lastName).toBeDefined();
+    expect(lastName!.validationError).toBe("This field is required");
+});
+
+test("does not set isRequired when NotEmpty or Required is not in rules", async () => {
+    const service = new VirtualService();
+
+    service.registerPersistentObject({
+        type: "Person",
+        label: "Person",
+        stateBehavior: "StayInEdit",
+        attributes: [
+            {
+                name: "Email",
+                type: "String",
+                rules: "IsEmail; MaxLength(100)",
+                value: ""
+            }
+        ]
+    });
+
+    await service.initialize();
+
+    const person = await service.getPersistentObject(null, "Person", "1");
+
+    // Attempt to save with empty value (should pass because not required)
+    await person.save();
+
+    // Check that no validation error occurs
+    const email = person.getAttribute("Email");
+    expect(email).toBeDefined();
+    expect(email!.validationError).toBeFalsy();
+});
+
+test("Required rule allows empty string but not null", async () => {
+    const service = new VirtualService();
+
+    service.registerPersistentObject({
+        type: "Person",
+        label: "Person",
+        stateBehavior: "StayInEdit",
+        attributes: [
+            {
+                name: "FirstName",
+                type: "String",
+                rules: "Required",
+                value: ""
+            },
+            {
+                name: "LastName",
+                type: "String",
+                rules: "Required",
+                value: null
+            }
+        ]
+    });
+
+    await service.initialize();
+
+    const person = await service.getPersistentObject(null, "Person", "1");
+
+    // Attempt to save - empty string should pass, null should fail
+    await person.save();
+
+    // FirstName with empty string should pass
+    const firstName = person.getAttribute("FirstName");
+    expect(firstName).toBeDefined();
+    expect(firstName!.validationError).toBeFalsy();
+
+    // LastName with null should fail
+    const lastName = person.getAttribute("LastName");
+    expect(lastName).toBeDefined();
+    expect(lastName!.validationError).toBe("This field is required");
+});
+
+test("NotEmpty rule rejects both null and empty string", async () => {
+    const service = new VirtualService();
+
+    service.registerPersistentObject({
+        type: "Person",
+        label: "Person",
+        stateBehavior: "StayInEdit",
+        attributes: [
+            {
+                name: "FirstName",
+                type: "String",
+                rules: "NotEmpty",
+                value: ""
+            },
+            {
+                name: "LastName",
+                type: "String",
+                rules: "NotEmpty",
+                value: null
+            }
+        ]
+    });
+
+    await service.initialize();
+
+    const person = await service.getPersistentObject(null, "Person", "1");
+
+    // Attempt to save - both should fail
+    await person.save();
+
+    // FirstName with empty string should fail
+    const firstName = person.getAttribute("FirstName");
+    expect(firstName).toBeDefined();
+    expect(firstName!.validationError).toBe("This field cannot be empty");
+
+    // LastName with null should fail
+    const lastName = person.getAttribute("LastName");
+    expect(lastName).toBeDefined();
+    expect(lastName!.validationError).toBe("This field cannot be empty");
 });

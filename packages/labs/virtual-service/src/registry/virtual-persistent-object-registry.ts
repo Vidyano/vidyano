@@ -231,16 +231,16 @@ export class VirtualPersistentObjectRegistry {
             // Clear previous validation errors
             attr.validationError = undefined;
 
-            // Find the attribute config to get rules and isRequired
+            // Find the attribute config to get rules
             const attrConfig = config.attributes.find(a => a.name === attr.name);
             if (!attrConfig)
                 continue;
 
-            // Create a DTO with the rules and isRequired from config
+            // Always use server config for rules and isRequired (never trust client values)
             const attrWithRules: Dto.PersistentObjectAttributeDto = {
                 ...attr,
                 rules: attrConfig.rules,
-                isRequired: attrConfig.isRequired || false
+                isRequired: hasRequiredRule(attrConfig.rules)
             };
 
             // Validate the attribute
@@ -388,6 +388,26 @@ async function buildPersistentObjectDto(
 }
 
 /**
+ * Checks if rules string contains NotEmpty or Required
+ */
+function hasRequiredRule(rules?: string): boolean {
+    if (!rules)
+        return false;
+
+    // Parse the rules string (semicolon-separated)
+    const ruleNames = rules
+        .split(";")
+        .map(rule => rule.trim())
+        .map(rule => {
+            // Extract just the rule name (before any parentheses)
+            const match = rule.match(/^(\w+)/);
+            return match ? match[1] : "";
+        });
+
+    return ruleNames.includes("NotEmpty") || ruleNames.includes("Required");
+}
+
+/**
  * Builds a PersistentObjectAttributeDto from configuration
  */
 async function buildAttributeDto(
@@ -395,13 +415,16 @@ async function buildAttributeDto(
     index: number,
     queryRegistry?: VirtualQueryRegistry
 ): Promise<Dto.PersistentObjectAttributeDto> {
+    // Automatically set isRequired if rules contain NotEmpty or Required
+    const isRequired = hasRequiredRule(config.rules);
+
     const baseDto: Dto.PersistentObjectAttributeDto = {
         id: config.id || crypto.randomUUID(),
         name: config.name,
         type: config.type || "String",
         label: config.label || config.name,
         value: config.value,
-        isRequired: config.isRequired || false,
+        isRequired,
         isReadOnly: config.isReadOnly || false,
         rules: config.rules,
         visibility: config.visibility || "Always",

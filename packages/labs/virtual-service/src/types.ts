@@ -31,11 +31,6 @@ export type VirtualPersistentObjectAttributeConfig = {
     value?: any;
 
     /**
-     * Indicates whether this attribute is required. Defaults to false.
-     */
-    isRequired?: boolean;
-
-    /**
      * Indicates whether the value of this attribute can be changed. Defaults to false.
      */
     isReadOnly?: boolean;

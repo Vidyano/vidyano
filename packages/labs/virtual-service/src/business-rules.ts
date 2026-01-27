@@ -35,7 +35,7 @@ export class BusinessRuleValidator {
         this.#builtInRules.set("MinLength", this.#validateMinLength.bind(this));
         this.#builtInRules.set("MinValue", this.#validateMinValue.bind(this));
         this.#builtInRules.set("NotEmpty", this.#validateNotEmpty.bind(this));
-        this.#builtInRules.set("Required", this.#validateNotEmpty.bind(this)); // Required is same as NotEmpty
+        this.#builtInRules.set("Required", this.#validateRequired.bind(this));
     }
 
     /**
@@ -78,16 +78,9 @@ export class BusinessRuleValidator {
         // Get the converted value (e.g., boolean from "True"/"False", number from string)
         const convertedValue = this.#getConvertedValue(attr);
 
-        // Check isRequired first
-        if (attr.isRequired) {
-            try {
-                this.#validateNotEmpty(convertedValue, context);
-            } catch (error) {
-                return error instanceof Error ? error.message : String(error);
-            }
-        }
-
         // Parse and validate rules string
+        // Note: isRequired is auto-set from rules for UI purposes only (e.g., showing asterisks)
+        // All validation logic is handled by the rules themselves
         if (!attr.rules)
             return null;
 
@@ -260,8 +253,13 @@ export class BusinessRuleValidator {
             throw new Error(`Minimum value is ${minimum}`);
     }
 
+    #validateRequired(value: any, context: RuleValidationContext): void {
+        if (value == null)
+            throw new Error("This field is required");
+    }
+
     #validateNotEmpty(value: any, context: RuleValidationContext): void {
         if (value == null || value === "" || (typeof value === "string" && value.trim() === ""))
-            throw new Error("This field is required");
+            throw new Error("This field cannot be empty");
     }
 }
