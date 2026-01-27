@@ -45,6 +45,9 @@ jobs:
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Remove always-auth from .npmrc
+        run: npm config delete always-auth --location=user 2>/dev/null || true
+
       - name: Install dependencies
         run: npm ci
 

@@ -39,6 +39,9 @@ jobs:
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Remove always-auth from .npmrc
+        run: npm config delete always-auth --location=user 2>/dev/null || true
+
       - name: Install dependencies
         run: npm ci
 
@@ -271,6 +274,9 @@ jobs:
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
+
+      - name: Remove always-auth from .npmrc
+        run: npm config delete always-auth --location=user 2>/dev/null || true
 
       # Ensure npm 11.5.1 or later for trusted publishing
       - name: Update npm
