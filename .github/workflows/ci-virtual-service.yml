@@ -1,0 +1,44 @@
+name: CI - Virtual Service
+
+on:
+  push:
+    branches:
+      - v4.0
+      - v5.0
+    paths:
+      - 'packages/labs/virtual-service/**'
+      - '.github/workflows/ci-virtual-service.yml'
+  pull_request:
+    branches:
+      - v4.0
+      - v5.0
+    paths:
+      - 'packages/labs/virtual-service/**'
+      - '.github/workflows/ci-virtual-service.yml'
+
+jobs:
+  test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chrome
+
+      - name: Build virtual-service
+        run: npm run build:virtual-service
+
+      - name: Run virtual-service tests
+        run: npm run test:virtual-service

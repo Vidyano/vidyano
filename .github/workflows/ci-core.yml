@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI - Core
 
 on:
   push:
@@ -6,30 +6,30 @@ on:
       - v4.0
       - v5.0
     paths:
-      - '.github/workflows/ci.yml'
+      - 'packages/core/**'
       - 'dev/**'
-      - 'packages/**'
-      - 'package-lock.json'
       - 'package.json'
+      - 'package-lock.json'
       - 'playwright.config.js'
       - 'tsconfig.json'
       - 'tsconfig.base.json'
+      - '.github/workflows/ci-core.yml'
   pull_request:
     branches:
       - v4.0
       - v5.0
     paths:
-      - '.github/workflows/ci.yml'
+      - 'packages/core/**'
       - 'dev/**'
-      - 'packages/**'
-      - 'package-lock.json'
       - 'package.json'
+      - 'package-lock.json'
       - 'playwright.config.js'
       - 'tsconfig.json'
       - 'tsconfig.base.json'
+      - '.github/workflows/ci-core.yml'
 
 jobs:
-  build-and-test:
+  test:
     name: Build and Test
     runs-on: ubuntu-latest
 
@@ -74,8 +74,8 @@ jobs:
             sleep 2
           done
 
-          # Run tests
-          npm test
+          # Run core tests
+          npm run test:core
           TEST_EXIT=$?
 
           # Stop server
