@@ -54,11 +54,11 @@ Check if rollup is running before building: `pgrep -f rollup` (returns PIDs if r
 │  │  └─ tests/        # Playwright tests
 │  ├─ vidyano/         # @vidyano/vidyano - Dynamic UI components (Polymer/Lit)
 │  │  ├─ src/          # Source code
+│  │  ├─ docs/         # Documentation (migration guides, etc.)
 │  │  └─ tests/        # Playwright tests
 │  └─ labs/            # Experimental packages
 │     └─ virtual-service/  # @vidyano-labs/virtual-service
-├─ dev/                # .NET backend for development
-└─ docs/               # Additional documentation (migration guides, etc.)
+└─ dev/                # .NET backend for development
 ```
 
 ### Vidyano Components Structure
