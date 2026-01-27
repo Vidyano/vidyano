@@ -188,6 +188,7 @@
         "packages/core/**/*.js": true,
         "packages/vidyano/web-components/*.d.ts": true,
         "packages/vidyano/**/*.js": true,
+        "packages/labs/**/*.js": true,
         "packages/vidyano/**/*.css": true,
         "packages/vidyano/**/*.css.map": true,
 		"packages/**/test/**/*.d.ts": true,
