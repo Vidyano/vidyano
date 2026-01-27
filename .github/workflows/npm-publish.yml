@@ -151,17 +151,17 @@ jobs:
             return ciPassed;
 
       - name: Run build for tests
-        if: steps.ci-status.outputs.passed != 'true'
+        if: steps.ci-status.outputs.passed != 'true' && !inputs.dry_run
         run: npm run build
 
       - name: Setup .NET
-        if: steps.ci-status.outputs.passed != 'true'
+        if: steps.ci-status.outputs.passed != 'true' && !inputs.dry_run
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
 
       - name: Start dev server and run tests
-        if: steps.ci-status.outputs.passed != 'true'
+        if: steps.ci-status.outputs.passed != 'true' && !inputs.dry_run
         run: |
           # Start server in background
           dotnet run --project dev/Dev.csproj --urls "http://0.0.0.0:5000" &
@@ -268,6 +268,9 @@ jobs:
         with:
           name: dist-all-${{ inputs.version }}
           path: .
+
+      - name: List downloaded artifacts
+        run: find . -type f | head -50
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
