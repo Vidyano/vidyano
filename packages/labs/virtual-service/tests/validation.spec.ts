@@ -887,3 +887,299 @@ test("NotEmpty rule rejects both null and empty string", async () => {
     expect(lastName).toBeDefined();
     expect(lastName!.validationError).toBe("This field cannot be empty");
 });
+
+// Translation tests
+
+test("uses default English messages when no translate function provided", async () => {
+    const service = new VirtualService();
+
+    service.registerPersistentObject({
+        type: "Person",
+        label: "Person",
+        stateBehavior: "StayInEdit",
+        attributes: [
+            {
+                name: "Email",
+                type: "String",
+                rules: "Required; IsEmail",
+                value: null
+            }
+        ]
+    });
+
+    await service.initialize();
+
+    const person = await service.getPersistentObject(null, "Person", "1");
+    await person.save();
+
+    const email = person.getAttribute("Email");
+    expect(email!.validationError).toBe("This field is required");
+});
+
+test("translates simple validation rules", async () => {
+    const translations: Record<string, string> = {
+        "Required": "Dit veld is verplicht",
+        "NotEmpty": "Dit veld mag niet leeg zijn",
+        "IsEmail": "E-mailformaat is ongeldig"
+    };
+
+    const service = new VirtualService();
+    service.registerMessageTranslator((key: string) => translations[key] || key);
+
+    service.registerPersistentObject({
+        type: "Person",
+        label: "Person",
+        stateBehavior: "StayInEdit",
+        attributes: [
+            {
+                name: "Email",
+                type: "String",
+                rules: "Required",
+                value: null
+            }
+        ]
+    });
+
+    await service.initialize();
+
+    const person = await service.getPersistentObject(null, "Person", "1");
+    await person.save();
+
+    const email = person.getAttribute("Email");
+    expect(email!.validationError).toBe("Dit veld is verplicht");
+});
+
+test("translates parameterized validation rules with positional params", async () => {
+    const service = new VirtualService();
+    service.registerMessageTranslator((key: string, ...params: any[]) => {
+        const templates: Record<string, string> = {
+            "MaxLength": `Maximale lengte is {0} tekens`,
+            "MinLength": `Minimale lengte is {0} tekens`,
+            "MaxValue": `Maximale waarde is {0}`,
+            "MinValue": `Minimale waarde is {0}`
+        };
+        const template = templates[key] || key;
+        // Simple positional replacement for testing
+        return template.replace(/\{(\d+)\}/g, (_, index) => String(params[index]));
+    });
+
+    service.registerPersistentObject({
+        type: "Person",
+        label: "Person",
+        stateBehavior: "StayInEdit",
+        attributes: [
+            {
+                name: "Name",
+                type: "String",
+                rules: "MaxLength(50)",
+                value: "A".repeat(51)
+            },
+            {
+                name: "Age",
+                type: "Number",
+                rules: "MinValue(18)",
+                value: 15
+            }
+        ]
+    });
+
+    await service.initialize();
+
+    const person = await service.getPersistentObject(null, "Person", "1");
+    await person.save();
+
+    const name = person.getAttribute("Name");
+    const age = person.getAttribute("Age");
+    expect(name!.validationError).toBe("Maximale lengte is 50 tekens");
+    expect(age!.validationError).toBe("Minimale waarde is 18");
+});
+
+test("translation function receives correct positional parameters", async () => {
+    let capturedCalls: Array<{key: string; params: any[]}> = [];
+
+    const service = new VirtualService();
+    service.registerMessageTranslator((key: string, ...params: any[]) => {
+        capturedCalls.push({ key, params });
+        return `${key}(${params.join(",")})`;
+    });
+
+    service.registerPersistentObject({
+        type: "Test",
+        label: "Test",
+        stateBehavior: "StayInEdit",
+        attributes: [
+            {
+                name: "Field1",
+                type: "String",
+                rules: "MaxLength(40)",
+                value: "A".repeat(50)
+            },
+            {
+                name: "Field2",
+                type: "Number",
+                rules: "MinValue(10)",
+                value: 5
+            }
+        ]
+    });
+
+    await service.initialize();
+
+    const obj = await service.getPersistentObject(null, "Test", "1");
+    await obj.save();
+
+    expect(capturedCalls).toContainEqual({ key: "MaxLength", params: [40] });
+    expect(capturedCalls).toContainEqual({ key: "MinValue", params: [10] });
+});
+
+test("translates multiple attributes with different rules in one save", async () => {
+    const service = new VirtualService();
+    service.registerMessageTranslator((key: string, ...params: any[]) => {
+        const translations: Record<string, string> = {
+            "Required": "Requerido",
+            "IsEmail": "Formato de correo inválido",
+            "MinLength": `Longitud mínima es {0} caracteres`
+        };
+        const template = translations[key] || key;
+        return template.replace(/\{(\d+)\}/g, (_, index) => String(params[index]));
+    });
+
+    service.registerPersistentObject({
+        type: "User",
+        label: "User",
+        stateBehavior: "StayInEdit",
+        attributes: [
+            {
+                name: "Username",
+                type: "String",
+                rules: "Required",
+                value: null
+            },
+            {
+                name: "Email",
+                type: "String",
+                rules: "IsEmail",
+                value: "invalid-email"
+            },
+            {
+                name: "Password",
+                type: "String",
+                rules: "MinLength(8)",
+                value: "short"
+            }
+        ]
+    });
+
+    await service.initialize();
+
+    const user = await service.getPersistentObject(null, "User", "1");
+    await user.save();
+
+    const username = user.getAttribute("Username");
+    const email = user.getAttribute("Email");
+    const password = user.getAttribute("Password");
+    expect(username!.validationError).toBe("Requerido");
+    expect(email!.validationError).toBe("Formato de correo inválido");
+    expect(password!.validationError).toBe("Longitud mínima es 8 caracteres");
+});
+
+test("custom rule can use context.translate()", async () => {
+    const service = new VirtualService();
+    service.registerMessageTranslator((key: string, ...params: any[]) => {
+        const translations: Record<string, string> = {
+            "MatchesPassword": "Les mots de passe ne correspondent pas",
+            "MinimumAge": `L'âge minimum est {0}`
+        };
+        const template = translations[key] || key;
+        return template.replace(/\{(\d+)\}/g, (_, index) => String(params[index]));
+    });
+
+    service.registerBusinessRule("MatchesPassword", (value: any, context: RuleValidationContext) => {
+        if (!value)
+            return;
+
+        const passwordValue = context.persistentObject.getAttributeValue("Password");
+        if (value !== passwordValue)
+            throw new Error(context.translate("MatchesPassword"));
+    });
+
+    service.registerBusinessRule("MinimumAge", (value: any, context: RuleValidationContext, minAge: number) => {
+        if (!value)
+            return;
+
+        const age = Number(value);
+        if (age < minAge)
+            throw new Error(context.translate("MinimumAge", minAge));
+    });
+
+    service.registerPersistentObject({
+        type: "User",
+        label: "User",
+        stateBehavior: "StayInEdit",
+        attributes: [
+            {
+                name: "Password",
+                type: "String",
+                value: "secret123"
+            },
+            {
+                name: "ConfirmPassword",
+                type: "String",
+                rules: "MatchesPassword",
+                value: "different123"
+            },
+            {
+                name: "Age",
+                type: "Number",
+                rules: "MinimumAge(18)",
+                value: 15
+            }
+        ]
+    });
+
+    await service.initialize();
+
+    const user = await service.getPersistentObject(null, "User", "1");
+    await user.save();
+
+    const confirmPassword = user.getAttribute("ConfirmPassword");
+    const age = user.getAttribute("Age");
+    expect(confirmPassword!.validationError).toBe("Les mots de passe ne correspondent pas");
+    expect(age!.validationError).toBe("L'âge minimum est 18");
+});
+
+test("custom rule can still throw errors directly without translation (backward compatibility)", async () => {
+    const service = new VirtualService();
+    service.registerMessageTranslator((key: string) => `Translated: ${key}`);
+
+    service.registerBusinessRule("IsPhoneNumber", (value: any, _context: RuleValidationContext) => {
+        if (!value)
+            return;
+
+        const phoneRegex = /^\+?[\d\s-()]+$/;
+        if (!phoneRegex.test(String(value)))
+            throw new Error("Invalid phone number format");
+    });
+
+    service.registerPersistentObject({
+        type: "Contact",
+        label: "Contact",
+        stateBehavior: "StayInEdit",
+        attributes: [
+            {
+                name: "Phone",
+                type: "String",
+                rules: "IsPhoneNumber",
+                value: "abc123"
+            }
+        ]
+    });
+
+    await service.initialize();
+
+    const contact = await service.getPersistentObject(null, "Contact", "1");
+    await contact.save();
+
+    const phone = contact.getAttribute("Phone");
+    expect(phone!.validationError).toBe("Invalid phone number format");
+});

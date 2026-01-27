@@ -1,6 +1,6 @@
 import { Service, Application } from "@vidyano/core";
 import { VirtualServiceHooks } from "./virtual-service-hooks.js";
-import { VirtualPersistentObjectConfig, VirtualQueryConfig, ActionConfig } from "./types.js";
+import { VirtualPersistentObjectConfig, VirtualQueryConfig, ActionConfig, TranslateFunction } from "./types.js";
 import { RuleValidatorFn } from "./business-rules.js";
 import { VirtualPersistentObjectActions } from "./virtual-persistent-object-actions.js";
 
@@ -26,7 +26,7 @@ export class VirtualService extends Service {
 
     /**
      * Creates a new VirtualService instance.
-     * @param hooks - Optional custom VirtualServiceHooks. If not provided, a default instance is created.
+     * @param hooks - Optional custom hooks instance.
      */
     constructor(hooks?: VirtualServiceHooks) {
         super("http://virtual.local", hooks ?? new VirtualServiceHooks(), true);
@@ -105,6 +105,17 @@ export class VirtualService extends Service {
     registerPersistentObjectActions(type: string, ActionsClass: typeof VirtualPersistentObjectActions): void {
         this.#ensureNotInitialized();
         this.virtualHooks.registerPersistentObjectActions(type, ActionsClass);
+    }
+
+    /**
+     * Registers a message translator for translating system messages.
+     * Must be called before initialize().
+     * @param translate - The translation function.
+     * @throws Error if called after initialize().
+     */
+    registerMessageTranslator(translate: TranslateFunction): void {
+        this.#ensureNotInitialized();
+        this.virtualHooks.setTranslate(translate);
     }
 
     /**

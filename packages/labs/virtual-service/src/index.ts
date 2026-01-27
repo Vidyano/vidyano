@@ -9,7 +9,8 @@ export type {
     RuleValidationContext,
     VirtualPersistentObjectConfig,
     VirtualQueryConfig,
-    VirtualQueryExecuteResult
+    VirtualQueryExecuteResult,
+    TranslateFunction
 } from "./types.js";
 export type { RuleValidatorFn } from "./business-rules.js";
 export { VirtualPersistentObjectActions } from "./virtual-persistent-object-actions.js";

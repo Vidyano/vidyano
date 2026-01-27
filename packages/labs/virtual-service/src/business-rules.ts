@@ -1,5 +1,5 @@
 import { Dto } from "@vidyano/core";
-import type { RuleValidationContext } from "./types.js";
+import type { RuleValidationContext, TranslateFunction } from "./types.js";
 import { fromServiceValue, toServiceValue } from "./virtual-service-data-type.js";
 import { createVirtualPersistentObject, createVirtualPersistentObjectAttribute, type ConversionContext } from "./virtual-persistent-object.js";
 
@@ -22,8 +22,11 @@ export type RuleValidatorFn = (value: any, context: RuleValidationContext, ...pa
 export class BusinessRuleValidator {
     #builtInRules = new Map<string, RuleValidatorFn>();
     #customRules = new Map<string, RuleValidatorFn>();
+    #translate: TranslateFunction;
 
     constructor() {
+        this.#translate = this.#defaultTranslate;
+
         // Register all built-in rules
         this.#builtInRules.set("IsBase64", this.#validateIsBase64.bind(this));
         this.#builtInRules.set("IsEmail", this.#validateIsEmail.bind(this));
@@ -36,6 +39,35 @@ export class BusinessRuleValidator {
         this.#builtInRules.set("MinValue", this.#validateMinValue.bind(this));
         this.#builtInRules.set("NotEmpty", this.#validateNotEmpty.bind(this));
         this.#builtInRules.set("Required", this.#validateRequired.bind(this));
+    }
+
+    /**
+     * Sets the translation function
+     */
+    setTranslate(translate: TranslateFunction): void {
+        this.#translate = translate;
+    }
+
+    /**
+     * Default English translations - used when no translate function provided
+     */
+    #defaultTranslate(key: string, ...params: any[]): string {
+        const defaults: Record<string, (...args: any[]) => string> = {
+            "Required": () => "This field is required",
+            "NotEmpty": () => "This field cannot be empty",
+            "IsEmail": () => "Email format is invalid",
+            "IsUrl": () => "Value must be a valid URL",
+            "MaxLength": (max: number) => `Maximum length is ${max} characters`,
+            "MinLength": (min: number) => `Minimum length is ${min} characters`,
+            "MaxValue": (max: number) => `Maximum value is ${max}`,
+            "MinValue": (min: number) => `Minimum value is ${min}`,
+            "IsBase64": () => "Value must be a valid base64 string",
+            "IsRegex": () => "Value must be a valid regular expression",
+            "IsWord": () => "Value must contain only word characters"
+        };
+
+        const translator = defaults[key];
+        return translator ? translator(...params) : key;
     }
 
     /**
@@ -72,7 +104,8 @@ export class BusinessRuleValidator {
         // Create validation context
         const context: RuleValidationContext = {
             persistentObject: wrappedPo,
-            attribute: wrappedAttr
+            attribute: wrappedAttr,
+            translate: this.#translate
         };
 
         // Get the converted value (e.g., boolean from "True"/"False", number from string)
@@ -161,66 +194,66 @@ export class BusinessRuleValidator {
 
     // Built-in validators - throw errors instead of returning strings
 
-    #validateIsBase64(value: any, context: RuleValidationContext): void {
+    #validateIsBase64(value: any, _context: RuleValidationContext): void {
         if (value == null || value === "")
             return;
 
         const base64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
         if (!base64Regex.test(String(value)))
-            throw new Error("Value must be a valid base64 string");
+            throw new Error(this.#translate("IsBase64"));
     }
 
-    #validateIsEmail(value: any, context: RuleValidationContext): void {
+    #validateIsEmail(value: any, _context: RuleValidationContext): void {
         if (value == null || value === "")
             return;
 
         // Only allow ASCII characters in email addresses
         const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
         if (!emailRegex.test(String(value)))
-            throw new Error("Email format is invalid");
+            throw new Error(this.#translate("IsEmail"));
     }
 
-    #validateIsRegex(value: any, context: RuleValidationContext): void {
+    #validateIsRegex(value: any, _context: RuleValidationContext): void {
         if (value == null || value === "")
             return;
 
         try {
             new RegExp(String(value));
         } catch {
-            throw new Error("Value must be a valid regular expression");
+            throw new Error(this.#translate("IsRegex"));
         }
     }
 
-    #validateIsUrl(value: any, context: RuleValidationContext): void {
+    #validateIsUrl(value: any, _context: RuleValidationContext): void {
         if (value == null || value === "")
             return;
 
         try {
             new URL(String(value));
         } catch {
-            throw new Error("Value must be a valid URL");
+            throw new Error(this.#translate("IsUrl"));
         }
     }
 
-    #validateIsWord(value: any, context: RuleValidationContext): void {
+    #validateIsWord(value: any, _context: RuleValidationContext): void {
         if (value == null || value === "")
             return;
 
         const wordRegex = /^\w+$/;
         if (!wordRegex.test(String(value)))
-            throw new Error("Value must contain only word characters");
+            throw new Error(this.#translate("IsWord"));
     }
 
-    #validateMaxLength(value: any, context: RuleValidationContext, maxLength: number): void {
+    #validateMaxLength(value: any, _context: RuleValidationContext, maxLength: number): void {
         if (value == null || value === "")
             return;
 
         const length = String(value).length;
         if (length > maxLength)
-            throw new Error(`Maximum length is ${maxLength} characters`);
+            throw new Error(this.#translate("MaxLength", maxLength));
     }
 
-    #validateMaxValue(value: any, context: RuleValidationContext, maximum: number): void {
+    #validateMaxValue(value: any, _context: RuleValidationContext, maximum: number): void {
         if (value == null || value === "")
             return;
 
@@ -229,19 +262,19 @@ export class BusinessRuleValidator {
             throw new Error("Value must be a number");
 
         if (num > maximum)
-            throw new Error(`Maximum value is ${maximum}`);
+            throw new Error(this.#translate("MaxValue", maximum));
     }
 
-    #validateMinLength(value: any, context: RuleValidationContext, minLength: number): void {
+    #validateMinLength(value: any, _context: RuleValidationContext, minLength: number): void {
         if (value == null || value === "")
             return;
 
         const length = String(value).length;
         if (length < minLength)
-            throw new Error(`Minimum length is ${minLength} characters`);
+            throw new Error(this.#translate("MinLength", minLength));
     }
 
-    #validateMinValue(value: any, context: RuleValidationContext, minimum: number): void {
+    #validateMinValue(value: any, _context: RuleValidationContext, minimum: number): void {
         if (value == null || value === "")
             return;
 
@@ -250,16 +283,16 @@ export class BusinessRuleValidator {
             throw new Error("Value must be a number");
 
         if (num < minimum)
-            throw new Error(`Minimum value is ${minimum}`);
+            throw new Error(this.#translate("MinValue", minimum));
     }
 
-    #validateRequired(value: any, context: RuleValidationContext): void {
+    #validateRequired(value: any, _context: RuleValidationContext): void {
         if (value == null)
-            throw new Error("This field is required");
+            throw new Error(this.#translate("Required"));
     }
 
-    #validateNotEmpty(value: any, context: RuleValidationContext): void {
+    #validateNotEmpty(value: any, _context: RuleValidationContext): void {
         if (value == null || value === "" || (typeof value === "string" && value.trim() === ""))
-            throw new Error("This field cannot be empty");
+            throw new Error(this.#translate("NotEmpty"));
     }
 }

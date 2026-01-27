@@ -223,6 +223,18 @@ export type ActionContext = {
 };
 
 /**
+ * Translation function for system messages
+ * @param key - The message key (e.g., "Required", "MaxLength")
+ * @param params - Positional parameters for the message
+ * @returns Translated message with parameters interpolated
+ *
+ * Example:
+ * translate("MaxLength", 50) => "Maximum length is 50 characters"
+ * translate("MinValue", 18) => "Minimum value is 18"
+ */
+export type TranslateFunction = (key: string, ...params: any[]) => string;
+
+/**
  * Context provided to business rule validators for accessing the persistent object
  */
 export type RuleValidationContext = {
@@ -235,6 +247,11 @@ export type RuleValidationContext = {
      * The attribute being validated (wrapped with helper methods)
      */
     attribute: VirtualPersistentObjectAttribute;
+
+    /**
+     * Translation function for system messages
+     */
+    translate: TranslateFunction;
 };
 
 /**
@@ -295,6 +312,16 @@ export type VirtualQueryExecuteResult = {
      * Total number of items matching the query (before pagination)
      */
     totalItems: number;
+};
+
+/**
+ * Options for configuring the VirtualService
+ */
+export type VirtualServiceOptions = {
+    /**
+     * Optional translation function for validation messages
+     */
+    translate?: TranslateFunction;
 };
 
 /**

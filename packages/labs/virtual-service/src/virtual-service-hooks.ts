@@ -1,5 +1,5 @@
 import { ServiceHooks, Dto } from "@vidyano/core";
-import { VirtualPersistentObjectConfig, VirtualQueryConfig, ActionConfig, ActionHandler } from "./types.js";
+import { VirtualPersistentObjectConfig, VirtualQueryConfig, ActionConfig, ActionHandler, TranslateFunction } from "./types.js";
 import { ConversionContext } from "./virtual-persistent-object.js";
 import { VirtualPersistentObjectRegistry } from "./registry/virtual-persistent-object-registry.js";
 import { VirtualQueryRegistry } from "./registry/virtual-query-registry.js";
@@ -41,6 +41,13 @@ export class VirtualServiceHooks extends ServiceHooks {
         this.#actionDefinitions.set("Remove", { name: "Remove", displayName: "Remove", isPinned: false });
         this.#actionDefinitions.set("Save", { name: "Save", displayName: "Save", isPinned: false });
         this.#actionDefinitions.set("SelectReference", { name: "SelectReference", displayName: "Select", isPinned: false });
+    }
+
+    /**
+     * Sets the translation function for system messages
+     */
+    setTranslate(translate: TranslateFunction): void {
+        this.#validator.setTranslate(translate);
     }
 
     /**

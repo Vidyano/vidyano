@@ -396,6 +396,115 @@ service.registerPersistentObject({
 - Return nothing (or undefined) if validation passes
 - Cannot override built-in rules
 
+### Translating Validation Messages
+
+Provide custom translations for validation error messages to support multiple languages:
+
+```typescript
+import { VirtualService } from "@vidyano-labs/virtual-service";
+
+// Define your translations
+const translations: Record<string, string> = {
+    "Required": "Dit veld is verplicht",
+    "NotEmpty": "Dit veld mag niet leeg zijn",
+    "IsEmail": "E-mailformaat is ongeldig",
+    "MaxLength": "Maximale lengte is {0} tekens",
+    "MinLength": "Minimale lengte is {0} tekens",
+    "MaxValue": "Maximale waarde is {0}",
+    "MinValue": "Minimale waarde is {0}"
+};
+
+// Create service and register translation function
+const service = new VirtualService();
+service.registerMessageTranslator((key: string, ...params: any[]) => {
+    const template = translations[key] || key;
+    // Use String.format from @vidyano/core for {0}, {1} placeholders
+    return String.format(template, ...params);
+});
+
+service.registerPersistentObject({
+    type: "Person",
+    attributes: [
+        {
+            name: "Email",
+            type: "String",
+            rules: "Required; MaxLength(100); IsEmail"
+        }
+    ]
+});
+
+await service.initialize();
+
+const person = await service.getPersistentObject(null, "Person", null, true);
+await person.save();
+
+// Error message is now translated
+console.log(person.getAttribute("Email").validationError);
+// "Dit veld is verplicht"
+```
+
+**Translation function signature:**
+```typescript
+type TranslateFunction = (key: string, ...params: any[]) => string;
+```
+
+**Parameters:**
+- `key` - The validation rule name (e.g., "Required", "MaxLength")
+- `params` - Positional parameters for the message (e.g., max length value)
+
+**How it works:**
+1. Built-in validators call `translate(key, ...params)` instead of using hardcoded messages
+2. Your translate function receives the rule name and any parameters
+3. Return the translated message with parameters interpolated
+4. If no translate function is provided, default English messages are used
+
+**Custom rules can also use translation:**
+
+```typescript
+const service = new VirtualService();
+service.registerMessageTranslator((key: string, ...params: any[]) => {
+    const translations: Record<string, string> = {
+        "MinimumAge": "L'âge minimum est {0}",
+        "MatchesPassword": "Les mots de passe ne correspondent pas"
+    };
+    const template = translations[key] || key;
+    return String.format(template, ...params);
+});
+
+// Custom rule using translation
+service.registerBusinessRule("MinimumAge", (value: any, context: RuleValidationContext, minAge: number) => {
+    if (!value)
+        return;
+
+    const age = Number(value);
+    if (age < minAge)
+        throw new Error(context.translate("MinimumAge", minAge));
+});
+
+// Custom rule can still throw direct errors (backward compatible)
+service.registerBusinessRule("IsPhoneNumber", (value: any, _context: RuleValidationContext) => {
+    if (!value)
+        return;
+
+    const phoneRegex = /^\+?[\d\s-()]+$/;
+    if (!phoneRegex.test(String(value)))
+        throw new Error("Invalid phone number format");  // Not translated
+});
+```
+
+**Built-in rule keys:**
+- `Required` - Field is required (no params)
+- `NotEmpty` - Field cannot be empty (no params)
+- `IsEmail` - Invalid email format (no params)
+- `IsUrl` - Invalid URL format (no params)
+- `MaxLength` - Maximum length exceeded (param: max length)
+- `MinLength` - Minimum length not met (param: min length)
+- `MaxValue` - Maximum value exceeded (param: max value)
+- `MinValue` - Minimum value not met (param: min value)
+- `IsBase64` - Invalid base64 string (no params)
+- `IsRegex` - Invalid regex pattern (no params)
+- `IsWord` - Invalid word characters (no params)
+
 ## Queries
 
 ### Basic Query Registration
@@ -1091,6 +1200,7 @@ test("search and sort query results", async () => {
 | `registerAction(config)` | Register a custom action |
 | `registerBusinessRule(name, validator)` | Register a validation rule |
 | `registerPersistentObjectActions(type, Class)` | Register lifecycle handlers |
+| `registerMessageTranslator(translateFn)` | Register message translator for system messages |
 | `initialize()` | Finalize registrations |
 
 ### VirtualPersistentObjectActions
@@ -1131,7 +1241,9 @@ import type {
     ActionArgs,
     ActionContext,
     RuleValidatorFn,
-    RuleValidationContext
+    RuleValidationContext,
+    TranslateFunction,
+    TranslateFunction
 } from "@vidyano-labs/virtual-service";
 ```
 

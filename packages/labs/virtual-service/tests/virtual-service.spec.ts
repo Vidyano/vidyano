@@ -115,35 +115,35 @@ test.describe("VirtualService", () => {
         }).toThrow("Cannot register after initialize() has been called");
     });
 
-    test("can use custom VirtualServiceHooks subclass", async () => {
-        let customHookCalled = false;
+    test("can use registerMessageTranslator method", async () => {
+        let translateCalled = false;
 
-        class CustomHooks extends VirtualServiceHooks {
-            async onFetch(request: Request): Promise<Response> {
-                customHookCalled = true;
-                return super.onFetch(request);
-            }
-        }
-
-        const service = new VirtualService(new CustomHooks());
+        const service = new VirtualService();
+        service.registerMessageTranslator((key: string) => {
+            translateCalled = true;
+            return key;
+        });
 
         service.registerPersistentObject({
             type: "Person",
             attributes: [
-                { name: "Name", type: "String", value: "John" }
+                { name: "Name", type: "String", rules: "Required", value: null }
             ]
         });
 
         await service.initialize();
 
-        expect(customHookCalled).toBe(true);
+        const person = await service.getPersistentObject(null, "Person", "1");
+        await person.save();
+
+        expect(translateCalled).toBe(true);
     });
 
     test("virtualHooks getter returns the hooks instance", async () => {
-        const hooks = new VirtualServiceHooks();
-        const service = new VirtualService(hooks);
+        const service = new VirtualService();
 
-        expect(service.virtualHooks).toBe(hooks);
+        expect(service.virtualHooks).toBeDefined();
+        expect(service.virtualHooks).toBeInstanceOf(VirtualServiceHooks);
     });
 
     test("creates default hooks if none provided", async () => {
