@@ -9,7 +9,7 @@ test("creates attributes with correct defaults", async () => {
         type: "Person",
         attributes: [
             { name: "FirstName" },
-            { name: "Email", type: "String", isRequired: true }
+            { name: "Email", type: "String", rules: "Required" }
         ]
     });
 
