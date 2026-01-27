@@ -339,7 +339,6 @@ async function buildPersistentObjectDto(
     // Build attributes using existing DTO type
     const attributes = await Promise.all(
         config.attributes
-            .filter(attr => shouldIncludeAttribute(attr, isNew))
             .map((attr, index) => buildAttributeDto(attr, index, queryRegistry))
     );
 
@@ -448,23 +447,4 @@ async function buildAttributeDto(
     }
 
     return baseDto;
-}
-
-/**
- * Determines if an attribute should be included based on visibility and isNew flag
- */
-function shouldIncludeAttribute(attr: VirtualPersistentObjectAttributeConfig, isNew: boolean): boolean {
-    if (!attr.visibility || attr.visibility === "Always")
-        return true;
-    if (attr.visibility === "Never")
-        return false;
-    if (attr.visibility === "New")
-        return isNew;
-    if (attr.visibility === "Read")
-        return !isNew;
-    // Handle compound visibilities like "Read, Query"
-    const parts = attr.visibility.split(",").map(p => p.trim());
-    if (isNew)
-        return parts.includes("New");
-    return parts.includes("Read");
 }

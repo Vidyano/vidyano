@@ -66,19 +66,19 @@ test("handles attribute visibility for new vs existing objects", async () => {
 
     await service.initialize();
 
-    // Test new object
+    // Test new object - all attributes should be present with correct visibility
     const newPerson = await service.getPersistentObject(null, "Person", undefined, true);
-    expect(newPerson.getAttribute("AlwaysVisible")).toBeDefined();
-    expect(newPerson.getAttribute("NewOnly")).toBeDefined();
-    expect(newPerson.getAttribute("ReadOnly")).toBeUndefined();
-    expect(newPerson.getAttribute("NeverVisible")).toBeUndefined();
+    expect(newPerson.getAttribute("AlwaysVisible")?.visibility).toBe("Always");
+    expect(newPerson.getAttribute("NewOnly")?.visibility).toBe("New");
+    expect(newPerson.getAttribute("ReadOnly")?.visibility).toBe("Read");
+    expect(newPerson.getAttribute("NeverVisible")?.visibility).toBe("Never");
 
-    // Test existing object
+    // Test existing object - all attributes should be present with correct visibility
     const existingPerson = await service.getPersistentObject(null, "Person", "123", false);
-    expect(existingPerson.getAttribute("AlwaysVisible")).toBeDefined();
-    expect(existingPerson.getAttribute("NewOnly")).toBeUndefined();
-    expect(existingPerson.getAttribute("ReadOnly")).toBeDefined();
-    expect(existingPerson.getAttribute("NeverVisible")).toBeUndefined();
+    expect(existingPerson.getAttribute("AlwaysVisible")?.visibility).toBe("Always");
+    expect(existingPerson.getAttribute("NewOnly")?.visibility).toBe("New");
+    expect(existingPerson.getAttribute("ReadOnly")?.visibility).toBe("Read");
+    expect(existingPerson.getAttribute("NeverVisible")?.visibility).toBe("Never");
 });
 
 test("calls onRefresh handler when attribute triggers refresh", async () => {
@@ -151,4 +151,46 @@ test("marks attributes as changed after refresh", async () => {
     const firstName = refreshed.getAttribute("FirstName");
     expect(firstName.value).toBe("Updated");
     expect(firstName.isValueChanged).toBe(true);
+});
+
+test("changes attribute visibility in onRefresh handler", async () => {
+    const service = new VirtualService();
+
+    service.registerPersistentObject({
+        type: "Person",
+        attributes: [
+            { name: "TriggerField", type: "String", triggersRefresh: true },
+            { name: "ConditionalField", type: "String", visibility: "Never" }
+        ]
+    });
+
+    service.registerPersistentObjectActions("Person", class extends VirtualPersistentObjectActions {
+        async onRefresh(obj: VirtualPersistentObject, attribute: VirtualPersistentObjectAttribute | undefined): Promise<VirtualPersistentObject> {
+            if (attribute?.name === "TriggerField") {
+                const conditionalField = obj.getAttribute("ConditionalField");
+                if (conditionalField) {
+                    const triggerValue = attribute.getValue() as string;
+                    // Show ConditionalField when TriggerField has a value
+                    conditionalField.visibility = triggerValue ? "Always" : "Never";
+                }
+            }
+            return obj;
+        }
+    });
+
+    await service.initialize();
+
+    const person = await service.getPersistentObject(null, "Person");
+
+    // Initially, ConditionalField should not be visible (visibility: "Never")
+    const conditionalFieldBefore = person.attributes?.find(a => a.name === "ConditionalField");
+    expect(conditionalFieldBefore?.visibility).toBe("Never");
+
+    // Change TriggerField value - this should trigger refresh and change visibility
+    const triggerField = person.getAttribute("TriggerField");
+    await triggerField.setValue("some value", true); // allowRefresh = true
+
+    // After refresh, ConditionalField visibility should be changed to "Always"
+    const conditionalFieldAfter = person.attributes?.find(a => a.name === "ConditionalField");
+    expect(conditionalFieldAfter?.visibility).toBe("Always");
 });
