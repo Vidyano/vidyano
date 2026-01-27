@@ -1,6 +1,12 @@
 {
 	"name": "C# (.NET)",
 	"runArgs": ["--init"],
+	"mounts": [
+		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+	],
+	"features": {
+		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+	},
 	"build": {
 		"dockerfile": "Dockerfile"
 	},
@@ -17,6 +23,7 @@
 	},
 	"forwardPorts": [5000, 5001, 8081],
 	"postCreateCommand": "npm install && npx playwright install chrome --with-deps && dotnet dev-certs https && dotnet build dev/Dev.csproj",
+	"postStartCommand": "sudo chgrp docker /var/run/docker.sock",
 	"remoteUser": "vscode",
 
 	// Unset DISPLAY to prevent interference with Playwright

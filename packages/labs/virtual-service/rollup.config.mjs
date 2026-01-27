@@ -4,16 +4,17 @@ import { dts } from "rollup-plugin-dts";
 export default [
     // Declaration bundle
     {
-        input: 'src/index.ts',
+        input: 'rollup/index.d.ts',
         external: ["@vidyano/core"],
         plugins: [
             dts({ respectExternal: true })
         ],
-        output: [{ file: "dist/index.d.ts", format: "es" }]
+        output: [{ file: "dist/index.d.ts", format: "es" }],
+        watch: false
     },
-    // Implementation bundle (from compiled JS)
+    // Implementation bundle
     {
-        input: 'dist/index.js',
+        input: 'src/index.js',
         external: ["@vidyano/core"],
         plugins: [
             nodeResolve()

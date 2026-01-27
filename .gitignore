@@ -195,6 +195,14 @@ PublishScripts/
 # except labs/, which contains @vidyano-labs packages
 !packages/labs/
 !packages/labs/**
+# except placeholders/, which contains npm namespace placeholder packages
+!packages/placeholders/
+!packages/placeholders/**
+# except core/ and vidyano/, which contain the main packages
+!packages/core/
+!packages/core/**
+!packages/vidyano/
+!packages/vidyano/**
 # Uncomment if necessary however generally it will be regenerated when needed
 #!**/[Pp]ackages/repositories.config
 # NuGet v3's project.json files produces more ignorable files
@@ -356,17 +364,27 @@ dist/**/*.js
 dist/**/*.d.ts
 dist/**/*.tgz
 
-# Package build outputs
-packages/**/dist/
-rollup
+# Package build outputs (ignore contents, keep package.json and README.md)
+packages/**/dist/*
+!packages/**/dist/package.json
+!packages/**/dist/README.md
+packages/**/rollup/
 
-src/vidyano/index.js
-src/vidyano/libs/**/*.js
-src/vidyano/web-components/**/*.d.ts
-src/vidyano/web-components/**/*.js
-src/vidyano/web-components/**/*.css
-src/vidyano/web-components/**/*.css.map
-src/core/**/*.js
+# TypeScript generated directories (from path aliases)
+packages/vidyano/core/
+packages/vidyano/vidyano/
+
+packages/vidyano/src/index.js
+packages/vidyano/src/libs/**/*.js
+packages/vidyano/src/web-components/**/*.d.ts
+packages/vidyano/src/web-components/**/*.js
+packages/vidyano/src/web-components/**/*.css
+packages/vidyano/src/web-components/**/*.css.map
+packages/vidyano/tests/**/*.js
+packages/core/src/**/*.js
+packages/core/src/**/*.d.ts
+packages/labs/**/src/**/*.js
+packages/labs/**/src/**/*.d.ts
 test/**/*.d.ts
 test/**/*.js
 test/**/*.css

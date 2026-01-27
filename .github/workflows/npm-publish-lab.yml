@@ -1,0 +1,215 @@
+name: Publish Lab Package to NPM
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'Lab package to publish'
+        required: true
+        type: choice
+        options:
+          - virtual-service
+      version:
+        description: 'Version to publish (e.g., 0.1.0 or 0.1.0-pre.1)'
+        required: true
+        type: string
+      dry_run:
+        description: 'Dry run (test without publishing or committing)'
+        required: false
+        type: boolean
+        default: true
+
+concurrency:
+  group: publish-lab-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build & Publish
+    runs-on: ubuntu-latest
+    environment: npm-production
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Remove always-auth from .npmrc
+        run: npm config delete always-auth --location=user 2>/dev/null || true
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Set package variables
+        id: pkg
+        run: |
+          case "${{ inputs.package }}" in
+            virtual-service)
+              echo "name=@vidyano-labs/virtual-service" >> $GITHUB_OUTPUT
+              echo "path=packages/labs/virtual-service" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "❌ Unknown package: ${{ inputs.package }}"
+              exit 1
+              ;;
+          esac
+
+      - name: Validate version
+        shell: bash
+        run: |
+          VERSION_RAW="${{ inputs.version }}"
+          VERSION=$(node -e "const s=require('semver');const v=s.valid(process.argv[1])||s.valid(s.coerce(process.argv[1])); if(!v){console.error('Invalid semver:', process.argv[1]); process.exit(1)}; console.log(v)" "$VERSION_RAW")
+          echo "✅ Valid version: $VERSION"
+
+      - name: Determine npm tag
+        id: npm-tag
+        shell: bash
+        run: |
+          VERSION="${{ inputs.version }}"
+          if node -e "const s=require('semver');process.exit(s.prerelease(process.argv[1])?0:1)" "$VERSION"; then
+            echo "tag=next" >> $GITHUB_OUTPUT
+            echo "is_stable=false" >> $GITHUB_OUTPUT
+            echo "Publishing as prerelease with tag: next"
+          else
+            echo "tag=latest" >> $GITHUB_OUTPUT
+            echo "is_stable=true" >> $GITHUB_OUTPUT
+            echo "Publishing as stable with tag: latest"
+          fi
+
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      - name: Detect act environment
+        id: detect-act
+        run: echo "is_act=${{ env.ACT && 'true' || 'false' }}" >> $GITHUB_OUTPUT
+
+      - name: Build @vidyano/core (dependency)
+        run: |
+          npm run build:ts:core
+          npm run build:core
+
+      - name: Build lab package
+        run: |
+          npm run build:ts:${{ inputs.package }}
+          npm run build -w ${{ steps.pkg.outputs.name }}
+
+      - name: Verify build artifacts
+        run: |
+          PKG_PATH="${{ steps.pkg.outputs.path }}"
+          echo "Verifying ${{ steps.pkg.outputs.name }} build outputs..."
+          test -f "$PKG_PATH/dist/index.js" || { echo "❌ $PKG_PATH/dist/index.js missing"; exit 1; }
+          test -f "$PKG_PATH/dist/index.d.ts" || { echo "❌ $PKG_PATH/dist/index.d.ts missing"; exit 1; }
+          test -f "$PKG_PATH/dist/package.json" || { echo "❌ $PKG_PATH/dist/package.json missing"; exit 1; }
+          echo "✅ All build artifacts verified successfully"
+
+      - name: Update dist package version
+        run: |
+          PKG_PATH="${{ steps.pkg.outputs.path }}/dist/package.json"
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('$PKG_PATH', 'utf8'));
+            pkg.version = '${{ inputs.version }}';
+            pkg.gitHash = '${{ github.sha }}';
+            fs.writeFileSync('$PKG_PATH', JSON.stringify(pkg, null, 2) + '\n');
+          "
+          echo "✅ Updated version in $PKG_PATH"
+
+      - name: Copy README to dist
+        run: |
+          PKG_PATH="${{ steps.pkg.outputs.path }}"
+          if [ -f "$PKG_PATH/README.md" ]; then
+            cp "$PKG_PATH/README.md" "$PKG_PATH/dist/README.md"
+            echo "✅ Copied README.md to dist"
+          fi
+
+      - name: List package contents
+        run: |
+          PKG_PATH="${{ steps.pkg.outputs.path }}/dist"
+          echo "📦 Files that will be published:"
+          cd "$PKG_PATH"
+          npm pack --dry-run 2>&1 | grep -E "^npm notice" || npm pack --dry-run
+
+      - name: Verify package.json version
+        shell: bash
+        run: |
+          PKG_PATH="${{ steps.pkg.outputs.path }}/dist/package.json"
+          V_IN="${{ inputs.version }}"
+          node -e "const fs=require('fs');const p='$PKG_PATH';const want=process.argv[1];const v=JSON.parse(fs.readFileSync(p,'utf8')).version; if(v!==want){console.error('❌',p,'has wrong version',v,'!=',want); process.exit(1)}" "$V_IN"
+          echo "✅ package.json version OK"
+
+      - name: Fail early if version already exists
+        shell: bash
+        run: |
+          PKG="${{ steps.pkg.outputs.name }}"
+          WANT="${{ inputs.version }}"
+          if [ -n "$(npm view "$PKG@$WANT" version 2>/dev/null || echo "")" ]; then
+            echo "❌ $PKG@$WANT already exists on npm"; exit 1
+          fi
+          echo "✅ $PKG@$WANT does not exist yet"
+
+      - name: Verify version not downgrading tags
+        shell: bash
+        run: |
+          NEW_VERSION="${{ inputs.version }}"
+          TAG="${{ steps.npm-tag.outputs.tag }}"
+          PKG="${{ steps.pkg.outputs.name }}"
+
+          echo "Checking $PKG..."
+          echo "  Checking tag: $TAG"
+          CURRENT_VERSION=$(npm view "$PKG@$TAG" version 2>/dev/null || echo "")
+          if [ -z "$CURRENT_VERSION" ]; then
+            echo "    Tag '$TAG' doesn't exist yet - OK"
+          else
+            echo "    Current: $CURRENT_VERSION"
+            echo "    New:     $NEW_VERSION"
+            if ! node -e "const s=require('semver');process.exit(s.gt(process.argv[1], process.argv[2])?0:1)" "$NEW_VERSION" "$CURRENT_VERSION"; then
+              echo "    ❌ ERROR: Would downgrade tag '$TAG' for $PKG"
+              exit 1
+            fi
+            echo "    ✅ OK (new version is higher)"
+          fi
+
+          echo "✅ No version downgrades detected for $PKG"
+
+      - name: Publish ${{ steps.pkg.outputs.name }}
+        shell: bash
+        run: |
+          cd "${{ steps.pkg.outputs.path }}/dist"
+          TAG="${{ steps.npm-tag.outputs.tag }}"
+          PKG="${{ steps.pkg.outputs.name }}"
+
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            FLAGS="--dry-run"
+            echo "🔍 DRY RUN: Would publish $PKG with tag $TAG"
+          else
+            FLAGS=""
+            echo "🚀 Publishing $PKG with tag $TAG"
+          fi
+
+          npm publish $FLAGS --provenance --access public --tag "$TAG"
+
+      - name: Create and push git tag (stable releases only)
+        if: ${{ !inputs.dry_run && steps.npm-tag.outputs.is_stable == 'true' && steps.detect-act.outputs.is_act != 'true' }}
+        run: |
+          VERSION="${{ inputs.version }}"
+          PKG="${{ inputs.package }}"
+          TAG_NAME="labs/$PKG/v$VERSION"
+          echo "✅ Creating git tag $TAG_NAME for stable release"
+          git tag "$TAG_NAME"
+          git push origin "$TAG_NAME"

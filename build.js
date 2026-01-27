@@ -15,19 +15,24 @@ if (!gitHash) {
     process.exit(1);
 }
 
-const subPackageDirs = ["vidyano", "core"];
-const distDir = "dist";
+const subPackageDirs = ["core", "vidyano"];
+const packagesDir = "packages";
 const rootDir = ".";
 
-async function cleanDistSubdirectory(subDirPath) {
-    console.info(`Cleaning directory: ${subDirPath} (preserving package.json)`);
+async function cleanDistSubdirectory(distPath) {
+    console.info(`Cleaning directory: ${distPath} (preserving package.json)`);
 
-    const items = await fs.readdir(subDirPath);
-    for (const item of items) {
-        if (!["package.json", "readme", "readme.md"].includes(item.toLowerCase())) {
-            const itemPath = path.join(subDirPath, item);
-            await fs.rm(itemPath, { recursive: true, force: true });
+    try {
+        const items = await fs.readdir(distPath);
+        for (const item of items) {
+            if (!["package.json", "readme", "readme.md"].includes(item.toLowerCase())) {
+                const itemPath = path.join(distPath, item);
+                await fs.rm(itemPath, { recursive: true, force: true });
+            }
         }
+    } catch (e) {
+        // dist directory may not exist yet
+        await fs.mkdir(distPath, { recursive: true });
     }
 }
 
@@ -44,6 +49,12 @@ async function bumpVersion(filePath, newVersion, gitHash = null) {
     }
     if (filePath.endsWith("package-lock.json") && packageData.packages && packageData.packages[""]) {
         packageData.packages[""].version = newVersion;
+    }
+
+    // Update @vidyano/core dependency to match the version being published
+    if (packageData.dependencies && packageData.dependencies["@vidyano/core"]) {
+        packageData.dependencies["@vidyano/core"] = newVersion;
+        console.info(`  Updating @vidyano/core dependency to ${newVersion}`);
     }
 
     await fs.writeFile(filePath, JSON.stringify(packageData, null, 2) + "\n");
@@ -80,23 +91,27 @@ function execCommand(command, options) {
         console.info("--- Starting build process ---");
 
         for (const subDir of subPackageDirs) {
-            const fullSubDirPath = path.join(distDir, subDir);
-
-            await cleanDistSubdirectory(fullSubDirPath);
+            const distPath = path.join(packagesDir, subDir, "dist");
+            await cleanDistSubdirectory(distPath);
         }
 
         await bumpVersion(path.join(rootDir, "package.json"), version);
         await bumpVersion(path.join(rootDir, "package-lock.json"), version);
 
         for (const subDir of subPackageDirs) {
-            const packageJsonPath = path.join(distDir, subDir, "package.json");
+            const packageJsonPath = path.join(packagesDir, subDir, "package.json");
             await bumpVersion(packageJsonPath, version, gitHash);
         }
 
-        await execCommand("npx sass --no-source-map src:src -q");
+        await execCommand("npx sass --no-source-map packages/vidyano/src:packages/vidyano/src -q");
 
-        await execCommand("tsc --project tsconfig.json");
-        await execCommand("npx rollup -c --environment NODE_ENV:production --bundleConfigAsCjs");
+        // Build core first (tsc then rollup) so @vidyano/core is available
+        await execCommand("tsc --project packages/core/tsconfig.json");
+        await execCommand("npx rollup -c --environment NODE_ENV:production --bundleConfigAsCjs", { cwd: path.join(packagesDir, "core") });
+
+        // Now build vidyano (depends on @vidyano/core being built)
+        await execCommand("tsc --project packages/vidyano/tsconfig.json");
+        await execCommand("npx rollup -c --environment NODE_ENV:production --bundleConfigAsCjs", { cwd: path.join(packagesDir, "vidyano") });
 
         console.info("Build completed successfully!");
     } catch (error) {

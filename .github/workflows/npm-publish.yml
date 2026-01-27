@@ -39,8 +39,11 @@ jobs:
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install semver library
-        run: npm install --no-save semver@7
+      - name: Remove always-auth from .npmrc
+        run: npm config delete always-auth --location=user 2>/dev/null || true
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Determine npm tag
         id: npm-tag
@@ -62,8 +65,12 @@ jobs:
           fi
 
           if [[ "$CURRENT_BRANCH" != "$DEFAULT_BRANCH" && "$IS_VERSION_BRANCH" != "true" ]]; then
-            echo "❌ Publishing only from $DEFAULT_BRANCH or version branches (vX.Y, e.g. v4.0)"
-            exit 1
+            if [[ -n "${ACT:-}" ]]; then
+              echo "⚠️ Running in act - bypassing branch restriction for local testing"
+            else
+              echo "❌ Publishing only from $DEFAULT_BRANCH or version branches (vX.Y, e.g. v4.0)"
+              exit 1
+            fi
           fi
 
           if [[ "$IS_VERSION_BRANCH" == "true" && "$INPUT_MAJOR" != "$BRANCH_MAJOR" ]]; then
@@ -73,8 +80,13 @@ jobs:
 
           if node -e "const s=require('semver');process.exit(s.prerelease(process.argv[1])?0:1)" "$VERSION"; then
             if [[ "$IS_VERSION_BRANCH" != "true" ]]; then
-              echo "❌ Prereleases only from version branches (vX.Y)"
-              exit 1
+              if [[ -n "${ACT:-}" ]]; then
+                echo "⚠️ Running in act - bypassing prerelease branch restriction for local testing"
+                BRANCH_TAG="v${INPUT_MAJOR}"
+              else
+                echo "❌ Prereleases only from version branches (vX.Y)"
+                exit 1
+              fi
             fi
             echo "tag=next-${BRANCH_TAG}" >> $GITHUB_OUTPUT
             echo "version_tag=" >> $GITHUB_OUTPUT
@@ -107,10 +119,16 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Detect act environment
+        id: detect-act
+        run: echo "is_act=${{ env.ACT && 'true' || 'false' }}" >> $GITHUB_OUTPUT
+
+      - name: Install Playwright browsers (act only)
+        if: ${{ steps.detect-act.outputs.is_act == 'true' }}
+        run: npx playwright install --with-deps chrome
 
       - name: Check if CI passed for this commit
+        if: ${{ steps.detect-act.outputs.is_act != 'true' }}
         id: ci-status
         uses: actions/github-script@v7
         with:
@@ -142,36 +160,34 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Start dev server
+      - name: Start dev server and run tests
         if: steps.ci-status.outputs.passed != 'true'
-        shell: bash
         run: |
-          set -Eeuo pipefail
-          dotnet run --project dev/Dev.csproj &
-          echo $! > server.pid
-          READY=""
+          # Start server in background
+          dotnet run --project dev/Dev.csproj --urls "http://0.0.0.0:5000" &
+          SERVER_PID=$!
+          echo "Server PID: $SERVER_PID"
+
+          # Wait for server to be ready
           for i in {1..30}; do
-            if curl -s -o /dev/null -w '%{http_code}' http://localhost:5000 | grep -q "200"; then
+            if curl -s -o /dev/null -w '%{http_code}' --head http://127.0.0.1:5000 | grep -q "200"; then
               echo "Server is ready!"
-              READY="yes"
               break
             fi
             echo "Waiting for server... ($i/30)"
             sleep 2
           done
-          [ -n "$READY" ] || { echo "❌ Server did not become ready in time"; exit 1; }
 
-      - name: Run tests
-        if: steps.ci-status.outputs.passed != 'true'
-        run: npm test
+          # Run tests
+          npm test
+          TEST_EXIT=$?
 
-      - name: Stop dev server
-        if: always() && steps.ci-status.outputs.passed != 'true'
-        run: |
-          if [ -f server.pid ]; then
-            kill $(cat server.pid) || true
-            rm server.pid
-          fi
+          # Stop server
+          echo "Stopping server (PID: $SERVER_PID)"
+          kill $SERVER_PID || true
+
+          # Exit with test result
+          exit $TEST_EXIT
 
       - name: Build distribution files with version
         run: npm run dist -- ${{ inputs.version }} ${{ github.sha }}
@@ -179,14 +195,14 @@ jobs:
       - name: Verify build artifacts
         run: |
           echo "Verifying @vidyano/core build outputs..."
-          test -f dist/core/index.js || { echo "❌ dist/core/index.js missing"; exit 1; }
-          test -f dist/core/index.d.ts || { echo "❌ dist/core/index.d.ts missing"; exit 1; }
-          test -f dist/core/index.min.js || { echo "❌ dist/core/index.min.js missing"; exit 1; }
+          test -f packages/core/dist/index.js || { echo "❌ packages/core/dist/index.js missing"; exit 1; }
+          test -f packages/core/dist/index.d.ts || { echo "❌ packages/core/dist/index.d.ts missing"; exit 1; }
+          test -f packages/core/dist/index.min.js || { echo "❌ packages/core/dist/index.min.js missing"; exit 1; }
 
           echo "Verifying @vidyano/vidyano build outputs..."
-          test -f dist/vidyano/index.js || { echo "❌ dist/vidyano/index.js missing"; exit 1; }
-          test -f dist/vidyano/index.d.ts || { echo "❌ dist/vidyano/index.d.ts missing"; exit 1; }
-          test -f dist/vidyano/index.min.js || { echo "❌ dist/vidyano/index.min.js missing"; exit 1; }
+          test -f packages/vidyano/dist/index.js || { echo "❌ packages/vidyano/dist/index.js missing"; exit 1; }
+          test -f packages/vidyano/dist/index.d.ts || { echo "❌ packages/vidyano/dist/index.d.ts missing"; exit 1; }
+          test -f packages/vidyano/dist/index.min.js || { echo "❌ packages/vidyano/dist/index.min.js missing"; exit 1; }
 
           echo "✅ All build artifacts verified successfully"
 
@@ -195,16 +211,19 @@ jobs:
         run: |
           set -Eeuo pipefail
           V_IN="${{ inputs.version }}"
-          for PKG in dist/core/package.json dist/vidyano/package.json; do
+          for PKG in packages/core/package.json packages/vidyano/package.json; do
             node -e "const fs=require('fs');const p='$PKG';const want=process.argv[1];const v=JSON.parse(fs.readFileSync(p,'utf8')).version; if(v!==want){console.error('❌',p,'has wrong version',v,'!=',want); process.exit(1)}" "$V_IN"
           done
           echo "✅ package.json versions OK"
 
       - name: Upload dist artifacts
+        if: ${{ steps.detect-act.outputs.is_act != 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: dist-all-${{ inputs.version }}
-          path: dist/
+          path: |
+            packages/core/dist/
+            packages/vidyano/dist/
           retention-days: 7
 
       # Expose tags for downstream matrix jobs
@@ -215,11 +234,13 @@ jobs:
           echo "version_tag=${{ steps.npm-tag.outputs.version_tag }}" >> $GITHUB_OUTPUT
           echo "next_tag=${{ steps.npm-tag.outputs.next_tag }}" >> $GITHUB_OUTPUT
           echo "is_stable=${{ steps.npm-tag.outputs.is_stable }}" >> $GITHUB_OUTPUT
+          echo "is_act=${{ steps.detect-act.outputs.is_act }}" >> $GITHUB_OUTPUT
     outputs:
       tag: ${{ steps.expose.outputs.tag }}
       version_tag: ${{ steps.expose.outputs.version_tag }}
       next_tag: ${{ steps.expose.outputs.next_tag }}
       is_stable: ${{ steps.expose.outputs.is_stable }}
+      is_act: ${{ steps.expose.outputs.is_act }}
 
   publish:
     name: Publish (${{ matrix.package.npm }})
@@ -236,10 +257,10 @@ jobs:
         package:
           - name: core
             npm: "@vidyano/core"
-            path: "dist/core"
+            path: "packages/core/dist"
           - name: vidyano
             npm: "@vidyano/vidyano"
-            path: "dist/vidyano"
+            path: "packages/vidyano/dist"
 
     steps:
       - name: Download dist artifacts
@@ -253,6 +274,9 @@ jobs:
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
+
+      - name: Remove always-auth from .npmrc
+        run: npm config delete always-auth --location=user 2>/dev/null || true
 
       # Ensure npm 11.5.1 or later for trusted publishing
       - name: Update npm
@@ -305,7 +329,7 @@ jobs:
       - name: Publish ${{ matrix.package.npm }}
         shell: bash
         run: |
-          cd "${{ matrix.package.name }}"
+          cd "${{ matrix.package.path }}"
 
           TAG="${{ needs.build.outputs.tag }}"
           VERSION_TAG="${{ needs.build.outputs.version_tag }}"
@@ -338,7 +362,7 @@ jobs:
   finalize:
     name: Create Git Tag
     needs: [build, publish]
-    if: ${{ !inputs.dry_run }}
+    if: ${{ !inputs.dry_run && needs.build.outputs.is_act != 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write

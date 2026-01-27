@@ -8,12 +8,12 @@ on:
     paths:
       - '.github/workflows/ci.yml'
       - 'dev/**'
-      - 'src/**'
-      - 'tests/**'
+      - 'packages/**'
       - 'package-lock.json'
       - 'package.json'
-      - 'playwright.config.ts'
+      - 'playwright.config.js'
       - 'tsconfig.json'
+      - 'tsconfig.base.json'
   pull_request:
     branches:
       - v4.0
@@ -21,12 +21,12 @@ on:
     paths:
       - '.github/workflows/ci.yml'
       - 'dev/**'
-      - 'src/**'
-      - 'tests/**'
+      - 'packages/**'
       - 'package-lock.json'
       - 'package.json'
-      - 'playwright.config.ts'
+      - 'playwright.config.js'
       - 'tsconfig.json'
+      - 'tsconfig.base.json'
 
 jobs:
   build-and-test:
@@ -51,16 +51,22 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chrome
+
       - name: Run build
         run: npm run build
 
-      - name: Start dev server
+      - name: Start dev server and run tests
         run: |
-          dotnet run --project dev/Dev.csproj &
-          echo $! > server.pid
+          # Start server in background
+          dotnet run --project dev/Dev.csproj --urls "http://0.0.0.0:5000" &
+          SERVER_PID=$!
+          echo "Server PID: $SERVER_PID"
+
           # Wait for server to be ready
           for i in {1..30}; do
-            if curl -s -o /dev/null -w '%{http_code}' --head http://localhost:5000 | grep -q "200"; then
+            if curl -s -o /dev/null -w '%{http_code}' --head http://127.0.0.1:5000 | grep -q "200"; then
               echo "Server is ready!"
               break
             fi
@@ -68,13 +74,13 @@ jobs:
             sleep 2
           done
 
-      - name: Run tests
-        run: npm test
+          # Run tests
+          npm test
+          TEST_EXIT=$?
 
-      - name: Stop dev server
-        if: always()
-        run: |
-          if [ -f server.pid ]; then
-            kill $(cat server.pid) || true
-            rm server.pid
-          fi
+          # Stop server
+          echo "Stopping server (PID: $SERVER_PID)"
+          kill $SERVER_PID || true
+
+          # Exit with test result
+          exit $TEST_EXIT

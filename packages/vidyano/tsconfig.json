@@ -1,0 +1,24 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": ".",
+    "rootDir": ".",
+    "declarationDir": "rollup",
+    "baseUrl": "src",
+    "paths": {
+      "components/*": ["web-components/*"],
+      "libs/*": ["libs/*"],
+      "polymer": ["libs/polymer/polymer"]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "tests/index.ts",
+    "tests/web-component/**/*.ts",
+    "tests/dialog/**/*.ts",
+    "tests/web-components/**/*.ts"
+  ],
+  "exclude": [
+    "tests/**/*.spec.ts"
+  ]
+}

@@ -15,9 +15,12 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@vidyano/core": ">=0.0.0-dev"
+    "@vidyano/core": "*"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "scripts": {
+    "build": "rollup -c"
   }
 }
