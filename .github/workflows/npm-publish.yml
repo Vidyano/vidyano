@@ -211,7 +211,7 @@ jobs:
         run: |
           set -Eeuo pipefail
           V_IN="${{ inputs.version }}"
-          for PKG in packages/core/package.json packages/vidyano/package.json; do
+          for PKG in packages/core/package.json packages/core/dist/package.json packages/vidyano/package.json packages/vidyano/dist/package.json; do
             node -e "const fs=require('fs');const p='$PKG';const want=process.argv[1];const v=JSON.parse(fs.readFileSync(p,'utf8')).version; if(v!==want){console.error('❌',p,'has wrong version',v,'!=',want); process.exit(1)}" "$V_IN"
           done
           echo "✅ package.json versions OK"

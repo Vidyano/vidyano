@@ -101,6 +101,9 @@ function execCommand(command, options) {
         for (const subDir of subPackageDirs) {
             const packageJsonPath = path.join(packagesDir, subDir, "package.json");
             await bumpVersion(packageJsonPath, version, gitHash);
+
+            const distPackageJsonPath = path.join(packagesDir, subDir, "dist", "package.json");
+            await bumpVersion(distPackageJsonPath, version, gitHash);
         }
 
         await execCommand("npx sass --no-source-map packages/vidyano/src:packages/vidyano/src -q");
