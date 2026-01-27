@@ -336,8 +336,10 @@ console.log(contact.getAttribute("Email").validationError);
 Register your own validation rules for domain-specific requirements:
 
 ```typescript
+import type { RuleValidationContext } from "@vidyano-labs/virtual-service";
+
 // Register a custom rule (before registerPersistentObject)
-service.registerBusinessRule("IsPhoneNumber", (value: any) => {
+service.registerBusinessRule("IsPhoneNumber", (value: any, context: RuleValidationContext) => {
     if (value == null || value === "") return;
     const phoneRegex = /^\+?[\d\s-()]+$/;
     if (!phoneRegex.test(String(value)))
@@ -357,8 +359,39 @@ service.registerPersistentObject({
 });
 ```
 
+**Validation context:**
+The `RuleValidationContext` parameter provides access to:
+- `context.persistentObject` - The persistent object being validated (wrapped with helper methods)
+- `context.attribute` - The attribute being validated (wrapped with helper methods)
+
+This allows cross-field validation:
+
+```typescript
+// Validate password confirmation matches password
+service.registerBusinessRule("MatchesPassword", (value: any, context: RuleValidationContext) => {
+    if (!value) return;
+
+    const passwordValue = context.persistentObject.getAttributeValue("Password");
+    if (value !== passwordValue)
+        throw new Error("Passwords do not match");
+});
+
+service.registerPersistentObject({
+    type: "User",
+    attributes: [
+        { name: "Password", type: "String" },
+        {
+            name: "ConfirmPassword",
+            type: "String",
+            rules: "MatchesPassword"
+        }
+    ]
+});
+```
+
 **Custom rule requirements:**
 - Must be registered before `registerPersistentObject()`
+- Receives two parameters: `value` (the attribute value) and `context` (validation context)
 - Throw an `Error` with a message if validation fails
 - Return nothing (or undefined) if validation passes
 - Cannot override built-in rules
@@ -1097,7 +1130,8 @@ import type {
     ActionHandler,
     ActionArgs,
     ActionContext,
-    RuleValidatorFn
+    RuleValidatorFn,
+    RuleValidationContext
 } from "@vidyano-labs/virtual-service";
 ```
 
