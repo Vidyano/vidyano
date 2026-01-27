@@ -42,6 +42,13 @@ export default defineConfig({
       fullyParallel: true,
       workers: 4,
     },
+    {
+      name: 'virtual-service',
+      testMatch: 'packages/labs/virtual-service/tests/**/*.spec.ts',
+      use: { ...devices['Desktop Chrome'], channel: 'chrome' },
+      fullyParallel: true,
+      workers: 4,
+    },
   ],
 
   /* Run your local dev server before starting the tests */

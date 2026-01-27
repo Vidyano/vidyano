@@ -17,7 +17,8 @@
 				"coenraads.bracket-pair-colorizer",
 				"idered.npm",
 				"ms-dotnettools.csdevkit",
-				"Anthropic.claude-code"
+				"Anthropic.claude-code",
+				"ms-playwright.playwright"
 			]
 		}
 	},
