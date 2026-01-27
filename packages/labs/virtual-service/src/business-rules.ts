@@ -1,4 +1,7 @@
 import { Dto } from "@vidyano/core";
+import type { RuleValidationContext } from "./types.js";
+import { fromServiceValue, toServiceValue } from "./virtual-service-data-type.js";
+import { createVirtualPersistentObject, createVirtualPersistentObjectAttribute, type ConversionContext } from "./virtual-persistent-object.js";
 
 /**
  * Parsed business rule with name and parameters
@@ -11,7 +14,7 @@ export type ParsedRule = {
 /**
  * Rule validator function that throws an error if invalid, or returns nothing if valid
  */
-export type RuleValidatorFn = (value: any, ...params: any[]) => void;
+export type RuleValidatorFn = (value: any, context: RuleValidationContext, ...params: any[]) => void;
 
 /**
  * Business rule validator that supports built-in and custom rules
@@ -48,13 +51,37 @@ export class BusinessRuleValidator {
 
     /**
      * Validate an attribute against its rules
+     * @param attr - The attribute to validate
+     * @param po - The persistent object containing the attribute
      * @returns Error message if validation fails, null if valid
      */
-    validateAttribute(attr: Dto.PersistentObjectAttributeDto): string | null {
+    validateAttribute(attr: Dto.PersistentObjectAttributeDto, po: Dto.PersistentObjectDto): string | null {
+        // Create conversion context for wrappers
+        const conversionContext: ConversionContext = {
+            getConvertedValue: (attribute: Dto.PersistentObjectAttributeDto) => this.#getConvertedValue(attribute),
+            setConvertedValue: (attribute: Dto.PersistentObjectAttributeDto, value: any) => {
+                attribute.value = toServiceValue(value, attribute.type);
+                attribute.isValueChanged = true;
+            }
+        };
+
+        // Create wrapped objects for the validation context
+        const wrappedPo = createVirtualPersistentObject(po, conversionContext);
+        const wrappedAttr = createVirtualPersistentObjectAttribute(attr, conversionContext);
+
+        // Create validation context
+        const context: RuleValidationContext = {
+            persistentObject: wrappedPo,
+            attribute: wrappedAttr
+        };
+
+        // Get the converted value (e.g., boolean from "True"/"False", number from string)
+        const convertedValue = this.#getConvertedValue(attr);
+
         // Check isRequired first
         if (attr.isRequired) {
             try {
-                this.#validateNotEmpty(attr.value);
+                this.#validateNotEmpty(convertedValue, context);
             } catch (error) {
                 return error instanceof Error ? error.message : String(error);
             }
@@ -71,7 +98,7 @@ export class BusinessRuleValidator {
                 throw new Error(`Unknown business rule: ${rule.name}`);
 
             try {
-                validator(attr.value, ...rule.params);
+                validator(convertedValue, context, ...rule.params);
             } catch (error) {
                 return error instanceof Error ? error.message : String(error);
             }
@@ -134,9 +161,14 @@ export class BusinessRuleValidator {
         return { name, params };
     }
 
+    // Helper to convert attribute values based on type
+    #getConvertedValue(attr: Dto.PersistentObjectAttributeDto): any {
+        return fromServiceValue(attr.value, attr.type);
+    }
+
     // Built-in validators - throw errors instead of returning strings
 
-    #validateIsBase64(value: any): void {
+    #validateIsBase64(value: any, context: RuleValidationContext): void {
         if (value == null || value === "")
             return;
 
@@ -145,7 +177,7 @@ export class BusinessRuleValidator {
             throw new Error("Value must be a valid base64 string");
     }
 
-    #validateIsEmail(value: any): void {
+    #validateIsEmail(value: any, context: RuleValidationContext): void {
         if (value == null || value === "")
             return;
 
@@ -155,7 +187,7 @@ export class BusinessRuleValidator {
             throw new Error("Email format is invalid");
     }
 
-    #validateIsRegex(value: any): void {
+    #validateIsRegex(value: any, context: RuleValidationContext): void {
         if (value == null || value === "")
             return;
 
@@ -166,7 +198,7 @@ export class BusinessRuleValidator {
         }
     }
 
-    #validateIsUrl(value: any): void {
+    #validateIsUrl(value: any, context: RuleValidationContext): void {
         if (value == null || value === "")
             return;
 
@@ -177,7 +209,7 @@ export class BusinessRuleValidator {
         }
     }
 
-    #validateIsWord(value: any): void {
+    #validateIsWord(value: any, context: RuleValidationContext): void {
         if (value == null || value === "")
             return;
 
@@ -186,7 +218,7 @@ export class BusinessRuleValidator {
             throw new Error("Value must contain only word characters");
     }
 
-    #validateMaxLength(value: any, maxLength: number): void {
+    #validateMaxLength(value: any, context: RuleValidationContext, maxLength: number): void {
         if (value == null || value === "")
             return;
 
@@ -195,7 +227,7 @@ export class BusinessRuleValidator {
             throw new Error(`Maximum length is ${maxLength} characters`);
     }
 
-    #validateMaxValue(value: any, maximum: number): void {
+    #validateMaxValue(value: any, context: RuleValidationContext, maximum: number): void {
         if (value == null || value === "")
             return;
 
@@ -207,7 +239,7 @@ export class BusinessRuleValidator {
             throw new Error(`Maximum value is ${maximum}`);
     }
 
-    #validateMinLength(value: any, minLength: number): void {
+    #validateMinLength(value: any, context: RuleValidationContext, minLength: number): void {
         if (value == null || value === "")
             return;
 
@@ -216,7 +248,7 @@ export class BusinessRuleValidator {
             throw new Error(`Minimum length is ${minLength} characters`);
     }
 
-    #validateMinValue(value: any, minimum: number): void {
+    #validateMinValue(value: any, context: RuleValidationContext, minimum: number): void {
         if (value == null || value === "")
             return;
 
@@ -228,7 +260,7 @@ export class BusinessRuleValidator {
             throw new Error(`Minimum value is ${minimum}`);
     }
 
-    #validateNotEmpty(value: any): void {
+    #validateNotEmpty(value: any, context: RuleValidationContext): void {
         if (value == null || value === "" || (typeof value === "string" && value.trim() === ""))
             throw new Error("This field is required");
     }

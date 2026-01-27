@@ -1,4 +1,5 @@
 import { Dto } from "@vidyano/core";
+import type { VirtualPersistentObject, VirtualPersistentObjectAttribute } from "./virtual-persistent-object.js";
 
 /**
  * Simplified attribute configuration - converted to PersistentObjectAttributeDto
@@ -224,6 +225,21 @@ export type ActionContext = {
      * Sets a notification message.
      */
     setNotification: (message: string, type: Dto.NotificationType, duration?: number) => void;
+};
+
+/**
+ * Context provided to business rule validators for accessing the persistent object
+ */
+export type RuleValidationContext = {
+    /**
+     * The persistent object being validated (wrapped with helper methods)
+     */
+    persistentObject: VirtualPersistentObject;
+
+    /**
+     * The attribute being validated (wrapped with helper methods)
+     */
+    attribute: VirtualPersistentObjectAttribute;
 };
 
 /**

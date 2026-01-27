@@ -244,7 +244,7 @@ export class VirtualPersistentObjectRegistry {
             };
 
             // Validate the attribute
-            const error = this.#validator.validateAttribute(attrWithRules);
+            const error = this.#validator.validateAttribute(attrWithRules, po);
             if (error) {
                 attr.validationError = error;
                 hasErrors = true;

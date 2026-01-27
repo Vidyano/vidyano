@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { VirtualService, VirtualPersistentObjectActions } from "../src/index.js";
-import type { VirtualPersistentObject } from "../src/index.js";
+import type { VirtualPersistentObject, RuleValidationContext } from "../src/index.js";
 
 test("validates required attributes on save", async () => {
     const service = new VirtualService();
@@ -278,7 +278,7 @@ test("supports custom business rules", async () => {
     const service = new VirtualService();
 
     // Register custom rule
-    service.registerBusinessRule("IsPhoneNumber", (value: any) => {
+    service.registerBusinessRule("IsPhoneNumber", (value: any, _context: RuleValidationContext) => {
         if (!value)
             return;
 
@@ -357,7 +357,7 @@ test("prevents overriding built-in rules", () => {
     const service = new VirtualService();
 
     expect(() => {
-        service.registerBusinessRule("IsEmail", (_value: any) => {
+        service.registerBusinessRule("IsEmail", (_value: any, _context: RuleValidationContext) => {
             throw new Error("Custom validation");
         });
     }).toThrow("Cannot override built-in rule: IsEmail");
@@ -565,7 +565,7 @@ test("does not convert empty parameter to zero", async () => {
     // Track what parameters the custom rule receives
     let receivedParams: any[] = [];
 
-    service.registerBusinessRule("CheckParams", (_value: any, ...params: any[]) => {
+    service.registerBusinessRule("CheckParams", (_value: any, _context: RuleValidationContext, ...params: any[]) => {
         receivedParams = params;
     });
 
@@ -626,4 +626,92 @@ test("validates special characters and unicode in strings", async () => {
     const email = person.getAttribute("Email");
     expect(name!.validationError).toBeFalsy(); // Unicode string within length limit
     expect(email!.validationError).toBe("Email format is invalid"); // Unicode in email domain
+});
+
+test("custom rule can access other attributes via context", async () => {
+    const service = new VirtualService();
+
+    // Register custom rule that validates password confirmation
+    service.registerBusinessRule("MatchesPassword", (value: any, context: RuleValidationContext) => {
+        if (!value)
+            return;
+
+        const passwordValue = context.persistentObject.getAttributeValue("Password");
+        if (value !== passwordValue)
+            throw new Error("Passwords do not match");
+    });
+
+    service.registerPersistentObject({
+        type: "User",
+        label: "User",
+        stateBehavior: "StayInEdit",
+        attributes: [
+            {
+                name: "Password",
+                type: "String",
+                value: "secret123"
+            },
+            {
+                name: "ConfirmPassword",
+                type: "String",
+                rules: "MatchesPassword",
+                value: "different123"
+            }
+        ]
+    });
+
+    await service.initialize();
+
+    const user = await service.getPersistentObject(null, "User", "1");
+
+    // Attempt to save with mismatched passwords
+    await user.save();
+
+    // Check validation error
+    const confirmPassword = user.getAttribute("ConfirmPassword");
+    expect(confirmPassword).toBeDefined();
+    expect(confirmPassword!.validationError).toBe("Passwords do not match");
+
+    // Now fix the password match and try again
+    user.getAttribute("ConfirmPassword")!.value = "secret123";
+    await user.save();
+
+    // Should pass validation now
+    expect(confirmPassword!.validationError).toBeFalsy();
+});
+
+test("custom rule receives converted value not raw DTO value", async () => {
+    const service = new VirtualService();
+
+    // Track what type and value the custom rule receives
+    let receivedValue: any = undefined;
+    let receivedType: string = "";
+
+    service.registerBusinessRule("CheckType", (value: any, _context: RuleValidationContext) => {
+        receivedValue = value;
+        receivedType = typeof value;
+    });
+
+    service.registerPersistentObject({
+        type: "Test",
+        label: "Test",
+        stateBehavior: "StayInEdit",
+        attributes: [
+            {
+                name: "IsActive",
+                type: "Boolean",
+                rules: "CheckType",
+                value: "True" // DTO stores as string "True"
+            }
+        ]
+    });
+
+    await service.initialize();
+
+    const obj = await service.getPersistentObject(null, "Test", "1");
+    await obj.save();
+
+    // The custom rule should receive boolean true, not string "True"
+    expect(receivedType).toBe("boolean");
+    expect(receivedValue).toBe(true);
 });
