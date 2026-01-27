@@ -6,7 +6,7 @@ args: <component-file.ts>
 You are helping migrate a Vidyano Polymer web component to Lit. Follow these steps carefully:
 
 ## Step 1: Read Migration Guide and Component
-1. Read the migration guide: `docs/migration/v3-to-v4/polymer-to-lit.md`
+1. Read the migration guide: `packages/vidyano/docs/migration/v3-to-v4/polymer-to-lit.md`
 2. Read the TypeScript component file provided by the user
 3. Find and read the associated `.html` template file (same directory, same name)
 4. Find and read the associated `.scss` or `.css` file (same directory, same name)
