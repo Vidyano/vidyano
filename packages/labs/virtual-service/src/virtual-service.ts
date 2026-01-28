@@ -58,6 +58,19 @@ export class VirtualService extends Service {
     }
 
     /**
+     * Sets the global messages dictionary.
+     * Use this to provide translations or override default messages.
+     * @example
+     * VirtualService.messages = {
+     *     "Required": "Dit veld is verplicht",
+     *     "MaxLength": "Maximale lengte is {0} tekens"
+     * };
+     */
+    static set messages(value: Record<string, string>) {
+        VirtualService.#messages = { ...value };
+    }
+
+    /**
      * Converts a service string value to a primitive JavaScript type.
      * Unlike DataType.fromServiceString, this returns number instead of BigNumber
      * for numeric types (Decimal, Double, Int64, etc.).
@@ -77,19 +90,6 @@ export class VirtualService extends Service {
      */
     static toServiceValue(value: any, type: string): string {
         return DataType.toServiceString(value, type);
-    }
-
-    /**
-     * Sets the global messages dictionary.
-     * Use this to provide translations or override default messages.
-     * @example
-     * VirtualService.messages = {
-     *     "Required": "Dit veld is verplicht",
-     *     "MaxLength": "Maximale lengte is {0} tekens"
-     * };
-     */
-    static set messages(value: Record<string, string>) {
-        VirtualService.#messages = { ...value };
     }
 
     /**
@@ -170,11 +170,9 @@ export class VirtualService extends Service {
      * Initializes the service and finalizes all registrations.
      * After this method is called, no more registrations are allowed.
      */
-    public async initialize(skipDefaultCredentialLogin?: boolean): Promise<Application>;
-    public async initialize(oneTimeSignInToken: string): Promise<Application>;
-    public async initialize(arg?: boolean | string): Promise<Application> {
+    public async initialize(): Promise<Application> {
         this.#isInitialized = true;
-        return super.initialize(arg as any);
+        return super.initialize(false);
     }
 
     /**
