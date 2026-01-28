@@ -105,7 +105,7 @@ export class VirtualServiceHooks extends ServiceHooks {
     /**
      * Registers a PersistentObject configuration
      */
-    registerPersistentObject(config: VirtualPersistentObjectConfig): void {
+    registerPersistentObject(config: VirtualPersistentObjectConfig, actionsClass?: typeof VirtualPersistentObjectActions): void {
         // Validate configuration
         if (!config.type)
             throw new Error("VirtualPersistentObjectConfig.type is required");
@@ -140,6 +140,10 @@ export class VirtualServiceHooks extends ServiceHooks {
 
         // Register with registry
         this.#persistentObjectRegistry.register(config);
+
+        // Register actions class if provided
+        if (actionsClass)
+            this.#persistentObjectActionsRegistry.register(config.type, actionsClass);
     }
 
     /**
@@ -207,14 +211,6 @@ export class VirtualServiceHooks extends ServiceHooks {
         this.#validator.registerCustomRule(name, validator);
     }
 
-    /**
-     * Registers a VirtualPersistentObjectActions class for a specific type
-     * @param type - The PersistentObject type name
-     * @param ActionsClass - The VirtualPersistentObjectActions class constructor
-     */
-    registerPersistentObjectActions(type: string, ActionsClass: typeof VirtualPersistentObjectActions): void {
-        this.#persistentObjectActionsRegistry.register(type, ActionsClass);
-    }
 
     /**
      * Wraps an incoming PersistentObject DTO with config augmentation

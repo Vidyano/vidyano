@@ -92,9 +92,7 @@ test("calls onRefresh handler when attribute triggers refresh", async () => {
             { name: "Email", type: "String", triggersRefresh: true },
             { name: "IsEmailValid", type: "Boolean", value: "False" }
         ]
-    });
-
-    service.registerPersistentObjectActions("Person", class extends VirtualPersistentObjectActions {
+    }, class extends VirtualPersistentObjectActions {
         async onRefresh(obj: VirtualPersistentObject, attribute: VirtualPersistentObjectAttribute | undefined): Promise<VirtualPersistentObject> {
             refreshCalled = true;
             refreshedAttrName = attribute?.name;
@@ -131,9 +129,7 @@ test("marks attributes as changed after refresh", async () => {
         attributes: [
             { name: "FirstName", type: "String", value: "John" }
         ]
-    });
-
-    service.registerPersistentObjectActions("Person", class extends VirtualPersistentObjectActions {
+    }, class extends VirtualPersistentObjectActions {
         async onRefresh(obj: VirtualPersistentObject, _attribute: VirtualPersistentObjectAttribute | undefined): Promise<VirtualPersistentObject> {
             // Use getAttribute().setValue() instead of setAttributeValue()
             obj.getAttribute("FirstName")?.setValue("Updated");
@@ -162,9 +158,7 @@ test("changes attribute visibility in onRefresh handler", async () => {
             { name: "TriggerField", type: "String", triggersRefresh: true },
             { name: "ConditionalField", type: "String", visibility: "Never" }
         ]
-    });
-
-    service.registerPersistentObjectActions("Person", class extends VirtualPersistentObjectActions {
+    }, class extends VirtualPersistentObjectActions {
         async onRefresh(obj: VirtualPersistentObject, attribute: VirtualPersistentObjectAttribute | undefined): Promise<VirtualPersistentObject> {
             if (attribute?.name === "TriggerField") {
                 const conditionalField = obj.getAttribute("ConditionalField");

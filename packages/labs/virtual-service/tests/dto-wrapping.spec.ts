@@ -22,9 +22,7 @@ test.describe("DTO Wrapping and Config Augmentation", () => {
                     { name: "Name", type: "String", rules: "NotEmpty" },
                     { name: "Email", type: "String", rules: "IsEmail" }
                 ]
-            });
-
-            service.registerPersistentObjectActions("Person", PersonActions);
+            }, PersonActions);
             await service.initialize();
 
             const person = await service.getPersistentObject(null, "Person");
@@ -178,9 +176,7 @@ test.describe("DTO Wrapping and Config Augmentation", () => {
                 attributes: [
                     { name: "Country", type: "String", triggersRefresh: true, rules: "NotEmpty" }
                 ]
-            });
-
-            service.registerPersistentObjectActions("Person", PersonActions);
+            }, PersonActions);
             await service.initialize();
 
             const person = await service.getPersistentObject(null, "Person");
@@ -213,9 +209,7 @@ test.describe("DTO Wrapping and Config Augmentation", () => {
                 attributes: [
                     { name: "Email", type: "String", rules: "NotEmpty; IsEmail" }
                 ]
-            });
-
-            service.registerPersistentObjectActions("Person", PersonActions);
+            }, PersonActions);
             await service.initialize();
 
             const person = await service.getPersistentObject(null, "Person");

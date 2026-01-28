@@ -112,11 +112,12 @@ export class VirtualService extends Service {
      * Registers a PersistentObject configuration.
      * Must be called before initialize().
      * @param config - The PersistentObject configuration.
+     * @param lifecycle - Optional lifecycle class for hooks (onLoad, onSave, onNew, etc.).
      * @throws Error if called after initialize().
      */
-    registerPersistentObject(config: VirtualPersistentObjectConfig): void {
+    registerPersistentObject(config: VirtualPersistentObjectConfig, lifecycle?: typeof VirtualPersistentObjectActions): void {
         this.#ensureNotInitialized();
-        this.virtualHooks.registerPersistentObject(config);
+        this.virtualHooks.registerPersistentObject(config, lifecycle);
     }
 
     /**
@@ -151,18 +152,6 @@ export class VirtualService extends Service {
     registerBusinessRule(name: string, validator: RuleValidatorFn): void {
         this.#ensureNotInitialized();
         this.virtualHooks.registerBusinessRule(name, validator);
-    }
-
-    /**
-     * Registers a VirtualPersistentObjectActions class for a specific type.
-     * Must be called before initialize().
-     * @param type - The PersistentObject type name.
-     * @param ActionsClass - The VirtualPersistentObjectActions class constructor.
-     * @throws Error if called after initialize().
-     */
-    registerPersistentObjectActions(type: string, ActionsClass: typeof VirtualPersistentObjectActions): void {
-        this.#ensureNotInitialized();
-        this.virtualHooks.registerPersistentObjectActions(type, ActionsClass);
     }
 
     /**

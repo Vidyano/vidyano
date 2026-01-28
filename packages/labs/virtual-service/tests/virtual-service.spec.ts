@@ -98,23 +98,6 @@ test.describe("VirtualService", () => {
         }).toThrow("Cannot register after initialize() has been called");
     });
 
-    test("throws error when registering PersistentObjectActions after initialize", async () => {
-        const service = new VirtualService();
-
-        service.registerPersistentObject({
-            type: "Person",
-            attributes: [
-                { name: "Name", type: "String", value: "John" }
-            ]
-        });
-
-        await service.initialize();
-
-        expect(() => {
-            service.registerPersistentObjectActions("Person", class extends VirtualPersistentObjectActions {});
-        }).toThrow("Cannot register after initialize() has been called");
-    });
-
     test("can set static messages for translation", async () => {
         // Save original messages
         const originalMessages = VirtualService.messages;
@@ -213,8 +196,7 @@ test.describe("VirtualService", () => {
             ]
         };
 
-        service.registerPersistentObject(config);
-        service.registerPersistentObjectActions("Person", PersonActions);
+        service.registerPersistentObject(config, PersonActions);
 
         await service.initialize();
 

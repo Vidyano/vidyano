@@ -194,10 +194,7 @@ test("calls onSelectReference when reference is changed", async () => {
                 lookup: "Contacts"
             }
         ]
-    });
-
-    // Register the custom actions
-    service.registerPersistentObjectActions("Person", PersonActions);
+    }, PersonActions);
 
     await service.initialize();
 

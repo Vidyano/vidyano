@@ -56,11 +56,10 @@ const service = new VirtualService();
 ```
 
 **Key methods:**
-- `registerPersistentObject(config)` - Register a mock persistent object type
+- `registerPersistentObject(config, actionsClass?)` - Register a mock persistent object type with optional lifecycle class
 - `registerQuery(config)` - Register a mock query
 - `registerAction(config)` - Register a custom action handler
 - `registerBusinessRule(name, validator)` - Add custom validation rules
-- `registerPersistentObjectActions(type, ActionsClass)` - Register lifecycle handlers
 - `initialize()` - Finalize registrations (must call before using service)
 
 > **Important:** All registrations must happen BEFORE calling `initialize()`. Attempting to register after initialization throws an error.
@@ -70,9 +69,8 @@ const service = new VirtualService();
 Dependencies must be registered before the things that reference them:
 
 1. **Actions** first - Custom actions must be registered before PersistentObjects/Queries that reference them
-2. **PersistentObjects** - Define the data schema
+2. **PersistentObjects** - Define the data schema (with optional lifecycle class)
 3. **Queries** - Must reference an already-registered PersistentObject type
-4. **PersistentObjectActions** - Lifecycle handlers (can be registered anytime before initialize)
 
 ```typescript
 // Correct order
@@ -854,8 +852,16 @@ class PersonActions extends VirtualPersistentObjectActions {
     }
 }
 
-// Register the actions class
-service.registerPersistentObjectActions("Person", PersonActions);
+// Register with the actions class
+service.registerPersistentObject({
+    type: "Person",
+    attributes: [
+        { name: "FirstName", type: "String" },
+        { name: "CreatedDate", type: "DateTime" },
+        { name: "ModifiedDate", type: "DateTime" },
+        { name: "Status", type: "String" }
+    ]
+}, PersonActions);
 ```
 
 ### Lifecycle Flow
@@ -1240,11 +1246,10 @@ test("search and sort query results", async () => {
 | Method | Description |
 |--------|-------------|
 | `constructor(hooks?)` | Create service with optional custom hooks |
-| `registerPersistentObject(config)` | Register a PersistentObject type |
+| `registerPersistentObject(config, actionsClass?)` | Register a PersistentObject type with optional lifecycle class |
 | `registerQuery(config)` | Register a Query |
 | `registerAction(config)` | Register a custom action |
 | `registerBusinessRule(name, validator)` | Register a validation rule |
-| `registerPersistentObjectActions(type, Class)` | Register lifecycle handlers |
 | `getMessage(key, ...params)` | Get a formatted message by key |
 | `initialize()` | Finalize registrations |
 

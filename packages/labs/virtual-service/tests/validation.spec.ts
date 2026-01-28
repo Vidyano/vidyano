@@ -330,9 +330,7 @@ test("allows save when validation passes", async () => {
                 value: "test@example.com"
             }
         ]
-    });
-
-    service.registerPersistentObjectActions("Person", class extends VirtualPersistentObjectActions {
+    }, class extends VirtualPersistentObjectActions {
         async onSave(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
             saveCalled = true;
             return super.onSave(obj);
@@ -1255,9 +1253,7 @@ test("validation failure prevents saveNew/saveExisting from being called", async
                 value: null
             }
         ]
-    });
-
-    service.registerPersistentObjectActions("Person", TestActions);
+    }, TestActions);
 
     await service.initialize();
 
@@ -1305,9 +1301,7 @@ test("checkRules override - custom validation", async () => {
                 value: "invalid"
             }
         ]
-    });
-
-    service.registerPersistentObjectActions("Person", TestActions);
+    }, TestActions);
 
     await service.initialize();
 
@@ -1354,9 +1348,7 @@ test("checkRules override - skip default validation", async () => {
                 value: null  // Would normally fail validation
             }
         ]
-    });
-
-    service.registerPersistentObjectActions("Person", TestActions);
+    }, TestActions);
 
     await service.initialize();
 
@@ -1405,9 +1397,7 @@ test("checkRules override - call super for combined validation", async () => {
                 value: null
             }
         ]
-    });
-
-    service.registerPersistentObjectActions("Person", TestActions);
+    }, TestActions);
 
     await service.initialize();
 
@@ -1447,9 +1437,7 @@ test("checkRules receives wrapped object with helper methods", async () => {
                 value: "John"
             }
         ]
-    });
-
-    service.registerPersistentObjectActions("Person", TestActions);
+    }, TestActions);
 
     await service.initialize();
 
@@ -1501,9 +1489,7 @@ test("checkRules receives attributes with rules from config", async () => {
                 value: "test@example.com"
             }
         ]
-    });
-
-    service.registerPersistentObjectActions("Person", TestActions);
+    }, TestActions);
 
     await service.initialize();
 
