@@ -379,7 +379,7 @@ class DraftActions extends VirtualPersistentObjectActions {
 **checkRules behavior:**
 - Returns `true` if all validations pass, `false` if any fail
 - When returning `false`, `saveNew`/`saveExisting` are not called
-- The object passed to `checkRules` is wrapped with helper methods
+- The object passed to `checkRules` is a `VirtualPersistentObject`
 - Call `super.checkRules(obj)` to include default rule-based validation
 
 ### Custom Business Rules
@@ -412,8 +412,8 @@ service.registerPersistentObject({
 
 **Validation context:**
 The `RuleValidationContext` parameter provides access to:
-- `context.persistentObject` - The persistent object being validated (wrapped with helper methods)
-- `context.attribute` - The attribute being validated (wrapped with helper methods)
+- `context.persistentObject` - The persistent object being validated
+- `context.attribute` - The attribute being validated
 - `context.service` - The VirtualService instance (use `context.service.getMessage()` for translations)
 
 This allows cross-field validation:
@@ -697,9 +697,9 @@ service.registerAction({
     displayName: "Approve Order",
     isPinned: true,
     handler: async (args: ActionArgs) => {
-        // Access context for reading/modifying the object
-        args.context.setAttributeValue("Status", "Approved");
-        args.context.setNotification("Order approved!", "OK", 3000);
+        // Access parent for reading/modifying the object
+        args.parent.setAttributeValue("Status", "Approved");
+        args.parent.setNotification("Order approved!", "OK", 3000);
 
         // Return the updated object (or null for silent completion)
         return args.parent;
@@ -715,64 +715,52 @@ Action handlers receive `ActionArgs` with execution context:
 import type { ActionArgs } from "@vidyano-labs/virtual-service";
 
 interface ActionArgs {
-    parent: PersistentObjectDto | null;       // The PO being acted on
-    query?: QueryDto;                         // The query (for query actions)
-    selectedItems?: QueryResultItemDto[];     // Selected items in query
+    parent: VirtualPersistentObject | null;   // The PO being acted on
+    query?: VirtualQuery;                     // The query (for query actions)
+    selectedItems?: VirtualQueryResultItem[]; // Selected items in query
     parameters?: Record<string, any>;         // Action parameters
-    context: ActionContext;                   // Helper methods
 }
 ```
 
-### ActionContext
 
-The context provides helper methods for modifying the persistent object:
+### Working with Parent in Action Handlers
+
+Since `args.parent` is a `VirtualPersistentObject`, you can use its methods directly:
 
 ```typescript
 handler: async (args: ActionArgs) => {
     // Get an attribute
-    const emailAttr = args.context.getAttribute("Email");
+    const emailAttr = args.parent.getAttribute("Email");
 
-    // Read attribute values
-    const email = args.context.getAttributeValue("Email");
+    // Read attribute values (type-converted)
+    const email = args.parent.getAttributeValue("Email");
 
-    // Type-safe value access (pass the attribute DTO)
-    const age = args.context.getConvertedValue(args.context.getAttribute("Age")!);
+    // Read from the attribute directly
+    const age = emailAttr?.getValue();
 
     // Modify attribute values
-    args.context.setAttributeValue("Status", "Active");
+    args.parent.setAttributeValue("Status", "Active");
 
-    // Set with type conversion (pass the attribute DTO)
-    const countAttr = args.context.getAttribute("Count")!;
-    args.context.setConvertedValue(countAttr, 42);
+    // Set via attribute directly
+    emailAttr?.setValue("new@example.com");
 
     // Set validation errors
     if (!email?.includes("@"))
-        args.context.setValidationError("Email", "Invalid email format");
+        args.parent.setValidationError("Email", "Invalid email format");
 
     // Clear validation errors
-    args.context.clearValidationError("Email");
+    args.parent.clearValidationError("Email");
 
     // Show notifications
-    args.context.setNotification("Saved successfully", "OK", 3000);
-    args.context.setNotification("Warning!", "Warning", 5000);
-    args.context.setNotification("Error occurred", "Error");
+    args.parent.setNotification("Saved successfully", "OK", 3000);
+    args.parent.setNotification("Warning!", "Warning", 5000);
+    args.parent.setNotification("Error occurred", "Error");
 
     return args.parent;
 }
 ```
 
-**Context methods:**
-
-| Method | Description |
-|--------|-------------|
-| `getAttribute(name)` | Get the full attribute DTO |
-| `getAttributeValue(name)` | Get the raw attribute value |
-| `getConvertedValue(attr)` | Get type-converted value from attribute DTO |
-| `setAttributeValue(name, value)` | Update raw attribute value |
-| `setConvertedValue(attr, value)` | Update attribute DTO with type conversion |
-| `setValidationError(name, error)` | Set a validation error message |
-| `clearValidationError(name)` | Clear validation error |
-| `setNotification(msg, type, duration?)` | Show notification to user |
+See [VirtualPersistentObject Methods](#virtualpersistentobject-methods) for the full list.
 
 ### Query Actions
 
@@ -785,12 +773,21 @@ service.registerAction({
         // Access selected items
         for (const item of args.selectedItems || []) {
             console.log(`Deleting item: ${item.id}`);
+            // Use getValue to read column values
+            const name = item.getValue("Name");
+            console.log(`  Name: ${name}`);
         }
 
         return null; // Silent completion
     }
 });
 ```
+
+**VirtualQueryResultItem methods:**
+
+| Method | Description |
+|--------|-------------|
+| `getValue(columnName)` | Get a value from the item by column name |
 
 ## Lifecycle Hooks
 
@@ -825,7 +822,7 @@ class PersonActions extends VirtualPersistentObjectActions {
     async onNew(
         obj: VirtualPersistentObject,
         parent: VirtualPersistentObject | null,
-        query: Dto.QueryDto | null,
+        query: VirtualQuery | null,
         parameters: Record<string, string> | null
     ): Promise<VirtualPersistentObject> {
         // Initialize new object
@@ -921,7 +918,7 @@ class PersonActions extends VirtualPersistentObjectActions {
     // Provide data for query execution
     // Framework handles text search, sort, and pagination automatically
     async getEntities(
-        query: Dto.QueryDto,
+        query: VirtualQuery,
         parent: VirtualPersistentObject | null,
         data: Record<string, any>[]
     ): Promise<Record<string, any>[]> {
@@ -931,7 +928,7 @@ class PersonActions extends VirtualPersistentObjectActions {
 
     // Or fully control query execution
     async onExecuteQuery(
-        query: Dto.QueryDto,
+        query: VirtualQuery,
         parent: VirtualPersistentObject | null,
         data: Record<string, any>[]
     ): Promise<VirtualQueryExecuteResult> {
@@ -950,16 +947,16 @@ Handle reference attribute selection:
 class OrderActions extends VirtualPersistentObjectActions {
     async onSelectReference(
         parent: VirtualPersistentObject,
-        referenceAttribute: Dto.PersistentObjectAttributeDto,
-        query: Dto.QueryDto,
-        selectedItem: Dto.QueryResultItemDto | null
+        referenceAttribute: VirtualPersistentObjectAttribute,
+        query: VirtualQuery,
+        selectedItem: VirtualQueryResultItem | null
     ): Promise<void> {
         // Default: sets objectId and value from displayAttribute
         await super.onSelectReference(parent, referenceAttribute, query, selectedItem);
 
         // Custom: also copy related fields
         if (selectedItem) {
-            const customerName = selectedItem.values?.find(v => v.key === "Name")?.value;
+            const customerName = selectedItem.getValue("Name");
             parent.setAttributeValue("CustomerName", customerName);
         }
     }
@@ -1063,14 +1060,13 @@ const linesQuery = order.queries.find(q => q.name === "OrderLines");
 await linesQuery.search();
 ```
 
-## VirtualPersistentObject Helpers
+## VirtualPersistentObject Methods
 
-The `VirtualPersistentObject` type provides convenient helper methods:
+The `VirtualPersistentObject` type provides these methods:
 
 ```typescript
-// In lifecycle hooks, objects are wrapped with helpers
 async onSave(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
-    // Get attribute by name (wrapped with helpers)
+    // Get attribute by name
     const attr = obj.getAttribute("Email");
 
     // Get/set values
@@ -1092,7 +1088,7 @@ async onSave(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
 
 | Method | Description |
 |--------|-------------|
-| `getAttribute(name)` | Get attribute wrapped with helpers |
+| `getAttribute(name)` | Get attribute by name |
 | `getAttributeValue(name)` | Get converted attribute value |
 | `setAttributeValue(name, value)` | Set attribute value with conversion |
 | `setValidationError(name, error)` | Set validation error |
@@ -1151,7 +1147,7 @@ test("complete order workflow", async () => {
     service.registerAction({
         name: "Submit",
         handler: async (args: ActionArgs) => {
-            args.context.setAttributeValue("Status", "Submitted");
+            args.parent.setAttributeValue("Status", "Submitted");
             return args.parent;
         }
     });
@@ -1159,12 +1155,12 @@ test("complete order workflow", async () => {
     service.registerAction({
         name: "Approve",
         handler: async (args: ActionArgs) => {
-            const status = args.context.getAttributeValue("Status");
+            const status = args.parent.getAttributeValue("Status");
             if (status !== "Submitted") {
-                args.context.setNotification("Order must be submitted first", "Error");
+                args.parent.setNotification("Order must be submitted first", "Error");
                 return args.parent;
             }
-            args.context.setAttributeValue("Status", "Approved");
+            args.parent.setAttributeValue("Status", "Approved");
             return args.parent;
         }
     });
@@ -1261,19 +1257,19 @@ test("search and sort query results", async () => {
 
 | Method | Description |
 |--------|-------------|
-| `onConstruct(obj)` | Called when constructing the DTO |
+| `onConstruct(obj: VirtualPersistentObject)` | Called when constructing the DTO |
 | `onLoad(obj, parent)` | Called when loading an existing object |
-| `onNew(obj, parent, query, params)` | Called when creating a new object |
+| `onNew(obj, parent, query: VirtualQuery, params)` | Called when creating a new object |
 | `onSave(obj)` | Called when saving (calls checkRules, then saveNew/saveExisting) |
 | `checkRules(obj)` | Validates attributes against rules (overridable) |
 | `saveNew(obj)` | Called for new objects (protected) |
 | `saveExisting(obj)` | Called for existing objects (protected) |
-| `onRefresh(obj, attribute)` | Called when refreshing |
-| `onDelete(parent, query, items)` | Called when deleting items |
-| `onConstructQuery(query, parent)` | Called when constructing a query |
-| `onExecuteQuery(query, parent, data)` | Called when executing a query |
-| `getEntities(query, parent, data)` | Provide query data |
-| `onSelectReference(parent, attr, query, item)` | Called when selecting a reference |
+| `onRefresh(obj, attribute: VirtualPersistentObjectAttribute)` | Called when refreshing |
+| `onDelete(parent, query: VirtualQuery, items: VirtualQueryResultItem[])` | Called when deleting items |
+| `onConstructQuery(query: VirtualQuery, parent)` | Called when constructing a query |
+| `onExecuteQuery(query: VirtualQuery, parent, data)` | Called when executing a query |
+| `getEntities(query: VirtualQuery, parent, data)` | Provide query data |
+| `onSelectReference(parent, attr: VirtualPersistentObjectAttribute, query: VirtualQuery, item: VirtualQueryResultItem)` | Called when selecting a reference |
 
 ### Type Exports
 
@@ -1287,6 +1283,8 @@ import {
 import type {
     VirtualPersistentObject,
     VirtualPersistentObjectAttribute,
+    VirtualQuery,
+    VirtualQueryResultItem,
     VirtualPersistentObjectConfig,
     VirtualPersistentObjectAttributeConfig,
     VirtualQueryConfig,
@@ -1294,7 +1292,6 @@ import type {
     ActionConfig,
     ActionHandler,
     ActionArgs,
-    ActionContext,
     RuleValidatorFn,
     RuleValidationContext
 } from "@vidyano-labs/virtual-service";

@@ -1,5 +1,5 @@
-import { Dto } from "@vidyano/core";
 import { VirtualPersistentObject, VirtualPersistentObjectAttribute } from "./virtual-persistent-object.js";
+import { VirtualQuery, VirtualQueryResultItem } from "./virtual-query.js";
 import { VirtualQueryExecuteResult } from "./types.js";
 import type { BusinessRuleValidator } from "./business-rules.js";
 import type { VirtualService } from "./virtual-service.js";
@@ -80,7 +80,7 @@ export class VirtualPersistentObjectActions {
     async onNew(
         obj: VirtualPersistentObject,
         parent: VirtualPersistentObject | null,
-        query: Dto.QueryDto | null,
+        query: VirtualQuery | null,
         parameters: Record<string, string> | null
     ): Promise<VirtualPersistentObject> {
         // Default implementation: return obj as-is
@@ -187,16 +187,17 @@ export class VirtualPersistentObjectActions {
      */
     async onSelectReference(
         _parent: VirtualPersistentObject,
-        referenceAttribute: Dto.PersistentObjectAttributeDto,
-        _query: Dto.QueryDto,
-        selectedItem: Dto.QueryResultItemDto | null
+        referenceAttribute: VirtualPersistentObjectAttribute,
+        _query: VirtualQuery,
+        selectedItem: VirtualQueryResultItem | null
     ): Promise<void> {
-        const refAttr = referenceAttribute as Dto.PersistentObjectAttributeWithReferenceDto;
+        // Access reference-specific properties via the underlying DTO
+        const refAttr = referenceAttribute as any;
 
         if (selectedItem == null) {
             // Clear the reference
             refAttr.objectId = null;
-            refAttr.value = null;
+            referenceAttribute.value = null;
         }
         else {
             // Set the reference to the selected item
@@ -204,11 +205,10 @@ export class VirtualPersistentObjectActions {
 
             // Get the display value from the item using displayAttribute
             const displayAttribute = refAttr.displayAttribute;
-            const displayValue = selectedItem.values?.find((v: any) => v.key === displayAttribute);
-            refAttr.value = displayValue?.value || selectedItem.id;
+            referenceAttribute.value = selectedItem.getValue(displayAttribute) || selectedItem.id;
         }
 
-        refAttr.isValueChanged = true;
+        referenceAttribute.isValueChanged = true;
     }
 
     /**
@@ -220,8 +220,8 @@ export class VirtualPersistentObjectActions {
      */
     async onDelete(
         parent: VirtualPersistentObject | null,
-        query: Dto.QueryDto,
-        selectedItems: Dto.QueryResultItemDto[]
+        query: VirtualQuery,
+        selectedItems: VirtualQueryResultItem[]
     ): Promise<void> {
         // Default implementation: do nothing (no persistence in mock)
     }
@@ -232,7 +232,7 @@ export class VirtualPersistentObjectActions {
      * @param query - The Query DTO being constructed
      * @param parent - The parent PersistentObject if this is a detail query, null for top-level queries
      */
-    onConstructQuery(query: Dto.QueryDto, parent: VirtualPersistentObject | null): void {
+    onConstructQuery(query: VirtualQuery, parent: VirtualPersistentObject | null): void {
         // Default implementation: do nothing
     }
 
@@ -245,7 +245,7 @@ export class VirtualPersistentObjectActions {
      * @returns The items matching the query criteria and the total count before pagination
      */
     async onExecuteQuery(
-        query: Dto.QueryDto,
+        query: VirtualQuery,
         parent: VirtualPersistentObject | null,
         data: Record<string, any>[]
     ): Promise<VirtualQueryExecuteResult> {
@@ -323,7 +323,7 @@ export class VirtualPersistentObjectActions {
      * @returns All items matching the query criteria (before pagination)
      */
     async getEntities(
-        _query: Dto.QueryDto,
+        _query: VirtualQuery,
         _parent: VirtualPersistentObject | null,
         data: Record<string, any>[]
     ): Promise<Record<string, any>[]> {

@@ -5,7 +5,6 @@ export type {
     ActionConfig,
     ActionHandler,
     ActionArgs,
-    ActionContext,
     RuleValidationContext,
     VirtualPersistentObjectConfig,
     VirtualQueryConfig,
@@ -14,3 +13,4 @@ export type {
 export type { RuleValidatorFn } from "./business-rules.js";
 export { VirtualPersistentObjectActions } from "./virtual-persistent-object-actions.js";
 export type { VirtualPersistentObject, VirtualPersistentObjectAttribute } from "./virtual-persistent-object.js";
+export type { VirtualQuery, VirtualQueryResultItem } from "./virtual-query.js";

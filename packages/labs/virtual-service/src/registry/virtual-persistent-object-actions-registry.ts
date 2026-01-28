@@ -1,6 +1,7 @@
 import { Dto } from "@vidyano/core";
 import { VirtualPersistentObjectActions } from "../virtual-persistent-object-actions.js";
 import { VirtualPersistentObject, VirtualPersistentObjectAttribute, ConversionContext, createVirtualPersistentObject, createVirtualPersistentObjectAttribute, unwrapVirtualPersistentObject } from "../virtual-persistent-object.js";
+import { VirtualQuery, VirtualQueryResultItem, createVirtualQuery, createVirtualQueryResultItem } from "../virtual-query.js";
 import { VirtualQueryExecuteResult } from "../types.js";
 import { fromServiceValue, toServiceValue } from "../virtual-service-data-type.js";
 import type { BusinessRuleValidator } from "../business-rules.js";
@@ -170,8 +171,11 @@ export class VirtualPersistentObjectActionsRegistry {
             wrappedParent = createVirtualPersistentObject(parent, parentContext);
         }
 
+        // Wrap query if provided
+        const wrappedQuery: VirtualQuery | null = query ? createVirtualQuery(query) : null;
+
         const instance = this.createInstance(dto.type);
-        const result = await instance.onNew(wrappedObj, wrappedParent, query, parameters);
+        const result = await instance.onNew(wrappedObj, wrappedParent, wrappedQuery, parameters);
 
         return unwrapVirtualPersistentObject(result);
     }
@@ -234,8 +238,12 @@ export class VirtualPersistentObjectActionsRegistry {
         conversionContext: ConversionContext
     ): Promise<void> {
         const wrappedParent = createVirtualPersistentObject(parent, conversionContext);
+        const wrappedAttribute = createVirtualPersistentObjectAttribute(referenceAttribute, conversionContext);
+        const wrappedQuery = createVirtualQuery(query);
+        const wrappedSelectedItem: VirtualQueryResultItem | null = selectedItem ? createVirtualQueryResultItem(selectedItem) : null;
+
         const instance = this.createInstance(parent.type);
-        await instance.onSelectReference(wrappedParent, referenceAttribute, query, selectedItem);
+        await instance.onSelectReference(wrappedParent, wrappedAttribute, wrappedQuery, wrappedSelectedItem);
     }
 
     /**
@@ -256,13 +264,17 @@ export class VirtualPersistentObjectActionsRegistry {
             wrappedParent = createVirtualPersistentObject(parent, conversionContext);
         }
 
+        // Wrap query and selectedItems
+        const wrappedQuery = createVirtualQuery(query);
+        const wrappedSelectedItems = selectedItems.map(item => createVirtualQueryResultItem(item));
+
         // Get type from query's persistentObject
         const type = query.persistentObject?.type;
         if (!type)
             throw new Error("Query does not have a persistentObject type");
 
         const instance = this.createInstance(type);
-        await instance.onDelete(wrappedParent, query, selectedItems);
+        await instance.onDelete(wrappedParent, wrappedQuery, wrappedSelectedItems);
     }
 
     /**
@@ -281,13 +293,16 @@ export class VirtualPersistentObjectActionsRegistry {
             wrappedParent = createVirtualPersistentObject(parent, conversionContext);
         }
 
+        // Wrap query
+        const wrappedQuery = createVirtualQuery(query);
+
         // Get type from query's persistentObject
         const type = query.persistentObject?.type;
         if (!type)
             throw new Error("Query does not have a persistentObject type");
 
         const instance = this.createInstance(type);
-        instance.onConstructQuery(query, wrappedParent);
+        instance.onConstructQuery(wrappedQuery, wrappedParent);
     }
 
     /**
@@ -309,13 +324,16 @@ export class VirtualPersistentObjectActionsRegistry {
             wrappedParent = createVirtualPersistentObject(parent, conversionContext);
         }
 
+        // Wrap query
+        const wrappedQuery = createVirtualQuery(query);
+
         // Get type from query's persistentObject
         const type = query.persistentObject?.type;
         if (!type)
             throw new Error("Query does not have a persistentObject type");
 
         const instance = this.createInstance(type);
-        return await instance.onExecuteQuery(query, wrappedParent, data);
+        return await instance.onExecuteQuery(wrappedQuery, wrappedParent, data);
     }
 
     /**

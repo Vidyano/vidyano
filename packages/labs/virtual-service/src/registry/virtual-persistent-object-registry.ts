@@ -1,6 +1,6 @@
 import { Dto } from "@vidyano/core";
-import { VirtualPersistentObjectConfig, VirtualPersistentObjectAttributeConfig, ActionHandler, ActionContext } from "../types.js";
-import { ConversionContext } from "../virtual-persistent-object.js";
+import { VirtualPersistentObjectConfig, VirtualPersistentObjectAttributeConfig, ActionHandler } from "../types.js";
+import { ConversionContext, createVirtualPersistentObject, unwrapVirtualPersistentObject } from "../virtual-persistent-object.js";
 import { fromServiceValue, toServiceValue } from "../virtual-service-data-type.js";
 import type { VirtualQueryRegistry } from "./virtual-query-registry.js";
 import type { VirtualPersistentObjectActionsRegistry } from "./virtual-persistent-object-actions-registry.js";
@@ -133,31 +133,27 @@ export class VirtualPersistentObjectRegistry {
         if (!handler)
             throw new Error(`Action "${actionName}" is not registered`);
 
-        // Create action context
-        const context = this.#createActionContext(parent);
+        // Wrap parent for the action handler
+        const conversionContext = this.#createConversionContext();
+        const wrappedParent = createVirtualPersistentObject(parent, conversionContext);
 
         // Build unified action args for PersistentObject actions
         const args = {
-            parent: parent,
+            parent: wrappedParent,
             query: undefined,
             selectedItems: undefined,
-            parameters: request.parameters,
-            context: context
+            parameters: request.parameters
         };
 
         // Execute handler and get result
         const result = await handler(args);
 
-        // Handle both old and new API formats for backwards compatibility
-        // Old API: handler returns { result: PersistentObjectDto }
-        // New API: handler returns PersistentObjectDto | null
+        // Unwrap result - handler returns VirtualPersistentObject | null
         let finalResult: Dto.PersistentObjectDto;
-        if (result && typeof result === "object" && "result" in result) {
-            // Old API format - extract the result property
-            finalResult = (result as any).result || parent;
+        if (result) {
+            finalResult = unwrapVirtualPersistentObject(result);
         } else {
-            // New API format - use directly
-            finalResult = result || parent;
+            finalResult = parent;
         }
 
         // Return response with result
@@ -189,60 +185,6 @@ export class VirtualPersistentObjectRegistry {
 
         return {
             result: parent
-        };
-    }
-
-    /**
-     * Creates an action context for custom action handlers
-     */
-    #createActionContext(po: Dto.PersistentObjectDto): ActionContext {
-        return {
-            getAttribute: (name: string) => {
-                return po.attributes?.find(a => a.name === name);
-            },
-
-            getAttributeValue: (name: string) => {
-                const attr = po.attributes?.find(a => a.name === name);
-                if (!attr)
-                    return undefined;
-
-                return fromServiceValue(attr.value, attr.type);
-            },
-
-            setAttributeValue: (name: string, value: any) => {
-                const attr = po.attributes?.find(a => a.name === name);
-                if (attr) {
-                    attr.value = toServiceValue(value, attr.type);
-                    attr.isValueChanged = true;
-                }
-            },
-
-            getConvertedValue: (attr: Dto.PersistentObjectAttributeDto) => {
-                return fromServiceValue(attr.value, attr.type);
-            },
-
-            setConvertedValue: (attr: Dto.PersistentObjectAttributeDto, value: any) => {
-                attr.value = toServiceValue(value, attr.type);
-                attr.isValueChanged = true;
-            },
-
-            setValidationError: (name: string, error: string) => {
-                const attr = po.attributes?.find(a => a.name === name);
-                if (attr)
-                    attr.validationError = error;
-            },
-
-            clearValidationError: (name: string) => {
-                const attr = po.attributes?.find(a => a.name === name);
-                if (attr)
-                    attr.validationError = undefined;
-            },
-
-            setNotification: (message: string, type: Dto.NotificationType, duration?: number) => {
-                po.notification = message;
-                po.notificationType = type;
-                po.notificationDuration = duration;
-            }
         };
     }
 

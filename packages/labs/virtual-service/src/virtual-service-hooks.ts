@@ -1,6 +1,7 @@
 import { ServiceHooks, Dto } from "@vidyano/core";
 import { VirtualPersistentObjectConfig, VirtualQueryConfig, ActionConfig, ActionHandler, VirtualPersistentObjectAttributeConfig } from "./types.js";
-import { ConversionContext, VirtualQuery, createVirtualQuery } from "./virtual-persistent-object.js";
+import { ConversionContext, createVirtualPersistentObject, unwrapVirtualPersistentObject } from "./virtual-persistent-object.js";
+import { VirtualQuery, createVirtualQuery, createVirtualQueryResultItem } from "./virtual-query.js";
 import { VirtualPersistentObjectRegistry } from "./registry/virtual-persistent-object-registry.js";
 import { VirtualQueryRegistry } from "./registry/virtual-query-registry.js";
 import { VirtualPersistentObjectActionsRegistry } from "./registry/virtual-persistent-object-actions-registry.js";
@@ -643,82 +644,38 @@ export class VirtualServiceHooks extends ServiceHooks {
         if (!handler)
             throw new Error(`Action "${actionName}" is not registered`);
 
-        // Create action context - use parent if provided, otherwise fall back to query's template PO
-        const contextPo = parent || query.persistentObject;
-        const context = this.#createActionContext(contextPo);
+        // Wrap parent, query, and selectedItems for the handler
+        const conversionContext = this.#createConversionContext();
+        const wrappedParent = parent ? createVirtualPersistentObject(parent, conversionContext) : null;
+        const wrappedQuery = createVirtualQuery(query);
+
+        const queryActionRequest = request as Dto.ExecuteQueryActionRequest;
+        const wrappedSelectedItems = queryActionRequest.selectedItems
+            ? queryActionRequest.selectedItems.map(item => createVirtualQueryResultItem(item))
+            : undefined;
 
         // Build unified action args
-        const queryActionRequest = request as Dto.ExecuteQueryActionRequest;
         const args = {
-            parent: parent ?? null,
-            query: query,
-            selectedItems: queryActionRequest.selectedItems,
-            parameters: request.parameters,
-            context: context
+            parent: wrappedParent,
+            query: wrappedQuery,
+            selectedItems: wrappedSelectedItems,
+            parameters: request.parameters
         };
 
         // Execute handler
         const result = await handler(args);
 
-        // Handle result - use parent if available, otherwise use template
-        const finalResult = this.#normalizeActionResult(result, contextPo);
+        // Unwrap result - handler returns VirtualPersistentObject | null
+        const contextPo = parent || query.persistentObject;
+        let finalResult: Dto.PersistentObjectDto;
+        if (result) {
+            finalResult = unwrapVirtualPersistentObject(result);
+        } else {
+            finalResult = contextPo;
+        }
 
         return {
             result: finalResult
-        };
-    }
-
-    /**
-     * Creates an action context for attribute manipulation
-     */
-    #createActionContext(po: Dto.PersistentObjectDto): any {
-        return {
-            getAttribute: (name: string) => {
-                return po.attributes?.find(a => a.name === name);
-            },
-
-            getAttributeValue: (name: string) => {
-                const attr = po.attributes?.find(a => a.name === name);
-                if (!attr)
-                    return undefined;
-
-                return fromServiceValue(attr.value, attr.type);
-            },
-
-            setAttributeValue: (name: string, value: any) => {
-                const attr = po.attributes?.find(a => a.name === name);
-                if (attr) {
-                    attr.value = toServiceValue(value, attr.type);
-                    attr.isValueChanged = true;
-                }
-            },
-
-            getConvertedValue: (attr: Dto.PersistentObjectAttributeDto) => {
-                return fromServiceValue(attr.value, attr.type);
-            },
-
-            setConvertedValue: (attr: Dto.PersistentObjectAttributeDto, value: any) => {
-                attr.value = toServiceValue(value, attr.type);
-                attr.isValueChanged = true;
-            },
-
-            setValidationError: (name: string, error: string) => {
-                const attr = po.attributes?.find(a => a.name === name);
-                if (attr)
-                    attr.validationError = error;
-            },
-
-            clearValidationError: (name: string) => {
-                const attr = po.attributes?.find(a => a.name === name);
-                if (attr)
-                    attr.validationError = undefined;
-            },
-
-            setNotification: (message: string, type: Dto.NotificationType, duration?: number) => {
-                po.notification = message;
-                po.notificationType = type;
-                po.notificationDuration = duration;
-            }
         };
     }
 
@@ -737,19 +694,4 @@ export class VirtualServiceHooks extends ServiceHooks {
         };
     }
 
-    /**
-     * Normalizes action result (handles both old and new API formats)
-     */
-    #normalizeActionResult(result: any, defaultParent: Dto.PersistentObjectDto): Dto.PersistentObjectDto {
-        // Handle both old and new API formats for backwards compatibility
-        // Old API: handler returns { result: PersistentObjectDto }
-        // New API: handler returns PersistentObjectDto | null
-        if (result && typeof result === "object" && "result" in result) {
-            // Old API format - extract the result property
-            return (result as any).result || defaultParent;
-        }
-
-        // New API format - use directly
-        return result || defaultParent;
-    }
 }
