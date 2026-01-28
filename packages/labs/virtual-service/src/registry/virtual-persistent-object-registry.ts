@@ -1,7 +1,6 @@
 import { Dto } from "@vidyano/core";
 import { VirtualPersistentObjectConfig, VirtualPersistentObjectAttributeConfig, ActionHandler } from "../types.js";
-import { ConversionContext, createVirtualPersistentObject, unwrapVirtualPersistentObject } from "../virtual-persistent-object.js";
-import { fromServiceValue, toServiceValue } from "../virtual-service-data-type.js";
+import { createVirtualPersistentObject, unwrapVirtualPersistentObject } from "../virtual-persistent-object.js";
 import type { VirtualQueryRegistry } from "./virtual-query-registry.js";
 import type { VirtualPersistentObjectActionsRegistry } from "./virtual-persistent-object-actions-registry.js";
 import type { VirtualService } from "../virtual-service.js";
@@ -54,15 +53,12 @@ export class VirtualPersistentObjectRegistry {
                 po.actions.push("Save");
         }
 
-        // Call lifecycle hooks
-        const conversionContext = this.#createConversionContext();
-
         // Always call onConstruct
-        this.#actionsRegistry.executeConstruct(po, conversionContext);
+        this.#actionsRegistry.executeConstruct(po);
 
         // Call onLoad only for existing objects
         if (!isNew)
-            po = await this.#actionsRegistry.executeLoad(po, parent, conversionContext);
+            po = await this.#actionsRegistry.executeLoad(po, parent);
 
         return po;
     }
@@ -95,14 +91,11 @@ export class VirtualPersistentObjectRegistry {
                 po.actions.push("Save");
         }
 
-        // Call lifecycle hooks
-        const conversionContext = this.#createConversionContext();
-
         // Always call onConstruct first
-        this.#actionsRegistry.executeConstruct(po, conversionContext);
+        this.#actionsRegistry.executeConstruct(po);
 
         // Then call onNew for new objects
-        po = await this.#actionsRegistry.executeNew(po, parent, query, parameters, conversionContext);
+        po = await this.#actionsRegistry.executeNew(po, parent, query, parameters);
 
         return po;
     }
@@ -125,8 +118,7 @@ export class VirtualPersistentObjectRegistry {
         if (actionName === "Save") {
             // No need to merge config here - parent is already wrapped with config metadata
             // at entry point via #wrapPersistentObject in virtual-service-hooks.ts
-            const conversionContext = this.#createConversionContext();
-            parent = await this.#actionsRegistry.executeSave(parent, conversionContext);
+            parent = await this.#actionsRegistry.executeSave(parent);
             return { result: parent };
         }
 
@@ -137,8 +129,7 @@ export class VirtualPersistentObjectRegistry {
             throw new Error(`Action "${actionName}" is not registered`);
 
         // Wrap parent for the action handler
-        const conversionContext = this.#createConversionContext();
-        const wrappedParent = createVirtualPersistentObject(parent, conversionContext, this.#service);
+        const wrappedParent = createVirtualPersistentObject(parent, this.#service);
 
         // Build unified action args for PersistentObject actions
         const args = {
@@ -183,26 +174,10 @@ export class VirtualPersistentObjectRegistry {
             : undefined;
 
         // Call onRefresh from actions registry
-        const conversionContext = this.#createConversionContext();
-        parent = await this.#actionsRegistry.executeRefresh(parent, triggeredAttribute, conversionContext);
+        parent = await this.#actionsRegistry.executeRefresh(parent, triggeredAttribute);
 
         return {
             result: parent
-        };
-    }
-
-    /**
-     * Creates a conversion context for type conversions
-     */
-    #createConversionContext(): ConversionContext {
-        return {
-            getConvertedValue: (attr: Dto.PersistentObjectAttributeDto) => {
-                return fromServiceValue(attr.value, attr.type);
-            },
-            setConvertedValue: (attr: Dto.PersistentObjectAttributeDto, value: any) => {
-                attr.value = toServiceValue(value, attr.type);
-                attr.isValueChanged = true;
-            }
         };
     }
 }

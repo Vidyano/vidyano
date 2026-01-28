@@ -1,57 +1,22 @@
 import { ServiceHooks, Dto } from "@vidyano/core";
-import { VirtualPersistentObjectConfig, VirtualQueryConfig, ActionConfig, ActionHandler, VirtualPersistentObjectAttributeConfig } from "./types.js";
-import { ConversionContext, createVirtualPersistentObject, unwrapVirtualPersistentObject } from "./virtual-persistent-object.js";
+import { VirtualPersistentObjectAttributeConfig } from "./types.js";
+import { createVirtualPersistentObject, unwrapVirtualPersistentObject } from "./virtual-persistent-object.js";
 import { VirtualQuery, createVirtualQuery, createVirtualQueryResultItem } from "./virtual-query.js";
-import { VirtualPersistentObjectRegistry } from "./registry/virtual-persistent-object-registry.js";
-import { VirtualQueryRegistry } from "./registry/virtual-query-registry.js";
-import { VirtualPersistentObjectActionsRegistry } from "./registry/virtual-persistent-object-actions-registry.js";
-import { BusinessRuleValidator, RuleValidatorFn } from "./business-rules.js";
-import { VirtualPersistentObjectActions } from "./virtual-persistent-object-actions.js";
-import { fromServiceValue, toServiceValue } from "./virtual-service-data-type.js";
 import type { VirtualService } from "./virtual-service.js";
 
 /**
  * Virtual implementation of ServiceHooks for testing without a backend
  */
 export class VirtualServiceHooks extends ServiceHooks {
-    #persistentObjectRegistry!: VirtualPersistentObjectRegistry;
-    #queryRegistry!: VirtualQueryRegistry;
-    #actionDefinitions = new Map<string, { name: string; displayName: string; isPinned: boolean }>();
-    #actionHandlers = new Map<string, ActionHandler>();
-    #validator!: BusinessRuleValidator;
-    #persistentObjectActionsRegistry!: VirtualPersistentObjectActionsRegistry;
-    #builtInActions = new Set(["New", "Delete", "SelectReference", "RefreshQuery", "Edit", "CancelEdit", "Save", "EndEdit"]);
     #service!: VirtualService;
 
     constructor() {
         super();
-
-        // Register default action definitions (these are built-in actions without custom handlers)
-        this.#actionDefinitions.set("AddReference", { name: "AddReference", displayName: "Add", isPinned: false });
-        this.#actionDefinitions.set("BulkEdit", { name: "BulkEdit", displayName: "Edit", isPinned: false });
-        this.#actionDefinitions.set("CancelEdit", { name: "CancelEdit", displayName: "Cancel", isPinned: false });
-        this.#actionDefinitions.set("CancelSave", { name: "CancelSave", displayName: "Cancel", isPinned: false });
-        this.#actionDefinitions.set("Delete", { name: "Delete", displayName: "Delete", isPinned: false });
-        this.#actionDefinitions.set("Edit", { name: "Edit", displayName: "Edit", isPinned: false });
-        this.#actionDefinitions.set("EndEdit", { name: "EndEdit", displayName: "Save", isPinned: false });
-        this.#actionDefinitions.set("Filter", { name: "Filter", displayName: "", isPinned: false });
-        this.#actionDefinitions.set("New", { name: "New", displayName: "New", isPinned: false });
-        this.#actionDefinitions.set("RefreshQuery", { name: "RefreshQuery", displayName: "", isPinned: false });
-        this.#actionDefinitions.set("Remove", { name: "Remove", displayName: "Remove", isPinned: false });
-        this.#actionDefinitions.set("Save", { name: "Save", displayName: "Save", isPinned: false });
-        this.#actionDefinitions.set("SelectReference", { name: "SelectReference", displayName: "Select", isPinned: false });
     }
 
-    /**
-     * Initializes all components that depend on the VirtualService instance
-     * @internal Called by VirtualService constructor
-     */
+    /** @internal */
     initialize(service: VirtualService): void {
         this.#service = service;
-        this.#validator = new BusinessRuleValidator(service);
-        this.#persistentObjectActionsRegistry = new VirtualPersistentObjectActionsRegistry(this.#validator, service);
-        this.#queryRegistry = new VirtualQueryRegistry(this.#persistentObjectActionsRegistry, service);
-        this.#persistentObjectRegistry = new VirtualPersistentObjectRegistry(this.#actionHandlers, this.#queryRegistry, this.#persistentObjectActionsRegistry, service);
     }
 
     /**
@@ -106,116 +71,6 @@ export class VirtualServiceHooks extends ServiceHooks {
     }
 
     /**
-     * Registers a PersistentObject configuration
-     */
-    registerPersistentObject(config: VirtualPersistentObjectConfig, actionsClass?: typeof VirtualPersistentObjectActions): void {
-        // Validate configuration
-        if (!config.type)
-            throw new Error("VirtualPersistentObjectConfig.type is required");
-        if (!config.attributes || config.attributes.length === 0)
-            throw new Error("VirtualPersistentObjectConfig.attributes must have at least one attribute");
-
-        // Validate that referenced actions are registered (skip built-in actions)
-        if (config.actions) {
-            config.actions.forEach(actionName => {
-                if (!this.#builtInActions.has(actionName) && !this.#actionHandlers.has(actionName))
-                    throw new Error(`Action "${actionName}" is not registered. Call registerAction first.`);
-            });
-        }
-
-        // Validate that referenced queries are registered
-        if (config.queries) {
-            config.queries.forEach(queryName => {
-                if (!this.#queryRegistry.hasQuery(queryName))
-                    throw new Error(`Query "${queryName}" is not registered. Call registerQuery first.`);
-            });
-        }
-
-        // Validate that lookup queries for reference attributes are registered
-        if (config.attributes) {
-            config.attributes.forEach(attr => {
-                if (attr.lookup) {
-                    if (!this.#queryRegistry.hasQuery(attr.lookup))
-                        throw new Error(`Lookup query "${attr.lookup}" for attribute "${attr.name}" is not registered. Call registerQuery first.`);
-                }
-            });
-        }
-
-        // Register with registry
-        this.#persistentObjectRegistry.register(config);
-
-        // Register actions class if provided
-        if (actionsClass)
-            this.#persistentObjectActionsRegistry.register(config.type, actionsClass);
-    }
-
-    /**
-     * Registers a Query configuration
-     */
-    registerQuery(config: VirtualQueryConfig): void {
-        // Validate configuration
-        if (!config.name)
-            throw new Error("VirtualQueryConfig.name is required");
-        if (!config.persistentObject)
-            throw new Error("VirtualQueryConfig.persistentObject is required");
-
-        // Verify PersistentObject is already registered
-        const persistentObjectConfig = this.#persistentObjectRegistry.getConfig(config.persistentObject);
-        if (!persistentObjectConfig)
-            throw new Error(`PersistentObject type '${config.persistentObject}' must be registered before creating a query. Call registerPersistentObject first.`);
-
-        // Validate that referenced actions are registered (skip built-in actions)
-        if (config.actions) {
-            config.actions.forEach(actionName => {
-                if (!this.#builtInActions.has(actionName) && !this.#actionHandlers.has(actionName))
-                    throw new Error(`Action "${actionName}" is not registered. Call registerAction first.`);
-            });
-        }
-
-        if (config.itemActions) {
-            config.itemActions.forEach(actionName => {
-                if (!this.#builtInActions.has(actionName) && !this.#actionHandlers.has(actionName))
-                    throw new Error(`Action "${actionName}" is not registered. Call registerAction first.`);
-            });
-        }
-
-        // Register with query registry
-        this.#queryRegistry.register(config, persistentObjectConfig);
-    }
-
-    /**
-     * Registers a custom action that can be used on PersistentObjects and Queries
-     * @param config - The action configuration with handler
-     */
-    registerAction(config: ActionConfig): void {
-        // Validate configuration
-        if (!config.name)
-            throw new Error("ActionConfig.name is required");
-        if (!config.handler)
-            throw new Error("ActionConfig.handler is required");
-
-        // Register action definition
-        this.#actionDefinitions.set(config.name, {
-            name: config.name,
-            displayName: config.displayName || config.name,
-            isPinned: config.isPinned || false
-        });
-
-        // Register action handler
-        this.#actionHandlers.set(config.name, config.handler);
-    }
-
-    /**
-     * Registers a custom business rule for validation
-     * @param name - The rule name (cannot override built-in rules)
-     * @param validator - The validation function
-     */
-    registerBusinessRule(name: string, validator: RuleValidatorFn): void {
-        this.#validator.registerCustomRule(name, validator);
-    }
-
-
-    /**
      * Wraps an incoming PersistentObject DTO with config augmentation
      * Merges server config metadata with client DTO values.
      * Only processes attributes that exist in the client DTO (client defines shape).
@@ -226,7 +81,7 @@ export class VirtualServiceHooks extends ServiceHooks {
         if (!dto)
             return null;
 
-        const config = this.#persistentObjectRegistry.getConfig(dto.type);
+        const config = this.#service.persistentObjectRegistry.getConfig(dto.type);
         if (!config)
             throw new Error(`PersistentObject type "${dto.type}" is not registered`);
 
@@ -313,11 +168,11 @@ export class VirtualServiceHooks extends ServiceHooks {
         if (!dto)
             return null;
 
-        const queryConfig = this.#queryRegistry.getQueryConfig(dto.name!);
+        const queryConfig = this.#service.queryRegistry.getQueryConfig(dto.name!);
         if (!queryConfig)
             throw new Error(`Query "${dto.name}" is not registered`);
 
-        const poConfig = this.#persistentObjectRegistry.getConfig(queryConfig.persistentObject);
+        const poConfig = this.#service.persistentObjectRegistry.getConfig(queryConfig.persistentObject);
 
         // Process columns - iterate over CLIENT columns only
         if (dto.columns && poConfig) {
@@ -371,7 +226,7 @@ export class VirtualServiceHooks extends ServiceHooks {
      */
     #handleGetApplication(): Dto.GetApplicationResponse {
         // Build action definition items
-        const actionItems: Dto.QueryResultItemDto[] = Array.from(this.#actionDefinitions.values()).map(action => ({
+        const actionItems: Dto.QueryResultItemDto[] = Array.from(this.#service._actionDefinitions.values()).map(action => ({
             id: crypto.randomUUID(),
             values: [
                 { key: "Name", value: action.name },
@@ -480,7 +335,7 @@ export class VirtualServiceHooks extends ServiceHooks {
      */
     async #handleGetQuery(request: Dto.GetQueryRequest): Promise<Dto.GetQueryResponse> {
         const queryName = request.id;
-        const queryDto = await this.#queryRegistry.getQuery(queryName);
+        const queryDto = await this.#service.queryRegistry.getQuery(queryName);
 
         return {
             query: queryDto
@@ -495,7 +350,7 @@ export class VirtualServiceHooks extends ServiceHooks {
         const wrappedQuery = this.#wrapQuery(request.query);
         const wrappedParent = this.#wrapPersistentObject(request.parent);
 
-        const result = await this.#queryRegistry.executeQuery(
+        const result = await this.#service.queryRegistry.executeQuery(
             wrappedQuery as Dto.QueryDto,
             wrappedParent
         );
@@ -516,7 +371,7 @@ export class VirtualServiceHooks extends ServiceHooks {
         // WRAP parent at entry point
         const wrappedParent = this.#wrapPersistentObject(request.parent);
 
-        const po = await this.#persistentObjectRegistry.getPersistentObject(type, objectId, isNew, wrappedParent);
+        const po = await this.#service.persistentObjectRegistry.getPersistentObject(type, objectId, isNew, wrappedParent);
 
         return {
             result: po
@@ -535,7 +390,7 @@ export class VirtualServiceHooks extends ServiceHooks {
         // Check if this is a query action
         const queryActionRequest = request as Dto.ExecuteQueryActionRequest;
         if (queryActionRequest.query) {
-            const queryDto = await this.#queryRegistry.getQuery(queryActionRequest.query.name!);
+            const queryDto = await this.#service.queryRegistry.getQuery(queryActionRequest.query.name!);
             return await this.#executeQueryAction(
                 { ...request, parent: wrappedParent },
                 queryDto,
@@ -544,7 +399,7 @@ export class VirtualServiceHooks extends ServiceHooks {
         }
 
         // PersistentObject action - must have parent
-        return await this.#persistentObjectRegistry.executeAction({
+        return await this.#service.persistentObjectRegistry.executeAction({
             ...request,
             parent: wrappedParent
         });
@@ -568,7 +423,7 @@ export class VirtualServiceHooks extends ServiceHooks {
                 throw new Error("Query does not have a persistentObject type");
 
             // Create a new PersistentObject with the full lifecycle
-            const newPo = await this.#persistentObjectRegistry.createNewPersistentObject(
+            const newPo = await this.#service.persistentObjectRegistry.createNewPersistentObject(
                 type,
                 parent,
                 query,
@@ -601,13 +456,11 @@ export class VirtualServiceHooks extends ServiceHooks {
             const selectedItem = selectedItems.length > 0 ? selectedItems[0] : null;
 
             // Call onSelectReference - base implementation sets objectId/value
-            const conversionContext = this.#createConversionContext();
-            await this.#persistentObjectActionsRegistry.executeSelectReference(
+            await this.#service.actionsRegistry.executeSelectReference(
                 parent,
                 refAttr,
                 query,
-                selectedItem,
-                conversionContext
+                selectedItem
             );
 
             return {
@@ -629,7 +482,7 @@ export class VirtualServiceHooks extends ServiceHooks {
                 throw new Error("Delete requires at least one selected item");
 
             // Call onDelete lifecycle hook
-            await this.#persistentObjectActionsRegistry.executeDelete(
+            await this.#service.actionsRegistry.executeDelete(
                 parent || null,
                 query,
                 selectedItems
@@ -642,13 +495,12 @@ export class VirtualServiceHooks extends ServiceHooks {
         }
 
         // Get action handler
-        const handler = this.#actionHandlers.get(actionName);
+        const handler = this.#service.actionHandlers.get(actionName);
         if (!handler)
             throw new Error(`Action "${actionName}" is not registered`);
 
         // Wrap parent, query, and selectedItems for the handler
-        const conversionContext = this.#createConversionContext();
-        const wrappedParent = parent ? createVirtualPersistentObject(parent, conversionContext, this.#service) : null;
+        const wrappedParent = parent ? createVirtualPersistentObject(parent, this.#service) : null;
         const wrappedQuery = createVirtualQuery(query, undefined, this.#service);
 
         const queryActionRequest = request as Dto.ExecuteQueryActionRequest;
@@ -678,21 +530,6 @@ export class VirtualServiceHooks extends ServiceHooks {
 
         return {
             result: finalResult
-        };
-    }
-
-    /**
-     * Creates a conversion context for type conversions
-     */
-    #createConversionContext(): ConversionContext {
-        return {
-            getConvertedValue: (attr: Dto.PersistentObjectAttributeDto) => {
-                return fromServiceValue(attr.value, attr.type);
-            },
-            setConvertedValue: (attr: Dto.PersistentObjectAttributeDto, value: any) => {
-                attr.value = toServiceValue(value, attr.type);
-                attr.isValueChanged = true;
-            }
         };
     }
 

@@ -1,8 +1,11 @@
-import { Service, Application } from "@vidyano/core";
+import { Service, Application, DataType } from "@vidyano/core";
 import { VirtualServiceHooks } from "./virtual-service-hooks.js";
-import { VirtualPersistentObjectConfig, VirtualQueryConfig, ActionConfig } from "./types.js";
-import { RuleValidatorFn } from "./business-rules.js";
+import { VirtualPersistentObjectConfig, VirtualQueryConfig, ActionConfig, ActionHandler } from "./types.js";
+import { BusinessRuleValidator, RuleValidatorFn } from "./business-rules.js";
 import { VirtualPersistentObjectActions } from "./virtual-persistent-object-actions.js";
+import { VirtualPersistentObjectActionsRegistry } from "./registry/virtual-persistent-object-actions-registry.js";
+import { VirtualPersistentObjectRegistry } from "./registry/virtual-persistent-object-registry.js";
+import { VirtualQueryRegistry } from "./registry/virtual-query-registry.js";
 
 /**
  * A virtual service for testing without a backend.
@@ -23,6 +26,13 @@ import { VirtualPersistentObjectActions } from "./virtual-persistent-object-acti
  */
 export class VirtualService extends Service {
     #isInitialized = false;
+    readonly #businessRuleValidator: BusinessRuleValidator;
+    readonly #actionsRegistry: VirtualPersistentObjectActionsRegistry;
+    readonly #persistentObjectRegistry: VirtualPersistentObjectRegistry;
+    readonly #queryRegistry: VirtualQueryRegistry;
+    readonly #actionDefinitions = new Map<string, { name: string; displayName: string; isPinned: boolean }>();
+    readonly #actionHandlers = new Map<string, ActionHandler>();
+    readonly #builtInActions = new Set(["New", "Delete", "SelectReference", "RefreshQuery", "Edit", "CancelEdit", "Save", "EndEdit"]);
 
     // Global (static) messages
     static #messages: Record<string, string> = {
@@ -45,6 +55,28 @@ export class VirtualService extends Service {
      */
     static get messages(): Record<string, string> {
         return { ...VirtualService.#messages };
+    }
+
+    /**
+     * Converts a service string value to a primitive JavaScript type.
+     * Unlike DataType.fromServiceString, this returns number instead of BigNumber
+     * for numeric types (Decimal, Double, Int64, etc.).
+     */
+    static fromServiceValue(value: any, type: string): any {
+        const result = DataType.fromServiceString(value, type);
+
+        // Check for BigNumber (has toNumber method) and convert to number primitive
+        if (result && typeof result.toNumber === "function")
+            return result.toNumber();
+
+        return result;
+    }
+
+    /**
+     * Converts a primitive JavaScript value to a service string.
+     */
+    static toServiceValue(value: any, type: string): string {
+        return DataType.toServiceString(value, type);
     }
 
     /**
@@ -87,7 +119,51 @@ export class VirtualService extends Service {
      */
     constructor(hooks?: VirtualServiceHooks) {
         super("http://virtual.local", hooks ?? new VirtualServiceHooks(), true);
+
+        this.#businessRuleValidator = new BusinessRuleValidator(this);
+        this.#actionsRegistry = new VirtualPersistentObjectActionsRegistry(this.#businessRuleValidator, this);
+        this.#queryRegistry = new VirtualQueryRegistry(this.#actionsRegistry, this);
+        this.#persistentObjectRegistry = new VirtualPersistentObjectRegistry(this.#actionHandlers, this.#queryRegistry, this.#actionsRegistry, this);
+        this.#actionDefinitions.set("AddReference", { name: "AddReference", displayName: "Add", isPinned: false });
+        this.#actionDefinitions.set("BulkEdit", { name: "BulkEdit", displayName: "Edit", isPinned: false });
+        this.#actionDefinitions.set("CancelEdit", { name: "CancelEdit", displayName: "Cancel", isPinned: false });
+        this.#actionDefinitions.set("CancelSave", { name: "CancelSave", displayName: "Cancel", isPinned: false });
+        this.#actionDefinitions.set("Delete", { name: "Delete", displayName: "Delete", isPinned: false });
+        this.#actionDefinitions.set("Edit", { name: "Edit", displayName: "Edit", isPinned: false });
+        this.#actionDefinitions.set("EndEdit", { name: "EndEdit", displayName: "Save", isPinned: false });
+        this.#actionDefinitions.set("Filter", { name: "Filter", displayName: "", isPinned: false });
+        this.#actionDefinitions.set("New", { name: "New", displayName: "New", isPinned: false });
+        this.#actionDefinitions.set("RefreshQuery", { name: "RefreshQuery", displayName: "", isPinned: false });
+        this.#actionDefinitions.set("Remove", { name: "Remove", displayName: "Remove", isPinned: false });
+        this.#actionDefinitions.set("Save", { name: "Save", displayName: "Save", isPinned: false });
+        this.#actionDefinitions.set("SelectReference", { name: "SelectReference", displayName: "Select", isPinned: false });
+
         (this.hooks as VirtualServiceHooks).initialize(this);
+    }
+
+    /** @internal */
+    get persistentObjectRegistry(): VirtualPersistentObjectRegistry {
+        return this.#persistentObjectRegistry;
+    }
+
+    /** @internal */
+    get queryRegistry(): VirtualQueryRegistry {
+        return this.#queryRegistry;
+    }
+
+    /** @internal */
+    get actionsRegistry(): VirtualPersistentObjectActionsRegistry {
+        return this.#actionsRegistry;
+    }
+
+    /** @internal */
+    get _actionDefinitions(): Map<string, { name: string; displayName: string; isPinned: boolean }> {
+        return this.#actionDefinitions;
+    }
+
+    /** @internal */
+    get actionHandlers(): Map<string, ActionHandler> {
+        return this.#actionHandlers;
     }
 
     /**
@@ -110,7 +186,39 @@ export class VirtualService extends Service {
      */
     registerPersistentObject(config: VirtualPersistentObjectConfig, lifecycle?: typeof VirtualPersistentObjectActions): void {
         this.#ensureNotInitialized();
-        (this.hooks as VirtualServiceHooks).registerPersistentObject(config, lifecycle);
+
+        if (!config.type)
+            throw new Error("VirtualPersistentObjectConfig.type is required");
+        if (!config.attributes || config.attributes.length === 0)
+            throw new Error("VirtualPersistentObjectConfig.attributes must have at least one attribute");
+
+        if (config.actions) {
+            config.actions.forEach(actionName => {
+                if (!this.#builtInActions.has(actionName) && !this.#actionHandlers.has(actionName))
+                    throw new Error(`Action "${actionName}" is not registered. Call registerAction first.`);
+            });
+        }
+
+        if (config.queries) {
+            config.queries.forEach(queryName => {
+                if (!this.#queryRegistry.hasQuery(queryName))
+                    throw new Error(`Query "${queryName}" is not registered. Call registerQuery first.`);
+            });
+        }
+
+        if (config.attributes) {
+            config.attributes.forEach(attr => {
+                if (attr.lookup) {
+                    if (!this.#queryRegistry.hasQuery(attr.lookup))
+                        throw new Error(`Lookup query "${attr.lookup}" for attribute "${attr.name}" is not registered. Call registerQuery first.`);
+                }
+            });
+        }
+
+        this.#persistentObjectRegistry.register(config);
+
+        if (lifecycle)
+            this.#actionsRegistry.register(config.type, lifecycle);
     }
 
     /**
@@ -121,7 +229,31 @@ export class VirtualService extends Service {
      */
     registerQuery(config: VirtualQueryConfig): void {
         this.#ensureNotInitialized();
-        (this.hooks as VirtualServiceHooks).registerQuery(config);
+
+        if (!config.name)
+            throw new Error("VirtualQueryConfig.name is required");
+        if (!config.persistentObject)
+            throw new Error("VirtualQueryConfig.persistentObject is required");
+
+        const persistentObjectConfig = this.#persistentObjectRegistry.getConfig(config.persistentObject);
+        if (!persistentObjectConfig)
+            throw new Error(`PersistentObject type '${config.persistentObject}' must be registered before creating a query. Call registerPersistentObject first.`);
+
+        if (config.actions) {
+            config.actions.forEach(actionName => {
+                if (!this.#builtInActions.has(actionName) && !this.#actionHandlers.has(actionName))
+                    throw new Error(`Action "${actionName}" is not registered. Call registerAction first.`);
+            });
+        }
+
+        if (config.itemActions) {
+            config.itemActions.forEach(actionName => {
+                if (!this.#builtInActions.has(actionName) && !this.#actionHandlers.has(actionName))
+                    throw new Error(`Action "${actionName}" is not registered. Call registerAction first.`);
+            });
+        }
+
+        this.#queryRegistry.register(config, persistentObjectConfig);
     }
 
     /**
@@ -132,7 +264,19 @@ export class VirtualService extends Service {
      */
     registerAction(config: ActionConfig): void {
         this.#ensureNotInitialized();
-        (this.hooks as VirtualServiceHooks).registerAction(config);
+
+        if (!config.name)
+            throw new Error("ActionConfig.name is required");
+        if (!config.handler)
+            throw new Error("ActionConfig.handler is required");
+
+        this.#actionDefinitions.set(config.name, {
+            name: config.name,
+            displayName: config.displayName || config.name,
+            isPinned: config.isPinned || false
+        });
+
+        this.#actionHandlers.set(config.name, config.handler);
     }
 
     /**
@@ -144,12 +288,9 @@ export class VirtualService extends Service {
      */
     registerBusinessRule(name: string, validator: RuleValidatorFn): void {
         this.#ensureNotInitialized();
-        (this.hooks as VirtualServiceHooks).registerBusinessRule(name, validator);
+        this.#businessRuleValidator.registerCustomRule(name, validator);
     }
 
-    /**
-     * Throws an error if the service has already been initialized.
-     */
     #ensureNotInitialized(): void {
         if (this.#isInitialized)
             throw new Error("Cannot register after initialize() has been called");

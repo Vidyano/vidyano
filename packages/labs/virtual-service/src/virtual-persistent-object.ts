@@ -1,14 +1,5 @@
 import { Dto } from "@vidyano/core";
-import type { VirtualService } from "./virtual-service.js";
-
-/**
- * Conversion context for type conversion between DTO and JavaScript values
- * @internal
- */
-export type ConversionContext = {
-    getConvertedValue: (attr: Dto.PersistentObjectAttributeDto) => any;
-    setConvertedValue: (attr: Dto.PersistentObjectAttributeDto, value: any) => void;
-};
+import { VirtualService } from "./virtual-service.js";
 
 /**
  * VirtualPersistentObjectAttribute combines a PersistentObjectAttributeDto with helper methods
@@ -76,23 +67,22 @@ export type VirtualPersistentObject = Dto.PersistentObjectDto & {
  * Creates a VirtualPersistentObjectAttribute by wrapping an attribute DTO with a Proxy
  * The Proxy intercepts property access to provide getValue/setValue methods
  * @param attr - The PersistentObjectAttributeDto to wrap
- * @param conversionContext - The conversion context for type conversions
  * @param persistentObject - The parent VirtualPersistentObject
  * @param service - The VirtualService instance
  * @returns A VirtualPersistentObjectAttribute that combines DTO properties with helper methods
  */
 export function createVirtualPersistentObjectAttribute(
     attr: Dto.PersistentObjectAttributeDto,
-    conversionContext: ConversionContext,
     persistentObject: VirtualPersistentObject,
     service: VirtualService
 ): VirtualPersistentObjectAttribute {
     const helpers = {
         getValue() {
-            return conversionContext.getConvertedValue(attr);
+            return VirtualService.fromServiceValue(attr.value, attr.type);
         },
         setValue(value: any) {
-            conversionContext.setConvertedValue(attr, value);
+            attr.value = VirtualService.toServiceValue(value, attr.type);
+            attr.isValueChanged = true;
         },
         setValidationError(error: string | null | undefined) {
             attr.validationError = error || undefined;
@@ -126,38 +116,38 @@ export function createVirtualPersistentObjectAttribute(
  * Creates a VirtualPersistentObject by wrapping a DTO with a Proxy
  * The Proxy intercepts property access to provide helper methods while keeping the underlying DTO unchanged
  * @param dto - The PersistentObjectDto to wrap
- * @param conversionContext - The conversion context for type conversions
  * @param service - The VirtualService instance
  * @returns A VirtualPersistentObject that combines DTO properties with helper methods
  */
 export function createVirtualPersistentObject(
     dto: Dto.PersistentObjectDto,
-    conversionContext: ConversionContext,
     service: VirtualService
 ): VirtualPersistentObject {
     // Create proxy first so we can reference it in helpers
     let proxy: VirtualPersistentObject;
 
-    // Helper methods - logic is inlined here, only using conversionContext for type conversion
+    // Helper methods - logic is inlined here, using VirtualService static methods for type conversion
     const helpers = {
         getAttribute(name: string) {
             const attr = dto.attributes?.find(a => a.name === name);
             if (!attr)
                 return undefined;
 
-            return createVirtualPersistentObjectAttribute(attr, conversionContext, proxy, service);
+            return createVirtualPersistentObjectAttribute(attr, proxy, service);
         },
         getAttributeValue(name: string) {
             const attr = dto.attributes?.find(a => a.name === name);
             if (!attr)
                 return undefined;
 
-            return conversionContext.getConvertedValue(attr);
+            return VirtualService.fromServiceValue(attr.value, attr.type);
         },
         setAttributeValue(name: string, value: any) {
             const attr = dto.attributes?.find(a => a.name === name);
-            if (attr)
-                conversionContext.setConvertedValue(attr, value);
+            if (attr) {
+                attr.value = VirtualService.toServiceValue(value, attr.type);
+                attr.isValueChanged = true;
+            }
         },
         setNotification(message: string, type: Dto.NotificationType, duration?: number) {
             dto.notification = message;
