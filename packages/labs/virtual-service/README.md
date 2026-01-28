@@ -58,7 +58,7 @@ const service = new VirtualService();
 **Key methods:**
 - `registerPersistentObject(config, actionsClass?)` - Register a mock persistent object type with optional lifecycle class
 - `registerQuery(config)` - Register a mock query
-- `registerAction(config)` - Register a custom action handler
+- `registerCustomAction(name, handler)` or `registerCustomAction(config, handler)` - Register a custom action
 - `registerBusinessRule(name, validator)` - Add custom validation rules
 - `initialize()` - Finalize registrations (must call before using service)
 
@@ -692,22 +692,28 @@ const page2 = await query.items.sliceAsync(10, 20);
 
 ### Custom Actions
 
-Register actions with custom handlers:
+Register actions with custom handlers. You can use either a simple string name or a full config object:
 
 ```typescript
-service.registerAction({
-    name: "Approve",
-    displayName: "Approve Order",
-    isPinned: true,
-    handler: async (args) => {
-        // Access parent for reading/modifying the object
+// Simple: just the action name
+service.registerCustomAction("Approve", async (args) => {
+    args.parent.setAttributeValue("Status", "Approved");
+    return args.parent;
+});
+
+// Full config: with displayName, isPinned, etc.
+service.registerCustomAction(
+    {
+        name: "Approve",
+        displayName: "Approve Order",
+        isPinned: true
+    },
+    async (args) => {
         args.parent.setAttributeValue("Status", "Approved");
         args.parent.setNotification("Order approved!", "OK", 3000);
-
-        // Return the updated object (or null for silent completion)
         return args.parent;
     }
-});
+);
 ```
 
 ### ActionArgs
@@ -767,19 +773,16 @@ See [VirtualPersistentObject Methods](#virtualpersistentobject-methods) for the 
 Actions can operate on query results:
 
 ```typescript
-service.registerAction({
-    name: "BulkDelete",
-    handler: async (args) => {
-        // Access selected items
-        for (const item of args.selectedItems || []) {
-            console.log(`Deleting item: ${item.id}`);
-            // Use getValue to read column values
-            const name = item.getValue("Name");
-            console.log(`  Name: ${name}`);
-        }
-
-        return null; // Silent completion
+service.registerCustomAction("BulkDelete", async (args) => {
+    // Access selected items
+    for (const item of args.selectedItems || []) {
+        console.log(`Deleting item: ${item.id}`);
+        // Use getValue to read column values
+        const name = item.getValue("Name");
+        console.log(`  Name: ${name}`);
     }
+
+    return null; // Silent completion
 });
 ```
 
@@ -1149,25 +1152,19 @@ import { VirtualService } from "@vidyano-labs/virtual-service";
 test("complete order workflow", async () => {
     const service = new VirtualService();
 
-    service.registerAction({
-        name: "Submit",
-        handler: async (args) => {
-            args.parent.setAttributeValue("Status", "Submitted");
-            return args.parent;
-        }
+    service.registerCustomAction("Submit", async (args) => {
+        args.parent.setAttributeValue("Status", "Submitted");
+        return args.parent;
     });
 
-    service.registerAction({
-        name: "Approve",
-        handler: async (args) => {
-            const status = args.parent.getAttributeValue("Status");
-            if (status !== "Submitted") {
-                args.parent.setNotification("Order must be submitted first", "Error");
-                return args.parent;
-            }
-            args.parent.setAttributeValue("Status", "Approved");
+    service.registerCustomAction("Approve", async (args) => {
+        const status = args.parent.getAttributeValue("Status");
+        if (status !== "Submitted") {
+            args.parent.setNotification("Order must be submitted first", "Error");
             return args.parent;
         }
+        args.parent.setAttributeValue("Status", "Approved");
+        return args.parent;
     });
 
     service.registerPersistentObject({
@@ -1249,7 +1246,8 @@ test("search and sort query results", async () => {
 | `constructor(hooks?)` | Create service with optional custom hooks |
 | `registerPersistentObject(config, actionsClass?)` | Register a PersistentObject type with optional lifecycle class |
 | `registerQuery(config)` | Register a Query |
-| `registerAction(config)` | Register a custom action |
+| `registerCustomAction(name, handler)` | Register a custom action (simple) |
+| `registerCustomAction(config, handler)` | Register a custom action (with config) |
 | `registerBusinessRule(name, validator)` | Register a validation rule |
 | `getMessage(key, ...params)` | Get a formatted message by key |
 | `initialize()` | Finalize registrations |

@@ -166,11 +166,6 @@ export type ActionConfig = {
      * Indicates whether the action is pinned. Defaults to false.
      */
     isPinned?: boolean;
-
-    /**
-     * Custom action logic handler.
-     */
-    handler: ActionHandler;
 };
 
 /**

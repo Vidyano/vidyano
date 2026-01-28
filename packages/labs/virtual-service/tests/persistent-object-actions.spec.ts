@@ -199,10 +199,7 @@ test("overrides saveNew and saveExisting separately", async () => {
     let saveNewCalled = false;
     let saveExistingCalled = false;
 
-    service.registerAction({
-        name: "Save",
-        handler: async (args) => args.parent
-    });
+    service.registerCustomAction("Save", async (args) => args.parent);
 
     service.registerPersistentObject({
         type: "Person",

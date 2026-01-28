@@ -231,14 +231,11 @@ test.describe("DTO Wrapping and Config Augmentation", () => {
 
             let parentHadRules = false;
 
-            service.registerAction({
-                name: "TestAction",
-                handler: async (args) => {
-                    // Check if parent attribute has rules from config
-                    const attr = args.parent?.attributes?.find(a => a.name === "Name");
-                    parentHadRules = attr?.rules === "NotEmpty";
-                    return args.parent;
-                }
+            service.registerCustomAction("TestAction", async (args) => {
+                // Check if parent attribute has rules from config
+                const attr = args.parent?.attributes?.find(a => a.name === "Name");
+                parentHadRules = attr?.rules === "NotEmpty";
+                return args.parent;
             });
 
             service.registerPersistentObject({

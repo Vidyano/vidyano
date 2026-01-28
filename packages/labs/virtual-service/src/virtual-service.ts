@@ -193,7 +193,7 @@ export class VirtualService extends Service {
         if (config.actions) {
             config.actions.forEach(actionName => {
                 if (!this.#builtInActions.has(actionName) && !this.#actionHandlers.has(actionName))
-                    throw new Error(`Action "${actionName}" is not registered. Call registerAction first.`);
+                    throw new Error(`Action "${actionName}" is not registered. Call registerCustomAction first.`);
             });
         }
 
@@ -240,14 +240,14 @@ export class VirtualService extends Service {
         if (config.actions) {
             config.actions.forEach(actionName => {
                 if (!this.#builtInActions.has(actionName) && !this.#actionHandlers.has(actionName))
-                    throw new Error(`Action "${actionName}" is not registered. Call registerAction first.`);
+                    throw new Error(`Action "${actionName}" is not registered. Call registerCustomAction first.`);
             });
         }
 
         if (config.itemActions) {
             config.itemActions.forEach(actionName => {
                 if (!this.#builtInActions.has(actionName) && !this.#actionHandlers.has(actionName))
-                    throw new Error(`Action "${actionName}" is not registered. Call registerAction first.`);
+                    throw new Error(`Action "${actionName}" is not registered. Call registerCustomAction first.`);
             });
         }
 
@@ -257,16 +257,28 @@ export class VirtualService extends Service {
     /**
      * Registers a custom action that can be used on PersistentObjects and Queries.
      * Must be called before initialize().
-     * @param config - The action configuration with handler.
+     * @param name - The action name.
+     * @param handler - The action handler function.
      * @throws Error if called after initialize().
      */
-    registerAction(config: ActionConfig): void {
+    registerCustomAction(name: string, handler: ActionHandler): void;
+    /**
+     * Registers a custom action that can be used on PersistentObjects and Queries.
+     * Must be called before initialize().
+     * @param config - The action configuration.
+     * @param handler - The action handler function.
+     * @throws Error if called after initialize().
+     */
+    registerCustomAction(config: ActionConfig, handler: ActionHandler): void;
+    registerCustomAction(configOrName: ActionConfig | string, handler: ActionHandler): void {
         this.#ensureNotInitialized();
+
+        const config = typeof configOrName === "string" ? { name: configOrName } : configOrName;
 
         if (!config.name)
             throw new Error("ActionConfig.name is required");
-        if (!config.handler)
-            throw new Error("ActionConfig.handler is required");
+        if (!handler)
+            throw new Error("ActionHandler is required");
 
         this.#actionDefinitions.set(config.name, {
             name: config.name,
@@ -274,7 +286,7 @@ export class VirtualService extends Service {
             isPinned: config.isPinned || false
         });
 
-        this.#actionHandlers.set(config.name, config.handler);
+        this.#actionHandlers.set(config.name, handler);
     }
 
     /**

@@ -74,10 +74,7 @@ test.describe("VirtualService", () => {
         await service.initialize();
 
         expect(() => {
-            service.registerAction({
-                name: "CustomAction",
-                handler: async () => null
-            });
+            service.registerCustomAction("CustomAction", async () => null);
         }).toThrow("Cannot register after initialize() has been called");
     });
 
