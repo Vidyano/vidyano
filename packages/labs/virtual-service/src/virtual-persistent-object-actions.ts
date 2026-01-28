@@ -1,7 +1,8 @@
 import { Dto } from "@vidyano/core";
 import { VirtualPersistentObject, VirtualPersistentObjectAttribute } from "./virtual-persistent-object.js";
-import { VirtualQueryExecuteResult, TranslateFunction } from "./types.js";
+import { VirtualQueryExecuteResult } from "./types.js";
 import type { BusinessRuleValidator } from "./business-rules.js";
+import type { VirtualService } from "./virtual-service.js";
 
 /**
  * Base class for PersistentObject lifecycle methods
@@ -15,9 +16,9 @@ export class VirtualPersistentObjectActions {
     protected validator?: BusinessRuleValidator;
 
     /**
-     * Translation function for validation messages (injected by registry)
+     * VirtualService instance for message translation (injected by registry)
      */
-    protected translate: TranslateFunction = (key: string) => key;
+    protected service?: VirtualService;
 
     /**
      * Sets the validator instance (called by registry during instance creation)
@@ -28,11 +29,22 @@ export class VirtualPersistentObjectActions {
     }
 
     /**
-     * Sets the translation function (called by registry during instance creation)
+     * Sets the VirtualService instance (called by registry during instance creation)
      * @internal
      */
-    setTranslate(translate: TranslateFunction): void {
-        this.translate = translate;
+    setService(service: VirtualService): void {
+        this.service = service;
+    }
+
+    /**
+     * Gets a translated message using the service's getMessage method
+     * Falls back to key if service is not set
+     */
+    protected getMessage(key: string, ...params: any[]): string {
+        if (!this.service)
+            return key;
+
+        return this.service.getMessage(key, ...params);
     }
 
     /**
@@ -137,7 +149,7 @@ export class VirtualPersistentObjectActions {
         }
 
         if (hasErrors)
-            obj.setNotification(this.translate("ValidationRulesFailed"), "Error");
+            obj.setNotification(this.getMessage("ValidationRulesFailed"), "Error");
 
         return !hasErrors;
     }

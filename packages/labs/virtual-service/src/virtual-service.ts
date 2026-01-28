@@ -1,6 +1,6 @@
 import { Service, Application } from "@vidyano/core";
 import { VirtualServiceHooks } from "./virtual-service-hooks.js";
-import { VirtualPersistentObjectConfig, VirtualQueryConfig, ActionConfig, TranslateFunction } from "./types.js";
+import { VirtualPersistentObjectConfig, VirtualQueryConfig, ActionConfig } from "./types.js";
 import { RuleValidatorFn } from "./business-rules.js";
 import { VirtualPersistentObjectActions } from "./virtual-persistent-object-actions.js";
 
@@ -24,12 +24,70 @@ import { VirtualPersistentObjectActions } from "./virtual-persistent-object-acti
 export class VirtualService extends Service {
     #isInitialized = false;
 
+    // Global (static) messages
+    static #messages: Record<string, string> = {
+        "Required": "This field is required",
+        "NotEmpty": "This field cannot be empty",
+        "IsEmail": "Email format is invalid",
+        "IsUrl": "Value must be a valid URL",
+        "MaxLength": "Maximum length is {0} characters",
+        "MinLength": "Minimum length is {0} characters",
+        "MaxValue": "Maximum value is {0}",
+        "MinValue": "Minimum value is {0}",
+        "IsBase64": "Value must be a valid base64 string",
+        "IsRegex": "Value must be a valid regular expression",
+        "IsWord": "Value must contain only word characters",
+        "ValidationRulesFailed": "Some required information is missing or incorrect."
+    };
+
+    /**
+     * Gets a copy of the global messages dictionary.
+     */
+    static get messages(): Record<string, string> {
+        return { ...VirtualService.#messages };
+    }
+
+    /**
+     * Sets the global messages dictionary.
+     * Use this to provide translations or override default messages.
+     * @example
+     * VirtualService.messages = {
+     *     "Required": "Dit veld is verplicht",
+     *     "MaxLength": "Maximale lengte is {0} tekens"
+     * };
+     */
+    static set messages(value: Record<string, string>) {
+        VirtualService.#messages = { ...value };
+    }
+
+    /**
+     * Gets a message by key with optional parameters.
+     * Resolution: static messages → return key unchanged
+     * @param key - The message key (e.g., "Required", "MaxLength")
+     * @param params - Positional parameters for {0}, {1} placeholders
+     * @returns The formatted message, or the key if not found
+     */
+    getMessage(key: string, ...params: any[]): string {
+        const template = VirtualService.#messages[key];
+
+        // Return key if not found
+        if (!template)
+            return key;
+
+        // Replace {0}, {1}, etc. with params
+        return template.replace(/\{(\d+)\}/g, (_, index) => {
+            const paramIndex = parseInt(index, 10);
+            return paramIndex < params.length ? String(params[paramIndex]) : `{${index}}`;
+        });
+    }
+
     /**
      * Creates a new VirtualService instance.
      * @param hooks - Optional custom hooks instance.
      */
     constructor(hooks?: VirtualServiceHooks) {
         super("http://virtual.local", hooks ?? new VirtualServiceHooks(), true);
+        this.virtualHooks.initialize(this);
     }
 
     /**
@@ -105,17 +163,6 @@ export class VirtualService extends Service {
     registerPersistentObjectActions(type: string, ActionsClass: typeof VirtualPersistentObjectActions): void {
         this.#ensureNotInitialized();
         this.virtualHooks.registerPersistentObjectActions(type, ActionsClass);
-    }
-
-    /**
-     * Registers a message translator for translating system messages.
-     * Must be called before initialize().
-     * @param translate - The translation function.
-     * @throws Error if called after initialize().
-     */
-    registerMessageTranslator(translate: TranslateFunction): void {
-        this.#ensureNotInitialized();
-        this.virtualHooks.setTranslate(translate);
     }
 
     /**

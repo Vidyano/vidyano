@@ -416,6 +416,7 @@ service.registerPersistentObject({
 The `RuleValidationContext` parameter provides access to:
 - `context.persistentObject` - The persistent object being validated (wrapped with helper methods)
 - `context.attribute` - The attribute being validated (wrapped with helper methods)
+- `context.service` - The VirtualService instance (use `context.service.getMessage()` for translations)
 
 This allows cross-field validation:
 
@@ -426,7 +427,7 @@ service.registerBusinessRule("MatchesPassword", (value: any, context: RuleValida
 
     const passwordValue = context.persistentObject.getAttributeValue("Password");
     if (value !== passwordValue)
-        throw new Error("Passwords do not match");
+        throw new Error(context.service.getMessage("MatchesPassword"));
 });
 
 service.registerPersistentObject({
@@ -451,29 +452,28 @@ service.registerPersistentObject({
 
 ### Translating Validation Messages
 
-Provide custom translations for validation error messages to support multiple languages:
+Customize validation error messages by setting the static `VirtualService.messages` property:
 
 ```typescript
 import { VirtualService } from "@vidyano-labs/virtual-service";
 
-// Define your translations
-const translations: Record<string, string> = {
+// Set custom messages (e.g., Dutch translations)
+VirtualService.messages = {
     "Required": "Dit veld is verplicht",
     "NotEmpty": "Dit veld mag niet leeg zijn",
     "IsEmail": "E-mailformaat is ongeldig",
     "MaxLength": "Maximale lengte is {0} tekens",
     "MinLength": "Minimale lengte is {0} tekens",
     "MaxValue": "Maximale waarde is {0}",
-    "MinValue": "Minimale waarde is {0}"
+    "MinValue": "Minimale waarde is {0}",
+    "IsBase64": "Waarde moet een geldige base64 string zijn",
+    "IsRegex": "Waarde moet een geldige reguliere expressie zijn",
+    "IsWord": "Waarde mag alleen woordtekens bevatten",
+    "IsUrl": "Waarde moet een geldige URL zijn",
+    "ValidationRulesFailed": "Sommige vereiste informatie ontbreekt of is onjuist."
 };
 
-// Create service and register translation function
 const service = new VirtualService();
-service.registerMessageTranslator((key: string, ...params: any[]) => {
-    const template = translations[key] || key;
-    // Use String.format from @vidyano/core for {0}, {1} placeholders
-    return String.format(template, ...params);
-});
 
 service.registerPersistentObject({
     type: "Person",
@@ -491,61 +491,51 @@ await service.initialize();
 const person = await service.getPersistentObject(null, "Person", null, true);
 await person.save();
 
-// Error message is now translated
+// Error message uses custom translation
 console.log(person.getAttribute("Email").validationError);
 // "Dit veld is verplicht"
 ```
 
-**Translation function signature:**
-```typescript
-type TranslateFunction = (key: string, ...params: any[]) => string;
-```
-
-**Parameters:**
-- `key` - The validation rule name (e.g., "Required", "MaxLength")
-- `params` - Positional parameters for the message (e.g., max length value)
-
 **How it works:**
-1. Built-in validators call `translate(key, ...params)` instead of using hardcoded messages
-2. Your translate function receives the rule name and any parameters
-3. Return the translated message with parameters interpolated
-4. If no translate function is provided, default English messages are used
+1. Set `VirtualService.messages` with your custom messages before creating services
+2. Messages use `{0}`, `{1}` placeholders for positional parameters
+3. The `getMessage(key, ...params)` method formats messages with the provided parameters
+4. If a key is not found in the messages dictionary, the key itself is returned
 
-**Custom rules can also use translation:**
+**Custom rules can also use getMessage:**
 
 ```typescript
-const service = new VirtualService();
-service.registerMessageTranslator((key: string, ...params: any[]) => {
-    const translations: Record<string, string> = {
-        "MinimumAge": "L'âge minimum est {0}",
-        "MatchesPassword": "Les mots de passe ne correspondent pas"
-    };
-    const template = translations[key] || key;
-    return String.format(template, ...params);
-});
+// Set custom messages including your custom rule keys
+VirtualService.messages = {
+    ...VirtualService.messages,  // Keep default messages
+    "MinimumAge": "L'âge minimum est {0}",
+    "MatchesPassword": "Les mots de passe ne correspondent pas"
+};
 
-// Custom rule using translation
+const service = new VirtualService();
+
+// Custom rule using getMessage via context.service
 service.registerBusinessRule("MinimumAge", (value: any, context: RuleValidationContext, minAge: number) => {
     if (!value)
         return;
 
     const age = Number(value);
     if (age < minAge)
-        throw new Error(context.translate("MinimumAge", minAge));
+        throw new Error(context.service.getMessage("MinimumAge", minAge));
 });
 
-// Custom rule can still throw direct errors (backward compatible)
+// Custom rule can still throw direct error strings
 service.registerBusinessRule("IsPhoneNumber", (value: any, _context: RuleValidationContext) => {
     if (!value)
         return;
 
     const phoneRegex = /^\+?[\d\s-()]+$/;
     if (!phoneRegex.test(String(value)))
-        throw new Error("Invalid phone number format");  // Not translated
+        throw new Error("Invalid phone number format");  // Direct string, not translated
 });
 ```
 
-**Built-in rule keys:**
+**Built-in message keys:**
 - `Required` - Field is required (no params)
 - `NotEmpty` - Field cannot be empty (no params)
 - `IsEmail` - Invalid email format (no params)
@@ -1255,8 +1245,12 @@ test("search and sort query results", async () => {
 | `registerAction(config)` | Register a custom action |
 | `registerBusinessRule(name, validator)` | Register a validation rule |
 | `registerPersistentObjectActions(type, Class)` | Register lifecycle handlers |
-| `registerMessageTranslator(translateFn)` | Register message translator for system messages |
+| `getMessage(key, ...params)` | Get a formatted message by key |
 | `initialize()` | Finalize registrations |
+
+| Static Property | Description |
+|-----------------|-------------|
+| `VirtualService.messages` | Get/set the global messages dictionary for translations |
 
 ### VirtualPersistentObjectActions
 
@@ -1297,8 +1291,7 @@ import type {
     ActionArgs,
     ActionContext,
     RuleValidatorFn,
-    RuleValidationContext,
-    TranslateFunction
+    RuleValidationContext
 } from "@vidyano-labs/virtual-service";
 ```
 

@@ -115,14 +115,16 @@ test.describe("VirtualService", () => {
         }).toThrow("Cannot register after initialize() has been called");
     });
 
-    test("can use registerMessageTranslator method", async () => {
-        let translateCalled = false;
+    test("can set static messages for translation", async () => {
+        // Save original messages
+        const originalMessages = VirtualService.messages;
+
+        VirtualService.messages = {
+            ...originalMessages,
+            "Required": "Custom required message"
+        };
 
         const service = new VirtualService();
-        service.registerMessageTranslator((key: string) => {
-            translateCalled = true;
-            return key;
-        });
 
         service.registerPersistentObject({
             type: "Person",
@@ -136,7 +138,11 @@ test.describe("VirtualService", () => {
         const person = await service.getPersistentObject(null, "Person", "1");
         await person.save({ throwExceptions: false });
 
-        expect(translateCalled).toBe(true);
+        const name = person.getAttribute("Name");
+        expect(name!.validationError).toBe("Custom required message");
+
+        // Restore original messages
+        VirtualService.messages = originalMessages;
     });
 
     test("virtualHooks getter returns the hooks instance", async () => {

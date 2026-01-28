@@ -4,6 +4,7 @@ import { VirtualPersistentObject, VirtualPersistentObjectAttribute, ConversionCo
 import { VirtualQueryExecuteResult } from "../types.js";
 import { fromServiceValue, toServiceValue } from "../virtual-service-data-type.js";
 import type { BusinessRuleValidator } from "../business-rules.js";
+import type { VirtualService } from "../virtual-service.js";
 
 /** Lifecycle methods that can be overridden in VirtualPersistentObjectActions */
 type LifecycleMethod = "onSave" | "onNew" | "onDelete" | "onRefresh" | "onLoad" | "onConstruct" | "onConstructQuery" | "onSelectReference" | "onExecuteQuery" | "getEntities";
@@ -21,9 +22,11 @@ export class VirtualPersistentObjectActionsRegistry {
     #actionsClasses = new Map<string, typeof VirtualPersistentObjectActions>();
     #overrideInfo = new Map<string, OverrideInfo>();
     #validator: BusinessRuleValidator;
+    #service: VirtualService;
 
-    constructor(validator: BusinessRuleValidator) {
+    constructor(validator: BusinessRuleValidator, service: VirtualService) {
         this.#validator = validator;
+        this.#service = service;
     }
 
     /**
@@ -88,7 +91,7 @@ export class VirtualPersistentObjectActionsRegistry {
     /**
      * Creates a new instance of the actions class for a type
      * Returns a default VirtualPersistentObjectActions if no custom actions are registered
-     * Injects validator and translate function into the instance
+     * Injects validator and service into the instance
      * @param type - The PersistentObject type name
      * @returns A new instance of the VirtualPersistentObjectActions class
      */
@@ -96,9 +99,10 @@ export class VirtualPersistentObjectActionsRegistry {
         const ActionsClass = this.#actionsClasses.get(type);
         const instance = ActionsClass ? new ActionsClass() : new VirtualPersistentObjectActions();
 
-        // Inject validator and translate function
+        // Inject validator and service
         instance.setValidator(this.#validator);
-        instance.setTranslate(this.#validator.translate);
+        if (this.#service)
+            instance.setService(this.#service);
 
         return instance;
     }

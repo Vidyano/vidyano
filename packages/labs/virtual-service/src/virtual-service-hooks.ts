@@ -1,5 +1,5 @@
 import { ServiceHooks, Dto } from "@vidyano/core";
-import { VirtualPersistentObjectConfig, VirtualQueryConfig, ActionConfig, ActionHandler, TranslateFunction, VirtualPersistentObjectAttributeConfig } from "./types.js";
+import { VirtualPersistentObjectConfig, VirtualQueryConfig, ActionConfig, ActionHandler, VirtualPersistentObjectAttributeConfig } from "./types.js";
 import { ConversionContext, VirtualQuery, createVirtualQuery } from "./virtual-persistent-object.js";
 import { VirtualPersistentObjectRegistry } from "./registry/virtual-persistent-object-registry.js";
 import { VirtualQueryRegistry } from "./registry/virtual-query-registry.js";
@@ -7,25 +7,22 @@ import { VirtualPersistentObjectActionsRegistry } from "./registry/virtual-persi
 import { BusinessRuleValidator, RuleValidatorFn } from "./business-rules.js";
 import { VirtualPersistentObjectActions } from "./virtual-persistent-object-actions.js";
 import { fromServiceValue, toServiceValue } from "./virtual-service-data-type.js";
+import type { VirtualService } from "./virtual-service.js";
 
 /**
  * Virtual implementation of ServiceHooks for testing without a backend
  */
 export class VirtualServiceHooks extends ServiceHooks {
-    #persistentObjectRegistry: VirtualPersistentObjectRegistry;
-    #queryRegistry: VirtualQueryRegistry;
+    #persistentObjectRegistry!: VirtualPersistentObjectRegistry;
+    #queryRegistry!: VirtualQueryRegistry;
     #actionDefinitions = new Map<string, { name: string; displayName: string; isPinned: boolean }>();
     #actionHandlers = new Map<string, ActionHandler>();
-    #validator: BusinessRuleValidator;
-    #persistentObjectActionsRegistry: VirtualPersistentObjectActionsRegistry;
+    #validator!: BusinessRuleValidator;
+    #persistentObjectActionsRegistry!: VirtualPersistentObjectActionsRegistry;
     #builtInActions = new Set(["New", "Delete", "SelectReference", "RefreshQuery", "Edit", "CancelEdit", "Save", "EndEdit"]);
 
     constructor() {
         super();
-        this.#validator = new BusinessRuleValidator();
-        this.#persistentObjectActionsRegistry = new VirtualPersistentObjectActionsRegistry(this.#validator);
-        this.#queryRegistry = new VirtualQueryRegistry(this.#persistentObjectActionsRegistry);
-        this.#persistentObjectRegistry = new VirtualPersistentObjectRegistry(this.#actionHandlers, this.#queryRegistry, this.#persistentObjectActionsRegistry);
 
         // Register default action definitions (these are built-in actions without custom handlers)
         this.#actionDefinitions.set("AddReference", { name: "AddReference", displayName: "Add", isPinned: false });
@@ -44,10 +41,14 @@ export class VirtualServiceHooks extends ServiceHooks {
     }
 
     /**
-     * Sets the translation function for system messages
+     * Initializes all components that depend on the VirtualService instance
+     * @internal Called by VirtualService constructor
      */
-    setTranslate(translate: TranslateFunction): void {
-        this.#validator.setTranslate(translate);
+    initialize(service: VirtualService): void {
+        this.#validator = new BusinessRuleValidator(service);
+        this.#persistentObjectActionsRegistry = new VirtualPersistentObjectActionsRegistry(this.#validator, service);
+        this.#queryRegistry = new VirtualQueryRegistry(this.#persistentObjectActionsRegistry);
+        this.#persistentObjectRegistry = new VirtualPersistentObjectRegistry(this.#actionHandlers, this.#queryRegistry, this.#persistentObjectActionsRegistry);
     }
 
     /**
