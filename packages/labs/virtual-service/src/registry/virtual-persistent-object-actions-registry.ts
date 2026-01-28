@@ -1,5 +1,5 @@
 import { Dto } from "@vidyano/core";
-import { VirtualPersistentObjectActions } from "../virtual-persistent-object-actions.js";
+import { VirtualPersistentObjectActions, initializeActions } from "../virtual-persistent-object-actions.js";
 import { VirtualPersistentObject, VirtualPersistentObjectAttribute, ConversionContext, createVirtualPersistentObject, createVirtualPersistentObjectAttribute, unwrapVirtualPersistentObject } from "../virtual-persistent-object.js";
 import { VirtualQuery, VirtualQueryResultItem, createVirtualQuery, createVirtualQueryResultItem } from "../virtual-query.js";
 import { VirtualQueryExecuteResult } from "../types.js";
@@ -100,10 +100,8 @@ export class VirtualPersistentObjectActionsRegistry {
         const ActionsClass = this.#actionsClasses.get(type);
         const instance = ActionsClass ? new ActionsClass() : new VirtualPersistentObjectActions();
 
-        // Inject validator and service
-        instance.setValidator(this.#validator);
-        if (this.#service)
-            instance.setService(this.#service);
+        // Inject validator and service via internal symbol
+        instance[initializeActions](this.#validator, this.#service);
 
         return instance;
     }
@@ -197,7 +195,7 @@ export class VirtualPersistentObjectActionsRegistry {
         // Wrap attribute if provided
         let wrappedAttribute: VirtualPersistentObjectAttribute | undefined;
         if (attribute)
-            wrappedAttribute = createVirtualPersistentObjectAttribute(attribute, conversionContext, wrappedObj);
+            wrappedAttribute = createVirtualPersistentObjectAttribute(attribute, conversionContext, wrappedObj, this.#service);
 
         const instance = this.createInstance(dto.type);
         const result = await instance.onRefresh(wrappedObj, wrappedAttribute);
@@ -238,7 +236,7 @@ export class VirtualPersistentObjectActionsRegistry {
         conversionContext: ConversionContext
     ): Promise<void> {
         const wrappedParent = createVirtualPersistentObject(parent, conversionContext, this.#service);
-        const wrappedAttribute = createVirtualPersistentObjectAttribute(referenceAttribute, conversionContext, wrappedParent);
+        const wrappedAttribute = createVirtualPersistentObjectAttribute(referenceAttribute, conversionContext, wrappedParent, this.#service);
         const wrappedQuery = createVirtualQuery(query, undefined, this.#service);
         const wrappedSelectedItem: VirtualQueryResultItem | null = selectedItem ? createVirtualQueryResultItem(selectedItem, wrappedQuery) : null;
 

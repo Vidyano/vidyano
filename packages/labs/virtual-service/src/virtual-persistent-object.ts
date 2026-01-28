@@ -3,6 +3,7 @@ import type { VirtualService } from "./virtual-service.js";
 
 /**
  * Conversion context for type conversion between DTO and JavaScript values
+ * @internal
  */
 export type ConversionContext = {
     getConvertedValue: (attr: Dto.PersistentObjectAttributeDto) => any;
@@ -59,11 +60,6 @@ export type VirtualPersistentObject = Dto.PersistentObjectDto & {
      * Sets the value of an attribute by name
      */
     setAttributeValue(name: string, value: any): void;
-
-    /**
-     * Sets a validation error for an attribute. Pass null/empty to clear.
-     */
-    setValidationError(name: string, error: string | null | undefined): void;
 
     /**
      * Sets a notification message on the persistent object
@@ -162,11 +158,6 @@ export function createVirtualPersistentObject(
             const attr = dto.attributes?.find(a => a.name === name);
             if (attr)
                 conversionContext.setConvertedValue(attr, value);
-        },
-        setValidationError(name: string, error: string | null | undefined) {
-            const attr = dto.attributes?.find(a => a.name === name);
-            if (attr)
-                attr.validationError = error || undefined;
         },
         setNotification(message: string, type: Dto.NotificationType, duration?: number) {
             dto.notification = message;

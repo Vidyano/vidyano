@@ -699,7 +699,7 @@ service.registerAction({
     name: "Approve",
     displayName: "Approve Order",
     isPinned: true,
-    handler: async (args: ActionArgs) => {
+    handler: async (args) => {
         // Access parent for reading/modifying the object
         args.parent.setAttributeValue("Status", "Approved");
         args.parent.setNotification("Order approved!", "OK", 3000);
@@ -712,17 +712,14 @@ service.registerAction({
 
 ### ActionArgs
 
-Action handlers receive `ActionArgs` with execution context:
+Action handlers receive an `args` object with execution context:
 
 ```typescript
-import type { ActionArgs } from "@vidyano-labs/virtual-service";
-
-interface ActionArgs {
-    parent: VirtualPersistentObject | null;   // The PO being acted on
-    query?: VirtualQuery;                     // The query (for query actions)
-    selectedItems?: VirtualQueryResultItem[]; // Selected items in query
-    parameters?: Record<string, any>;         // Action parameters
-}
+// args parameter contains:
+// - parent: VirtualPersistentObject | null   // The PO being acted on
+// - query?: VirtualQuery                     // The query (for query actions)
+// - selectedItems?: VirtualQueryResultItem[] // Selected items in query
+// - parameters?: Record<string, any>         // Action parameters
 ```
 
 
@@ -731,7 +728,7 @@ interface ActionArgs {
 Since `args.parent` is a `VirtualPersistentObject`, you can use its methods directly:
 
 ```typescript
-handler: async (args: ActionArgs) => {
+handler: async (args) => {
     // Get an attribute
     const emailAttr = args.parent.getAttribute("Email");
 
@@ -772,7 +769,7 @@ Actions can operate on query results:
 ```typescript
 service.registerAction({
     name: "BulkDelete",
-    handler: async (args: ActionArgs) => {
+    handler: async (args) => {
         // Access selected items
         for (const item of args.selectedItems || []) {
             console.log(`Deleting item: ${item.id}`);
@@ -1148,14 +1145,13 @@ test("validates email format", async () => {
 ```typescript
 import { test, expect } from "@playwright/test";
 import { VirtualService } from "@vidyano-labs/virtual-service";
-import type { ActionArgs } from "@vidyano-labs/virtual-service";
 
 test("complete order workflow", async () => {
     const service = new VirtualService();
 
     service.registerAction({
         name: "Submit",
-        handler: async (args: ActionArgs) => {
+        handler: async (args) => {
             args.parent.setAttributeValue("Status", "Submitted");
             return args.parent;
         }
@@ -1163,7 +1159,7 @@ test("complete order workflow", async () => {
 
     service.registerAction({
         name: "Approve",
-        handler: async (args: ActionArgs) => {
+        handler: async (args) => {
             const status = args.parent.getAttributeValue("Status");
             if (status !== "Submitted") {
                 args.parent.setNotification("Order must be submitted first", "Error");
@@ -1279,31 +1275,6 @@ test("search and sort query results", async () => {
 | `onExecuteQuery(query: VirtualQuery, parent, data)` | Called when executing a query |
 | `getEntities(query: VirtualQuery, parent, data)` | Provide query data |
 | `onSelectReference(parent, attr: VirtualPersistentObjectAttribute, query: VirtualQuery, item: VirtualQueryResultItem)` | Called when selecting a reference |
-
-### Type Exports
-
-```typescript
-import {
-    VirtualService,
-    VirtualServiceHooks,
-    VirtualPersistentObjectActions
-} from "@vidyano-labs/virtual-service";
-
-import type {
-    VirtualPersistentObject,
-    VirtualPersistentObjectAttribute,
-    VirtualQuery,
-    VirtualQueryResultItem,
-    VirtualPersistentObjectConfig,
-    VirtualPersistentObjectAttributeConfig,
-    VirtualQueryConfig,
-    VirtualQueryExecuteResult,
-    ActionConfig,
-    ActionHandler,
-    ActionArgs,
-    RuleValidatorFn
-} from "@vidyano-labs/virtual-service";
-```
 
 ## Best Practices
 

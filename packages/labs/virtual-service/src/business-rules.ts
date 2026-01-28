@@ -3,8 +3,9 @@ import type { VirtualService } from "./virtual-service.js";
 
 /**
  * Parsed business rule with name and parameters
+ * @internal
  */
-export type ParsedRule = {
+type ParsedRule = {
     name: string;
     params: any[];
 };
@@ -14,6 +15,7 @@ export type ParsedRule = {
  * @param value - The converted attribute value
  * @param attribute - The wrapped attribute with access to persistentObject and service
  * @param params - Additional parameters from the rule definition
+ * @internal - Exported for internal package use only, not re-exported from index.ts
  */
 export type RuleValidatorFn = (value: any, attribute: VirtualPersistentObjectAttribute, ...params: any[]) => void;
 

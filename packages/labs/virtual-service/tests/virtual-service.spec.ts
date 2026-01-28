@@ -128,19 +128,6 @@ test.describe("VirtualService", () => {
         VirtualService.messages = originalMessages;
     });
 
-    test("virtualHooks getter returns the hooks instance", async () => {
-        const service = new VirtualService();
-
-        expect(service.virtualHooks).toBeDefined();
-        expect(service.virtualHooks).toBeInstanceOf(VirtualServiceHooks);
-    });
-
-    test("creates default hooks if none provided", async () => {
-        const service = new VirtualService();
-
-        expect(service.virtualHooks).toBeInstanceOf(VirtualServiceHooks);
-    });
-
     test("registers a simple persistent object", () => {
         const service = new VirtualService();
 
@@ -206,7 +193,7 @@ test.describe("VirtualService", () => {
         config.attributes = config.attributes.filter(a => a.name !== "Age");
 
         // Call hooks directly with a DTO containing an unknown attribute
-        const hooks = service.virtualHooks;
+        const hooks = (service.hooks as VirtualServiceHooks);
         const mockBody = {
             action: "Person.Save",
             parent: {
@@ -243,7 +230,7 @@ test.describe("VirtualService", () => {
         await service.initialize();
 
         // Call hooks directly with an unknown PersistentObject type
-        const hooks = service.virtualHooks;
+        const hooks = (service.hooks as VirtualServiceHooks);
         const mockBody = {
             action: "UnknownType.Save",
             parent: {
@@ -277,7 +264,7 @@ test.describe("VirtualService", () => {
         await service.initialize();
 
         // Call hooks directly with an unknown Query name
-        const hooks = service.virtualHooks;
+        const hooks = (service.hooks as VirtualServiceHooks);
         const mockBody = {
             id: "UnknownQuery"
         };

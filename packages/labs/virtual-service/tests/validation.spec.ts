@@ -1276,9 +1276,9 @@ test("checkRules override - custom validation", async () => {
     class TestActions extends VirtualPersistentObjectActions {
         checkRules(obj: VirtualPersistentObject): boolean {
             // Custom validation: reject Name="invalid"
-            const name = obj.getAttributeValue("Name");
-            if (name === "invalid") {
-                obj.setValidationError("Name", "Name cannot be 'invalid'");
+            const nameAttr = obj.getAttribute("Name");
+            if (nameAttr?.getValue() === "invalid") {
+                nameAttr.setValidationError("Name cannot be 'invalid'");
                 obj.setNotification("Custom validation failed", "Error");
                 return false;
             }
@@ -1369,9 +1369,9 @@ test("checkRules override - call super for combined validation", async () => {
     class TestActions extends VirtualPersistentObjectActions {
         checkRules(obj: VirtualPersistentObject): boolean {
             // Add custom validation first
-            const name = obj.getAttributeValue("Name");
-            if (name === "reserved") {
-                obj.setValidationError("Name", "Name is reserved");
+            const nameAttr = obj.getAttribute("Name");
+            if (nameAttr?.getValue() === "reserved") {
+                nameAttr.setValidationError("Name is reserved");
                 obj.setNotification("Custom validation failed", "Error");
                 return false;
             }

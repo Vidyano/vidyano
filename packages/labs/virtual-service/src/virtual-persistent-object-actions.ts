@@ -5,6 +5,11 @@ import type { BusinessRuleValidator } from "./business-rules.js";
 import type { VirtualService } from "./virtual-service.js";
 
 /**
+ * @internal
+ */
+export const initializeActions = Symbol("initializeActions");
+
+/**
  * Base class for PersistentObject lifecycle methods
  * Extend this class to override lifecycle hooks like onLoad, onSave, onRefresh, etc.
  * All methods have default implementations, so you only need to override what you need.
@@ -21,30 +26,12 @@ export class VirtualPersistentObjectActions {
     protected service?: VirtualService;
 
     /**
-     * Sets the validator instance (called by registry during instance creation)
+     * Internal initialization method (called by registry during instance creation)
      * @internal
      */
-    setValidator(validator: BusinessRuleValidator): void {
+    [initializeActions](validator: BusinessRuleValidator, service: VirtualService): void {
         this.validator = validator;
-    }
-
-    /**
-     * Sets the VirtualService instance (called by registry during instance creation)
-     * @internal
-     */
-    setService(service: VirtualService): void {
         this.service = service;
-    }
-
-    /**
-     * Gets a translated message using the service's getMessage method
-     * Falls back to key if service is not set
-     */
-    protected getMessage(key: string, ...params: any[]): string {
-        if (!this.service)
-            return key;
-
-        return this.service.getMessage(key, ...params);
     }
 
     /**
@@ -149,7 +136,7 @@ export class VirtualPersistentObjectActions {
         }
 
         if (hasErrors)
-            obj.setNotification(this.getMessage("ValidationRulesFailed"), "Error");
+            obj.setNotification(this.service!.getMessage("ValidationRulesFailed"), "Error");
 
         return !hasErrors;
     }

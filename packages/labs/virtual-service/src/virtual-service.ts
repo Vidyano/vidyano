@@ -87,14 +87,7 @@ export class VirtualService extends Service {
      */
     constructor(hooks?: VirtualServiceHooks) {
         super("http://virtual.local", hooks ?? new VirtualServiceHooks(), true);
-        this.virtualHooks.initialize(this);
-    }
-
-    /**
-     * Gets the VirtualServiceHooks instance.
-     */
-    get virtualHooks(): VirtualServiceHooks {
-        return this.hooks as VirtualServiceHooks;
+        (this.hooks as VirtualServiceHooks).initialize(this);
     }
 
     /**
@@ -117,7 +110,7 @@ export class VirtualService extends Service {
      */
     registerPersistentObject(config: VirtualPersistentObjectConfig, lifecycle?: typeof VirtualPersistentObjectActions): void {
         this.#ensureNotInitialized();
-        this.virtualHooks.registerPersistentObject(config, lifecycle);
+        (this.hooks as VirtualServiceHooks).registerPersistentObject(config, lifecycle);
     }
 
     /**
@@ -128,7 +121,7 @@ export class VirtualService extends Service {
      */
     registerQuery(config: VirtualQueryConfig): void {
         this.#ensureNotInitialized();
-        this.virtualHooks.registerQuery(config);
+        (this.hooks as VirtualServiceHooks).registerQuery(config);
     }
 
     /**
@@ -139,7 +132,7 @@ export class VirtualService extends Service {
      */
     registerAction(config: ActionConfig): void {
         this.#ensureNotInitialized();
-        this.virtualHooks.registerAction(config);
+        (this.hooks as VirtualServiceHooks).registerAction(config);
     }
 
     /**
@@ -151,7 +144,7 @@ export class VirtualService extends Service {
      */
     registerBusinessRule(name: string, validator: RuleValidatorFn): void {
         this.#ensureNotInitialized();
-        this.virtualHooks.registerBusinessRule(name, validator);
+        (this.hooks as VirtualServiceHooks).registerBusinessRule(name, validator);
     }
 
     /**

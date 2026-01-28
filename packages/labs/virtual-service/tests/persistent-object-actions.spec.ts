@@ -261,10 +261,10 @@ test("validates data in onSave before persisting", async () => {
         ]
     }, class extends VirtualPersistentObjectActions {
         async onSave(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
-            const age = obj.getAttributeValue("Age");
+            const ageAttr = obj.getAttribute("Age");
 
-            if (age < 0 || age > 150) {
-                obj.setValidationError("Age", "Age must be between 0 and 150");
+            if (ageAttr && (ageAttr.getValue() < 0 || ageAttr.getValue() > 150)) {
+                ageAttr.setValidationError("Age must be between 0 and 150");
                 obj.setNotification("Validation failed", "Error");
                 return obj;
             }
