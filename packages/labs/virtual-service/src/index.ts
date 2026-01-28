@@ -5,7 +5,6 @@ export type {
     ActionConfig,
     ActionHandler,
     ActionArgs,
-    RuleValidationContext,
     VirtualPersistentObjectConfig,
     VirtualQueryConfig,
     VirtualQueryExecuteResult

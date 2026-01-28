@@ -1,4 +1,5 @@
 import { Dto } from "@vidyano/core";
+import type { VirtualService } from "./virtual-service.js";
 
 /**
  * Conversion context for type conversion between DTO and JavaScript values
@@ -24,14 +25,14 @@ export type VirtualPersistentObjectAttribute = Dto.PersistentObjectAttributeDto 
     setValue(value: any): void;
 
     /**
-     * Sets a validation error on this attribute
+     * Sets a validation error on this attribute. Pass null/empty to clear.
      */
-    setValidationError(error: string): void;
+    setValidationError(error: string | null | undefined): void;
 
     /**
-     * Clears the validation error on this attribute
+     * Reference to the parent persistent object
      */
-    clearValidationError(): void;
+    readonly persistentObject: VirtualPersistentObject;
 };
 
 /**
@@ -55,19 +56,19 @@ export type VirtualPersistentObject = Dto.PersistentObjectDto & {
     setAttributeValue(name: string, value: any): void;
 
     /**
-     * Sets a validation error for an attribute
+     * Sets a validation error for an attribute. Pass null/empty to clear.
      */
-    setValidationError(name: string, error: string): void;
-
-    /**
-     * Clears a validation error for an attribute
-     */
-    clearValidationError(name: string): void;
+    setValidationError(name: string, error: string | null | undefined): void;
 
     /**
      * Sets a notification message on the persistent object
      */
     setNotification(message: string, type: Dto.NotificationType, duration?: number): void;
+
+    /**
+     * Reference to the VirtualService instance
+     */
+    readonly service: VirtualService;
 };
 
 /**
@@ -75,11 +76,13 @@ export type VirtualPersistentObject = Dto.PersistentObjectDto & {
  * The Proxy intercepts property access to provide getValue/setValue methods
  * @param attr - The PersistentObjectAttributeDto to wrap
  * @param conversionContext - The conversion context for type conversions
+ * @param persistentObject - The parent VirtualPersistentObject
  * @returns A VirtualPersistentObjectAttribute that combines DTO properties with helper methods
  */
 export function createVirtualPersistentObjectAttribute(
     attr: Dto.PersistentObjectAttributeDto,
-    conversionContext: ConversionContext
+    conversionContext: ConversionContext,
+    persistentObject: VirtualPersistentObject
 ): VirtualPersistentObjectAttribute {
     const helpers = {
         getValue() {
@@ -88,18 +91,20 @@ export function createVirtualPersistentObjectAttribute(
         setValue(value: any) {
             conversionContext.setConvertedValue(attr, value);
         },
-        setValidationError(error: string) {
-            attr.validationError = error;
+        setValidationError(error: string | null | undefined) {
+            attr.validationError = error || undefined;
         },
-        clearValidationError() {
-            attr.validationError = undefined;
+        get persistentObject() {
+            return persistentObject;
         }
     };
 
     return new Proxy(attr, {
         get(target, prop) {
-            if (prop in helpers)
-                return helpers[prop as keyof typeof helpers];
+            if (prop in helpers) {
+                const value = helpers[prop as keyof typeof helpers];
+                return typeof value === "function" ? value : value;
+            }
 
             return target[prop as keyof typeof target];
         },
@@ -116,12 +121,17 @@ export function createVirtualPersistentObjectAttribute(
  * The Proxy intercepts property access to provide helper methods while keeping the underlying DTO unchanged
  * @param dto - The PersistentObjectDto to wrap
  * @param conversionContext - The conversion context for type conversions
+ * @param service - The VirtualService instance
  * @returns A VirtualPersistentObject that combines DTO properties with helper methods
  */
 export function createVirtualPersistentObject(
     dto: Dto.PersistentObjectDto,
-    conversionContext: ConversionContext
+    conversionContext: ConversionContext,
+    service: VirtualService
 ): VirtualPersistentObject {
+    // Create proxy first so we can reference it in helpers
+    let proxy: VirtualPersistentObject;
+
     // Helper methods - logic is inlined here, only using conversionContext for type conversion
     const helpers = {
         getAttribute(name: string) {
@@ -129,7 +139,7 @@ export function createVirtualPersistentObject(
             if (!attr)
                 return undefined;
 
-            return createVirtualPersistentObjectAttribute(attr, conversionContext);
+            return createVirtualPersistentObjectAttribute(attr, conversionContext, proxy);
         },
         getAttributeValue(name: string) {
             const attr = dto.attributes?.find(a => a.name === name);
@@ -143,29 +153,29 @@ export function createVirtualPersistentObject(
             if (attr)
                 conversionContext.setConvertedValue(attr, value);
         },
-        setValidationError(name: string, error: string) {
+        setValidationError(name: string, error: string | null | undefined) {
             const attr = dto.attributes?.find(a => a.name === name);
             if (attr)
-                attr.validationError = error;
-        },
-        clearValidationError(name: string) {
-            const attr = dto.attributes?.find(a => a.name === name);
-            if (attr)
-                attr.validationError = undefined;
+                attr.validationError = error || undefined;
         },
         setNotification(message: string, type: Dto.NotificationType, duration?: number) {
             dto.notification = message;
             dto.notificationType = type;
             dto.notificationDuration = duration;
+        },
+        get service() {
+            return service;
         }
     };
 
     // Create a Proxy that intercepts property access
-    return new Proxy(dto, {
+    proxy = new Proxy(dto, {
         get(target, prop) {
             // If accessing a helper method, return it
-            if (prop in helpers)
-                return helpers[prop as keyof typeof helpers];
+            if (prop in helpers) {
+                const value = helpers[prop as keyof typeof helpers];
+                return typeof value === "function" ? value : value;
+            }
 
             // Otherwise, return the DTO property
             return target[prop as keyof typeof target];
@@ -177,6 +187,8 @@ export function createVirtualPersistentObject(
             return true;
         }
     }) as VirtualPersistentObject;
+
+    return proxy;
 }
 
 /**

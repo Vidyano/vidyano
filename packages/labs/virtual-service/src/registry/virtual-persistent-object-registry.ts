@@ -4,6 +4,7 @@ import { ConversionContext, createVirtualPersistentObject, unwrapVirtualPersiste
 import { fromServiceValue, toServiceValue } from "../virtual-service-data-type.js";
 import type { VirtualQueryRegistry } from "./virtual-query-registry.js";
 import type { VirtualPersistentObjectActionsRegistry } from "./virtual-persistent-object-actions-registry.js";
+import type { VirtualService } from "../virtual-service.js";
 
 /**
  * Registry for managing PersistentObject configurations and instances
@@ -13,11 +14,13 @@ export class VirtualPersistentObjectRegistry {
     #actionHandlers: Map<string, ActionHandler>;
     #queryRegistry: VirtualQueryRegistry;
     #actionsRegistry: VirtualPersistentObjectActionsRegistry;
+    #service: VirtualService;
 
-    constructor(actionHandlers: Map<string, ActionHandler>, queryRegistry: VirtualQueryRegistry, actionsRegistry: VirtualPersistentObjectActionsRegistry) {
+    constructor(actionHandlers: Map<string, ActionHandler>, queryRegistry: VirtualQueryRegistry, actionsRegistry: VirtualPersistentObjectActionsRegistry, service: VirtualService) {
         this.#actionHandlers = actionHandlers;
         this.#queryRegistry = queryRegistry;
         this.#actionsRegistry = actionsRegistry;
+        this.#service = service;
     }
 
     /**
@@ -135,7 +138,7 @@ export class VirtualPersistentObjectRegistry {
 
         // Wrap parent for the action handler
         const conversionContext = this.#createConversionContext();
-        const wrappedParent = createVirtualPersistentObject(parent, conversionContext);
+        const wrappedParent = createVirtualPersistentObject(parent, conversionContext, this.#service);
 
         // Build unified action args for PersistentObject actions
         const args = {

@@ -21,6 +21,7 @@ export class VirtualServiceHooks extends ServiceHooks {
     #validator!: BusinessRuleValidator;
     #persistentObjectActionsRegistry!: VirtualPersistentObjectActionsRegistry;
     #builtInActions = new Set(["New", "Delete", "SelectReference", "RefreshQuery", "Edit", "CancelEdit", "Save", "EndEdit"]);
+    #service!: VirtualService;
 
     constructor() {
         super();
@@ -46,10 +47,11 @@ export class VirtualServiceHooks extends ServiceHooks {
      * @internal Called by VirtualService constructor
      */
     initialize(service: VirtualService): void {
+        this.#service = service;
         this.#validator = new BusinessRuleValidator(service);
         this.#persistentObjectActionsRegistry = new VirtualPersistentObjectActionsRegistry(this.#validator, service);
-        this.#queryRegistry = new VirtualQueryRegistry(this.#persistentObjectActionsRegistry);
-        this.#persistentObjectRegistry = new VirtualPersistentObjectRegistry(this.#actionHandlers, this.#queryRegistry, this.#persistentObjectActionsRegistry);
+        this.#queryRegistry = new VirtualQueryRegistry(this.#persistentObjectActionsRegistry, service);
+        this.#persistentObjectRegistry = new VirtualPersistentObjectRegistry(this.#actionHandlers, this.#queryRegistry, this.#persistentObjectActionsRegistry, service);
     }
 
     /**
@@ -329,7 +331,7 @@ export class VirtualServiceHooks extends ServiceHooks {
             }
         }
 
-        return createVirtualQuery(dto, queryConfig);
+        return createVirtualQuery(dto, queryConfig, this.#service);
     }
 
     /**
@@ -646,12 +648,12 @@ export class VirtualServiceHooks extends ServiceHooks {
 
         // Wrap parent, query, and selectedItems for the handler
         const conversionContext = this.#createConversionContext();
-        const wrappedParent = parent ? createVirtualPersistentObject(parent, conversionContext) : null;
-        const wrappedQuery = createVirtualQuery(query);
+        const wrappedParent = parent ? createVirtualPersistentObject(parent, conversionContext, this.#service) : null;
+        const wrappedQuery = createVirtualQuery(query, undefined, this.#service);
 
         const queryActionRequest = request as Dto.ExecuteQueryActionRequest;
         const wrappedSelectedItems = queryActionRequest.selectedItems
-            ? queryActionRequest.selectedItems.map(item => createVirtualQueryResultItem(item))
+            ? queryActionRequest.selectedItems.map(item => createVirtualQueryResultItem(item, wrappedQuery))
             : undefined;
 
         // Build unified action args

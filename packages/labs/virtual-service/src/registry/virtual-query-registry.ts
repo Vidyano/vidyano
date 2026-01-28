@@ -2,6 +2,8 @@ import { Dto, DataType } from "@vidyano/core";
 import { VirtualQueryConfig, VirtualPersistentObjectConfig } from "../types.js";
 import type { VirtualPersistentObjectActionsRegistry } from "./virtual-persistent-object-actions-registry.js";
 
+import type { VirtualService } from "../virtual-service.js";
+
 /**
  * Registry for managing Query configurations
  */
@@ -13,9 +15,11 @@ export class VirtualQueryRegistry {
         data: Record<string, any>[];
     }>();
     #actionsRegistry: VirtualPersistentObjectActionsRegistry | null;
+    #service: VirtualService | null;
 
-    constructor(actionsRegistry?: VirtualPersistentObjectActionsRegistry) {
+    constructor(actionsRegistry?: VirtualPersistentObjectActionsRegistry, service?: VirtualService) {
         this.#actionsRegistry = actionsRegistry || null;
+        this.#service = service || null;
     }
 
     /**

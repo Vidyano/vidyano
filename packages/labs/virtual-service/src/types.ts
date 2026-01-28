@@ -1,7 +1,6 @@
 import { Dto } from "@vidyano/core";
-import type { VirtualPersistentObject, VirtualPersistentObjectAttribute } from "./virtual-persistent-object.js";
+import type { VirtualPersistentObject } from "./virtual-persistent-object.js";
 import type { VirtualQuery, VirtualQueryResultItem } from "./virtual-query.js";
-import type { VirtualService } from "./virtual-service.js";
 
 /**
  * Simplified attribute configuration - converted to PersistentObjectAttributeDto
@@ -172,27 +171,6 @@ export type ActionConfig = {
      * Custom action logic handler.
      */
     handler: ActionHandler;
-};
-
-/**
- * Context provided to business rule validators for accessing the persistent object
- */
-export type RuleValidationContext = {
-    /**
-     * The persistent object being validated (wrapped with helper methods)
-     */
-    persistentObject: VirtualPersistentObject;
-
-    /**
-     * The attribute being validated (wrapped with helper methods)
-     */
-    attribute: VirtualPersistentObjectAttribute;
-
-    /**
-     * The VirtualService instance for message translation
-     * Use service.getMessage("Key", ...params) to get translated messages
-     */
-    service: VirtualService;
 };
 
 /**

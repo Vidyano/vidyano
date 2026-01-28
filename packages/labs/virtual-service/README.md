@@ -387,10 +387,10 @@ class DraftActions extends VirtualPersistentObjectActions {
 Register your own validation rules for domain-specific requirements:
 
 ```typescript
-import type { RuleValidationContext } from "@vidyano-labs/virtual-service";
+import type { VirtualPersistentObjectAttribute } from "@vidyano-labs/virtual-service";
 
 // Register a custom rule (before registerPersistentObject)
-service.registerBusinessRule("IsPhoneNumber", (value: any, context: RuleValidationContext) => {
+service.registerBusinessRule("IsPhoneNumber", (value: any, attr: VirtualPersistentObjectAttribute) => {
     if (value == null || value === "") return;
     const phoneRegex = /^\+?[\d\s-()]+$/;
     if (!phoneRegex.test(String(value)))
@@ -410,22 +410,23 @@ service.registerPersistentObject({
 });
 ```
 
-**Validation context:**
-The `RuleValidationContext` parameter provides access to:
-- `context.persistentObject` - The persistent object being validated
-- `context.attribute` - The attribute being validated
-- `context.service` - The VirtualService instance (use `context.service.getMessage()` for translations)
+**Attribute parameter:**
+The `attr` parameter is the `VirtualPersistentObjectAttribute` being validated, which provides access to:
+- `attr.persistentObject` - The persistent object being validated
+- `attr.persistentObject.service` - The VirtualService instance (use for `getMessage()` translations)
+- `attr.getValue()` / `attr.setValue()` - Get/set the attribute value
+- All DTO properties (`name`, `type`, `rules`, etc.)
 
 This allows cross-field validation:
 
 ```typescript
 // Validate password confirmation matches password
-service.registerBusinessRule("MatchesPassword", (value: any, context: RuleValidationContext) => {
+service.registerBusinessRule("MatchesPassword", (value: any, attr: VirtualPersistentObjectAttribute) => {
     if (!value) return;
 
-    const passwordValue = context.persistentObject.getAttributeValue("Password");
+    const passwordValue = attr.persistentObject.getAttributeValue("Password");
     if (value !== passwordValue)
-        throw new Error(context.service.getMessage("MatchesPassword"));
+        throw new Error(attr.persistentObject.service.getMessage("MatchesPassword"));
 });
 
 service.registerPersistentObject({
@@ -443,7 +444,7 @@ service.registerPersistentObject({
 
 **Custom rule requirements:**
 - Must be registered before `registerPersistentObject()`
-- Receives two parameters: `value` (the attribute value) and `context` (validation context)
+- Receives two parameters: `value` (the converted attribute value) and `attr` (the attribute being validated)
 - Throw an `Error` with a message if validation fails
 - Return nothing (or undefined) if validation passes
 - Cannot override built-in rules
@@ -503,6 +504,8 @@ console.log(person.getAttribute("Email").validationError);
 **Custom rules can also use getMessage:**
 
 ```typescript
+import type { VirtualPersistentObjectAttribute } from "@vidyano-labs/virtual-service";
+
 // Set custom messages including your custom rule keys
 VirtualService.messages = {
     ...VirtualService.messages,  // Keep default messages
@@ -512,18 +515,18 @@ VirtualService.messages = {
 
 const service = new VirtualService();
 
-// Custom rule using getMessage via context.service
-service.registerBusinessRule("MinimumAge", (value: any, context: RuleValidationContext, minAge: number) => {
+// Custom rule using getMessage via attr.persistentObject.service
+service.registerBusinessRule("MinimumAge", (value: any, attr: VirtualPersistentObjectAttribute, minAge: number) => {
     if (!value)
         return;
 
     const age = Number(value);
     if (age < minAge)
-        throw new Error(context.service.getMessage("MinimumAge", minAge));
+        throw new Error(attr.persistentObject.service.getMessage("MinimumAge", minAge));
 });
 
 // Custom rule can still throw direct error strings
-service.registerBusinessRule("IsPhoneNumber", (value: any, _context: RuleValidationContext) => {
+service.registerBusinessRule("IsPhoneNumber", (value: any, _attr: VirtualPersistentObjectAttribute) => {
     if (!value)
         return;
 
@@ -748,8 +751,8 @@ handler: async (args: ActionArgs) => {
     if (!email?.includes("@"))
         args.parent.setValidationError("Email", "Invalid email format");
 
-    // Clear validation errors
-    args.parent.clearValidationError("Email");
+    // Clear validation errors (pass null or empty string)
+    args.parent.setValidationError("Email", null);
 
     // Show notifications
     args.parent.setNotification("Saved successfully", "OK", 3000);
@@ -788,6 +791,7 @@ service.registerAction({
 | Method | Description |
 |--------|-------------|
 | `getValue(columnName)` | Get a value from the item by column name |
+| `query` | Reference to the parent VirtualQuery |
 
 ## Lifecycle Hooks
 
@@ -1073,9 +1077,12 @@ async onSave(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
     const email = obj.getAttributeValue("Email");
     obj.setAttributeValue("Email", "new@example.com");
 
-    // Validation errors
+    // Validation errors (pass null/empty to clear)
     obj.setValidationError("Email", "Invalid format");
-    obj.clearValidationError("Email");
+    obj.setValidationError("Email", null);  // Clear error
+
+    // Access the service
+    const message = obj.service.getMessage("CustomKey");
 
     // Notifications
     obj.setNotification("Saved!", "OK", 3000);
@@ -1091,9 +1098,9 @@ async onSave(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
 | `getAttribute(name)` | Get attribute by name |
 | `getAttributeValue(name)` | Get converted attribute value |
 | `setAttributeValue(name, value)` | Set attribute value with conversion |
-| `setValidationError(name, error)` | Set validation error |
-| `clearValidationError(name)` | Clear validation error |
+| `setValidationError(name, error)` | Set validation error (pass `null`/empty to clear) |
 | `setNotification(msg, type, duration?)` | Set notification |
+| `service` | Reference to the VirtualService instance |
 
 **VirtualPersistentObjectAttribute methods:**
 
@@ -1101,8 +1108,8 @@ async onSave(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
 |--------|-------------|
 | `getValue()` | Get converted value |
 | `setValue(value)` | Set value with conversion |
-| `setValidationError(error)` | Set validation error |
-| `clearValidationError()` | Clear validation error |
+| `setValidationError(error)` | Set validation error (pass `null`/empty to clear) |
+| `persistentObject` | Reference to the parent VirtualPersistentObject |
 
 
 ## Testing Examples
@@ -1292,8 +1299,7 @@ import type {
     ActionConfig,
     ActionHandler,
     ActionArgs,
-    RuleValidatorFn,
-    RuleValidationContext
+    RuleValidatorFn
 } from "@vidyano-labs/virtual-service";
 ```
 

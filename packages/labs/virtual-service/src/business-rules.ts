@@ -1,4 +1,3 @@
-import type { RuleValidationContext } from "./types.js";
 import type { VirtualPersistentObject, VirtualPersistentObjectAttribute } from "./virtual-persistent-object.js";
 import type { VirtualService } from "./virtual-service.js";
 
@@ -12,8 +11,11 @@ export type ParsedRule = {
 
 /**
  * Rule validator function that throws an error if invalid, or returns nothing if valid
+ * @param value - The converted attribute value
+ * @param attribute - The wrapped attribute with access to persistentObject and service
+ * @param params - Additional parameters from the rule definition
  */
-export type RuleValidatorFn = (value: any, context: RuleValidationContext, ...params: any[]) => void;
+export type RuleValidatorFn = (value: any, attribute: VirtualPersistentObjectAttribute, ...params: any[]) => void;
 
 /**
  * Business rule validator that supports built-in and custom rules
@@ -54,24 +56,17 @@ export class BusinessRuleValidator {
 
     /**
      * Validate an attribute against its rules
-     * @param attr - The wrapped attribute to validate (has getValue/setValue methods)
-     * @param po - The wrapped persistent object containing the attribute
+     * @param attr - The wrapped attribute to validate (has getValue/setValue methods and persistentObject reference)
+     * @param _po - Deprecated: The persistent object is now accessible via attr.persistentObject
      * @returns Error message if validation fails, null if valid
      */
-    validateAttribute(attr: VirtualPersistentObjectAttribute, po: VirtualPersistentObject): string | null {
+    validateAttribute(attr: VirtualPersistentObjectAttribute, _po: VirtualPersistentObject): string | null {
         // The attr already has rules from config (merged at entry point via #wrapPersistentObject)
         // Get the converted value using the wrapped attribute's getValue()
         const convertedValue = attr.getValue();
 
         if (!attr.rules)
             return null;
-
-        // Create validation context using the already-wrapped objects
-        const context: RuleValidationContext = {
-            persistentObject: po,
-            attribute: attr,
-            service: this.#service!
-        };
 
         const rules = this.parseRules(attr.rules);
         for (const rule of rules) {
@@ -80,7 +75,7 @@ export class BusinessRuleValidator {
                 throw new Error(`Unknown business rule: ${rule.name}`);
 
             try {
-                validator(convertedValue, context, ...rule.params);
+                validator(convertedValue, attr, ...rule.params);
             } catch (error) {
                 return error instanceof Error ? error.message : String(error);
             }
@@ -145,7 +140,7 @@ export class BusinessRuleValidator {
 
     // Built-in validators - throw errors instead of returning strings
 
-    #validateIsBase64(value: any, _context: RuleValidationContext): void {
+    #validateIsBase64(value: any, _attr: VirtualPersistentObjectAttribute): void {
         if (value == null || value === "")
             return;
 
@@ -154,7 +149,7 @@ export class BusinessRuleValidator {
             throw new Error(this.#service.getMessage("IsBase64"));
     }
 
-    #validateIsEmail(value: any, _context: RuleValidationContext): void {
+    #validateIsEmail(value: any, _attr: VirtualPersistentObjectAttribute): void {
         if (value == null || value === "")
             return;
 
@@ -164,7 +159,7 @@ export class BusinessRuleValidator {
             throw new Error(this.#service.getMessage("IsEmail"));
     }
 
-    #validateIsRegex(value: any, _context: RuleValidationContext): void {
+    #validateIsRegex(value: any, _attr: VirtualPersistentObjectAttribute): void {
         if (value == null || value === "")
             return;
 
@@ -175,7 +170,7 @@ export class BusinessRuleValidator {
         }
     }
 
-    #validateIsUrl(value: any, _context: RuleValidationContext): void {
+    #validateIsUrl(value: any, _attr: VirtualPersistentObjectAttribute): void {
         if (value == null || value === "")
             return;
 
@@ -186,7 +181,7 @@ export class BusinessRuleValidator {
         }
     }
 
-    #validateIsWord(value: any, _context: RuleValidationContext): void {
+    #validateIsWord(value: any, _attr: VirtualPersistentObjectAttribute): void {
         if (value == null || value === "")
             return;
 
@@ -195,7 +190,7 @@ export class BusinessRuleValidator {
             throw new Error(this.#service.getMessage("IsWord"));
     }
 
-    #validateMaxLength(value: any, _context: RuleValidationContext, maxLength: number): void {
+    #validateMaxLength(value: any, _attr: VirtualPersistentObjectAttribute, maxLength: number): void {
         if (value == null || value === "")
             return;
 
@@ -204,7 +199,7 @@ export class BusinessRuleValidator {
             throw new Error(this.#service.getMessage("MaxLength", maxLength));
     }
 
-    #validateMaxValue(value: any, _context: RuleValidationContext, maximum: number): void {
+    #validateMaxValue(value: any, _attr: VirtualPersistentObjectAttribute, maximum: number): void {
         if (value == null || value === "")
             return;
 
@@ -216,7 +211,7 @@ export class BusinessRuleValidator {
             throw new Error(this.#service.getMessage("MaxValue", maximum));
     }
 
-    #validateMinLength(value: any, _context: RuleValidationContext, minLength: number): void {
+    #validateMinLength(value: any, _attr: VirtualPersistentObjectAttribute, minLength: number): void {
         if (value == null || value === "")
             return;
 
@@ -225,7 +220,7 @@ export class BusinessRuleValidator {
             throw new Error(this.#service.getMessage("MinLength", minLength));
     }
 
-    #validateMinValue(value: any, _context: RuleValidationContext, minimum: number): void {
+    #validateMinValue(value: any, _attr: VirtualPersistentObjectAttribute, minimum: number): void {
         if (value == null || value === "")
             return;
 
@@ -237,12 +232,12 @@ export class BusinessRuleValidator {
             throw new Error(this.#service.getMessage("MinValue", minimum));
     }
 
-    #validateRequired(value: any, _context: RuleValidationContext): void {
+    #validateRequired(value: any, _attr: VirtualPersistentObjectAttribute): void {
         if (value == null)
             throw new Error(this.#service.getMessage("Required"));
     }
 
-    #validateNotEmpty(value: any, _context: RuleValidationContext): void {
+    #validateNotEmpty(value: any, _attr: VirtualPersistentObjectAttribute): void {
         if (value == null || value === "" || (typeof value === "string" && value.trim() === ""))
             throw new Error(this.#service.getMessage("NotEmpty"));
     }

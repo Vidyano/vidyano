@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { VirtualService, VirtualPersistentObjectActions } from "../src/index.js";
-import type { VirtualPersistentObject, RuleValidationContext } from "../src/index.js";
+import type { VirtualPersistentObject, VirtualPersistentObjectAttribute } from "../src/index.js";
 
 test("validates required attributes on save", async () => {
     const service = new VirtualService();
@@ -278,7 +278,7 @@ test("supports custom business rules", async () => {
     const service = new VirtualService();
 
     // Register custom rule
-    service.registerBusinessRule("IsPhoneNumber", (value: any, _context: RuleValidationContext) => {
+    service.registerBusinessRule("IsPhoneNumber", (value: any, _attr: VirtualPersistentObjectAttribute) => {
         if (!value)
             return;
 
@@ -355,7 +355,7 @@ test("prevents overriding built-in rules", () => {
     const service = new VirtualService();
 
     expect(() => {
-        service.registerBusinessRule("IsEmail", (_value: any, _context: RuleValidationContext) => {
+        service.registerBusinessRule("IsEmail", (_value: any, _attr: VirtualPersistentObjectAttribute) => {
             throw new Error("Custom validation");
         });
     }).toThrow("Cannot override built-in rule: IsEmail");
@@ -563,7 +563,7 @@ test("does not convert empty parameter to zero", async () => {
     // Track what parameters the custom rule receives
     let receivedParams: any[] = [];
 
-    service.registerBusinessRule("CheckParams", (_value: any, _context: RuleValidationContext, ...params: any[]) => {
+    service.registerBusinessRule("CheckParams", (_value: any, _attr: VirtualPersistentObjectAttribute, ...params: any[]) => {
         receivedParams = params;
     });
 
@@ -626,15 +626,15 @@ test("validates special characters and unicode in strings", async () => {
     expect(email!.validationError).toBe("Email format is invalid"); // Unicode in email domain
 });
 
-test("custom rule can access other attributes via context", async () => {
+test("custom rule can access other attributes via attr.persistentObject", async () => {
     const service = new VirtualService();
 
     // Register custom rule that validates password confirmation
-    service.registerBusinessRule("MatchesPassword", (value: any, context: RuleValidationContext) => {
+    service.registerBusinessRule("MatchesPassword", (value: any, attr: VirtualPersistentObjectAttribute) => {
         if (!value)
             return;
 
-        const passwordValue = context.persistentObject.getAttributeValue("Password");
+        const passwordValue = attr.persistentObject.getAttributeValue("Password");
         if (value !== passwordValue)
             throw new Error("Passwords do not match");
     });
@@ -685,7 +685,7 @@ test("custom rule receives converted value not raw DTO value", async () => {
     let receivedValue: any = undefined;
     let receivedType: string = "";
 
-    service.registerBusinessRule("CheckType", (value: any, _context: RuleValidationContext) => {
+    service.registerBusinessRule("CheckType", (value: any, _attr: VirtualPersistentObjectAttribute) => {
         receivedValue = value;
         receivedType = typeof value;
     });
@@ -1090,7 +1090,7 @@ test("translates multiple attributes with different rules in one save", async ()
     VirtualService.messages = originalMessages;
 });
 
-test("custom rule can use context.service.getMessage()", async () => {
+test("custom rule can use attr.persistentObject.service.getMessage()", async () => {
     // Save original messages
     const originalMessages = VirtualService.messages;
 
@@ -1102,22 +1102,22 @@ test("custom rule can use context.service.getMessage()", async () => {
 
     const service = new VirtualService();
 
-    service.registerBusinessRule("MatchesPassword", (value: any, context: RuleValidationContext) => {
+    service.registerBusinessRule("MatchesPassword", (value: any, attr: VirtualPersistentObjectAttribute) => {
         if (!value)
             return;
 
-        const passwordValue = context.persistentObject.getAttributeValue("Password");
+        const passwordValue = attr.persistentObject.getAttributeValue("Password");
         if (value !== passwordValue)
-            throw new Error(context.service.getMessage("MatchesPassword"));
+            throw new Error(attr.persistentObject.service.getMessage("MatchesPassword"));
     });
 
-    service.registerBusinessRule("MinimumAge", (value: any, context: RuleValidationContext, minAge: number) => {
+    service.registerBusinessRule("MinimumAge", (value: any, attr: VirtualPersistentObjectAttribute, minAge: number) => {
         if (!value)
             return;
 
         const age = Number(value);
         if (age < minAge)
-            throw new Error(context.service.getMessage("MinimumAge", minAge));
+            throw new Error(attr.persistentObject.service.getMessage("MinimumAge", minAge));
     });
 
     service.registerPersistentObject({
@@ -1162,7 +1162,7 @@ test("custom rule can use context.service.getMessage()", async () => {
 test("custom rule can throw errors directly without using getMessage", async () => {
     const service = new VirtualService();
 
-    service.registerBusinessRule("IsPhoneNumber", (value: any, _context: RuleValidationContext) => {
+    service.registerBusinessRule("IsPhoneNumber", (value: any, _attr: VirtualPersistentObjectAttribute) => {
         if (!value)
             return;
 

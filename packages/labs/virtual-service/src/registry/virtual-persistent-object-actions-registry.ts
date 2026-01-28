@@ -114,7 +114,7 @@ export class VirtualPersistentObjectActionsRegistry {
      * @param conversionContext - The conversion context for type conversions
      */
     executeConstruct(dto: Dto.PersistentObjectDto, conversionContext: ConversionContext): void {
-        const wrappedObj = createVirtualPersistentObject(dto, conversionContext);
+        const wrappedObj = createVirtualPersistentObject(dto, conversionContext, this.#service);
         const instance = this.createInstance(dto.type);
         instance.onConstruct(wrappedObj);
     }
@@ -131,13 +131,13 @@ export class VirtualPersistentObjectActionsRegistry {
         parent: Dto.PersistentObjectDto | null,
         conversionContext: ConversionContext
     ): Promise<Dto.PersistentObjectDto> {
-        const wrappedObj = createVirtualPersistentObject(dto, conversionContext);
+        const wrappedObj = createVirtualPersistentObject(dto, conversionContext, this.#service);
 
         // Wrap parent if provided
         let wrappedParent: VirtualPersistentObject | null = null;
         if (parent) {
             const parentContext = this.#createConversionContext();
-            wrappedParent = createVirtualPersistentObject(parent, parentContext);
+            wrappedParent = createVirtualPersistentObject(parent, parentContext, this.#service);
         }
 
         const instance = this.createInstance(dto.type);
@@ -162,17 +162,17 @@ export class VirtualPersistentObjectActionsRegistry {
         parameters: Record<string, string> | null,
         conversionContext: ConversionContext
     ): Promise<Dto.PersistentObjectDto> {
-        const wrappedObj = createVirtualPersistentObject(dto, conversionContext);
+        const wrappedObj = createVirtualPersistentObject(dto, conversionContext, this.#service);
 
         // Wrap parent if provided
         let wrappedParent: VirtualPersistentObject | null = null;
         if (parent) {
             const parentContext = this.#createConversionContext();
-            wrappedParent = createVirtualPersistentObject(parent, parentContext);
+            wrappedParent = createVirtualPersistentObject(parent, parentContext, this.#service);
         }
 
         // Wrap query if provided
-        const wrappedQuery: VirtualQuery | null = query ? createVirtualQuery(query) : null;
+        const wrappedQuery: VirtualQuery | null = query ? createVirtualQuery(query, undefined, this.#service) : null;
 
         const instance = this.createInstance(dto.type);
         const result = await instance.onNew(wrappedObj, wrappedParent, wrappedQuery, parameters);
@@ -192,12 +192,12 @@ export class VirtualPersistentObjectActionsRegistry {
         attribute: Dto.PersistentObjectAttributeDto | undefined,
         conversionContext: ConversionContext
     ): Promise<Dto.PersistentObjectDto> {
-        const wrappedObj = createVirtualPersistentObject(dto, conversionContext);
+        const wrappedObj = createVirtualPersistentObject(dto, conversionContext, this.#service);
 
         // Wrap attribute if provided
         let wrappedAttribute: VirtualPersistentObjectAttribute | undefined;
         if (attribute)
-            wrappedAttribute = createVirtualPersistentObjectAttribute(attribute, conversionContext);
+            wrappedAttribute = createVirtualPersistentObjectAttribute(attribute, conversionContext, wrappedObj);
 
         const instance = this.createInstance(dto.type);
         const result = await instance.onRefresh(wrappedObj, wrappedAttribute);
@@ -215,7 +215,7 @@ export class VirtualPersistentObjectActionsRegistry {
         dto: Dto.PersistentObjectDto,
         conversionContext: ConversionContext
     ): Promise<Dto.PersistentObjectDto> {
-        const wrappedObj = createVirtualPersistentObject(dto, conversionContext);
+        const wrappedObj = createVirtualPersistentObject(dto, conversionContext, this.#service);
         const instance = this.createInstance(dto.type);
         const result = await instance.onSave(wrappedObj);
 
@@ -237,10 +237,10 @@ export class VirtualPersistentObjectActionsRegistry {
         selectedItem: Dto.QueryResultItemDto | null,
         conversionContext: ConversionContext
     ): Promise<void> {
-        const wrappedParent = createVirtualPersistentObject(parent, conversionContext);
-        const wrappedAttribute = createVirtualPersistentObjectAttribute(referenceAttribute, conversionContext);
-        const wrappedQuery = createVirtualQuery(query);
-        const wrappedSelectedItem: VirtualQueryResultItem | null = selectedItem ? createVirtualQueryResultItem(selectedItem) : null;
+        const wrappedParent = createVirtualPersistentObject(parent, conversionContext, this.#service);
+        const wrappedAttribute = createVirtualPersistentObjectAttribute(referenceAttribute, conversionContext, wrappedParent);
+        const wrappedQuery = createVirtualQuery(query, undefined, this.#service);
+        const wrappedSelectedItem: VirtualQueryResultItem | null = selectedItem ? createVirtualQueryResultItem(selectedItem, wrappedQuery) : null;
 
         const instance = this.createInstance(parent.type);
         await instance.onSelectReference(wrappedParent, wrappedAttribute, wrappedQuery, wrappedSelectedItem);
@@ -261,12 +261,12 @@ export class VirtualPersistentObjectActionsRegistry {
         let wrappedParent: VirtualPersistentObject | null = null;
         if (parent) {
             const conversionContext = this.#createConversionContext();
-            wrappedParent = createVirtualPersistentObject(parent, conversionContext);
+            wrappedParent = createVirtualPersistentObject(parent, conversionContext, this.#service);
         }
 
         // Wrap query and selectedItems
-        const wrappedQuery = createVirtualQuery(query);
-        const wrappedSelectedItems = selectedItems.map(item => createVirtualQueryResultItem(item));
+        const wrappedQuery = createVirtualQuery(query, undefined, this.#service);
+        const wrappedSelectedItems = selectedItems.map(item => createVirtualQueryResultItem(item, wrappedQuery));
 
         // Get type from query's persistentObject
         const type = query.persistentObject?.type;
@@ -290,11 +290,11 @@ export class VirtualPersistentObjectActionsRegistry {
         let wrappedParent: VirtualPersistentObject | null = null;
         if (parent) {
             const conversionContext = this.#createConversionContext();
-            wrappedParent = createVirtualPersistentObject(parent, conversionContext);
+            wrappedParent = createVirtualPersistentObject(parent, conversionContext, this.#service);
         }
 
         // Wrap query
-        const wrappedQuery = createVirtualQuery(query);
+        const wrappedQuery = createVirtualQuery(query, undefined, this.#service);
 
         // Get type from query's persistentObject
         const type = query.persistentObject?.type;
@@ -321,11 +321,11 @@ export class VirtualPersistentObjectActionsRegistry {
         let wrappedParent: VirtualPersistentObject | null = null;
         if (parent) {
             const conversionContext = this.#createConversionContext();
-            wrappedParent = createVirtualPersistentObject(parent, conversionContext);
+            wrappedParent = createVirtualPersistentObject(parent, conversionContext, this.#service);
         }
 
         // Wrap query
-        const wrappedQuery = createVirtualQuery(query);
+        const wrappedQuery = createVirtualQuery(query, undefined, this.#service);
 
         // Get type from query's persistentObject
         const type = query.persistentObject?.type;
