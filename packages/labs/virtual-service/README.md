@@ -412,8 +412,8 @@ service.registerPersistentObject({
 
 **Attribute parameter:**
 The `attr` parameter is the `VirtualPersistentObjectAttribute` being validated, which provides access to:
+- `attr.service` - The VirtualService instance (use for `getMessage()` translations)
 - `attr.persistentObject` - The persistent object being validated
-- `attr.persistentObject.service` - The VirtualService instance (use for `getMessage()` translations)
 - `attr.getValue()` / `attr.setValue()` - Get/set the attribute value
 - All DTO properties (`name`, `type`, `rules`, etc.)
 
@@ -426,7 +426,7 @@ service.registerBusinessRule("MatchesPassword", (value: any, attr: VirtualPersis
 
     const passwordValue = attr.persistentObject.getAttributeValue("Password");
     if (value !== passwordValue)
-        throw new Error(attr.persistentObject.service.getMessage("MatchesPassword"));
+        throw new Error(attr.service.getMessage("MatchesPassword"));
 });
 
 service.registerPersistentObject({
@@ -515,14 +515,14 @@ VirtualService.messages = {
 
 const service = new VirtualService();
 
-// Custom rule using getMessage via attr.persistentObject.service
+// Custom rule using getMessage via attr.service
 service.registerBusinessRule("MinimumAge", (value: any, attr: VirtualPersistentObjectAttribute, minAge: number) => {
     if (!value)
         return;
 
     const age = Number(value);
     if (age < minAge)
-        throw new Error(attr.persistentObject.service.getMessage("MinimumAge", minAge));
+        throw new Error(attr.service.getMessage("MinimumAge", minAge));
 });
 
 // Custom rule can still throw direct error strings
@@ -792,6 +792,7 @@ service.registerAction({
 |--------|-------------|
 | `getValue(columnName)` | Get a value from the item by column name |
 | `query` | Reference to the parent VirtualQuery |
+| `service` | Reference to the VirtualService instance |
 
 ## Lifecycle Hooks
 
@@ -1110,6 +1111,7 @@ async onSave(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
 | `setValue(value)` | Set value with conversion |
 | `setValidationError(error)` | Set validation error (pass `null`/empty to clear) |
 | `persistentObject` | Reference to the parent VirtualPersistentObject |
+| `service` | Reference to the VirtualService instance |
 
 
 ## Testing Examples

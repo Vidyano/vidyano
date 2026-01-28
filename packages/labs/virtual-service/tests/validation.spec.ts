@@ -1090,7 +1090,7 @@ test("translates multiple attributes with different rules in one save", async ()
     VirtualService.messages = originalMessages;
 });
 
-test("custom rule can use attr.persistentObject.service.getMessage()", async () => {
+test("custom rule can use attr.service.getMessage()", async () => {
     // Save original messages
     const originalMessages = VirtualService.messages;
 
@@ -1108,7 +1108,7 @@ test("custom rule can use attr.persistentObject.service.getMessage()", async () 
 
         const passwordValue = attr.persistentObject.getAttributeValue("Password");
         if (value !== passwordValue)
-            throw new Error(attr.persistentObject.service.getMessage("MatchesPassword"));
+            throw new Error(attr.service.getMessage("MatchesPassword"));
     });
 
     service.registerBusinessRule("MinimumAge", (value: any, attr: VirtualPersistentObjectAttribute, minAge: number) => {
@@ -1117,7 +1117,7 @@ test("custom rule can use attr.persistentObject.service.getMessage()", async () 
 
         const age = Number(value);
         if (age < minAge)
-            throw new Error(attr.persistentObject.service.getMessage("MinimumAge", minAge));
+            throw new Error(attr.service.getMessage("MinimumAge", minAge));
     });
 
     service.registerPersistentObject({

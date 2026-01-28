@@ -33,6 +33,11 @@ export type VirtualPersistentObjectAttribute = Dto.PersistentObjectAttributeDto 
      * Reference to the parent persistent object
      */
     readonly persistentObject: VirtualPersistentObject;
+
+    /**
+     * Reference to the VirtualService instance
+     */
+    readonly service: VirtualService;
 };
 
 /**
@@ -77,12 +82,14 @@ export type VirtualPersistentObject = Dto.PersistentObjectDto & {
  * @param attr - The PersistentObjectAttributeDto to wrap
  * @param conversionContext - The conversion context for type conversions
  * @param persistentObject - The parent VirtualPersistentObject
+ * @param service - The VirtualService instance
  * @returns A VirtualPersistentObjectAttribute that combines DTO properties with helper methods
  */
 export function createVirtualPersistentObjectAttribute(
     attr: Dto.PersistentObjectAttributeDto,
     conversionContext: ConversionContext,
-    persistentObject: VirtualPersistentObject
+    persistentObject: VirtualPersistentObject,
+    service: VirtualService
 ): VirtualPersistentObjectAttribute {
     const helpers = {
         getValue() {
@@ -96,6 +103,9 @@ export function createVirtualPersistentObjectAttribute(
         },
         get persistentObject() {
             return persistentObject;
+        },
+        get service() {
+            return service;
         }
     };
 
@@ -139,7 +149,7 @@ export function createVirtualPersistentObject(
             if (!attr)
                 return undefined;
 
-            return createVirtualPersistentObjectAttribute(attr, conversionContext, proxy);
+            return createVirtualPersistentObjectAttribute(attr, conversionContext, proxy, service);
         },
         getAttributeValue(name: string) {
             const attr = dto.attributes?.find(a => a.name === name);

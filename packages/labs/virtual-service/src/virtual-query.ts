@@ -17,6 +17,11 @@ export type VirtualQueryColumn = Dto.QueryColumnDto & {
      * Reference to the parent query
      */
     readonly query: VirtualQuery;
+
+    /**
+     * Reference to the VirtualService instance
+     */
+    readonly service: VirtualService;
 };
 
 /**
@@ -58,6 +63,11 @@ export type VirtualQueryResultItem = Dto.QueryResultItemDto & {
      * Reference to the parent query
      */
     readonly query: VirtualQuery;
+
+    /**
+     * Reference to the VirtualService instance
+     */
+    readonly service: VirtualService;
 };
 
 /**
@@ -73,6 +83,9 @@ export function createVirtualQueryColumn(
     const helpers = {
         get query() {
             return query;
+        },
+        get service() {
+            return query.service;
         }
     };
 
@@ -175,6 +188,9 @@ export function createVirtualQueryResultItem(
         },
         get query() {
             return query;
+        },
+        get service() {
+            return query.service;
         }
     };
 
