@@ -29,7 +29,7 @@ test("validates required attributes on save", async () => {
     const person = await service.getPersistentObject(null, "Person", "1");
 
     // Attempt to save with null required field
-    await person.save();
+    await person.save({ throwExceptions: false });
 
     // Check validation error on FirstName (null value should fail)
     const firstName = person.getAttribute("FirstName");
@@ -63,7 +63,7 @@ test("validates IsEmail rule", async () => {
     const person = await service.getPersistentObject(null, "Person", "1");
 
     // Attempt to save with invalid email
-    await person.save();
+    await person.save({ throwExceptions: false });
 
     // Check validation error
     const email = person.getAttribute("Email");
@@ -92,7 +92,7 @@ test("validates MaxLength rule", async () => {
     const person = await service.getPersistentObject(null, "Person", "1");
 
     // Attempt to save with value exceeding max length
-    await person.save();
+    await person.save({ throwExceptions: false });
 
     // Check validation error
     const firstName = person.getAttribute("FirstName");
@@ -121,7 +121,7 @@ test("validates NotEmpty rule", async () => {
     const person = await service.getPersistentObject(null, "Person", "1");
 
     // Attempt to save with empty value
-    await person.save();
+    await person.save({ throwExceptions: false });
 
     // Check validation error
     const firstName = person.getAttribute("FirstName");
@@ -150,7 +150,7 @@ test("validates multiple rules on single attribute", async () => {
     const person = await service.getPersistentObject(null, "Person", "1");
 
     // Attempt to save with invalid email (should fail on IsEmail rule)
-    await person.save();
+    await person.save({ throwExceptions: false });
 
     // Check validation error - should be the first failing rule
     const email = person.getAttribute("Email");
@@ -179,7 +179,7 @@ test("validates MinLength rule", async () => {
     const person = await service.getPersistentObject(null, "Person", "1");
 
     // Attempt to save with value below min length
-    await person.save();
+    await person.save({ throwExceptions: false });
 
     // Check validation error
     const password = person.getAttribute("Password");
@@ -208,7 +208,7 @@ test("validates MinValue rule", async () => {
     const product = await service.getPersistentObject(null, "Product", "1");
 
     // Attempt to save with value below minimum
-    await product.save();
+    await product.save({ throwExceptions: false });
 
     // Check validation error
     const price = product.getAttribute("Price");
@@ -237,7 +237,7 @@ test("validates MaxValue rule", async () => {
     const product = await service.getPersistentObject(null, "Product", "1");
 
     // Attempt to save with value above maximum
-    await product.save();
+    await product.save({ throwExceptions: false });
 
     // Check validation error
     const discount = product.getAttribute("Discount");
@@ -266,7 +266,7 @@ test("validates IsUrl rule", async () => {
     const website = await service.getPersistentObject(null, "Website", "1");
 
     // Attempt to save with invalid URL
-    await website.save();
+    await website.save({ throwExceptions: false });
 
     // Check validation error
     const url = website.getAttribute("Url");
@@ -305,7 +305,7 @@ test("supports custom business rules", async () => {
     const contact = await service.getPersistentObject(null, "Contact", "1");
 
     // Attempt to save with invalid phone number
-    await contact.save();
+    await contact.save({ throwExceptions: false });
 
     // Check validation error
     const phone = contact.getAttribute("Phone");
@@ -497,7 +497,7 @@ test("validates empty string vs whitespace for NotEmpty", async () => {
     const person = await service.getPersistentObject(null, "Person", "1");
 
     // Both should fail validation
-    await person.save();
+    await person.save({ throwExceptions: false });
 
     const emptyString = person.getAttribute("EmptyString");
     const whitespaceOnly = person.getAttribute("WhitespaceOnly");
@@ -526,7 +526,7 @@ test("validates non-numeric values for Min/MaxValue rules", async () => {
     const product = await service.getPersistentObject(null, "Product", "1");
 
     // Should fail with "must be a number" error
-    await product.save();
+    await product.save({ throwExceptions: false });
 
     const price = product.getAttribute("Price");
     expect(price!.validationError).toBe("Value must be a number");
@@ -553,7 +553,7 @@ test("validates multiple failing rules returns first error", async () => {
     const person = await service.getPersistentObject(null, "Person", "1");
 
     // Should return the first failing rule's error (NotEmpty)
-    await person.save();
+    await person.save({ throwExceptions: false });
 
     const email = person.getAttribute("Email");
     expect(email!.validationError).toBe("This field cannot be empty");
@@ -620,7 +620,7 @@ test("validates special characters and unicode in strings", async () => {
     const person = await service.getPersistentObject(null, "Person", "1");
 
     // Unicode characters should be handled correctly
-    await person.save();
+    await person.save({ throwExceptions: false });
 
     const name = person.getAttribute("Name");
     const email = person.getAttribute("Email");
@@ -665,7 +665,7 @@ test("custom rule can access other attributes via context", async () => {
     const user = await service.getPersistentObject(null, "User", "1");
 
     // Attempt to save with mismatched passwords
-    await user.save();
+    await user.save({ throwExceptions: false });
 
     // Check validation error
     const confirmPassword = user.getAttribute("ConfirmPassword");
@@ -738,7 +738,7 @@ test("automatically sets isRequired when NotEmpty rule is present", async () => 
     const person = await service.getPersistentObject(null, "Person", "1");
 
     // Attempt to save with empty value
-    await person.save();
+    await person.save({ throwExceptions: false });
 
     // Check validation error - NotEmpty rule executes and fails
     const firstName = person.getAttribute("FirstName");
@@ -768,7 +768,7 @@ test("automatically sets isRequired when Required rule is present", async () => 
     const person = await service.getPersistentObject(null, "Person", "1");
 
     // Attempt to save with null value (should fail Required rule)
-    await person.save();
+    await person.save({ throwExceptions: false });
 
     // Check validation error - Required rule should fail
     const lastName = person.getAttribute("LastName");
@@ -834,7 +834,7 @@ test("Required rule allows empty string but not null", async () => {
     const person = await service.getPersistentObject(null, "Person", "1");
 
     // Attempt to save - empty string should pass, null should fail
-    await person.save();
+    await person.save({ throwExceptions: false });
 
     // FirstName with empty string should pass
     const firstName = person.getAttribute("FirstName");
@@ -875,7 +875,7 @@ test("NotEmpty rule rejects both null and empty string", async () => {
     const person = await service.getPersistentObject(null, "Person", "1");
 
     // Attempt to save - both should fail
-    await person.save();
+    await person.save({ throwExceptions: false });
 
     // FirstName with empty string should fail
     const firstName = person.getAttribute("FirstName");
@@ -910,7 +910,7 @@ test("uses default English messages when no translate function provided", async 
     await service.initialize();
 
     const person = await service.getPersistentObject(null, "Person", "1");
-    await person.save();
+    await person.save({ throwExceptions: false });
 
     const email = person.getAttribute("Email");
     expect(email!.validationError).toBe("This field is required");
@@ -943,7 +943,7 @@ test("translates simple validation rules", async () => {
     await service.initialize();
 
     const person = await service.getPersistentObject(null, "Person", "1");
-    await person.save();
+    await person.save({ throwExceptions: false });
 
     const email = person.getAttribute("Email");
     expect(email!.validationError).toBe("Dit veld is verplicht");
@@ -986,7 +986,7 @@ test("translates parameterized validation rules with positional params", async (
     await service.initialize();
 
     const person = await service.getPersistentObject(null, "Person", "1");
-    await person.save();
+    await person.save({ throwExceptions: false });
 
     const name = person.getAttribute("Name");
     const age = person.getAttribute("Age");
@@ -1026,7 +1026,7 @@ test("translation function receives correct positional parameters", async () => 
     await service.initialize();
 
     const obj = await service.getPersistentObject(null, "Test", "1");
-    await obj.save();
+    await obj.save({ throwExceptions: false });
 
     expect(capturedCalls).toContainEqual({ key: "MaxLength", params: [40] });
     expect(capturedCalls).toContainEqual({ key: "MinValue", params: [10] });
@@ -1073,7 +1073,7 @@ test("translates multiple attributes with different rules in one save", async ()
     await service.initialize();
 
     const user = await service.getPersistentObject(null, "User", "1");
-    await user.save();
+    await user.save({ throwExceptions: false });
 
     const username = user.getAttribute("Username");
     const email = user.getAttribute("Email");
@@ -1140,7 +1140,7 @@ test("custom rule can use context.translate()", async () => {
     await service.initialize();
 
     const user = await service.getPersistentObject(null, "User", "1");
-    await user.save();
+    await user.save({ throwExceptions: false });
 
     const confirmPassword = user.getAttribute("ConfirmPassword");
     const age = user.getAttribute("Age");
@@ -1178,8 +1178,326 @@ test("custom rule can still throw errors directly without translation (backward 
     await service.initialize();
 
     const contact = await service.getPersistentObject(null, "Contact", "1");
-    await contact.save();
+    await contact.save({ throwExceptions: false });
 
     const phone = contact.getAttribute("Phone");
     expect(phone!.validationError).toBe("Invalid phone number format");
+});
+
+// checkRules tests
+
+test("checkRules sets notification on validation failure", async () => {
+    const service = new VirtualService();
+
+    service.registerPersistentObject({
+        type: "Person",
+        label: "Person",
+        stateBehavior: "StayInEdit",
+        attributes: [
+            {
+                name: "FirstName",
+                type: "String",
+                rules: "Required",
+                value: null
+            }
+        ]
+    });
+
+    await service.initialize();
+
+    const person = await service.getPersistentObject(null, "Person", "1");
+    await person.save({ throwExceptions: false });
+
+    // Check that notification is set
+    expect(person.notification).toBe("Some required information is missing or incorrect.");
+    expect(person.notificationType).toBe("Error");
+});
+
+test("validation failure prevents saveNew/saveExisting from being called", async () => {
+    const service = new VirtualService();
+
+    let saveNewCalled = false;
+    let saveExistingCalled = false;
+
+    class TestActions extends VirtualPersistentObjectActions {
+        protected async saveNew(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
+            saveNewCalled = true;
+            return obj;
+        }
+
+        protected async saveExisting(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
+            saveExistingCalled = true;
+            return obj;
+        }
+    }
+
+    service.registerPersistentObject({
+        type: "Person",
+        label: "Person",
+        stateBehavior: "StayInEdit",
+        attributes: [
+            {
+                name: "FirstName",
+                type: "String",
+                rules: "Required",
+                value: null
+            }
+        ]
+    });
+
+    service.registerPersistentObjectActions("Person", TestActions);
+
+    await service.initialize();
+
+    const person = await service.getPersistentObject(null, "Person", "1");
+
+    // Attempt to save with invalid data
+    const result = await person.save({ throwExceptions: false });
+
+    // Verify save methods were NOT called
+    expect(saveNewCalled).toBe(false);
+    expect(saveExistingCalled).toBe(false);
+
+    // Verify save returned false
+    expect(result).toBe(false);
+});
+
+test("checkRules override - custom validation", async () => {
+    const service = new VirtualService();
+
+    class TestActions extends VirtualPersistentObjectActions {
+        checkRules(obj: VirtualPersistentObject): boolean {
+            // Custom validation: reject Name="invalid"
+            const name = obj.getAttributeValue("Name");
+            if (name === "invalid") {
+                obj.setValidationError("Name", "Name cannot be 'invalid'");
+                obj.setNotification("Custom validation failed", "Error");
+                return false;
+            }
+            return true;
+        }
+
+        protected async saveNew(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
+            return obj;
+        }
+    }
+
+    service.registerPersistentObject({
+        type: "Person",
+        label: "Person",
+        stateBehavior: "StayInEdit",
+        attributes: [
+            {
+                name: "Name",
+                type: "String",
+                value: "invalid"
+            }
+        ]
+    });
+
+    service.registerPersistentObjectActions("Person", TestActions);
+
+    await service.initialize();
+
+    const person = await service.getPersistentObject(null, "Person", "1");
+    await person.save({ throwExceptions: false });
+
+    // Check custom validation error
+    const name = person.getAttribute("Name");
+    expect(name!.validationError).toBe("Name cannot be 'invalid'");
+    expect(person.notification).toBe("Custom validation failed");
+});
+
+test("checkRules override - skip default validation", async () => {
+    const service = new VirtualService();
+
+    let saveCalled = false;
+
+    class TestActions extends VirtualPersistentObjectActions {
+        checkRules(_obj: VirtualPersistentObject): boolean {
+            // Skip all validation
+            return true;
+        }
+
+        protected async saveNew(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
+            saveCalled = true;
+            return obj;
+        }
+
+        protected async saveExisting(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
+            saveCalled = true;
+            return obj;
+        }
+    }
+
+    service.registerPersistentObject({
+        type: "Person",
+        label: "Person",
+        stateBehavior: "StayInEdit",
+        attributes: [
+            {
+                name: "FirstName",
+                type: "String",
+                rules: "Required",
+                value: null  // Would normally fail validation
+            }
+        ]
+    });
+
+    service.registerPersistentObjectActions("Person", TestActions);
+
+    await service.initialize();
+
+    const person = await service.getPersistentObject(null, "Person", "1");
+    await person.save();
+
+    // Save should succeed because we skipped validation
+    expect(saveCalled).toBe(true);
+
+    // No validation error should be set
+    const firstName = person.getAttribute("FirstName");
+    expect(firstName!.validationError).toBeFalsy();
+});
+
+test("checkRules override - call super for combined validation", async () => {
+    const service = new VirtualService();
+
+    class TestActions extends VirtualPersistentObjectActions {
+        checkRules(obj: VirtualPersistentObject): boolean {
+            // Add custom validation first
+            const name = obj.getAttributeValue("Name");
+            if (name === "reserved") {
+                obj.setValidationError("Name", "Name is reserved");
+                obj.setNotification("Custom validation failed", "Error");
+                return false;
+            }
+
+            // Then call super for default validation (Required rule, etc.)
+            return super.checkRules(obj);
+        }
+
+        protected async saveNew(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
+            return obj;
+        }
+    }
+
+    service.registerPersistentObject({
+        type: "Person",
+        label: "Person",
+        stateBehavior: "StayInEdit",
+        attributes: [
+            {
+                name: "Name",
+                type: "String",
+                rules: "Required",
+                value: null
+            }
+        ]
+    });
+
+    service.registerPersistentObjectActions("Person", TestActions);
+
+    await service.initialize();
+
+    const person = await service.getPersistentObject(null, "Person", "1");
+    await person.save({ throwExceptions: false });
+
+    // Default validation should catch Required rule failure
+    const name = person.getAttribute("Name");
+    expect(name!.validationError).toBe("This field is required");
+});
+
+test("checkRules receives wrapped object with helper methods", async () => {
+    const service = new VirtualService();
+
+    let receivedObj: VirtualPersistentObject | null = null;
+
+    class TestActions extends VirtualPersistentObjectActions {
+        checkRules(obj: VirtualPersistentObject): boolean {
+            receivedObj = obj;
+            return super.checkRules(obj);
+        }
+
+        protected async saveNew(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
+            return obj;
+        }
+    }
+
+    service.registerPersistentObject({
+        type: "Person",
+        label: "Person",
+        stateBehavior: "StayInEdit",
+        attributes: [
+            {
+                name: "FirstName",
+                type: "String",
+                rules: "MaxLength(50)",
+                value: "John"
+            }
+        ]
+    });
+
+    service.registerPersistentObjectActions("Person", TestActions);
+
+    await service.initialize();
+
+    const person = await service.getPersistentObject(null, "Person", "1");
+    await person.save();
+
+    // Verify the object has helper methods
+    expect(receivedObj).not.toBeNull();
+    expect(typeof receivedObj!.getAttribute).toBe("function");
+    expect(typeof receivedObj!.getAttributeValue).toBe("function");
+    expect(typeof receivedObj!.setAttributeValue).toBe("function");
+    expect(typeof receivedObj!.setNotification).toBe("function");
+
+    // Verify helper methods work correctly
+    const attr = receivedObj!.getAttribute("FirstName");
+    expect(attr).toBeDefined();
+    expect(attr!.rules).toBe("MaxLength(50)");
+
+    const value = receivedObj!.getAttributeValue("FirstName");
+    expect(value).toBe("John");
+});
+
+test("checkRules receives attributes with rules from config", async () => {
+    const service = new VirtualService();
+
+    let receivedRules: string | undefined;
+
+    class TestActions extends VirtualPersistentObjectActions {
+        checkRules(obj: VirtualPersistentObject): boolean {
+            const attr = obj.getAttribute("Email");
+            receivedRules = attr?.rules;
+            return super.checkRules(obj);
+        }
+
+        protected async saveNew(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
+            return obj;
+        }
+    }
+
+    service.registerPersistentObject({
+        type: "Person",
+        label: "Person",
+        stateBehavior: "StayInEdit",
+        attributes: [
+            {
+                name: "Email",
+                type: "String",
+                rules: "NotEmpty; IsEmail",
+                value: "test@example.com"
+            }
+        ]
+    });
+
+    service.registerPersistentObjectActions("Person", TestActions);
+
+    await service.initialize();
+
+    const person = await service.getPersistentObject(null, "Person", "1");
+    await person.save();
+
+    // Verify rules came from config
+    expect(receivedRules).toBe("NotEmpty; IsEmail");
 });

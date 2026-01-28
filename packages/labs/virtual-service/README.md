@@ -308,7 +308,7 @@ service.registerPersistentObject({
 
 ### Validation Flow
 
-Validation runs automatically when the Save action executes:
+Validation runs automatically when saving - `onSave` calls `checkRules()` before delegating to `saveNew`/`saveExisting`:
 
 ```typescript
 const contact = await service.getPersistentObject(null, "Contact", null, true);
@@ -322,14 +322,67 @@ await contact.save();
 // Check validation error
 console.log(contact.getAttribute("Email").validationError);
 // "Email format is invalid"
+
+// Notification is also set on the object
+console.log(contact.notification);
+// "Some required information is missing or incorrect."
 ```
 
 **Validation behavior:**
-- Runs before save handlers execute
+- Runs inside `onSave` via the `checkRules()` method (before `saveNew`/`saveExisting`)
 - First failing rule stops validation for that attribute
 - Validation errors set on the attribute's `validationError` property
-- If any attribute fails, the save operation is aborted
+- If any attribute fails, a notification is set and save handlers are not called
 - Null and undefined values skip validation (unless using `NotEmpty`/`Required`)
+
+### Overriding Validation
+
+Override `checkRules()` in your `VirtualPersistentObjectActions` class to customize validation:
+
+```typescript
+class PersonActions extends VirtualPersistentObjectActions {
+    // Custom validation - completely replace default behavior
+    checkRules(obj: VirtualPersistentObject): boolean {
+        const name = obj.getAttributeValue("Name");
+        if (name === "reserved") {
+            obj.setValidationError("Name", "This name is reserved");
+            obj.setNotification("Validation failed", "Error");
+            return false;
+        }
+        return true;  // Skip default validation
+    }
+}
+
+// Or combine custom + default validation
+class OrderActions extends VirtualPersistentObjectActions {
+    checkRules(obj: VirtualPersistentObject): boolean {
+        // Custom business logic first
+        const total = obj.getAttributeValue("Total");
+        const discount = obj.getAttributeValue("Discount");
+        if (discount > total) {
+            obj.setValidationError("Discount", "Discount cannot exceed total");
+            obj.setNotification("Validation failed", "Error");
+            return false;
+        }
+
+        // Then run default rule-based validation
+        return super.checkRules(obj);
+    }
+}
+
+// Skip validation entirely
+class DraftActions extends VirtualPersistentObjectActions {
+    checkRules(_obj: VirtualPersistentObject): boolean {
+        return true;  // Always valid - skip all validation
+    }
+}
+```
+
+**checkRules behavior:**
+- Returns `true` if all validations pass, `false` if any fail
+- When returning `false`, `saveNew`/`saveExisting` are not called
+- The object passed to `checkRules` is wrapped with helper methods
+- Call `super.checkRules(obj)` to include default rule-based validation
 
 ### Custom Business Rules
 
@@ -504,6 +557,7 @@ service.registerBusinessRule("IsPhoneNumber", (value: any, _context: RuleValidat
 - `IsBase64` - Invalid base64 string (no params)
 - `IsRegex` - Invalid regex pattern (no params)
 - `IsWord` - Invalid word characters (no params)
+- `ValidationRulesFailed` - Notification message when validation fails (no params)
 
 ## Queries
 
@@ -819,7 +873,7 @@ service.registerPersistentObjectActions("Person", PersonActions);
 ```
 PersistentObject Load:    onConstruct → onLoad
 PersistentObject New:     onConstruct → onNew
-PersistentObject Save:    (validation) → onSave → (saveNew | saveExisting)
+PersistentObject Save:    onSave → checkRules → (saveNew | saveExisting)
 Query Construction:       onConstructQuery
 Query Execution:          onExecuteQuery → (text search, sort, paginate)
 Attribute Refresh:        onRefresh
@@ -1058,6 +1112,7 @@ async onSave(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
 | `setValidationError(error)` | Set validation error |
 | `clearValidationError()` | Clear validation error |
 
+
 ## Testing Examples
 
 ### Unit Test Example
@@ -1210,7 +1265,8 @@ test("search and sort query results", async () => {
 | `onConstruct(obj)` | Called when constructing the DTO |
 | `onLoad(obj, parent)` | Called when loading an existing object |
 | `onNew(obj, parent, query, params)` | Called when creating a new object |
-| `onSave(obj)` | Called when saving |
+| `onSave(obj)` | Called when saving (calls checkRules, then saveNew/saveExisting) |
+| `checkRules(obj)` | Validates attributes against rules (overridable) |
 | `saveNew(obj)` | Called for new objects (protected) |
 | `saveExisting(obj)` | Called for existing objects (protected) |
 | `onRefresh(obj, attribute)` | Called when refreshing |
@@ -1242,7 +1298,6 @@ import type {
     ActionContext,
     RuleValidatorFn,
     RuleValidationContext,
-    TranslateFunction,
     TranslateFunction
 } from "@vidyano-labs/virtual-service";
 ```

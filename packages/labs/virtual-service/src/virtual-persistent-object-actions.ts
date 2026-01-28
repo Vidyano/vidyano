@@ -1,6 +1,7 @@
 import { Dto } from "@vidyano/core";
 import { VirtualPersistentObject, VirtualPersistentObjectAttribute } from "./virtual-persistent-object.js";
-import { VirtualQueryExecuteResult } from "./types.js";
+import { VirtualQueryExecuteResult, TranslateFunction } from "./types.js";
+import type { BusinessRuleValidator } from "./business-rules.js";
 
 /**
  * Base class for PersistentObject lifecycle methods
@@ -8,6 +9,32 @@ import { VirtualQueryExecuteResult } from "./types.js";
  * All methods have default implementations, so you only need to override what you need.
  */
 export class VirtualPersistentObjectActions {
+    /**
+     * Validator instance for business rule validation (injected by registry)
+     */
+    protected validator?: BusinessRuleValidator;
+
+    /**
+     * Translation function for validation messages (injected by registry)
+     */
+    protected translate: TranslateFunction = (key: string) => key;
+
+    /**
+     * Sets the validator instance (called by registry during instance creation)
+     * @internal
+     */
+    setValidator(validator: BusinessRuleValidator): void {
+        this.validator = validator;
+    }
+
+    /**
+     * Sets the translation function (called by registry during instance creation)
+     * @internal
+     */
+    setTranslate(translate: TranslateFunction): void {
+        this.translate = translate;
+    }
+
     /**
      * Called every time a PersistentObject DTO is created (both new and existing objects)
      * Use this to set metadata on attributes that can only be known at runtime
@@ -70,11 +97,49 @@ export class VirtualPersistentObjectActions {
      * @returns The saved PersistentObject
      */
     async onSave(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
-        // Default implementation: delegate to saveNew or saveExisting based on isNew flag
+        // Validate first - return with errors if invalid
+        if (!this.checkRules(obj))
+            return obj;
+
+        // Delegate to saveNew or saveExisting based on isNew flag
         if (obj.isNew)
             return await this.saveNew(obj);
         else
             return await this.saveExisting(obj);
+    }
+
+    /**
+     * Validates all attributes against their business rules
+     * Override this to customize validation behavior
+     * @param obj - The wrapped PersistentObject to validate (already has config metadata merged)
+     * @returns true if all rules pass, false if any validation errors
+     */
+    checkRules(obj: VirtualPersistentObject): boolean {
+        if (!this.validator || !obj.attributes)
+            return true;
+
+        let hasErrors = false;
+        for (const attr of obj.attributes) {
+            // Clear previous errors
+            attr.validationError = undefined;
+
+            // Get wrapped attribute (has getValue/setValue methods)
+            const wrappedAttr = obj.getAttribute(attr.name);
+            if (!wrappedAttr)
+                continue;
+
+            // Note: wrappedAttr.rules is already set from config via #wrapPersistentObject
+            const error = this.validator.validateAttribute(wrappedAttr, obj);
+            if (error) {
+                attr.validationError = error;
+                hasErrors = true;
+            }
+        }
+
+        if (hasErrors)
+            obj.setNotification(this.translate("ValidationRulesFailed"), "Error");
+
+        return !hasErrors;
     }
 
     /**

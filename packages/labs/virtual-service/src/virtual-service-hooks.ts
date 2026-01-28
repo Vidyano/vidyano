@@ -1,6 +1,6 @@
 import { ServiceHooks, Dto } from "@vidyano/core";
-import { VirtualPersistentObjectConfig, VirtualQueryConfig, ActionConfig, ActionHandler, TranslateFunction } from "./types.js";
-import { ConversionContext } from "./virtual-persistent-object.js";
+import { VirtualPersistentObjectConfig, VirtualQueryConfig, ActionConfig, ActionHandler, TranslateFunction, VirtualPersistentObjectAttributeConfig } from "./types.js";
+import { ConversionContext, VirtualQuery, createVirtualQuery } from "./virtual-persistent-object.js";
 import { VirtualPersistentObjectRegistry } from "./registry/virtual-persistent-object-registry.js";
 import { VirtualQueryRegistry } from "./registry/virtual-query-registry.js";
 import { VirtualPersistentObjectActionsRegistry } from "./registry/virtual-persistent-object-actions-registry.js";
@@ -23,9 +23,9 @@ export class VirtualServiceHooks extends ServiceHooks {
     constructor() {
         super();
         this.#validator = new BusinessRuleValidator();
-        this.#persistentObjectActionsRegistry = new VirtualPersistentObjectActionsRegistry();
+        this.#persistentObjectActionsRegistry = new VirtualPersistentObjectActionsRegistry(this.#validator);
         this.#queryRegistry = new VirtualQueryRegistry(this.#persistentObjectActionsRegistry);
-        this.#persistentObjectRegistry = new VirtualPersistentObjectRegistry(this.#validator, this.#actionHandlers, this.#queryRegistry, this.#persistentObjectActionsRegistry);
+        this.#persistentObjectRegistry = new VirtualPersistentObjectRegistry(this.#actionHandlers, this.#queryRegistry, this.#persistentObjectActionsRegistry);
 
         // Register default action definitions (these are built-in actions without custom handlers)
         this.#actionDefinitions.set("AddReference", { name: "AddReference", displayName: "Add", isPinned: false });
@@ -216,6 +216,125 @@ export class VirtualServiceHooks extends ServiceHooks {
     }
 
     /**
+     * Wraps an incoming PersistentObject DTO with config augmentation
+     * Merges server config metadata with client DTO values.
+     * Only processes attributes that exist in the client DTO (client defines shape).
+     * @param dto - The incoming PersistentObject DTO from client
+     * @returns The augmented DTO with config metadata applied
+     */
+    #wrapPersistentObject(dto: Dto.PersistentObjectDto | null | undefined): Dto.PersistentObjectDto | null {
+        if (!dto)
+            return null;
+
+        const config = this.#persistentObjectRegistry.getConfig(dto.type);
+        if (!config)
+            throw new Error(`PersistentObject type "${dto.type}" is not registered`);
+
+        // Process attributes - iterate over CLIENT attributes only
+        if (dto.attributes) {
+            for (const clientAttr of dto.attributes) {
+                const configAttr = config.attributes.find(a => a.name === clientAttr.name);
+                if (!configAttr)
+                    throw new Error(`Attribute "${clientAttr.name}" is not registered for PersistentObject type "${dto.type}"`);
+
+                this.#mergeAttributeWithConfig(clientAttr, configAttr);
+            }
+        }
+
+        // Recursively wrap parent if present
+        if (dto.parent)
+            dto.parent = this.#wrapPersistentObject(dto.parent)!;
+
+        return dto;
+    }
+
+    /**
+     * Merges a client attribute with config metadata
+     * Server provides all metadata, client provides runtime values only
+     */
+    #mergeAttributeWithConfig(
+        clientAttr: Dto.PersistentObjectAttributeDto,
+        configAttr: VirtualPersistentObjectAttributeConfig
+    ): void {
+        // SERVER PROVIDES (all metadata):
+        clientAttr.type = configAttr.type || "String";
+        clientAttr.rules = configAttr.rules;
+        clientAttr.typeHints = configAttr.typeHints;
+        clientAttr.isReadOnly = configAttr.isReadOnly || false;
+        clientAttr.triggersRefresh = configAttr.triggersRefresh || false;
+        clientAttr.isRequired = this.#hasRequiredRule(configAttr.rules);
+        clientAttr.label = configAttr.label || configAttr.name;
+        clientAttr.group = configAttr.group || "";
+        clientAttr.tab = configAttr.tab || "";
+        clientAttr.column = configAttr.column;
+        clientAttr.columnSpan = configAttr.columnSpan;
+        clientAttr.options = configAttr.options;
+
+        // Reference attribute properties - only set if explicitly configured
+        if (configAttr.lookup) {
+            const refAttr = clientAttr as Dto.PersistentObjectAttributeWithReferenceDto;
+            // Only override displayAttribute if explicitly configured
+            if (configAttr.displayAttribute !== undefined)
+                refAttr.displayAttribute = configAttr.displayAttribute;
+            // Note: lookup query is set by server, not merged from client
+        }
+
+        // CLIENT PROVIDES (runtime state only):
+        // - value (kept from client)
+        // - isValueChanged (kept from client)
+        // - objectId for references (kept from client)
+        // Note: validationError is NOT sent by client - it's server-set only
+    }
+
+    /**
+     * Checks if rules string contains NotEmpty or Required
+     */
+    #hasRequiredRule(rules?: string): boolean {
+        if (!rules)
+            return false;
+
+        const ruleNames = rules
+            .split(";")
+            .map(rule => rule.trim())
+            .map(rule => {
+                const match = rule.match(/^(\w+)/);
+                return match ? match[1] : "";
+            });
+
+        return ruleNames.includes("NotEmpty") || ruleNames.includes("Required");
+    }
+
+    /**
+     * Wraps an incoming Query DTO with config augmentation
+     * @param dto - The incoming Query DTO from client
+     * @returns The augmented VirtualQuery with config metadata applied
+     */
+    #wrapQuery(dto: Dto.QueryDto | null | undefined): VirtualQuery | null {
+        if (!dto)
+            return null;
+
+        const queryConfig = this.#queryRegistry.getQueryConfig(dto.name!);
+        if (!queryConfig)
+            throw new Error(`Query "${dto.name}" is not registered`);
+
+        const poConfig = this.#persistentObjectRegistry.getConfig(queryConfig.persistentObject);
+
+        // Process columns - iterate over CLIENT columns only
+        if (dto.columns && poConfig) {
+            for (const clientCol of dto.columns) {
+                const attrConfig = poConfig.attributes.find(a => a.name === clientCol.name);
+                if (attrConfig) {
+                    // SERVER PROVIDES: canSort, type
+                    clientCol.canSort = attrConfig.canSort ?? true;
+                    // CLIENT PROVIDES: includes, excludes (filter state)
+                }
+            }
+        }
+
+        return createVirtualQuery(dto, queryConfig);
+    }
+
+    /**
      * Handles GetClientData requests
      */
     #handleGetClientData(): Dto.ClientDataDto {
@@ -372,8 +491,14 @@ export class VirtualServiceHooks extends ServiceHooks {
      * Handles ExecuteQuery requests
      */
     async #handleExecuteQuery(request: Dto.ExecuteQueryRequest): Promise<Dto.ExecuteQueryResponse> {
-        const query = request.query;
-        const result = await this.#queryRegistry.executeQuery(query, request.parent || null);
+        // WRAP at entry point
+        const wrappedQuery = this.#wrapQuery(request.query);
+        const wrappedParent = this.#wrapPersistentObject(request.parent);
+
+        const result = await this.#queryRegistry.executeQuery(
+            wrappedQuery as Dto.QueryDto,
+            wrappedParent
+        );
 
         return {
             result
@@ -387,9 +512,11 @@ export class VirtualServiceHooks extends ServiceHooks {
         const type = request.persistentObjectTypeId;
         const objectId = request.objectId || crypto.randomUUID();
         const isNew = request.isNew || false;
-        const parent = request.parent || null;
 
-        const po = await this.#persistentObjectRegistry.getPersistentObject(type, objectId, isNew, parent);
+        // WRAP parent at entry point
+        const wrappedParent = this.#wrapPersistentObject(request.parent);
+
+        const po = await this.#persistentObjectRegistry.getPersistentObject(type, objectId, isNew, wrappedParent);
 
         return {
             result: po
@@ -402,22 +529,35 @@ export class VirtualServiceHooks extends ServiceHooks {
     async #handleExecuteAction(request: Dto.ExecuteActionRequest): Promise<Dto.ExecuteActionResponse> {
         const actionName = request.action.split(".").pop()!;
 
+        // WRAP IMMEDIATELY at entry point
+        const wrappedParent = this.#wrapPersistentObject(request.parent);
+
         // Check if this is a query action
         const queryActionRequest = request as Dto.ExecuteQueryActionRequest;
         if (queryActionRequest.query) {
-            // Query action - can have parent or not
             const queryDto = await this.#queryRegistry.getQuery(queryActionRequest.query.name!);
-            return await this.#executeQueryAction(request, queryDto, actionName);
+            return await this.#executeQueryAction(
+                { ...request, parent: wrappedParent },
+                queryDto,
+                actionName
+            );
         }
 
         // PersistentObject action - must have parent
-        return await this.#persistentObjectRegistry.executeAction(request);
+        return await this.#persistentObjectRegistry.executeAction({
+            ...request,
+            parent: wrappedParent
+        });
     }
 
     /**
      * Executes an action from a query context
      */
-    async #executeQueryAction(request: Dto.ExecuteActionRequest, query: Dto.QueryDto, actionName: string): Promise<Dto.ExecuteActionResponse> {
+    async #executeQueryAction(
+        request: Dto.ExecuteActionRequest,
+        query: Dto.QueryDto,
+        actionName: string
+    ): Promise<Dto.ExecuteActionResponse> {
         // Note: query.persistentObject is the TEMPLATE/SCHEMA, not the parent!
         const parent = request.parent;
 

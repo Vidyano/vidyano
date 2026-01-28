@@ -27,6 +27,14 @@ export class VirtualQueryRegistry {
     }
 
     /**
+     * Gets a registered Query configuration
+     * @param name - The query name
+     */
+    getQueryConfig(name: string): VirtualQueryConfig | undefined {
+        return this.#configs.get(name)?.config;
+    }
+
+    /**
      * Registers a Query configuration
      */
     register(

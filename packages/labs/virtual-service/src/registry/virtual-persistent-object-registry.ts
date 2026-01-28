@@ -1,7 +1,6 @@
 import { Dto } from "@vidyano/core";
 import { VirtualPersistentObjectConfig, VirtualPersistentObjectAttributeConfig, ActionHandler, ActionContext } from "../types.js";
 import { ConversionContext } from "../virtual-persistent-object.js";
-import { BusinessRuleValidator } from "../business-rules.js";
 import { fromServiceValue, toServiceValue } from "../virtual-service-data-type.js";
 import type { VirtualQueryRegistry } from "./virtual-query-registry.js";
 import type { VirtualPersistentObjectActionsRegistry } from "./virtual-persistent-object-actions-registry.js";
@@ -12,12 +11,10 @@ import type { VirtualPersistentObjectActionsRegistry } from "./virtual-persisten
 export class VirtualPersistentObjectRegistry {
     #configs = new Map<string, VirtualPersistentObjectConfig>();
     #actionHandlers: Map<string, ActionHandler>;
-    #validator: BusinessRuleValidator;
     #queryRegistry: VirtualQueryRegistry;
     #actionsRegistry: VirtualPersistentObjectActionsRegistry;
 
-    constructor(validator: BusinessRuleValidator, actionHandlers: Map<string, ActionHandler>, queryRegistry: VirtualQueryRegistry, actionsRegistry: VirtualPersistentObjectActionsRegistry) {
-        this.#validator = validator;
+    constructor(actionHandlers: Map<string, ActionHandler>, queryRegistry: VirtualQueryRegistry, actionsRegistry: VirtualPersistentObjectActionsRegistry) {
         this.#actionHandlers = actionHandlers;
         this.#queryRegistry = queryRegistry;
         this.#actionsRegistry = actionsRegistry;
@@ -115,41 +112,19 @@ export class VirtualPersistentObjectRegistry {
         if (!parent)
             throw new Error("ExecuteAction requires a parent PersistentObject");
 
-        const type = parent.type;
         const actionName = request.action.split(".").pop()!;
 
         // Handle refresh action
         if (actionName === "Refresh")
             return this.#handleRefresh(request);
 
-        // Validate before Save action
+        // Handle Save action
         if (actionName === "Save") {
-            const config = this.#configs.get(type);
-
-            try {
-                const validationFailed = this.#validateAttributes(parent, config);
-
-                if (validationFailed) {
-                    return {
-                        result: parent
-                    };
-                }
-            } catch (error) {
-                parent.notification = error instanceof Error ? error.message : String(error);
-                parent.notificationType = "Error";
-
-                return {
-                    result: parent
-                };
-            }
-
-            // Call onSave from actions registry
+            // No need to merge config here - parent is already wrapped with config metadata
+            // at entry point via #wrapPersistentObject in virtual-service-hooks.ts
             const conversionContext = this.#createConversionContext();
             parent = await this.#actionsRegistry.executeSave(parent, conversionContext);
-
-            return {
-                result: parent
-            };
+            return { result: parent };
         }
 
         // Get custom action handler
@@ -215,43 +190,6 @@ export class VirtualPersistentObjectRegistry {
         return {
             result: parent
         };
-    }
-
-    /**
-     * Validates all attributes on a PersistentObject
-     * @returns true if validation failed, false if all valid
-     */
-    #validateAttributes(po: Dto.PersistentObjectDto, config?: VirtualPersistentObjectConfig): boolean {
-        if (!po.attributes || !config)
-            return false;
-
-        let hasErrors = false;
-
-        for (const attr of po.attributes) {
-            // Clear previous validation errors
-            attr.validationError = undefined;
-
-            // Find the attribute config to get rules
-            const attrConfig = config.attributes.find(a => a.name === attr.name);
-            if (!attrConfig)
-                continue;
-
-            // Always use server config for rules and isRequired (never trust client values)
-            const attrWithRules: Dto.PersistentObjectAttributeDto = {
-                ...attr,
-                rules: attrConfig.rules,
-                isRequired: hasRequiredRule(attrConfig.rules)
-            };
-
-            // Validate the attribute
-            const error = this.#validator.validateAttribute(attrWithRules, po);
-            if (error) {
-                attr.validationError = error;
-                hasErrors = true;
-            }
-        }
-
-        return hasErrors;
     }
 
     /**

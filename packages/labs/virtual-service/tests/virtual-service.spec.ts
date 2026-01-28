@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { VirtualService, VirtualServiceHooks, VirtualPersistentObjectActions } from "../src/index.js";
+import { VirtualService, VirtualServiceHooks, VirtualPersistentObjectActions, VirtualPersistentObject, VirtualPersistentObjectConfig } from "../src/index.js";
 
 test.describe("VirtualService", () => {
     test("can register and initialize successfully", async () => {
@@ -134,7 +134,7 @@ test.describe("VirtualService", () => {
         await service.initialize();
 
         const person = await service.getPersistentObject(null, "Person", "1");
-        await person.save();
+        await person.save({ throwExceptions: false });
 
         expect(translateCalled).toBe(true);
     });
@@ -187,5 +187,121 @@ test.describe("VirtualService", () => {
                 attributes: []
             });
         }).toThrow("VirtualPersistentObjectConfig.attributes must have at least one attribute");
+    });
+
+    test("throws error when saving with unknown attribute", async () => {
+        const service = new VirtualService();
+
+        class PersonActions extends VirtualPersistentObjectActions {
+            protected async saveNew(obj: VirtualPersistentObject) {
+                return obj;
+            }
+        }
+
+        // Keep reference to config so we can mutate it
+        const config: VirtualPersistentObjectConfig = {
+            type: "Person",
+            attributes: [
+                { name: "Name", type: "String" },
+                { name: "Age", type: "Int32" }
+            ]
+        };
+
+        service.registerPersistentObject(config);
+        service.registerPersistentObjectActions("Person", PersonActions);
+
+        await service.initialize();
+
+        // Remove Age attribute from config BEFORE getting the person
+        // This way when getPersistentObject builds the DTO, it won't have Age
+        // But if we directly call the hooks with a DTO that has Age, it should fail
+        config.attributes = config.attributes.filter(a => a.name !== "Age");
+
+        // Call hooks directly with a DTO containing an unknown attribute
+        const hooks = service.virtualHooks;
+        const mockBody = {
+            action: "Person.Save",
+            parent: {
+                type: "Person",
+                objectId: "1",
+                isNew: true,
+                attributes: [
+                    { name: "Name", value: "John" },
+                    { name: "Age", value: 30 }  // This attribute is not in config anymore
+                ],
+                actions: []
+            }
+        };
+
+        const request = new Request("http://virtual.local/ExecuteAction", {
+            method: "POST",
+            body: JSON.stringify(mockBody)
+        });
+
+        const response = await hooks.onFetch(request);
+        const result = await response.json();
+
+        expect(result.exception).toContain('Attribute "Age" is not registered for PersistentObject type "Person"');
+    });
+
+    test("returns error when executing action with unknown PersistentObject type", async () => {
+        const service = new VirtualService();
+
+        service.registerPersistentObject({
+            type: "Person",
+            attributes: [{ name: "Name", type: "String" }]
+        });
+
+        await service.initialize();
+
+        // Call hooks directly with an unknown PersistentObject type
+        const hooks = service.virtualHooks;
+        const mockBody = {
+            action: "UnknownType.Save",
+            parent: {
+                type: "UnknownType",
+                objectId: "1",
+                isNew: true,
+                attributes: [{ name: "Name", value: "John" }],
+                actions: []
+            }
+        };
+
+        const request = new Request("http://virtual.local/ExecuteAction", {
+            method: "POST",
+            body: JSON.stringify(mockBody)
+        });
+
+        const response = await hooks.onFetch(request);
+        const result = await response.json();
+
+        expect(result.exception).toContain('PersistentObject type "UnknownType" is not registered');
+    });
+
+    test("returns error when getting unknown Query", async () => {
+        const service = new VirtualService();
+
+        service.registerPersistentObject({
+            type: "Person",
+            attributes: [{ name: "Name", type: "String" }]
+        });
+
+        await service.initialize();
+
+        // Call hooks directly with an unknown Query name
+        const hooks = service.virtualHooks;
+        const mockBody = {
+            id: "UnknownQuery"
+        };
+
+        const request = new Request("http://virtual.local/GetQuery", {
+            method: "POST",
+            body: JSON.stringify(mockBody)
+        });
+
+        const response = await hooks.onFetch(request);
+        const result = await response.json();
+
+        expect(result.exception).toContain("Query 'UnknownQuery' is not registered");
     });
 });

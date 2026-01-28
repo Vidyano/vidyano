@@ -3,6 +3,7 @@ import { VirtualPersistentObjectActions } from "../virtual-persistent-object-act
 import { VirtualPersistentObject, VirtualPersistentObjectAttribute, ConversionContext, createVirtualPersistentObject, createVirtualPersistentObjectAttribute, unwrapVirtualPersistentObject } from "../virtual-persistent-object.js";
 import { VirtualQueryExecuteResult } from "../types.js";
 import { fromServiceValue, toServiceValue } from "../virtual-service-data-type.js";
+import type { BusinessRuleValidator } from "../business-rules.js";
 
 /** Lifecycle methods that can be overridden in VirtualPersistentObjectActions */
 type LifecycleMethod = "onSave" | "onNew" | "onDelete" | "onRefresh" | "onLoad" | "onConstruct" | "onConstructQuery" | "onSelectReference" | "onExecuteQuery" | "getEntities";
@@ -19,6 +20,11 @@ interface OverrideInfo {
 export class VirtualPersistentObjectActionsRegistry {
     #actionsClasses = new Map<string, typeof VirtualPersistentObjectActions>();
     #overrideInfo = new Map<string, OverrideInfo>();
+    #validator: BusinessRuleValidator;
+
+    constructor(validator: BusinessRuleValidator) {
+        this.#validator = validator;
+    }
 
     /**
      * Registers a VirtualPersistentObjectActions class for a specific type
@@ -82,15 +88,19 @@ export class VirtualPersistentObjectActionsRegistry {
     /**
      * Creates a new instance of the actions class for a type
      * Returns a default VirtualPersistentObjectActions if no custom actions are registered
+     * Injects validator and translate function into the instance
      * @param type - The PersistentObject type name
      * @returns A new instance of the VirtualPersistentObjectActions class
      */
     createInstance(type: string): VirtualPersistentObjectActions {
         const ActionsClass = this.#actionsClasses.get(type);
-        if (!ActionsClass)
-            return new VirtualPersistentObjectActions();
+        const instance = ActionsClass ? new ActionsClass() : new VirtualPersistentObjectActions();
 
-        return new ActionsClass();
+        // Inject validator and translate function
+        instance.setValidator(this.#validator);
+        instance.setTranslate(this.#validator.translate);
+
+        return instance;
     }
 
     /**

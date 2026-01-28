@@ -1,7 +1,5 @@
-import { Dto } from "@vidyano/core";
 import type { RuleValidationContext, TranslateFunction } from "./types.js";
-import { fromServiceValue, toServiceValue } from "./virtual-service-data-type.js";
-import { createVirtualPersistentObject, createVirtualPersistentObjectAttribute, type ConversionContext } from "./virtual-persistent-object.js";
+import type { VirtualPersistentObject, VirtualPersistentObjectAttribute } from "./virtual-persistent-object.js";
 
 /**
  * Parsed business rule with name and parameters
@@ -63,11 +61,19 @@ export class BusinessRuleValidator {
             "MinValue": (min: number) => `Minimum value is ${min}`,
             "IsBase64": () => "Value must be a valid base64 string",
             "IsRegex": () => "Value must be a valid regular expression",
-            "IsWord": () => "Value must contain only word characters"
+            "IsWord": () => "Value must contain only word characters",
+            "ValidationRulesFailed": () => "Some required information is missing or incorrect."
         };
 
         const translator = defaults[key];
         return translator ? translator(...params) : key;
+    }
+
+    /**
+     * Gets the current translate function
+     */
+    get translate(): TranslateFunction {
+        return this.#translate;
     }
 
     /**
@@ -83,39 +89,24 @@ export class BusinessRuleValidator {
 
     /**
      * Validate an attribute against its rules
-     * @param attr - The attribute to validate
-     * @param po - The persistent object containing the attribute
+     * @param attr - The wrapped attribute to validate (has getValue/setValue methods)
+     * @param po - The wrapped persistent object containing the attribute
      * @returns Error message if validation fails, null if valid
      */
-    validateAttribute(attr: Dto.PersistentObjectAttributeDto, po: Dto.PersistentObjectDto): string | null {
-        // Create conversion context for wrappers
-        const conversionContext: ConversionContext = {
-            getConvertedValue: (attribute: Dto.PersistentObjectAttributeDto) => this.#getConvertedValue(attribute),
-            setConvertedValue: (attribute: Dto.PersistentObjectAttributeDto, value: any) => {
-                attribute.value = toServiceValue(value, attribute.type);
-                attribute.isValueChanged = true;
-            }
-        };
+    validateAttribute(attr: VirtualPersistentObjectAttribute, po: VirtualPersistentObject): string | null {
+        // The attr already has rules from config (merged at entry point via #wrapPersistentObject)
+        // Get the converted value using the wrapped attribute's getValue()
+        const convertedValue = attr.getValue();
 
-        // Create wrapped objects for the validation context
-        const wrappedPo = createVirtualPersistentObject(po, conversionContext);
-        const wrappedAttr = createVirtualPersistentObjectAttribute(attr, conversionContext);
-
-        // Create validation context
-        const context: RuleValidationContext = {
-            persistentObject: wrappedPo,
-            attribute: wrappedAttr,
-            translate: this.#translate
-        };
-
-        // Get the converted value (e.g., boolean from "True"/"False", number from string)
-        const convertedValue = this.#getConvertedValue(attr);
-
-        // Parse and validate rules string
-        // Note: isRequired is auto-set from rules for UI purposes only (e.g., showing asterisks)
-        // All validation logic is handled by the rules themselves
         if (!attr.rules)
             return null;
+
+        // Create validation context using the already-wrapped objects
+        const context: RuleValidationContext = {
+            persistentObject: po,
+            attribute: attr,
+            translate: this.#translate
+        };
 
         const rules = this.parseRules(attr.rules);
         for (const rule of rules) {
@@ -185,11 +176,6 @@ export class BusinessRuleValidator {
             });
 
         return { name, params };
-    }
-
-    // Helper to convert attribute values based on type
-    #getConvertedValue(attr: Dto.PersistentObjectAttributeDto): any {
-        return fromServiceValue(attr.value, attr.type);
     }
 
     // Built-in validators - throw errors instead of returning strings
