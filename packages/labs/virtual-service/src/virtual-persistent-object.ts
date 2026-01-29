@@ -1,5 +1,6 @@
 import { Dto } from "@vidyano/core";
-import { VirtualService } from "./virtual-service.js";
+import { fromServiceValue, toServiceValue } from "./virtual-service-data-type.js";
+import type { VirtualService } from "./virtual-service.js";
 import { createVirtualQuery, VirtualQuery } from "./virtual-query.js";
 
 /**
@@ -95,10 +96,10 @@ export function createVirtualPersistentObjectAttribute(
 ): VirtualPersistentObjectAttribute {
     const helpers = {
         getValue() {
-            return VirtualService.fromServiceValue(attr.value, attr.type);
+            return fromServiceValue(attr.value, attr.type);
         },
         setValue(value: any) {
-            attr.value = VirtualService.toServiceValue(value, attr.type);
+            attr.value = toServiceValue(value, attr.type);
             attr.isValueChanged = true;
         },
         setValidationError(error: string | null | undefined) {
