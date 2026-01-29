@@ -7,5 +7,5 @@ export type {
     VirtualQueryExecuteResult
 } from "./types.js";
 export { VirtualPersistentObjectActions } from "./virtual-persistent-object-actions.js";
-export type { VirtualPersistentObject, VirtualPersistentObjectAttribute } from "./virtual-persistent-object.js";
+export type { VirtualPersistentObject, VirtualPersistentObjectAttribute, VirtualPersistentObjectAttributeWithReference } from "./virtual-persistent-object.js";
 export type { VirtualQuery, VirtualQueryResultItem } from "./virtual-query.js";

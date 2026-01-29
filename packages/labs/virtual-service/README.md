@@ -801,43 +801,45 @@ service.registerCustomAction("BulkDelete", async (args) => {
 For complex scenarios, create a class extending `VirtualPersistentObjectActions`:
 
 ```typescript
-import { VirtualPersistentObjectActions } from "@vidyano-labs/virtual-service";
+import { VirtualPersistentObjectActions, VirtualQuery } from "@vidyano-labs/virtual-service";
 import type { VirtualPersistentObject, VirtualPersistentObjectAttribute } from "@vidyano-labs/virtual-service";
-import { Dto } from "@vidyano/core";
 
 class PersonActions extends VirtualPersistentObjectActions {
-    // Called when any Person DTO is created
+    // Called after the object is built
     onConstruct(obj: VirtualPersistentObject): void {
-        // Set defaults - note: this is synchronous
         obj.setAttributeValue("CreatedDate", new Date().toISOString());
     }
 
     // Called when loading an existing Person
     async onLoad(
-        obj: VirtualPersistentObject,
+        objectId: string,
         parent: VirtualPersistentObject | null
     ): Promise<VirtualPersistentObject> {
+        const obj = await super.onLoad(objectId, parent);
+
         // Load additional data based on ID
-        const id = obj.objectId;
-        console.log(`Loading person: ${id}`);
+        console.log(`Loading person: ${objectId}`);
+
         return obj;
     }
 
     // Called when creating a new Person via "New" action
     async onNew(
-        obj: VirtualPersistentObject,
         parent: VirtualPersistentObject | null,
         query: VirtualQuery | null,
         parameters: Record<string, string> | null
     ): Promise<VirtualPersistentObject> {
+        const obj = await super.onNew(parent, query, parameters);
+
         // Initialize new object
         obj.setAttributeValue("Status", "Draft");
+
         return obj;
     }
 
     // Called when saving
     async onSave(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
-        // Calls saveNew or saveExisting based on obj.isNew
+        // Calls checkRules, then saveNew or saveExisting based on obj.isNew
         return await super.onSave(obj);
     }
 
@@ -869,11 +871,11 @@ service.registerPersistentObject({
 ### Lifecycle Flow
 
 ```
-PersistentObject Load:    onConstruct → onLoad
-PersistentObject New:     onConstruct → onNew
+PersistentObject Load:    onLoad (calls onConstruct internally)
+PersistentObject New:     onNew (calls onConstruct internally)
 PersistentObject Save:    onSave → checkRules → (saveNew | saveExisting)
-Query Construction:       onConstructQuery
-Query Execution:          onExecuteQuery → (text search, sort, paginate)
+Query Get:                onGetQuery (calls onConstructQuery internally)
+Query Execution:          onExecuteQuery → getEntities
 Attribute Refresh:        onRefresh
 Reference Selection:      onSelectReference
 Deletion:                 onDelete
@@ -910,6 +912,27 @@ service.registerPersistentObject({
         { name: "Total", type: "Decimal", isReadOnly: true }
     ]
 });
+```
+
+### Query Retrieval
+
+Customize how queries are retrieved:
+
+```typescript
+class PersonActions extends VirtualPersistentObjectActions {
+    // Called when a query is requested
+    async onGetQuery(
+        queryName: string,
+        parent: VirtualPersistentObject | null
+    ): Promise<VirtualQuery> {
+        const query = await super.onGetQuery(queryName, parent);
+
+        // Custom post-processing
+        console.log(`Query ${queryName} loaded with ${query.totalItems} items`);
+
+        return query;
+    }
+}
 ```
 
 ### Query Execution
@@ -1064,6 +1087,28 @@ const order = await service.getPersistentObject(null, "Order", "123");
 const linesQuery = order.queries.find(q => q.name === "OrderLines");
 await linesQuery.search();
 ```
+
+### Detail Query Pre-Execution
+
+By default, detail queries are pre-executed when the parent PersistentObject is loaded. This means the client immediately has access to the query results without needing to call `search()`.
+
+You can control this behavior in `onConstruct` by setting `isIncludedInParentObject`:
+
+```typescript
+class OrderActions extends VirtualPersistentObjectActions {
+    onConstruct(obj: VirtualPersistentObject): void {
+        // Exclude OrderLines from being pre-executed (lazy load instead)
+        const orderLinesQuery = obj.queries!.find(q => q.name === "OrderLines")!;
+        orderLinesQuery.isIncludedInParentObject = false;
+    }
+}
+```
+
+**Behavior:**
+- `isIncludedInParentObject = true` (default) - Query is executed before returning the PersistentObject; results are immediately available
+- `isIncludedInParentObject = false` - Query is not pre-executed; client must call `search()` to load results
+
+This is useful for optimizing performance when detail queries contain large datasets that aren't always needed immediately.
 
 ## VirtualPersistentObject Methods
 
@@ -1260,16 +1305,17 @@ test("search and sort query results", async () => {
 
 | Method | Description |
 |--------|-------------|
-| `onConstruct(obj: VirtualPersistentObject)` | Called when constructing the DTO |
-| `onLoad(obj, parent)` | Called when loading an existing object |
-| `onNew(obj, parent, query: VirtualQuery, params)` | Called when creating a new object |
+| `onConstruct(obj: VirtualPersistentObject)` | Called after the object is built (synchronous) |
+| `onLoad(objectId: string, parent)` | Called when loading an existing object - call `super.onLoad()` to build |
+| `onNew(parent, query: VirtualQuery, params)` | Called when creating a new object - call `super.onNew()` to build |
+| `onGetQuery(queryName: string, parent)` | Called when retrieving a query - call `super.onGetQuery()` to build |
 | `onSave(obj)` | Called when saving (calls checkRules, then saveNew/saveExisting) |
 | `checkRules(obj)` | Validates attributes against rules (overridable) |
 | `saveNew(obj)` | Called for new objects (protected) |
 | `saveExisting(obj)` | Called for existing objects (protected) |
 | `onRefresh(obj, attribute: VirtualPersistentObjectAttribute)` | Called when refreshing |
 | `onDelete(parent, query: VirtualQuery, items: VirtualQueryResultItem[])` | Called when deleting items |
-| `onConstructQuery(query: VirtualQuery, parent)` | Called when constructing a query |
+| `onConstructQuery(query: VirtualQuery, parent)` | Called after query is built (synchronous) |
 | `onExecuteQuery(query: VirtualQuery, parent, data)` | Called when executing a query |
 | `getEntities(query: VirtualQuery, parent, data)` | Provide query data |
 | `onSelectReference(parent, attr: VirtualPersistentObjectAttribute, query: VirtualQuery, item: VirtualQueryResultItem)` | Called when selecting a reference |

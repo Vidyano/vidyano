@@ -40,6 +40,12 @@ export type VirtualQuery = Dto.QueryDto & {
     setNotification(message: string, type: Dto.NotificationType, duration?: number): void;
 
     /**
+     * Whether the query results should be included when loading the parent PersistentObject.
+     * Defaults to true for detail queries - set to false to skip pre-execution.
+     */
+    isIncludedInParentObject: boolean;
+
+    /**
      * Reference to config (internal use)
      */
     readonly __config?: VirtualQueryConfig;

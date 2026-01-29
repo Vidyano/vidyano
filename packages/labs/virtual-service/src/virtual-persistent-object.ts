@@ -1,11 +1,23 @@
 import { Dto } from "@vidyano/core";
 import { VirtualService } from "./virtual-service.js";
+import { createVirtualQuery, VirtualQuery } from "./virtual-query.js";
 
 /**
  * VirtualPersistentObjectAttribute combines a PersistentObjectAttributeDto with helper methods
  * This allows clean syntax like attr.getValue() and attr.setValue() while keeping the underlying DTO unchanged
  */
-export type VirtualPersistentObjectAttribute = Dto.PersistentObjectAttributeDto & {
+export type VirtualPersistentObjectAttribute = Dto.PersistentObjectAttributeDto & VirtualPersistentObjectAttributeHelpers;
+
+/**
+ * VirtualPersistentObjectAttributeWithReference extends VirtualPersistentObjectAttribute with reference-specific properties
+ * Use this type when the attribute type is "Reference"
+ */
+export type VirtualPersistentObjectAttributeWithReference = Dto.PersistentObjectAttributeWithReferenceDto & VirtualPersistentObjectAttributeHelpers;
+
+/**
+ * Helper methods added to VirtualPersistentObjectAttribute
+ */
+type VirtualPersistentObjectAttributeHelpers = {
     /**
      * Gets the converted value of this attribute (e.g., Boolean as boolean, Int32 as number)
      */
@@ -36,7 +48,7 @@ export type VirtualPersistentObjectAttribute = Dto.PersistentObjectAttributeDto 
  * VirtualPersistentObject combines a PersistentObjectDto with helper methods
  * This allows clean syntax like obj.setAttributeValue() while keeping the underlying DTO unchanged
  */
-export type VirtualPersistentObject = Dto.PersistentObjectDto & {
+export type VirtualPersistentObject = Omit<Dto.PersistentObjectDto, "queries"> & {
     /**
      * Gets an attribute by name, wrapped with getValue/setValue methods
      */
@@ -56,6 +68,11 @@ export type VirtualPersistentObject = Dto.PersistentObjectDto & {
      * Sets a notification message on the persistent object
      */
     setNotification(message: string, type: Dto.NotificationType, duration?: number): void;
+
+    /**
+     * Detail queries attached to this persistent object, wrapped as VirtualQuery
+     */
+    queries?: VirtualQuery[];
 
     /**
      * Reference to the VirtualService instance
@@ -126,6 +143,9 @@ export function createVirtualPersistentObject(
     // Create proxy first so we can reference it in helpers
     let proxy: VirtualPersistentObject;
 
+    // Cache wrapped queries to ensure same instance is returned
+    let wrappedQueries: VirtualQuery[] | undefined;
+
     // Helper methods - logic is inlined here, using VirtualService static methods for type conversion
     const helpers = {
         getAttribute(name: string) {
@@ -153,6 +173,16 @@ export function createVirtualPersistentObject(
             dto.notification = message;
             dto.notificationType = type;
             dto.notificationDuration = duration;
+        },
+        get queries() {
+            if (!dto.queries)
+                return undefined;
+
+            // Wrap queries lazily and cache them
+            if (!wrappedQueries)
+                wrappedQueries = dto.queries.map(q => createVirtualQuery(q, undefined, service));
+
+            return wrappedQueries;
         },
         get service() {
             return service;

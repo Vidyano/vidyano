@@ -27,6 +27,26 @@ export class BusinessRuleValidator {
     #customRules = new Map<string, RuleValidatorFn>();
     #service: VirtualService;
 
+    /**
+     * Checks if a rules string contains NotEmpty or Required rule
+     * @param rules - The rules string (semicolon-separated)
+     * @returns true if rules contain NotEmpty or Required
+     */
+    static hasRequiredRule(rules?: string): boolean {
+        if (!rules)
+            return false;
+
+        const ruleNames = rules
+            .split(";")
+            .map(rule => rule.trim())
+            .map(rule => {
+                const match = rule.match(/^(\w+)/);
+                return match ? match[1] : "";
+            });
+
+        return ruleNames.includes("NotEmpty") || ruleNames.includes("Required");
+    }
+
     constructor(service: VirtualService) {
         this.#service = service;
 

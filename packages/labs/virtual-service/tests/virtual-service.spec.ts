@@ -274,6 +274,6 @@ test.describe("VirtualService", () => {
         const response = await hooks.onFetch(request);
         const result = await response.json();
 
-        expect(result.exception).toContain("Query 'UnknownQuery' is not registered");
+        expect(result.exception).toContain("Query \"UnknownQuery\" is not registered");
     });
 });

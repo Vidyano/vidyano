@@ -241,7 +241,7 @@ test.describe("Basic Setup", () => {
         }
 
         expect(error).toBeDefined();
-        expect(error).toBe("Query 'UnknownQuery' is not registered");
+        expect(error).toContain("Query \"UnknownQuery\" is not registered");
     });
 
     test("throws error if PersistentObject not registered", () => {

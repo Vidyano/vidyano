@@ -153,10 +153,9 @@ test("calls onSelectReference when reference is changed", async () => {
 
             // Custom logic: when a contact is selected, copy their email to a notes field
             if (selectedItem) {
-                const emailValue = selectedItem.values?.find((v: any) => v.key === "Email");
-                if (emailValue) {
-                    parent.setAttributeValue("Notes", `Contact email: ${emailValue.value}`);
-                }
+                const emailValue = selectedItem.getValue("Email");
+                if (emailValue)
+                    parent.setAttributeValue("Notes", `Contact email: ${emailValue}`);
             }
         }
     }

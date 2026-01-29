@@ -122,8 +122,8 @@ export class VirtualService extends Service {
 
         this.#businessRuleValidator = new BusinessRuleValidator(this);
         this.#actionsRegistry = new VirtualPersistentObjectActionsRegistry(this.#businessRuleValidator, this);
-        this.#queryRegistry = new VirtualQueryRegistry(this.#actionsRegistry, this);
-        this.#persistentObjectRegistry = new VirtualPersistentObjectRegistry(this.#actionHandlers, this.#queryRegistry, this.#actionsRegistry, this);
+        this.#queryRegistry = new VirtualQueryRegistry();
+        this.#persistentObjectRegistry = new VirtualPersistentObjectRegistry();
         this.#actionDefinitions.set("AddReference", { name: "AddReference", displayName: "Add", isPinned: false });
         this.#actionDefinitions.set("BulkEdit", { name: "BulkEdit", displayName: "Edit", isPinned: false });
         this.#actionDefinitions.set("CancelEdit", { name: "CancelEdit", displayName: "Cancel", isPinned: false });

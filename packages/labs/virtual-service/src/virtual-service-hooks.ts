@@ -1,7 +1,9 @@
 import { ServiceHooks, Dto } from "@vidyano/core";
+import { BusinessRuleValidator } from "./business-rules.js";
+import { VirtualQueryRegistry } from "./registry/virtual-query-registry.js";
 import { VirtualPersistentObjectAttributeConfig } from "./types.js";
-import { createVirtualPersistentObject, unwrapVirtualPersistentObject } from "./virtual-persistent-object.js";
-import { VirtualQuery, createVirtualQuery, createVirtualQueryResultItem } from "./virtual-query.js";
+import { createVirtualPersistentObject, createVirtualPersistentObjectAttribute, unwrapVirtualPersistentObject, VirtualPersistentObject } from "./virtual-persistent-object.js";
+import { VirtualQuery, createVirtualQuery, createVirtualQueryResultItem, unwrapVirtualQuery } from "./virtual-query.js";
 import type { VirtualService } from "./virtual-service.js";
 
 /**
@@ -36,21 +38,145 @@ export class VirtualServiceHooks extends ServiceHooks {
                 case "GetClientData":
                     result = this.#handleGetClientData();
                     break;
+
                 case "GetApplication":
                     result = this.#handleGetApplication();
                     break;
-                case "GetQuery":
-                    result = await this.#handleGetQuery(body as Dto.GetQueryRequest);
+
+                case "GetQuery": {
+                    const queryName = body.id;
+                    const poConfig = this.#service.queryRegistry.getPersistentObjectConfig(queryName);
+                    const type = poConfig?.type;
+                    if (!type)
+                        throw new Error(`Query "${queryName}" is not registered or has no persistentObject type`);
+
+                    const instance = this.#service.actionsRegistry.createInstance(type);
+                    const query = await instance.onGetQuery(queryName, null);
+                    result = { query: unwrapVirtualQuery(query) };
                     break;
-                case "ExecuteQuery":
-                    result = await this.#handleExecuteQuery(body as Dto.ExecuteQueryRequest);
+                }
+
+                case "GetPersistentObject": {
+                    const { persistentObjectTypeId: type, objectId, isNew } = body;
+                    const wrappedParent = this.#wrapPersistentObject(body.parent);
+                    const instance = this.#service.actionsRegistry.createInstance(type);
+
+                    // Choose lifecycle based on isNew flag
+                    const po = isNew
+                        ? await instance.onNew(wrappedParent, null, null)
+                        : await instance.onLoad(objectId || crypto.randomUUID(), wrappedParent);
+
+                    // Execute detail queries AFTER onLoad/onNew completes (parent is fully set up)
+                    await instance.executeIncludedQueries(po);
+
+                    result = { result: unwrapVirtualPersistentObject(po) };
                     break;
-                case "GetPersistentObject":
-                    result = await this.#handleGetPersistentObject(body as Dto.GetPersistentObjectRequest);
+                }
+
+                case "ExecuteQuery": {
+                    const wrappedQuery = this.#wrapQuery(body.query);
+                    const wrappedParent = this.#wrapPersistentObject(body.parent);
+                    const type = body.query?.persistentObject?.type;
+                    if (!type)
+                        throw new Error("Query does not have a persistentObject type");
+
+                    const instance = this.#service.actionsRegistry.createInstance(type);
+                    const data = this.#service.queryRegistry.getData(body.query.name);
+                    const queryResult = await instance.onExecuteQuery(wrappedQuery!, wrappedParent, data);
+
+                    // Convert to QueryResultDto
+                    const columns = wrappedQuery!.columns || [];
+                    const pageSize = body.query?.pageSize || 20;
+                    result = {
+                        result: VirtualQueryRegistry.buildQueryResultDto(queryResult, columns, pageSize)
+                    };
                     break;
-                case "ExecuteAction":
-                    result = await this.#handleExecuteAction(body as Dto.ExecuteActionRequest);
+                }
+
+                case "ExecuteAction": {
+                    const actionName = body.action.split(".").pop()!;
+
+                    // WRAP IMMEDIATELY at entry point
+                    const wrappedParent = this.#wrapPersistentObject(body.parent);
+
+                    // Query actions (have body.query)
+                    if (body.query) {
+                        const wrappedQuery = this.#wrapQuery(body.query);
+                        const type = body.query.persistentObject?.type;
+                        if (!type)
+                            throw new Error("Query does not have a persistentObject type");
+
+                        const instance = this.#service.actionsRegistry.createInstance(type);
+
+                        if (actionName === "New") {
+                            const po = await instance.onNew(wrappedParent, wrappedQuery, body.parameters);
+                            await instance.executeIncludedQueries(po);
+                            result = { result: unwrapVirtualPersistentObject(po) };
+                        }
+                        else if (actionName === "Delete") {
+                            const wrappedItems = body.selectedItems?.map((item: Dto.QueryResultItemDto) =>
+                                createVirtualQueryResultItem(item, wrappedQuery!)
+                            ) || [];
+                            await instance.onDelete(wrappedParent, wrappedQuery!, wrappedItems);
+                            result = { result: wrappedParent ? unwrapVirtualPersistentObject(wrappedParent) : null };
+                        }
+                        else if (actionName === "SelectReference") {
+                            if (!wrappedParent)
+                                throw new Error("SelectReference requires a parent PersistentObject");
+
+                            const attributeId = body.parameters?.PersistentObjectAttributeId;
+                            if (!attributeId)
+                                throw new Error("SelectReference requires PersistentObjectAttributeId parameter");
+
+                            // Use parent's type for SelectReference (onSelectReference is on parent's actions class)
+                            const parentInstance = this.#service.actionsRegistry.createInstance(wrappedParent.type);
+                            const refAttr = createVirtualPersistentObjectAttribute(
+                                wrappedParent.attributes!.find(a => a.id === attributeId)!,
+                                wrappedParent,
+                                this.#service
+                            );
+                            const selectedItem = body.selectedItems?.[0]
+                                ? createVirtualQueryResultItem(body.selectedItems[0], wrappedQuery!)
+                                : null;
+                            await parentInstance.onSelectReference(wrappedParent, refAttr, wrappedQuery!, selectedItem);
+                            result = { result: unwrapVirtualPersistentObject(wrappedParent) };
+                        }
+                        else {
+                            // Custom query action - use action handler
+                            result = await this.#executeCustomAction(actionName, wrappedParent, wrappedQuery, body);
+                        }
+                    }
+                    // PersistentObject actions (no body.query)
+                    else {
+                        if (!wrappedParent)
+                            throw new Error("ExecuteAction requires a parent PersistentObject");
+
+                        const type = wrappedParent.type;
+                        const instance = this.#service.actionsRegistry.createInstance(type);
+
+                        if (actionName === "Save") {
+                            const po = await instance.onSave(wrappedParent);
+                            result = { result: unwrapVirtualPersistentObject(po) };
+                        }
+                        else if (actionName === "Refresh") {
+                            const attr = body.parameters?.RefreshedPersistentObjectAttributeId
+                                ? createVirtualPersistentObjectAttribute(
+                                    wrappedParent.attributes!.find(a => a.id === body.parameters.RefreshedPersistentObjectAttributeId)!,
+                                    wrappedParent,
+                                    this.#service
+                                )
+                                : undefined;
+                            const po = await instance.onRefresh(wrappedParent, attr);
+                            result = { result: unwrapVirtualPersistentObject(po) };
+                        }
+                        else {
+                            // Custom PO action - use action handler
+                            result = await this.#executeCustomAction(actionName, wrappedParent, null, body);
+                        }
+                    }
                     break;
+                }
+
                 default:
                     throw new Error(`Virtual handler not implemented for method: ${method}`);
             }
@@ -71,13 +197,50 @@ export class VirtualServiceHooks extends ServiceHooks {
     }
 
     /**
-     * Wraps an incoming PersistentObject DTO with config augmentation
-     * Merges server config metadata with client DTO values.
-     * Only processes attributes that exist in the client DTO (client defines shape).
-     * @param dto - The incoming PersistentObject DTO from client
-     * @returns The augmented DTO with config metadata applied
+     * Executes a custom action handler
      */
-    #wrapPersistentObject(dto: Dto.PersistentObjectDto | null | undefined): Dto.PersistentObjectDto | null {
+    async #executeCustomAction(
+        actionName: string,
+        parent: VirtualPersistentObject | null,
+        query: VirtualQuery | null,
+        body: any
+    ): Promise<Dto.ExecuteActionResponse> {
+        const handler = this.#service.actionHandlers.get(actionName);
+        if (!handler)
+            throw new Error(`Action "${actionName}" is not registered`);
+
+        // Build unified action args
+        const wrappedSelectedItems = body.selectedItems && query
+            ? body.selectedItems.map((item: Dto.QueryResultItemDto) => createVirtualQueryResultItem(item, query))
+            : undefined;
+
+        const args = {
+            parent,
+            query: query || undefined,
+            selectedItems: wrappedSelectedItems,
+            parameters: body.parameters
+        };
+
+        // Execute handler and get result
+        const handlerResult = await handler(args);
+
+        // Unwrap result
+        const contextPo = parent || (query ? query.persistentObject : null);
+        let finalResult: Dto.PersistentObjectDto | null;
+        if (handlerResult)
+            finalResult = unwrapVirtualPersistentObject(handlerResult);
+        else
+            finalResult = contextPo as Dto.PersistentObjectDto;
+
+        return { result: finalResult };
+    }
+
+    /**
+     * Wraps an incoming PersistentObject DTO with config augmentation
+     * @param dto - The incoming PersistentObject DTO from client
+     * @returns The wrapped VirtualPersistentObject with config metadata applied
+     */
+    #wrapPersistentObject(dto: Dto.PersistentObjectDto | null | undefined): VirtualPersistentObject | null {
         if (!dto)
             return null;
 
@@ -98,14 +261,13 @@ export class VirtualServiceHooks extends ServiceHooks {
 
         // Recursively wrap parent if present
         if (dto.parent)
-            dto.parent = this.#wrapPersistentObject(dto.parent)!;
+            dto.parent = unwrapVirtualPersistentObject(this.#wrapPersistentObject(dto.parent)!);
 
-        return dto;
+        return createVirtualPersistentObject(dto, this.#service);
     }
 
     /**
      * Merges a client attribute with config metadata
-     * Server provides all metadata, client provides runtime values only
      */
     #mergeAttributeWithConfig(
         clientAttr: Dto.PersistentObjectAttributeDto,
@@ -117,7 +279,7 @@ export class VirtualServiceHooks extends ServiceHooks {
         clientAttr.typeHints = configAttr.typeHints;
         clientAttr.isReadOnly = configAttr.isReadOnly || false;
         clientAttr.triggersRefresh = configAttr.triggersRefresh || false;
-        clientAttr.isRequired = this.#hasRequiredRule(configAttr.rules);
+        clientAttr.isRequired = BusinessRuleValidator.hasRequiredRule(configAttr.rules);
         clientAttr.label = configAttr.label || configAttr.name;
         clientAttr.group = configAttr.group || "";
         clientAttr.tab = configAttr.tab || "";
@@ -128,41 +290,35 @@ export class VirtualServiceHooks extends ServiceHooks {
         // Reference attribute properties - only set if explicitly configured
         if (configAttr.lookup) {
             const refAttr = clientAttr as Dto.PersistentObjectAttributeWithReferenceDto;
-            // Only override displayAttribute if explicitly configured
             if (configAttr.displayAttribute !== undefined)
                 refAttr.displayAttribute = configAttr.displayAttribute;
-            // Note: lookup query is set by server, not merged from client
         }
-
-        // CLIENT PROVIDES (runtime state only):
-        // - value (kept from client)
-        // - isValueChanged (kept from client)
-        // - objectId for references (kept from client)
-        // Note: validationError is NOT sent by client - it's server-set only
     }
 
     /**
-     * Checks if rules string contains NotEmpty or Required
+     * Maps attribute visibility to column isHidden property
      */
-    #hasRequiredRule(rules?: string): boolean {
-        if (!rules)
+    static #mapVisibilityToIsHidden(visibility?: Dto.PersistentObjectAttributeVisibility): boolean {
+        if (!visibility || visibility === "Always" || visibility === "Read" || visibility === "Query")
             return false;
 
-        const ruleNames = rules
-            .split(";")
-            .map(rule => rule.trim())
-            .map(rule => {
-                const match = rule.match(/^(\w+)/);
-                return match ? match[1] : "";
-            });
+        if (visibility === "New" || visibility === "Never")
+            return true;
 
-        return ruleNames.includes("NotEmpty") || ruleNames.includes("Required");
+        // Handle compound visibility values
+        if (visibility === "Read, Query" || visibility === "Query, New")
+            return false;
+
+        if (visibility === "Read, New")
+            return true;
+
+        return false;
     }
 
     /**
      * Wraps an incoming Query DTO with config augmentation
      * @param dto - The incoming Query DTO from client
-     * @returns The augmented VirtualQuery with config metadata applied
+     * @returns The wrapped VirtualQuery with config metadata applied
      */
     #wrapQuery(dto: Dto.QueryDto | null | undefined): VirtualQuery | null {
         if (!dto)
@@ -179,9 +335,9 @@ export class VirtualServiceHooks extends ServiceHooks {
             for (const clientCol of dto.columns) {
                 const attrConfig = poConfig.attributes.find(a => a.name === clientCol.name);
                 if (attrConfig) {
-                    // SERVER PROVIDES: canSort, type
                     clientCol.canSort = attrConfig.canSort ?? true;
-                    // CLIENT PROVIDES: includes, excludes (filter state)
+                    // Ensure isHidden is set from visibility config
+                    clientCol.isHidden = VirtualServiceHooks.#mapVisibilityToIsHidden(attrConfig.visibility);
                 }
             }
         }
@@ -329,208 +485,4 @@ export class VirtualServiceHooks extends ServiceHooks {
             hasSensitive: false
         };
     }
-
-    /**
-     * Handles GetQuery requests
-     */
-    async #handleGetQuery(request: Dto.GetQueryRequest): Promise<Dto.GetQueryResponse> {
-        const queryName = request.id;
-        const queryDto = await this.#service.queryRegistry.getQuery(queryName);
-
-        return {
-            query: queryDto
-        };
-    }
-
-    /**
-     * Handles ExecuteQuery requests
-     */
-    async #handleExecuteQuery(request: Dto.ExecuteQueryRequest): Promise<Dto.ExecuteQueryResponse> {
-        // WRAP at entry point
-        const wrappedQuery = this.#wrapQuery(request.query);
-        const wrappedParent = this.#wrapPersistentObject(request.parent);
-
-        const result = await this.#service.queryRegistry.executeQuery(
-            wrappedQuery as Dto.QueryDto,
-            wrappedParent
-        );
-
-        return {
-            result
-        };
-    }
-
-    /**
-     * Handles GetPersistentObject requests
-     */
-    async #handleGetPersistentObject(request: Dto.GetPersistentObjectRequest): Promise<Dto.GetPersistentObjectResponse> {
-        const type = request.persistentObjectTypeId;
-        const objectId = request.objectId || crypto.randomUUID();
-        const isNew = request.isNew || false;
-
-        // WRAP parent at entry point
-        const wrappedParent = this.#wrapPersistentObject(request.parent);
-
-        const po = await this.#service.persistentObjectRegistry.getPersistentObject(type, objectId, isNew, wrappedParent);
-
-        return {
-            result: po
-        };
-    }
-
-    /**
-     * Handles ExecuteAction requests
-     */
-    async #handleExecuteAction(request: Dto.ExecuteActionRequest): Promise<Dto.ExecuteActionResponse> {
-        const actionName = request.action.split(".").pop()!;
-
-        // WRAP IMMEDIATELY at entry point
-        const wrappedParent = this.#wrapPersistentObject(request.parent);
-
-        // Check if this is a query action
-        const queryActionRequest = request as Dto.ExecuteQueryActionRequest;
-        if (queryActionRequest.query) {
-            const queryDto = await this.#service.queryRegistry.getQuery(queryActionRequest.query.name!);
-            return await this.#executeQueryAction(
-                { ...request, parent: wrappedParent },
-                queryDto,
-                actionName
-            );
-        }
-
-        // PersistentObject action - must have parent
-        return await this.#service.persistentObjectRegistry.executeAction({
-            ...request,
-            parent: wrappedParent
-        });
-    }
-
-    /**
-     * Executes an action from a query context
-     */
-    async #executeQueryAction(
-        request: Dto.ExecuteActionRequest,
-        query: Dto.QueryDto,
-        actionName: string
-    ): Promise<Dto.ExecuteActionResponse> {
-        // Note: query.persistentObject is the TEMPLATE/SCHEMA, not the parent!
-        const parent = request.parent;
-
-        // Handle built-in New action
-        if (actionName === "New") {
-            const type = query.persistentObject?.type;
-            if (!type)
-                throw new Error("Query does not have a persistentObject type");
-
-            // Create a new PersistentObject with the full lifecycle
-            const newPo = await this.#service.persistentObjectRegistry.createNewPersistentObject(
-                type,
-                parent,
-                query,
-                request.parameters || null
-            );
-
-            return {
-                result: newPo
-            };
-        }
-
-        // Handle built-in SelectReference action
-        if (actionName === "SelectReference") {
-            if (!parent)
-                throw new Error("SelectReference requires a parent PersistentObject");
-
-            const attributeId = request.parameters?.PersistentObjectAttributeId;
-            if (!attributeId)
-                throw new Error("SelectReference requires PersistentObjectAttributeId parameter");
-
-            // Find the reference attribute
-            const refAttr = parent.attributes?.find(a => a.id === attributeId) as Dto.PersistentObjectAttributeWithReferenceDto;
-            if (!refAttr)
-                throw new Error(`Attribute with id "${attributeId}" not found`);
-
-            // Get selected items from the request
-            const queryActionRequest = request as Dto.ExecuteQueryActionRequest;
-            const selectedItems = queryActionRequest.selectedItems || [];
-
-            const selectedItem = selectedItems.length > 0 ? selectedItems[0] : null;
-
-            // Call onSelectReference - base implementation sets objectId/value
-            await this.#service.actionsRegistry.executeSelectReference(
-                parent,
-                refAttr,
-                query,
-                selectedItem
-            );
-
-            return {
-                result: parent
-            };
-        }
-
-        // Handle built-in Delete action
-        if (actionName === "Delete") {
-            const type = query.persistentObject?.type;
-            if (!type)
-                throw new Error("Query does not have a persistentObject type");
-
-            // Get selected items from the request
-            const queryActionRequest = request as Dto.ExecuteQueryActionRequest;
-            const selectedItems = queryActionRequest.selectedItems || [];
-
-            if (selectedItems.length === 0)
-                throw new Error("Delete requires at least one selected item");
-
-            // Call onDelete lifecycle hook
-            await this.#service.actionsRegistry.executeDelete(
-                parent || null,
-                query,
-                selectedItems
-            );
-
-            // Return parent or empty result
-            return {
-                result: parent || null
-            };
-        }
-
-        // Get action handler
-        const handler = this.#service.actionHandlers.get(actionName);
-        if (!handler)
-            throw new Error(`Action "${actionName}" is not registered`);
-
-        // Wrap parent, query, and selectedItems for the handler
-        const wrappedParent = parent ? createVirtualPersistentObject(parent, this.#service) : null;
-        const wrappedQuery = createVirtualQuery(query, undefined, this.#service);
-
-        const queryActionRequest = request as Dto.ExecuteQueryActionRequest;
-        const wrappedSelectedItems = queryActionRequest.selectedItems
-            ? queryActionRequest.selectedItems.map(item => createVirtualQueryResultItem(item, wrappedQuery))
-            : undefined;
-
-        // Build unified action args
-        const args = {
-            parent: wrappedParent,
-            query: wrappedQuery,
-            selectedItems: wrappedSelectedItems,
-            parameters: request.parameters
-        };
-
-        // Execute handler
-        const result = await handler(args);
-
-        // Unwrap result - handler returns VirtualPersistentObject | null
-        const contextPo = parent || query.persistentObject;
-        let finalResult: Dto.PersistentObjectDto;
-        if (result) {
-            finalResult = unwrapVirtualPersistentObject(result);
-        } else {
-            finalResult = contextPo;
-        }
-
-        return {
-            result: finalResult
-        };
-    }
-
 }

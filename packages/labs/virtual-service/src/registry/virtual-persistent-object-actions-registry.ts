@@ -1,8 +1,4 @@
-import { Dto } from "@vidyano/core";
 import { VirtualPersistentObjectActions, initializeActions } from "../virtual-persistent-object-actions.js";
-import { VirtualPersistentObject, VirtualPersistentObjectAttribute, createVirtualPersistentObject, createVirtualPersistentObjectAttribute, unwrapVirtualPersistentObject } from "../virtual-persistent-object.js";
-import { VirtualQuery, VirtualQueryResultItem, createVirtualQuery, createVirtualQueryResultItem } from "../virtual-query.js";
-import { VirtualQueryExecuteResult } from "../types.js";
 import type { BusinessRuleValidator } from "../business-rules.js";
 import type { VirtualService } from "../virtual-service.js";
 
@@ -16,7 +12,7 @@ interface OverrideInfo {
 
 /**
  * Registry for managing VirtualPersistentObjectActions classes
- * Provides methods to register actions classes and execute lifecycle hooks
+ * Provides methods to register actions classes and create instances
  */
 export class VirtualPersistentObjectActionsRegistry {
     #actionsClasses = new Map<string, typeof VirtualPersistentObjectActions>();
@@ -91,7 +87,7 @@ export class VirtualPersistentObjectActionsRegistry {
     /**
      * Creates a new instance of the actions class for a type
      * Returns a default VirtualPersistentObjectActions if no custom actions are registered
-     * Injects validator and service into the instance
+     * Injects validator, service, and type into the instance
      * @param type - The PersistentObject type name
      * @returns A new instance of the VirtualPersistentObjectActions class
      */
@@ -99,214 +95,9 @@ export class VirtualPersistentObjectActionsRegistry {
         const ActionsClass = this.#actionsClasses.get(type);
         const instance = ActionsClass ? new ActionsClass() : new VirtualPersistentObjectActions();
 
-        // Inject validator and service via internal symbol
-        instance[initializeActions](this.#validator, this.#service);
+        // Inject validator, service, and type via internal symbol
+        instance[initializeActions](this.#validator, this.#service, type);
 
         return instance;
-    }
-
-    /**
-     * Executes onConstruct lifecycle hook
-     * @param dto - The PersistentObject DTO
-     */
-    executeConstruct(dto: Dto.PersistentObjectDto): void {
-        const wrappedObj = createVirtualPersistentObject(dto, this.#service);
-        const instance = this.createInstance(dto.type);
-        instance.onConstruct(wrappedObj);
-    }
-
-    /**
-     * Executes onLoad lifecycle hook
-     * @param dto - The PersistentObject DTO
-     * @param parent - The parent DTO (or null)
-     * @returns The updated DTO
-     */
-    async executeLoad(
-        dto: Dto.PersistentObjectDto,
-        parent: Dto.PersistentObjectDto | null
-    ): Promise<Dto.PersistentObjectDto> {
-        const wrappedObj = createVirtualPersistentObject(dto, this.#service);
-
-        // Wrap parent if provided
-        let wrappedParent: VirtualPersistentObject | null = null;
-        if (parent)
-            wrappedParent = createVirtualPersistentObject(parent, this.#service);
-
-        const instance = this.createInstance(dto.type);
-        const result = await instance.onLoad(wrappedObj, wrappedParent);
-
-        return unwrapVirtualPersistentObject(result);
-    }
-
-    /**
-     * Executes onNew lifecycle hook
-     * @param dto - The PersistentObject DTO
-     * @param parent - The parent DTO (or null)
-     * @param query - The query DTO (or null)
-     * @param parameters - The parameters (or null)
-     * @returns The updated DTO
-     */
-    async executeNew(
-        dto: Dto.PersistentObjectDto,
-        parent: Dto.PersistentObjectDto | null,
-        query: Dto.QueryDto | null,
-        parameters: Record<string, string> | null
-    ): Promise<Dto.PersistentObjectDto> {
-        const wrappedObj = createVirtualPersistentObject(dto, this.#service);
-
-        // Wrap parent if provided
-        let wrappedParent: VirtualPersistentObject | null = null;
-        if (parent)
-            wrappedParent = createVirtualPersistentObject(parent, this.#service);
-
-        // Wrap query if provided
-        const wrappedQuery: VirtualQuery | null = query ? createVirtualQuery(query, undefined, this.#service) : null;
-
-        const instance = this.createInstance(dto.type);
-        const result = await instance.onNew(wrappedObj, wrappedParent, wrappedQuery, parameters);
-
-        return unwrapVirtualPersistentObject(result);
-    }
-
-    /**
-     * Executes onRefresh lifecycle hook
-     * @param dto - The PersistentObject DTO
-     * @param attribute - The attribute that triggered the refresh (or undefined)
-     * @returns The updated DTO
-     */
-    async executeRefresh(
-        dto: Dto.PersistentObjectDto,
-        attribute: Dto.PersistentObjectAttributeDto | undefined
-    ): Promise<Dto.PersistentObjectDto> {
-        const wrappedObj = createVirtualPersistentObject(dto, this.#service);
-
-        // Wrap attribute if provided
-        let wrappedAttribute: VirtualPersistentObjectAttribute | undefined;
-        if (attribute)
-            wrappedAttribute = createVirtualPersistentObjectAttribute(attribute, wrappedObj, this.#service);
-
-        const instance = this.createInstance(dto.type);
-        const result = await instance.onRefresh(wrappedObj, wrappedAttribute);
-
-        return unwrapVirtualPersistentObject(result);
-    }
-
-    /**
-     * Executes onSave lifecycle hook
-     * @param dto - The PersistentObject DTO
-     * @returns The updated DTO
-     */
-    async executeSave(dto: Dto.PersistentObjectDto): Promise<Dto.PersistentObjectDto> {
-        const wrappedObj = createVirtualPersistentObject(dto, this.#service);
-        const instance = this.createInstance(dto.type);
-        const result = await instance.onSave(wrappedObj);
-
-        return unwrapVirtualPersistentObject(result);
-    }
-
-    /**
-     * Executes onSelectReference lifecycle hook
-     * @param parent - The parent DTO
-     * @param referenceAttribute - The reference attribute DTO
-     * @param query - The query DTO
-     * @param selectedItem - The selected item (or null)
-     */
-    async executeSelectReference(
-        parent: Dto.PersistentObjectDto,
-        referenceAttribute: Dto.PersistentObjectAttributeDto,
-        query: Dto.QueryDto,
-        selectedItem: Dto.QueryResultItemDto | null
-    ): Promise<void> {
-        const wrappedParent = createVirtualPersistentObject(parent, this.#service);
-        const wrappedAttribute = createVirtualPersistentObjectAttribute(referenceAttribute, wrappedParent, this.#service);
-        const wrappedQuery = createVirtualQuery(query, undefined, this.#service);
-        const wrappedSelectedItem: VirtualQueryResultItem | null = selectedItem ? createVirtualQueryResultItem(selectedItem, wrappedQuery) : null;
-
-        const instance = this.createInstance(parent.type);
-        await instance.onSelectReference(wrappedParent, wrappedAttribute, wrappedQuery, wrappedSelectedItem);
-    }
-
-    /**
-     * Executes onDelete lifecycle hook
-     * @param parent - The parent DTO (or null)
-     * @param query - The query DTO
-     * @param selectedItems - The selected items
-     */
-    async executeDelete(
-        parent: Dto.PersistentObjectDto | null,
-        query: Dto.QueryDto,
-        selectedItems: Dto.QueryResultItemDto[]
-    ): Promise<void> {
-        // Wrap parent if provided
-        let wrappedParent: VirtualPersistentObject | null = null;
-        if (parent)
-            wrappedParent = createVirtualPersistentObject(parent, this.#service);
-
-        // Wrap query and selectedItems
-        const wrappedQuery = createVirtualQuery(query, undefined, this.#service);
-        const wrappedSelectedItems = selectedItems.map(item => createVirtualQueryResultItem(item, wrappedQuery));
-
-        // Get type from query's persistentObject
-        const type = query.persistentObject?.type;
-        if (!type)
-            throw new Error("Query does not have a persistentObject type");
-
-        const instance = this.createInstance(type);
-        await instance.onDelete(wrappedParent, wrappedQuery, wrappedSelectedItems);
-    }
-
-    /**
-     * Executes onConstructQuery lifecycle hook
-     * @param query - The query DTO
-     * @param parent - The parent DTO (or null)
-     */
-    executeConstructQuery(
-        query: Dto.QueryDto,
-        parent: Dto.PersistentObjectDto | null
-    ): void {
-        // Wrap parent if provided
-        let wrappedParent: VirtualPersistentObject | null = null;
-        if (parent)
-            wrappedParent = createVirtualPersistentObject(parent, this.#service);
-
-        // Wrap query
-        const wrappedQuery = createVirtualQuery(query, undefined, this.#service);
-
-        // Get type from query's persistentObject
-        const type = query.persistentObject?.type;
-        if (!type)
-            throw new Error("Query does not have a persistentObject type");
-
-        const instance = this.createInstance(type);
-        instance.onConstructQuery(wrappedQuery, wrappedParent);
-    }
-
-    /**
-     * Executes onExecuteQuery lifecycle hook
-     * @param query - The query DTO with textSearch, sortOptions, skip, top set
-     * @param parent - The parent DTO (or null)
-     * @param data - Default data from the query config (used if getEntities is not overridden)
-     * @returns The query execution result with items and totalItems
-     */
-    async executeQuery(
-        query: Dto.QueryDto,
-        parent: Dto.PersistentObjectDto | null,
-        data: Record<string, any>[]
-    ): Promise<VirtualQueryExecuteResult> {
-        // Wrap parent if provided
-        let wrappedParent: VirtualPersistentObject | null = null;
-        if (parent)
-            wrappedParent = createVirtualPersistentObject(parent, this.#service);
-
-        // Wrap query
-        const wrappedQuery = createVirtualQuery(query, undefined, this.#service);
-
-        // Get type from query's persistentObject
-        const type = query.persistentObject?.type;
-        if (!type)
-            throw new Error("Query does not have a persistentObject type");
-
-        const instance = this.createInstance(type);
-        return await instance.onExecuteQuery(wrappedQuery, wrappedParent, data);
     }
 }
