@@ -146,7 +146,7 @@ export function createVirtualPersistentObject(
     // Cache wrapped queries to ensure same instance is returned
     let wrappedQueries: VirtualQuery[] | undefined;
 
-    // Helper methods - logic is inlined here, using VirtualService static methods for type conversion
+    // Helper methods - delegate to attribute helpers where possible
     const helpers = {
         getAttribute(name: string) {
             const attr = dto.attributes?.find(a => a.name === name);
@@ -156,18 +156,10 @@ export function createVirtualPersistentObject(
             return createVirtualPersistentObjectAttribute(attr, proxy, service);
         },
         getAttributeValue(name: string) {
-            const attr = dto.attributes?.find(a => a.name === name);
-            if (!attr)
-                return undefined;
-
-            return VirtualService.fromServiceValue(attr.value, attr.type);
+            return proxy.getAttribute(name)?.getValue();
         },
         setAttributeValue(name: string, value: any) {
-            const attr = dto.attributes?.find(a => a.name === name);
-            if (attr) {
-                attr.value = VirtualService.toServiceValue(value, attr.type);
-                attr.isValueChanged = true;
-            }
+            proxy.getAttribute(name)?.setValue(value);
         },
         setNotification(message: string, type: Dto.NotificationType, duration?: number) {
             dto.notification = message;

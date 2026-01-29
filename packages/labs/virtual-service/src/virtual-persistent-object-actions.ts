@@ -208,7 +208,7 @@ export class VirtualPersistentObjectActions {
         if (selectedItem == null) {
             // Clear the reference
             refAttr.objectId = null;
-            referenceAttribute.value = null;
+            referenceAttribute.setValue(null);
         }
         else {
             // Set the reference to the selected item
@@ -216,10 +216,8 @@ export class VirtualPersistentObjectActions {
 
             // Get the display value from the item using displayAttribute
             const displayAttribute = refAttr.displayAttribute;
-            referenceAttribute.value = selectedItem.getValue(displayAttribute) || selectedItem.id;
+            referenceAttribute.setValue(selectedItem.getValue(displayAttribute) || selectedItem.id);
         }
-
-        referenceAttribute.isValueChanged = true;
     }
 
     /**
