@@ -1,18 +1,23 @@
-import type { RuleValidationContext, TranslateFunction } from "./types.js";
 import type { VirtualPersistentObject, VirtualPersistentObjectAttribute } from "./virtual-persistent-object.js";
+import type { VirtualService } from "./virtual-service.js";
 
 /**
  * Parsed business rule with name and parameters
+ * @internal
  */
-export type ParsedRule = {
+type ParsedRule = {
     name: string;
     params: any[];
 };
 
 /**
  * Rule validator function that throws an error if invalid, or returns nothing if valid
+ * @param value - The converted attribute value
+ * @param attribute - The wrapped attribute with access to persistentObject and service
+ * @param params - Additional parameters from the rule definition
+ * @internal - Exported for internal package use only, not re-exported from index.ts
  */
-export type RuleValidatorFn = (value: any, context: RuleValidationContext, ...params: any[]) => void;
+export type RuleValidatorFn = (value: any, attribute: VirtualPersistentObjectAttribute, ...params: any[]) => void;
 
 /**
  * Business rule validator that supports built-in and custom rules
@@ -20,10 +25,30 @@ export type RuleValidatorFn = (value: any, context: RuleValidationContext, ...pa
 export class BusinessRuleValidator {
     #builtInRules = new Map<string, RuleValidatorFn>();
     #customRules = new Map<string, RuleValidatorFn>();
-    #translate: TranslateFunction;
+    #service: VirtualService;
 
-    constructor() {
-        this.#translate = this.#defaultTranslate;
+    /**
+     * Checks if a rules string contains NotEmpty or Required rule
+     * @param rules - The rules string (semicolon-separated)
+     * @returns true if rules contain NotEmpty or Required
+     */
+    static hasRequiredRule(rules?: string): boolean {
+        if (!rules)
+            return false;
+
+        const ruleNames = rules
+            .split(";")
+            .map(rule => rule.trim())
+            .map(rule => {
+                const match = rule.match(/^(\w+)/);
+                return match ? match[1] : "";
+            });
+
+        return ruleNames.includes("NotEmpty") || ruleNames.includes("Required");
+    }
+
+    constructor(service: VirtualService) {
+        this.#service = service;
 
         // Register all built-in rules
         this.#builtInRules.set("IsBase64", this.#validateIsBase64.bind(this));
@@ -39,42 +64,6 @@ export class BusinessRuleValidator {
         this.#builtInRules.set("Required", this.#validateRequired.bind(this));
     }
 
-    /**
-     * Sets the translation function
-     */
-    setTranslate(translate: TranslateFunction): void {
-        this.#translate = translate;
-    }
-
-    /**
-     * Default English translations - used when no translate function provided
-     */
-    #defaultTranslate(key: string, ...params: any[]): string {
-        const defaults: Record<string, (...args: any[]) => string> = {
-            "Required": () => "This field is required",
-            "NotEmpty": () => "This field cannot be empty",
-            "IsEmail": () => "Email format is invalid",
-            "IsUrl": () => "Value must be a valid URL",
-            "MaxLength": (max: number) => `Maximum length is ${max} characters`,
-            "MinLength": (min: number) => `Minimum length is ${min} characters`,
-            "MaxValue": (max: number) => `Maximum value is ${max}`,
-            "MinValue": (min: number) => `Minimum value is ${min}`,
-            "IsBase64": () => "Value must be a valid base64 string",
-            "IsRegex": () => "Value must be a valid regular expression",
-            "IsWord": () => "Value must contain only word characters",
-            "ValidationRulesFailed": () => "Some required information is missing or incorrect."
-        };
-
-        const translator = defaults[key];
-        return translator ? translator(...params) : key;
-    }
-
-    /**
-     * Gets the current translate function
-     */
-    get translate(): TranslateFunction {
-        return this.#translate;
-    }
 
     /**
      * Register a custom business rule
@@ -89,24 +78,17 @@ export class BusinessRuleValidator {
 
     /**
      * Validate an attribute against its rules
-     * @param attr - The wrapped attribute to validate (has getValue/setValue methods)
-     * @param po - The wrapped persistent object containing the attribute
+     * @param attr - The wrapped attribute to validate (has getValue/setValue methods and persistentObject reference)
+     * @param _po - Deprecated: The persistent object is now accessible via attr.persistentObject
      * @returns Error message if validation fails, null if valid
      */
-    validateAttribute(attr: VirtualPersistentObjectAttribute, po: VirtualPersistentObject): string | null {
+    validateAttribute(attr: VirtualPersistentObjectAttribute, _po: VirtualPersistentObject): string | null {
         // The attr already has rules from config (merged at entry point via #wrapPersistentObject)
         // Get the converted value using the wrapped attribute's getValue()
         const convertedValue = attr.getValue();
 
         if (!attr.rules)
             return null;
-
-        // Create validation context using the already-wrapped objects
-        const context: RuleValidationContext = {
-            persistentObject: po,
-            attribute: attr,
-            translate: this.#translate
-        };
 
         const rules = this.parseRules(attr.rules);
         for (const rule of rules) {
@@ -115,7 +97,7 @@ export class BusinessRuleValidator {
                 throw new Error(`Unknown business rule: ${rule.name}`);
 
             try {
-                validator(convertedValue, context, ...rule.params);
+                validator(convertedValue, attr, ...rule.params);
             } catch (error) {
                 return error instanceof Error ? error.message : String(error);
             }
@@ -180,66 +162,66 @@ export class BusinessRuleValidator {
 
     // Built-in validators - throw errors instead of returning strings
 
-    #validateIsBase64(value: any, _context: RuleValidationContext): void {
+    #validateIsBase64(value: any, _attr: VirtualPersistentObjectAttribute): void {
         if (value == null || value === "")
             return;
 
         const base64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
         if (!base64Regex.test(String(value)))
-            throw new Error(this.#translate("IsBase64"));
+            throw new Error(this.#service.getMessage("IsBase64"));
     }
 
-    #validateIsEmail(value: any, _context: RuleValidationContext): void {
+    #validateIsEmail(value: any, _attr: VirtualPersistentObjectAttribute): void {
         if (value == null || value === "")
             return;
 
         // Only allow ASCII characters in email addresses
         const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
         if (!emailRegex.test(String(value)))
-            throw new Error(this.#translate("IsEmail"));
+            throw new Error(this.#service.getMessage("IsEmail"));
     }
 
-    #validateIsRegex(value: any, _context: RuleValidationContext): void {
+    #validateIsRegex(value: any, _attr: VirtualPersistentObjectAttribute): void {
         if (value == null || value === "")
             return;
 
         try {
             new RegExp(String(value));
         } catch {
-            throw new Error(this.#translate("IsRegex"));
+            throw new Error(this.#service.getMessage("IsRegex"));
         }
     }
 
-    #validateIsUrl(value: any, _context: RuleValidationContext): void {
+    #validateIsUrl(value: any, _attr: VirtualPersistentObjectAttribute): void {
         if (value == null || value === "")
             return;
 
         try {
             new URL(String(value));
         } catch {
-            throw new Error(this.#translate("IsUrl"));
+            throw new Error(this.#service.getMessage("IsUrl"));
         }
     }
 
-    #validateIsWord(value: any, _context: RuleValidationContext): void {
+    #validateIsWord(value: any, _attr: VirtualPersistentObjectAttribute): void {
         if (value == null || value === "")
             return;
 
         const wordRegex = /^\w+$/;
         if (!wordRegex.test(String(value)))
-            throw new Error(this.#translate("IsWord"));
+            throw new Error(this.#service.getMessage("IsWord"));
     }
 
-    #validateMaxLength(value: any, _context: RuleValidationContext, maxLength: number): void {
+    #validateMaxLength(value: any, _attr: VirtualPersistentObjectAttribute, maxLength: number): void {
         if (value == null || value === "")
             return;
 
         const length = String(value).length;
         if (length > maxLength)
-            throw new Error(this.#translate("MaxLength", maxLength));
+            throw new Error(this.#service.getMessage("MaxLength", maxLength));
     }
 
-    #validateMaxValue(value: any, _context: RuleValidationContext, maximum: number): void {
+    #validateMaxValue(value: any, _attr: VirtualPersistentObjectAttribute, maximum: number): void {
         if (value == null || value === "")
             return;
 
@@ -248,19 +230,19 @@ export class BusinessRuleValidator {
             throw new Error("Value must be a number");
 
         if (num > maximum)
-            throw new Error(this.#translate("MaxValue", maximum));
+            throw new Error(this.#service.getMessage("MaxValue", maximum));
     }
 
-    #validateMinLength(value: any, _context: RuleValidationContext, minLength: number): void {
+    #validateMinLength(value: any, _attr: VirtualPersistentObjectAttribute, minLength: number): void {
         if (value == null || value === "")
             return;
 
         const length = String(value).length;
         if (length < minLength)
-            throw new Error(this.#translate("MinLength", minLength));
+            throw new Error(this.#service.getMessage("MinLength", minLength));
     }
 
-    #validateMinValue(value: any, _context: RuleValidationContext, minimum: number): void {
+    #validateMinValue(value: any, _attr: VirtualPersistentObjectAttribute, minimum: number): void {
         if (value == null || value === "")
             return;
 
@@ -269,16 +251,16 @@ export class BusinessRuleValidator {
             throw new Error("Value must be a number");
 
         if (num < minimum)
-            throw new Error(this.#translate("MinValue", minimum));
+            throw new Error(this.#service.getMessage("MinValue", minimum));
     }
 
-    #validateRequired(value: any, _context: RuleValidationContext): void {
+    #validateRequired(value: any, _attr: VirtualPersistentObjectAttribute): void {
         if (value == null)
-            throw new Error(this.#translate("Required"));
+            throw new Error(this.#service.getMessage("Required"));
     }
 
-    #validateNotEmpty(value: any, _context: RuleValidationContext): void {
+    #validateNotEmpty(value: any, _attr: VirtualPersistentObjectAttribute): void {
         if (value == null || value === "" || (typeof value === "string" && value.trim() === ""))
-            throw new Error(this.#translate("NotEmpty"));
+            throw new Error(this.#service.getMessage("NotEmpty"));
     }
 }

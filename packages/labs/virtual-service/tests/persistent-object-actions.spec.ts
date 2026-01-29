@@ -1,31 +1,28 @@
 import { test, expect } from "@playwright/test";
-import { PersistentObject, PersistentObjectAttributeWithReference, Dto } from "@vidyano/core";
+import { PersistentObject, PersistentObjectAttributeWithReference } from "@vidyano/core";
 import { VirtualService, VirtualPersistentObjectActions } from "../src/index.js";
-import type { VirtualPersistentObject } from "../src/index.js";
+import type { VirtualPersistentObject, VirtualPersistentObjectAttribute, VirtualPersistentObjectAttributeWithReference, VirtualQuery, VirtualQueryResultItem } from "../src/index.js";
 
 test("overrides onLoad method for a PersistentObject type", async () => {
     const service = new VirtualService();
     let loadCalled = false;
 
-    // Register PersistentObject
+    // Register PersistentObject with actions
     service.registerPersistentObject({
         type: "Person",
         attributes: [
             { name: "FirstName", type: "String", value: "John" },
             { name: "LastName", type: "String", value: "Doe" }
         ]
-    });
-
-    // Override load behavior for Person type
-    service.registerPersistentObjectActions("Person", class extends VirtualPersistentObjectActions {
-        async onLoad(obj: VirtualPersistentObject, parent: VirtualPersistentObject | null): Promise<VirtualPersistentObject> {
+    }, class extends VirtualPersistentObjectActions {
+        async onLoad(objectId: string, parent: VirtualPersistentObject | null): Promise<VirtualPersistentObject> {
             loadCalled = true;
 
-            // Call base implementation first
-            obj = await super.onLoad(obj, parent);
+            // Call base implementation first - builds the object
+            const obj = await super.onLoad(objectId, parent);
 
             // Custom load logic - clean method calls directly on obj
-            if (obj.objectId === "123") {
+            if (objectId === "123") {
                 obj.setAttributeValue("FirstName", "Custom");
                 obj.setAttributeValue("LastName", "Loaded");
             }
@@ -54,10 +51,7 @@ test("overrides onSave method for a PersistentObject type", async () => {
             { name: "LastName", type: "String", value: "Doe" },
             { name: "FullName", type: "String", value: "", isReadOnly: true }
         ]
-    });
-
-    // Override save behavior - Save action is auto-added when onSave is overridden
-    service.registerPersistentObjectActions("Person", class extends VirtualPersistentObjectActions {
+    }, class extends VirtualPersistentObjectActions {
         async onSave(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
             saveCalled = true;
 
@@ -95,11 +89,8 @@ test("overrides onRefresh method for attribute changes", async () => {
             { name: "LastName", type: "String", value: "Doe" },
             { name: "FullName", type: "String", value: "John Doe", isReadOnly: true }
         ]
-    });
-
-    // Override refresh behavior
-    service.registerPersistentObjectActions("Person", class extends VirtualPersistentObjectActions {
-        async onRefresh(obj: VirtualPersistentObject, attribute: Dto.PersistentObjectAttributeDto | undefined): Promise<VirtualPersistentObject> {
+    }, class extends VirtualPersistentObjectActions {
+        async onRefresh(obj: VirtualPersistentObject, attribute: VirtualPersistentObjectAttribute | undefined): Promise<VirtualPersistentObject> {
             refreshCalled = true;
 
             // Call base implementation first
@@ -138,9 +129,7 @@ test("overrides onConstruct for all objects", async () => {
             { name: "FirstName", type: "String", value: "John" },
             { name: "IsActive", type: "Boolean", value: false }
         ]
-    });
-
-    service.registerPersistentObjectActions("Person", class extends VirtualPersistentObjectActions {
+    }, class extends VirtualPersistentObjectActions {
         onConstruct(obj: VirtualPersistentObject): void {
             constructCalled = true;
 
@@ -160,6 +149,65 @@ test("overrides onConstruct for all objects", async () => {
     expect(person.getAttributeValue("IsActive")).toBe(true);
 });
 
+test("onConstruct receives reference attributes with lookup query set", async () => {
+    const service = new VirtualService();
+    let constructCalled = false;
+    let lookupWasAvailable = false;
+    let lookupQueryName: string | undefined;
+
+    // Register the Contact PersistentObject (what we're referencing)
+    service.registerPersistentObject({
+        type: "Contact",
+        attributes: [
+            { name: "Id", type: "String" },
+            { name: "FullName", type: "String" }
+        ]
+    });
+
+    // Register the Contacts lookup query
+    service.registerQuery({
+        name: "Contacts",
+        persistentObject: "Contact",
+        data: [
+            { Id: "1", FullName: "John Doe" },
+            { Id: "2", FullName: "Jane Smith" }
+        ]
+    });
+
+    // Register Person with a reference attribute
+    service.registerPersistentObject({
+        type: "Person",
+        attributes: [
+            { name: "FirstName", type: "String" },
+            {
+                name: "EmergencyContact",
+                type: "Reference",
+                lookup: "Contacts"
+            }
+        ]
+    }, class extends VirtualPersistentObjectActions {
+        onConstruct(obj: VirtualPersistentObject): void {
+            constructCalled = true;
+            super.onConstruct(obj);
+
+            // Check if the reference attribute has its lookup query available
+            const refAttr = obj.getAttribute("EmergencyContact") as VirtualPersistentObjectAttributeWithReference;
+            if (refAttr?.lookup) {
+                lookupWasAvailable = true;
+                lookupQueryName = refAttr.lookup.name;
+            }
+        }
+    });
+
+    await service.initialize();
+
+    await service.getPersistentObject(null, "Person");
+
+    expect(constructCalled).toBe(true);
+    expect(lookupWasAvailable).toBe(true);
+    expect(lookupQueryName).toBe("Contacts");
+});
+
 test("overrides onNew for creating new objects", async () => {
     const service = new VirtualService();
     let newCalled = false;
@@ -170,31 +218,28 @@ test("overrides onNew for creating new objects", async () => {
             { name: "FirstName", type: "String", value: "" },
             { name: "Status", type: "String", value: "" }
         ]
-    });
-
-    // New action is auto-added to queries by default
-    service.registerQuery({
-        name: "People",
-        persistentObject: "Person"
-    });
-
-    service.registerPersistentObjectActions("Person", class extends VirtualPersistentObjectActions {
+    }, class extends VirtualPersistentObjectActions {
         async onNew(
-            obj: VirtualPersistentObject,
             parent: VirtualPersistentObject | null,
-            query: Dto.QueryDto | null,
+            query: VirtualQuery | null,
             parameters: Record<string, string> | null
         ): Promise<VirtualPersistentObject> {
             newCalled = true;
 
-            // Call base implementation
-            obj = await super.onNew(obj, parent, query, parameters);
+            // Call base implementation - builds the object
+            const obj = await super.onNew(parent, query, parameters);
 
             // Set default status for new objects
             obj.setAttributeValue("Status", "Draft");
 
             return obj;
         }
+    });
+
+    // New action is auto-added to queries by default
+    service.registerQuery({
+        name: "People",
+        persistentObject: "Person"
     });
 
     await service.initialize();
@@ -212,10 +257,7 @@ test("overrides saveNew and saveExisting separately", async () => {
     let saveNewCalled = false;
     let saveExistingCalled = false;
 
-    service.registerAction({
-        name: "Save",
-        handler: async (args) => args.parent
-    });
+    service.registerCustomAction("Save", async (args) => args.parent);
 
     service.registerPersistentObject({
         type: "Person",
@@ -225,9 +267,7 @@ test("overrides saveNew and saveExisting separately", async () => {
             { name: "UpdatedAt", type: "DateTime", value: null, isReadOnly: true }
         ],
         actions: ["Save"]
-    });
-
-    service.registerPersistentObjectActions("Person", class extends VirtualPersistentObjectActions {
+    }, class extends VirtualPersistentObjectActions {
         protected async saveNew(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
             saveNewCalled = true;
 
@@ -274,15 +314,12 @@ test("validates data in onSave before persisting", async () => {
         attributes: [
             { name: "Age", type: "Int32", value: 0 }
         ]
-    });
-
-    // Save action is auto-added when onSave is overridden
-    service.registerPersistentObjectActions("Person", class extends VirtualPersistentObjectActions {
+    }, class extends VirtualPersistentObjectActions {
         async onSave(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
-            const age = obj.getAttributeValue("Age");
+            const ageAttr = obj.getAttribute("Age");
 
-            if (age < 0 || age > 150) {
-                obj.setValidationError("Age", "Age must be between 0 and 150");
+            if (ageAttr && (ageAttr.getValue() < 0 || ageAttr.getValue() > 150)) {
+                ageAttr.setValidationError("Age must be between 0 and 150");
                 obj.setNotification("Validation failed", "Error");
                 return obj;
             }
@@ -314,16 +351,12 @@ test("onLoad can throw to prevent loading certain objects", async () => {
         attributes: [
             { name: "FirstName", type: "String", value: "John" }
         ]
-    });
-
-    service.registerPersistentObjectActions("Person", class extends VirtualPersistentObjectActions {
-        async onLoad(obj: VirtualPersistentObject, parent: VirtualPersistentObject | null): Promise<VirtualPersistentObject> {
-            if (obj.objectId === "deleted-123") {
-                obj.setNotification("This person has been deleted", "Error");
+    }, class extends VirtualPersistentObjectActions {
+        async onLoad(objectId: string, parent: VirtualPersistentObject | null): Promise<VirtualPersistentObject> {
+            if (objectId === "deleted-123")
                 throw new Error("Person not found");
-            }
 
-            return await super.onLoad(obj, parent);
+            return await super.onLoad(objectId, parent);
         }
     });
 
@@ -350,10 +383,8 @@ test("onRefresh can modify multiple attributes based on one change", async () =>
             { name: "Tax", type: "Decimal", value: 0, isReadOnly: true },
             { name: "Total", type: "Decimal", value: 0, isReadOnly: true }
         ]
-    });
-
-    service.registerPersistentObjectActions("Product", class extends VirtualPersistentObjectActions {
-        async onRefresh(obj: VirtualPersistentObject, attribute: Dto.PersistentObjectAttributeDto | undefined): Promise<VirtualPersistentObject> {
+    }, class extends VirtualPersistentObjectActions {
+        async onRefresh(obj: VirtualPersistentObject, attribute: VirtualPersistentObjectAttribute | undefined): Promise<VirtualPersistentObject> {
             obj = await super.onRefresh(obj, attribute);
 
             // Recalculate tax and total when price changes
@@ -393,16 +424,14 @@ test("onLoad can set initial values based on objectId", async () => {
             { name: "LastName", type: "String", value: "" },
             { name: "Role", type: "String", value: "" }
         ]
-    });
-
-    service.registerPersistentObjectActions("Person", class extends VirtualPersistentObjectActions {
-        async onLoad(obj: VirtualPersistentObject, parent: VirtualPersistentObject | null): Promise<VirtualPersistentObject> {
-            obj = await super.onLoad(obj, parent);
+    }, class extends VirtualPersistentObjectActions {
+        async onLoad(objectId: string, parent: VirtualPersistentObject | null): Promise<VirtualPersistentObject> {
+            const obj = await super.onLoad(objectId, parent);
 
             // Simulate loading from different data sources based on ID prefix
-            if (obj.objectId?.startsWith("admin-")) {
+            if (objectId?.startsWith("admin-")) {
                 obj.setAttributeValue("Role", "Administrator");
-            } else if (obj.objectId?.startsWith("user-")) {
+            } else if (objectId?.startsWith("user-")) {
                 obj.setAttributeValue("Role", "User");
             } else {
                 obj.setAttributeValue("Role", "Guest");
@@ -441,12 +470,10 @@ test("parent parameter is passed to onLoad for master-detail scenarios", async (
             { name: "ProductName", type: "String", value: "Widget" },
             { name: "ParentOrderNumber", type: "String", value: "", isReadOnly: true }
         ]
-    });
-
-    service.registerPersistentObjectActions("OrderLine", class extends VirtualPersistentObjectActions {
-        async onLoad(obj: VirtualPersistentObject, parent: VirtualPersistentObject | null): Promise<VirtualPersistentObject> {
+    }, class extends VirtualPersistentObjectActions {
+        async onLoad(objectId: string, parent: VirtualPersistentObject | null): Promise<VirtualPersistentObject> {
             parentReceived = parent;
-            obj = await super.onLoad(obj, parent);
+            const obj = await super.onLoad(objectId, parent);
 
             // If loaded in context of parent Order, copy order number
             if (parent && parent.type === "Order") {
@@ -478,11 +505,9 @@ test("VirtualPersistentObject provides access to DTO properties", async () => {
             { name: "FirstName", type: "String", value: "John" },
             { name: "Age", type: "Int32", value: 30 }
         ]
-    });
-
-    service.registerPersistentObjectActions("Person", class extends VirtualPersistentObjectActions {
-        async onLoad(obj: VirtualPersistentObject, parent: VirtualPersistentObject | null): Promise<VirtualPersistentObject> {
-            obj = await super.onLoad(obj, parent);
+    }, class extends VirtualPersistentObjectActions {
+        async onLoad(objectId: string, parent: VirtualPersistentObject | null): Promise<VirtualPersistentObject> {
+            const obj = await super.onLoad(objectId, parent);
 
             // Can access DTO properties directly
             expect(obj.type).toBe("Person");
@@ -520,6 +545,15 @@ test("onConstructQuery is called when a query is constructed", async () => {
             { name: "Title", type: "String" },
             { name: "Status", type: "String" }
         ]
+    }, class extends VirtualPersistentObjectActions {
+        onConstructQuery(query: VirtualQuery, parent: VirtualPersistentObject | null): void {
+            onConstructQueryCalled = true;
+            capturedQueryName = query.name;
+            capturedParent = parent;
+
+            // Custom logic: could modify query columns, set metadata, etc.
+            // For now, just track that it was called
+        }
     });
 
     service.registerQuery({
@@ -529,17 +563,6 @@ test("onConstructQuery is called when a query is constructed", async () => {
             { Id: "1", Title: "Task 1", Status: "Open" },
             { Id: "2", Title: "Task 2", Status: "Done" }
         ]
-    });
-
-    service.registerPersistentObjectActions("Task", class extends VirtualPersistentObjectActions {
-        onConstructQuery(query: Dto.QueryDto, parent: VirtualPersistentObject | null): void {
-            onConstructQueryCalled = true;
-            capturedQueryName = query.name;
-            capturedParent = parent;
-
-            // Custom logic: could modify query columns, set metadata, etc.
-            // For now, just track that it was called
-        }
     });
 
     await service.initialize();
@@ -565,6 +588,19 @@ test("onDelete is called when items are deleted from a query", async () => {
             { name: "Title", type: "String" },
             { name: "Status", type: "String" }
         ]
+    }, class extends VirtualPersistentObjectActions {
+        async onDelete(
+            _parent: VirtualPersistentObject | null,
+            _query: VirtualQuery,
+            selectedItems: VirtualQueryResultItem[]
+        ): Promise<void> {
+            // Track which items were deleted
+            for (const item of selectedItems) {
+                deletedIds.push(item.id);
+            }
+
+            // Custom logic: could remove from data store, validate permissions, etc.
+        }
     });
 
     // Delete action is auto-added to queries when onDelete is overridden
@@ -576,21 +612,6 @@ test("onDelete is called when items are deleted from a query", async () => {
             { Id: "2", Title: "Task 2", Status: "Open" },
             { Id: "3", Title: "Task 3", Status: "Done" }
         ]
-    });
-
-    service.registerPersistentObjectActions("Task", class extends VirtualPersistentObjectActions {
-        async onDelete(
-            _parent: VirtualPersistentObject | null,
-            _query: Dto.QueryDto,
-            selectedItems: Dto.QueryResultItemDto[]
-        ): Promise<void> {
-            // Track which items were deleted
-            for (const item of selectedItems) {
-                deletedIds.push(item.id);
-            }
-
-            // Custom logic: could remove from data store, validate permissions, etc.
-        }
     });
 
     await service.initialize();
@@ -654,15 +675,12 @@ test("base onSelectReference sets objectId and value on reference attribute", as
                 displayAttribute: "FullName"
             }
         ]
-    });
-
-    // Register custom actions that calls super.onSelectReference()
-    service.registerPersistentObjectActions("Person", class extends VirtualPersistentObjectActions {
+    }, class extends VirtualPersistentObjectActions {
         async onSelectReference(
             parent: VirtualPersistentObject,
-            referenceAttribute: Dto.PersistentObjectAttributeDto,
-            query: Dto.QueryDto,
-            selectedItem: Dto.QueryResultItemDto | null
+            referenceAttribute: any,
+            query: any,
+            selectedItem: any
         ): Promise<void> {
             // Call base implementation - this should set objectId and value
             await super.onSelectReference(parent, referenceAttribute, query, selectedItem);

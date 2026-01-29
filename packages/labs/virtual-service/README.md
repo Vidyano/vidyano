@@ -56,11 +56,10 @@ const service = new VirtualService();
 ```
 
 **Key methods:**
-- `registerPersistentObject(config)` - Register a mock persistent object type
+- `registerPersistentObject(config, actionsClass?)` - Register a mock persistent object type with optional lifecycle class
 - `registerQuery(config)` - Register a mock query
-- `registerAction(config)` - Register a custom action handler
+- `registerCustomAction(name, handler)` or `registerCustomAction(config, handler)` - Register a custom action
 - `registerBusinessRule(name, validator)` - Add custom validation rules
-- `registerPersistentObjectActions(type, ActionsClass)` - Register lifecycle handlers
 - `initialize()` - Finalize registrations (must call before using service)
 
 > **Important:** All registrations must happen BEFORE calling `initialize()`. Attempting to register after initialization throws an error.
@@ -70,9 +69,8 @@ const service = new VirtualService();
 Dependencies must be registered before the things that reference them:
 
 1. **Actions** first - Custom actions must be registered before PersistentObjects/Queries that reference them
-2. **PersistentObjects** - Define the data schema
+2. **PersistentObjects** - Define the data schema (with optional lifecycle class)
 3. **Queries** - Must reference an already-registered PersistentObject type
-4. **PersistentObjectActions** - Lifecycle handlers (can be registered anytime before initialize)
 
 ```typescript
 // Correct order
@@ -381,7 +379,7 @@ class DraftActions extends VirtualPersistentObjectActions {
 **checkRules behavior:**
 - Returns `true` if all validations pass, `false` if any fail
 - When returning `false`, `saveNew`/`saveExisting` are not called
-- The object passed to `checkRules` is wrapped with helper methods
+- The object passed to `checkRules` is a `VirtualPersistentObject`
 - Call `super.checkRules(obj)` to include default rule-based validation
 
 ### Custom Business Rules
@@ -389,10 +387,10 @@ class DraftActions extends VirtualPersistentObjectActions {
 Register your own validation rules for domain-specific requirements:
 
 ```typescript
-import type { RuleValidationContext } from "@vidyano-labs/virtual-service";
+import type { VirtualPersistentObjectAttribute } from "@vidyano-labs/virtual-service";
 
 // Register a custom rule (before registerPersistentObject)
-service.registerBusinessRule("IsPhoneNumber", (value: any, context: RuleValidationContext) => {
+service.registerBusinessRule("IsPhoneNumber", (value: any, attr: VirtualPersistentObjectAttribute) => {
     if (value == null || value === "") return;
     const phoneRegex = /^\+?[\d\s-()]+$/;
     if (!phoneRegex.test(String(value)))
@@ -412,21 +410,23 @@ service.registerPersistentObject({
 });
 ```
 
-**Validation context:**
-The `RuleValidationContext` parameter provides access to:
-- `context.persistentObject` - The persistent object being validated (wrapped with helper methods)
-- `context.attribute` - The attribute being validated (wrapped with helper methods)
+**Attribute parameter:**
+The `attr` parameter is the `VirtualPersistentObjectAttribute` being validated, which provides access to:
+- `attr.service` - The VirtualService instance (use for `getMessage()` translations)
+- `attr.persistentObject` - The persistent object being validated
+- `attr.getValue()` / `attr.setValue()` - Get/set the attribute value
+- All DTO properties (`name`, `type`, `rules`, etc.)
 
 This allows cross-field validation:
 
 ```typescript
 // Validate password confirmation matches password
-service.registerBusinessRule("MatchesPassword", (value: any, context: RuleValidationContext) => {
+service.registerBusinessRule("MatchesPassword", (value: any, attr: VirtualPersistentObjectAttribute) => {
     if (!value) return;
 
-    const passwordValue = context.persistentObject.getAttributeValue("Password");
+    const passwordValue = attr.persistentObject.getAttributeValue("Password");
     if (value !== passwordValue)
-        throw new Error("Passwords do not match");
+        throw new Error(attr.service.getMessage("MatchesPassword"));
 });
 
 service.registerPersistentObject({
@@ -444,36 +444,35 @@ service.registerPersistentObject({
 
 **Custom rule requirements:**
 - Must be registered before `registerPersistentObject()`
-- Receives two parameters: `value` (the attribute value) and `context` (validation context)
+- Receives two parameters: `value` (the converted attribute value) and `attr` (the attribute being validated)
 - Throw an `Error` with a message if validation fails
 - Return nothing (or undefined) if validation passes
 - Cannot override built-in rules
 
 ### Translating Validation Messages
 
-Provide custom translations for validation error messages to support multiple languages:
+Customize validation error messages by setting the static `VirtualService.messages` property:
 
 ```typescript
 import { VirtualService } from "@vidyano-labs/virtual-service";
 
-// Define your translations
-const translations: Record<string, string> = {
+// Set custom messages (e.g., Dutch translations)
+VirtualService.messages = {
     "Required": "Dit veld is verplicht",
     "NotEmpty": "Dit veld mag niet leeg zijn",
     "IsEmail": "E-mailformaat is ongeldig",
     "MaxLength": "Maximale lengte is {0} tekens",
     "MinLength": "Minimale lengte is {0} tekens",
     "MaxValue": "Maximale waarde is {0}",
-    "MinValue": "Minimale waarde is {0}"
+    "MinValue": "Minimale waarde is {0}",
+    "IsBase64": "Waarde moet een geldige base64 string zijn",
+    "IsRegex": "Waarde moet een geldige reguliere expressie zijn",
+    "IsWord": "Waarde mag alleen woordtekens bevatten",
+    "IsUrl": "Waarde moet een geldige URL zijn",
+    "ValidationRulesFailed": "Sommige vereiste informatie ontbreekt of is onjuist."
 };
 
-// Create service and register translation function
 const service = new VirtualService();
-service.registerMessageTranslator((key: string, ...params: any[]) => {
-    const template = translations[key] || key;
-    // Use String.format from @vidyano/core for {0}, {1} placeholders
-    return String.format(template, ...params);
-});
 
 service.registerPersistentObject({
     type: "Person",
@@ -491,61 +490,53 @@ await service.initialize();
 const person = await service.getPersistentObject(null, "Person", null, true);
 await person.save();
 
-// Error message is now translated
+// Error message uses custom translation
 console.log(person.getAttribute("Email").validationError);
 // "Dit veld is verplicht"
 ```
 
-**Translation function signature:**
-```typescript
-type TranslateFunction = (key: string, ...params: any[]) => string;
-```
-
-**Parameters:**
-- `key` - The validation rule name (e.g., "Required", "MaxLength")
-- `params` - Positional parameters for the message (e.g., max length value)
-
 **How it works:**
-1. Built-in validators call `translate(key, ...params)` instead of using hardcoded messages
-2. Your translate function receives the rule name and any parameters
-3. Return the translated message with parameters interpolated
-4. If no translate function is provided, default English messages are used
+1. Set `VirtualService.messages` with your custom messages before creating services
+2. Messages use `{0}`, `{1}` placeholders for positional parameters
+3. The `getMessage(key, ...params)` method formats messages with the provided parameters
+4. If a key is not found in the messages dictionary, the key itself is returned
 
-**Custom rules can also use translation:**
+**Custom rules can also use getMessage:**
 
 ```typescript
-const service = new VirtualService();
-service.registerMessageTranslator((key: string, ...params: any[]) => {
-    const translations: Record<string, string> = {
-        "MinimumAge": "L'âge minimum est {0}",
-        "MatchesPassword": "Les mots de passe ne correspondent pas"
-    };
-    const template = translations[key] || key;
-    return String.format(template, ...params);
-});
+import type { VirtualPersistentObjectAttribute } from "@vidyano-labs/virtual-service";
 
-// Custom rule using translation
-service.registerBusinessRule("MinimumAge", (value: any, context: RuleValidationContext, minAge: number) => {
+// Set custom messages including your custom rule keys
+VirtualService.messages = {
+    ...VirtualService.messages,  // Keep default messages
+    "MinimumAge": "L'âge minimum est {0}",
+    "MatchesPassword": "Les mots de passe ne correspondent pas"
+};
+
+const service = new VirtualService();
+
+// Custom rule using getMessage via attr.service
+service.registerBusinessRule("MinimumAge", (value: any, attr: VirtualPersistentObjectAttribute, minAge: number) => {
     if (!value)
         return;
 
     const age = Number(value);
     if (age < minAge)
-        throw new Error(context.translate("MinimumAge", minAge));
+        throw new Error(attr.service.getMessage("MinimumAge", minAge));
 });
 
-// Custom rule can still throw direct errors (backward compatible)
-service.registerBusinessRule("IsPhoneNumber", (value: any, _context: RuleValidationContext) => {
+// Custom rule can still throw direct error strings
+service.registerBusinessRule("IsPhoneNumber", (value: any, _attr: VirtualPersistentObjectAttribute) => {
     if (!value)
         return;
 
     const phoneRegex = /^\+?[\d\s-()]+$/;
     if (!phoneRegex.test(String(value)))
-        throw new Error("Invalid phone number format");  // Not translated
+        throw new Error("Invalid phone number format");  // Direct string, not translated
 });
 ```
 
-**Built-in rule keys:**
+**Built-in message keys:**
 - `Required` - Field is required (no params)
 - `NotEmpty` - Field cannot be empty (no params)
 - `IsEmail` - Invalid email format (no params)
@@ -701,108 +692,107 @@ const page2 = await query.items.sliceAsync(10, 20);
 
 ### Custom Actions
 
-Register actions with custom handlers:
+Register actions with custom handlers. You can use either a simple string name or a full config object:
 
 ```typescript
-service.registerAction({
-    name: "Approve",
-    displayName: "Approve Order",
-    isPinned: true,
-    handler: async (args: ActionArgs) => {
-        // Access context for reading/modifying the object
-        args.context.setAttributeValue("Status", "Approved");
-        args.context.setNotification("Order approved!", "OK", 3000);
+// Simple: just the action name
+service.registerCustomAction("Approve", async (args) => {
+    args.parent.setAttributeValue("Status", "Approved");
+    return args.parent;
+});
 
-        // Return the updated object (or null for silent completion)
+// Full config: with displayName, isPinned, etc.
+service.registerCustomAction(
+    {
+        name: "Approve",
+        displayName: "Approve Order",
+        isPinned: true
+    },
+    async (args) => {
+        args.parent.setAttributeValue("Status", "Approved");
+        args.parent.setNotification("Order approved!", "OK", 3000);
         return args.parent;
     }
-});
+);
 ```
 
 ### ActionArgs
 
-Action handlers receive `ActionArgs` with execution context:
+Action handlers receive an `args` object with execution context:
 
 ```typescript
-import type { ActionArgs } from "@vidyano-labs/virtual-service";
-
-interface ActionArgs {
-    parent: PersistentObjectDto | null;       // The PO being acted on
-    query?: QueryDto;                         // The query (for query actions)
-    selectedItems?: QueryResultItemDto[];     // Selected items in query
-    parameters?: Record<string, any>;         // Action parameters
-    context: ActionContext;                   // Helper methods
-}
+// args parameter contains:
+// - parent: VirtualPersistentObject | null   // The PO being acted on
+// - query?: VirtualQuery                     // The query (for query actions)
+// - selectedItems?: VirtualQueryResultItem[] // Selected items in query
+// - parameters?: Record<string, any>         // Action parameters
 ```
 
-### ActionContext
 
-The context provides helper methods for modifying the persistent object:
+### Working with Parent in Action Handlers
+
+Since `args.parent` is a `VirtualPersistentObject`, you can use its methods directly:
 
 ```typescript
-handler: async (args: ActionArgs) => {
+handler: async (args) => {
     // Get an attribute
-    const emailAttr = args.context.getAttribute("Email");
+    const emailAttr = args.parent.getAttribute("Email");
 
-    // Read attribute values
-    const email = args.context.getAttributeValue("Email");
+    // Read attribute values (type-converted)
+    const email = args.parent.getAttributeValue("Email");
 
-    // Type-safe value access (pass the attribute DTO)
-    const age = args.context.getConvertedValue(args.context.getAttribute("Age")!);
+    // Read from the attribute directly
+    const age = emailAttr?.getValue();
 
     // Modify attribute values
-    args.context.setAttributeValue("Status", "Active");
+    args.parent.setAttributeValue("Status", "Active");
 
-    // Set with type conversion (pass the attribute DTO)
-    const countAttr = args.context.getAttribute("Count")!;
-    args.context.setConvertedValue(countAttr, 42);
+    // Set via attribute directly
+    emailAttr?.setValue("new@example.com");
 
     // Set validation errors
     if (!email?.includes("@"))
-        args.context.setValidationError("Email", "Invalid email format");
+        args.parent.setValidationError("Email", "Invalid email format");
 
-    // Clear validation errors
-    args.context.clearValidationError("Email");
+    // Clear validation errors (pass null or empty string)
+    args.parent.setValidationError("Email", null);
 
     // Show notifications
-    args.context.setNotification("Saved successfully", "OK", 3000);
-    args.context.setNotification("Warning!", "Warning", 5000);
-    args.context.setNotification("Error occurred", "Error");
+    args.parent.setNotification("Saved successfully", "OK", 3000);
+    args.parent.setNotification("Warning!", "Warning", 5000);
+    args.parent.setNotification("Error occurred", "Error");
 
     return args.parent;
 }
 ```
 
-**Context methods:**
-
-| Method | Description |
-|--------|-------------|
-| `getAttribute(name)` | Get the full attribute DTO |
-| `getAttributeValue(name)` | Get the raw attribute value |
-| `getConvertedValue(attr)` | Get type-converted value from attribute DTO |
-| `setAttributeValue(name, value)` | Update raw attribute value |
-| `setConvertedValue(attr, value)` | Update attribute DTO with type conversion |
-| `setValidationError(name, error)` | Set a validation error message |
-| `clearValidationError(name)` | Clear validation error |
-| `setNotification(msg, type, duration?)` | Show notification to user |
+See [VirtualPersistentObject Methods](#virtualpersistentobject-methods) for the full list.
 
 ### Query Actions
 
 Actions can operate on query results:
 
 ```typescript
-service.registerAction({
-    name: "BulkDelete",
-    handler: async (args: ActionArgs) => {
-        // Access selected items
-        for (const item of args.selectedItems || []) {
-            console.log(`Deleting item: ${item.id}`);
-        }
-
-        return null; // Silent completion
+service.registerCustomAction("BulkDelete", async (args) => {
+    // Access selected items
+    for (const item of args.selectedItems || []) {
+        console.log(`Deleting item: ${item.id}`);
+        // Use getValue to read column values
+        const name = item.getValue("Name");
+        console.log(`  Name: ${name}`);
     }
+
+    return null; // Silent completion
 });
 ```
+
+**VirtualQueryResultItem methods:**
+
+| Method | Description |
+|--------|-------------|
+| `getValue(columnName)` | Get a value from the item by column name |
+| `query` | Reference to the parent VirtualQuery |
+| `service` | Reference to the VirtualService instance |
 
 ## Lifecycle Hooks
 
@@ -811,43 +801,45 @@ service.registerAction({
 For complex scenarios, create a class extending `VirtualPersistentObjectActions`:
 
 ```typescript
-import { VirtualPersistentObjectActions } from "@vidyano-labs/virtual-service";
+import { VirtualPersistentObjectActions, VirtualQuery } from "@vidyano-labs/virtual-service";
 import type { VirtualPersistentObject, VirtualPersistentObjectAttribute } from "@vidyano-labs/virtual-service";
-import { Dto } from "@vidyano/core";
 
 class PersonActions extends VirtualPersistentObjectActions {
-    // Called when any Person DTO is created
+    // Called after the object is built
     onConstruct(obj: VirtualPersistentObject): void {
-        // Set defaults - note: this is synchronous
         obj.setAttributeValue("CreatedDate", new Date().toISOString());
     }
 
     // Called when loading an existing Person
     async onLoad(
-        obj: VirtualPersistentObject,
+        objectId: string,
         parent: VirtualPersistentObject | null
     ): Promise<VirtualPersistentObject> {
+        const obj = await super.onLoad(objectId, parent);
+
         // Load additional data based on ID
-        const id = obj.objectId;
-        console.log(`Loading person: ${id}`);
+        console.log(`Loading person: ${objectId}`);
+
         return obj;
     }
 
     // Called when creating a new Person via "New" action
     async onNew(
-        obj: VirtualPersistentObject,
         parent: VirtualPersistentObject | null,
-        query: Dto.QueryDto | null,
+        query: VirtualQuery | null,
         parameters: Record<string, string> | null
     ): Promise<VirtualPersistentObject> {
+        const obj = await super.onNew(parent, query, parameters);
+
         // Initialize new object
         obj.setAttributeValue("Status", "Draft");
+
         return obj;
     }
 
     // Called when saving
     async onSave(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
-        // Calls saveNew or saveExisting based on obj.isNew
+        // Calls checkRules, then saveNew or saveExisting based on obj.isNew
         return await super.onSave(obj);
     }
 
@@ -864,18 +856,26 @@ class PersonActions extends VirtualPersistentObjectActions {
     }
 }
 
-// Register the actions class
-service.registerPersistentObjectActions("Person", PersonActions);
+// Register with the actions class
+service.registerPersistentObject({
+    type: "Person",
+    attributes: [
+        { name: "FirstName", type: "String" },
+        { name: "CreatedDate", type: "DateTime" },
+        { name: "ModifiedDate", type: "DateTime" },
+        { name: "Status", type: "String" }
+    ]
+}, PersonActions);
 ```
 
 ### Lifecycle Flow
 
 ```
-PersistentObject Load:    onConstruct → onLoad
-PersistentObject New:     onConstruct → onNew
+PersistentObject Load:    onLoad (calls onConstruct internally)
+PersistentObject New:     onNew (calls onConstruct internally)
 PersistentObject Save:    onSave → checkRules → (saveNew | saveExisting)
-Query Construction:       onConstructQuery
-Query Execution:          onExecuteQuery → (text search, sort, paginate)
+Query Get:                onGetQuery (calls onConstructQuery internally)
+Query Execution:          onExecuteQuery → getEntities
 Attribute Refresh:        onRefresh
 Reference Selection:      onSelectReference
 Deletion:                 onDelete
@@ -914,6 +914,27 @@ service.registerPersistentObject({
 });
 ```
 
+### Query Retrieval
+
+Customize how queries are retrieved:
+
+```typescript
+class PersonActions extends VirtualPersistentObjectActions {
+    // Called when a query is requested
+    async onGetQuery(
+        queryName: string,
+        parent: VirtualPersistentObject | null
+    ): Promise<VirtualQuery> {
+        const query = await super.onGetQuery(queryName, parent);
+
+        // Custom post-processing
+        console.log(`Query ${queryName} loaded with ${query.totalItems} items`);
+
+        return query;
+    }
+}
+```
+
 ### Query Execution
 
 Provide dynamic query data:
@@ -925,7 +946,7 @@ class PersonActions extends VirtualPersistentObjectActions {
     // Provide data for query execution
     // Framework handles text search, sort, and pagination automatically
     async getEntities(
-        query: Dto.QueryDto,
+        query: VirtualQuery,
         parent: VirtualPersistentObject | null,
         data: Record<string, any>[]
     ): Promise<Record<string, any>[]> {
@@ -935,7 +956,7 @@ class PersonActions extends VirtualPersistentObjectActions {
 
     // Or fully control query execution
     async onExecuteQuery(
-        query: Dto.QueryDto,
+        query: VirtualQuery,
         parent: VirtualPersistentObject | null,
         data: Record<string, any>[]
     ): Promise<VirtualQueryExecuteResult> {
@@ -954,16 +975,16 @@ Handle reference attribute selection:
 class OrderActions extends VirtualPersistentObjectActions {
     async onSelectReference(
         parent: VirtualPersistentObject,
-        referenceAttribute: Dto.PersistentObjectAttributeDto,
-        query: Dto.QueryDto,
-        selectedItem: Dto.QueryResultItemDto | null
+        referenceAttribute: VirtualPersistentObjectAttribute,
+        query: VirtualQuery,
+        selectedItem: VirtualQueryResultItem | null
     ): Promise<void> {
         // Default: sets objectId and value from displayAttribute
         await super.onSelectReference(parent, referenceAttribute, query, selectedItem);
 
         // Custom: also copy related fields
         if (selectedItem) {
-            const customerName = selectedItem.values?.find(v => v.key === "Name")?.value;
+            const customerName = selectedItem.getValue("Name");
             parent.setAttributeValue("CustomerName", customerName);
         }
     }
@@ -1067,23 +1088,47 @@ const linesQuery = order.queries.find(q => q.name === "OrderLines");
 await linesQuery.search();
 ```
 
-## VirtualPersistentObject Helpers
+### Detail Query Pre-Execution
 
-The `VirtualPersistentObject` type provides convenient helper methods:
+By default, detail queries are pre-executed when the parent PersistentObject is loaded. This means the client immediately has access to the query results without needing to call `search()`.
+
+You can control this behavior in `onConstruct` by setting `isIncludedInParentObject`:
 
 ```typescript
-// In lifecycle hooks, objects are wrapped with helpers
+class OrderActions extends VirtualPersistentObjectActions {
+    onConstruct(obj: VirtualPersistentObject): void {
+        // Exclude OrderLines from being pre-executed (lazy load instead)
+        const orderLinesQuery = obj.queries!.find(q => q.name === "OrderLines")!;
+        orderLinesQuery.isIncludedInParentObject = false;
+    }
+}
+```
+
+**Behavior:**
+- `isIncludedInParentObject = true` (default) - Query is executed before returning the PersistentObject; results are immediately available
+- `isIncludedInParentObject = false` - Query is not pre-executed; client must call `search()` to load results
+
+This is useful for optimizing performance when detail queries contain large datasets that aren't always needed immediately.
+
+## VirtualPersistentObject Methods
+
+The `VirtualPersistentObject` type provides these methods:
+
+```typescript
 async onSave(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
-    // Get attribute by name (wrapped with helpers)
+    // Get attribute by name
     const attr = obj.getAttribute("Email");
 
     // Get/set values
     const email = obj.getAttributeValue("Email");
     obj.setAttributeValue("Email", "new@example.com");
 
-    // Validation errors
+    // Validation errors (pass null/empty to clear)
     obj.setValidationError("Email", "Invalid format");
-    obj.clearValidationError("Email");
+    obj.setValidationError("Email", null);  // Clear error
+
+    // Access the service
+    const message = obj.service.getMessage("CustomKey");
 
     // Notifications
     obj.setNotification("Saved!", "OK", 3000);
@@ -1096,12 +1141,12 @@ async onSave(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
 
 | Method | Description |
 |--------|-------------|
-| `getAttribute(name)` | Get attribute wrapped with helpers |
+| `getAttribute(name)` | Get attribute by name |
 | `getAttributeValue(name)` | Get converted attribute value |
 | `setAttributeValue(name, value)` | Set attribute value with conversion |
-| `setValidationError(name, error)` | Set validation error |
-| `clearValidationError(name)` | Clear validation error |
+| `setValidationError(name, error)` | Set validation error (pass `null`/empty to clear) |
 | `setNotification(msg, type, duration?)` | Set notification |
+| `service` | Reference to the VirtualService instance |
 
 **VirtualPersistentObjectAttribute methods:**
 
@@ -1109,8 +1154,9 @@ async onSave(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
 |--------|-------------|
 | `getValue()` | Get converted value |
 | `setValue(value)` | Set value with conversion |
-| `setValidationError(error)` | Set validation error |
-| `clearValidationError()` | Clear validation error |
+| `setValidationError(error)` | Set validation error (pass `null`/empty to clear) |
+| `persistentObject` | Reference to the parent VirtualPersistentObject |
+| `service` | Reference to the VirtualService instance |
 
 
 ## Testing Examples
@@ -1147,30 +1193,23 @@ test("validates email format", async () => {
 ```typescript
 import { test, expect } from "@playwright/test";
 import { VirtualService } from "@vidyano-labs/virtual-service";
-import type { ActionArgs } from "@vidyano-labs/virtual-service";
 
 test("complete order workflow", async () => {
     const service = new VirtualService();
 
-    service.registerAction({
-        name: "Submit",
-        handler: async (args: ActionArgs) => {
-            args.context.setAttributeValue("Status", "Submitted");
-            return args.parent;
-        }
+    service.registerCustomAction("Submit", async (args) => {
+        args.parent.setAttributeValue("Status", "Submitted");
+        return args.parent;
     });
 
-    service.registerAction({
-        name: "Approve",
-        handler: async (args: ActionArgs) => {
-            const status = args.context.getAttributeValue("Status");
-            if (status !== "Submitted") {
-                args.context.setNotification("Order must be submitted first", "Error");
-                return args.parent;
-            }
-            args.context.setAttributeValue("Status", "Approved");
+    service.registerCustomAction("Approve", async (args) => {
+        const status = args.parent.getAttributeValue("Status");
+        if (status !== "Submitted") {
+            args.parent.setNotification("Order must be submitted first", "Error");
             return args.parent;
         }
+        args.parent.setAttributeValue("Status", "Approved");
+        return args.parent;
     });
 
     service.registerPersistentObject({
@@ -1250,57 +1289,36 @@ test("search and sort query results", async () => {
 | Method | Description |
 |--------|-------------|
 | `constructor(hooks?)` | Create service with optional custom hooks |
-| `registerPersistentObject(config)` | Register a PersistentObject type |
+| `registerPersistentObject(config, actionsClass?)` | Register a PersistentObject type with optional lifecycle class |
 | `registerQuery(config)` | Register a Query |
-| `registerAction(config)` | Register a custom action |
+| `registerCustomAction(name, handler)` | Register a custom action (simple) |
+| `registerCustomAction(config, handler)` | Register a custom action (with config) |
 | `registerBusinessRule(name, validator)` | Register a validation rule |
-| `registerPersistentObjectActions(type, Class)` | Register lifecycle handlers |
-| `registerMessageTranslator(translateFn)` | Register message translator for system messages |
+| `getMessage(key, ...params)` | Get a formatted message by key |
 | `initialize()` | Finalize registrations |
+
+| Static Property | Description |
+|-----------------|-------------|
+| `VirtualService.messages` | Get/set the global messages dictionary for translations |
 
 ### VirtualPersistentObjectActions
 
 | Method | Description |
 |--------|-------------|
-| `onConstruct(obj)` | Called when constructing the DTO |
-| `onLoad(obj, parent)` | Called when loading an existing object |
-| `onNew(obj, parent, query, params)` | Called when creating a new object |
+| `onConstruct(obj: VirtualPersistentObject)` | Called after the object is built (synchronous) |
+| `onLoad(objectId: string, parent)` | Called when loading an existing object - call `super.onLoad()` to build |
+| `onNew(parent, query: VirtualQuery, params)` | Called when creating a new object - call `super.onNew()` to build |
+| `onGetQuery(queryName: string, parent)` | Called when retrieving a query - call `super.onGetQuery()` to build |
 | `onSave(obj)` | Called when saving (calls checkRules, then saveNew/saveExisting) |
 | `checkRules(obj)` | Validates attributes against rules (overridable) |
 | `saveNew(obj)` | Called for new objects (protected) |
 | `saveExisting(obj)` | Called for existing objects (protected) |
-| `onRefresh(obj, attribute)` | Called when refreshing |
-| `onDelete(parent, query, items)` | Called when deleting items |
-| `onConstructQuery(query, parent)` | Called when constructing a query |
-| `onExecuteQuery(query, parent, data)` | Called when executing a query |
-| `getEntities(query, parent, data)` | Provide query data |
-| `onSelectReference(parent, attr, query, item)` | Called when selecting a reference |
-
-### Type Exports
-
-```typescript
-import {
-    VirtualService,
-    VirtualServiceHooks,
-    VirtualPersistentObjectActions
-} from "@vidyano-labs/virtual-service";
-
-import type {
-    VirtualPersistentObject,
-    VirtualPersistentObjectAttribute,
-    VirtualPersistentObjectConfig,
-    VirtualPersistentObjectAttributeConfig,
-    VirtualQueryConfig,
-    VirtualQueryExecuteResult,
-    ActionConfig,
-    ActionHandler,
-    ActionArgs,
-    ActionContext,
-    RuleValidatorFn,
-    RuleValidationContext,
-    TranslateFunction
-} from "@vidyano-labs/virtual-service";
-```
+| `onRefresh(obj, attribute: VirtualPersistentObjectAttribute)` | Called when refreshing |
+| `onDelete(parent, query: VirtualQuery, items: VirtualQueryResultItem[])` | Called when deleting items |
+| `onConstructQuery(query: VirtualQuery, parent)` | Called after query is built (synchronous) |
+| `onExecuteQuery(query: VirtualQuery, parent, data)` | Called when executing a query |
+| `getEntities(query: VirtualQuery, parent, data)` | Provide query data |
+| `onSelectReference(parent, attr: VirtualPersistentObjectAttribute, query: VirtualQuery, item: VirtualQueryResultItem)` | Called when selecting a reference |
 
 ## Best Practices
 

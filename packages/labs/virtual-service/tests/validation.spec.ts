@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { VirtualService, VirtualPersistentObjectActions } from "../src/index.js";
-import type { VirtualPersistentObject, RuleValidationContext } from "../src/index.js";
+import type { VirtualPersistentObject, VirtualPersistentObjectAttribute } from "../src/index.js";
 
 test("validates required attributes on save", async () => {
     const service = new VirtualService();
@@ -278,7 +278,7 @@ test("supports custom business rules", async () => {
     const service = new VirtualService();
 
     // Register custom rule
-    service.registerBusinessRule("IsPhoneNumber", (value: any, _context: RuleValidationContext) => {
+    service.registerBusinessRule("IsPhoneNumber", (value: any, _attr: VirtualPersistentObjectAttribute) => {
         if (!value)
             return;
 
@@ -330,9 +330,7 @@ test("allows save when validation passes", async () => {
                 value: "test@example.com"
             }
         ]
-    });
-
-    service.registerPersistentObjectActions("Person", class extends VirtualPersistentObjectActions {
+    }, class extends VirtualPersistentObjectActions {
         async onSave(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
             saveCalled = true;
             return super.onSave(obj);
@@ -357,7 +355,7 @@ test("prevents overriding built-in rules", () => {
     const service = new VirtualService();
 
     expect(() => {
-        service.registerBusinessRule("IsEmail", (_value: any, _context: RuleValidationContext) => {
+        service.registerBusinessRule("IsEmail", (_value: any, _attr: VirtualPersistentObjectAttribute) => {
             throw new Error("Custom validation");
         });
     }).toThrow("Cannot override built-in rule: IsEmail");
@@ -565,7 +563,7 @@ test("does not convert empty parameter to zero", async () => {
     // Track what parameters the custom rule receives
     let receivedParams: any[] = [];
 
-    service.registerBusinessRule("CheckParams", (_value: any, _context: RuleValidationContext, ...params: any[]) => {
+    service.registerBusinessRule("CheckParams", (_value: any, _attr: VirtualPersistentObjectAttribute, ...params: any[]) => {
         receivedParams = params;
     });
 
@@ -628,15 +626,15 @@ test("validates special characters and unicode in strings", async () => {
     expect(email!.validationError).toBe("Email format is invalid"); // Unicode in email domain
 });
 
-test("custom rule can access other attributes via context", async () => {
+test("custom rule can access other attributes via attr.persistentObject", async () => {
     const service = new VirtualService();
 
     // Register custom rule that validates password confirmation
-    service.registerBusinessRule("MatchesPassword", (value: any, context: RuleValidationContext) => {
+    service.registerBusinessRule("MatchesPassword", (value: any, attr: VirtualPersistentObjectAttribute) => {
         if (!value)
             return;
 
-        const passwordValue = context.persistentObject.getAttributeValue("Password");
+        const passwordValue = attr.persistentObject.getAttributeValue("Password");
         if (value !== passwordValue)
             throw new Error("Passwords do not match");
     });
@@ -687,7 +685,7 @@ test("custom rule receives converted value not raw DTO value", async () => {
     let receivedValue: any = undefined;
     let receivedType: string = "";
 
-    service.registerBusinessRule("CheckType", (value: any, _context: RuleValidationContext) => {
+    service.registerBusinessRule("CheckType", (value: any, _attr: VirtualPersistentObjectAttribute) => {
         receivedValue = value;
         receivedType = typeof value;
     });
@@ -917,14 +915,17 @@ test("uses default English messages when no translate function provided", async 
 });
 
 test("translates simple validation rules", async () => {
-    const translations: Record<string, string> = {
+    // Save original messages
+    const originalMessages = VirtualService.messages;
+
+    VirtualService.messages = {
+        ...originalMessages,
         "Required": "Dit veld is verplicht",
         "NotEmpty": "Dit veld mag niet leeg zijn",
         "IsEmail": "E-mailformaat is ongeldig"
     };
 
     const service = new VirtualService();
-    service.registerMessageTranslator((key: string) => translations[key] || key);
 
     service.registerPersistentObject({
         type: "Person",
@@ -947,21 +948,24 @@ test("translates simple validation rules", async () => {
 
     const email = person.getAttribute("Email");
     expect(email!.validationError).toBe("Dit veld is verplicht");
+
+    // Restore original messages
+    VirtualService.messages = originalMessages;
 });
 
 test("translates parameterized validation rules with positional params", async () => {
+    // Save original messages
+    const originalMessages = VirtualService.messages;
+
+    VirtualService.messages = {
+        ...originalMessages,
+        "MaxLength": "Maximale lengte is {0} tekens",
+        "MinLength": "Minimale lengte is {0} tekens",
+        "MaxValue": "Maximale waarde is {0}",
+        "MinValue": "Minimale waarde is {0}"
+    };
+
     const service = new VirtualService();
-    service.registerMessageTranslator((key: string, ...params: any[]) => {
-        const templates: Record<string, string> = {
-            "MaxLength": `Maximale lengte is {0} tekens`,
-            "MinLength": `Minimale lengte is {0} tekens`,
-            "MaxValue": `Maximale waarde is {0}`,
-            "MinValue": `Minimale waarde is {0}`
-        };
-        const template = templates[key] || key;
-        // Simple positional replacement for testing
-        return template.replace(/\{(\d+)\}/g, (_, index) => String(params[index]));
-    });
 
     service.registerPersistentObject({
         type: "Person",
@@ -992,16 +996,13 @@ test("translates parameterized validation rules with positional params", async (
     const age = person.getAttribute("Age");
     expect(name!.validationError).toBe("Maximale lengte is 50 tekens");
     expect(age!.validationError).toBe("Minimale waarde is 18");
+
+    // Restore original messages
+    VirtualService.messages = originalMessages;
 });
 
-test("translation function receives correct positional parameters", async () => {
-    let capturedCalls: Array<{key: string; params: any[]}> = [];
-
+test("getMessage formats parameterized messages correctly", async () => {
     const service = new VirtualService();
-    service.registerMessageTranslator((key: string, ...params: any[]) => {
-        capturedCalls.push({ key, params });
-        return `${key}(${params.join(",")})`;
-    });
 
     service.registerPersistentObject({
         type: "Test",
@@ -1028,21 +1029,24 @@ test("translation function receives correct positional parameters", async () => 
     const obj = await service.getPersistentObject(null, "Test", "1");
     await obj.save({ throwExceptions: false });
 
-    expect(capturedCalls).toContainEqual({ key: "MaxLength", params: [40] });
-    expect(capturedCalls).toContainEqual({ key: "MinValue", params: [10] });
+    const field1 = obj.getAttribute("Field1");
+    const field2 = obj.getAttribute("Field2");
+    expect(field1!.validationError).toBe("Maximum length is 40 characters");
+    expect(field2!.validationError).toBe("Minimum value is 10");
 });
 
 test("translates multiple attributes with different rules in one save", async () => {
+    // Save original messages
+    const originalMessages = VirtualService.messages;
+
+    VirtualService.messages = {
+        ...originalMessages,
+        "Required": "Requerido",
+        "IsEmail": "Formato de correo inválido",
+        "MinLength": "Longitud mínima es {0} caracteres"
+    };
+
     const service = new VirtualService();
-    service.registerMessageTranslator((key: string, ...params: any[]) => {
-        const translations: Record<string, string> = {
-            "Required": "Requerido",
-            "IsEmail": "Formato de correo inválido",
-            "MinLength": `Longitud mínima es {0} caracteres`
-        };
-        const template = translations[key] || key;
-        return template.replace(/\{(\d+)\}/g, (_, index) => String(params[index]));
-    });
 
     service.registerPersistentObject({
         type: "User",
@@ -1081,35 +1085,39 @@ test("translates multiple attributes with different rules in one save", async ()
     expect(username!.validationError).toBe("Requerido");
     expect(email!.validationError).toBe("Formato de correo inválido");
     expect(password!.validationError).toBe("Longitud mínima es 8 caracteres");
+
+    // Restore original messages
+    VirtualService.messages = originalMessages;
 });
 
-test("custom rule can use context.translate()", async () => {
-    const service = new VirtualService();
-    service.registerMessageTranslator((key: string, ...params: any[]) => {
-        const translations: Record<string, string> = {
-            "MatchesPassword": "Les mots de passe ne correspondent pas",
-            "MinimumAge": `L'âge minimum est {0}`
-        };
-        const template = translations[key] || key;
-        return template.replace(/\{(\d+)\}/g, (_, index) => String(params[index]));
-    });
+test("custom rule can use attr.service.getMessage()", async () => {
+    // Save original messages
+    const originalMessages = VirtualService.messages;
 
-    service.registerBusinessRule("MatchesPassword", (value: any, context: RuleValidationContext) => {
+    VirtualService.messages = {
+        ...originalMessages,
+        "MatchesPassword": "Les mots de passe ne correspondent pas",
+        "MinimumAge": "L'âge minimum est {0}"
+    };
+
+    const service = new VirtualService();
+
+    service.registerBusinessRule("MatchesPassword", (value: any, attr: VirtualPersistentObjectAttribute) => {
         if (!value)
             return;
 
-        const passwordValue = context.persistentObject.getAttributeValue("Password");
+        const passwordValue = attr.persistentObject.getAttributeValue("Password");
         if (value !== passwordValue)
-            throw new Error(context.translate("MatchesPassword"));
+            throw new Error(attr.service.getMessage("MatchesPassword"));
     });
 
-    service.registerBusinessRule("MinimumAge", (value: any, context: RuleValidationContext, minAge: number) => {
+    service.registerBusinessRule("MinimumAge", (value: any, attr: VirtualPersistentObjectAttribute, minAge: number) => {
         if (!value)
             return;
 
         const age = Number(value);
         if (age < minAge)
-            throw new Error(context.translate("MinimumAge", minAge));
+            throw new Error(attr.service.getMessage("MinimumAge", minAge));
     });
 
     service.registerPersistentObject({
@@ -1146,13 +1154,15 @@ test("custom rule can use context.translate()", async () => {
     const age = user.getAttribute("Age");
     expect(confirmPassword!.validationError).toBe("Les mots de passe ne correspondent pas");
     expect(age!.validationError).toBe("L'âge minimum est 18");
+
+    // Restore original messages
+    VirtualService.messages = originalMessages;
 });
 
-test("custom rule can still throw errors directly without translation (backward compatibility)", async () => {
+test("custom rule can throw errors directly without using getMessage", async () => {
     const service = new VirtualService();
-    service.registerMessageTranslator((key: string) => `Translated: ${key}`);
 
-    service.registerBusinessRule("IsPhoneNumber", (value: any, _context: RuleValidationContext) => {
+    service.registerBusinessRule("IsPhoneNumber", (value: any, _attr: VirtualPersistentObjectAttribute) => {
         if (!value)
             return;
 
@@ -1243,9 +1253,7 @@ test("validation failure prevents saveNew/saveExisting from being called", async
                 value: null
             }
         ]
-    });
-
-    service.registerPersistentObjectActions("Person", TestActions);
+    }, TestActions);
 
     await service.initialize();
 
@@ -1268,9 +1276,9 @@ test("checkRules override - custom validation", async () => {
     class TestActions extends VirtualPersistentObjectActions {
         checkRules(obj: VirtualPersistentObject): boolean {
             // Custom validation: reject Name="invalid"
-            const name = obj.getAttributeValue("Name");
-            if (name === "invalid") {
-                obj.setValidationError("Name", "Name cannot be 'invalid'");
+            const nameAttr = obj.getAttribute("Name");
+            if (nameAttr?.getValue() === "invalid") {
+                nameAttr.setValidationError("Name cannot be 'invalid'");
                 obj.setNotification("Custom validation failed", "Error");
                 return false;
             }
@@ -1293,9 +1301,7 @@ test("checkRules override - custom validation", async () => {
                 value: "invalid"
             }
         ]
-    });
-
-    service.registerPersistentObjectActions("Person", TestActions);
+    }, TestActions);
 
     await service.initialize();
 
@@ -1342,9 +1348,7 @@ test("checkRules override - skip default validation", async () => {
                 value: null  // Would normally fail validation
             }
         ]
-    });
-
-    service.registerPersistentObjectActions("Person", TestActions);
+    }, TestActions);
 
     await service.initialize();
 
@@ -1365,9 +1369,9 @@ test("checkRules override - call super for combined validation", async () => {
     class TestActions extends VirtualPersistentObjectActions {
         checkRules(obj: VirtualPersistentObject): boolean {
             // Add custom validation first
-            const name = obj.getAttributeValue("Name");
-            if (name === "reserved") {
-                obj.setValidationError("Name", "Name is reserved");
+            const nameAttr = obj.getAttribute("Name");
+            if (nameAttr?.getValue() === "reserved") {
+                nameAttr.setValidationError("Name is reserved");
                 obj.setNotification("Custom validation failed", "Error");
                 return false;
             }
@@ -1393,9 +1397,7 @@ test("checkRules override - call super for combined validation", async () => {
                 value: null
             }
         ]
-    });
-
-    service.registerPersistentObjectActions("Person", TestActions);
+    }, TestActions);
 
     await service.initialize();
 
@@ -1435,9 +1437,7 @@ test("checkRules receives wrapped object with helper methods", async () => {
                 value: "John"
             }
         ]
-    });
-
-    service.registerPersistentObjectActions("Person", TestActions);
+    }, TestActions);
 
     await service.initialize();
 
@@ -1489,9 +1489,7 @@ test("checkRules receives attributes with rules from config", async () => {
                 value: "test@example.com"
             }
         ]
-    });
-
-    service.registerPersistentObjectActions("Person", TestActions);
+    }, TestActions);
 
     await service.initialize();
 

@@ -74,10 +74,7 @@ test.describe("VirtualService", () => {
         await service.initialize();
 
         expect(() => {
-            service.registerAction({
-                name: "CustomAction",
-                handler: async () => null
-            });
+            service.registerCustomAction("CustomAction", async () => null);
         }).toThrow("Cannot register after initialize() has been called");
     });
 
@@ -98,31 +95,16 @@ test.describe("VirtualService", () => {
         }).toThrow("Cannot register after initialize() has been called");
     });
 
-    test("throws error when registering PersistentObjectActions after initialize", async () => {
-        const service = new VirtualService();
+    test("can set static messages for translation", async () => {
+        // Save original messages
+        const originalMessages = VirtualService.messages;
 
-        service.registerPersistentObject({
-            type: "Person",
-            attributes: [
-                { name: "Name", type: "String", value: "John" }
-            ]
-        });
-
-        await service.initialize();
-
-        expect(() => {
-            service.registerPersistentObjectActions("Person", class extends VirtualPersistentObjectActions {});
-        }).toThrow("Cannot register after initialize() has been called");
-    });
-
-    test("can use registerMessageTranslator method", async () => {
-        let translateCalled = false;
+        VirtualService.messages = {
+            ...originalMessages,
+            "Required": "Custom required message"
+        };
 
         const service = new VirtualService();
-        service.registerMessageTranslator((key: string) => {
-            translateCalled = true;
-            return key;
-        });
 
         service.registerPersistentObject({
             type: "Person",
@@ -136,20 +118,11 @@ test.describe("VirtualService", () => {
         const person = await service.getPersistentObject(null, "Person", "1");
         await person.save({ throwExceptions: false });
 
-        expect(translateCalled).toBe(true);
-    });
+        const name = person.getAttribute("Name");
+        expect(name!.validationError).toBe("Custom required message");
 
-    test("virtualHooks getter returns the hooks instance", async () => {
-        const service = new VirtualService();
-
-        expect(service.virtualHooks).toBeDefined();
-        expect(service.virtualHooks).toBeInstanceOf(VirtualServiceHooks);
-    });
-
-    test("creates default hooks if none provided", async () => {
-        const service = new VirtualService();
-
-        expect(service.virtualHooks).toBeInstanceOf(VirtualServiceHooks);
+        // Restore original messages
+        VirtualService.messages = originalMessages;
     });
 
     test("registers a simple persistent object", () => {
@@ -207,8 +180,7 @@ test.describe("VirtualService", () => {
             ]
         };
 
-        service.registerPersistentObject(config);
-        service.registerPersistentObjectActions("Person", PersonActions);
+        service.registerPersistentObject(config, PersonActions);
 
         await service.initialize();
 
@@ -218,7 +190,7 @@ test.describe("VirtualService", () => {
         config.attributes = config.attributes.filter(a => a.name !== "Age");
 
         // Call hooks directly with a DTO containing an unknown attribute
-        const hooks = service.virtualHooks;
+        const hooks = (service.hooks as VirtualServiceHooks);
         const mockBody = {
             action: "Person.Save",
             parent: {
@@ -255,7 +227,7 @@ test.describe("VirtualService", () => {
         await service.initialize();
 
         // Call hooks directly with an unknown PersistentObject type
-        const hooks = service.virtualHooks;
+        const hooks = (service.hooks as VirtualServiceHooks);
         const mockBody = {
             action: "UnknownType.Save",
             parent: {
@@ -289,7 +261,7 @@ test.describe("VirtualService", () => {
         await service.initialize();
 
         // Call hooks directly with an unknown Query name
-        const hooks = service.virtualHooks;
+        const hooks = (service.hooks as VirtualServiceHooks);
         const mockBody = {
             id: "UnknownQuery"
         };
@@ -302,6 +274,6 @@ test.describe("VirtualService", () => {
         const response = await hooks.onFetch(request);
         const result = await response.json();
 
-        expect(result.exception).toContain("Query 'UnknownQuery' is not registered");
+        expect(result.exception).toContain("Query \"UnknownQuery\" is not registered");
     });
 });

@@ -1,15 +1,17 @@
 {
-    "permissions": {
-        "allow": [
-            "Bash(pgrep -f rollup:*)",
-            "Bash(curl -s -o /dev/null -w '%{http_code}' --head http://localhost:5000:*)"
-        ]
-    },
-    "hooks": {
-        "PreToolUse": []
-    },
-    "statusLine": {
-        "type": "command",
-        "command": "node -e \"const fs=require('fs');const path=require('path');const input=JSON.parse(fs.readFileSync(0,'utf8'));const model=input.model.display_name;const currentDir=path.basename(input.workspace.current_dir);let gitBranch='';try{const headContent=fs.readFileSync('.git/HEAD','utf8').trim();if(headContent.startsWith('ref: refs/heads/')){gitBranch=' | 🌿 '+headContent.replace('ref: refs/heads/','');}}catch(e){}console.log('['+model+'] 📁 '+currentDir+gitBranch);\""
-    }
+  "permissions": {
+    "allow": [
+      "Bash(pgrep -f rollup:*)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' --head http://localhost:5000:*)",
+      "Bash(npm run test:virtual-service:*)",
+      "Bash(npx playwright test:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": []
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "node -e \"const fs=require('fs');const path=require('path');const input=JSON.parse(fs.readFileSync(0,'utf8'));const model=input.model.display_name;const currentDir=path.basename(input.workspace.current_dir);let gitBranch='';try{const headContent=fs.readFileSync('.git/HEAD','utf8').trim();if(headContent.startsWith('ref: refs/heads/')){gitBranch=' | 🌿 '+headContent.replace('ref: refs/heads/','');}}catch(e){}console.log('['+model+'] 📁 '+currentDir+gitBranch);\""
+  }
 }

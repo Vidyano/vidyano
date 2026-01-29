@@ -1,5 +1,6 @@
 import { Dto } from "@vidyano/core";
-import type { VirtualPersistentObject, VirtualPersistentObjectAttribute } from "./virtual-persistent-object.js";
+import type { VirtualPersistentObject } from "./virtual-persistent-object.js";
+import type { VirtualQuery, VirtualQueryResultItem } from "./virtual-query.js";
 
 /**
  * Simplified attribute configuration - converted to PersistentObjectAttributeDto
@@ -121,27 +122,22 @@ export type ActionArgs = {
      * For PersistentObject actions: the PersistentObject itself
      * For Query actions: the parent PO that owns the query, or null for top-level queries
      */
-    parent: Dto.PersistentObjectDto | null;
+    parent: VirtualPersistentObject | null;
 
     /**
      * The query context (like args.Query in C#) - present if action invoked from query
      */
-    query?: Dto.QueryDto;
+    query?: VirtualQuery;
 
     /**
      * Selected items (like args.SelectedItems in C#) - present if query action with selections
      */
-    selectedItems?: Dto.QueryResultItemDto[];
+    selectedItems?: VirtualQueryResultItem[];
 
     /**
      * Additional parameters (like args.Parameters in C#)
      */
     parameters?: Record<string, any>;
-
-    /**
-     * Helper context for modifying attributes and setting notifications
-     */
-    context: ActionContext;
 };
 
 /**
@@ -150,7 +146,7 @@ export type ActionArgs = {
  */
 export type ActionHandler = (
     args: ActionArgs
-) => Promise<Dto.PersistentObjectDto | null> | Dto.PersistentObjectDto | null;
+) => Promise<VirtualPersistentObject | null> | VirtualPersistentObject | null;
 
 /**
  * Action configuration
@@ -170,88 +166,6 @@ export type ActionConfig = {
      * Indicates whether the action is pinned. Defaults to false.
      */
     isPinned?: boolean;
-
-    /**
-     * Custom action logic handler.
-     */
-    handler: ActionHandler;
-};
-
-/**
- * Context provides safe API to modify the persistent object during actions
- */
-export type ActionContext = {
-    /**
-     * Gets an attribute by name.
-     */
-    getAttribute: (name: string) => Dto.PersistentObjectAttributeDto | undefined;
-
-    /**
-     * Gets the value of an attribute by name.
-     */
-    getAttributeValue: (name: string) => any;
-
-    /**
-     * Sets the value of an attribute by name.
-     */
-    setAttributeValue: (name: string, value: any) => void;
-
-    /**
-     * Gets the converted value of an attribute DTO (e.g., Boolean as boolean, Int32 as number).
-     */
-    getConvertedValue: (attr: Dto.PersistentObjectAttributeDto) => any;
-
-    /**
-     * Sets the value on an attribute DTO with automatic type conversion.
-     */
-    setConvertedValue: (attr: Dto.PersistentObjectAttributeDto, value: any) => void;
-
-    /**
-     * Sets a validation error for an attribute.
-     */
-    setValidationError: (name: string, error: string) => void;
-
-    /**
-     * Clears the validation error for an attribute.
-     */
-    clearValidationError: (name: string) => void;
-
-    /**
-     * Sets a notification message.
-     */
-    setNotification: (message: string, type: Dto.NotificationType, duration?: number) => void;
-};
-
-/**
- * Translation function for system messages
- * @param key - The message key (e.g., "Required", "MaxLength")
- * @param params - Positional parameters for the message
- * @returns Translated message with parameters interpolated
- *
- * Example:
- * translate("MaxLength", 50) => "Maximum length is 50 characters"
- * translate("MinValue", 18) => "Minimum value is 18"
- */
-export type TranslateFunction = (key: string, ...params: any[]) => string;
-
-/**
- * Context provided to business rule validators for accessing the persistent object
- */
-export type RuleValidationContext = {
-    /**
-     * The persistent object being validated (wrapped with helper methods)
-     */
-    persistentObject: VirtualPersistentObject;
-
-    /**
-     * The attribute being validated (wrapped with helper methods)
-     */
-    attribute: VirtualPersistentObjectAttribute;
-
-    /**
-     * Translation function for system messages
-     */
-    translate: TranslateFunction;
 };
 
 /**
@@ -312,16 +226,6 @@ export type VirtualQueryExecuteResult = {
      * Total number of items matching the query (before pagination)
      */
     totalItems: number;
-};
-
-/**
- * Options for configuring the VirtualService
- */
-export type VirtualServiceOptions = {
-    /**
-     * Optional translation function for validation messages
-     */
-    translate?: TranslateFunction;
 };
 
 /**

@@ -22,9 +22,7 @@ test.describe("DTO Wrapping and Config Augmentation", () => {
                     { name: "Name", type: "String", rules: "NotEmpty" },
                     { name: "Email", type: "String", rules: "IsEmail" }
                 ]
-            });
-
-            service.registerPersistentObjectActions("Person", PersonActions);
+            }, PersonActions);
             await service.initialize();
 
             const person = await service.getPersistentObject(null, "Person");
@@ -178,9 +176,7 @@ test.describe("DTO Wrapping and Config Augmentation", () => {
                 attributes: [
                     { name: "Country", type: "String", triggersRefresh: true, rules: "NotEmpty" }
                 ]
-            });
-
-            service.registerPersistentObjectActions("Person", PersonActions);
+            }, PersonActions);
             await service.initialize();
 
             const person = await service.getPersistentObject(null, "Person");
@@ -213,9 +209,7 @@ test.describe("DTO Wrapping and Config Augmentation", () => {
                 attributes: [
                     { name: "Email", type: "String", rules: "NotEmpty; IsEmail" }
                 ]
-            });
-
-            service.registerPersistentObjectActions("Person", PersonActions);
+            }, PersonActions);
             await service.initialize();
 
             const person = await service.getPersistentObject(null, "Person");
@@ -237,14 +231,11 @@ test.describe("DTO Wrapping and Config Augmentation", () => {
 
             let parentHadRules = false;
 
-            service.registerAction({
-                name: "TestAction",
-                handler: async (args) => {
-                    // Check if parent attribute has rules from config
-                    const attr = args.parent?.attributes?.find(a => a.name === "Name");
-                    parentHadRules = attr?.rules === "NotEmpty";
-                    return args.parent;
-                }
+            service.registerCustomAction("TestAction", async (args) => {
+                // Check if parent attribute has rules from config
+                const attr = args.parent?.attributes?.find(a => a.name === "Name");
+                parentHadRules = attr?.rules === "NotEmpty";
+                return args.parent;
             });
 
             service.registerPersistentObject({

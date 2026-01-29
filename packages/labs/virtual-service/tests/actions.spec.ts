@@ -5,16 +5,9 @@ import type { ActionArgs } from "../src/index.js";
 test("registers actions on persistent object", async () => {
     const service = new VirtualService();
 
-    // Register actions first
-    service.registerAction({
-        name: "CustomAction",
-        handler: async (args: ActionArgs) => args.parent
-    });
-
-    service.registerAction({
-        name: "AnotherAction",
-        handler: async (args: ActionArgs) => args.parent
-    });
+    // Register actions first (using string shorthand)
+    service.registerCustomAction("CustomAction", async (args: ActionArgs) => args.parent);
+    service.registerCustomAction("AnotherAction", async (args: ActionArgs) => args.parent);
 
     // Register PersistentObject with action references
     service.registerPersistentObject({
@@ -38,18 +31,16 @@ test("executes custom action handler", async () => {
     const service = new VirtualService();
     let actionExecuted = false;
 
-    // Register action with new unified handler
-    service.registerAction({
-        name: "CustomAction",
-        handler: async (args: ActionArgs) => {
+    // Register action with new unified handler (using string shorthand)
+    service.registerCustomAction("CustomAction", async (args: ActionArgs) => {
             actionExecuted = true;
-            const firstName = args.context.getAttributeValue("FirstName");
+            const firstName = args.parent!.getAttributeValue("FirstName");
             expect(firstName).toBe("John");
-            args.context.setAttributeValue("LastName", "Smith");
-            args.context.setNotification("Action executed!", "OK", 3000);
+            args.parent!.setAttributeValue("LastName", "Smith");
+            args.parent!.setNotification("Action executed!", "OK", 3000);
             return args.parent;
         }
-    });
+    );
 
     service.registerPersistentObject({
         type: "Person",
@@ -76,12 +67,9 @@ test("executes custom action handler", async () => {
 test("registers Save action explicitly", async () => {
     const service = new VirtualService();
 
-    // Register Save action explicitly
-    service.registerAction({
-        name: "Save",
-        handler: async (args: ActionArgs) => {
-            return args.parent;
-        }
+    // Register Save action explicitly (using string shorthand)
+    service.registerCustomAction("Save", async (args: ActionArgs) => {
+        return args.parent;
     });
 
     service.registerPersistentObject({
@@ -106,9 +94,7 @@ test("unified action can detect if invoked from query", async () => {
     let hasSelectedItems = false;
 
     // Register unified action that checks context
-    service.registerAction({
-        name: "UnifiedAction",
-        handler: async (args: ActionArgs) => {
+    service.registerCustomAction("UnifiedAction", async (args: ActionArgs) => {
             // Check if invoked from query
             if (args.query) {
                 hasQuery = true;
@@ -122,7 +108,7 @@ test("unified action can detect if invoked from query", async () => {
 
             return args.parent;
         }
-    });
+    );
 
     service.registerPersistentObject({
         type: "Product",
@@ -162,11 +148,9 @@ test("unified action can detect if invoked from query", async () => {
 test("action can inspect parent persistent object attributes", async () => {
     const service = new VirtualService();
 
-    service.registerAction({
-        name: "InspectProduct",
-        handler: async (args: ActionArgs) => {
-            const name = args.context.getAttributeValue("Name");
-            const price = args.context.getAttributeValue("Price");
+    service.registerCustomAction("InspectProduct", async (args: ActionArgs) => {
+            const name = args.parent!.getAttributeValue("Name");
+            const price = args.parent!.getAttributeValue("Price");
 
             expect(name).toBe("Widget");
             expect(price).toBe(100);
@@ -174,13 +158,13 @@ test("action can inspect parent persistent object attributes", async () => {
             // Modify based on current values
             const priceNum = typeof price === "string" ? parseFloat(price) : price;
             if (priceNum < 200) {
-                args.context.setAttributeValue("Price", 200);
-                args.context.setNotification("Price increased to minimum", "Warning");
+                args.parent!.setAttributeValue("Price", 200);
+                args.parent!.setNotification("Price increased to minimum", "Warning");
             }
 
             return args.parent;
         }
-    });
+    );
 
     service.registerPersistentObject({
         type: "Product",
@@ -208,14 +192,12 @@ test("action can return null to complete silently", async () => {
     const service = new VirtualService();
     let executed = false;
 
-    service.registerAction({
-        name: "SilentAction",
-        handler: async (args: ActionArgs) => {
+    service.registerCustomAction("SilentAction", async (args: ActionArgs) => {
             executed = true;
             // Return null to complete without UI refresh
             return null;
         }
-    });
+    );
 
     service.registerPersistentObject({
         type: "Product",
@@ -244,9 +226,7 @@ test("query action receives selected items", async () => {
     let selectedItemIds: string[] = [];
 
     // Register action that processes selected items (same action can be used from PO or Query)
-    service.registerAction({
-        name: "BulkUpdatePrice",
-        handler: async (args: ActionArgs) => {
+    service.registerCustomAction("BulkUpdatePrice", async (args: ActionArgs) => {
             // For query actions without a parent context, parent can be null
             if (args.parent === null) {
                 parentIsNull = true;
@@ -258,19 +238,20 @@ test("query action receives selected items", async () => {
                 expect(args.query.name).toBe("Products");
             }
 
-            // Check selected items
+            // Check selected items - they are now wrapped VirtualQueryResultItems
             if (args.selectedItems && args.selectedItems.length > 0) {
                 selectedItemCount = args.selectedItems.length;
                 selectedItemIds = args.selectedItems.map(item => item.id);
 
-                // In a real scenario, you might update the selected items
-                args.context.setNotification(`Updated ${selectedItemCount} products`, "OK");
+                // Verify we can use getValue on selected items
+                const firstItemName = args.selectedItems[0].getValue("Name");
+                expect(firstItemName).toBe("Widget");
             }
 
-            // For query actions, we can return null since there's no parent to refresh
+            // Return null - for query actions without parent, no PO to refresh
             return null;
         }
-    });
+    );
 
     service.registerPersistentObject({
         type: "Product",
@@ -302,13 +283,11 @@ test("query action receives selected items", async () => {
 
     // Execute action on selected items
     const action = query.getAction("BulkUpdatePrice");
-    const result = await action.execute({ selectedItems: [items[0], items[1]] });
+    await action.execute({ selectedItems: [items[0], items[1]] });
 
     // Verify the action received all context
     expect(parentIsNull).toBe(true);
     expect(receivedQuery).toBe(true);
     expect(selectedItemCount).toBe(2);
     expect(selectedItemIds).toEqual(["1", "2"]);
-    // Result is the query's template PO with notification
-    expect(result.notification).toBe("Updated 2 products");
 });
