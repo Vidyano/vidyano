@@ -188,3 +188,34 @@ test("changes attribute visibility in onRefresh handler", async () => {
     const conditionalFieldAfter = person.attributes?.find(a => a.name === "ConditionalField");
     expect(conditionalFieldAfter?.visibility).toBe("Always");
 });
+
+test("preserves dynamically set options after subsequent refresh", async () => {
+    const service = new VirtualService();
+
+    service.registerPersistentObject({
+        type: "Test",
+        attributes: [
+            { name: "Trigger", type: "String", triggersRefresh: true },
+            { name: "Dynamic", type: "String", triggersRefresh: true } // No static options
+        ]
+    }, class extends VirtualPersistentObjectActions {
+        async onRefresh(obj: VirtualPersistentObject, attr: VirtualPersistentObjectAttribute | undefined): Promise<VirtualPersistentObject> {
+            // Set options dynamically when Trigger changes
+            if (attr?.name === "Trigger")
+                obj.getAttribute("Dynamic")!.options = ["A=Option A", "B=Option B"];
+
+            return obj;
+        }
+    });
+
+    await service.initialize();
+    const form = await service.getPersistentObject(null, "Test");
+
+    // Trigger refresh to set dynamic options
+    await form.getAttribute("Trigger").setValue("x", true);
+    expect(form.getAttribute("Dynamic").options).toEqual(["A=Option A", "B=Option B"]);
+
+    // Trigger another refresh from Dynamic - options should be preserved
+    await form.getAttribute("Dynamic").setValue("A", true);
+    expect(form.getAttribute("Dynamic").options).toEqual(["A=Option A", "B=Option B"]);
+});

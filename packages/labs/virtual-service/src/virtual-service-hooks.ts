@@ -285,7 +285,6 @@ export class VirtualServiceHooks extends ServiceHooks {
         clientAttr.tab = configAttr.tab || "";
         clientAttr.column = configAttr.column;
         clientAttr.columnSpan = configAttr.columnSpan;
-        clientAttr.options = configAttr.options;
 
         // Reference attribute properties - only set if explicitly configured
         if (configAttr.lookup) {
