@@ -1,5 +1,5 @@
 import { Service, Application } from "@vidyano/core";
-import { fromServiceValue, toServiceValue } from "./virtual-service-data-type.js";
+import { fromServiceString as fromServiceStringInternal } from "./virtual-service-data-type.js";
 import { VirtualServiceHooks } from "./virtual-service-hooks.js";
 import { VirtualPersistentObjectConfig, VirtualQueryConfig, ActionConfig, ActionHandler } from "./types.js";
 import { BusinessRuleValidator, RuleValidatorFn } from "./business-rules.js";
@@ -73,18 +73,11 @@ export class VirtualService extends Service {
 
     /**
      * Converts a service string value to a primitive JavaScript type.
-     * Unlike DataType.fromServiceString, this returns number instead of BigNumber
+     * Unlike Service.fromServiceString, this returns number instead of BigNumber
      * for numeric types (Decimal, Double, Int64, etc.).
      */
-    static fromServiceValue(value: any, type: string): any {
-        return fromServiceValue(value, type);
-    }
-
-    /**
-     * Converts a primitive JavaScript value to a service string.
-     */
-    static toServiceValue(value: any, type: string): string {
-        return toServiceValue(value, type);
+    static override fromServiceString(value: string, typeName: string): any {
+        return fromServiceStringInternal(value, typeName);
     }
 
     /**

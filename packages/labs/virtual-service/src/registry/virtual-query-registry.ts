@@ -1,6 +1,6 @@
 import { Dto } from "@vidyano/core";
 import { VirtualQueryConfig, VirtualPersistentObjectConfig, VirtualQueryExecuteResult } from "../types.js";
-import { toServiceValue } from "../virtual-service-data-type.js";
+import { toServiceString } from "../virtual-service-data-type.js";
 
 /**
  * Registry for managing Query configurations (config + columns store)
@@ -193,7 +193,7 @@ export class VirtualQueryRegistry {
             const rawValue = data[column.name];
             return {
                 key: column.name,
-                value: rawValue == null ? null : toServiceValue(rawValue, column.type),
+                value: rawValue == null ? null : toServiceString(rawValue, column.type),
                 objectId: data[column.name + "Id"],
                 typeHints: data[column.name + "$typeHints"]
             };

@@ -1,18 +1,11 @@
 /**
- * Value conversion utilities for the virtual service.
- * Wraps core DataType conversions to return JavaScript primitives instead of BigNumber.
+ * Internal value conversion utilities for the virtual service.
  *
- * @example
- * // Convert from service string to primitive
- * fromServiceValue("100.50", "Decimal")    // => 100.5 (number)
- * fromServiceValue("True", "Boolean")      // => true (boolean)
- * fromServiceValue("15-01-2024 10:30:00", "DateTime")  // => Date object
+ * NOTE: This file exists to avoid circular dependencies. Files like
+ * virtual-persistent-object.ts cannot import VirtualService directly
+ * (it would create a cycle), so they import these helpers instead.
  *
- * @example
- * // Convert from primitive to service string
- * toServiceValue(100.5, "Decimal")         // => "100.5"
- * toServiceValue(true, "Boolean")          // => "True"
- * toServiceValue(new Date(2024, 0, 15), "Date")  // => "15-01-2024 00:00:00"
+ * Public API: Use VirtualService.fromServiceString() and VirtualService.toServiceString().
  */
 
 import { DataType } from "@vidyano/core";
@@ -22,7 +15,7 @@ import { DataType } from "@vidyano/core";
  * Unlike DataType.fromServiceString, this returns number instead of BigNumber
  * for numeric types (Decimal, Double, Int64, etc.).
  */
-export function fromServiceValue(value: any, type: string): any {
+export function fromServiceString(value: string, type: string): any {
     const result = DataType.fromServiceString(value, type);
 
     // Check for BigNumber (has toNumber method) and convert to number primitive
@@ -35,6 +28,6 @@ export function fromServiceValue(value: any, type: string): any {
 /**
  * Converts a primitive JavaScript value to a service string.
  */
-export function toServiceValue(value: any, type: string): string {
+export function toServiceString(value: any, type: string): string {
     return DataType.toServiceString(value, type);
 }
