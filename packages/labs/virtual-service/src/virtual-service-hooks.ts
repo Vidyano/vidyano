@@ -2,8 +2,9 @@ import { ServiceHooks, Dto } from "@vidyano/core";
 import { BusinessRuleValidator } from "./business-rules.js";
 import { VirtualQueryRegistry } from "./registry/virtual-query-registry.js";
 import { VirtualPersistentObjectAttributeConfig } from "./types.js";
-import { createVirtualPersistentObject, createVirtualPersistentObjectAttribute, unwrapVirtualPersistentObject, VirtualPersistentObject } from "./virtual-persistent-object.js";
+import { createVirtualPersistentObject, createVirtualPersistentObjectAttribute, type InternalAttributeDto, unwrapVirtualPersistentObject, VirtualPersistentObject } from "./virtual-persistent-object.js";
 import { VirtualQuery, createVirtualQuery, createVirtualQueryResultItem, unwrapVirtualQuery } from "./virtual-query.js";
+import { fromServiceString } from "./virtual-service-data-type.js";
 import type { VirtualService } from "./virtual-service.js";
 
 /**
@@ -285,6 +286,10 @@ export class VirtualServiceHooks extends ServiceHooks {
         clientAttr.tab = configAttr.tab || "";
         clientAttr.column = configAttr.column;
         clientAttr.columnSpan = configAttr.columnSpan;
+
+        // Convert incoming service string to primitive
+        if (clientAttr.value != null)
+            (clientAttr as InternalAttributeDto).value = fromServiceString(clientAttr.value, clientAttr.type);
 
         // Reference attribute properties - only set if explicitly configured
         if (configAttr.lookup) {

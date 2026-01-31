@@ -1,7 +1,21 @@
 import { Dto } from "@vidyano/core";
-import { fromServiceString, toServiceString } from "./virtual-service-data-type.js";
+import { toServiceString } from "./virtual-service-data-type.js";
 import type { VirtualService } from "./virtual-service.js";
-import { createVirtualQuery, VirtualQuery } from "./virtual-query.js";
+import { createVirtualQuery, unwrapVirtualQuery, VirtualQuery } from "./virtual-query.js";
+
+/**
+ * Primitive value types supported for attribute values.
+ * Internally we store primitives; conversion to/from service strings happens at serialization boundaries.
+ */
+type PrimitiveValue = string | boolean | number | Date | null | undefined;
+
+/**
+ * Internal representation of an attribute DTO that allows primitive values.
+ * The wire format uses strings, but internally we work with native types.
+ */
+export type InternalAttributeDto = Omit<Dto.PersistentObjectAttributeDto, "value"> & {
+    value?: PrimitiveValue;
+};
 
 /**
  * VirtualPersistentObjectAttribute combines a PersistentObjectAttributeDto with helper methods
@@ -20,14 +34,14 @@ export type VirtualPersistentObjectAttributeWithReference = Dto.PersistentObject
  */
 type VirtualPersistentObjectAttributeHelpers = {
     /**
-     * Gets the converted value of this attribute (e.g., Boolean as boolean, Int32 as number)
+     * Gets the value of this attribute
      */
-    getValue(): any;
+    getValue<T = any>(): T;
 
     /**
-     * Sets the value of this attribute with automatic type conversion
+     * Sets the value of this attribute
      */
-    setValue(value: any): void;
+    setValue<T = any>(value: T): void;
 
     /**
      * Sets a validation error on this attribute. Pass null/empty to clear.
@@ -58,12 +72,12 @@ export type VirtualPersistentObject = Omit<Dto.PersistentObjectDto, "queries"> &
     /**
      * Gets the value of an attribute by name
      */
-    getAttributeValue(name: string): any;
+    getAttributeValue<T = any>(name: string): T;
 
     /**
      * Sets the value of an attribute by name
      */
-    setAttributeValue(name: string, value: any): void;
+    setAttributeValue<T = any>(name: string, value: T): void;
 
     /**
      * Sets a notification message on the persistent object
@@ -94,13 +108,15 @@ export function createVirtualPersistentObjectAttribute(
     persistentObject: VirtualPersistentObject,
     service: VirtualService
 ): VirtualPersistentObjectAttribute {
+    const internalAttr = attr as InternalAttributeDto;
+
     const helpers = {
-        getValue() {
-            return fromServiceString(attr.value, attr.type);
+        getValue<T = any>(): T {
+            return internalAttr.value as T;
         },
-        setValue(value: any) {
-            attr.value = toServiceString(value, attr.type);
-            attr.isValueChanged = true;
+        setValue<T = any>(value: T): void {
+            internalAttr.value = value as PrimitiveValue;
+            internalAttr.isValueChanged = true;
         },
         setValidationError(error: string | null | undefined) {
             attr.validationError = error || undefined;
@@ -113,7 +129,7 @@ export function createVirtualPersistentObjectAttribute(
         }
     };
 
-    return new Proxy(attr, {
+    return new Proxy(internalAttr, {
         get(target, prop) {
             if (prop in helpers) {
                 const value = helpers[prop as keyof typeof helpers];
@@ -123,8 +139,21 @@ export function createVirtualPersistentObjectAttribute(
             return target[prop as keyof typeof target];
         },
 
-        set(target, prop, value) {
-            (target as any)[prop] = value;
+        set(target, prop, newValue) {
+            if (prop === "value") {
+                const oldValue = target.value;
+                const hasChanged = oldValue instanceof Date && newValue instanceof Date
+                    ? oldValue.getTime() !== newValue.getTime()
+                    : oldValue !== newValue;
+
+                if (hasChanged) {
+                    target.value = newValue;
+                    target.isValueChanged = true;
+                }
+            }
+            else
+                (target as Record<string, unknown>)[prop as string] = newValue;
+
             return true;
         }
     }) as VirtualPersistentObjectAttribute;
@@ -206,13 +235,20 @@ export function createVirtualPersistentObject(
 }
 
 /**
- * Unwraps a VirtualPersistentObject to get the underlying DTO
- * Since the Proxy wraps the DTO, we can safely cast it back
- * @param wrapped - The VirtualPersistentObject to unwrap
- * @returns The underlying PersistentObjectDto
+ * Unwraps a VirtualPersistentObject to get a DTO suitable for wire transmission.
+ * Converts primitive values to service string format.
+ * Also accepts raw DTOs for recursive handling of parent/nested objects.
  */
-export function unwrapVirtualPersistentObject(wrapped: VirtualPersistentObject): Dto.PersistentObjectDto {
-    // The wrapped object is a Proxy around the DTO
-    // We can return it as-is since the DTO is the target of the Proxy
-    return wrapped as Dto.PersistentObjectDto;
+export function unwrapVirtualPersistentObject(wrapped: VirtualPersistentObject | Dto.PersistentObjectDto): Dto.PersistentObjectDto {
+    const dto = wrapped as Dto.PersistentObjectDto;
+
+    return {
+        ...dto,
+        attributes: dto.attributes?.map(attr => ({
+            ...attr,
+            value: attr.value != null ? toServiceString(attr.value, attr.type) : attr.value
+        })),
+        parent: dto.parent ? unwrapVirtualPersistentObject(dto.parent) : undefined,
+        queries: dto.queries?.map(q => unwrapVirtualQuery(q))
+    };
 }

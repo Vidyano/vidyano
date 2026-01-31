@@ -144,7 +144,7 @@ Common attribute types supported by the virtual service:
 | `Date` | Dates only | `"2026-01-23"` |
 | `Byte` | Small integers (0-255) | `128` |
 
-> **Note:** Values are stored as strings in DTOs but converted to JavaScript types when accessed through `getValue()`. Boolean attributes accept both native booleans and string values `"True"`/`"False"`.
+> **Note:** Use native JavaScript types (boolean, number, Date, etc.) when setting attribute values. The `getValue<T>()` and `setValue<T>()` methods work directly with these types and support generics for type safety (e.g., `getValue<number>()`).
 
 ### Attribute Configuration
 
@@ -1142,8 +1142,8 @@ async onSave(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
 | Method | Description |
 |--------|-------------|
 | `getAttribute(name)` | Get attribute by name |
-| `getAttributeValue(name)` | Get converted attribute value |
-| `setAttributeValue(name, value)` | Set attribute value with conversion |
+| `getAttributeValue<T>(name)` | Get attribute value |
+| `setAttributeValue<T>(name, value)` | Set attribute value |
 | `setValidationError(name, error)` | Set validation error (pass `null`/empty to clear) |
 | `setNotification(msg, type, duration?)` | Set notification |
 | `service` | Reference to the VirtualService instance |
@@ -1152,8 +1152,8 @@ async onSave(obj: VirtualPersistentObject): Promise<VirtualPersistentObject> {
 
 | Method | Description |
 |--------|-------------|
-| `getValue()` | Get converted value |
-| `setValue(value)` | Set value with conversion |
+| `getValue<T>()` | Get value |
+| `setValue<T>(value)` | Set value |
 | `setValidationError(error)` | Set validation error (pass `null`/empty to clear) |
 | `persistentObject` | Reference to the parent VirtualPersistentObject |
 | `service` | Reference to the VirtualService instance |

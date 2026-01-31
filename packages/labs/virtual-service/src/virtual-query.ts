@@ -169,11 +169,12 @@ export function createVirtualQuery(
 }
 
 /**
- * Unwraps a VirtualQuery to get the underlying DTO
- * @param wrapped - The VirtualQuery to unwrap
+ * Unwraps a VirtualQuery to get the underlying DTO.
+ * Also accepts raw DTOs for recursive handling.
+ * @param wrapped - The VirtualQuery or QueryDto to unwrap
  * @returns The underlying QueryDto
  */
-export function unwrapVirtualQuery(wrapped: VirtualQuery): Dto.QueryDto {
+export function unwrapVirtualQuery(wrapped: VirtualQuery | Dto.QueryDto): Dto.QueryDto {
     return wrapped as Dto.QueryDto;
 }
 
