@@ -1,4 +1,5 @@
 name: Publish Lab Package to NPM
+run-name: Publish ${{ inputs.package }} v${{ inputs.version }}${{ inputs.dry_run && ' (dry run)' || '' }}
 
 on:
   workflow_dispatch:
