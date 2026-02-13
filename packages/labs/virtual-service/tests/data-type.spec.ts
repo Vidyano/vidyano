@@ -1,73 +1,113 @@
 import { test, expect } from "@playwright/test";
 import { DataType } from "@vidyano/core";
-// Import polyfills required for DataType.toServiceString and array extensions
 import "@vidyano/core";
+import { VirtualService, VirtualPersistentObjectActions, VirtualPersistentObject } from "../src/index.js";
+import { unwrapVirtualPersistentObject } from "../src/virtual-persistent-object.js";
 
-test.describe("Phase 3: Data Conversion - Service String Format", () => {
-    test("DataType.toServiceString converts string values (pass through)", () => {
-        const value = "John Doe";
-        const result = DataType.toServiceString(value, "String");
+DataType.registerConverter("NativeDate", {
+    toServiceString: (value) => DataType.toServiceString(value, "Date"),
+    fromServiceString: (value) => DataType.fromServiceString(value, "Date")
+});
 
-        expect(result).toBe("John Doe");
+test.describe("Data Conversion with VirtualService", () => {
+    test("Date value serializes correctly via unwrap", async () => {
+        const service = new VirtualService();
+        const testDate = new Date(2024, 0, 15);
+        let unwrappedDto: any;
+
+        service.registerPersistentObject({
+            type: "Test",
+            attributes: [
+                { name: "CustomDate", type: "NativeDate", value: testDate }
+            ]
+        }, class extends VirtualPersistentObjectActions {
+            async onLoad(objectId: string, parent: VirtualPersistentObject | null) {
+                const obj = await super.onLoad(objectId, parent);
+                unwrappedDto = unwrapVirtualPersistentObject(obj);
+                return obj;
+            }
+        });
+
+        await service.initialize();
+        await service.getPersistentObject(null, "Test", "123");
+
+        const dateAttr = unwrappedDto.attributes?.find((a: any) => a.name === "CustomDate");
+        expect(dateAttr?.value).toBe("15-01-2024 00:00:00");
     });
 
-    test("DataType.toServiceString converts boolean true to 'True'", () => {
-        const value = true;
-        const result = DataType.toServiceString(value, "Boolean");
+    test("getValue() returns Date primitive", async () => {
+        const service = new VirtualService();
+        const testDate = new Date(2024, 5, 15);
+        let capturedValue: any;
 
-        expect(result).toBe("True");
+        service.registerPersistentObject({
+            type: "Test",
+            attributes: [
+                { name: "CustomDate", type: "NativeDate", value: testDate }
+            ]
+        }, class extends VirtualPersistentObjectActions {
+            async onLoad(objectId: string, parent: VirtualPersistentObject | null) {
+                const obj = await super.onLoad(objectId, parent);
+                capturedValue = obj.getAttribute("CustomDate")!.getValue();
+                return obj;
+            }
+        });
+
+        await service.initialize();
+        await service.getPersistentObject(null, "Test", "123");
+
+        expect(capturedValue).toBeInstanceOf(Date);
+        expect(capturedValue.getFullYear()).toBe(2024);
     });
 
-    test("DataType.toServiceString converts boolean false to 'False'", () => {
-        const value = false;
-        const result = DataType.toServiceString(value, "Boolean");
+    test("unregistered custom types pass through as strings", async () => {
+        const service = new VirtualService();
+        let capturedValue: any;
 
-        expect(result).toBe("False");
+        service.registerPersistentObject({
+            type: "Test",
+            attributes: [
+                { name: "Custom", type: "CustomType", value: "hello" }
+            ]
+        }, class extends VirtualPersistentObjectActions {
+            async onLoad(objectId: string, parent: VirtualPersistentObject | null) {
+                const obj = await super.onLoad(objectId, parent);
+                capturedValue = obj.getAttribute("Custom")!.getValue();
+                return obj;
+            }
+        });
+
+        await service.initialize();
+        await service.getPersistentObject(null, "Test", "123");
+
+        expect(capturedValue).toBe("hello");
     });
 
-    test("DataType.toServiceString converts Date objects to 'dd-MM-yyyy 00:00:00' format", () => {
-        const birthDate = new Date(1994, 0, 15); // January 15, 1994
-        const result = DataType.toServiceString(birthDate, "Date");
+    test("query result items serialize custom types via converter", async () => {
+        const service = new VirtualService();
+        const testDate = new Date(2024, 2, 10);
 
-        expect(result).toBe("15-01-1994 00:00:00");
-    });
+        service.registerPersistentObject({
+            type: "Event",
+            attributes: [
+                { name: "Name", type: "String" },
+                { name: "EventDate", type: "NativeDate" }
+            ]
+        });
+        service.registerQuery({
+            name: "AllEvents",
+            persistentObject: "Event",
+            data: [
+                { id: "1", Name: "Meeting", EventDate: testDate }
+            ]
+        });
 
-    test("DataType.toServiceString converts DateTime objects to 'dd-MM-yyyy HH:mm:ss.fff' format", () => {
-        const createdAt = new Date(2023, 0, 15, 10, 30, 45, 123); // January 15, 2023 10:30:45.123
-        const result = DataType.toServiceString(createdAt, "DateTime");
+        await service.initialize();
+        const query = await service.getQuery("AllEvents");
+        const items = await query.items.toArrayAsync();
 
-        expect(result).toBe("15-01-2023 10:30:45.123");
-    });
-
-    test("DataType.toServiceString converts Int32 numbers to string format", () => {
-        const value = 30;
-        const result = DataType.toServiceString(value, "Int32");
-
-        expect(result).toBe("30");
-    });
-
-    test("DataType.toServiceString converts Decimal numbers to string format", () => {
-        const value = 75000.50;
-        const result = DataType.toServiceString(value, "Decimal");
-
-        expect(result).toBe("75000.5");
-    });
-
-    test("DataType.toServiceString handles null values for nullable types", () => {
-        expect(DataType.toServiceString(null, "String")).toBeNull();
-        expect(DataType.toServiceString(null, "NullableInt32")).toBeNull();
-        expect(DataType.toServiceString(null, "NullableBoolean")).toBeNull();
-    });
-
-    test("DataType.toServiceString handles null values for non-nullable numeric types", () => {
-        // Non-nullable numeric types default to "0" when value is empty/null
-        expect(DataType.toServiceString(null, "Int32")).toBe("0");
-        expect(DataType.toServiceString(null, "Decimal")).toBe("0");
-    });
-
-    test("DataType.toServiceString handles undefined values", () => {
-        // undefined is treated similarly to null
-        expect(DataType.toServiceString(undefined, "String")).toBeUndefined();
-        expect(DataType.toServiceString(undefined, "Int32")).toBe("0");
+        expect(items.length).toBe(1);
+        const dateValue = items[0].getFullValue("EventDate");
+        expect(dateValue.value).toBe("10-03-2024 00:00:00");
     });
 });

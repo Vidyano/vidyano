@@ -16,18 +16,13 @@
  */
 
 import { DataType } from "@vidyano/core";
-import { TypeConverter } from "./types.js";
 
 /**
  * Converts a service string value to a primitive JavaScript type.
  * Unlike DataType.fromServiceString, this returns number instead of BigNumber
  * for numeric types (Decimal, Double, Int64, etc.).
  */
-export function fromServiceValue(value: any, type: string, typeConverters?: ReadonlyMap<string, TypeConverter>): any {
-    const converter = typeConverters?.get(type);
-    if (converter)
-        return converter.fromServiceValue(value);
-
+export function fromServiceValue(value: any, type: string): any {
     const result = DataType.fromServiceString(value, type);
 
     // Check for BigNumber (has toNumber method) and convert to number primitive
@@ -40,10 +35,6 @@ export function fromServiceValue(value: any, type: string, typeConverters?: Read
 /**
  * Converts a primitive JavaScript value to a service string.
  */
-export function toServiceValue(value: any, type: string, typeConverters?: ReadonlyMap<string, TypeConverter>): string {
-    const converter = typeConverters?.get(type);
-    if (converter)
-        return converter.toServiceValue(value);
-
+export function toServiceValue(value: any, type: string): string {
     return DataType.toServiceString(value, type);
 }

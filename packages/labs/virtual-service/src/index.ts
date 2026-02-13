@@ -4,8 +4,7 @@ export type {
     VirtualPersistentObjectAttributeConfig,
     VirtualPersistentObjectConfig,
     VirtualQueryConfig,
-    VirtualQueryExecuteResult,
-    TypeConverter
+    VirtualQueryExecuteResult
 } from "./types.js";
 export { VirtualPersistentObjectActions } from "./virtual-persistent-object-actions.js";
 export type { VirtualPersistentObject, VirtualPersistentObjectAttribute, VirtualPersistentObjectAttributeWithReference } from "./virtual-persistent-object.js";

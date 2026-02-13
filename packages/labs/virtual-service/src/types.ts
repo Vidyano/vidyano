@@ -2,11 +2,6 @@ import { Dto } from "@vidyano/core";
 import type { VirtualPersistentObject } from "./virtual-persistent-object.js";
 import type { VirtualQuery, VirtualQueryResultItem } from "./virtual-query.js";
 
-export interface TypeConverter {
-    toServiceValue(value: any): string;
-    fromServiceValue(value: string): any;
-}
-
 /**
  * Simplified attribute configuration - converted to PersistentObjectAttributeDto
  */

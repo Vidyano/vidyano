@@ -60,7 +60,6 @@ const service = new VirtualService();
 - `registerQuery(config)` - Register a mock query
 - `registerCustomAction(name, handler)` or `registerCustomAction(config, handler)` - Register a custom action
 - `registerBusinessRule(name, validator)` - Add custom validation rules
-- `registerTypeConverter(type, converter)` - Register a custom type converter for serialization
 - `initialize()` - Finalize registrations (must call before using service)
 
 > **Important:** All registrations must happen BEFORE calling `initialize()`. Attempting to register after initialization throws an error.
@@ -72,7 +71,6 @@ Dependencies must be registered before the things that reference them:
 1. **Actions** - Custom actions must be registered before PersistentObjects/Queries that reference them
 2. **PersistentObjects** - Define the data schema (with optional lifecycle class)
 3. **Queries** - Must reference an already-registered PersistentObject type
-4. **Type converters** (optional) - Can be registered at any point before `initialize()`
 
 ```typescript
 // Correct order
@@ -1286,22 +1284,21 @@ test("search and sort query results", async () => {
 
 ## Type Converters
 
-When you need custom types (for example, `NativeDate`, `NativeTime`), register a type converter so the virtual service can serialize and deserialize values using custom callbacks:
+When you need custom types (for example, `NativeDate`, `NativeTime`), register a type converter on `DataType` so all serialization and deserialization goes through your custom callbacks:
 
 ```typescript
 import { DataType } from "@vidyano/core";
 
+DataType.registerConverter("NativeDate", {
+    toServiceString: (value) => DataType.toServiceString(value, "Date"),
+    fromServiceString: (value) => DataType.fromServiceString(value, "Date"),
+});
+DataType.registerConverter("NativeTime", {
+    toServiceString: (value) => DataType.toServiceString(value, "Time"),
+    fromServiceString: (value) => DataType.fromServiceString(value, "Time"),
+});
+
 const service = new VirtualService();
-
-service.registerTypeConverter("NativeDate", {
-    toServiceValue: (value) => DataType.toServiceString(value, "Date"),
-    fromServiceValue: (value) => DataType.fromServiceString(value, "Date"),
-});
-service.registerTypeConverter("NativeTime", {
-    toServiceValue: (value) => DataType.toServiceString(value, "Time"),
-    fromServiceValue: (value) => DataType.fromServiceString(value, "Time"),
-});
-
 service.registerPersistentObject({
     type: "Event",
     attributes: [
@@ -1317,10 +1314,10 @@ await service.initialize();
 ```
 
 **How it works:**
-- When loading data from the service, converters deserialize service strings into native types (e.g., `"15-01-2025 00:00:00"` → `Date`)
-- `getValue()` and `setValue()` work with the native values directly — no conversion overhead
-- When saving back to the service, converters serialize native values to service strings at the serialization boundary
-- Unregistered custom types pass through unchanged (values are treated as strings)
+- Converters are registered on `DataType` and apply globally to all `DataType.fromServiceString` / `DataType.toServiceString` calls
+- `attribute.value` (getter) uses the converter to deserialize service strings into native types
+- `attribute.setValue()` uses the converter to serialize native values back to service strings
+- Unregistered custom types fall through to the default behavior (values are treated as strings)
 
 > **Important:** Type converters must be registered before calling `initialize()`. Attempting to register after initialization throws an error.
 
@@ -1336,7 +1333,6 @@ await service.initialize();
 | `registerCustomAction(name, handler)` | Register a custom action (simple) |
 | `registerCustomAction(config, handler)` | Register a custom action (with config) |
 | `registerBusinessRule(name, validator)` | Register a validation rule |
-| `registerTypeConverter(type, converter)` | Register a custom type converter for serialization |
 | `getMessage(key, ...params)` | Get a formatted message by key |
 | `initialize()` | Finalize registrations |
 
