@@ -92,7 +92,7 @@ export class VirtualPersistentObjectActions {
         this.onConstructQuery(query, parent);
         if (query.autoQuery) {
             const executeResult = await this.onExecuteQuery(query, parent, this.getQueryData(queryName));
-            query.result = VirtualQueryRegistry.buildQueryResultDto(executeResult, query.columns || [], query.pageSize || 20);
+            query.result = VirtualQueryRegistry.buildQueryResultDto(executeResult, query.columns || [], query.pageSize || 20, this.service?.typeConverters);
         }
 
         return query;
@@ -414,7 +414,7 @@ export class VirtualPersistentObjectActions {
 
             const data = this.getQueryData(query.name!);
             const executeResult = await this.onExecuteQuery(query, obj, data);
-            query.result = VirtualQueryRegistry.buildQueryResultDto(executeResult, query.columns || [], query.pageSize || 20);
+            query.result = VirtualQueryRegistry.buildQueryResultDto(executeResult, query.columns || [], query.pageSize || 20, this.service?.typeConverters);
         }
     }
 

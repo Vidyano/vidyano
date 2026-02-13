@@ -1,6 +1,6 @@
 import { Dto } from "@vidyano/core";
-import { VirtualQueryConfig, VirtualPersistentObjectConfig, VirtualQueryExecuteResult } from "../types.js";
-import { toServiceString } from "../virtual-service-data-type.js";
+import { VirtualQueryConfig, VirtualPersistentObjectConfig, VirtualQueryExecuteResult, TypeConverter } from "../types.js";
+import { toServiceValue } from "../virtual-service-data-type.js";
 
 /**
  * Registry for managing Query configurations (config + columns store)
@@ -153,10 +153,11 @@ export class VirtualQueryRegistry {
     static buildQueryResultDto(
         result: VirtualQueryExecuteResult,
         columns: Dto.QueryColumnDto[],
-        pageSize: number
+        pageSize: number,
+        typeConverters?: ReadonlyMap<string, TypeConverter>
     ): Dto.QueryResultDto {
         const items = result.items.map(row =>
-            VirtualQueryRegistry.buildQueryResultItemDto(row, columns)
+            VirtualQueryRegistry.buildQueryResultItemDto(row, columns, typeConverters)
         );
 
         return {
@@ -177,7 +178,8 @@ export class VirtualQueryRegistry {
      */
     static buildQueryResultItemDto(
         data: Record<string, any>,
-        columns: Dto.QueryColumnDto[]
+        columns: Dto.QueryColumnDto[],
+        typeConverters?: ReadonlyMap<string, TypeConverter>
     ): Dto.QueryResultItemDto {
         // Extract or generate ID
         let id: string;
@@ -193,7 +195,7 @@ export class VirtualQueryRegistry {
             const rawValue = data[column.name];
             return {
                 key: column.name,
-                value: rawValue == null ? null : toServiceString(rawValue, column.type),
+                value: rawValue == null ? null : toServiceValue(rawValue, column.type, typeConverters),
                 objectId: data[column.name + "Id"],
                 typeHints: data[column.name + "$typeHints"]
             };

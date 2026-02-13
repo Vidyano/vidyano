@@ -1,7 +1,8 @@
 import { Dto } from "@vidyano/core";
-import { toServiceString } from "./virtual-service-data-type.js";
+import { toServiceValue } from "./virtual-service-data-type.js";
 import type { VirtualService } from "./virtual-service.js";
 import { createVirtualQuery, unwrapVirtualQuery, VirtualQuery } from "./virtual-query.js";
+import type { TypeConverter } from "./types.js";
 
 /**
  * Primitive value types supported for attribute values.
@@ -239,16 +240,19 @@ export function createVirtualPersistentObject(
  * Converts primitive values to service string format.
  * Also accepts raw DTOs for recursive handling of parent/nested objects.
  */
-export function unwrapVirtualPersistentObject(wrapped: VirtualPersistentObject | Dto.PersistentObjectDto): Dto.PersistentObjectDto {
+export function unwrapVirtualPersistentObject(
+    wrapped: VirtualPersistentObject | Dto.PersistentObjectDto,
+    typeConverters?: ReadonlyMap<string, TypeConverter>
+): Dto.PersistentObjectDto {
     const dto = wrapped as Dto.PersistentObjectDto;
 
     return {
         ...dto,
         attributes: dto.attributes?.map(attr => ({
             ...attr,
-            value: attr.value != null ? toServiceString(attr.value, attr.type) : attr.value
+            value: attr.value != null ? toServiceValue(attr.value, attr.type, typeConverters) : attr.value
         })),
-        parent: dto.parent ? unwrapVirtualPersistentObject(dto.parent) : undefined,
+        parent: dto.parent ? unwrapVirtualPersistentObject(dto.parent, typeConverters) : undefined,
         queries: dto.queries?.map(q => unwrapVirtualQuery(q))
     };
 }

@@ -1,7 +1,7 @@
 import { Service, Application } from "@vidyano/core";
-import { fromServiceString as fromServiceStringInternal } from "./virtual-service-data-type.js";
+import { fromServiceValue } from "./virtual-service-data-type.js";
 import { VirtualServiceHooks } from "./virtual-service-hooks.js";
-import { VirtualPersistentObjectConfig, VirtualQueryConfig, ActionConfig, ActionHandler } from "./types.js";
+import { VirtualPersistentObjectConfig, VirtualQueryConfig, ActionConfig, ActionHandler, TypeConverter } from "./types.js";
 import { BusinessRuleValidator, RuleValidatorFn } from "./business-rules.js";
 import { VirtualPersistentObjectActions } from "./virtual-persistent-object-actions.js";
 import { VirtualPersistentObjectActionsRegistry } from "./registry/virtual-persistent-object-actions-registry.js";
@@ -33,6 +33,7 @@ export class VirtualService extends Service {
     readonly #queryRegistry: VirtualQueryRegistry;
     readonly #actionDefinitions = new Map<string, { name: string; displayName: string; isPinned: boolean }>();
     readonly #actionHandlers = new Map<string, ActionHandler>();
+    readonly #typeConverters = new Map<string, TypeConverter>();
     readonly #builtInActions = new Set(["New", "Delete", "SelectReference", "RefreshQuery", "Edit", "CancelEdit", "Save", "EndEdit"]);
 
     // Global (static) messages
@@ -77,7 +78,7 @@ export class VirtualService extends Service {
      * for numeric types (Decimal, Double, Int64, etc.).
      */
     static override fromServiceString(value: string, typeName: string): any {
-        return fromServiceStringInternal(value, typeName);
+        return fromServiceValue(value, typeName);
     }
 
     /**
@@ -152,6 +153,11 @@ export class VirtualService extends Service {
     /** @internal */
     get actionHandlers(): Map<string, ActionHandler> {
         return this.#actionHandlers;
+    }
+
+    /** @internal */
+    get typeConverters(): ReadonlyMap<string, TypeConverter> {
+        return this.#typeConverters;
     }
 
     /**
@@ -240,6 +246,17 @@ export class VirtualService extends Service {
         }
 
         this.#queryRegistry.register(config, persistentObjectConfig);
+    }
+
+    /**
+     * Registers a custom converter for a type.
+     * Must be called before initialize().
+     * @param type - The custom type name (e.g., NativeDate)
+     * @param converter - The converter used for that type
+     */
+    registerTypeConverter(type: string, converter: TypeConverter): void {
+        this.#ensureNotInitialized();
+        this.#typeConverters.set(type, converter);
     }
 
     /**

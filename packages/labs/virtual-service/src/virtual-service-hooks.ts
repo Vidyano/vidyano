@@ -4,7 +4,7 @@ import { VirtualQueryRegistry } from "./registry/virtual-query-registry.js";
 import { VirtualPersistentObjectAttributeConfig } from "./types.js";
 import { createVirtualPersistentObject, createVirtualPersistentObjectAttribute, type InternalAttributeDto, unwrapVirtualPersistentObject, VirtualPersistentObject } from "./virtual-persistent-object.js";
 import { VirtualQuery, createVirtualQuery, createVirtualQueryResultItem, unwrapVirtualQuery } from "./virtual-query.js";
-import { fromServiceString } from "./virtual-service-data-type.js";
+import { fromServiceValue } from "./virtual-service-data-type.js";
 import type { VirtualService } from "./virtual-service.js";
 
 /**
@@ -70,7 +70,7 @@ export class VirtualServiceHooks extends ServiceHooks {
                     // Execute detail queries AFTER onLoad/onNew completes (parent is fully set up)
                     await instance.executeIncludedQueries(po);
 
-                    result = { result: unwrapVirtualPersistentObject(po) };
+                    result = { result: unwrapVirtualPersistentObject(po, this.#service.typeConverters) };
                     break;
                 }
 
@@ -89,7 +89,7 @@ export class VirtualServiceHooks extends ServiceHooks {
                     const columns = wrappedQuery!.columns || [];
                     const pageSize = body.query?.pageSize || 20;
                     result = {
-                        result: VirtualQueryRegistry.buildQueryResultDto(queryResult, columns, pageSize)
+                        result: VirtualQueryRegistry.buildQueryResultDto(queryResult, columns, pageSize, this.#service.typeConverters)
                     };
                     break;
                 }
@@ -112,14 +112,14 @@ export class VirtualServiceHooks extends ServiceHooks {
                         if (actionName === "New") {
                             const po = await instance.onNew(wrappedParent, wrappedQuery, body.parameters);
                             await instance.executeIncludedQueries(po);
-                            result = { result: unwrapVirtualPersistentObject(po) };
+                            result = { result: unwrapVirtualPersistentObject(po, this.#service.typeConverters) };
                         }
                         else if (actionName === "Delete") {
                             const wrappedItems = body.selectedItems?.map((item: Dto.QueryResultItemDto) =>
                                 createVirtualQueryResultItem(item, wrappedQuery!)
                             ) || [];
                             await instance.onDelete(wrappedParent, wrappedQuery!, wrappedItems);
-                            result = { result: wrappedParent ? unwrapVirtualPersistentObject(wrappedParent) : null };
+                            result = { result: wrappedParent ? unwrapVirtualPersistentObject(wrappedParent, this.#service.typeConverters) : null };
                         }
                         else if (actionName === "SelectReference") {
                             if (!wrappedParent)
@@ -140,7 +140,7 @@ export class VirtualServiceHooks extends ServiceHooks {
                                 ? createVirtualQueryResultItem(body.selectedItems[0], wrappedQuery!)
                                 : null;
                             await parentInstance.onSelectReference(wrappedParent, refAttr, wrappedQuery!, selectedItem);
-                            result = { result: unwrapVirtualPersistentObject(wrappedParent) };
+                            result = { result: unwrapVirtualPersistentObject(wrappedParent, this.#service.typeConverters) };
                         }
                         else {
                             // Custom query action - use action handler
@@ -157,7 +157,7 @@ export class VirtualServiceHooks extends ServiceHooks {
 
                         if (actionName === "Save") {
                             const po = await instance.onSave(wrappedParent);
-                            result = { result: unwrapVirtualPersistentObject(po) };
+                            result = { result: unwrapVirtualPersistentObject(po, this.#service.typeConverters) };
                         }
                         else if (actionName === "Refresh") {
                             const attr = body.parameters?.RefreshedPersistentObjectAttributeId
@@ -168,7 +168,7 @@ export class VirtualServiceHooks extends ServiceHooks {
                                 )
                                 : undefined;
                             const po = await instance.onRefresh(wrappedParent, attr);
-                            result = { result: unwrapVirtualPersistentObject(po) };
+                            result = { result: unwrapVirtualPersistentObject(po, this.#service.typeConverters) };
                         }
                         else {
                             // Custom PO action - use action handler
@@ -229,7 +229,7 @@ export class VirtualServiceHooks extends ServiceHooks {
         const contextPo = parent || (query ? query.persistentObject : null);
         let finalResult: Dto.PersistentObjectDto | null;
         if (handlerResult)
-            finalResult = unwrapVirtualPersistentObject(handlerResult);
+            finalResult = unwrapVirtualPersistentObject(handlerResult, this.#service.typeConverters);
         else
             finalResult = contextPo as Dto.PersistentObjectDto;
 
@@ -262,7 +262,7 @@ export class VirtualServiceHooks extends ServiceHooks {
 
         // Recursively wrap parent if present
         if (dto.parent)
-            dto.parent = unwrapVirtualPersistentObject(this.#wrapPersistentObject(dto.parent)!);
+            dto.parent = unwrapVirtualPersistentObject(this.#wrapPersistentObject(dto.parent)!, this.#service.typeConverters);
 
         return createVirtualPersistentObject(dto, this.#service);
     }
@@ -289,7 +289,7 @@ export class VirtualServiceHooks extends ServiceHooks {
 
         // Convert incoming service string to primitive
         if (clientAttr.value != null)
-            (clientAttr as InternalAttributeDto).value = fromServiceString(clientAttr.value, clientAttr.type);
+            (clientAttr as InternalAttributeDto).value = fromServiceValue(clientAttr.value, clientAttr.type, this.#service.typeConverters);
 
         // Reference attribute properties - only set if explicitly configured
         if (configAttr.lookup) {
