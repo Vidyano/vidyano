@@ -310,3 +310,18 @@ class HeadlessHooks extends ServiceHooks {
 }
 const serviceWithHooks = new Service("http://...", new HeadlessHooks());
 ```
+
+#### 8. Custom Type Converters
+
+Register custom serialization logic for types that `DataType` doesn't handle natively.
+
+```typescript
+import { DataType } from "@vidyano/core";
+
+DataType.registerConverter("NativeDate", {
+    toServiceString: (value) => DataType.toServiceString(value, "Date"),
+    fromServiceString: (value) => DataType.fromServiceString(value, "Date"),
+});
+```
+
+Once registered, `DataType.fromServiceString` and `DataType.toServiceString` route through the converter for that type — including attribute value getters/setters and query result item parsing. Unregistered types fall through to default behavior.

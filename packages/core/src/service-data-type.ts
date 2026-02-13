@@ -1,9 +1,28 @@
 import BigNumber from "bignumber.js";
 
 /**
+ * Defines custom conversion logic for a service data type.
+ */
+export interface DataTypeConverter {
+    toServiceString(value: any): string;
+    fromServiceString(value: string): any;
+}
+
+const converters = new Map<string, DataTypeConverter>();
+
+/**
  * Provides helpers for working with service data types.
  */
 export abstract class DataType {
+    /**
+     * Registers a custom type converter.
+     * @param type - The type name (e.g. "NativeDate").
+     * @param converter - The converter for this type.
+     */
+    static registerConverter(type: string, converter: DataTypeConverter): void {
+        converters.set(type, converter);
+    }
+
     /**
      * Determines if the type is a date or time type.
      * @param type - The type string.
@@ -128,6 +147,10 @@ export abstract class DataType {
      * @param type - The data type of the service string value.
      */
     static fromServiceString(value: string, type: string): any {
+        const converter = converters.get(type);
+        if (converter)
+            return converter.fromServiceString(value);
+
         switch (type) {
             case "Decimal":
             case "Single":
@@ -229,6 +252,10 @@ export abstract class DataType {
      * @param type - The data type of the service string value.
      */
     static toServiceString(value: any, type: string): string {
+        const converter = converters.get(type);
+        if (converter)
+            return converter.toServiceString(value);
+
         switch (type) {
             case "NullableDecimal":
             case "Decimal":
