@@ -1,6 +1,6 @@
 #:sdk Microsoft.NET.Sdk.Web
 #:property PublishAot=false
-#:package Vidyano@6.0.20251128.6195
+#:package Vidyano@6.0.*
 
 using Vidyano.Core.Services;
 using Vidyano.Service;
