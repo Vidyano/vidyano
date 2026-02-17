@@ -1,6 +1,6 @@
 import { test, expect, TestInfo } from "@playwright/test";
 import { Service, PersistentObject, PersistentObjectAttributeTab, Action } from "@vidyano/core";
-import { startBackend, stopBackend, BackendProcess } from "../../../vidyano/tests/_helpers/backend";
+import { startBackend, stopBackend, BackendProcess } from "../_helpers/backend";
 
 let backend: BackendProcess;
 
