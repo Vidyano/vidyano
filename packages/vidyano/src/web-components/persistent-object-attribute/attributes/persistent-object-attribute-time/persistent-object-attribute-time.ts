@@ -95,19 +95,17 @@ export class PersistentObjectAttributeTime extends PersistentObjectAttribute {
         if (typeof value !== "string" || value.length === 0)
             return null;
 
-        // Parse .NET TimeSpan string format: "d:HH:MM:SS.fffffff" (e.g., "0:14:30:00.0000000")
-        const parts = value.split(/[:.]/);
-        if (parts.length < 4)
+        // Parse .NET TimeSpan string format: [d. or d:]HH:mm:ss[.fffffff]
+        const match = /^(?:(\d+)[.:])?(\d{1,2}):(\d{1,2}):(\d{1,2})(?:\.(\d+))?$/.exec(value);
+        if (!match)
             return null;
 
-        const startIndex = parts.length - 4;
-        const hours = parseInt(parts[startIndex], 10);
-        const minutes = parseInt(parts[startIndex + 1], 10);
-        const seconds = parseInt(parts[startIndex + 2], 10);
-        const milliseconds = parseInt(parts[startIndex + 3].substring(0, 3), 10);
-
-        if ([hours, minutes, seconds, milliseconds].some(Number.isNaN))
-            return null;
+        const hours = parseInt(match[2], 10);
+        const minutes = parseInt(match[3], 10);
+        const seconds = parseInt(match[4], 10);
+        let milliseconds = 0;
+        if (match[5])
+            milliseconds = parseInt(match[5].substring(0, 3).padEnd(3, "0"), 10);
 
         const time = new Date();
         time.setHours(hours, minutes, seconds, milliseconds);
