@@ -1,7 +1,21 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, Locator, Page } from '@playwright/test';
 import { setupPage } from '../../_helpers/page';
 import { setupAttribute, beginEdit, cancelEdit, save, freeze, unfreeze, isDirty } from '../_helpers/attribute';
 import { startBackend, stopBackend, BackendProcess } from '../../_helpers/backend';
+
+async function pasteText(input: Locator, text: string) {
+    await input.evaluate((element, value) => {
+        const dataTransfer = new DataTransfer();
+        dataTransfer.setData('text/plain', value);
+
+        element.dispatchEvent(new ClipboardEvent('paste', {
+            clipboardData: dataTransfer,
+            bubbles: true,
+            cancelable: true,
+            composed: true
+        }));
+    }, text);
+}
 
 test.describe.serial('Numeric Attribute', () => {
     let sharedBackend: BackendProcess;
@@ -286,6 +300,102 @@ test.describe('Decimal', () => {
             await input.fill('12345');
 
             await expect(input).toHaveValue('12345');
+        });
+
+        test('drops grouping separators from a locale-formatted value (1,234.56 -> 1234.56)', async () => {
+            const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-numeric', 'Decimal');
+
+            await beginEdit(sharedPage, component);
+
+            const input = component.locator('input');
+            await input.clear();
+            await input.fill('1,234.56');
+
+            await expect(input).toHaveValue('1234.56');
+        });
+
+        test('converts a wrong-locale decimal separator (12,5 -> 12.5)', async () => {
+            const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-numeric', 'Decimal');
+
+            await beginEdit(sharedPage, component);
+
+            const input = component.locator('input');
+            await input.clear();
+            await input.fill('12,5');
+
+            await expect(input).toHaveValue('12.5');
+        });
+
+        test('paste converts a wrong-locale decimal separator (12,5 -> 12.5)', async () => {
+            const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-numeric', 'Decimal');
+
+            await beginEdit(sharedPage, component);
+
+            const input = component.locator('input');
+            await input.clear();
+            await pasteText(input, '12,5');
+
+            await expect(input).toHaveValue('12.5');
+        });
+
+        test('paste preserves a leading minus with wrong-locale decimal separator (-12,5 -> -12.5)', async () => {
+            const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-numeric', 'Decimal');
+
+            await beginEdit(sharedPage, component);
+
+            const input = component.locator('input');
+            await input.clear();
+            await pasteText(input, '-12,5');
+
+            await expect(input).toHaveValue('-12.5');
+        });
+
+        test('paste drops grouping separators from a locale-formatted value (1,234.56 -> 1234.56)', async () => {
+            const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-numeric', 'Decimal');
+
+            await beginEdit(sharedPage, component);
+
+            const input = component.locator('input');
+            await input.clear();
+            await pasteText(input, '1,234.56');
+
+            await expect(input).toHaveValue('1234.56');
+        });
+
+        test('paste converts rightmost separator as decimal (1.234,56 -> 1234.56)', async () => {
+            const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-numeric', 'Decimal');
+
+            await beginEdit(sharedPage, component);
+
+            const input = component.locator('input');
+            await input.clear();
+            await pasteText(input, '1.234,56');
+
+            await expect(input).toHaveValue('1234.56');
+        });
+
+        test('paste drops valid integer grouping separators (1,234 -> 1234)', async () => {
+            const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-numeric', 'Decimal');
+
+            await beginEdit(sharedPage, component);
+
+            const input = component.locator('input');
+            await input.clear();
+            await pasteText(input, '1,234');
+
+            await expect(input).toHaveValue('1234');
+        });
+
+        test('paste drops valid negative integer grouping separators (-123,456 -> -123456)', async () => {
+            const component = await setupAttribute(sharedPage, 'vi-persistent-object-attribute-numeric', 'Decimal');
+
+            await beginEdit(sharedPage, component);
+
+            const input = component.locator('input');
+            await input.clear();
+            await pasteText(input, '-123,456');
+
+            await expect(input).toHaveValue('-123456');
         });
 
         test('allows typing trailing decimal separator while focused', async () => {
@@ -999,12 +1109,9 @@ test.describe('Numeric Input Validation', () => {
 
             const input = component.locator('input');
             await input.clear();
+            await pasteText(input, '-500');
 
-            // Simulate pasting negative value
-            await input.fill('-500');
-
-            const currentValue = await input.inputValue();
-            expect(currentValue).not.toBe('-500');
+            await expect(input).toHaveValue('');
         });
     });
 
