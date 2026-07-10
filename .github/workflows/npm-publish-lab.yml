@@ -88,9 +88,6 @@ jobs:
             echo "Publishing as stable with tag: latest"
           fi
 
-      - name: Update npm
-        run: npm install -g npm@11
-
       - name: Configure Git
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"

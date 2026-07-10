@@ -112,9 +112,6 @@ jobs:
             fi
           fi
 
-      - name: Update npm
-        run: npm install -g npm@11
-
       - name: Configure Git
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
@@ -278,10 +275,6 @@ jobs:
 
       - name: Remove always-auth from .npmrc
         run: npm config delete always-auth --location=user 2>/dev/null || true
-
-      # Ensure npm 11.5.1 or later for trusted publishing
-      - name: Update npm
-        run: npm install -g npm@11
 
       - name: Install semver library
         run: npm install --no-save semver@7
