@@ -174,6 +174,16 @@
                 }
             }
 
+            .passkey {
+                padding-top: var(--theme-h4);
+
+                vi-button[inverse] {
+                    padding: 0 var(--theme-h5);
+                    margin-left: calc(var(--theme-h5) * -1);
+                    line-height: var(--theme-h2);
+                }
+            }
+
             .user {
                 margin: var(--theme-h5) calc(var(--theme-h2) * -1) 0 calc(var(--theme-h2) * -1);
                 padding: 0 var(--theme-h2);

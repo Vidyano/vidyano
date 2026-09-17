@@ -76,6 +76,11 @@ interface INotification {
             readOnly: true,
             value: false
         },
+        hasPasskey: {
+            type: Boolean,
+            readOnly: true,
+            value: false
+        },
         register: {
             type: Object,
             readOnly: true,
@@ -122,6 +127,7 @@ export class SignIn extends Polymer.WebComponent {
     readonly hasOther: boolean; private _setHasOther: (hasOther: boolean) => void;
     readonly hasForgot: boolean; private _setHasForgot: (hasForgot: boolean) => void;
     readonly hasRegister: boolean; private _setHasRegister: (hasRegister: boolean) => void;
+    readonly hasPasskey: boolean; private _setHasPasskey: (hasPasskey: boolean) => void;
     readonly register: Vidyano.PersistentObject; private _setRegister: (register: Vidyano.PersistentObject) => void;
     readonly initial: Vidyano.PersistentObject;
     readonly description: string; private _setDescription: (description: string) => void;
@@ -131,6 +137,7 @@ export class SignIn extends Polymer.WebComponent {
     password: string;
     staySignedIn: boolean;
     twoFactorCode: string;
+    private _conditionalPasskey: AbortController;
 
     private async _activate(e: CustomEvent) {
         const { parameters }: { parameters: ISignInRouteParameters; } = e.detail;
@@ -186,6 +193,7 @@ export class SignIn extends Polymer.WebComponent {
         if (this.hasVidyano) {
             this._setHasForgot(this.service.providers.Vidyano.forgotPassword || false);
             this._setHasRegister(!!this.service.providers.Vidyano.registerUser && !!this.service.providers.Vidyano.registerPersistentObjectId);
+            this._setHasPasskey(!!this.service.providers.Vidyano.passkeys && typeof PublicKeyCredential !== "undefined");
         }
 
         if (this.hasVidyano)
@@ -235,11 +243,61 @@ export class SignIn extends Polymer.WebComponent {
             }
 
             this.step = this.hasVidyano && this.userName ? "password" : "username";
+            this._offerConditionalPasskey();
         }
     }
 
     private _deactivate() {
+        this._abortConditionalPasskey();
         this.password = this.twoFactorCode = "";
+    }
+
+    private async _offerConditionalPasskey() {
+        this._abortConditionalPasskey();
+        if (!this.hasPasskey || this.step !== "username" || typeof PublicKeyCredential.isConditionalMediationAvailable !== "function")
+            return;
+
+        try {
+            if (!await PublicKeyCredential.isConditionalMediationAvailable())
+                return;
+
+            const controller = this._conditionalPasskey = new AbortController();
+            await this.service.signInUsingPasskey({ staySignedIn: this.staySignedIn, mediation: "conditional", signal: controller.signal });
+            if (controller.signal.aborted)
+                return;
+
+            this.app.changePath(decodeURIComponent(this.returnUrl || ""));
+        }
+        catch (error) {
+            if (!this._isPasskeyCancellation(error))
+                this._error(error);
+        }
+    }
+
+    private _abortConditionalPasskey() {
+        this._conditionalPasskey?.abort();
+        this._conditionalPasskey = null;
+    }
+
+    private async _signInWithPasskey() {
+        this._abortConditionalPasskey();
+        this._setIsBusy(true);
+
+        try {
+            await this.service.signInUsingPasskey({ staySignedIn: this.staySignedIn });
+            this.app.changePath(decodeURIComponent(this.returnUrl || ""));
+        }
+        catch (error) {
+            if (!this._isPasskeyCancellation(error))
+                this._error(error);
+        }
+        finally {
+            this._setIsBusy(false);
+        }
+    }
+
+    private _isPasskeyCancellation(error: unknown): boolean {
+        return error instanceof DOMException && (error.name === "NotAllowedError" || error.name === "AbortError");
     }
 
     private _back() {
@@ -376,6 +434,7 @@ export class SignIn extends Polymer.WebComponent {
     }
 
     private async _authenticate() {
+        this._abortConditionalPasskey();
         this._setIsBusy(true);
 
         try {

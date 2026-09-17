@@ -32,7 +32,7 @@
             <h1>[[translateMessage("SignInTo", label, translations)]]</h1>
             <dom-if if="[[hasVidyano]]">
                 <template>
-                    <input id="username" autocomplete="username" type="text" placeholder="[[translations.UserName]]" value="{{userName::input}}" on-keydown="_keydown" disabled$="[[isBusy]]" />
+                    <input id="username" autocomplete="username webauthn" type="text" placeholder="[[translations.UserName]]" value="{{userName::input}}" on-keydown="_keydown" disabled$="[[isBusy]]" />
                     <label class="description">[[description]]</label>
                     <div class="actions layout horizontal-reverse justified">
                         <vi-button label="[[translations.Next]]" on-tap="_authenticate" disabled$="[[!canAuthenticate]]"></vi-button>
@@ -42,6 +42,13 @@
                             </template>
                         </dom-if>
                     </div>
+                    <dom-if if="[[hasPasskey]]">
+                        <template>
+                            <div class="passkey">
+                                <vi-button label="[[translations.SignInWithPasskey]]" inverse on-tap="_signInWithPasskey" disabled$="[[isBusy]]"></vi-button>
+                            </div>
+                        </template>
+                    </dom-if>
                     <dom-if if="[[hasOther]]">
                         <template>
                             <div class="splitter">
@@ -83,6 +90,13 @@
                     </template>
                 </dom-if>
             </div>
+            <dom-if if="[[hasPasskey]]">
+                <template>
+                    <div class="passkey">
+                        <vi-button label="[[translations.SignInWithPasskey]]" inverse on-tap="_signInWithPasskey" disabled$="[[isBusy]]"></vi-button>
+                    </div>
+                </template>
+            </dom-if>
         </section>
         <section class="twofactor">
             <div class="layout horizontal user wrap">

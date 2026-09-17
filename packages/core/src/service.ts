@@ -586,6 +586,63 @@ export class Service extends Observable<Service> {
     }
 
     /**
+     * Signs in with a passkey (WebAuthn); `mediation: "conditional"` offers it in the user name field's autofill.
+     * @param options - Optional: stay signed in, the mediation requirement and an abort signal.
+     * @returns A promise resolving to the Application instance upon successful sign-in.
+     */
+    public async signInUsingPasskey(options?: { staySignedIn?: boolean; mediation?: CredentialMediationRequirement; signal?: AbortSignal; }): Promise<Application> {
+        if (!this.#clientData)
+            await this.initialize(true);
+
+        if (!IS_BROWSER || typeof PublicKeyCredential === "undefined")
+            throw new Error("Passkeys need a browser with WebAuthn support.");
+
+        const ceremony = await this.#postJSON(this.#createUri("authenticate/passkey/assertOptions"), {});
+        const credential = await navigator.credentials.get({
+            publicKey: PublicKeyCredential.parseRequestOptionsFromJSON(ceremony.options),
+            mediation: options?.mediation,
+            signal: options?.signal
+        }) as PublicKeyCredential;
+
+        const data = this.#createData("getApplication");
+        data.ceremonyId = ceremony.ceremonyId;
+        data.credential = credential.toJSON();
+        data.staySignedIn = !!options?.staySignedIn;
+
+        const application = this.#applyApplicationResult(await this.#postJSON(this.#createUri("authenticate/passkey/assert"), data));
+        if (application && this.isSignedIn && this.#useCookieStore)
+            cookie("staySignedIn", (this.staySignedIn = !!options?.staySignedIn) ? "true" : null, { force: true, expires: 365 });
+
+        return application;
+    }
+
+    /**
+     * Registers a new passkey for the signed-in user.
+     * @param name - Optional name for the passkey; the service names it when omitted.
+     * @returns The registered passkey's id, name and creation time.
+     */
+    public async registerPasskey(name?: string): Promise<{ id: string; name: string; createdOn: string; }> {
+        if (!this.isSignedIn)
+            throw new Error("Sign in to add a passkey.");
+
+        if (!IS_BROWSER || typeof PublicKeyCredential === "undefined")
+            throw new Error("Passkeys need a browser with WebAuthn support.");
+
+        const ceremony = await this.#postJSON(this.#createUri("authenticate/passkey/registerOptions"), this.#createData("registerPasskey"));
+        const credential = await navigator.credentials.create({
+            publicKey: PublicKeyCredential.parseCreationOptionsFromJSON(ceremony.options)
+        }) as PublicKeyCredential;
+
+        const data = this.#createData("registerPasskey");
+        data.ceremonyId = ceremony.ceremonyId;
+        data.credential = credential.toJSON();
+        if (name)
+            data.name = name;
+
+        return this.#postJSON(this.#createUri("authenticate/passkey/register"), data);
+    }
+
+    /**
      * Signs in using default credentials, if available (e.g., Windows Authentication or pre-configured user).
      * @returns A promise resolving to the Application instance upon successful sign-in.
      */
@@ -1427,8 +1484,15 @@ export class Service extends Observable<Service> {
             data.userName = this.userName;
         }
 
-        const result = await this.#postJSON(this.#createUri("GetApplication"), data);
+        return this.#applyApplicationResult(await this.#postJSON(this.#createUri("GetApplication"), data));
+    }
 
+    /**
+     * Applies a GetApplication result, which the passkey sign-in returns as well.
+     * @param result - The GetApplication-shaped result.
+     * @returns The Application instance.
+     */
+    #applyApplicationResult(result: any): Application {
         if (!String.isNullOrEmpty(result.exception))
             throw result.exception;
 
