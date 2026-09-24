@@ -3,7 +3,7 @@ import type { NotificationType, Service } from "./service.js";
 import type { ServiceObjectWithActions } from "./service-object-with-actions.js";
 import type { Action, ISelectedItemsActionArgs } from "./action.js";
 import { ActionDefinition } from "./action-definition.js";
-import { ClientOperations, IClientOperation, IExecuteMethodOperation, IOpenOperation } from "./client-operations.js";
+import { ClientOperations, IClientOperation, IExecuteActionOperation, IExecuteMethodOperation, IOpenOperation } from "./client-operations.js";
 import { PersistentObject } from "./persistent-object.js";
 import type { ExecuteActionArgs } from "./execute-action-args.js";
 import type { ServiceObject } from "./service-object.js";
@@ -350,10 +350,28 @@ export class ServiceHooks {
                 this.onOpen(this.onConstructPersistentObject(this.#service, open.persistentObject), open.replace, open.persistentObject.isNew);
                 break;
 
+            case "ExecuteAction":
+                this.onExecuteAction(<IExecuteActionOperation>operation);
+                break;
+
             default:
                 console.log("Missing client operation type: " + operation.type, operation);
                 break;
         }
+    }
+
+    /**
+     * Called to execute the action named by a client operation.
+     * @param operation - The execute action operation to handle.
+     */
+    async onExecuteAction(operation: IExecuteActionOperation): Promise<void> {
+        const query = operation.queryId ? await this.#service.getQuery(operation.queryId) : null;
+        const parent = operation.persistentObjectId ? await this.#service.getPersistentObject(null, operation.persistentObjectId, operation.objectId) : null;
+        const selectedItems = query && operation.selectedItems
+            ? operation.selectedItems.map(id => new QueryResultItem(this.#service, { id, values: [] }, query, true))
+            : [];
+
+        await this.#service.executeAction(operation.action, parent, query, selectedItems, operation.parameters);
     }
 
     /**
