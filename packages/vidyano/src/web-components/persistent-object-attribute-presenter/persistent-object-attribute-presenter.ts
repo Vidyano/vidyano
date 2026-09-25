@@ -24,6 +24,7 @@ import "components/persistent-object-attribute/attributes/persistent-object-attr
 import "components/persistent-object-attribute/attributes/persistent-object-attribute-password/persistent-object-attribute-password"
 import "components/persistent-object-attribute/attributes/persistent-object-attribute-reference/persistent-object-attribute-reference"
 import { PersistentObjectAttributeString } from "components/persistent-object-attribute/attributes/persistent-object-attribute-string/persistent-object-attribute-string"
+import "components/persistent-object-attribute/attributes/persistent-object-attribute-time/persistent-object-attribute-time"
 import "components/persistent-object-attribute/attributes/persistent-object-attribute-translated-string/persistent-object-attribute-translated-string"
 import "components/persistent-object-attribute/attributes/persistent-object-attribute-user/persistent-object-attribute-user"
 import "components/persistent-object-attribute-label/persistent-object-attribute-label"

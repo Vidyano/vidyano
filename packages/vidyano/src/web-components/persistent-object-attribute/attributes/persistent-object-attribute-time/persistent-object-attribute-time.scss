@@ -1,0 +1,32 @@
+:host {
+    display: flex;
+
+    &[editing] {
+        [slot="content"] {
+            display: flex;
+        }
+
+        vi-masked-input {
+            display: inline-block;
+            border: none;
+            height: calc(var(--theme-h2) - 2px);
+            line-height: calc(var(--theme-h2) - 2px);
+            flex: 1;
+            min-height: 0;
+            min-width: 0;
+        }
+
+        vi-masked-input[invalid]::part(input) {
+            color: red;
+        }
+    }
+
+    span, vi-masked-input {
+        color: var(--vi-persistent-object-attribute-foreground, var(--theme-foreground));
+    }
+
+    vi-time-picker::part(icon) {
+        width: calc(var(--theme-h2) - 2px);
+        height: calc(var(--theme-h2) - 2px);
+    }
+}
