@@ -201,5 +201,6 @@
         "packages/**/rollup/": true
     },
     "dotnet.projects.enableFileBasedPrograms": true,
-    "explorer.excludeGitIgnore": true
+    "explorer.excludeGitIgnore": true,
+    "js/ts.tsc.autoDetect": "off"
 }

@@ -385,6 +385,7 @@ packages/core/src/**/*.js
 packages/core/src/**/*.d.ts
 packages/labs/**/src/**/*.js
 packages/labs/**/src/**/*.d.ts
+*.tsbuildinfo
 test/**/*.d.ts
 test/**/*.js
 test/**/*.css
