@@ -137,9 +137,12 @@ export class SignIn extends Polymer.WebComponent {
     password: string;
     staySignedIn: boolean;
     twoFactorCode: string;
+    private _activation: AbortController;
     private _conditionalPasskey: AbortController;
 
     private async _activate(e: CustomEvent) {
+        this._activation = new AbortController();
+
         const { parameters }: { parameters: ISignInRouteParameters; } = e.detail;
         if (parameters.stateOrReturnUrl) {
             if (/^(register)$/i.test(parameters.stateOrReturnUrl)) {
@@ -248,29 +251,36 @@ export class SignIn extends Polymer.WebComponent {
     }
 
     private _deactivate() {
+        this._activation?.abort();
         this._abortConditionalPasskey();
         this.password = this.twoFactorCode = "";
     }
 
     private async _offerConditionalPasskey() {
         this._abortConditionalPasskey();
-        if (!this.hasPasskey || this.step !== "username" || typeof PublicKeyCredential.isConditionalMediationAvailable !== "function")
+        if (!this.hasPasskey || this.step !== "username" || this._activation.signal.aborted || typeof PublicKeyCredential.isConditionalMediationAvailable !== "function")
             return;
 
+        const controller = this._conditionalPasskey = new AbortController();
+        const activation = this._activation.signal;
+
         try {
-            if (!await PublicKeyCredential.isConditionalMediationAvailable())
+            if (!await PublicKeyCredential.isConditionalMediationAvailable() || controller.signal.aborted)
                 return;
 
-            const controller = this._conditionalPasskey = new AbortController();
             await this.service.signInUsingPasskey({ staySignedIn: this.staySignedIn, mediation: "conditional", signal: controller.signal });
-            if (controller.signal.aborted)
-                return;
 
-            this.app.changePath(decodeURIComponent(this.returnUrl || ""));
+            // An in-page abort after the passkey was picked still signs in
+            if (!activation.aborted)
+                this.app.changePath(decodeURIComponent(this.returnUrl || ""));
         }
         catch (error) {
             if (!this._isPasskeyCancellation(error))
                 this._error(error);
+        }
+        finally {
+            if (this._conditionalPasskey === controller)
+                this._conditionalPasskey = null;
         }
     }
 
@@ -283,13 +293,18 @@ export class SignIn extends Polymer.WebComponent {
         this._abortConditionalPasskey();
         this._setIsBusy(true);
 
+        const activation = this._activation.signal;
+
         try {
-            await this.service.signInUsingPasskey({ staySignedIn: this.staySignedIn });
-            this.app.changePath(decodeURIComponent(this.returnUrl || ""));
+            await this.service.signInUsingPasskey({ staySignedIn: this.staySignedIn, signal: activation });
+            if (!activation.aborted)
+                this.app.changePath(decodeURIComponent(this.returnUrl || ""));
         }
         catch (error) {
             if (!this._isPasskeyCancellation(error))
                 this._error(error);
+
+            this._offerConditionalPasskey();
         }
         finally {
             this._setIsBusy(false);
@@ -304,6 +319,7 @@ export class SignIn extends Polymer.WebComponent {
         if (this.step === "password") {
             this.userName = "";
             this.step = "username";
+            this._offerConditionalPasskey();
         }
         else if (this.step === "twofactor") {
             this.password = this.twoFactorCode = "";
@@ -476,6 +492,7 @@ export class SignIn extends Polymer.WebComponent {
         catch (error) {
             this._error(error);
             this._setIsBusy(false);
+            this._offerConditionalPasskey();
         }
     }
 
