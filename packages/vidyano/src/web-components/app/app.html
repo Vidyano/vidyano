@@ -60,6 +60,11 @@
             <vi-sign-out></vi-sign-out>
         </template>
     </vi-app-route>
+    <vi-app-route class="fit" route="connect/consent/:requestId">
+        <template>
+            <vi-consent></vi-consent>
+        </template>
+    </vi-app-route>
     <slot name="app-route"></slot>
 </vi-app-route-presenter>
 <dom-if if="[[service.application.hasManagement]]">

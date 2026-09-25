@@ -6,6 +6,31 @@ import type { ServiceObjectWithActions } from "./service-object-with-actions.js"
 import type { PersistentObject } from "./persistent-object.js"
 import type { IExecuteMethodOperation, IOpenOperation } from "./client-operations.js"
 
+Actions.AddPasskey = class AddPasskey extends Action {
+    constructor(service: Service, definition: ActionDefinition, owner: ServiceObjectWithActions) {
+        super(service, definition, owner);
+    }
+
+    protected async _onExecute({ throwExceptions }: IActionExecuteOptions): Promise<PersistentObject> {
+        try {
+            await this.service.registerPasskey();
+            await this.query?.search();
+        }
+        catch (e) {
+            // A dismissed prompt is not an error.
+            if (e instanceof DOMException && (e.name === "NotAllowedError" || e.name === "AbortError"))
+                return null;
+
+            if (throwExceptions)
+                throw e;
+
+            this.owner.setNotification(typeof e === "string" ? e : (e?.message ?? String(e)), "Error");
+        }
+
+        return null;
+    }
+}
+
 Actions.CancelEdit = class CancelEdit extends Action {
     constructor(service: Service, definition: ActionDefinition, owner: ServiceObjectWithActions) {
         super(service, definition, owner);
