@@ -20,16 +20,16 @@ export interface ConsentRequest {
 type Phase = "loading" | "ready" | "deciding" | "done" | "error";
 
 const translations = {
-    ConsentTitle: { en: "Authorize {0}", nl: "{0} toegang geven" },
-    ConsentIntro: { en: "{0} wants to access this application on your behalf and will return to {1}.", nl: "{0} wil namens u toegang tot deze toepassing en keert daarna terug naar {1}." },
-    ConsentLocalhostWarning: { en: "The application runs on this computer. Only continue if you started this yourself.", nl: "De toepassing draait op deze computer. Ga alleen verder als u dit zelf hebt gestart." },
-    ConsentSignedInAs: { en: "Signed in as {0}.", nl: "Aangemeld als {0}." },
-    ConsentPermissions: { en: "The application asks permission to:", nl: "De toepassing vraagt toestemming om:" },
-    ConsentAllow: { en: "Allow", nl: "Toestaan" },
-    ConsentDeny: { en: "Deny", nl: "Weigeren" },
-    ConsentReturning: { en: "Returning to the application…", nl: "Terug naar de toepassing…" },
-    ConsentExpired: { en: "This authorization request has expired. Start again from the application.", nl: "Deze aanvraag is verlopen. Begin opnieuw vanuit de toepassing." },
-    ConsentFailed: { en: "The request could not be completed.", nl: "De aanvraag kon niet worden voltooid." },
+    ConsentTitle: { en: "Authorize {0}" },
+    ConsentIntro: { en: "{0} wants to access this application on your behalf and will return to {1}." },
+    ConsentLocalhostWarning: { en: "The application runs on this computer. Only continue if you started this yourself." },
+    ConsentSignedInAs: { en: "Signed in as {0}." },
+    ConsentPermissions: { en: "The application asks permission to:" },
+    ConsentAllow: { en: "Allow" },
+    ConsentDeny: { en: "Deny" },
+    ConsentReturning: { en: "Returning to the application…" },
+    ConsentExpired: { en: "This authorization request has expired. Start again from the application." },
+    ConsentFailed: { en: "The request could not be completed." },
 };
 
 /**
