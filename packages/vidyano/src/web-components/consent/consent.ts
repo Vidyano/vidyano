@@ -39,9 +39,9 @@ const translations = {
 export class Consent extends WebComponent<typeof translations> {
     static styles = unsafeCSS(styles);
 
-    @state() private phase: Phase = "loading";
-    @state() private request: ConsentRequest | null = null;
-    @state() private error: string | null = null;
+    @state() private _phase: Phase = "loading";
+    @state() private _request: ConsentRequest | null = null;
+    @state() private _error: string | null = null;
 
     constructor() {
         super({ translations });
@@ -51,9 +51,9 @@ export class Consent extends WebComponent<typeof translations> {
     private async _activate(e: CustomEvent) {
         const { requestId } = (e.detail.parameters || {}) as { requestId?: string };
 
-        this.phase = "loading";
-        this.request = null;
-        this.error = null;
+        this._phase = "loading";
+        this._request = null;
+        this._error = null;
 
         if (!requestId) {
             this.#fail(this.translations.ConsentExpired);
@@ -68,8 +68,8 @@ export class Consent extends WebComponent<typeof translations> {
                 return;
             }
 
-            this.request = body as ConsentRequest;
-            this.phase = "ready";
+            this._request = body as ConsentRequest;
+            this._phase = "ready";
         }
         catch {
             this.#fail(this.translations.ConsentFailed);
@@ -81,19 +81,19 @@ export class Consent extends WebComponent<typeof translations> {
     }
 
     #renderPhase() {
-        switch (this.phase) {
+        switch (this._phase) {
             case "loading":
                 return html`<vi-spinner></vi-spinner>`;
 
             case "error":
-                return html`<p class="error">${this.error}</p>`;
+                return html`<p class="error">${this._error}</p>`;
 
             case "done":
                 return html`<p>${this.translations.ConsentReturning}</p>`;
 
             default: {
-                const request = this.request!;
-                const deciding = this.phase === "deciding";
+                const request = this._request!;
+                const deciding = this._phase === "deciding";
 
                 return html`
                     <h1>${String.format(this.translations.ConsentTitle, request.clientName)}</h1>
@@ -102,7 +102,7 @@ export class Consent extends WebComponent<typeof translations> {
                     <p class="user">${String.format(this.translations.ConsentSignedInAs, this.service.application?.friendlyUserName || this.service.userName)} <a href="#" @click=${this.#notYou}>${this.translations.NotYou}</a></p>
                     <p>${this.translations.ConsentPermissions}</p>
                     <ul>${request.scopes.map(scope => html`<li>${scope.description}</li>`)}</ul>
-                    ${this.error ? html`<p class="error">${this.error}</p>` : nothing}
+                    ${this._error ? html`<p class="error">${this._error}</p>` : nothing}
                     <div class="actions">
                         <vi-button id="deny" inverse .label=${this.translations.ConsentDeny} ?disabled=${deciding} @click=${() => this.#decide("deny")}></vi-button>
                         <vi-button id="allow" .label=${this.translations.ConsentAllow} ?disabled=${deciding} ?busy=${deciding} @click=${() => this.#decide("allow")}></vi-button>
@@ -112,18 +112,18 @@ export class Consent extends WebComponent<typeof translations> {
     }
 
     async #decide(decision: "allow" | "deny") {
-        if (this.phase !== "ready" || !this.request)
+        if (this._phase !== "ready" || !this._request)
             return;
 
-        this.phase = "deciding";
-        this.error = null;
+        this._phase = "deciding";
+        this._error = null;
 
         try {
-            const response = await this.#send("POST", this.request.requestId, { decision });
+            const response = await this.#send("POST", this._request.requestId, { decision });
             const body = await response.json();
 
             if (body?.redirectUri) {
-                this.phase = "done";
+                this._phase = "done";
                 document.location.replace(body.redirectUri);
                 return;
             }
@@ -133,12 +133,12 @@ export class Consent extends WebComponent<typeof translations> {
                 return;
             }
 
-            this.error = body?.error_description || body?.error || this.translations.ConsentFailed;
-            this.phase = body?.error === "expired" ? "error" : "ready";
+            this._error = body?.error_description || body?.error || this.translations.ConsentFailed;
+            this._phase = body?.error === "expired" ? "error" : "ready";
         }
         catch {
-            this.error = this.translations.ConsentFailed;
-            this.phase = "ready";
+            this._error = this.translations.ConsentFailed;
+            this._phase = "ready";
         }
     }
 
@@ -148,8 +148,8 @@ export class Consent extends WebComponent<typeof translations> {
     }
 
     #fail(message: string) {
-        this.error = message;
-        this.phase = "error";
+        this._error = message;
+        this._phase = "error";
     }
 
     #send(method: "GET" | "POST", requestId: string, body?: object): Promise<Response> {
