@@ -586,8 +586,9 @@ export class Service extends Observable<Service> {
     }
 
     /**
-     * Signs in with a passkey (WebAuthn); `mediation: "conditional"` offers it in the user name field's autofill.
+     * Signs in with a passkey (WebAuthn).
      * @param options - Optional: stay signed in, the mediation requirement and an abort signal.
+     * A `mediation` of `"conditional"` offers the passkey in the user name field's autofill.
      * @returns A promise resolving to the Application instance upon successful sign-in.
      */
     public async signInUsingPasskey(options?: { staySignedIn?: boolean; mediation?: CredentialMediationRequirement; signal?: AbortSignal; }): Promise<Application> {
