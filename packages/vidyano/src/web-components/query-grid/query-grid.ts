@@ -349,8 +349,13 @@ export class QueryGrid extends Polymer.WebComponent {
         let newVirtualGridStartIndex: number = 0;
         if (viewportEndRowIndex - this._virtualGridStartIndex > virtualRowCount)
             newVirtualGridStartIndex = viewportStartRowIndex;
-        else if (viewportStartRowIndex < this._virtualGridStartIndex)
+        else if (viewportStartRowIndex < this._virtualGridStartIndex) {
             newVirtualGridStartIndex = viewportEndRowIndex - virtualRowCount;
+
+            // Round an odd start up instead of down, the window is aligned to the viewport end so rounding down would leave the last visible row uncovered
+            if (newVirtualGridStartIndex % 2 !== 0 && this._verticalSpacerCorrection === 1 && newVirtualGridStartIndex < viewportStartRowIndex)
+                newVirtualGridStartIndex++;
+        }
         else if (this.virtualItems.some(item => item === placeholder))
             newVirtualGridStartIndex = this._virtualGridStartIndex;
         else if (items.forceUpdate) {
