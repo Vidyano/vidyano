@@ -356,6 +356,50 @@
         }
     }
 
+    // Filter + Inline actions
+    &:not([can-select])[can-filter][inline-actions] {
+        .controls {
+            grid-template-areas: "spacer" "filter";
+
+            .spacer {
+                display: block;
+                border-bottom: 1px solid var(--theme-light-border);
+            }
+        }
+
+        vi-query-grid-row {
+            grid-template-columns: repeat(1, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+        }
+
+        &[has-grouping] {
+            .controls {
+                grid-template-areas: "spacer spacer" "grouping filter";
+            }
+
+            vi-query-grid-row {
+                grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+
+                &::part(groupspacer) {
+                    display: block;
+                }
+            }
+        }
+
+        &[can-reorder] {
+            .controls {
+                grid-template-areas: "spacer spacer" "reorder filter";
+
+                .reorder {
+                    display: block;
+                }
+            }
+
+            vi-query-grid-row {
+                grid-template-columns: repeat(2, var(--vi-query-grid-row-height)) var(--vi-query-grid-columns-no-data, var(--vi-query-grid-columns));
+            }
+        }
+    }
+
     // Select + Filter
     &[can-select][can-filter]:not([inline-actions]) {
         .controls {
