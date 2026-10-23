@@ -10,11 +10,15 @@
 ### Commands
 ```bash
 # Development
-npm run dev          # Start backend (localhost:5000, blocks terminal)
-npm run build        # Build pipeline (only after packages/ changes, NOT for test changes)
+npm run dev          # Start backend + dev supervisor (localhost:5000, blocks terminal)
+npm run dev:status   # Print the supervisor's watcher status and problem counts
+npm run build        # Build pipeline (only when npm run dev is NOT running)
 npm test             # Run ALL Playwright tests (core + vidyano)
 
-# Testing
+# Testing while npm run dev is running (preferred)
+npm run test:dev -- <specs or folders> -x   # Queue a run in the dev supervisor, stream its output
+
+# Testing without the supervisor
 npm run test:core           # Run all core tests
 npm run test:vidyano        # Run all vidyano tests
 npm run test:virtual-service # Run all virtual-service tests
@@ -36,15 +40,16 @@ npm run dist         # Production build
 
 # Check if backend is running
 curl -s -o /dev/null -w '%{http_code}' --head http://localhost:5000
-
-# Check if rollup watch is running
-pgrep -f rollup
 ```
 
-### Build Warning
-**NEVER run `npm run build` when rollup is running in watch mode.** The watch mode (started via VS Code task "rollup: watch") automatically rebuilds on file changes. Running the build command simultaneously will cause conflicts.
+### Dev Supervisor
+`npm run dev` starts the `dev/` backend, and in Development the backend starts the **Dev Supervisor** (`dev/Service/Supervisor/`). It runs every watcher: TypeScript, Rollup for core, vidyano and virtual-service, and Sass. It shows their status, compiler problems and logs at http://localhost:5000/supervisor/ (localhost only). Edited `.ts` and `.scss` files rebuild on save; the backend restarts itself when a `.cs` file or a model JSON in `dev/` changes. Start order matters and the supervisor enforces it: TypeScript core → core rollup watch (which also bundles `packages/core/dist/index.d.ts`) → the vidyano and virtual-service compiles, with vidyano also waiting for Sass.
 
-Check if rollup is running before building: `pgrep -f rollup` (returns PIDs if running, empty if not).
+**NEVER run `npm run build` while `npm run dev` is running.** The watchers already rebuild on save; a parallel build conflicts with them. Check with `npm run dev:status`.
+
+**Tests**: `npm run test:dev -- <specs or folders> -x` sends the run to the supervisor. It runs everything in one Playwright process and queues concurrent runs, because core tests share the backend's database. Runs wait until the watchers have finished building. The Tests view in the supervisor shows every spec with its results and can start runs too.
+
+**Worktrees**: run `npm run dev` only in the main checkout. Its supervisor finds every git worktree of the repo, runs that worktree's watchers on first use (with `npm ci` when its `node_modules` is missing or stale), and serves its `dev/wwwroot` at `http://localhost:5000/<worktree>/`. `npm run test:dev` inside a worktree runs that worktree's specs against its own build. The worktree's backend C# code does not run: main's backend serves every worktree. Stop a worktree in the supervisor's picker before removing it.
 
 ### Documentation Map
 | Component | Documentation | Tests |
@@ -110,7 +115,7 @@ Create `plans/[plan-name]-YYYYMMDD-HHMMSS-plan.md` with:
 - [ ] Write tests first
 - [ ] Write code to pass tests
 - [ ] Refactor if needed
-- [ ] Run all tests: `npm test`
+- [ ] Run all tests: `npm run test:dev` (or `npm test` without the supervisor)
 
 ## Validation
 - [ ] All tests pass

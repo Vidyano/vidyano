@@ -24,8 +24,7 @@ export default [
         plugins: [
             dts({ respectExternal: true })
         ],
-        output: [{ file: "dist/index.d.ts", format: "es" }],
-        watch: false
+        output: [{ file: "dist/index.d.ts", format: "es" }]
     },
     // Implementation bundle
     {

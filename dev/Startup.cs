@@ -1,4 +1,5 @@
 using Dev.Service;
+using Dev.Service.Supervisor;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Vidyano.Service;
 using Vidyano.Service.Repository.DataLayer;
@@ -37,10 +38,26 @@ public class Startup
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime lifetime)
     {
         if (env.IsDevelopment())
+        {
             app.UseDeveloperExceptionPage();
+
+            // The dev supervisor runs the watchers and test runs; see /supervisor/
+            lifetime.ApplicationStarted.Register(() =>
+            {
+                DevSupervisor.Start(Path.GetFullPath(Path.Combine(env.ContentRootPath, "..")));
+                DevSupervisor.StopWithParent(lifetime.StopApplication);
+            });
+            lifetime.ApplicationStopping.Register(DevSupervisor.Stop);
+
+            app.Use(async (context, next) =>
+            {
+                if (!await SupervisorApi.TryServe(context) && !await Worktrees.TryServe(context))
+                    await next();
+            });
+        }
 
         // Enable CORS
         app.UseCors("AllowAll");
