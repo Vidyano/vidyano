@@ -536,6 +536,7 @@ export class QueryGrid extends Polymer.WebComponent {
 
     private _computeColumns(columns: QueryGridColumn[]) {
         columns = columns.filter(c => !c.isHidden);
+        columns = [...columns.filter(c => c.isPinned), ...columns.filter(c => !c.isPinned)];
 
         if (this.columns) {
             const signature = (columns: QueryGridColumn[]) => columns.orderBy(c => c.name).map(c => c.name).join(";");
@@ -548,8 +549,11 @@ export class QueryGrid extends Polymer.WebComponent {
             this.style.setProperty("--vi-query-grid-columns-no-data", init);
             this.style.setProperty("--vi-query-grid-columns", init);
         }
+        // Columns were hidden, pinned or reordered: each column keeps its own measured width instead of the width of its old position
+        else if (columns.every(c => this._columnWidths.get(c.name)?.current > 0))
+            this.style.setProperty("--vi-query-grid-columns", `${columns.map(c => `${Math.ceil(this._columnWidths.get(c.name).current)}px`).join(" ")} minmax(0, 1fr)`);
 
-        return [...columns.filter(c => c.isPinned), ...columns.filter(c => !c.isPinned)];
+        return columns;
     }
 
     private _computeVirtualRowCount(viewportHeight: number, rowHeight: number, canReorder: boolean, totalItems: number) {
