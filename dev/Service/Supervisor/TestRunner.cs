@@ -54,6 +54,10 @@ namespace Dev.Service.Supervisor
         public long? Started;
         public long? Took;
         public string WaitingFor;
+        public long Sequence;
+        public string Access;
+        public bool Followed;
+        public long LastPolled;
         public bool Cancelled;
         public int? ExitCode;
         public List<JObject> Errors = new();
@@ -92,6 +96,19 @@ namespace Dev.Service.Supervisor
         const int KeptRuns = 30;
         public static readonly (string Name, string Path)[] SpecRoots = { ("core", "packages/core/tests"), ("vidyano", "packages/vidyano/tests"), ("virtual-service", "packages/labs/virtual-service/tests") };
         static readonly HashSet<string> ValueFlags = new() { "-g", "--grep", "--grep-invert", "--project", "-j", "--workers", "--retries", "--timeout", "--repeat-each", "--max-failures", "--shard", "-c", "--config", "--output", "--trace" };
+
+        /// <summary>A run that uses no shared state: its specs start their own backends or need none.</summary>
+        public const string Free = "free";
+        /// <summary>A run that uses the shared dev backend, so it runs alone among the shared runs.</summary>
+        public const string Shared = "shared";
+        /// <summary>A perf run, which runs alone on the machine.</summary>
+        public const string Machine = "machine";
+
+        // The spec folders whose specs never touch the shared dev backend; everything else is shared
+        static readonly string[] FreeRoots = { "packages/vidyano/tests", "packages/labs/virtual-service/tests" };
+        static readonly string[] SharedRoots = { "packages/vidyano/tests/query-grid" };
+        static readonly StringComparison PathComparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        static long sequence;
 
         readonly DevSupervisor supervisor;
         readonly SemaphoreSlim listing = new(1, 1);
@@ -159,11 +176,99 @@ namespace Dev.Service.Supervisor
             }).Distinct().ToList();
         }
 
+        static string SpecOf(string target)
+        {
+            return Regex.Replace(target, @":\d+$", "");
+        }
+
+        static bool IsUnder(string file, string folder)
+        {
+            return file.StartsWith(folder + "/", PathComparison);
+        }
+
+        static List<string> ProjectsOf(IReadOnlyList<string> flags)
+        {
+            var projects = new List<string>();
+            for (var i = 0; i < flags.Count; i++)
+            {
+                if (flags[i] == "--project" && i + 1 < flags.Count)
+                    projects.Add(flags[++i]);
+                else if (flags[i].StartsWith("--project="))
+                    projects.Add(flags[i]["--project=".Length..]);
+            }
+
+            return projects.SelectMany(p => p.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToList();
+        }
+
+        public static bool IsPerf(string target)
+        {
+            var spec = SpecOf(target);
+            return spec.StartsWith("perf/", PathComparison) || spec.Contains("/perf/", PathComparison);
+        }
+
+        /// <summary>
+        /// A perf run: one that names a perf project (vidyano-perf) or holds only perf specs.
+        /// </summary>
+        public static bool IsPerfRun(IReadOnlyList<string> flags, IReadOnlyList<string> targets)
+        {
+            return ProjectsOf(flags).Any(p => p.Contains("perf", StringComparison.OrdinalIgnoreCase)) || (targets.Count > 0 && targets.All(IsPerf));
+        }
+
+        /// <summary>
+        /// What a run shares with other runs, by the Playwright projects it names and the specs it holds: Free when every
+        /// spec it can run lies in a folder that never uses the shared dev backend (the vidyano component specs outside
+        /// query-grid, and virtual-service), Shared otherwise, including anything this cannot tell (another config, an
+        /// unknown project, a filter that is no spec path).
+        /// </summary>
+        public static string AccessOf(IReadOnlyList<string> flags, IReadOnlyList<string> targets)
+        {
+            if (IsPerfRun(flags, targets))
+                return Machine;
+
+            // No spec paths (e.g. an empty folder) leaves Playwright to run its whole config
+            if (targets.Count == 0)
+                return Shared;
+
+            if (flags.Any(f => f is "-c" or "--config" || f.StartsWith("--config=")))
+                return Shared;
+
+            var projects = ProjectsOf(flags);
+            var names = projects.Count > 0 ? projects : SpecRoots.Select(r => r.Name).ToList();
+            var roots = new List<string>();
+            foreach (var name in names)
+            {
+                var root = SpecRoots.FirstOrDefault(r => r.Name == name).Path;
+                if (root == null)
+                    return Shared;
+
+                roots.Add(root);
+            }
+
+            var specs = targets.Select(SpecOf).ToList();
+            if (specs.Any(s => !SpecRoots.Any(r => IsUnder(s, r.Path))))
+                return Shared;
+
+            var free = specs.Where(s => roots.Any(r => IsUnder(s, r))).All(s => FreeRoots.Any(r => IsUnder(s, r)) && !SharedRoots.Any(r => IsUnder(s, r)));
+            return free ? Free : Shared;
+        }
+
+        /// <summary>
+        /// Whether runs of two different checkouts cannot run at the same time: when either is a perf run, or when both
+        /// use the shared dev backend. Runs of one checkout never run at the same time, since they share its test-results/ folder.
+        /// </summary>
+        public static bool Conflicts(string a, string b)
+        {
+            return a == Machine || b == Machine || (a == Shared && b == Shared);
+        }
+
         ProcessStartInfo PlaywrightStartInfo(IEnumerable<string> arguments)
         {
             var info = supervisor.StartInfo(supervisor.Node, new[] { PlaywrightCli, "test" }.Concat(arguments));
             info.Environment["FORCE_COLOR"] = "0";
             info.Environment["VIDYANO_DEV_EVENTS"] = "1";
+            // The shared dev backend, and where it serves this checkout's build (/<worktree>/ for a worktree)
+            info.Environment["VIDYANO_BACKEND_URL"] = DevSupervisor.ServerUrl;
+            info.Environment["VIDYANO_DEV_URL"] = supervisor.IsMain ? DevSupervisor.ServerUrl : $"{DevSupervisor.ServerUrl}/{supervisor.Workspace}";
             info.Environment["NODE_OPTIONS"] = $"{Environment.GetEnvironmentVariable("NODE_OPTIONS")} --disable-warning=DEP0205".Trim();
             return info;
         }
@@ -398,14 +503,23 @@ namespace Dev.Service.Supervisor
             run.Version = Touch();
         }
 
-        public TestRun CreateRun(IReadOnlyList<string> args)
+        /// <summary>
+        /// Queues a run. A followed run belongs to a client (npm run test:dev) that polls its output; it is cancelled
+        /// when that client stops polling (see CancelAbandoned).
+        /// </summary>
+        public TestRun CreateRun(IReadOnlyList<string> args, bool followed = false)
         {
             var (flags, paths) = ParseArgs(args);
             var targets = Expand(paths);
-            var files = targets.GroupBy(t => Regex.Replace(t, @":\d+$", "")).Select(g => new RunFile { File = g.Count() == 1 ? g.First() : g.Key }).ToList();
+
+            // Perf specs measure timings, so they only run in a run of their own
+            var perf = IsPerfRun(flags, targets) ? new List<string>() : targets.Where(IsPerf).ToList();
+            targets = targets.Except(perf).ToList();
+
+            var files = targets.GroupBy(SpecOf).Select(g => new RunFile { File = g.Count() == 1 ? g.First() : g.Key }).ToList();
             lock (Gate)
             {
-                var run = new TestRun { Id = nextId++, Flags = flags, Targets = targets, Files = files, QueuedAt = DevSupervisor.Now() };
+                var run = new TestRun { Id = nextId++, Sequence = ++sequence, Access = AccessOf(flags, targets), Followed = followed, LastPolled = Environment.TickCount64, Flags = flags, Targets = targets, Files = files, QueuedAt = DevSupervisor.Now() };
                 Runs.Add(run);
 
                 var finished = Runs.Where(r => r.Done).ToList();
@@ -413,6 +527,12 @@ namespace Dev.Service.Supervisor
                     Runs.Remove(finished[0]);
 
                 Tell(run, $"Run #{run.Id} queued in the dev supervisor{(supervisor.IsMain ? "" : $" for worktree {supervisor.Workspace}")}:{(files.Count == 1 ? files[0].File : $"{files.Count} spec files")}{(flags.Count > 0 ? $" {string.Join(' ', flags)}" : "")}");
+                if (perf.Count > 0)
+                    Tell(run, $"Skipped {perf.Count} perf spec {(perf.Count == 1 ? "file" : "files")}: perf specs run alone, e.g. npm run test:dev -- {Path.GetDirectoryName(SpecOf(perf[0])).Replace('\\', '/')}");
+
+                if (run.Access == Machine)
+                    Tell(run, "Perf runs run alone: this run waits until no other test run runs and no watcher builds");
+
                 return run;
             }
         }
@@ -423,35 +543,44 @@ namespace Dev.Service.Supervisor
                 return Runs.FirstOrDefault(r => r.Id == id);
         }
 
-        public void Next()
+        /// <summary>
+        /// Keeps a queued run waiting, and says what for whenever that changes. Worktrees.NextRun calls this under the Gate.
+        /// </summary>
+        public void Wait(TestRun run, string reason)
         {
-            lock (Gate)
-            {
-                if (supervisor.ShuttingDown || Worktrees.TestsRunning())
-                    return;
+            if (run.WaitingFor == reason)
+                return;
 
-                var run = Runs.FirstOrDefault(r => r.Status == "queued");
-                if (run == null)
-                    return;
+            run.WaitingFor = reason;
+            Tell(run, $"Waiting for {reason} to finish");
+        }
 
-                var waiting = Blockers();
-                if (waiting.Count > 0)
-                {
-                    var reason = string.Join(", ", waiting);
-                    if (run.WaitingFor != reason)
-                    {
-                        run.WaitingFor = reason;
-                        Tell(run, $"Waiting for {reason} to finish");
-                    }
+        /// <summary>
+        /// Fails a queued run that cannot run at all, with the lines that say why. Worktrees.NextRun calls this under the Gate.
+        /// </summary>
+        public void Fail(TestRun run, string reason, IEnumerable<string> details)
+        {
+            run.Status = "failed";
+            run.ExitCode = 1;
+            run.Took = 0;
+            run.WaitingFor = null;
+            run.Files.ForEach(f => f.Status = "skipped");
+            run.Errors.Add(JObject.FromObject(new { message = reason }));
+            foreach (var line in details)
+                Output(run, line);
 
-                    return;
-                }
+            Tell(run, $"── Run #{run.Id} failed: {reason}");
+        }
 
-                run.Status = "running";
-                run.WaitingFor = null;
-                run.Started = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                RunAll(run);
-            }
+        /// <summary>
+        /// Starts a queued run. Worktrees.NextRun calls this under the Gate.
+        /// </summary>
+        public void Begin(TestRun run)
+        {
+            run.Status = "running";
+            run.WaitingFor = null;
+            run.Started = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            RunAll(run);
         }
 
         void RunAll(TestRun run)
@@ -628,6 +757,22 @@ namespace Dev.Service.Supervisor
                 {
                 }
             }
+        }
+
+        /// <summary>
+        /// Cancels the followed runs whose client has not polled their output for a while, e.g. because its shell was killed.
+        /// </summary>
+        public void CancelAbandoned(long idleMs)
+        {
+            List<TestRun> abandoned;
+            lock (Gate)
+            {
+                abandoned = Runs.Where(r => r.Followed && !r.Done && !r.Cancelled && Environment.TickCount64 - r.LastPolled > idleMs).ToList();
+                foreach (var run in abandoned)
+                    Tell(run, $"Nothing follows run #{run.Id} anymore (no poll for {idleMs / 1000}s)");
+            }
+
+            abandoned.ForEach(Cancel);
         }
 
         public void CancelAll()

@@ -72,6 +72,9 @@ namespace Dev.Service.Supervisor
                 case (false, "status"):
                     await Status(context, main);
                     return;
+                case (false, "busy"):
+                    await Json(context, new BusyDto(Worktrees.ActiveRuns()));
+                    return;
                 case (false, "lit-html.js"):
                     await LitHtml(context, main);
                     return;
@@ -135,6 +138,15 @@ namespace Dev.Service.Supervisor
         static async Task Run(HttpContext context, string workspace, RunRequest request)
         {
             var name = string.IsNullOrEmpty(workspace) ? Worktrees.NameForPath(request?.Cwd) : workspace;
+            // Never fall through to the main checkout's specs and build for a cwd that is not the main checkout
+            var unknown = name == null ? Worktrees.Unknown(request?.Cwd) : null;
+            if (unknown != null)
+            {
+                context.Response.StatusCode = StatusCodes.Status409Conflict;
+                await Json(context, new ErrorDto(unknown));
+                return;
+            }
+
             var supervisor = name == null ? DevSupervisor.Instance : Worktrees.Run(name);
             if (supervisor == null)
             {
@@ -142,7 +154,7 @@ namespace Dev.Service.Supervisor
                 return;
             }
 
-            var run = supervisor.Tests.CreateRun(request?.Args ?? new List<string>());
+            var run = supervisor.Tests.CreateRun(request?.Args ?? new List<string>(), request?.Follow == true);
             await Json(context, new RunCreatedDto(run.Id, supervisor.Workspace));
         }
 
@@ -220,7 +232,10 @@ namespace Dev.Service.Supervisor
             var after = long.TryParse(query["after"], out var afterId) ? afterId : -1;
             RunOutputDto output;
             lock (supervisor.Gate)
+            {
+                run.LastPolled = Environment.TickCount64;
                 output = new RunOutputDto(run.Id, run.Status, run.ExitCode, run.Done, run.Output.Where(l => l.Id > after).Select(l => new OutputLineDto(l.Id, l.Text)).ToList());
+            }
 
             await Json(context, output);
         }

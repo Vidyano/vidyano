@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig, devices } from '@playwright/test';
+import path from 'path';
 
 /**
  * Read environment variables from file.
@@ -14,10 +15,14 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: '.',
+  /* Worktrees nested in .claude/ are checkouts of their own; their specs are not this checkout's */
+  testIgnore: [new RegExp(`${path.resolve(__dirname, '.claude').replaceAll('\\', '/').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/`, 'i')],
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
+  /* A hung run in the dev supervisor would hold back every queued run, so it ends after 90 minutes */
+  globalTimeout: process.env.VIDYANO_DEV_EVENTS ? 90 * 60_000 : 0,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [['list'], ...(process.env.VIDYANO_DEV_EVENTS ? [['./tools/dev/reporter.mjs']] : [])],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */

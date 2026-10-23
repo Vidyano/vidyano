@@ -10,7 +10,7 @@ test.describe.serial('Streaming action from a client operation', () => {
     test.beforeAll(async ({ browser }, testInfo) => {
         backend = await startBackend(testInfo);
         sharedPage = await browser.newPage();
-        await setupPage(sharedPage, '', backend.port);
+        await setupPage(sharedPage, '', backend.url);
 
         // A real app, so everything between the click and the dialog is the app's own code.
         // Only the two things a person would do are supplied, answering a prompt and being shown a dialog.

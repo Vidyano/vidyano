@@ -2,6 +2,7 @@
 
 using System.Diagnostics;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -62,6 +63,8 @@ public sealed class DevSupervisor
     const string Rollup = "node_modules/rollup/dist/bin/rollup";
     const string Sass = "node_modules/sass/sass.js";
     const string VidyanoSources = "packages/vidyano/src";
+    // The SHA-256 of the package-lock.json of a worktree's last successful npm ci
+    const string InstallStamp = "node_modules/.cache/vidyano-dev/lock.sha";
 
     static readonly Regex Ansi = new(@"\x1b\[[0-9;?]*[A-Za-z]");
     static readonly Regex Timestamp = new(@"^(\d{1,2}:\d{2}:\d{2}( [AP]M)? - |\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}(:\d{2})?\] |\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z )");
@@ -80,6 +83,7 @@ public sealed class DevSupervisor
     public bool ShuttingDown { get; private set; }
 
     readonly List<LogEntry> log = new();
+    readonly string installHash;
     long version;
     long nextLogId = 1;
     TaskCompletionSource changed = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -92,6 +96,7 @@ public sealed class DevSupervisor
         Gate = host?.Gate ?? new object();
 
         var install = host != null && NeedsInstall(root);
+        installHash = install ? LockHash(root) : null;
         var watchAfter = install ? new[] { "install" } : Array.Empty<string>();
         Tasks = new List<SupervisorTask>
         {
@@ -125,14 +130,83 @@ public sealed class DevSupervisor
         return new DevSupervisor(root, host, workspace);
     }
 
+    static string LockHash(string root)
+    {
+        var lockFile = Path.Combine(root, "package-lock.json");
+        try
+        {
+            return File.Exists(lockFile) ? Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(lockFile))) : "";
+        }
+        catch (IOException)
+        {
+            return "";
+        }
+    }
+
+    static void StampInstall(string root, string hash)
+    {
+        try
+        {
+            var stamp = Path.Combine(root, InstallStamp);
+            Directory.CreateDirectory(Path.GetDirectoryName(stamp));
+            File.WriteAllText(stamp, hash);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+        }
+    }
+
+    /// <summary>
+    /// Whether a worktree needs npm ci: when its package-lock.json differs from the one of its last successful install,
+    /// so a checkout or rebase that only touches the lock file's timestamp does not reinstall everything.
+    /// </summary>
     static bool NeedsInstall(string root)
     {
         var installed = Path.Combine(root, "node_modules/.package-lock.json");
         if (!File.Exists(installed))
             return true;
 
-        var stamp = File.GetLastWriteTimeUtc(installed);
-        return new[] { "package.json", "package-lock.json" }.Select(f => Path.Combine(root, f)).Any(f => File.Exists(f) && File.GetLastWriteTimeUtc(f) > stamp);
+        var hash = LockHash(root);
+        var stamp = Path.Combine(root, InstallStamp);
+        if (File.Exists(stamp))
+            return File.ReadAllText(stamp).Trim() != hash;
+
+        // Installed before the stamp existed: trust the timestamps once, and stamp the install when they agree
+        var at = File.GetLastWriteTimeUtc(installed);
+        if (new[] { "package.json", "package-lock.json" }.Select(f => Path.Combine(root, f)).Any(f => File.Exists(f) && File.GetLastWriteTimeUtc(f) > at))
+            return true;
+
+        StampInstall(root, hash);
+        return false;
+    }
+
+    SupervisorTask Install => Tasks.FirstOrDefault(t => t.Key == "install");
+
+    public bool InstallRunning => !ShuttingDown && Install?.Process != null;
+
+    public bool InstallWaiting => !ShuttingDown && Install is { Process: null, Status: "waiting" };
+
+    public void StartInstall()
+    {
+        StartTask(Install);
+    }
+
+    public void WaitForInstall(string other)
+    {
+        var detail = $"after the npm ci of {other}";
+        if (Install.Detail != detail)
+            Set(Install, "waiting", detail);
+    }
+
+    /// <summary>
+    /// The end of the npm ci output when this worktree's install failed, which no test run can do without; null otherwise.
+    /// </summary>
+    public List<string> InstallFailure()
+    {
+        if (Install?.Status != "error")
+            return null;
+
+        return LogAfter(0).Where(e => e.Task == "install").TakeLast(15).Select(e => e.Text).Prepend($"npm ci {Install.Detail}").ToList();
     }
 
     SupervisorTask InstallTask()
@@ -532,12 +606,18 @@ public sealed class DevSupervisor
                 RecoverLater(t, $"exited with code {process.ExitCode}");
             else if (process.ExitCode == 0)
             {
+                if (t.Key == "install")
+                    StampInstall(Root, installHash);
+
                 Set(t, "ok", "packages installed");
                 MarkReady(t);
             }
             else
                 Set(t, "error", $"failed with code {process.ExitCode}");
         }
+
+        if (t.Key == "install")
+            ThreadPool.QueueUserWorkItem(_ => Worktrees.NextInstall());
     }
 
     void RecoverLater(SupervisorTask t, string reason)
@@ -599,9 +679,13 @@ public sealed class DevSupervisor
             if (ShuttingDown)
                 return;
 
-            foreach (var t in Tasks.Where(t => t.Group == "frontend" && t.After.Length == 0))
+            // npm ci runs for one worktree at a time (see Worktrees.NextInstall)
+            foreach (var t in Tasks.Where(t => t.Group == "frontend" && t.After.Length == 0 && t.Key != "install"))
                 StartTask(t);
         }
+
+        if (Install != null)
+            Worktrees.NextInstall();
 
         Tests.Start();
         Console.WriteLine(IsMain ? $"Supervisor: {ServerUrl}/supervisor/" : $"Workspace {Workspace}: {ServerUrl}/{Workspace}/");

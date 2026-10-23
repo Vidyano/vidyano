@@ -15,7 +15,7 @@ test.describe.serial("Core service backend", () => {
     });
 
     test("should initialize service and load application", async () => {
-        const service = new Service(`http://localhost:${backend.port}`, undefined, false);
+        const service = new Service(backend.url, undefined, false);
         const app = await service.initialize(false);
 
         expect(app).toBeInstanceOf(Application);

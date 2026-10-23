@@ -1,6 +1,7 @@
 import { spawn, spawnSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import { supervisorApi } from './protocol.mjs';
 import { ensureDependencies, root } from './setup.mjs';
 
 const project = 'dev/Dev.csproj';
@@ -8,8 +9,12 @@ const sources = path.join(root, 'dev');
 const backendSource = /\.(cs|csproj)$|^App_Data[\\/](Model[\\/]|[^\\/]+\.json$)/;
 const ignored = /^(bin|obj|wwwroot|Supervisor)[\\/]/;
 const crashRestartMs = 3000;
+// A restart ends every test run, so it waits for them, but not forever
+const maxDeferMs = 10 * 60000;
 
 let backend = null;
+let deferring = false;
+let changedFile = null;
 let restarting = false;
 let stopping = false;
 let startedAt = 0;
@@ -48,8 +53,48 @@ function kill(child) {
         child.kill('SIGTERM');
 }
 
-function restart(file) {
-    step(`${file} changed; restarting the backend`);
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// The supervisor's queued and running test runs, which a restart would end; none when it does not answer
+async function activeRuns() {
+    try {
+        const response = await fetch(`${supervisorApi}/busy`, { cache: 'no-store', signal: AbortSignal.timeout(2000) });
+        return response.ok ? (await response.json()).runs ?? [] : [];
+    } catch {
+        return [];
+    }
+}
+
+async function restart(file) {
+    changedFile = file;
+    if (deferring)
+        return;
+
+    deferring = true;
+    const deadline = Date.now() + maxDeferMs;
+    let waitingFor = '';
+    for (let runs = await activeRuns(); runs.length > 0 && !stopping; runs = await activeRuns()) {
+        if (Date.now() > deadline) {
+            step(`Test runs are still active after ${maxDeferMs / 60000} minutes; restarting the backend anyway`);
+            break;
+        }
+
+        const active = runs.map(run => `run #${run.id} in ${run.workspace}`).join(', ');
+        if (active !== waitingFor) {
+            waitingFor = active;
+            step(`${changedFile} changed; deferring the backend restart until ${active} ${runs.length === 1 ? 'finishes' : 'finish'}`);
+        }
+
+        await sleep(2000);
+    }
+
+    deferring = false;
+    if (stopping)
+        return;
+
+    step(`${changedFile} changed; restarting the backend`);
     if (backend) {
         restarting = true;
         kill(backend);
