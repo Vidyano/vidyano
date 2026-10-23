@@ -245,7 +245,8 @@ export class QueryGrid extends Polymer.WebComponent {
      * Service bus observer for storing query grid state when the parent app route changes
      */
     private _onAppRouteDeactivate(sender: AppRoute, message: string, detail: IAppRouteDeactivateArgs) {
-        if (!this.findParent(e => e === sender))
+        // A newly connected grid receives the last deactivate message again, it should not overwrite the stored offsets
+        if (this.initializing || !this.findParent(e => e === sender))
             return;
 
         queryScrollOffsets.set(this.query, {
