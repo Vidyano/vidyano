@@ -84,9 +84,15 @@ namespace Dev.Service.Supervisor
 
     public record ServiceStatusDto(string Status, string Url);
 
-    public record RunRequest(List<string> Args, string Cwd);
+    public record RunRequest(List<string> Args, string Cwd, bool Follow);
 
     public record RunCreatedDto(int Id, string Workspace);
+
+    public record ErrorDto(string Error);
+
+    public record ActiveRunDto(string Workspace, int Id, string Status);
+
+    public record BusyDto(List<ActiveRunDto> Runs);
 
     public record WorkspaceDto(string Name, string Branch, string Root, bool Running);
 

@@ -11,7 +11,7 @@ test.describe.serial('PersistentObjectAttributeEdit', () => {
     test.beforeAll(async ({ browser }, testInfo) => {
         backend = await startBackend(testInfo, 'persistent-object-attribute-edit.cs');
         sharedPage = await browser.newPage();
-        await setupPage(sharedPage, '', backend.port);
+        await setupPage(sharedPage, '', backend.url);
     });
 
     test.afterAll(async () => {

@@ -1,7 +1,6 @@
 import { test as base, expect } from '@playwright/test';
 import { Service, ServiceHooks } from "@vidyano/core";
-
-const DEV_SERVER_URL = "http://localhost:5000";
+import { devBackendUrl } from "./_helpers/dev-backend";
 
 type ServiceFixtures = {
     service: Service;
@@ -9,7 +8,7 @@ type ServiceFixtures = {
 
 const test = base.extend<ServiceFixtures>({
     service: async ({}, use) => {
-        const serviceInstance = new Service(DEV_SERVER_URL, undefined, false);
+        const serviceInstance = new Service(devBackendUrl(), undefined, false);
         await serviceInstance.initialize(true);
 
         await use(serviceInstance);
@@ -22,7 +21,7 @@ const test = base.extend<ServiceFixtures>({
 
 test.describe('Service', () => {
     test('should initialize Service', async () => {
-        const service = new Service(DEV_SERVER_URL);
+        const service = new Service(devBackendUrl());
 
         expect(service.providers).toBeUndefined();
         expect(service.language).toBeUndefined();
@@ -42,7 +41,7 @@ test.describe('Service', () => {
     });
 
     test('should have correct service properties', async ({ service }) => {
-        expect(service.serviceUri).toBe(DEV_SERVER_URL);
+        expect(service.serviceUri).toBe(devBackendUrl());
         expect(service.isTransient).toBe(false);
         expect(service.isSignedIn).toBe(false);
     });
@@ -68,7 +67,7 @@ test.describe('Service', () => {
         }
 
         const hooks = new TestServiceHooks();
-        const serviceWithHooks = new Service(DEV_SERVER_URL, hooks);
+        const serviceWithHooks = new Service(devBackendUrl(), hooks);
         await serviceWithHooks.initialize(true);
 
         expect(serviceWithHooks.hooks).toBe(hooks);
@@ -82,7 +81,7 @@ test.describe('Service', () => {
     });
 
     test('should create transient service', async () => {
-        const transientService = new Service(DEV_SERVER_URL, undefined, true);
+        const transientService = new Service(devBackendUrl(), undefined, true);
         await transientService.initialize();
         await transientService.signInUsingCredentials("admin", "admin");
 

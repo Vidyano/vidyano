@@ -11,6 +11,7 @@ import {
     PersistentObjectAttributeGroup,
     PersistentObjectAttributeTab,
 } from "@vidyano/core";
+import { devBackendUrl } from "./_helpers/dev-backend";
 
 type Fixtures = {
     service: Service;
@@ -20,7 +21,7 @@ type Fixtures = {
 
 const test = base.extend<Fixtures>({
     service: async ({ }, use) => {
-        const service = new Service("http://localhost:5000", undefined, false);
+        const service = new Service(devBackendUrl(), undefined, false);
         await service.initialize(true);
         await service.signInUsingCredentials("admin", "admin");
         await service.executeAction("PersistentObject.ResetTest", service.application);

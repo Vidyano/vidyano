@@ -38,8 +38,8 @@ export function getTestHtml(customStyles = '') {
 
 export async function setupPage(
     page: Page,
-    customStyles = '',
-    port = 44355
+    customStyles: string,
+    backendUrl: string
 ) {
     // Log browser console messages to the terminal
     page.on('console', msg => {
@@ -61,17 +61,17 @@ export async function setupPage(
         });
     });
 
-    await page.goto(`http://localhost:${port}/test-page`);
+    await page.goto(`${backendUrl}/test-page`);
     await page.addScriptTag({ path: "dev/wwwroot/index.js", type: 'module' });
 
     // Wait for Vidyano to load
     await page.waitForFunction(() => typeof (window as any).Vidyano !== 'undefined', { timeout: 10000 });
 
     // Initialize service once
-    await page.evaluate(async (backendPort) => {
+    await page.evaluate(async (backendUrl) => {
         const Service = (window as any).Vidyano.Service;
 
-        const service = new Service(`http://localhost:${backendPort}`);
+        const service = new Service(backendUrl);
         await service.initialize();
         (window as any).service = service;
 
@@ -106,5 +106,5 @@ export async function setupPage(
 
         // Set the Symbol reference that components look for in connectedCallback
         (window as any)[Symbol.for("Vidyano.App")] = (window as any).app;
-    }, port);
+    }, backendUrl);
 }

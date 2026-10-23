@@ -394,6 +394,8 @@ tests/**/*.js
 
 playwright-report/index.html
 test-results/
+# Perf timings of the query grid perf specs; Playwright empties test-results/ on every run
+perf-results/
 
 patch
 *.sln

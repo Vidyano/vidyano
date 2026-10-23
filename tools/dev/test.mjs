@@ -5,8 +5,10 @@ let scope = '';
 
 async function call(action, options) {
     const response = await fetch(`${supervisorApi}/${action}`, { cache: 'no-store', ...options });
-    if (!response.ok)
-        throw new Error(`${action} answered ${response.status}`);
+    if (!response.ok) {
+        const body = await response.json().catch(() => null);
+        throw new Error(body?.error ?? `${action} answered ${response.status}`);
+    }
 
     return response.json();
 }
@@ -23,11 +25,16 @@ process.on('SIGINT', async () => {
 });
 
 try {
-    const created = await call('run', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ args: process.argv.slice(2), cwd: process.cwd() }) });
+    const created = await call('run', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ args: process.argv.slice(2), cwd: process.cwd(), follow: true }) });
     run = created.id;
     scope = created.workspace ? `?workspace=${encodeURIComponent(created.workspace)}` : '';
-} catch {
-    console.error('npm run dev is not running (the dev supervisor on localhost:5000 does not answer). Start it, then run the tests again.');
+} catch (e) {
+    // fetch throws a TypeError when nothing answers; an Error carries the supervisor's refusal
+    if (e instanceof TypeError)
+        console.error('npm run dev is not running (the dev supervisor on localhost:5000 does not answer). Start it, then run the tests again.');
+    else
+        console.error(`The dev supervisor refused the run: ${e.message}`);
+
     process.exit(1);
 }
 

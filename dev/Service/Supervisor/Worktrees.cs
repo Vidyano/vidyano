@@ -31,9 +31,14 @@ namespace Dev.Service.Supervisor
 
         static readonly HashSet<string> stoppedByUser = new();
         static List<Worktree> known = new();
+        static Dictionary<string, string> skipped = new();
         static string hostBranch;
         static FileSystemWatcher watcher;
         static Timer pending;
+        static Timer sweep;
+
+        // npm run test:dev polls a run's output every 300 ms; a run nobody polled for this long has lost its client
+        const long AbandonedMs = 30000;
 
         static DevSupervisor Host => DevSupervisor.Instance;
 
@@ -41,6 +46,7 @@ namespace Dev.Service.Supervisor
         {
             Refresh();
             Watch(host.Root);
+            sweep = new Timer(_ => Supervisors().ForEach(s => s.Tests.CancelAbandoned(AbandonedMs)), null, 5000, 5000);
         }
 
         public static IReadOnlyList<Worktree> Known
@@ -70,15 +76,106 @@ namespace Dev.Service.Supervisor
                 supervisor.Changed();
         }
 
-        public static void NextRun()
+        /// <summary>
+        /// The queued and running test runs of all checkouts, which a backend restart would end (see tools/dev/index.mjs).
+        /// </summary>
+        public static List<ActiveRunDto> ActiveRuns()
         {
-            foreach (var supervisor in Supervisors())
-                supervisor.Tests.Next();
+            var supervisors = Supervisors();
+            lock (Host.Gate)
+                return supervisors.SelectMany(s => s.Tests.Runs.Where(r => !r.Done).Select(r => new ActiveRunDto(Label(s), r.Id, r.Status))).ToList();
         }
 
-        public static bool TestsRunning()
+        /// <summary>
+        /// Starts the npm ci of the first worktree that waits for one, unless another runs: several at once compete for
+        /// the npm cache and the disk.
+        /// </summary>
+        public static void NextInstall()
         {
-            return Supervisors().Any(s => s.Tests.Runs.Any(r => r.Running));
+            var host = Host;
+            if (host == null)
+                return;
+
+            var supervisors = Supervisors();
+            lock (host.Gate)
+            {
+                var running = supervisors.FirstOrDefault(s => s.InstallRunning);
+                foreach (var supervisor in supervisors.Where(s => s.InstallWaiting))
+                {
+                    if (running == null)
+                    {
+                        supervisor.StartInstall();
+                        running = supervisor;
+                    }
+                    else
+                        supervisor.WaitForInstall(Label(running));
+                }
+            }
+        }
+
+        static string Label(DevSupervisor supervisor)
+        {
+            return supervisor.IsMain ? "main" : supervisor.Workspace;
+        }
+
+        /// <summary>
+        /// Starts every queued run, of all checkouts in the order they were queued, that conflicts with no running run
+        /// and no run queued before it (see TestRunner.Conflicts), once its own watchers are done building (all
+        /// checkouts' watchers for a perf run). A run that only waits for watchers holds back later runs of its own
+        /// checkout only, unless it is a perf run.
+        /// </summary>
+        public static void NextRun()
+        {
+            var host = Host;
+            if (host == null)
+                return;
+
+            var supervisors = Supervisors();
+            lock (host.Gate)
+            {
+                if (host.ShuttingDown)
+                    return;
+
+                var runs = supervisors.SelectMany(s => s.Tests.Runs.Where(r => !r.Done).Select(r => (Supervisor: s, Run: r))).OrderBy(x => x.Run.Sequence).ToList();
+                var ahead = runs.Where(x => x.Run.Running).Select(x => (x.Supervisor, x.Run, Holds: true)).ToList();
+                foreach (var (supervisor, run) in runs.Where(x => x.Run.Status == "queued"))
+                {
+                    if (supervisor.ShuttingDown)
+                        continue;
+
+                    // Without its packages a worktree runs nothing, so its runs fail now instead of waiting forever
+                    var installFailure = supervisor.InstallFailure();
+                    if (installFailure != null)
+                    {
+                        supervisor.Tests.Fail(run, "npm ci failed in this worktree; stop and start it in the supervisor to retry", installFailure);
+                        continue;
+                    }
+
+                    var blocker = ahead.FirstOrDefault(x => x.Supervisor == supervisor || (x.Holds && TestRunner.Conflicts(x.Run.Access, run.Access)));
+                    if (blocker.Run != null)
+                    {
+                        supervisor.Tests.Wait(run, $"run #{blocker.Run.Id} in {Label(blocker.Supervisor)}{(blocker.Run.Running ? "" : " (queued)")}");
+                        ahead.Add((supervisor, run, true));
+                        continue;
+                    }
+
+                    var watchers = supervisor.Tests.Blockers();
+                    // A perf run also waits for the other checkouts' builds, which would skew its timings
+                    if (run.Access == TestRunner.Machine)
+                        watchers.AddRange(supervisors.Where(s => s != supervisor && !s.ShuttingDown).SelectMany(s => s.Watchers.Where(t => t.Status is "starting" or "building").Select(t => $"{Label(s)}: {t.Label}")));
+
+                    if (watchers.Count > 0)
+                    {
+                        supervisor.Tests.Wait(run, string.Join(", ", watchers));
+                        // A perf run keeps its place, or later runs could keep it from ever starting
+                        ahead.Add((supervisor, run, run.Access == TestRunner.Machine));
+                        continue;
+                    }
+
+                    supervisor.Tests.Begin(run);
+                    ahead.Add((supervisor, run, true));
+                }
+            }
         }
 
         public static DevSupervisor Running(string name)
@@ -157,6 +254,7 @@ namespace Dev.Service.Supervisor
             }
 
             watcher?.Dispose();
+            sweep?.Dispose();
             running.ForEach(s => s.StopAll());
         }
 
@@ -167,10 +265,31 @@ namespace Dev.Service.Supervisor
 
             var full = Path.GetFullPath(path);
             var match = Match(full);
-            if (match == null && !IsUnder(full, Host.Root) && Refresh())
+            // A subfolder of the main checkout can be a worktree created since the last refresh
+            if (match == null && !SamePath(full, Host.Root) && Refresh())
                 match = Match(full);
 
             return match?.Name;
+        }
+
+        /// <summary>
+        /// Says why a path that matches no worktree cannot run in the main checkout either: it lies in a worktree that
+        /// Refresh skipped, or outside the repository. Null when the path belongs to the main checkout.
+        /// </summary>
+        public static string Unknown(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return null;
+
+            var full = Path.GetFullPath(path);
+            lock (Host.Gate)
+            {
+                var hit = skipped.Where(s => IsUnder(full, s.Key)).OrderByDescending(s => s.Key.Length).FirstOrDefault();
+                if (hit.Key != null)
+                    return $"the dev supervisor skips the worktree {hit.Key} because {hit.Value}; move it to a folder with another name";
+            }
+
+            return IsUnder(full, Host.Root) ? null : $"{full} is not the main checkout or one of its worktrees";
         }
 
         static Worktree Match(string path)
@@ -206,6 +325,7 @@ namespace Dev.Service.Supervisor
             lock (host.Gate)
             {
                 var next = new List<Worktree>();
+                var nextSkipped = new Dictionary<string, string>();
                 foreach (var entry in found)
                 {
                     if (SamePath(entry.Root, host.Root))
@@ -216,7 +336,8 @@ namespace Dev.Service.Supervisor
 
                     if (entry.Name.Length == 0 || reserved.Contains(entry.Name) || next.Any(w => w.Name == entry.Name))
                     {
-                        Console.WriteLine($"[worktrees] skipped {entry.Root}: the name {entry.Name} is taken");
+                        nextSkipped[entry.Root] = $"the name {entry.Name} is taken";
+                        Console.WriteLine($"[worktrees] skipped {entry.Root}: {nextSkipped[entry.Root]}");
                         continue;
                     }
 
@@ -226,6 +347,7 @@ namespace Dev.Service.Supervisor
 
                 removed = known.Select(w => w.Supervisor).Where(s => s != null && next.All(w => w.Supervisor != s)).ToList();
                 known = next;
+                skipped = nextSkipped;
             }
 
             removed.ForEach(s => s.StopAll());

@@ -15,7 +15,7 @@ test.describe.serial('DateTime Attribute', () => {
 
     test.beforeAll(async ({ browser }) => {
         sharedPage = await browser.newPage();
-        await setupPage(sharedPage, '', sharedBackend.port);
+        await setupPage(sharedPage, '', sharedBackend.url);
     });
 
     test.afterAll(async () => {

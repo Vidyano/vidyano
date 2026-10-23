@@ -58,6 +58,7 @@ test.describe.serial('SignIn passkeys', () => {
 
     test.beforeAll(async ({ browser }, testInfo) => {
         backend = await startBackend(testInfo);
+        // Passkeys need a domain as relying party id, so this spec reaches its backend by localhost, not by backend.url
         origin = `http://localhost:${backend.port}`;
 
         page = await browser.newPage();
