@@ -15,6 +15,9 @@ import { PolymerElement, html } from "@polymer/polymer"
 import { GestureEventListeners } from "@polymer/polymer/lib/mixins/gesture-event-listeners"
 import * as Settings from "@polymer/polymer/lib/utils/settings"
 import { DomModule } from "@polymer/polymer/lib/elements/dom-module"
+import { DomRepeat } from "@polymer/polymer/lib/elements/dom-repeat"
+import { matches, translate } from "@polymer/polymer/lib/utils/path"
+import { templatize } from "@polymer/polymer/lib/utils/templatize"
 import * as Vidyano from "@vidyano/core"
 import { Path } from "libs/pathjs/pathjs"
 import type { AppBase } from "components/app/app-base"
@@ -28,6 +31,52 @@ Settings.setOrderedComputed(true);
 Settings.setPassiveTouchGestures(true);
 Settings.setRemoveNestedTemplates(true);
 Settings.setSuppressTemplateNotifications(true);
+
+// Polymer's dom-repeat creates its templatize callbacks in a scope whose arrow function captures `this`, and templatize caches
+// those callbacks in the template info that every instance of the host element shares: the first dom-repeat, its host and
+// everything that host holds stayed alive forever. Create the same callbacks outside of any dom-repeat scope instead.
+// Mirrors __ensureTemplatized of @polymer/polymer 3.5.2 (vidyano/polymer#vidyano): re-check it when Polymer is upgraded.
+function domRepeatForwardHostProp(this: any, prop: string, value: any) {
+    const instances = this.__instances;
+    for (let i = 0, instance; (i < instances.length) && (instance = instances[i]); i++)
+        instance.forwardHostProp(prop, value);
+}
+
+function domRepeatNotifyInstanceProp(this: any, instance: any, prop: string, value: any) {
+    if (matches(this.as, prop)) {
+        const index = instance[this.itemsIndexAs];
+        if (prop == this.as)
+            this.items[index] = value;
+
+        this.notifyPath(translate(this.as, `items.${index}`, prop), value);
+    }
+}
+
+const domRepeatEnsureTemplatized = (DomRepeat.prototype as any).__ensureTemplatized;
+(DomRepeat.prototype as any).__ensureTemplatized = function(this: any) {
+    if (this.__ctor)
+        return true;
+
+    // Without a template yet the original waits for it, and then calls back into this method
+    const template = this._templateInfo ? this : this.querySelector("template");
+    if (!template)
+        return domRepeatEnsureTemplatized.call(this);
+
+    this.template = template;
+    const instanceProps = {};
+    instanceProps[this.as] = true;
+    instanceProps[this.indexAs] = true;
+    instanceProps[this.itemsIndexAs] = true;
+    this.__ctor = templatize(template, this, {
+        mutableData: this.mutableData,
+        parentModel: true,
+        instanceProps: instanceProps,
+        forwardHostProp: domRepeatForwardHostProp,
+        notifyInstanceProp: domRepeatNotifyInstanceProp
+    });
+
+    return true;
+};
 
 class Operations {
     areSame(value1: any, value2: any): boolean {
