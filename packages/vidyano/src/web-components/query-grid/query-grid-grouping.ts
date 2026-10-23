@@ -2,6 +2,7 @@ import * as Polymer from "polymer"
 import * as Vidyano from "@vidyano/core"
 import "components/popup-menu/popup-menu"
 import { PopupMenuItem } from "components/popup-menu/popup-menu-item"
+import { Popup } from "components/popup/popup"
 
 @Polymer.WebComponent.register({
     properties: {
@@ -17,6 +18,8 @@ export class QueryGridGrouping extends Polymer.WebComponent {
         const collapse = (<PopupMenuItem>e.currentTarget).icon === "QueryGrid_Group_Collapse";
         this.query.groupingInfo.groups.forEach(g => g.isCollapsed = collapse);
 
+        Popup.closeAll();
+
         this.dispatchEvent(new CustomEvent("scroll-top", {
             bubbles: true,
             composed: true
@@ -24,6 +27,7 @@ export class QueryGridGrouping extends Polymer.WebComponent {
     }
 
     private _remove() {
+        Popup.closeAll();
         this.query.group("");
     }
 }
