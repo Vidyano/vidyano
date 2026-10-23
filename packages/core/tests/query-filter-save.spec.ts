@@ -1,5 +1,6 @@
 import { test as base, expect } from "@playwright/test";
 import { Service, ServiceHooks, Query, QueryFilter } from "@vidyano/core";
+import { devBackendUrl } from "./_helpers/dev-backend";
 
 /**
  * A failed QueryFilters.save keeps the current filter and the column filters as they are.
@@ -32,7 +33,7 @@ const test = base.extend<Fixtures>({
     },
 
     peopleQuery: async ({ hooks }, use) => {
-        const service = new Service("http://localhost:5000", hooks, false);
+        const service = new Service(devBackendUrl(), hooks, false);
         await service.initialize(true);
         await service.signInUsingCredentials("admin", "admin");
         const query = await service.getQuery("People");

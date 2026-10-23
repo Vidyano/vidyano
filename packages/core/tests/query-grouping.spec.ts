@@ -1,5 +1,6 @@
 import { test as base, expect } from "@playwright/test";
 import { Service, ServiceHooks, Query } from "@vidyano/core";
+import { devBackendUrl } from "./_helpers/dev-backend";
 
 /**
  * Grouped People (10,000 rows, pageSize 100): lazy page loads and the query's group objects.
@@ -40,7 +41,7 @@ const test = base.extend<Fixtures>({
     },
 
     query: async ({ hooks }, use) => {
-        const service = new Service("http://localhost:5000", hooks, false);
+        const service = new Service(devBackendUrl(), hooks, false);
         await service.initialize(true);
         await service.signInUsingCredentials("admin", "admin");
         const query = await service.getQuery("People");

@@ -1,6 +1,7 @@
 import { test as base, expect } from "@playwright/test";
 import { Service, Query, _internal } from "@vidyano/core";
 import { ContinuationHooks, LIMIT, PEOPLE, referenceIds } from "./_helpers/continuation";
+import { devBackendUrl } from "./_helpers/dev-backend";
 
 /**
  * Queries with an unknown total that page with continuation tokens.
@@ -23,7 +24,7 @@ type Fixtures = {
 const test = base.extend<Fixtures, WorkerFixtures>({
     reference: [async ({}, use) => {
         const hooks = new ContinuationHooks();
-        const service = new Service("http://localhost:5000", hooks, false);
+        const service = new Service(devBackendUrl(), hooks, false);
         await service.initialize(true);
         await service.signInUsingCredentials("admin", "admin");
 
@@ -35,7 +36,7 @@ const test = base.extend<Fixtures, WorkerFixtures>({
     },
 
     query: async ({ hooks }, use) => {
-        const service = new Service("http://localhost:5000", hooks, false);
+        const service = new Service(devBackendUrl(), hooks, false);
         await service.initialize(true);
         await service.signInUsingCredentials("admin", "admin");
         await use(await service.getQuery(PEOPLE));
