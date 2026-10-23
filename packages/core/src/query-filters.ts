@@ -217,7 +217,13 @@ export class QueryFilters extends Observable<QueryFilters> {
                 this.#filtersAsDetail.objects.remove(filter.persistentObject = newFilter);
 
             this.#computeFilters();
-            this.currentFilter = this.filters.find(f => f.name === filter.name);
+            if (result)
+                this.currentFilter = this.filters.find(f => f.name === filter.name);
+            else if (this.#currentFilter && !this.#currentFilter.persistentObject.isNew) {
+                // Keep the column filters as they are, only point to the recomputed instance of the current filter
+                const oldCurrentFilter = this.#currentFilter;
+                this.notifyPropertyChanged("currentFilter", this.#currentFilter = this.filters.find(f => f.name === oldCurrentFilter.name) || oldCurrentFilter, oldCurrentFilter);
+            }
 
             return result;
         });

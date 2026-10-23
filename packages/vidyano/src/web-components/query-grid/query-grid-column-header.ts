@@ -12,6 +12,10 @@ resizeObserver = new ResizeObserver(allEntries => {
     
         const parents = new Map<HTMLElement, ResizeObserverEntry[]>();
         allEntries.forEach(e => {
+            // A header inside a hidden (display: none) container has no size yet, keep observing it until it is shown
+            if (!(e["borderBoxSize"] != null ? e["borderBoxSize"][0].inlineSize : (<HTMLElement>e.target).offsetWidth))
+                return;
+
             const parent = parents.get(e.target.parentElement) || parents.set(e.target.parentElement, []).get(e.target.parentElement);
             parent.push(e);
         });

@@ -87,8 +87,13 @@
     &[is-group] {
         grid-template-columns: 1fr !important;
 
-        ::slotted(.column), .pinned {
+        ::slotted(.column) {
             display: none;
+        }
+
+        // !important: the grid's [has-grouping] ::part(groupspacer) and [can-filter] ::part(filter) rules would win otherwise
+        .pinned {
+            display: none !important;
         }
     }
 

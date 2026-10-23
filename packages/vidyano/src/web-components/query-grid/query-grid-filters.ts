@@ -188,11 +188,15 @@ export class QueryGridFilters extends Polymer.WebComponent {
     }
 
     private async _edit(e: Polymer.Gestures.TapEvent) {
+        e.stopPropagation();
+
         const filter = <Vidyano.QueryFilter>e.model.filter.filter;
         this.app.showDialog(new QueryGridFilterDialog(this.query.filters, filter));
     }
 
     private async _delete(e: Polymer.Gestures.TapEvent) {
+        e.stopPropagation();
+
         const filter = <Vidyano.QueryFilter>e.model.filter.filter;
 
         const result = await this.app.showMessageDialog({

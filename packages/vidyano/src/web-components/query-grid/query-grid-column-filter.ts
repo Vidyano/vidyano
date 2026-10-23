@@ -239,11 +239,13 @@ export class QueryGridColumnFilter extends Polymer.WebComponent {
         }
     }
 
-    private async _updateDistincts() {
+    private async _updateDistincts(search: boolean = true) {
         this._setLoading(true);
 
         try {
-            await this.column.query.search();
+            if (search)
+                await this.column.query.search();
+
             await this.queryColumn.refreshDistincts(this.searchText);
         }
         finally {
@@ -288,11 +290,12 @@ export class QueryGridColumnFilter extends Polymer.WebComponent {
 
     private _getHighlightedDistinctDisplayValue(displayValue: string, searchText: string): string {
         if (!searchText)
-            return displayValue;
+            return this._escapeHTML(displayValue);
 
+        // Split on the raw text so matches never land inside escaped entities; odd parts are the matches
         searchText = searchText.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
         const exp = new RegExp(`(${searchText})`, "gi");
-        return displayValue.replace(exp, "<span class='match'>$1</span>");
+        return displayValue.split(exp).map((part, index) => index % 2 ? `<span class='match'>${this._escapeHTML(part)}</span>` : this._escapeHTML(part)).join("");
     }
 
     private async _search() {
@@ -307,7 +310,7 @@ export class QueryGridColumnFilter extends Polymer.WebComponent {
 
         this._renderDistincts();
         this._updateFilters();
-        this._updateDistincts();
+        this._updateDistincts(false);
     }
 
     private _inverse(e: Event) {

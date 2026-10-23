@@ -69,7 +69,7 @@ export class QueryGridRow extends Polymer.WebComponent {
     private _extraclass: string;
     readonly isGroup: boolean; private _setIsGroup: (isGroup: boolean) => void;
     columns: Vidyano.QueryColumn[];
-    offsets: number[];
+    offsets: [cellLeft: number, cellRight: number][];
     visibleRange: [ left: number, right: number];
 
     get cells(): QueryGridCell[] {
@@ -97,6 +97,9 @@ export class QueryGridRow extends Polymer.WebComponent {
         existingCells.forEach(cell => {
             this.removeChild(cell);
         });
+
+        // The cells were added, removed or reordered, the offsets of the visible cells changed
+        this._flush(this.offsets, this.visibleRange);
     }
 
     private _itemChanged(item: Vidyano.QueryResultItem | Vidyano.QueryResultItemGroup, oldItem: Vidyano.QueryResultItem | Vidyano.QueryResultItemGroup) {
@@ -152,18 +155,19 @@ export class QueryGridRow extends Polymer.WebComponent {
     private _flush(offsets: [cellLeft: number, cellRight: number][], visibleRange: [left: number, right: number]) {
         const cells = <QueryGridCell[]>(<HTMLSlotElement>this.$.columns).assignedElements();
 
-        this._visibleCells = cells.filter((cell, index) => {
-            const visible = this.columns[index].isPinned || !(offsets[index][1] < visibleRange[0] || offsets[index][0] > visibleRange[1] - 64);
-            if (visible && this._visibleCells && this._visibleCells.indexOf(cell) < 0) {
-                const invisibleCellIndex = this._invisibleCellValues.findIndex(cellValue => cellValue[0] === cell);
-                if (invisibleCellIndex >= 0) {
-                    const update = this._invisibleCellValues.splice(invisibleCellIndex, 1)[0];
-                    update[0].value = update[1];
-                }
-            }
+        // Without measured column widths (e.g. while the grid is initializing) every cell is filled
+        const virtualize = !!offsets && !!visibleRange && offsets.length === cells.length;
+        const visibleCells = cells.filter((cell, index) => !virtualize || cell.column.isPinned || !(offsets[index][1] < visibleRange[0] || offsets[index][0] > visibleRange[1]));
 
-            return visible;
+        this._invisibleCellValues = this._invisibleCellValues.filter(([cell, value]) => {
+            if (visibleCells.indexOf(cell) < 0)
+                return true;
+
+            cell.value = value;
+            return false;
         });
+
+        this._visibleCells = virtualize ? visibleCells : null;
     }
 
     private _preventOpen(e: Polymer.Gestures.TapEvent) {

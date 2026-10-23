@@ -69,6 +69,10 @@ const PHYSICAL_UPPER_LIMIT = 100000;
             type: Array,
             readOnly: true
         },
+        columnWidths: {
+            type: Object,
+            readOnly: true
+        },
         horizontalScrollOffset: {
             type: Number,
             observer: "_updateHorizontalScrollOffset"
@@ -210,6 +214,7 @@ export class QueryGrid extends Polymer.WebComponent {
     readonly virtualItems: QueryGridItem[]; private _setVirtualItems: (virtualItems: QueryGridItem[]) => void;
     readonly columns: QueryGridColumn[];
     readonly pinnedColumns: QueryGridColumn[]; private _setPinnedColumns: (pinnedColumns: QueryGridColumn[]) => void;
+    readonly columnWidths: Record<string, number>; private _setColumnWidths: (columnWidths: Record<string, number>) => void;
     readonly viewportHeight: number;
     readonly virtualRowCount: number;
     readonly hasGrouping: boolean; private _setHasGrouping: (hasGrouping: boolean) => void;
@@ -245,7 +250,8 @@ export class QueryGrid extends Polymer.WebComponent {
      * Service bus observer for storing query grid state when the parent app route changes
      */
     private _onAppRouteDeactivate(sender: AppRoute, message: string, detail: IAppRouteDeactivateArgs) {
-        if (!this.findParent(e => e === sender))
+        // A newly connected grid receives the last deactivate message again, it should not overwrite the stored offsets
+        if (this.initializing || !this.findParent(e => e === sender))
             return;
 
         queryScrollOffsets.set(this.query, {
@@ -255,8 +261,11 @@ export class QueryGrid extends Polymer.WebComponent {
     }
 
     private _onInitializingChanged(initializing: boolean, oldInitializing: boolean) {
-        if (initializing)
+        if (initializing) {
+            // Rows fill every cell while the column widths are measured from the cell content
+            this._setColumnWidths(null);
             return;
+        }
 
         const offset = queryScrollOffsets.get(this.query);
         if (offset !== undefined) {
@@ -322,6 +331,8 @@ export class QueryGrid extends Polymer.WebComponent {
         if (widths.every(w => w.cell >= 0))
             this.style.removeProperty("--vi-query-grid-columns-no-data");
 
+        // Rows defer the cells outside the horizontal viewport from now on
+        this._setColumnWidths(Object.fromEntries(Array.from(this._columnWidths).map(([column, width]) => [column, Math.ceil(width.current)])));
         this._setInitializing(false);
 
         if (detail.save)
@@ -348,8 +359,13 @@ export class QueryGrid extends Polymer.WebComponent {
         let newVirtualGridStartIndex: number = 0;
         if (viewportEndRowIndex - this._virtualGridStartIndex > virtualRowCount)
             newVirtualGridStartIndex = viewportStartRowIndex;
-        else if (viewportStartRowIndex < this._virtualGridStartIndex)
+        else if (viewportStartRowIndex < this._virtualGridStartIndex) {
             newVirtualGridStartIndex = viewportEndRowIndex - virtualRowCount;
+
+            // Round an odd start up instead of down, the window is aligned to the viewport end so rounding down would leave the last visible row uncovered
+            if (newVirtualGridStartIndex % 2 !== 0 && this._verticalSpacerCorrection === 1 && newVirtualGridStartIndex < viewportStartRowIndex)
+                newVirtualGridStartIndex++;
+        }
         else if (this.virtualItems.some(item => item === placeholder))
             newVirtualGridStartIndex = this._virtualGridStartIndex;
         else if (items.forceUpdate) {
@@ -535,6 +551,7 @@ export class QueryGrid extends Polymer.WebComponent {
 
     private _computeColumns(columns: QueryGridColumn[]) {
         columns = columns.filter(c => !c.isHidden);
+        columns = [...columns.filter(c => c.isPinned), ...columns.filter(c => !c.isPinned)];
 
         if (this.columns) {
             const signature = (columns: QueryGridColumn[]) => columns.orderBy(c => c.name).map(c => c.name).join(";");
@@ -547,8 +564,11 @@ export class QueryGrid extends Polymer.WebComponent {
             this.style.setProperty("--vi-query-grid-columns-no-data", init);
             this.style.setProperty("--vi-query-grid-columns", init);
         }
+        // Columns were hidden, pinned or reordered: each column keeps its own measured width instead of the width of its old position
+        else if (columns.every(c => this._columnWidths.get(c.name)?.current > 0))
+            this.style.setProperty("--vi-query-grid-columns", `${columns.map(c => `${Math.ceil(this._columnWidths.get(c.name).current)}px`).join(" ")} minmax(0, 1fr)`);
 
-        return [...columns.filter(c => c.isPinned), ...columns.filter(c => !c.isPinned)];
+        return columns;
     }
 
     private _computeVirtualRowCount(viewportHeight: number, rowHeight: number, canReorder: boolean, totalItems: number) {
@@ -561,10 +581,13 @@ export class QueryGrid extends Polymer.WebComponent {
         return Math.ceil(Math.max(Math.ceil(viewportHeight / rowHeight) * 1.5, this.virtualRowCount || 0));
     }
 
-    private _computeOffsets(columnWidths: number[]) {
+    private _computeOffsets(columns: QueryGridColumn[], columnWidths: Record<string, number>) {
+        if (!columns || !columnWidths)
+            return null;
+
         let offset = 0;
-        return columnWidths.map(width => {
-            return [offset, offset += width];
+        return columns.map(column => {
+            return [offset, offset += columnWidths[column.name] || 0];
         });
     }
 
