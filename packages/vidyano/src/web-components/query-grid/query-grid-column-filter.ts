@@ -288,11 +288,12 @@ export class QueryGridColumnFilter extends Polymer.WebComponent {
 
     private _getHighlightedDistinctDisplayValue(displayValue: string, searchText: string): string {
         if (!searchText)
-            return displayValue;
+            return this._escapeHTML(displayValue);
 
+        // Split on the raw text so matches never land inside escaped entities; odd parts are the matches
         searchText = searchText.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
         const exp = new RegExp(`(${searchText})`, "gi");
-        return displayValue.replace(exp, "<span class='match'>$1</span>");
+        return displayValue.split(exp).map((part, index) => index % 2 ? `<span class='match'>${this._escapeHTML(part)}</span>` : this._escapeHTML(part)).join("");
     }
 
     private async _search() {

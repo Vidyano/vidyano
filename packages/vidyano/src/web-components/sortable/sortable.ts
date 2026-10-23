@@ -318,6 +318,21 @@ export class Sortable extends WebComponent {
     }
 
     /**
+     * Checks if the pointer went down on an interactive element inside the draggable item.
+     */
+    #isInteractiveTarget(composedPath: EventTarget[], draggableElement: HTMLElement): boolean {
+        for (const el of composedPath) {
+            if (el === draggableElement)
+                return false;
+
+            if (el instanceof HTMLElement && el.matches("vi-button, button, input, select, textarea, a[href], [contenteditable]"))
+                return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Activates drag mode after delay (if configured) has elapsed.
      */
     #activateDragMode(draggableElement: HTMLElement, items: HTMLElement[], e: PointerEvent) {
@@ -396,6 +411,10 @@ export class Sortable extends WebComponent {
 
         // Check if the element should be filtered
         if (this.filter && draggableElement.matches(this.filter))
+            return;
+
+        // Let buttons and inputs inside an item receive their own clicks instead of starting a drag
+        if (this.#isInteractiveTarget(e.composedPath(), draggableElement))
             return;
 
         // Check if handle is required and was clicked

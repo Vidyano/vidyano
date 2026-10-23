@@ -1,7 +1,20 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "@vidyano/core"
 import "components/notification/notification"
-import "./query-grid-filter-dialog-name"
+import { PersistentObjectAttributePresenter } from "components/persistent-object-attribute-presenter/persistent-object-attribute-presenter"
+import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute"
+import { QueryGridFilterDialogName } from "./query-grid-filter-dialog-name"
+
+/**
+ * Presents the filter name attribute with the group/name editor instead of the default string editor.
+ */
+export class QueryGridFilterDialogNamePresenter extends PersistentObjectAttributePresenter {
+    protected createAttributeElement(): PersistentObjectAttribute {
+        return <PersistentObjectAttribute><unknown>new QueryGridFilterDialogName();
+    }
+}
+
+customElements.define("vi-query-grid-filter-dialog-name-presenter", QueryGridFilterDialogNamePresenter);
 
 @Polymer.WebComponent.register({
     properties: {

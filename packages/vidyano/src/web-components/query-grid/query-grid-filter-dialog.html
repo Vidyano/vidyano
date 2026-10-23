@@ -2,11 +2,7 @@
 
 <vi-notification service-object="[[persistentObject]]"></vi-notification>
 <main id="main">
-    <vi-persistent-object-attribute-presenter attribute="[[persistentObject.attributes.Name]]">
-        <template>
-            <vi-query-grid-filter-dialog-name class="flex" attribute="[[attribute]]"></vi-query-grid-filter-dialog-name>
-        </template>
-    </vi-persistent-object-attribute-presenter>
+    <vi-query-grid-filter-dialog-name-presenter attribute="[[persistentObject.attributes.Name]]"></vi-query-grid-filter-dialog-name-presenter>
     <vi-persistent-object-attribute-presenter attribute="[[persistentObject.attributes.IsDefault]]"></vi-persistent-object-attribute-presenter>
 </main>
 <footer class="layout horizontal-reverse">
