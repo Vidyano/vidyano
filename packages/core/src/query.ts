@@ -1229,6 +1229,18 @@ export class Query extends ServiceObjectWithActions {
             return;
         }
 
+        // Keep the current groups when they did not change (e.g. a lazy page load), so their consumers don't re-render.
+        const groups = groupingInfo.groups || [];
+        const current = this.groupingInfo;
+        if (current?.groupedBy === groupingInfo.groupedBy && current.groups?.length === groups.length && current.groups.every((g, i) => g.name === groups[i].name && g.count === groups[i].count)) {
+            for (const group of current.groups) {
+                const items = this.items.slice(group.start, group.end);
+                group.items.splice(0, items.length, ...items);
+            }
+
+            return;
+        }
+
         // Preserve UI state by remembering which groups are currently collapsed.
         const oldCollapsedStates = new Map<string, boolean>();
         if (this.groupingInfo?.groups?.length) {
@@ -1242,7 +1254,7 @@ export class Query extends ServiceObjectWithActions {
         // Callback for group items to notify the query of state changes (e.g., collapse/expand).
         const notifier = () => this.#setLastUpdated(new Date());
         
-        const newGroups = (groupingInfo.groups || []).map(g => {
+        const newGroups = groups.map(g => {
             const group = new QueryResultItemGroup(this, g, start, (start = start + g.count) - 1, notifier);
             if (oldCollapsedStates.has(group.name)) {
                 group.isCollapsed = true;
