@@ -239,11 +239,13 @@ export class QueryGridColumnFilter extends Polymer.WebComponent {
         }
     }
 
-    private async _updateDistincts() {
+    private async _updateDistincts(search: boolean = true) {
         this._setLoading(true);
 
         try {
-            await this.column.query.search();
+            if (search)
+                await this.column.query.search();
+
             await this.queryColumn.refreshDistincts(this.searchText);
         }
         finally {
@@ -308,7 +310,7 @@ export class QueryGridColumnFilter extends Polymer.WebComponent {
 
         this._renderDistincts();
         this._updateFilters();
-        this._updateDistincts();
+        this._updateDistincts(false);
     }
 
     private _inverse(e: Event) {
