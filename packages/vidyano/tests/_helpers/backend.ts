@@ -1,5 +1,9 @@
 import { TestInfo } from '@playwright/test';
 import { spawn, ChildProcess, execSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
+
+const isWindows = process.platform === 'win32';
 
 // Map worker ID to port to enable parallel test execution
 function getWorkerPort(testInfo: TestInfo): number {
@@ -11,33 +15,14 @@ export interface BackendProcess extends ChildProcess {
     port: number;
 }
 
-export async function startBackend(testInfo: TestInfo, backendFile?: string): Promise<BackendProcess> {
-    const testFile = testInfo.file;
-    const dir = testFile.substring(0, testFile.lastIndexOf('/'));
-
-    let csFile: string;
-    if (backendFile) {
-        // Use the specified backend file
-        csFile = `${dir}/${backendFile}`;
-    } else {
-        // Derive from spec filename: foo.spec.ts -> foo.cs
-        const specFileName = testFile.substring(testFile.lastIndexOf('/') + 1);
-        const csFileName = specFileName.replace('.spec.ts', '.cs');
-        csFile = `${dir}/${csFileName}`;
+// Gracefully stop any process listening on the port
+async function freePort(port: number) {
+    // Windows has no lsof or SIGINT for console processes, so it force-kills the listener
+    if (isWindows) {
+        killPort(port);
+        return;
     }
 
-    // Check if the .cs file exists
-    try {
-        execSync(`test -f "${csFile}"`, { encoding: 'utf-8' });
-    } catch {
-        throw new Error(`No matching .cs file found: ${csFile}`);
-    }
-
-    const csFilePath = execSync(`realpath --relative-to="$(pwd)" "${csFile}"`, { encoding: 'utf-8' }).trim();
-    const port = getWorkerPort(testInfo);
-
-    // Start the backend process
-    // Gracefully stop any existing process on this port
     try {
         const pidOutput = execSync(`lsof -ti:${port} 2>/dev/null`, { encoding: 'utf-8' }).trim();
         if (pidOutput) {
@@ -69,7 +54,23 @@ export async function startBackend(testInfo: TestInfo, backendFile?: string): Pr
     } catch (error) {
         // No process was running on the port, which is fine
     }
+}
 
+export async function startBackend(testInfo: TestInfo, backendFile?: string): Promise<BackendProcess> {
+    const testFile = testInfo.file;
+    const dir = path.dirname(testFile);
+
+    // Use the specified backend file, or derive it from the spec filename: foo.spec.ts -> foo.cs
+    const csFile = path.join(dir, backendFile ?? path.basename(testFile).replace('.spec.ts', '.cs'));
+    if (!fs.existsSync(csFile))
+        throw new Error(`No matching .cs file found: ${csFile}`);
+
+    const csFilePath = path.relative(process.cwd(), csFile);
+    const port = getWorkerPort(testInfo);
+
+    await freePort(port);
+
+    // Start the backend process
     return new Promise((resolve, reject) => {
         const backendProcess = spawn('dotnet', ['run', csFilePath], {
             stdio: 'pipe',
@@ -82,7 +83,7 @@ export async function startBackend(testInfo: TestInfo, backendFile?: string): Pr
         let isReady = false;
         const timeout = setTimeout(() => {
             if (!isReady) {
-                backendProcess.kill('SIGKILL');
+                killTree(backendProcess);
                 reject(new Error(`Backend failed to start within timeout period (30s) on port ${port}`));
             }
         }, 30000);
@@ -122,6 +123,28 @@ export async function startBackend(testInfo: TestInfo, backendFile?: string): Pr
     });
 }
 
+function killPort(port: number) {
+    try {
+        const pids = new Set(execSync(`netstat -ano -p tcp`, { encoding: 'utf-8' })
+            .split('\n')
+            .map(line => line.trim().split(/\s+/))
+            .filter(cols => cols[1]?.endsWith(`:${port}`) && cols[3] === 'LISTENING')
+            .map(cols => cols[4]));
+
+        for (const pid of pids)
+            execSync(`taskkill /pid ${pid} /T /F`, { stdio: 'ignore' });
+    } catch {
+        // No process was running on the port, which is fine
+    }
+}
+
+function killTree(process: ChildProcess) {
+    if (isWindows && process.pid)
+        execSync(`taskkill /pid ${process.pid} /T /F`, { stdio: 'ignore' });
+    else
+        process.kill('SIGKILL');
+}
+
 export async function stopBackend(process: ChildProcess | undefined): Promise<void> {
     if (!process || !process.pid)
         return;
@@ -138,6 +161,21 @@ export async function stopBackend(process: ChildProcess | undefined): Promise<vo
         };
 
         process.once('exit', onExit);
+        if (process.exitCode !== null || process.signalCode !== null) {
+            onExit();
+            return;
+        }
+
+        // dotnet run leaves the backend running as a child process on Windows, so kill the whole tree
+        if (isWindows) {
+            try {
+                killTree(process);
+            } catch {
+                // Process might already be dead
+            }
+
+            return;
+        }
 
         // Try graceful shutdown first
         process.kill('SIGINT');

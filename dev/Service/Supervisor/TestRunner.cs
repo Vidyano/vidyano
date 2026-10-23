@@ -515,10 +515,10 @@ namespace Dev.Service.Supervisor
                     }
 
                     file.Took = file.Started != null ? Environment.TickCount64 - file.Started : null;
-                    file.Status = run.Cancelled ? "cancelled" : process.ExitCode == 0 ? "passed" : anyFailed ? "skipped" : "failed";
+                    file.Status = run.Cancelled ? "cancelled" : TestsOf(run, file).Any(t => t.Status == "failed") ? "failed" : process.ExitCode == 0 ? "passed" : anyFailed ? "skipped" : "failed";
                 }
 
-                Finish(run);
+                Finish(run, process.ExitCode);
             }
         }
 
@@ -547,10 +547,11 @@ namespace Dev.Service.Supervisor
                     if ((string)e["type"] == "test-begin")
                     {
                         test.Status = "running";
-                        if (file?.Status == "pending")
+                        // A retry reopens a file that settled after the failed attempt
+                        if (file != null && file.Status != "running")
                         {
                             file.Status = "running";
-                            file.Started = Environment.TickCount64;
+                            file.Started ??= Environment.TickCount64;
                         }
                     }
                     else
@@ -590,14 +591,14 @@ namespace Dev.Service.Supervisor
             file.Took = Environment.TickCount64 - file.Started;
         }
 
-        void Finish(TestRun run)
+        void Finish(TestRun run, int exitCode = 0)
         {
             run.Took = run.Started != null ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - run.Started : 0;
             run.Status = run.Cancelled ? "cancelled" : run.Files.Any(f => f.Status == "failed") ? "failed" : "passed";
 
             var failedFiles = run.Files.Where(f => f.Status == "failed").ToList();
             var ran = run.Files.Count(f => f.Status != "skipped");
-            run.ExitCode = run.Cancelled ? 130 : failedFiles.Count > 0 ? 1 : 0;
+            run.ExitCode = run.Cancelled ? 130 : failedFiles.Count > 0 ? 1 : exitCode;
             Tell(run, $"── Run #{run.Id} {run.Status}: {ran}/{run.Files.Count} spec files run{(failedFiles.Count > 0 ? $", failed: {string.Join(", ", failedFiles.Select(f => f.File))}" : "")}");
         }
 

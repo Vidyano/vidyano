@@ -458,7 +458,7 @@ test.describe("Query", () => {
             const initialAccess = peopleQuery.items[testIndex];
             expect(initialAccess).toBeNull();
 
-            await new Promise((resolve) => setTimeout(resolve, 500));
+            await expect.poll(() => becameBusy && !peopleQuery.isBusy).toBe(true);
             disposer();
 
             const afterWaitAccess = peopleQuery.items[testIndex];
