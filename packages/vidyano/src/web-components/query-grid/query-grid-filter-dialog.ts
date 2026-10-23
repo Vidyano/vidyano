@@ -21,6 +21,11 @@ customElements.define("vi-query-grid-filter-dialog-name-presenter", QueryGridFil
         persistentObject: {
             type: Object,
             readOnly: true
+        },
+        saving: {
+            type: Boolean,
+            readOnly: true,
+            value: false
         }
     },
     forwardObservers: [
@@ -31,6 +36,7 @@ export class QueryGridFilterDialog extends Polymer.Dialog {
     static get template() { return Polymer.Dialog.dialogTemplate(Polymer.html`<link rel="import" href="query-grid-filter-dialog.html">`) }
 
     readonly persistentObject: Vidyano.PersistentObject; private _setPersistentObject: (persistentObject: Vidyano.PersistentObject) => void;
+    readonly saving: boolean; private _setSaving: (saving: boolean) => void;
 
     constructor(private _filters: Vidyano.QueryFilters, private _filter: Vidyano.QueryFilter) {
         super();
@@ -40,13 +46,18 @@ export class QueryGridFilterDialog extends Polymer.Dialog {
     }
 
     private async _save() {
-        const isNew = this.persistentObject.isNew;
-        if (await this._filters.save(this._filter)) {
-            super.close();
-            return;
-        }
+        this._setSaving(true);
+        try {
+            if (await this._filters.save(this._filter)) {
+                super.close();
+                return;
+            }
 
-        this._setPersistentObject(this._filter.persistentObject);
+            this._setPersistentObject(this._filter.persistentObject);
+        }
+        finally {
+            this._setSaving(false);
+        }
     }
 
     close(result?: any) {
