@@ -45,6 +45,8 @@ export class Query extends ServiceObjectWithActions {
     #labelWithTotalItems: string;
     #sortOptions: ISortOption[];
     #queriedPages: number[] = [];
+    /** Increments on every search, so page loads started before it do not write into the new result */
+    #searchGeneration: number = 0;
     #filters: QueryFilters;
     #allowTextSearch: boolean;
     #canFilter: boolean;
@@ -256,6 +258,10 @@ export class Query extends ServiceObjectWithActions {
             return;
 
         this.notifyPropertyChanged("hasMore", this.#hasMore = val, oldValue);
+
+        // The "+" after the total depends on hasMore, also when the total itself does not change (an empty last page)
+        if (this.#totalItems != null)
+            this.#updateLabelWithTotalItems();
     }
 
     /**
@@ -736,16 +742,24 @@ export class Query extends ServiceObjectWithActions {
             return this.#getItems(start, length);
         }
 
+        const requestedStart = start, requestedLength = length;
+        const requested = () => this.items.slice(requestedStart, requestedStart + requestedLength);
+
         if (this.totalItems >= 0) {
-            if (start > this.totalItems)
+            if (start > this.totalItems) {
+                // A continuation token can only fetch the next page, so also load the pages in between
+                if (this.hasMore)
+                    length += start - this.totalItems;
+
                 start = this.totalItems;
+            }
 
             if (!this.hasMore && start + length > this.totalItems)
                 length = this.totalItems - start;
         }
 
         if (this.pageSize <= 0 || length === 0)
-            return this.items.slice(start, start + length);
+            return requested();
 
         let startPage = Math.floor(start / this.pageSize);
         let endPage = Math.floor((start + length - 1) / this.pageSize);
@@ -756,23 +770,44 @@ export class Query extends ServiceObjectWithActions {
             endPage--;
 
         if (startPage === endPage && this.#queriedPages.indexOf(startPage) >= 0)
-            return this.items.slice(start, start + length);
+            return requested();
 
+        const generation = this.#searchGeneration;
         const clonedQuery = this.clone(this.#asLookup);
-        const skip = startPage * this.pageSize;
+        let skip = startPage * this.pageSize;
         clonedQuery.top = (endPage - startPage + 1) * this.pageSize;
 
-        if (this.hasMore && this.items.length > 0 && this.#continuation)
+        const usesContinuation = this.hasMore && this.items.length > 0 && !!this.#continuation;
+        if (usesContinuation)
             clonedQuery.#continuation = this.#continuation;
         else
             clonedQuery.skip = skip;
 
         const work = async () => {
+            // A search since this request was made replaced the result, so this page belongs to the old one
+            if (generation !== this.#searchGeneration)
+                return requested();
+
+            if (usesContinuation) {
+                if (!this.hasMore)
+                    return requested();
+
+                // Pages may have been loaded while this work was queued, continue from the current continuation token
+                while (startPage < endPage && this.#queriedPages.indexOf(startPage) >= 0)
+                    startPage++;
+
+                skip = startPage * this.pageSize;
+                clonedQuery.top = (endPage - startPage + 1) * this.pageSize;
+                clonedQuery.#continuation = this.#continuation;
+            }
+
             if (!Array.range(startPage, endPage).some(p => this.#queriedPages.indexOf(p) < 0))
-                return this.items.slice(start, start + length);
+                return requested();
 
             try {
                 const result = await this.service.executeQuery(this.parent, clonedQuery, this.#asLookup, true);
+                if (generation !== this.#searchGeneration)
+                    return requested();
 
                 if (result.totalItems === -1) {
                     this.#continuation = result.continuation;
@@ -781,6 +816,7 @@ export class Query extends ServiceObjectWithActions {
                     this.#setTotalItems(result.totalItems);
                 }
                 else if (this.hasMore) {
+                    this.#continuation = null;
                     this.#setHasMore(false);
                     result.totalItems = skip + result.items.length;
                     this.#setTotalItems(result.totalItems);
@@ -836,7 +872,7 @@ export class Query extends ServiceObjectWithActions {
                 this.#updateGroupingInfo(result.groupingInfo);
 
                 if (isChanged) {
-                    const result = await this.#getItems(start, length, true);
+                    const result = await this.#getItems(requestedStart, requestedLength, true);
                     this.notifyPropertyChanged("items", this.items);
 
                     return result;
@@ -844,7 +880,7 @@ export class Query extends ServiceObjectWithActions {
 
                 this.#setLastUpdated();
 
-                return this.items.slice(start, start + length);
+                return requested();
             }
             catch (e) {
                 this.setNotification(e);
@@ -870,6 +906,7 @@ export class Query extends ServiceObjectWithActions {
         const wasAllSelectedInverse = options?.keepSelection && this.selectAll.allSelected && this.selectAll.inverse;
         const inverseDeselectedIds = wasAllSelectedInverse ? this.items.filter(i => !i.isSelected).map(i => i.id) : null;
         const search = () => {
+            this.#searchGeneration++;
             this.#continuation = null;
             this.#queriedPages = [];
             this.#setHasSearched(false);
@@ -1102,7 +1139,13 @@ export class Query extends ServiceObjectWithActions {
         const oldTotalItems = this.#totalItems;
         this.notifyPropertyChanged("totalItems", this.#totalItems = items, oldTotalItems);
 
+        this.#updateLabelWithTotalItems();
+    }
 
+    /**
+     * Updates labelWithTotalItems from totalItems and hasMore.
+     */
+    #updateLabelWithTotalItems() {
         const oldLabelWithTotalItems = this.#labelWithTotalItems;
         let formattedTotal = "";
         if (this.totalItems != null) {
