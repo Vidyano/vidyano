@@ -69,6 +69,10 @@ const PHYSICAL_UPPER_LIMIT = 100000;
             type: Array,
             readOnly: true
         },
+        columnWidths: {
+            type: Object,
+            readOnly: true
+        },
         horizontalScrollOffset: {
             type: Number,
             observer: "_updateHorizontalScrollOffset"
@@ -210,6 +214,7 @@ export class QueryGrid extends Polymer.WebComponent {
     readonly virtualItems: QueryGridItem[]; private _setVirtualItems: (virtualItems: QueryGridItem[]) => void;
     readonly columns: QueryGridColumn[];
     readonly pinnedColumns: QueryGridColumn[]; private _setPinnedColumns: (pinnedColumns: QueryGridColumn[]) => void;
+    readonly columnWidths: Record<string, number>; private _setColumnWidths: (columnWidths: Record<string, number>) => void;
     readonly viewportHeight: number;
     readonly virtualRowCount: number;
     readonly hasGrouping: boolean; private _setHasGrouping: (hasGrouping: boolean) => void;
@@ -256,8 +261,11 @@ export class QueryGrid extends Polymer.WebComponent {
     }
 
     private _onInitializingChanged(initializing: boolean, oldInitializing: boolean) {
-        if (initializing)
+        if (initializing) {
+            // Rows fill every cell while the column widths are measured from the cell content
+            this._setColumnWidths(null);
             return;
+        }
 
         const offset = queryScrollOffsets.get(this.query);
         if (offset !== undefined) {
@@ -323,6 +331,8 @@ export class QueryGrid extends Polymer.WebComponent {
         if (widths.every(w => w.cell >= 0))
             this.style.removeProperty("--vi-query-grid-columns-no-data");
 
+        // Rows defer the cells outside the horizontal viewport from now on
+        this._setColumnWidths(Object.fromEntries(Array.from(this._columnWidths).map(([column, width]) => [column, Math.ceil(width.current)])));
         this._setInitializing(false);
 
         if (detail.save)
@@ -571,10 +581,13 @@ export class QueryGrid extends Polymer.WebComponent {
         return Math.ceil(Math.max(Math.ceil(viewportHeight / rowHeight) * 1.5, this.virtualRowCount || 0));
     }
 
-    private _computeOffsets(columnWidths: number[]) {
+    private _computeOffsets(columns: QueryGridColumn[], columnWidths: Record<string, number>) {
+        if (!columns || !columnWidths)
+            return null;
+
         let offset = 0;
-        return columnWidths.map(width => {
-            return [offset, offset += width];
+        return columns.map(column => {
+            return [offset, offset += columnWidths[column.name] || 0];
         });
     }
 
