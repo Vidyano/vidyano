@@ -983,7 +983,7 @@ export class Query extends ServiceObjectWithActions {
                         this.#setResult(result, sentFilterState);
                     }
                     catch (e) {
-                        // The result could not be applied, e.g. a row hook threw and the query shows an empty result instead
+                        // The result could not be applied, e.g. a row hook threw and the query is left with an empty result
                         failed = true;
                         error = e;
                     }
@@ -1248,7 +1248,8 @@ export class Query extends ServiceObjectWithActions {
 
     /**
      * Replaces the result with an empty one when a result could not be applied, the page loads of the old result stop.
-     * @param error - The error that is shown as the notification.
+     * A row hook that throws is a bug in the app, so the error goes to the console for the developer, not to the user.
+     * @param error - The error the row hook threw.
      */
     #setEmptyResult(error: any) {
         this.#lastResult = null;
@@ -1266,7 +1267,7 @@ export class Query extends ServiceObjectWithActions {
         this.#updateGroupingInfo(groupedBy ? { groupedBy, groups: [] } : null);
         this.#setTotalItem(null);
 
-        this.setNotification(error);
+        console.error(error);
         this.#setLastUpdated();
     }
 

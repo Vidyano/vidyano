@@ -5,7 +5,7 @@ import { devBackendUrl } from "./_helpers/dev-backend";
 
 /**
  * A row hook (ServiceHooks.onConstructQueryResultItem) that throws while a result or a page is applied.
- * A result that cannot be applied leaves an empty result with the error as the notification,
+ * A result that cannot be applied leaves an empty result and reports the error in the console (a row hook error is a bug for the developer, not news for the user),
  * a page that cannot be applied leaves the query as it was, so the page can be loaded again.
  */
 
@@ -98,11 +98,27 @@ function expectEmptyResult(query: Query) {
     expect(query.hasMore).toBe(false);
     expect(query.items.length).toBe(0);
     expect(query.totalItem).toBeNull();
-    expect(query.notification).toBe(ERROR);
+    expect(query.notification).toBeFalsy();
 }
 
 test.describe("A search whose rows cannot be built", () => {
-    test("leaves an empty result with the error as the notification", async ({ service, hooks }) => {
+    test("reports the error in the console", async ({ service, hooks }) => {
+        const query = await service.getQuery("People");
+        const logged: unknown[][] = [];
+        const consoleError = console.error;
+        console.error = (...args: unknown[]) => { logged.push(args); };
+        try {
+            hooks.failFor(query);
+            await query.search();
+        }
+        finally {
+            console.error = consoleError;
+        }
+
+        expect(logged.some(args => args.some(a => a instanceof Error && a.message === ERROR))).toBe(true);
+    });
+
+    test("leaves an empty result", async ({ service, hooks }) => {
         const query = await service.getQuery("People");
         expect(query.totalItems).toBe(10_000);
 
@@ -223,7 +239,7 @@ test.describe("A lazy page whose rows cannot be built", () => {
 });
 
 test.describe("A reorder whose rows cannot be built", () => {
-    test("leaves an empty result with the error as the notification", async ({ reorderQuery: query, hooks }) => {
+    test("leaves an empty result", async ({ reorderQuery: query, hooks }) => {
         expect(query.totalItems).toBe(250);
         expect(query.pageSize).toBeLessThan(150);
         const first = loadedItem(query, 0), moved = loadedItem(query, 1);
