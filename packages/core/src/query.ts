@@ -831,33 +831,50 @@ export class Query extends ServiceObjectWithActions {
                 if (generation !== this.#searchGeneration)
                     return requested();
 
-                if (result.totalItems === -1) {
-                    this.#continuation = result.continuation;
-                    this.#setHasMore(true);
+                // A page with a continuation token, or the last page of a continuation query, sets the total
+                const hasMore = result.totalItems === -1, endsContinuation = !hasMore && this.hasMore;
+                if (hasMore || endsContinuation)
                     result.totalItems = skip + result.items.length;
-                    this.#setTotalItems(result.totalItems);
+
+                // NOTE: Query has changed (items added/deleted) so the old data is replaced
+                const isChanged = !hasMore && !this.hasMore && this.pageSize > 0 && result.totalItems !== this.totalItems;
+                if (isChanged && !this.selectAll.allSelected) {
+                    /* tslint:disable:no-var-keyword */ var selectedItems = {}; /* tslint:enable:no-var-keyword */
+                    this.selectedItems.forEach(i => selectedItems[i.id] = i);
                 }
-                else if (this.hasMore) {
-                    this.#continuation = null;
-                    this.#setHasMore(false);
-                    result.totalItems = skip + result.items.length;
+
+                // Build the rows before anything changes, so a row hook that throws leaves the page to be loaded again
+                const missing: number[] = [];
+                const disableLazyLoading = this.#disableLazyLoading;
+                this.#disableLazyLoading = true;
+                for (let n = 0; n < clonedQuery.top && (skip + n < result.totalItems); n++) {
+                    if (isChanged || this.items[skip + n] == null)
+                        missing.push(n);
+                }
+                this.#disableLazyLoading = disableLazyLoading;
+
+                const rows: QueryResultItem[] = [];
+                for (const n of missing) {
+                    const newItem = result.items[n];
+                    // Select-all turns off once a page makes the total unknown
+                    const isSelected = isChanged ? !!selectedItems?.[newItem.id] : this.selectAll.allSelected && !hasMore;
+
+                    rows[n] = this.service.hooks.onConstructQueryResultItem(this.service, newItem, this, isSelected);
+                }
+
+                if (hasMore || endsContinuation) {
+                    this.#continuation = hasMore ? result.continuation : null;
+                    this.#setHasMore(hasMore);
                     this.#setTotalItems(result.totalItems);
                 }
 
                 for (let p = startPage; p <= endPage; p++)
                     this.#queriedPages.push(p);
 
-                const isChanged = !this.hasMore && this.pageSize > 0 && result.totalItems !== this.totalItems;
                 if (isChanged) {
-                    // NOTE: Query has changed (items added/deleted) so remove old data
                     this.#queriedPages = [];
                     for (let i = startPage; i <= endPage; i++)
                         this.#queriedPages.push(i);
-
-                    if (!this.selectAll.allSelected) {
-                        /* tslint:disable:no-var-keyword */ var selectedItems = {}; /* tslint:enable:no-var-keyword */
-                        this.selectedItems.forEach(i => selectedItems[i.id] = i);
-                    }
 
                     this.#setItems([]);
                     this.#setTotalItems(result.totalItems);
@@ -870,11 +887,8 @@ export class Query extends ServiceObjectWithActions {
 
                 for (let n = 0; n < clonedQuery.top && (skip + n < result.totalItems); n++) {
                     const currentItem = this.items[skip + n];
-                    if (currentItem == null) {
-                        const newItem = result.items[n];
-                        const isSelected = this.selectAll.allSelected || (selectedItems && selectedItems[newItem.id]);
-                        
-                        this.items[skip + n] = this.service.hooks.onConstructQueryResultItem(this.service, newItem, this, isSelected);
+                    if (n in rows) {
+                        this.items[skip + n] = rows[n];
                         notify ||= {
                             index: skip,
                             removedItems: [],
@@ -947,23 +961,29 @@ export class Query extends ServiceObjectWithActions {
                 const sent = this.#sentSearchGeneration = this.#searchGeneration;
                 const sentSortOptions = this.sortOptions, sentGroupingInfo = this.groupingInfo;
                 const sentFilterState = this.#filterState();
-                let failed = false, error: any;
+                let failed = false, error: any, result: Dto.QueryResultDto;
                 try {
-                    const result = await this.service.executeQuery(this.parent, this, this.#asLookup, true);
-
-                    // A search started while this one ran sends its own request, its result wins
-                    if (sent !== this.#searchGeneration)
-                        return;
-
-                    this.#setHasSearched(true);
-                    this.#setResult(result, sentFilterState);
+                    result = await this.service.executeQuery(this.parent, this, this.#asLookup, true);
                 }
                 catch (e) {
-                    if (sent !== this.#searchGeneration)
-                        return;
-
                     failed = true;
                     error = e;
+                }
+
+                // A search started while this one ran sends its own request, its result wins
+                if (sent !== this.#searchGeneration)
+                    return;
+
+                if (!failed) {
+                    try {
+                        this.#setHasSearched(true);
+                        this.#setResult(result, sentFilterState);
+                    }
+                    catch (e) {
+                        // The result could not be applied, e.g. a row hook threw and the query shows an empty result instead
+                        failed = true;
+                        error = e;
+                    }
                 }
 
                 const waiters = this.#searchWaiters;
@@ -1135,6 +1155,19 @@ export class Query extends ServiceObjectWithActions {
      * @param filterState - The text search and column filters sent for the result.
      */
     #setResult(result: Dto.QueryResultDto, filterState?: QueryFilterState) {
+        // The rows are built with the columns of the result, before anything else changes
+        this.#updateColumns(result.columns);
+
+        let items: QueryResultItem[], totalItem: QueryResultItem;
+        try {
+            items = result.items.map(item => this.service.hooks.onConstructQueryResultItem(this.service, item, this));
+            totalItem = result.totalItem != null ? this.service.hooks.onConstructQueryResultItem(this.service, result.totalItem, this) : null;
+        }
+        catch (e) {
+            this.#setEmptyResult(e);
+            throw e;
+        }
+
         this.#lastResult = result;
 
         // The result replaces every row, also those of pages loaded before (e.g. in the old order of a reorder)
@@ -1161,9 +1194,8 @@ export class Query extends ServiceObjectWithActions {
         }
 
         this.#setHasSearched(true);
-        this.#updateColumns(result.columns);
         this.#resultFilterState = filterState ?? this.#filterState();
-        this.#setItems(result.items.map(item => this.service.hooks.onConstructQueryResultItem(this.service, item, this)));
+        this.#setItems(items);
 
         // The service sends no groupingInfo for an empty grouped result, keep the requested grouping
         const groupedBy = this.groupingInfo?.groupedBy;
@@ -1172,7 +1204,7 @@ export class Query extends ServiceObjectWithActions {
         this.#setSortOptionsFromService(result.sortOptions);
         this.#resultSortOptions = this.sortOptions;
 
-        this.#setTotalItem(result.totalItem != null ? this.service.hooks.onConstructQueryResultItem(this.service, result.totalItem, this) : null);
+        this.#setTotalItem(totalItem);
 
         this.setNotification(result.notification, result.notificationType, result.notificationDuration);
 
@@ -1180,6 +1212,30 @@ export class Query extends ServiceObjectWithActions {
             this.#setCharts(result.charts.map(c => new QueryChart(this, c.label, c.name, c.options, c.type)));
 
         this.#tag = result.tag;
+        this.#setLastUpdated();
+    }
+
+    /**
+     * Replaces the result with an empty one when a result could not be applied, the page loads of the old result stop.
+     * @param error - The error that is shown as the notification.
+     */
+    #setEmptyResult(error: any) {
+        this.#lastResult = null;
+        this.#searchGeneration++;
+        this.#continuation = null;
+        this.#queriedPages = [];
+
+        this.#setHasMore(false);
+        this.#setTotalItems(0);
+        this.#setHasSearched(true);
+        this.#setItems([]);
+
+        // Keep the requested grouping, like an empty grouped result
+        const groupedBy = this.groupingInfo?.groupedBy;
+        this.#updateGroupingInfo(groupedBy ? { groupedBy, groups: [] } : null);
+        this.#setTotalItem(null);
+
+        this.setNotification(error);
         this.#setLastUpdated();
     }
 
