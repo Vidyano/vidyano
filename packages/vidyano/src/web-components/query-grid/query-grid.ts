@@ -117,7 +117,7 @@ const PHYSICAL_UPPER_LIMIT = 100000;
         canSelect: {
             type: Boolean,
             reflectToAttribute: true,
-            computed: "_computeCanSelect(query, noSelection, asLookup)"
+            computed: "_computeCanSelect(query, noSelection, asLookup, query.actions.*)"
         },
         noInlineActions: {
             type: Boolean,
@@ -127,7 +127,7 @@ const PHYSICAL_UPPER_LIMIT = 100000;
         inlineActions: {
             type: Boolean,
             reflectToAttribute: true,
-            computed: "_computeInlineActions(query, noInlineActions)"
+            computed: "_computeInlineActions(query, noInlineActions, asLookup, query.actions.*)"
         },
         canFilter: {
             type: Boolean,
@@ -165,6 +165,7 @@ const PHYSICAL_UPPER_LIMIT = 100000;
         },
     },
     forwardObservers: [
+        "query.actions.*.isVisible",
         "query.canReorder",
         "query.columns",
         "query.isBusy",
@@ -183,7 +184,7 @@ const PHYSICAL_UPPER_LIMIT = 100000;
     observers: [
         "_scrollToTop(query.items)", // Scroll to top when the query items reference changes, for example after search.
         "_update(verticalScrollOffset, virtualRowCount, rowHeight, items, skip, maxRows)",
-        "_updateVerticalSpacer(viewportHeight, rowHeight, items, maxRows)",
+        "_updateVerticalSpacer(viewportHeight, rowHeight, items, maxRows, skip)",
         "_updateUserSettings(query, query.columns)",
         "_updateMore(visibleColumnHeaderSize, horizontalScrollOffset)"
     ],
@@ -204,6 +205,9 @@ export class QueryGrid extends Polymer.WebComponent {
     private _lastSelectedItemIndex: number;
     private _controlsSizeObserver: ResizeObserver;
     private _updateMoreDebouncer: Polymer.Debounce.Debouncer;
+    private _programmaticScroll: boolean;
+    private _renderedSkip: number;
+    private _renderedMaxRows: number;
 
     query: Vidyano.Query;
     asLookup: boolean;
@@ -232,10 +236,21 @@ export class QueryGrid extends Polymer.WebComponent {
 
         this._controlsSizeObserver = new ResizeObserver(this._controlsSizeChanged.bind(this));
         this._controlsSizeObserver.observe(this.shadowRoot.querySelector(".controls"));
+
+        // A re-attached grid renders its rows again instead of keeping placeholders until the next scroll
+        if (!this.initializing && this.items?.length) {
+            this.items.forceUpdate = true;
+            this._update(this.verticalScrollOffset, this.virtualRowCount, this.rowHeight, this.items, this.skip, this.maxRows);
+        }
     }
 
     disconnectedCallback() {
         this._controlsSizeObserver.disconnect();
+
+        // A removed grid sends nothing to the server
+        this._getItemsDebouncer?.cancel();
+        this._updateCellDebouncer?.cancel();
+        this._updateMoreDebouncer?.cancel();
 
         super.disconnectedCallback();
     }
@@ -243,7 +258,14 @@ export class QueryGrid extends Polymer.WebComponent {
     ready() {
         super.ready();
 
-        requestAnimationFrame(() => this.rowHeight = parseInt(window.getComputedStyle(this).getPropertyValue("--vi-query-grid-row-height")));
+        requestAnimationFrame(() => {
+            // The custom property keeps the length as written (e.g. 2.5em), a probe resolves it to pixels
+            const probe = document.createElement("div");
+            probe.style.cssText = "position: absolute; visibility: hidden; height: var(--vi-query-grid-row-height);";
+            this.shadowRoot.appendChild(probe);
+            this.rowHeight = Math.round(parseFloat(window.getComputedStyle(probe).height));
+            probe.remove();
+        });
     }
 
     /**
@@ -271,8 +293,10 @@ export class QueryGrid extends Polymer.WebComponent {
         if (offset !== undefined) {
             // Run as animation frame, otherwise the browser will set an incorrect scroll height
             Polymer.Async.animationFrame.run(() => {
-                this.verticalScrollOffset = offset.vertical;
-                this.horizontalScrollOffset = offset.horizontal;
+                this._scrollProgrammatically(() => {
+                    this.verticalScrollOffset = offset.vertical;
+                    this.horizontalScrollOffset = offset.horizontal;
+                });
 
                 queryScrollOffsets.delete(this.query);
             });
@@ -284,10 +308,12 @@ export class QueryGrid extends Polymer.WebComponent {
      */
     private _queryChanged(query: Vidyano.Query, oldQuery: Vidyano.Query) {
         if (oldQuery) {
+            // The widths were measured on the old query's data
+            this._columnWidths.clear();
             this._setInitializing(true);
 
             // A new query has its own columns, the old horizontal offset means nothing there
-            this.horizontalScrollOffset = 0;
+            this._scrollProgrammatically(() => this.horizontalScrollOffset = 0);
         }
     }
 
@@ -320,24 +346,10 @@ export class QueryGrid extends Polymer.WebComponent {
         if (this._columnWidths.size < this.columns.length)
             return;
 
-        // Remove previously added columns which are no longer relevant
-        Array.from(this._columnWidths).filter(cw => !this.columns.find(c => c.name === cw[0])).forEach(c => this._columnWidths.delete(c[0]));
+        if (this.columns.some(c => Number.isNaN(this._columnWidths.get(c.name)?.current)) && (this.query.items.length || this.query.isBusy))
+            return;
 
-        const widths = Array.from(this._columnWidths.values());
-        if (widths.some(w => Number.isNaN(w.current))) {
-            if (this.query.items.length || this.query.isBusy)
-                return;
-            
-            this._columnWidths.forEach(cw => cw.current = cw.column);
-        }
-
-        this.style.setProperty("--vi-query-grid-columns", `${this.columns.map(c => `${Math.ceil(this._columnWidths.get(c.name).current)}px`).join(" ")} minmax(0, 1fr)`);
-        if (widths.every(w => w.cell >= 0))
-            this.style.removeProperty("--vi-query-grid-columns-no-data");
-
-        // Rows defer the cells outside the horizontal viewport from now on
-        this._setColumnWidths(Object.fromEntries(Array.from(this._columnWidths).map(([column, width]) => [column, Math.ceil(width.current)])));
-        this._setInitializing(false);
+        this._applyColumnWidths();
 
         if (detail.save) {
             const query = this.query;
@@ -345,20 +357,68 @@ export class QueryGrid extends Polymer.WebComponent {
         }
     }
 
+    /**
+     * Writes the measured column widths and ends initializing, a column without a cell width falls back to its header width.
+     */
+    private _applyColumnWidths() {
+        // Remove previously added columns which are no longer relevant
+        Array.from(this._columnWidths).filter(cw => !this.columns.find(c => c.name === cw[0])).forEach(c => this._columnWidths.delete(c[0]));
+
+        const widths = Array.from(this._columnWidths.values());
+        if (widths.some(w => Number.isNaN(w.current)))
+            this._columnWidths.forEach(cw => cw.current = cw.column);
+
+        this._setColumnTracks(this.columns);
+        if (widths.every(w => w.cell >= 0))
+            this.style.removeProperty("--vi-query-grid-columns-no-data");
+
+        // Rows defer the cells outside the horizontal viewport from now on
+        this._setColumnWidths(Object.fromEntries(Array.from(this._columnWidths).map(([column, width]) => [column, Math.ceil(width.current)])));
+        this._setInitializing(false);
+    }
+
     private _scrollToTop() {
-        this.verticalScrollOffset = 0;
+        // The range anchor is an index into the old items
+        this._lastSelectedItemIndex = undefined;
+
+        this._scrollProgrammatically(() => this.verticalScrollOffset = 0);
+    }
+
+    private _scrollProgrammatically(scroll: () => void) {
+        this._programmaticScroll = true;
+        try {
+            scroll();
+        }
+        finally {
+            this._programmaticScroll = false;
+        }
+    }
+
+    private _setColumnTracks(columns: QueryGridColumn[]) {
+        const widths = columns.map(c => Math.ceil(this._columnWidths.get(c.name).current));
+        this.style.setProperty("--vi-query-grid-columns", `${widths.map(w => `${w}px`).join(" ")} minmax(0, 1fr)`);
+        this.style.setProperty("--vi-query-grid-columns-width", `${widths.reduce((sum, w) => sum + w, 0)}px`);
     }
 
     private _update(verticalScrollOffset: number, virtualRowCount: number, rowHeight: number, items: QueryGridItems, skip: number, maxRows?: number) {
         if (!virtualRowCount)
             return;
 
+        // The browser clamped the scroll height: the unscaled row position lies past it, the rows move back to the real scroll position
+        const clampOffset = this._verticalSpacerCorrection > 1 ? verticalScrollOffset * (this._verticalSpacerCorrection - 1) : 0;
         verticalScrollOffset *= this._verticalSpacerCorrection;
         const viewportStartRowIndex = Math.floor(verticalScrollOffset / rowHeight);
         const viewportEndRowIndex = Math.ceil((verticalScrollOffset + this.viewportHeight) / rowHeight);
 
-        if (!this.virtualItems || this.virtualItems.length !== virtualRowCount) {
-            this._setVirtualItems(new Array(Math.min(virtualRowCount, maxRows || Number.MAX_SAFE_INTEGER)));
+        const virtualItemsLength = Math.min(virtualRowCount, maxRows || Number.MAX_SAFE_INTEGER);
+        if (!this.virtualItems || this.virtualItems.length !== virtualItemsLength) {
+            this._setVirtualItems(new Array(virtualItemsLength));
+            items.forceUpdate = true;
+        }
+
+        if (skip !== this._renderedSkip || maxRows !== this._renderedMaxRows) {
+            this._renderedSkip = skip;
+            this._renderedMaxRows = maxRows;
             items.forceUpdate = true;
         }
         
@@ -412,7 +472,7 @@ export class QueryGrid extends Polymer.WebComponent {
                 this._virtualGridStartIndex = newVirtualGridStartIndex;
                 this.splice("virtualItems", 0, this.virtualRowCount, ...this.virtualItems);
 
-                this.$.grid.style.transform = `translateY(${newVirtualGridStartIndex * rowHeight}px)`;
+                this.$.grid.style.transform = `translateY(${newVirtualGridStartIndex * rowHeight - clampOffset}px)`;
             }
         );
 
@@ -430,7 +490,13 @@ export class QueryGrid extends Polymer.WebComponent {
         if (this.initializing && this.query.isBusy) {
             // Query grid is displayed for the first time but query has no items, there will be no rows to trigger the column width synchronization.
             this.query.queueWork(async () => {
-                if (this.initializing && !this.query.items.length)
+                if (!this.initializing || this.query.items.length)
+                    return;
+
+                // The headers reported their widths while the search was busy, nothing will report them again
+                if (this.columns.every(c => this._columnWidths.get(c.name)?.column >= 0))
+                    this._applyColumnWidths();
+                else
                     this._setInitializing(false);
             });
         }
@@ -508,13 +574,10 @@ export class QueryGrid extends Polymer.WebComponent {
         }
     }
 
-    private _updateVerticalSpacer(viewportHeight: number, rowHeight: number, items: QueryGridItem[], maxRows?: number) {
+    private _updateVerticalSpacer(viewportHeight: number, rowHeight: number, items: QueryGridItem[], maxRows?: number, skip?: number) {
         Polymer.Render.beforeNextRender(this, () => {
-            const newHeight = Math.min(Math.min(items.length, PHYSICAL_UPPER_LIMIT), maxRows || Number.MAX_SAFE_INTEGER) * rowHeight;
-            if (!maxRows)
-                this.$.gridWrapper.style.height = `${newHeight}px`;
-            else
-                this.$.gridWrapper.style.maxHeight = `${newHeight}px`;
+            const newHeight = Math.min(Math.max(0, Math.min(items.length, PHYSICAL_UPPER_LIMIT) - (skip || 0)), maxRows || Number.MAX_SAFE_INTEGER) * rowHeight;
+            this.$.gridWrapper.style.height = `${newHeight}px`;
 
             this._verticalSpacerCorrection = (newHeight - this.viewportHeight) / (this.$.gridWrapper.clientHeight - viewportHeight);
         });
@@ -537,7 +600,7 @@ export class QueryGrid extends Polymer.WebComponent {
             this.shadowRoot.appendChild(this._pinnedStyle = document.createElement("style"));
             
         this._pinnedStyle.innerHTML = `
-            header [grid] > *:nth-child(-n+${pinnedColumns.length}), vi-query-grid-row > .column:nth-child(-n+${pinnedColumns.length}), vi-query-grid-footer > .column:nth-child(-n+${pinnedColumns.length}) {
+            header [grid] > *:nth-child(-n+${pinnedColumns.length}), vi-query-grid-row > .column:nth-child(-n+${pinnedColumns.length} of .column), vi-query-grid-footer > .column:nth-child(-n+${pinnedColumns.length}) {
                 transform: translateX(var(--vi-query-grid-horizontal, 0));
             }
 
@@ -545,7 +608,7 @@ export class QueryGrid extends Polymer.WebComponent {
                 z-index: 1;
             }
 
-            vi-query-grid-row > .column:nth-child(${pinnedColumns.length}), vi-query-grid-footer > .column:nth-child(${pinnedColumns.length}) {
+            vi-query-grid-row > .column:nth-child(${pinnedColumns.length} of .column), vi-query-grid-footer > .column:nth-child(${pinnedColumns.length}) {
                 border-right: 1px solid var(--theme-light-border);
             }
         `;
@@ -569,10 +632,11 @@ export class QueryGrid extends Polymer.WebComponent {
             const init = columns.map(c => c.width || "max-content").join(" ");
             this.style.setProperty("--vi-query-grid-columns-no-data", init);
             this.style.setProperty("--vi-query-grid-columns", init);
+            this.style.removeProperty("--vi-query-grid-columns-width");
         }
         // Columns were hidden, pinned or reordered: each column keeps its own measured width instead of the width of its old position
         else if (columns.every(c => this._columnWidths.get(c.name)?.current > 0))
-            this.style.setProperty("--vi-query-grid-columns", `${columns.map(c => `${Math.ceil(this._columnWidths.get(c.name).current)}px`).join(" ")} minmax(0, 1fr)`);
+            this._setColumnTracks(columns);
 
         return columns;
     }
@@ -609,8 +673,8 @@ export class QueryGrid extends Polymer.WebComponent {
         return !noSelection && !!query && (asLookup || query.actions.some(a => a.isVisible && a.definition.selectionRule !== Vidyano.ExpressionParser.alwaysTrue));
     }
 
-    private _computeInlineActions(query: Vidyano.Query, noInlineActions: boolean): boolean {
-        return !noInlineActions && !!query && !query.asLookup && !this.asLookup && (query.actions.some(a => a.isVisible && a.definition.selectionRule !== Vidyano.ExpressionParser.alwaysTrue && a.definition.selectionRule(1)));
+    private _computeInlineActions(query: Vidyano.Query, noInlineActions: boolean, asLookup: boolean): boolean {
+        return !noInlineActions && !!query && !query.asLookup && !asLookup && (query.actions.some(a => a.isVisible && a.definition.selectionRule !== Vidyano.ExpressionParser.alwaysTrue && a.definition.selectionRule(1)));
     }
 
     private _computeCanReorder(canReorder: boolean, hasGrouping: boolean) {
@@ -629,12 +693,20 @@ export class QueryGrid extends Polymer.WebComponent {
         this.style.setProperty("--vi-query-grid-row-height", `${rowHeight}px`);
     }
 
-    private _updateHorizontalScrollOffset(horizontalScrollOffset: number) {
+    private _updateHorizontalScrollOffset(horizontalScrollOffset: number, oldHorizontalScrollOffset: number) {
         this.style.setProperty("--vi-query-grid-horizontal", `${horizontalScrollOffset}px`);
-        Popup.closeAll();
+        this._closePopupsOnUserScroll(oldHorizontalScrollOffset);
     }
 
-    private _onVerticalScrollOffsetChanged() {
+    private _onVerticalScrollOffsetChanged(verticalScrollOffset: number, oldVerticalScrollOffset: number) {
+        this._closePopupsOnUserScroll(oldVerticalScrollOffset);
+    }
+
+    private _closePopupsOnUserScroll(oldScrollOffset: number) {
+        // The first offset is the scroller's initial position when the grid is attached
+        if (oldScrollOffset === undefined || this._programmaticScroll)
+            return;
+
         Popup.closeAll();
     }
 
@@ -729,7 +801,7 @@ export class QueryGrid extends Polymer.WebComponent {
 
     private _reset() {
         this._updateUserSettings(this.query);
-        this._update(this.verticalScrollOffset, this.virtualRowCount, this.rowHeight, this.items, this.skip);
+        this._update(this.verticalScrollOffset, this.virtualRowCount, this.rowHeight, this.items, this.skip, this.maxRows);
     }
 
     private _updateMore(visibleColumnHeaderSize: ISize, horizontalScrollOffset: number) {
@@ -742,10 +814,14 @@ export class QueryGrid extends Polymer.WebComponent {
             () => {
                 const sizeTracker = this.$.columnHeadersDomRepeat as SizeTracker;
                 const headers = Array.from(sizeTracker.parentElement.querySelectorAll("vi-query-grid-column-header")) as QueryGridColumnHeader[];
+                const unpinnedHeaders = headers.filter(h => !h.column.isPinned);
+
+                // The pinned headers stay in view and cover the headers scrolled behind them
+                const pinnedWidth = headers.filter(h => h.column.isPinned).reduce((width, h) => width + h.offsetWidth, 0);
 
                 this._setMoreColumns({
-                    left: headers.filter(h => h.offsetLeft - horizontalScrollOffset < 0).sort((a, b) => a.column.label.localeCompare(b.column.label)),
-                    right: headers.filter(h => (h.offsetLeft + h.offsetWidth / 2) > visibleColumnHeaderSize.width).sort((a, b) => a.column.label.localeCompare(b.column.label))
+                    left: unpinnedHeaders.filter(h => h.offsetLeft - horizontalScrollOffset < pinnedWidth).sort((a, b) => a.column.label.localeCompare(b.column.label)),
+                    right: unpinnedHeaders.filter(h => (h.offsetLeft + h.offsetWidth / 2) > visibleColumnHeaderSize.width).sort((a, b) => a.column.label.localeCompare(b.column.label))
                 });
             });
     }

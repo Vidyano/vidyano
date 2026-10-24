@@ -26,9 +26,26 @@
         min-width: 0;
     }
 
+    // Keeps the horizontal scroll range while there are no rows. Out of flow so the rows keep the viewport width,
+    // and 1px high because a box without height adds no scrollable overflow.
+    #gridWrapper::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: calc(var(--vi-query-grid-controls-width, 0px) + var(--vi-query-grid-columns-width, 0px));
+        height: 1px;
+        pointer-events: none;
+    }
+
     [grid] {
         display: grid;
         grid-template-columns: var(--vi-query-grid-columns);
+    }
+
+    // Scroll anchoring would push scrollTop forward when a page arrives and the virtualized rows are re-rendered
+    #grid {
+        overflow-anchor: none;
     }
 
     header {

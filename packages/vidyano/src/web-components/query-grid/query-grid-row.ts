@@ -81,9 +81,10 @@ export class QueryGridRow extends Polymer.WebComponent {
 
         for (let i=0; i < columns.length; i++) {
             const column = columns[i];
-            let cell: QueryGridCell = existingCells.find(c => c.column.name === column.name);
+            const cellType = QueryGridCell.getCellTypeConstructor(column.type) || QueryGridCellDefault;
+            let cell: QueryGridCell = existingCells.find(c => c.column.name === column.name && c.constructor === cellType);
             if (!cell) {
-                cell = new (QueryGridCell.getCellTypeConstructor(column.type) || QueryGridCellDefault)();
+                cell = new cellType();
                 cell.classList.add("column");
                 cell.column = column;
                 cell.value = this.item instanceof Vidyano.QueryResultItem ? this.item.getFullValue(column.name) : undefined;
@@ -218,7 +219,8 @@ export class QueryGridRow extends Polymer.WebComponent {
             return;
         }
 
-        if (this.item.query.canRead && !this.item.query.asLookup) {
+        const grid = (this.getRootNode() as ShadowRoot).host as any;
+        if (this.item.query.canRead && !this.item.query.asLookup && !grid.asLookup) {
             if (e.detail.sourceEvent && ((<KeyboardEvent>e.detail.sourceEvent).ctrlKey || (<KeyboardEvent>e.detail.sourceEvent).shiftKey) && 'getUrlForPersistentObject' in this.app) {
                 // Open in new window/tab
                 window.open(Path.routes.root + (<any>this.app).getUrlForPersistentObject(this.item.query.persistentObject.id, this.item.id));
@@ -227,7 +229,6 @@ export class QueryGridRow extends Polymer.WebComponent {
                 return;
             }
 
-            const grid = (this.getRootNode() as ShadowRoot).host as any;
             grid["_itemOpening"] = this.item;
             const po = await this.item.getPersistentObject();
             if (!po)

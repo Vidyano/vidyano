@@ -5,6 +5,8 @@ import { PopupMenu } from "components/popup-menu/popup-menu"
 import { QueryGridColumn } from "./query-grid-column"
 import "./query-grid-column-filter"
 
+const observeOnConnected = new WeakSet<Element>();
+
 let resizeObserver: ResizeObserver;
 resizeObserver = new ResizeObserver(allEntries => {
     window.requestAnimationFrame(() => {
@@ -12,6 +14,13 @@ resizeObserver = new ResizeObserver(allEntries => {
     
         const parents = new Map<HTMLElement, ResizeObserverEntry[]>();
         allEntries.forEach(e => {
+            // A detached grid does not listen for the width, the header reports again once it is re-attached
+            if (!e.target.isConnected) {
+                resizeObserver.unobserve(e.target);
+                observeOnConnected.add(e.target);
+                return;
+            }
+
             // A header inside a hidden (display: none) container has no size yet, keep observing it until it is shown
             if (!(e["borderBoxSize"] != null ? e["borderBoxSize"][0].inlineSize : (<HTMLElement>e.target).offsetWidth))
                 return;
@@ -225,6 +234,13 @@ export class QueryGridColumnHeader extends Polymer.WebComponent {
             bubbles: true,
             composed: true
         }));
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+
+        if (observeOnConnected.delete(this))
+            resizeObserver.observe(this, { box: "border-box" });
     }
 
     private _queueMeasure(column: QueryGridColumn, isConnected: boolean) {

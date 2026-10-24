@@ -108,8 +108,8 @@ export abstract class QueryGridCell extends Polymer.WebComponent {
             return;
 
         const row = this.parentElement as QueryGridRow;
-        // Don't measure the cell when the row is not a query result item (sanity check)
-        if (!(row.item instanceof Vidyano.QueryResultItem))
+        // Don't measure the cell when the row is not a query result item (sanity check), or still shows an item of the grid's previous query
+        if (!(row.item instanceof Vidyano.QueryResultItem) || row.item.query !== this.column?.query)
             return;
 
         // Only measure if this is the first non-group query grid row in the grid
