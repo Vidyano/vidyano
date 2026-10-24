@@ -34,12 +34,12 @@ on:
 
 jobs:
   test:
-    name: Build and Test (${{ matrix.shard }}/2)
+    name: Build and Test (${{ matrix.shard }}/3)
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2]
+        shard: [1, 2, 3]
 
     steps:
       - name: Checkout code
@@ -84,7 +84,7 @@ jobs:
             sleep 2
           done
 
-          npm run test:vidyano -- --shard=${{ matrix.shard }}/2
+          npm run test:vidyano -- --shard=${{ matrix.shard }}/3
           TEST_EXIT=$?
 
           # Stop server
