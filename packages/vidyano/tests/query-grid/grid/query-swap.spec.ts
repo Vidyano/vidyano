@@ -40,8 +40,12 @@ async function expectRowsAtTheirIndex(grid: Locator, step: string) {
 
 /** Scrolls the grid body to a top offset and waits for the rows there. */
 async function scrolledTo(grid: Locator, top: number) {
-    await scrollGrid(grid, { top });
-    await expect.poll(async () => (await getScrollOffset(grid)).top).toBe(top);
+    // Right after a search the grid can still reset its scroll position or lack the height for the offset, which undoes a single scroll
+    await waitForQueryIdle(grid);
+    await expect(async () => {
+        await scrollGrid(grid, { top });
+        expect((await getScrollOffset(grid)).top).toBe(top);
+    }).toPass();
     await settle(grid);
 }
 
