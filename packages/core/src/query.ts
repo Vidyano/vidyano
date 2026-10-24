@@ -1103,9 +1103,16 @@ export class Query extends ServiceObjectWithActions {
     /**
      * Converts the query to a service object.
      * @internal
+     * @param forResult - Whether the request is about the current result (e.g. an action on its selection), it then sends the sort, grouping, text search and filters of the last result.
      * @returns The service object representation of the query.
      */
-    #toServiceObject() {
+    #toServiceObject(forResult: boolean = false) {
+        // A sort, grouping, text search or filter changed without a search yet is not part of the current result
+        const fromResult = forResult && !!this.#lastResult;
+        const filterState = fromResult ? this.#resultFilterState : null;
+        const sortOptions = fromResult ? this.#resultSortOptions : this.sortOptions;
+        const groupingInfo = fromResult ? this.#resultGroupingInfo : this.groupingInfo;
+
         const result = this._copyPropertiesFromValues({
             "id": this.id,
             "isSystem": this.isSystem,
@@ -1114,7 +1121,7 @@ export class Query extends ServiceObjectWithActions {
             "pageSize": this.pageSize,
             "skip": this.skip,
             "top": this.top,
-            "textSearch": this.textSearch,
+            "textSearch": filterState ? filterState.textSearch : this.textSearch,
             "continuation": this.#continuation
         });
 
@@ -1125,15 +1132,30 @@ export class Query extends ServiceObjectWithActions {
                 result["allSelectedInversed"] = true;
         }
 
-        result["sortOptions"] = this.sortOptions ? this.sortOptions.filter(option => option.direction !== "").map(option => {
+        result["sortOptions"] = sortOptions ? sortOptions.filter(option => option.direction !== "").map(option => {
             return `${option.name}${option.direction === "DESC" ? " " + option.direction : ""}`;
         }).join("; ") : "";
-        result["groupedBy"] = this.groupingInfo?.groupedBy;
+        result["groupedBy"] = groupingInfo?.groupedBy;
 
         if (this.persistentObject)
             result.persistentObject = this.persistentObject.toServiceObject();
 
-        result.columns = this.columns.map(col => _internal(col).toServiceObject());
+        result.columns = this.columns.map(col => {
+            const column = _internal(col).toServiceObject();
+            if (filterState) {
+                const filter = filterState.columns[col.name];
+                const distincts = filter?.selectedDistincts || [];
+                column.includes = !filter?.selectedDistinctsInversed ? distincts : [];
+                column.excludes = filter?.selectedDistinctsInversed ? distincts : [];
+
+                if (filter?.includeAllContent)
+                    column.includeAllContent = true;
+                else
+                    delete column.includeAllContent;
+            }
+
+            return column;
+        });
 
         return result;
     }

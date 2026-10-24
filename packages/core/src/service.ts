@@ -939,8 +939,9 @@ export class Service extends Observable<Service> {
         if (parent != null)
             data.parent = parent.toServiceObject();
 
+        // An action acts on the current result, so it sends the state of that result
         if (query != null)
-            data.query = _internal(query).toServiceObject();
+            data.query = _internal(query).toServiceObject(true);
 
         if (selectedItems != null)
             data.selectedItems = selectedItems.map(item => item && _internal(item).toServiceObject());
@@ -1029,8 +1030,9 @@ export class Service extends Observable<Service> {
         if (parent != null)
             data.parent = parent.toServiceObject();
 
+        // A stream (e.g. an export) is about the current result, so it sends the state of that result
         if (query != null)
-            data.query = _internal(query).toServiceObject();
+            data.query = _internal(query).toServiceObject(true);
 
         if (selectedItems != null)
             data.selectedItems = selectedItems.map(si => _internal(si).toServiceObject());

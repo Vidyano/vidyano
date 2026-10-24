@@ -319,6 +319,8 @@ Select-all is not available while the total is unknown (`hasMore`) or while the 
 
 Setting `maxSelectedItems` keeps the first selected rows up to the limit and deselects the rest. With select-all on, select-all is switched off and the first selected rows of the loaded result are kept.
 
+An action or export on the query (with a selection, select-all or neither) sends the sort, grouping, text search and filters of the last result, so it works on the rows that were shown. A `textSearch`, `sortOptions` or column filter changed without a search is only sent by the next `search()`; call it first to act on the new state.
+
 ### Clear Selection
 
 ```ts
