@@ -1274,6 +1274,7 @@ export class Query extends ServiceObjectWithActions {
         this.#updateGroupingInfo(groupedBy ? { groupedBy, groups: [] } : null);
         this.#setTotalItem(null);
         this.#setCharts(null);
+        this.currentChart = null;
         this.#tag = null;
 
         console.error(error);

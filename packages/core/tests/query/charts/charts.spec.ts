@@ -68,6 +68,7 @@ test.describe("A result whose rows cannot be built", () => {
     test.beforeEach(async ({ query, hooks }) => {
         expect(query.charts.map(c => c.name)).toEqual(["ByRegion"]);
         expect(query.tag).toBe("Sales");
+        query.currentChart = query.charts[0];
 
         const consoleError = console.error;
         console.error = () => {};
@@ -84,6 +85,10 @@ test.describe("A result whose rows cannot be built", () => {
 
     test("drops the charts of the previous result", async ({ query }) => {
         expect(query.charts).toBeNull();
+    });
+
+    test("drops the selected chart of the previous result", async ({ query }) => {
+        expect(query.currentChart).toBeNull();
     });
 
     test("drops the tag of the previous result", async ({ query }) => {
