@@ -32,6 +32,12 @@ export interface ISortOption {
     direction: SortDirection;
 }
 
+/** The text search and column filters of a request, by column name */
+type QueryFilterState = {
+    textSearch: string;
+    columns: { [name: string]: { selectedDistincts: string[]; selectedDistinctsInversed: boolean; includeAllContent: boolean } };
+};
+
 /**
  * Represents a Vidyano query and provides methods to search, group, and manipulate its result set.
  * @inheritdoc
@@ -47,6 +53,10 @@ export class Query extends ServiceObjectWithActions {
     #queriedPages: number[] = [];
     /** Increments on every search, so page loads started before it do not write into the new result */
     #searchGeneration: number = 0;
+    /** The newest search generation whose query state was sent to the service */
+    #sentSearchGeneration: number = 0;
+    /** The searches that wait for the answer to the latest state of the query */
+    #searchWaiters: { resolve: () => void; reject: (error: any) => void }[] = [];
     #filters: QueryFilters;
     #allowTextSearch: boolean;
     #canFilter: boolean;
@@ -63,6 +73,10 @@ export class Query extends ServiceObjectWithActions {
     #columnObservers: ISubjectDisposer[];
     #hasMore: boolean = null;
     #groupingInfo: IQueryGroupingInfo;
+    #resultSortOptions: ISortOption[];
+    #resultGroupingInfo: IQueryGroupingInfo;
+    /** The text search and column filters sent for the last result */
+    #resultFilterState: QueryFilterState;
     #itemsProxy!: QueryItemsProxy;
     #tag: any;
 
@@ -372,7 +386,13 @@ export class Query extends ServiceObjectWithActions {
             return;
 
         const oldValue = this.#maxSelectedItems;
-        this.notifyPropertyChanged("maxSelectedItems", this.#maxSelectedItems = maxSelectedItems, oldValue);
+        this.#maxSelectedItems = maxSelectedItems;
+
+        // Trim before announcing the limit, select-all trims when the announcement switches it off
+        if (!this.selectAll.allSelected)
+            this.#limitSelection();
+
+        this.notifyPropertyChanged("maxSelectedItems", maxSelectedItems, oldValue);
     }
 
     /**
@@ -701,8 +721,10 @@ export class Query extends ServiceObjectWithActions {
 
         return await this.queueWork(async () => {
             try {
+                // An action sends the text search and filters of the last result, also when the app's onAction hook changed them
+                const sentFilterState = this.#resultFilterState;
                 const po = await this.service.executeAction("QueryOrder.Reorder", this.parent, this, [before, item, after]);
-                this.#setResult((po.queries[0] as Query).#lastResult);
+                this.#setResult((po.queries[0] as Query).#lastResult, sentFilterState);
 
                 return this.items;
             }
@@ -738,7 +760,13 @@ export class Query extends ServiceObjectWithActions {
      */
     async #getItems(start: number, length: number = this.pageSize, skipQueue: boolean = false): Promise<QueryResultItem[]> {
         if (!this.hasSearched) {
-            await this.search({ delay: 0, throwExceptions: true });
+            if (this.#searchWaiters.length > 0) {
+                // Wait for the running search instead of starting another one, which would replace its result; when it fails, so does this read
+                await new Promise<void>((resolve, reject) => this.#searchWaiters.push({ resolve, reject }));
+            }
+            else
+                await this.search({ throwExceptions: true });
+
             return this.#getItems(start, length);
         }
 
@@ -773,15 +801,7 @@ export class Query extends ServiceObjectWithActions {
             return requested();
 
         const generation = this.#searchGeneration;
-        const clonedQuery = this.clone(this.#asLookup);
-        let skip = startPage * this.pageSize;
-        clonedQuery.top = (endPage - startPage + 1) * this.pageSize;
-
         const usesContinuation = this.hasMore && this.items.length > 0 && !!this.#continuation;
-        if (usesContinuation)
-            clonedQuery.#continuation = this.#continuation;
-        else
-            clonedQuery.skip = skip;
 
         const work = async () => {
             // A search since this request was made replaced the result, so this page belongs to the old one
@@ -795,47 +815,69 @@ export class Query extends ServiceObjectWithActions {
                 // Pages may have been loaded while this work was queued, continue from the current continuation token
                 while (startPage < endPage && this.#queriedPages.indexOf(startPage) >= 0)
                     startPage++;
-
-                skip = startPage * this.pageSize;
-                clonedQuery.top = (endPage - startPage + 1) * this.pageSize;
-                clonedQuery.#continuation = this.#continuation;
             }
 
             if (!Array.range(startPage, endPage).some(p => this.#queriedPages.indexOf(p) < 0))
                 return requested();
+
+            // Cloned when the work runs, so the result it belongs to is fully applied
+            const clonedQuery = this.#cloneForResult();
+            const skip = startPage * this.pageSize;
+            clonedQuery.top = (endPage - startPage + 1) * this.pageSize;
+            if (usesContinuation)
+                clonedQuery.#continuation = this.#continuation;
+            else
+                clonedQuery.skip = skip;
 
             try {
                 const result = await this.service.executeQuery(this.parent, clonedQuery, this.#asLookup, true);
                 if (generation !== this.#searchGeneration)
                     return requested();
 
-                if (result.totalItems === -1) {
-                    this.#continuation = result.continuation;
-                    this.#setHasMore(true);
+                // A page with a continuation token, or the last page of a continuation query, sets the total
+                const hasMore = result.totalItems === -1, endsContinuation = !hasMore && this.hasMore;
+                if (hasMore || endsContinuation)
                     result.totalItems = skip + result.items.length;
-                    this.#setTotalItems(result.totalItems);
+
+                // NOTE: Query has changed (items added/deleted) so the old data is replaced
+                const isChanged = !hasMore && !this.hasMore && this.pageSize > 0 && result.totalItems !== this.totalItems;
+                if (isChanged && !this.selectAll.allSelected) {
+                    /* tslint:disable:no-var-keyword */ var selectedItems = {}; /* tslint:enable:no-var-keyword */
+                    this.selectedItems.forEach(i => selectedItems[i.id] = i);
                 }
-                else if (this.hasMore) {
-                    this.#continuation = null;
-                    this.#setHasMore(false);
-                    result.totalItems = skip + result.items.length;
+
+                // Build the rows before anything changes, so a row hook that throws leaves the page to be loaded again
+                const missing: number[] = [];
+                const disableLazyLoading = this.#disableLazyLoading;
+                this.#disableLazyLoading = true;
+                for (let n = 0; n < clonedQuery.top && (skip + n < result.totalItems); n++) {
+                    if (isChanged || this.items[skip + n] == null)
+                        missing.push(n);
+                }
+                this.#disableLazyLoading = disableLazyLoading;
+
+                const rows: QueryResultItem[] = [];
+                for (const n of missing) {
+                    const newItem = result.items[n];
+                    // Select-all turns off once a page makes the total unknown
+                    const isSelected = isChanged ? !!selectedItems?.[newItem.id] : this.selectAll.allSelected && !hasMore;
+
+                    rows[n] = this.service.hooks.onConstructQueryResultItem(this.service, newItem, this, isSelected);
+                }
+
+                if (hasMore || endsContinuation) {
+                    this.#continuation = hasMore ? result.continuation : null;
+                    this.#setHasMore(hasMore);
                     this.#setTotalItems(result.totalItems);
                 }
 
                 for (let p = startPage; p <= endPage; p++)
                     this.#queriedPages.push(p);
 
-                const isChanged = !this.hasMore && this.pageSize > 0 && result.totalItems !== this.totalItems;
                 if (isChanged) {
-                    // NOTE: Query has changed (items added/deleted) so remove old data
                     this.#queriedPages = [];
                     for (let i = startPage; i <= endPage; i++)
                         this.#queriedPages.push(i);
-
-                    if (!this.selectAll.allSelected) {
-                        /* tslint:disable:no-var-keyword */ var selectedItems = {}; /* tslint:enable:no-var-keyword */
-                        this.selectedItems.forEach(i => selectedItems[i.id] = i);
-                    }
 
                     this.#setItems([]);
                     this.#setTotalItems(result.totalItems);
@@ -848,11 +890,8 @@ export class Query extends ServiceObjectWithActions {
 
                 for (let n = 0; n < clonedQuery.top && (skip + n < result.totalItems); n++) {
                     const currentItem = this.items[skip + n];
-                    if (currentItem == null) {
-                        const newItem = result.items[n];
-                        const isSelected = this.selectAll.allSelected || (selectedItems && selectedItems[newItem.id]);
-                        
-                        this.items[skip + n] = this.service.hooks.onConstructQueryResultItem(this.service, newItem, this, isSelected);
+                    if (n in rows) {
+                        this.items[skip + n] = rows[n];
                         notify ||= {
                             index: skip,
                             removedItems: [],
@@ -870,6 +909,7 @@ export class Query extends ServiceObjectWithActions {
                     this.notifyArrayChanged("items", notify.index, notify.removedItems, notify.removedItems.length);
 
                 this.#updateGroupingInfo(result.groupingInfo);
+                this.#resultGroupingInfo = this.groupingInfo;
 
                 if (isChanged) {
                     const result = await this.#getItems(requestedStart, requestedLength, true);
@@ -899,42 +939,79 @@ export class Query extends ServiceObjectWithActions {
      * @param options - The search options.
      * @returns A promise that resolves to the query result items.
      */
-    async search(options?: { delay?: number; throwExceptions?: boolean; keepSelection?: boolean }): Promise<QueryResultItem[]> {
+    async search(options?: { throwExceptions?: boolean; keepSelection?: boolean }): Promise<QueryResultItem[]> {
         const selectedIds = options?.keepSelection ? this.selectedItems.map(i => i.id) : null;
         // Capture select-all state before refresh
         const wasAllSelected = options?.keepSelection && this.selectAll.allSelected && !this.selectAll.inverse;
         const wasAllSelectedInverse = options?.keepSelection && this.selectAll.allSelected && this.selectAll.inverse;
         const inverseDeselectedIds = wasAllSelectedInverse ? this.items.filter(i => !i.isSelected).map(i => i.id) : null;
         const search = () => {
-            this.#searchGeneration++;
+            const generation = ++this.#searchGeneration;
             this.#continuation = null;
             this.#queriedPages = [];
             this.#setHasSearched(false);
             this.#setTotalItems(null);
             this.#setItems([]);
 
-            const now = new Date();
-            return this.queueWork(async () => {
-                if (this.#lastUpdated && this.#lastUpdated > now)
-                    return this.items;
+            // Settles once the request for the latest state of the query, sent by this search or a later one, is answered
+            const answered = new Promise<void>((resolve, reject) => this.#searchWaiters.push({ resolve, reject }));
 
-                const result = await this.service.executeQuery(this.parent, this, this.#asLookup, !!options?.throwExceptions);
-                if (!result)
-                    return null;
+            this.queueWork(async () => {
+                // A later search already sent the latest state of the query
+                if (this.#sentSearchGeneration >= generation)
+                    return;
 
-                if (!this.#lastUpdated || this.#lastUpdated <= now) {
-                    this.#setHasSearched(true);
-                    this.#setResult(result);
+                const sent = this.#sentSearchGeneration = this.#searchGeneration;
+                const sentSortOptions = this.sortOptions, sentGroupingInfo = this.groupingInfo;
+                const sentFilterState = this.#filterState();
+                let failed = false, error: any, result: Dto.QueryResultDto;
+                try {
+                    result = await this.service.executeQuery(this.parent, this, this.#asLookup, true);
+                }
+                catch (e) {
+                    failed = true;
+                    error = e;
                 }
 
-                return this.items;
-            }, false).then((items: any) => {
+                // A search started while this one ran sends its own request, its result wins
+                if (sent !== this.#searchGeneration)
+                    return;
+
+                if (!failed) {
+                    try {
+                        this.#setHasSearched(true);
+                        this.#setResult(result, sentFilterState);
+                    }
+                    catch (e) {
+                        // The result could not be applied, e.g. a row hook threw and the query is left with an empty result
+                        failed = true;
+                        error = e;
+                    }
+
+                    // A listener started a newer search while the result was applied, its answer settles the callers
+                    if (!failed && sent !== this.#searchGeneration)
+                        return;
+                }
+
+                const waiters = this.#searchWaiters;
+                this.#searchWaiters = [];
+                waiters.forEach(w => failed ? w.reject(error) : w.resolve());
+
+                // The waiters continue after this
+                if (failed)
+                    this.#restoreResultState(sentSortOptions, sentGroupingInfo);
+            }, false);
+
+            // Each search settles by its own options, also when a later search answered it
+            return answered.then(() => {
+                const items = this.items;
+
                 // Restore non-inverse select-all state if it was active before refresh
-                if (wasAllSelected) {
+                if (wasAllSelected && this.selectAll.isAvailable) {
                     this.selectAll.allSelected = true;
                 }
                 // Restore inverse select-all state if it was active before refresh
-                else if (wasAllSelectedInverse) {
+                else if (wasAllSelectedInverse && this.selectAll.isAvailable) {
                     this.selectAll.allSelected = true;
                     this.selectAll.inverse = true;
                     // Deselect the items that were deselected before
@@ -947,26 +1024,22 @@ export class Query extends ServiceObjectWithActions {
                         });
                     }
                 }
-                // Otherwise restore individual selections
+                // Otherwise restore individual selections, also those of a select-all that is not available for the new result
                 else if (selectedIds != null && selectedIds.length > 0) {
                     const newSelectionItems = selectedIds.map(id => items.find((i: QueryResultItem) => i?.id === id)).filter(i => i != null);
-                    if (newSelectionItems.length === selectedIds.length)
+                    if (newSelectionItems.length === selectedIds.length || wasAllSelected || wasAllSelectedInverse)
                         this.selectedItems = newSelectionItems;
                 }
 
                 return items;
+            }, e => {
+                // The service already set the error as the query's notification
+                if (options?.throwExceptions)
+                    throw e;
+
+                return null;
             });
         };
-
-        if (options?.delay > 0) {
-            const now = new Date();
-            await new Promise(resolve => setTimeout(resolve, options?.delay));
-
-            if (!this.#lastUpdated || this.#lastUpdated <= now)
-                return search();
-            else
-                return this.items;
-        }
 
         return search();
     }
@@ -981,18 +1054,66 @@ export class Query extends ServiceObjectWithActions {
         const dto = Object.assign({}, this.#dto, this.#toServiceObject());
         dto[clonedFrom] = this.#dto; // Mark the DTO as cloned from the original query DTO.
         
-        const cloned = this.service.hooks.onConstructQuery(this.service, dto, this.parent, asLookup);
+        // A clone as a lookup picks other rows (e.g. references to add), the selection limit of this query does not apply to it
+        const cloned = this.service.hooks.onConstructQuery(this.service, dto, this.parent, asLookup, asLookup ? undefined : this.maxSelectedItems);
         cloned.#setOwnerAttributeWithReference(this.#ownerAttributeWithReference);
 
         return cloned;
     }
 
     /**
+     * Clones the query with the state of the last result, so a page load fetches rows in the order of that result.
+     * A sort, grouping, text search or filter changed without a search yet is not used.
+     * @returns The cloned query.
+     */
+    #cloneForResult(): Query {
+        const cloned = this.clone(this.#asLookup);
+        if (!this.#lastResult)
+            return cloned;
+
+        cloned.sortOptions = this.#resultSortOptions;
+        cloned.#setGroupingInfo(this.#resultGroupingInfo);
+
+        const state = this.#resultFilterState;
+        cloned.textSearch = state.textSearch;
+        cloned.columns.forEach(column => {
+            const filter = state.columns[column.name];
+            column.selectedDistincts = filter?.selectedDistincts || [];
+            column.selectedDistinctsInversed = !!filter?.selectedDistinctsInversed;
+            column.includeAllContent = !!filter?.includeAllContent;
+        });
+
+        return cloned;
+    }
+
+    /**
+     * Gets the text search and column filters that a request sends now.
+     * @returns The text search and the filter of each column by name.
+     */
+    #filterState(): QueryFilterState {
+        const columns: QueryFilterState["columns"] = {};
+        this.columns.forEach(column => columns[column.name] = {
+            selectedDistincts: column.selectedDistincts.slice(),
+            selectedDistinctsInversed: column.selectedDistinctsInversed,
+            includeAllContent: column.includeAllContent
+        });
+
+        return { textSearch: this.textSearch, columns };
+    }
+
+    /**
      * Converts the query to a service object.
      * @internal
+     * @param forResult - Whether the request is about the current result (e.g. an action on its selection), it then sends the sort, grouping, text search and filters of the last result.
      * @returns The service object representation of the query.
      */
-    #toServiceObject() {
+    #toServiceObject(forResult: boolean = false) {
+        // A sort, grouping, text search or filter changed without a search yet is not part of the current result
+        const fromResult = forResult && !!this.#lastResult;
+        const filterState = fromResult ? this.#resultFilterState : null;
+        const sortOptions = fromResult ? this.#resultSortOptions : this.sortOptions;
+        const groupingInfo = fromResult ? this.#resultGroupingInfo : this.groupingInfo;
+
         const result = this._copyPropertiesFromValues({
             "id": this.id,
             "isSystem": this.isSystem,
@@ -1001,7 +1122,7 @@ export class Query extends ServiceObjectWithActions {
             "pageSize": this.pageSize,
             "skip": this.skip,
             "top": this.top,
-            "textSearch": this.textSearch,
+            "textSearch": filterState ? filterState.textSearch : this.textSearch,
             "continuation": this.#continuation
         });
 
@@ -1012,25 +1133,74 @@ export class Query extends ServiceObjectWithActions {
                 result["allSelectedInversed"] = true;
         }
 
-        result["sortOptions"] = this.sortOptions ? this.sortOptions.filter(option => option.direction !== "").map(option => {
+        result["sortOptions"] = sortOptions ? sortOptions.filter(option => option.direction !== "").map(option => {
             return `${option.name}${option.direction === "DESC" ? " " + option.direction : ""}`;
         }).join("; ") : "";
-        result["groupedBy"] = this.groupingInfo?.groupedBy;
+        result["groupedBy"] = groupingInfo?.groupedBy;
 
         if (this.persistentObject)
             result.persistentObject = this.persistentObject.toServiceObject();
 
-        result.columns = this.columns.map(col => _internal(col).toServiceObject());
+        result.columns = this.columns.map(col => {
+            const column = _internal(col).toServiceObject();
+            if (filterState) {
+                const filter = filterState.columns[col.name];
+                const distincts = filter?.selectedDistincts || [];
+                column.includes = !filter?.selectedDistinctsInversed ? distincts : [];
+                column.excludes = filter?.selectedDistinctsInversed ? distincts : [];
+
+                if (filter?.includeAllContent)
+                    column.includeAllContent = true;
+                else
+                    delete column.includeAllContent;
+            }
+
+            return column;
+        });
 
         return result;
     }
 
     /**
+     * Goes back to the sort and grouping of the last result after a failed search, the failed ones were never applied.
+     * A sort or grouping changed again after the request went out is kept, and so is everything before the first result.
+     * @param sentSortOptions - The sort options sent with the failed request.
+     * @param sentGroupingInfo - The grouping info sent with the failed request.
+     */
+    #restoreResultState(sentSortOptions: ISortOption[], sentGroupingInfo: IQueryGroupingInfo) {
+        if (!this.#lastResult)
+            return;
+
+        if (this.sortOptions === sentSortOptions)
+            this.sortOptions = this.#resultSortOptions;
+
+        if (this.groupingInfo === sentGroupingInfo)
+            this.#setGroupingInfo(this.#resultGroupingInfo);
+    }
+
+    /**
      * Sets the result for the query.
      * @param result - The query result DTO.
+     * @param filterState - The text search and column filters sent for the result.
      */
-    #setResult(result: Dto.QueryResultDto) {
+    #setResult(result: Dto.QueryResultDto, filterState?: QueryFilterState) {
+        // The rows are built with the columns of the result, before anything else changes
+        this.#updateColumns(result.columns);
+
+        let items: QueryResultItem[], totalItem: QueryResultItem;
+        try {
+            items = result.items.map(item => this.service.hooks.onConstructQueryResultItem(this.service, item, this));
+            totalItem = result.totalItem != null ? this.service.hooks.onConstructQueryResultItem(this.service, result.totalItem, this) : null;
+        }
+        catch (e) {
+            this.#setEmptyResult(e);
+            throw e;
+        }
+
         this.#lastResult = result;
+
+        // The result replaces every row, also those of pages loaded before (e.g. in the old order of a reorder)
+        this.#queriedPages = [];
 
         this.#continuation = result.continuation;
         this.pageSize = result.pageSize || 0;
@@ -1046,16 +1216,26 @@ export class Query extends ServiceObjectWithActions {
             this.#setTotalItems(result.totalItems || 0);
             this.#queriedPages.push(Math.floor((this.skip || 0) / this.pageSize));
         }
-        else
+        else {
+            // A result without paging has every row, also after a result with an unknown total
             this.#setTotalItems(result.items.length);
+            this.#setHasMore(false);
+        }
 
         this.#setHasSearched(true);
-        this.#updateColumns(result.columns);
-        this.#setItems(result.items.map(item => this.service.hooks.onConstructQueryResultItem(this.service, item, this)));
-        this.#updateGroupingInfo(result.groupingInfo);
-        this.#setSortOptionsFromService(result.sortOptions);
+        this.#resultFilterState = filterState ?? this.#filterState();
 
-        this.#setTotalItem(result.totalItem != null ? this.service.hooks.onConstructQueryResultItem(this.service, result.totalItem, this) : null);
+        // The sort is set before the rows are announced, so a listener sees the result's sort and a sort it sets is kept
+        this.#setSortOptionsFromService(result.sortOptions);
+        this.#resultSortOptions = this.sortOptions;
+        this.#setItems(items);
+
+        // The service sends no groupingInfo for an empty grouped result, keep the requested grouping
+        const groupedBy = this.groupingInfo?.groupedBy;
+        this.#updateGroupingInfo(result.groupingInfo ?? (groupedBy && !result.items.length ? { groupedBy, groups: [] } : null));
+        this.#resultGroupingInfo = this.groupingInfo;
+
+        this.#setTotalItem(totalItem);
 
         this.setNotification(result.notification, result.notificationType, result.notificationDuration);
 
@@ -1067,14 +1247,56 @@ export class Query extends ServiceObjectWithActions {
     }
 
     /**
+     * Replaces the result with an empty one when a result could not be applied, the page loads of the old result stop.
+     * A row hook that throws is a bug in the app, so the error goes to the console for the developer, not to the user.
+     * @param error - The error the row hook threw.
+     */
+    #setEmptyResult(error: any) {
+        this.#lastResult = null;
+        this.#searchGeneration++;
+        this.#continuation = null;
+        this.#queriedPages = [];
+
+        this.#setHasMore(false);
+        this.#setTotalItems(0);
+        this.#setHasSearched(true);
+        this.#setItems([]);
+
+        // Keep the requested grouping, like an empty grouped result
+        const groupedBy = this.groupingInfo?.groupedBy;
+        this.#updateGroupingInfo(groupedBy ? { groupedBy, groups: [] } : null);
+        this.#setTotalItem(null);
+
+        console.error(error);
+        this.#setLastUpdated();
+    }
+
+    /**
      * Handles property changes for the select all functionality.
      * @param selectAll - The select all instance.
      * @param args - The property changed arguments.
      */
     #selectAllPropertyChanged(selectAll: QuerySelectAll, args: PropertyChangedArgs) {
         if (args.propertyName === "allSelected") {
-            this.selectedItems = selectAll.allSelected ? this.items : [];
+            // Only a new limit switches select-all off while limited, keep the first rows up to the limit
+            if (!selectAll.allSelected && this.maxSelectedItems)
+                this.#limitSelection(true);
+            else
+                this.selectedItems = selectAll.allSelected ? this.items : [];
         }
+    }
+
+    /**
+     * Keeps the first selected rows up to maxSelectedItems.
+     * @param announce - Announce the selection also when it is within the limit.
+     */
+    #limitSelection(announce?: boolean) {
+        if (!this.maxSelectedItems)
+            return;
+
+        const selectedItems = this.selectedItems;
+        if (announce || selectedItems.length > this.maxSelectedItems)
+            this.selectedItems = selectedItems.slice(0, this.maxSelectedItems);
     }
 
     /**

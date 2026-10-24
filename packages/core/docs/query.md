@@ -225,11 +225,22 @@ For comprehensive filtering documentation including distinct values, text search
 ```ts
 // Search with options
 await peopleQuery.search({
-    delay: 300,              // Debounce search
     throwExceptions: true,   // Don't suppress errors
     keepSelection: true      // Maintain selected items
 });
 ```
+
+When select-all was on and is no longer available for the new result (its total is unknown), `keepSelection` keeps the selected rows that are still in it instead.
+
+### Searches That Overlap
+
+A query holds one result, so the latest search wins. A search started while another one runs sends its own request once the running one returns; only the latest result is applied, and every `search()` that was waiting resolves with those rows. Searches queued behind a running one share one request for the latest state. To keep two results side by side, search two queries, for example `peopleQuery.clone()`.
+
+Reading rows while a search runs (`atAsync`, `sliceAsync`, `toArrayAsync`) waits for that search instead of starting another one; when the search fails, the read fails with the same error.
+
+Rows loaded lazily while scrolling use the sort, grouping, text search and filters of the last result, so a change that was not searched yet never mixes into the rows on screen. A page that fails to load sets the error as the query's notification and loads again on the next read.
+
+A row hook (`onConstructQueryResultItem`) that throws is a bug in the app: the query is left with an empty result, the error is logged to the console and passed to `search({ throwExceptions: true })` callers, and nothing is shown to the user.
 
 ## Sorting
 
@@ -264,6 +275,8 @@ console.log('Applied sorts:', peopleQuery.sortOptions.map(s =>
     `${s.name} ${s.direction}`
 ).join(', '));
 ```
+
+A search that fails goes back to the sort of the last result, so `sortOptions` keeps matching the rows the server returned. A sort set before the first result, or set again while the failing request was on its way, is kept.
 
 ### Clear Sorting
 
@@ -313,6 +326,14 @@ if (peopleQuery.selectAll.isAvailable) {
     console.log('Cleared all selections');
 }
 ```
+
+Select-all is not available while the total is unknown (`hasMore`) or while the selection is limited (`maxSelectedItems`); setting `selectAll.isAvailable` is ignored while it is limited. A query created with a limit, such as a lookup, never offers select-all, also when its limit is removed later.
+
+Setting `maxSelectedItems` keeps the first selected rows up to the limit and deselects the rest. With select-all on, select-all is switched off and the first selected rows of the loaded result are kept.
+
+An action or export on the query (with a selection, select-all or neither) sends the sort, grouping, text search and filters of the last result, so it works on the rows that were shown. A `textSearch`, `sortOptions` or column filter changed without a search is only sent by the next `search()`; call it first to act on the new state.
+
+`query.clone()` keeps the selection limit of the query; `query.clone(true)` creates a lookup that picks other rows (such as the AddReference dialog) and has no limit.
 
 ### Clear Selection
 
@@ -371,6 +392,8 @@ if (birthDateColumn) {
 await peopleQuery.group(null);
 console.log('Grouping removed');
 ```
+
+A `group()` that fails goes back to the grouping of the last result, so the same grouping can be tried again.
 
 ## Query Actions
 

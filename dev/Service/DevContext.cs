@@ -89,6 +89,9 @@ public partial class DevContext : NullTargetContext
             _people[i].EmergencyContact = _people[rndIndex];
         }
 
+        // Read-only vi-query-grid test data (seeded, see DevContext.QueryGrid.cs)
+        InitializeQueryGridData();
+
         Version++;
     }
 

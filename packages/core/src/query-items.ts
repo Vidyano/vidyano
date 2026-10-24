@@ -494,6 +494,8 @@ export class QueryItemsProxy {
 
         try {
             await this.#atAsync(queuedLazyItemIndexes);
+        } catch {
+            // Nobody awaits a lazy load; the query's notification already shows the error
         } finally {
             queuedLazyItemIndexes.forEach(i => {
                 if (target[i] == null) {
