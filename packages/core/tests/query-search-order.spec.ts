@@ -187,6 +187,17 @@ test.describe("Searches that fail", () => {
     });
 });
 
+test.describe("A single search", () => {
+    // search() has no delay option any more, the Refresh client operation waits itself
+    test("is sent at once, also when an older caller still passes a delay", async ({ query, hooks }) => {
+        hooks.delay = 0;
+        const search = query.search({ delay: 2000 } as any);
+        await expect.poll(() => hooks.sorts.length, { timeout: 500 }).toBe(1);
+        await search;
+        expect(query.hasSearched).toBe(true);
+    });
+});
+
 test.describe("Rows read during a search", () => {
     test("wait for the search instead of starting another one", async ({ query, hooks }) => {
         const search = query.search();

@@ -751,7 +751,7 @@ export class Query extends ServiceObjectWithActions {
                     return [];
             }
             else
-                await this.search({ delay: 0, throwExceptions: true });
+                await this.search({ throwExceptions: true });
 
             return this.#getItems(start, length);
         }
@@ -913,7 +913,7 @@ export class Query extends ServiceObjectWithActions {
      * @param options - The search options.
      * @returns A promise that resolves to the query result items.
      */
-    async search(options?: { delay?: number; throwExceptions?: boolean; keepSelection?: boolean }): Promise<QueryResultItem[]> {
+    async search(options?: { throwExceptions?: boolean; keepSelection?: boolean }): Promise<QueryResultItem[]> {
         const selectedIds = options?.keepSelection ? this.selectedItems.map(i => i.id) : null;
         // Capture select-all state before refresh
         const wasAllSelected = options?.keepSelection && this.selectAll.allSelected && !this.selectAll.inverse;
@@ -998,16 +998,6 @@ export class Query extends ServiceObjectWithActions {
                 return null;
             });
         };
-
-        if (options?.delay > 0) {
-            const now = new Date();
-            await new Promise(resolve => setTimeout(resolve, options?.delay));
-
-            if (!this.#lastUpdated || this.#lastUpdated <= now)
-                return search();
-            else
-                return this.items;
-        }
 
         return search();
     }

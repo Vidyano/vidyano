@@ -112,16 +112,21 @@ export class AppServiceHooks extends AppServiceHooksBase {
         switch (operation.type) {
             case "Refresh":
                 const refresh = <Vidyano.IRefreshOperation>operation;
+                let refreshNow: () => void;
                 if (refresh.queryId) {
+                    // Pick the queries now, a query that is searching when the delay ends is still refreshed
+                    const queries: Vidyano.Query[] = [];
                     const cacheEntry = <AppCacheEntryQuery>this.app.cachePing(new AppCacheEntryQuery(refresh.queryId));
                     if (cacheEntry && cacheEntry.query && cacheEntry.query.hasSearched)
-                        cacheEntry.query.search({ delay: refresh.delay });
+                        queries.push(cacheEntry.query);
 
                     const poCacheEntriesWithQueries = <AppCacheEntryPersistentObject[]>this.app.cacheEntries.filter(e => e instanceof AppCacheEntryPersistentObject && !!e.persistentObject && e.persistentObject.queries.length > 0);
-                    poCacheEntriesWithQueries.forEach(poEntry => poEntry.persistentObject.queries.filter(q => q.id === refresh.queryId && q.hasSearched).forEach(q => q.search({ delay: refresh.delay })));
+                    poCacheEntriesWithQueries.forEach(poEntry => queries.push(...poEntry.persistentObject.queries.filter(q => q.id === refresh.queryId && q.hasSearched)));
+
+                    refreshNow = () => queries.forEach(q => q.search());
                 }
                 else {
-                    const refreshPersistentObject = async () => {
+                    refreshNow = async () => {
                         const cacheEntry = <AppCacheEntryPersistentObject>this.app.cachePing(new AppCacheEntryPersistentObject(refresh.fullTypeName, refresh.objectId));
                         if (!cacheEntry || !cacheEntry.persistentObject)
                             return;
@@ -134,12 +139,12 @@ export class AppServiceHooks extends AppServiceHooksBase {
                             cacheEntry.persistentObject.setNotification(e);
                         }
                     };
-
-                    if (refresh.delay)
-                        setTimeout(refreshPersistentObject, refresh.delay);
-                    else
-                        refreshPersistentObject();
                 }
+
+                if (refresh.delay)
+                    setTimeout(refreshNow, refresh.delay);
+                else
+                    refreshNow();
 
                 break;
 

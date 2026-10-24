@@ -225,7 +225,6 @@ For comprehensive filtering documentation including distinct values, text search
 ```ts
 // Search with options
 await peopleQuery.search({
-    delay: 300,              // Debounce search
     throwExceptions: true,   // Don't suppress errors
     keepSelection: true      // Maintain selected items
 });
