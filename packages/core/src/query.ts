@@ -1171,11 +1171,16 @@ export class Query extends ServiceObjectWithActions {
         if (!this.#lastResult)
             return;
 
+        const sortOptions = this.sortOptions, groupingInfo = this.groupingInfo;
         if (this.sortOptions === sentSortOptions)
             this.sortOptions = this.#resultSortOptions;
 
         if (this.groupingInfo === sentGroupingInfo)
             this.#setGroupingInfo(this.#resultGroupingInfo);
+
+        // Views that redraw on lastUpdated, like the grid, follow the restored state
+        if (this.sortOptions !== sortOptions || this.groupingInfo !== groupingInfo)
+            this.#setLastUpdated();
     }
 
     /**

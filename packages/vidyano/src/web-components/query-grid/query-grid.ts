@@ -59,7 +59,7 @@ const PHYSICAL_UPPER_LIMIT = 100000;
         },
         items: {
             type: Array,
-            computed: "_computeItems(query.lastUpdated, query.items, query.groupingInfo)"
+            computed: "_computeItems(query.lastUpdated, query.items)"
         },
         columns: {
             type: Array,
@@ -167,7 +167,6 @@ const PHYSICAL_UPPER_LIMIT = 100000;
     forwardObservers: [
         "query.canReorder",
         "query.columns",
-        "query.groupingInfo",
         "query.isBusy",
         "query.lastUpdated",
         "query.items.*",
