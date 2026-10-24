@@ -1,6 +1,6 @@
 import { test, expect, Locator, Page } from '@playwright/test';
 import { gridPage, mountGrid, columnTracks, getScrollOffset, headerNames, nextFrames, pageErrors, requestLog, scrollGrid, waitForGridReady, waitForQueryIdle } from '../_helpers/query-grid';
-import { clickGroupingMenuItem, columnTokens, consoleErrors, controlsBox, headerBoxes, hostVar, initializingAdds, initializingEvents, rowAt, rows, settle, valuesOf, watchInitializing } from '../_helpers/grid';
+import { clickGroupingMenuItem, columnTokens, consoleErrors, controlsBox, headerBoxes, holdExecuteQuery, hostVar, initializingAdds, initializingEvents, rowAt, rows, settle, valuesOf, watchInitializing } from '../_helpers/grid';
 
 const RH = 32;
 const PEOPLE_COLUMNS = ['FirstName', 'LastName', 'BirthDate', 'Gender', 'ContactPreference', 'Email', 'PhoneNumber', 'EmergencyContact', 'IsActive'];
@@ -244,6 +244,45 @@ test.describe('Query swap, detach, busy and errors', () => {
         await waitForQueryIdle(grid);
         await expect.poll(controlsWidth).toBe(before);
         expect(errors).toEqual([]);
+    });
+
+    test('a page that arrives while the grid is detached is used after re-attach', { annotation: [{ type: 'case', description: 'grid.lc-detach-page-arrives' }] }, async ({ page }) => {
+        await gridPage(page);
+        const grid = await mountGrid(page);
+
+        // The page request is sent before the grid is removed, its response arrives while it is detached
+        const release = await holdExecuteQuery(page);
+        const requested = page.waitForRequest('**/ExecuteQuery');
+        await scrollGrid(grid, { top: 6000 * RH });
+        await requested;
+        await grid.evaluate((g: any) => g.remove());
+
+        await release();
+        await expect.poll(() => page.evaluate(() => {
+            const q = (window as any).q;
+            const lazy = q.disableLazyLoading;
+            q.disableLazyLoading = true;
+            try {
+                return !!q.items[6000];
+            }
+            finally {
+                q.disableLazyLoading = lazy;
+            }
+        })).toBe(true);
+
+        // Re-inserting the grid resets its scroll position, so it shows the loaded first rows
+        await page.evaluate(() => document.getElementById('test-container')!.appendChild((window as any).grid));
+        await settle(grid);
+        expect((await getScrollOffset(grid)).top).toBe(0);
+        expect((await rows(grid))[0].index).toBe(0);
+        await expectRowsAtTheirIndex(grid, 're-attached');
+
+        // Back at the page that arrived while detached, its rows show without loading it again
+        const log = requestLog(page);
+        await scrolledTo(grid, 6000 * RH);
+        await expectRowsAtTheirIndex(grid, 'scrolled back');
+        await log.quiet();
+        expect(log.of('ExecuteQuery')).toHaveLength(0);
     });
 
     test('a removed grid sends no pending page load', { annotation: [{ type: 'case', description: 'grid.lc-detach-pending-load' }] }, async ({ page }) => {

@@ -251,6 +251,8 @@ export class QueryGrid extends Polymer.WebComponent {
             });
         }
 
+        this._queryOnDisconnect = this._queryValuesOnDisconnect = null;
+
         // Redo the work that was cancelled when the grid was removed, nothing else would start it again
         if (this._cancelledOnDisconnect && this.items) {
             this._cancelledOnDisconnect = false;
