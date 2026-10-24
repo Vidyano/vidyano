@@ -8,9 +8,9 @@ import { AppCacheEntryPersistentObjectFromAction } from "components/app-cache/ap
 import { AppCacheEntryQuery } from "components/app-cache/app-cache-entry-query"
 import { PersistentObjectDialog } from "components/persistent-object-dialog/persistent-object-dialog"
 import { PersistentObjectWizardDialog } from "components/persistent-object-wizard-dialog/persistent-object-wizard-dialog"
-import type { PersistentObjectPresenter } from "components/persistent-object-presenter/persistent-object-presenter"
+import { PersistentObjectPresenter } from "components/persistent-object-presenter/persistent-object-presenter"
 import type { ProgramUnitPresenter } from "components/program-unit-presenter/program-unit-presenter"
-import type { QueryPresenter } from "components/query-presenter/query-presenter"
+import { QueryPresenter } from "components/query-presenter/query-presenter"
 
 export class AppServiceHooks extends AppServiceHooksBase {
     get app(): App {
@@ -123,12 +123,13 @@ export class AppServiceHooks extends AppServiceHooksBase {
                     const poCacheEntriesWithQueries = <AppCacheEntryPersistentObject[]>this.app.cacheEntries.filter(e => e instanceof AppCacheEntryPersistentObject && !!e.persistentObject && e.persistentObject.queries.length > 0);
                     poCacheEntriesWithQueries.forEach(poEntry => queries.push(...poEntry.persistentObject.queries.filter(q => q.id === refresh.queryId && q.hasSearched)));
 
-                    refreshNow = () => queries.forEach(q => q.search());
+                    // A delayed refresh skips a query that is closed when the delay ends
+                    refreshNow = () => queries.filter(q => !refresh.delay || !(QueryPresenter.isClosed(q) || PersistentObjectPresenter.isClosed(q.parent))).forEach(q => q.search());
                 }
                 else {
                     refreshNow = async () => {
                         const cacheEntry = <AppCacheEntryPersistentObject>this.app.cachePing(new AppCacheEntryPersistentObject(refresh.fullTypeName, refresh.objectId));
-                        if (!cacheEntry || !cacheEntry.persistentObject)
+                        if (!cacheEntry || !cacheEntry.persistentObject || refresh.delay && PersistentObjectPresenter.isClosed(cacheEntry.persistentObject))
                             return;
 
                         try {
@@ -141,8 +142,20 @@ export class AppServiceHooks extends AppServiceHooksBase {
                     };
                 }
 
-                if (refresh.delay)
-                    setTimeout(refreshNow, refresh.delay);
+                if (refresh.delay) {
+                    // Signing out or in cancels the refresh, it belongs to the old session
+                    let timer: ReturnType<typeof setTimeout>;
+                    const stopWatching = this.app.service.propertyChanged.attach((_, args) => {
+                        if (args.propertyName === "application") {
+                            clearTimeout(timer);
+                            stopWatching();
+                        }
+                    });
+                    timer = setTimeout(() => {
+                        stopWatching();
+                        refreshNow();
+                    }, refresh.delay);
+                }
                 else
                     refreshNow();
 

@@ -4,9 +4,10 @@ import { startBackend, stopBackend, BackendProcess } from '../_helpers/backend';
 
 let backend: BackendProcess | undefined;
 
-test.describe.serial('Refresh client operation for a query', () => {
+test.describe.serial('Refresh client operation', () => {
     let sharedPage: Page;
     let executeQueries: number[] = [];
+    let getPersistentObjects = 0;
 
     test.beforeAll(async ({ browser }, testInfo) => {
         backend = await startBackend(testInfo);
@@ -16,11 +17,15 @@ test.describe.serial('Refresh client operation for a query', () => {
         sharedPage.on('request', request => {
             if (request.url().endsWith('/ExecuteQuery'))
                 executeQueries.push(Date.now());
+            else if (request.url().endsWith('/GetPersistentObject'))
+                getPersistentObjects++;
         });
 
-        // A real app with the Tickets query in its cache, as if the user opened it
+        // A real app that shows the Tickets list, as if the user opened it
         await sharedPage.evaluate(async () => {
             const app = document.createElement('vi-app') as any;
+            // Absolute, so the service is not reached relative to the path the app navigates to
+            app.uri = location.origin;
             document.body.appendChild(app);
             await new Promise<void>(resolve => {
                 const ready = () => app.service ? resolve() : setTimeout(ready, 50);
@@ -28,29 +33,47 @@ test.describe.serial('Refresh client operation for a query', () => {
             });
 
             await app.service.signInUsingDefaultCredentials();
-            const query = await app.service.getQuery('Tickets');
-            await query.search();
+            const queryId = (await app.service.getQuery('Tickets')).id;
+            const project = await app.service.getPersistentObject(null, 'Mock_Project', '1');
 
-            // The app's cache entry classes are not on window, so take the one a refresh looks up with (a refresh starts with that lookup)
-            let AppCacheEntryQuery: any;
-            const cachePing = app.cachePing;
-            app.cachePing = (entry: any) => (AppCacheEntryQuery = entry.constructor, null);
-            app.service.hooks.onClientOperation({ type: 'Refresh', queryId: query.id });
-            app.cachePing = cachePing;
+            const until = (check: () => any) => new Promise<void>(resolve => {
+                const poll = () => check() ? resolve() : setTimeout(poll, 50);
+                poll();
+            });
+            const shown = (presenter: string) => app.shadowRoot.querySelector(`vi-app-route.active > ${presenter}`);
 
-            const entry = new AppCacheEntryQuery(query.id);
-            entry.query = query;
-            app.cache(entry);
+            // Opening a list or a persistent object navigates to it, closing navigates away
+            (window as any).openList = async () => {
+                app.changePath(`query.${queryId}`);
+                await until(() => shown('vi-query-presenter')?.query?.hasSearched);
+                (window as any).query = shown('vi-query-presenter').query;
+            };
+            (window as any).openProject = async () => {
+                app.changePath(`persistent-object.${project.id}/${project.objectId}`);
+                await until(() => shown('vi-persistent-object-presenter')?.persistentObject);
+                const q = (window as any).projectTickets = shown('vi-persistent-object-presenter').persistentObject.queries[0];
+                await until(() => q.hasSearched);
+            };
+            (window as any).goHome = async () => {
+                app.changePath('');
+                await until(() => !shown('vi-query-presenter') && !shown('vi-persistent-object-presenter'));
+            };
+            (window as any).signOut = () => app.service.signOut();
 
-            (window as any).refresh = (delay?: number) => app.service.hooks.onClientOperation({ type: 'Refresh', queryId: query.id, delay });
+            (window as any).refresh = (delay?: number) => app.service.hooks.onClientOperation({ type: 'Refresh', queryId, delay });
+            (window as any).refreshProjectTickets = (delay?: number) => app.service.hooks.onClientOperation({ type: 'Refresh', queryId: (window as any).projectTickets.id, delay });
+            (window as any).refreshProject = (delay?: number) => app.service.hooks.onClientOperation({ type: 'Refresh', fullTypeName: project.fullTypeName, objectId: project.objectId, delay });
             // Starts a search without waiting for it; settled() waits for the last one
-            (window as any).search = () => { (window as any).lastSearch = query.search(); };
+            (window as any).search = () => { (window as any).lastSearch = (window as any).query.search(); };
             (window as any).settled = () => (window as any).lastSearch.then(() => { });
+
+            await (window as any).openList();
         });
     });
 
     test.beforeEach(() => {
         executeQueries = [];
+        getPersistentObjects = 0;
     });
 
     test.afterAll(async () => {
@@ -104,6 +127,78 @@ test.describe.serial('Refresh client operation for a query', () => {
 
         await expect.poll(() => executeQueries.length, { timeout: 5000 }).toBe(2);
         await sharedPage.evaluate(() => (window as any).settled());
+    });
+
+    test('a delayed refresh does not search a list closed during the delay', async () => {
+        await sharedPage.evaluate(() => (window as any).openList());
+        executeQueries = [];
+
+        await sharedPage.evaluate(() => (window as any).refresh(1000));
+        await sharedPage.evaluate(() => (window as any).goHome());
+
+        await sharedPage.waitForTimeout(2000);
+        expect(executeQueries).toHaveLength(0);
+    });
+
+    test('a delayed refresh searches a list in a persistent object once the delay ends', async () => {
+        await sharedPage.evaluate(() => (window as any).openProject());
+        executeQueries = [];
+
+        await sharedPage.evaluate(() => (window as any).refreshProjectTickets(1000));
+
+        await sharedPage.waitForTimeout(500);
+        expect(executeQueries).toHaveLength(0);
+
+        await expect.poll(() => executeQueries.length, { timeout: 5000 }).toBe(1);
+
+        await sharedPage.waitForTimeout(500);
+        expect(executeQueries).toHaveLength(1);
+    });
+
+    test('a delayed refresh does not search a list whose persistent object was closed during the delay', async () => {
+        await sharedPage.evaluate(() => (window as any).openProject());
+        executeQueries = [];
+
+        await sharedPage.evaluate(() => (window as any).refreshProjectTickets(1000));
+        await sharedPage.evaluate(() => (window as any).goHome());
+
+        await sharedPage.waitForTimeout(2000);
+        expect(executeQueries).toHaveLength(0);
+    });
+
+    test('a delayed refresh of a persistent object reloads it once the delay ends', async () => {
+        await sharedPage.evaluate(() => (window as any).openProject());
+        getPersistentObjects = 0;
+
+        await sharedPage.evaluate(() => (window as any).refreshProject(1000));
+
+        await sharedPage.waitForTimeout(500);
+        expect(getPersistentObjects).toBe(0);
+
+        await expect.poll(() => getPersistentObjects, { timeout: 5000 }).toBe(1);
+    });
+
+    test('a delayed refresh of a persistent object does not reload it when it was closed during the delay', async () => {
+        await sharedPage.evaluate(() => (window as any).openProject());
+        getPersistentObjects = 0;
+
+        await sharedPage.evaluate(() => (window as any).refreshProject(1000));
+        await sharedPage.evaluate(() => (window as any).goHome());
+
+        await sharedPage.waitForTimeout(2000);
+        expect(getPersistentObjects).toBe(0);
+    });
+
+    // Signs out, so it runs last
+    test('a delayed refresh does not search after signing out during the delay', async () => {
+        await sharedPage.evaluate(() => (window as any).openList());
+        executeQueries = [];
+
+        await sharedPage.evaluate(() => (window as any).refresh(1000));
+        await sharedPage.evaluate(() => (window as any).signOut());
+
+        await sharedPage.waitForTimeout(2000);
+        expect(executeQueries).toHaveLength(0);
     });
 
 });
