@@ -67,6 +67,7 @@ export class Query extends ServiceObjectWithActions {
     #columnObservers: ISubjectDisposer[];
     #hasMore: boolean = null;
     #groupingInfo: IQueryGroupingInfo;
+    #resultSortOptions: ISortOption[];
     #itemsProxy!: QueryItemsProxy;
     #tag: any;
 
@@ -936,6 +937,7 @@ export class Query extends ServiceObjectWithActions {
                     return;
 
                 const sent = this.#sentSearchGeneration = this.#searchGeneration;
+                const sentSortOptions = this.sortOptions;
                 let failed = false, error: any;
                 try {
                     const result = await this.service.executeQuery(this.parent, this, this.#asLookup, true);
@@ -958,6 +960,10 @@ export class Query extends ServiceObjectWithActions {
                 const waiters = this.#searchWaiters;
                 this.#searchWaiters = [];
                 waiters.forEach(w => failed ? w.reject(error) : w.resolve());
+
+                // Go back to the sort of the last result, unless it changed again after the request went out (the waiters continue after this)
+                if (failed && this.#lastResult && this.sortOptions === sentSortOptions)
+                    this.sortOptions = this.#resultSortOptions;
             }, false);
 
             // Each search settles by its own options, also when a later search answered it
@@ -1094,6 +1100,7 @@ export class Query extends ServiceObjectWithActions {
         const groupedBy = this.groupingInfo?.groupedBy;
         this.#updateGroupingInfo(result.groupingInfo ?? (groupedBy && !result.items.length ? { groupedBy, groups: [] } : null));
         this.#setSortOptionsFromService(result.sortOptions);
+        this.#resultSortOptions = this.sortOptions;
 
         this.#setTotalItem(result.totalItem != null ? this.service.hooks.onConstructQueryResultItem(this.service, result.totalItem, this) : null);
 

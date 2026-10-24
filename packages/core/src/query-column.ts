@@ -314,17 +314,15 @@ export class QueryColumn extends ServiceObject {
         if (!!multiSort) {
             const sortOption = this.query.sortOptions.find(option => option.name === this.name);
             if (sortOption && sortOption.direction === direction)
-                return;
+                return this.query.items;
 
             if (!sortOption) {
                 if (direction !== "")
                     this.query.sortOptions = this.query.sortOptions.concat([{ name: this.name, direction: direction }]);
             }
             else {
-                if (direction !== "") {
-                    sortOption.direction = direction;
-                    this.query.sortOptions = this.query.sortOptions.slice();
-                }
+                if (direction !== "")
+                    this.query.sortOptions = this.query.sortOptions.map(option => option === sortOption ? { name: this.name, direction: direction } : option);
                 else
                     this.query.sortOptions = this.query.sortOptions.filter(option => option !== sortOption);
             }

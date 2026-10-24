@@ -264,6 +264,8 @@ console.log('Applied sorts:', peopleQuery.sortOptions.map(s =>
 ).join(', '));
 ```
 
+A search that fails goes back to the sort of the last result, so `sortOptions` keeps matching the rows the server returned. A sort set before the first result, or set again while the failing request was on its way, is kept.
+
 ### Clear Sorting
 
 ```ts
