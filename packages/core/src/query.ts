@@ -47,6 +47,10 @@ export class Query extends ServiceObjectWithActions {
     #queriedPages: number[] = [];
     /** Increments on every search, so page loads started before it do not write into the new result */
     #searchGeneration: number = 0;
+    /** The newest search generation whose query state was sent to the service */
+    #sentSearchGeneration: number = 0;
+    /** The searches that wait for the answer to the latest state of the query */
+    #searchWaiters: { resolve: () => void; reject: (error: any) => void }[] = [];
     #filters: QueryFilters;
     #allowTextSearch: boolean;
     #canFilter: boolean;
@@ -738,7 +742,17 @@ export class Query extends ServiceObjectWithActions {
      */
     async #getItems(start: number, length: number = this.pageSize, skipQueue: boolean = false): Promise<QueryResultItem[]> {
         if (!this.hasSearched) {
-            await this.search({ delay: 0, throwExceptions: true });
+            if (this.#searchWaiters.length > 0) {
+                // Wait for the running search instead of starting another one, which would replace its result
+                await new Promise<void>(resolve => this.#searchWaiters.push({ resolve, reject: () => resolve() }));
+
+                // The search failed and its notification shows it, don't send it again
+                if (!this.hasSearched)
+                    return [];
+            }
+            else
+                await this.search({ delay: 0, throwExceptions: true });
+
             return this.#getItems(start, length);
         }
 
@@ -906,29 +920,50 @@ export class Query extends ServiceObjectWithActions {
         const wasAllSelectedInverse = options?.keepSelection && this.selectAll.allSelected && this.selectAll.inverse;
         const inverseDeselectedIds = wasAllSelectedInverse ? this.items.filter(i => !i.isSelected).map(i => i.id) : null;
         const search = () => {
-            this.#searchGeneration++;
+            const generation = ++this.#searchGeneration;
             this.#continuation = null;
             this.#queriedPages = [];
             this.#setHasSearched(false);
             this.#setTotalItems(null);
             this.#setItems([]);
 
-            const now = new Date();
-            return this.queueWork(async () => {
-                if (this.#lastUpdated && this.#lastUpdated > now)
-                    return this.items;
+            // Settles once the request for the latest state of the query, sent by this search or a later one, is answered
+            const answered = new Promise<void>((resolve, reject) => this.#searchWaiters.push({ resolve, reject }));
 
-                const result = await this.service.executeQuery(this.parent, this, this.#asLookup, !!options?.throwExceptions);
-                if (!result)
-                    return null;
+            this.queueWork(async () => {
+                // A later search already sent the latest state of the query
+                if (this.#sentSearchGeneration >= generation)
+                    return;
 
-                if (!this.#lastUpdated || this.#lastUpdated <= now) {
+                const sent = this.#sentSearchGeneration = this.#searchGeneration;
+                let failed = false, error: any;
+                try {
+                    const result = await this.service.executeQuery(this.parent, this, this.#asLookup, true);
+
+                    // A search started while this one ran sends its own request, its result wins
+                    if (sent !== this.#searchGeneration)
+                        return;
+
                     this.#setHasSearched(true);
                     this.#setResult(result);
                 }
+                catch (e) {
+                    if (sent !== this.#searchGeneration)
+                        return;
 
-                return this.items;
-            }, false).then((items: any) => {
+                    failed = true;
+                    error = e;
+                }
+
+                const waiters = this.#searchWaiters;
+                this.#searchWaiters = [];
+                waiters.forEach(w => failed ? w.reject(error) : w.resolve());
+            }, false);
+
+            // Each search settles by its own options, also when a later search answered it
+            return answered.then(() => {
+                const items = this.items;
+
                 // Restore non-inverse select-all state if it was active before refresh
                 if (wasAllSelected) {
                     this.selectAll.allSelected = true;
@@ -955,6 +990,12 @@ export class Query extends ServiceObjectWithActions {
                 }
 
                 return items;
+            }, e => {
+                // The service already set the error as the query's notification
+                if (options?.throwExceptions)
+                    throw e;
+
+                return null;
             });
         };
 
