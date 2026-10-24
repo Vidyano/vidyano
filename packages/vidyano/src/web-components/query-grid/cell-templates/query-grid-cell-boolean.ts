@@ -76,6 +76,11 @@ export class QueryGridCellBoolean extends QueryGridCell {
                     this._icon.setAttribute("is-selected", "");
             }
             else {
+                if (this._icon && !this._isHidden) {
+                    this._icon.setAttribute("hidden", "");
+                    this._isHidden = true;
+                }
+
                 const displayTextKey = typeHints[displayValue ? "truekey" : "falsekey"];
                 const displayTextValue = this.translations[displayTextKey] || displayTextKey;
                 if (!this._textNode)

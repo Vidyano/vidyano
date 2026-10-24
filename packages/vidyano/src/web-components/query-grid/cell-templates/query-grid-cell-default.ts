@@ -1,6 +1,9 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "@vidyano/core"
 import { QueryGridCell } from "./query-grid-cell"
+
+const classNames = (value: string) => value.split(/\s+/).filter(Boolean);
+
 @Polymer.WebComponent.register({
     properties: {
         value: {
@@ -9,6 +12,10 @@ import { QueryGridCell } from "./query-grid-cell"
         },
         column: Object,
         right: {
+            type: Boolean,
+            reflectToAttribute: true
+        },
+        center: {
             type: Boolean,
             reflectToAttribute: true
         },
@@ -28,6 +35,7 @@ export class QueryGridCellDefault extends QueryGridCell {
     private _tag: { currentValue?: any; originalValue?: any } = { currentValue: null };
     tag: boolean;
     right: boolean;
+    center: boolean;
 
     protected _valueChanged(itemValue: Vidyano.QueryResultItemValue, oldValue: Vidyano.QueryResultItemValue) {
         super._valueChanged(itemValue, oldValue);
@@ -43,7 +51,7 @@ export class QueryGridCellDefault extends QueryGridCell {
         value = itemValue.item.getValue(itemValue.column.name);
         if (value != null && (itemValue.column.type === "Boolean" || itemValue.column.type === "NullableBoolean"))
             value = itemValue.item.query.service.getTranslatedMessage(value ? this._getTypeHint(itemValue.column, "truekey", "True") : this._getTypeHint(itemValue.column, "falsekey", "False"));
-        else if (itemValue.column.type === "YesNo")
+        else if (value != null && itemValue.column.type === "YesNo")
             value = itemValue.item.query.service.getTranslatedMessage(value ? this._getTypeHint(itemValue.column, "truekey", "Yes") : this._getTypeHint(itemValue.column, "falsekey", "No"));
         else if (itemValue.column.type === "Time" || itemValue.column.type === "NullableTime") {
             if (typeof value === "string") {
@@ -94,11 +102,11 @@ export class QueryGridCellDefault extends QueryGridCell {
         const extraClass = itemValue.column.getTypeHint("extraclass", undefined, value && itemValue.typeHints);
         if (extraClass !== this._extraClass) {
             if (!String.isNullOrEmpty(this._extraClass))
-                this.classList.remove(...this._extraClass.split(" "));
+                this.classList.remove(...classNames(this._extraClass));
 
             this._extraClass = extraClass;
             if (!String.isNullOrEmpty(extraClass))
-                this.classList.add(...this._extraClass.split(" "));
+                this.classList.add(...classNames(this._extraClass));
         }
 
         this._updateCell(value);
@@ -126,6 +134,7 @@ export class QueryGridCellDefault extends QueryGridCell {
         this.tag = !!tagHint;
         // The tag follows the cell's alignment (numbers are right-aligned)
         this.right = this.tag && this.style.textAlign === "right";
+        this.center = this.tag && this.style.textAlign === "center";
     }
 
     private _clearTagTypeHint() {
@@ -138,6 +147,7 @@ export class QueryGridCellDefault extends QueryGridCell {
         }
         this.tag = false;
         this.right = false;
+        this.center = false;
     }
 
     protected _updateCell(value: string) {
