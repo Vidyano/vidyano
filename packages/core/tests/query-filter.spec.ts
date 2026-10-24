@@ -144,6 +144,34 @@ test.describe('Query Filters and Distincts', () => {
             expect(dropdownOptions.some(opt => opt.value === 'Female')).toBe(true);
         });
 
+        test('refreshing one column keeps the distincts of the other columns fresh', async ({ peopleQuery }) => {
+            const genderColumn = peopleQuery.columns.find(c => c.name === 'Gender')!;
+            const lastNameColumn = peopleQuery.columns.find(c => c.name === 'LastName')!;
+
+            await genderColumn.refreshDistincts();
+            await lastNameColumn.refreshDistincts();
+
+            expect(genderColumn.distincts.isDirty).toBe(false);
+            expect(lastNameColumn.distincts.isDirty).toBe(false);
+        });
+
+        test('a filter change or a new result marks the distincts dirty', async ({ peopleQuery }) => {
+            const genderColumn = peopleQuery.columns.find(c => c.name === 'Gender')!;
+            const lastNameColumn = peopleQuery.columns.find(c => c.name === 'LastName')!;
+
+            await genderColumn.refreshDistincts();
+            await lastNameColumn.refreshDistincts();
+
+            lastNameColumn.selectedDistincts = ['1|@Ja'];
+            expect(genderColumn.distincts.isDirty).toBe(true);
+            expect(lastNameColumn.distincts.isDirty).toBe(false);
+
+            await genderColumn.refreshDistincts();
+            await peopleQuery.search();
+            expect(genderColumn.distincts.isDirty).toBe(true);
+            expect(lastNameColumn.distincts.isDirty).toBe(true);
+        });
+
         test('handles hasMore in distincts', async ({ peopleQuery }) => {
             const birthDateColumn = peopleQuery.columns.find(c => c.name === 'BirthDate')!;
             expect(birthDateColumn).toBeInstanceOf(QueryColumn);

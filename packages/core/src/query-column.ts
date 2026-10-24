@@ -291,11 +291,6 @@ export class QueryColumn extends ServiceObject {
             return this.distincts;
         }
 
-        this.query.columns.filter(q => q !== this).forEach(col => {
-            if (col.distincts)
-                col.distincts.isDirty = true;
-        });
-
         const matchingDistinctsAttr = result.attributes["MatchingDistincts"];
         const remainingDistinctsAttr = result.attributes["RemainingDistincts"];
 
