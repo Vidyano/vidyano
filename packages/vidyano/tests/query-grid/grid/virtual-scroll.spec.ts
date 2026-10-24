@@ -260,6 +260,35 @@ test.describe('Virtual scrolling and lazy loading', () => {
         await expectRowsAtTheirIndex(grid, 'after release');
     });
 
+    test('rows of a page that is loading stay placeholders while scrolling', { annotation: [{ type: 'case', description: 'grid.vs-placeholder-while-loading' }] }, async ({ page }) => {
+        await gridPage(page, { height: HEIGHT_640 });
+        const grid = await mountGrid(page);
+        const log = requestLog(page);
+        const release = await holdExecuteQuery(page);
+
+        await scrollGrid(grid, { top: 5000 * RH });
+        await expect.poll(() => log.of('ExecuteQuery').length).toBe(1);
+
+        // The page is requested and still held: a scroll within it must keep its rows as placeholders
+        for (const row of [5003, 4999]) {
+            await scrollGrid(grid, { top: row * RH });
+            await nextFrames(page, 2);
+            const visible = await rows(grid);
+            expect(visible.map(r => r.position), `row ${row}: rows in the viewport`).toEqual(Array.from({ length: 640 / RH }, (_, i) => row + i));
+            visible.forEach(r => expect(r.loading, `row ${row}: position ${r.position}`).toBe(true));
+            if (row === 5003)
+                expect(log.of('ExecuteQuery').map(r => r.skip), 'no second request for the loading page').toEqual([5000]);
+        }
+
+        await release();
+        await settle(grid);
+        await log.quiet();
+        // Row 4999 lies in the page before: each page is requested once
+        expect(log.of('ExecuteQuery').map(r => r.skip)).toEqual([5000, 4900]);
+        expect((await rows(grid))[0].index).toBe(4999);
+        await expectRowsAtTheirIndex(grid, 'after release');
+    });
+
     test('jumping into one unloaded page requests exactly that page', { annotation: [{ type: 'case', description: 'grid.vs-lazy-request-single-page' }] }, async ({ page }) => {
         await gridPage(page);
         const grid = await mountGrid(page);

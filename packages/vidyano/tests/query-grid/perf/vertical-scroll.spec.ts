@@ -33,40 +33,114 @@ test.describe('Vertical scrolling', () => {
         await recordPerf(page, testInfo, 'perf.vw-small-scroll-zero-mutations', { counts: { pool: result.pool, steps: result.k, rowMutations: mutations.rowRecords, otherMutations: mutations.otherRecords, requests: log.requests.length } });
     });
 
-    test('rows cover the viewport in every frame while scrolling', perfCase('perf.vw-coverage-every-frame', { timing: true }), async ({ page }, testInfo) => {
+    test('rows cover the viewport in every frame while scrolling', perfCase('perf.vw-coverage-every-frame'), async ({ page }, testInfo) => {
         await perfPage(page);
         const grid = await mountGrid(page);
         await parkMouse(page);
 
+        // Page loads wait for the scroll to release them: pages are in flight and arrive while scrolling, whatever the frame rate
+        const held: (() => void)[] = [];
+        await page.route(/\/ExecuteQuery$/, route => {
+            held.push(() => route.continue().catch(() => {}));
+        });
+        await page.exposeFunction('releasePages', () => held.splice(0).forEach(release => release()));
+
         const result = await grid.evaluate(async (g: any) => {
-            const perf = (window as any).__perf;
+            const w = window as any;
+            const perf = w.__perf;
+            const q = g.query;
             const scroller = perf.scroller(g).scroller;
-            const step = 8 * g.rowHeight;
-            const frames = 5000 / 8;
-            const down = await perf.runFrames(frames, (i: number) => scroller.scrollTop = (i + 1) * step, () => perf.coverage(g));
-            const up = await perf.runFrames(frames, (i: number) => scroller.scrollTop = (frames - 1 - i) * step, () => perf.coverage(g));
-            const summary = (run: any) => ({ frames: run.samples.length, uncovered: run.samples.filter((s: any) => s.gap > 1).length, maxGap: Math.max(...run.samples.map((s: any) => s.gap)) });
+            const rh = g.rowHeight;
+            const segment = 50;
+            const frames = 4 * segment;
+            // 7.5 rows per frame: window starts of both parities and positions between rows
+            const step = 7.5 * rh;
+
+            let lastUpdated = q.lastUpdated;
+            const loading = () => {
+                const lazy = q.disableLazyLoading;
+                q.disableLazyLoading = true;
+                try {
+                    const first = Math.floor(scroller.scrollTop / rh);
+                    const last = Math.ceil((scroller.scrollTop + scroller.clientHeight) / rh) - 1;
+                    let count = 0;
+                    for (let i = first; i <= last; i++)
+                        count += q.items[i] === null ? 1 : 0;
+
+                    return count;
+                }
+                finally {
+                    q.disableLazyLoading = lazy;
+                }
+            };
+            const measure = () => {
+                const arrived = q.lastUpdated !== lastUpdated;
+                lastUpdated = q.lastUpdated;
+                return { ...perf.coverage(g), loading: loading(), arrived };
+            };
+
+            // Each segment after the first starts over rows whose page is requested and held; its second frame releases the held pages
+            const scroll = async (position: (frame: number) => number) => {
+                const samples: any[] = [];
+                for (let start = 0; start < frames; start += segment) {
+                    if (start > 0)
+                        await perf.whenFrame(() => loading() > 0);
+
+                    const run = await perf.runFrames(segment, (i: number) => {
+                        if (start > 0 && i === 1)
+                            w.releasePages();
+
+                        scroller.scrollTop = position(start + i) * step;
+                    }, measure);
+                    samples.push(...run.samples);
+                }
+
+                // Released pages that did not arrive yet arrive in frames that still scroll
+                const end = scroller.scrollTop;
+                while (!samples.some(s => s.arrived)) {
+                    w.releasePages();
+                    const run = await perf.runFrames(10, (i: number) => scroller.scrollTop = end + (i % 2 ? rh : 0), measure);
+                    samples.push(...run.samples);
+                }
+
+                return { samples };
+            };
+
+            const down = await scroll(frame => frame + 1);
+            // Up from twice as far, so its pauses fall in pages the way down did not load
+            const up = await scroll(frame => 2 * frames - 1 - frame);
+            const summary = (run: any) => ({
+                frames: run.samples.length,
+                uncovered: run.samples.filter((s: any) => s.gap > 1).length,
+                maxGap: Math.max(...run.samples.map((s: any) => s.gap)),
+                loadingFrames: run.samples.filter((s: any) => s.loading > 0).length,
+                arrivals: run.samples.filter((s: any) => s.arrived).length
+            });
 
             // A single upward step, then idle: the viewport stays covered without a further scroll (two targets, so one
-            // of them aligns the window end to an odd start)
+            // of them aligns the window end to an odd start), in pages the scrolls above never requested
             const steps = [];
-            for (const target of [2995, 2994]) {
-                const step = await perf.runFrames(2, (i: number) => scroller.scrollTop = [3001, target][i] * g.rowHeight, () => perf.coverage(g));
-                await new Promise(resolve => setTimeout(resolve, 300));
-                await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+            for (const target of [5995, 5994]) {
+                const step = await perf.runFrames(2, (i: number) => scroller.scrollTop = [6001, target][i] * rh, () => perf.coverage(g));
+                // Idle until the rows in view are requested (their page stays held)
+                await perf.whenFrame(() => loading() > 0);
                 steps.push({ target, stepGap: step.samples[1].gap, idleGap: perf.coverage(g).gap });
             }
 
             return { down: summary(down), up: summary(up), steps };
         });
 
-        expect(result.down.frames).toBe(625);
+        expect(result.down.frames).toBeGreaterThanOrEqual(200);
+        expect(result.down.loadingFrames, 'frames scrolling down over rows whose page is loading').toBeGreaterThan(0);
+        expect(result.down.arrivals, 'pages arriving while scrolling down').toBeGreaterThan(0);
         expect(result.down.uncovered, 'uncovered frames scrolling down').toBe(0);
 
         await recordPerf(page, testInfo, 'perf.vw-coverage-every-frame', { counts: { uncoveredDown: result.down.uncovered, uncoveredUp: result.up.uncovered, maxGapUp: result.up.maxGap }, frames: result });
 
         // Scrolling up aligns the window to the viewport end, keeping an even start must not uncover the last visible row
-        expect(result.up.frames).toBe(625);
+        expect(result.up.frames).toBeGreaterThanOrEqual(200);
+        expect(result.up.loadingFrames, 'frames scrolling up over rows whose page is loading').toBeGreaterThan(0);
+        expect(result.up.arrivals, 'pages arriving while scrolling up').toBeGreaterThan(0);
         expect(result.up.uncovered, 'uncovered frames scrolling up').toBe(0);
         for (const step of result.steps) {
             expect(step.stepGap, `uncovered strip after one upward step to row ${step.target}`).toBeLessThanOrEqual(1);

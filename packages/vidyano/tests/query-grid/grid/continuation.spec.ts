@@ -318,6 +318,11 @@ test.describe('Unknown totals (continuation)', () => {
         await scrollToEnd(grid);
         await nextFrames(page, 2);
         expect(paging.tokens(), 'the page is requested once').toEqual(['offset:100']);
+        // Scrolling on into the open end stays within it while the page loads
+        const loading = await state(grid);
+        expect(loading.scrollTop).toBeGreaterThanOrEqual(top);
+        expect(loading.scrollTop).toBeLessThanOrEqual(100 * RH);
+        expect(loading.scrollHeight).toBeLessThanOrEqual(100 * RH + loading.clientHeight);
 
         await release();
         await paging.quiet();
@@ -334,7 +339,7 @@ test.describe('Unknown totals (continuation)', () => {
         expect(s.scrollHeight).toBeGreaterThanOrEqual(200 * RH);
         expect(s.scrollHeight).toBeLessThanOrEqual(200 * RH + s.clientHeight);
         // The arriving page does not move the scroll position
-        expect(s.scrollTop).toBe(top);
+        expect(s.scrollTop).toBe(loading.scrollTop);
         await expectLoadedInOrder(grid, 200);
 
         // The new rows render at their index

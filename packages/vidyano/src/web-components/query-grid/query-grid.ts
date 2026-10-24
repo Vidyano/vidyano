@@ -476,7 +476,8 @@ export class QueryGrid extends Polymer.WebComponent {
             const [item, realIndex] = this._getItem(index, true);
             this.virtualItems[virtualIndex] = item;
 
-            if (this.virtualItems[virtualIndex] === undefined) {
+            // A null item at a real index is one whose page is loading
+            if (item === undefined || (item === null && realIndex >= 0)) {
                 if (realIndex < this.query.totalItems || this.query.hasMore) {
                     placeholder.query = this.query;
                     this.virtualItems[virtualIndex] = <any>placeholder;
