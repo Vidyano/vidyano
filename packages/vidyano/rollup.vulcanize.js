@@ -48,7 +48,7 @@ export default function vulcanize() {
         async transform(code, id) {
             const index = id.indexOf("src");
             if (index >= 0) {
-                const componentDir = path.dirname(id);
+                const componentDir = fg.convertPathToPattern(path.dirname(id));
 
                 const files = await fg([
                     componentDir + "/*.css",
