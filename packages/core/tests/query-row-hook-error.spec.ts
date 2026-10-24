@@ -48,12 +48,26 @@ class RowHooks extends ContinuationHooks {
 }
 
 type Fixtures = {
+    /** What the tests log with console.error, captured so the row hook errors stay out of the test output */
+    logged: unknown[][];
     hooks: RowHooks;
     service: Service;
     reorderQuery: Query;
 };
 
 const test = base.extend<Fixtures>({
+    logged: [async ({}, use) => {
+        const logged: unknown[][] = [];
+        const consoleError = console.error;
+        console.error = (...args: unknown[]) => { logged.push(args); };
+        try {
+            await use(logged);
+        }
+        finally {
+            console.error = consoleError;
+        }
+    }, { auto: true }],
+
     hooks: async ({}, use) => {
         const hooks = new RowHooks();
         hooks.simulate = false;
@@ -102,18 +116,10 @@ function expectEmptyResult(query: Query) {
 }
 
 test.describe("A search whose rows cannot be built", () => {
-    test("reports the error in the console", async ({ service, hooks }) => {
+    test("reports the error in the console", async ({ service, hooks, logged }) => {
         const query = await service.getQuery("People");
-        const logged: unknown[][] = [];
-        const consoleError = console.error;
-        console.error = (...args: unknown[]) => { logged.push(args); };
-        try {
-            hooks.failFor(query);
-            await query.search();
-        }
-        finally {
-            console.error = consoleError;
-        }
+        hooks.failFor(query);
+        await query.search();
 
         expect(logged.some(args => args.some(a => a instanceof Error && a.message === ERROR))).toBe(true);
     });
