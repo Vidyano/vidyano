@@ -266,7 +266,7 @@ export class QueryGridRow extends Polymer.WebComponent {
             return;
 
         // Without a qualifying action there is no menu, the native menu shows instead
-        if (this._getActions().length === 0)
+        if (this._selectForActions().length === 0)
             return;
 
         let [x, y] = [e.clientX, e.clientY];
@@ -314,27 +314,38 @@ export class QueryGridRow extends Polymer.WebComponent {
     }
 
     /**
-     * The actions the menu would list, counted with the selection it will have: opening it selects an unselected row exclusively.
+     * Selects this row exclusively unless it is already selected, and returns the actions the menu lists for that selection.
+     * Without any, the previous selection is restored.
      */
-    private _getActions(): Vidyano.Action[] {
+    private _selectForActions(): Vidyano.Action[] {
         const query = this.item.query;
-        const count = query.selectedItems.indexOf(<Vidyano.QueryResultItem>this.item) < 0 ? 1 : Math.max(1, query.selectedItems.length);
+        const item = <Vidyano.QueryResultItem>this.item;
+        const getActions = () => (<Vidyano.Action[]>query.actions || []).filter(a => a.isVisible && a.definition.selectionRule !== Vidyano.ExpressionParser.alwaysTrue && a.selectionRule(Math.max(1, query.selectedItems.length)));
 
-        return (<Vidyano.Action[]>query.actions || []).filter(a => a.isVisible && a.definition.selectionRule !== Vidyano.ExpressionParser.alwaysTrue && a.selectionRule(count));
+        if (query.selectedItems.indexOf(item) >= 0)
+            return getActions();
+
+        const [selectedItems, allSelected, inverse] = [query.selectedItems, query.selectAll.allSelected, query.selectAll.inverse];
+        query.selectAll.allSelected = query.selectAll.inverse = false;
+        query.selectedItems = [item];
+
+        // Checked after selecting, the app can change which actions are visible for a selection
+        const actions = getActions();
+        if (actions.length === 0) {
+            query.selectAll.allSelected = allSelected;
+            query.selectAll.inverse = inverse;
+            query.selectedItems = selectedItems;
+        }
+
+        return actions;
     }
 
     // TODO: Actions popup displays out of viewport
     private async _onActionsOpening(e: CustomEvent) {
-        const actions = this._getActions();
+        const actions = this._selectForActions();
         if (actions.length === 0) {
             e.preventDefault();
             return;
-        }
-
-        // Always select this row when opening context menu (if not already selected)
-        if (this.item.query.selectedItems.indexOf(<Vidyano.QueryResultItem>this.item) < 0) {
-            this.item.query.selectAll.allSelected = this.item.query.selectAll.inverse = false;
-            this.item.query.selectedItems = [<Vidyano.QueryResultItem>this.item];
         }
 
         const actionGroups: { [name: string]: Vidyano.ActionGroup } = {};

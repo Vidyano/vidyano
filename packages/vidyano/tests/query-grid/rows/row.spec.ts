@@ -1190,6 +1190,7 @@ test.describe('vi-query-grid-row: type hints (extraclass)', () => {
         expect(await taps(page)).toEqual([]);
         expect(await opens(page)).toEqual([]);
         await expect(contextPopup(grid)).toHaveCount(0);
+        expect(await contextMenuEvents(page)).toEqual([false]);
 
         await setSelected(grid, 2, true);
         expect(await selectedIndexes(grid)).toEqual([]);
@@ -1523,9 +1524,11 @@ test.describe('vi-query-grid-row: context menu details', () => {
         await setSelected(grid, 1, true);
         await setSelected(grid, 2, true);
         await expect.poll(() => selectedIndexes(grid)).toEqual([1, 2]);
+        await recordContextMenu(page);
 
         // With only row 4 selected MoreThanOne would not qualify, so there is no menu to show
         await (await rowOf(grid, 4)).locator('.column').first().click({ button: 'right' });
+        await expect.poll(() => contextMenuEvents(page)).toEqual([false]);
         await nextFrames(page, 5);
         await expect(contextPopup(grid)).toHaveCount(0);
         expect(await selectedIndexes(grid)).toEqual([1, 2]);
@@ -1611,9 +1614,11 @@ test.describe('vi-query-grid-row: context menu details', () => {
         test(`without a qualifying action right-click opens no menu and keeps the selection (${query})`, case_('rows.row-ctx-empty-views'), async ({ page }) => {
             await gridPage(page);
             const grid = await mountGrid(page, { query });
+            await recordContextMenu(page);
 
             const row = await rowOf(grid, 0);
             await row.locator('.column').first().click({ button: 'right' });
+            await expect.poll(() => contextMenuEvents(page)).toEqual([false]);
             await nextFrames(page, 5);
             expect(await contextPopupCount(grid)).toBe(0);
             await expect(grid.locator('vi-popup[open]')).toHaveCount(0);
@@ -1625,8 +1630,10 @@ test.describe('vi-query-grid-row: context menu details', () => {
     test('right-click without a qualifying action shows no popup and keeps the selection', case_('rows.row-ctx-empty-no-popup'), async ({ page }) => {
         await gridPage(page);
         const grid = await mountGrid(page, { query: 'QueryGrid_None' });
+        await recordContextMenu(page);
 
         await (await rowOf(grid, 0)).locator('.column').first().click({ button: 'right' });
+        await expect.poll(() => contextMenuEvents(page)).toEqual([false]);
         await nextFrames(page, 5);
         await expect(page.locator('vi-popup[open]')).toHaveCount(0);
         expect(await grid.evaluate((g: any) => g.query.selectedItems.length)).toBe(0);
@@ -1658,35 +1665,64 @@ test.describe('vi-query-grid-row: context menu details', () => {
         });
     }
 
-    test('in select-all mode the menu uses the selected item count', case_('gap.row-ctx-allselected-rule-count'), async ({ page }) => {
+    test('in select-all mode the menu counts the selected items like the action bar', case_('gap.row-ctx-allselected-rule-count'), async ({ page }) => {
         await gridPage(page);
         const grid = await mountGrid(page);
 
         await grid.locator('vi-query-grid-select-all').click();
         await expect.poll(async () => (await selectAllState(grid)).allSelected).toBe(true);
 
+        // A rule between the loaded selection and the whole result tells the two counts apart. The action bar's
+        // canExecute counts query.selectedItems, so the menu must list exactly the actions the bar enables.
         const expected = await grid.evaluate((g: any) => {
             const q = g.query;
             const alwaysTrue = (window as any).Vidyano.ExpressionParser.alwaysTrue;
-            const names: string[] = [];
-            q.actions.filter((a: any) => a.isVisible && a.definition.selectionRule !== alwaysTrue && a.selectionRule(q.selectedItemCount))
-                .forEach((a: any) => {
-                    const name = a.group ? a.group.name : a.name;
-                    if (!names.includes(name))
-                        names.push(name);
-                });
+            const loaded = q.selectedItems.length;
+            const single = q.actions.find((a: any) => a.isVisible && a.definition.selectionRule !== alwaysTrue && !a.group && a.selectionRule(1) && !a.selectionRule(2));
+            const upToLoaded = q.actions.find((a: any) => a.isVisible && a.definition.selectionRule !== alwaysTrue && !a.group && a !== single);
+            upToLoaded.selectionRule = (count: number) => count >= 1 && count <= loaded;
 
-            return { names, count: q.selectedItemCount, singles: q.actions.filter((a: any) => a.isVisible && a.definition.selectionRule !== alwaysTrue && !a.group && a.selectionRule(1) && !a.selectionRule(2)).map((a: any) => a.name) };
+            return { loaded, total: q.selectedItemCount, single: single?.name, upToLoaded: upToLoaded.name };
         });
-        expect(expected.count).toBe(10000);
+        expect(expected.total).toBe(10000);
+        expect(expected.loaded).toBeGreaterThan(1);
+        expect(expected.loaded).toBeLessThan(expected.total);
 
         await (await rowOf(grid, 1)).locator('.column').first().click({ button: 'right' });
         const popup = contextPopup(grid);
         await expect(popup).toHaveCount(1);
         const names = await buttonNames(popup);
-        expect(names).toEqual(expected.names);
-        for (const single of expected.singles)
-            expect(names).not.toContain(single);
+        expect(names).toContain(expected.upToLoaded);
+        if (expected.single)
+            expect(names).not.toContain(expected.single);
+    });
+
+    test('the menu lists the actions the app shows for the row\'s selection', case_('rows.row-ctx-actions-after-selection'), async ({ page }) => {
+        await gridPage(page);
+        const grid = await mountGrid(page);
+        await setSelected(grid, 1, true);
+        await expect.poll(() => selectedIndexes(grid)).toEqual([1]);
+
+        // Like an app hook that shows an action only for some rows
+        const name = await grid.evaluate((g: any) => {
+            const q = g.query;
+            const alwaysTrue = (window as any).Vidyano.ExpressionParser.alwaysTrue;
+            const action = q.actions.find((a: any) => a.isVisible && a.definition.selectionRule !== alwaysTrue && !a.group && a.selectionRule(1));
+            const target = q.items[3];
+            action.isVisible = false;
+            q.propertyChanged.attach((_: any, args: any) => {
+                if (args.propertyName === 'selectedItems')
+                    action.isVisible = q.selectedItems.includes(target);
+            });
+
+            return action.name;
+        });
+
+        await (await rowOf(grid, 3)).locator('.column').first().click({ button: 'right' });
+        const popup = contextPopup(grid);
+        await expect(popup).toHaveCount(1);
+        expect(await buttonNames(popup)).toContain(name);
+        expect(await selectedIndexes(grid)).toEqual([3]);
     });
 
     test('the context menu opens at the pointer on a scrolled document', case_('gap.row-ctx-position-scrolled-document'), async ({ page }) => {
@@ -1821,10 +1857,12 @@ test.describe('vi-query-grid-row: opening edge cases', () => {
         await gridPage(page);
         const grid = await mountGrid(page);
         let first = true;
+        let releaseFirst: () => void;
+        const firstReleased = new Promise<void>(resolve => releaseFirst = resolve);
         await page.route(/\/GetPersistentObject$/, async route => {
             if (first) {
                 first = false;
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                await firstReleased;
             }
 
             await route.continue();
@@ -1843,6 +1881,9 @@ test.describe('vi-query-grid-row: opening edge cases', () => {
 
         await (await rowOf(grid, 0)).locator('.column').first().click();
         await (await rowOf(grid, 1)).locator('.column').first().click();
+        // The first item's load only answers once the second row was clicked (the service sends the second load after it)
+        await expect.poll(() => taps(page)).toHaveLength(2);
+        releaseFirst!();
         await expect.poll(() => opens(page)).toHaveLength(1);
         await expect.poll(() => log.of('GetPersistentObject').length).toBe(2);
         await log.quiet(300);

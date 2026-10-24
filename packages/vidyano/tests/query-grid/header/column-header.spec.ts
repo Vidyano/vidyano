@@ -48,7 +48,7 @@ test.describe('Rendering', () => {
         expect(names).not.toContain('Email');
     });
 
-    test('truncates a too-narrow label with an ellipsis and shows the full label as its tooltip', { annotation: [{ type: 'case', description: 'header.hdr-label-ellipsis-no-tooltip' }] }, async ({ page }) => {
+    test('truncates a too-narrow label with an ellipsis and shows the full label as its tooltip', { annotation: [{ type: 'case', description: 'header.hdr-label-ellipsis-tooltip' }] }, async ({ page }) => {
         const grid = await headerGrid(page);
 
         await resizeColumn(grid, 'LastName', -400);
