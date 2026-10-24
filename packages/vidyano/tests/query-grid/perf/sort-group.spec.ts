@@ -1,4 +1,5 @@
 import { Locator, Page } from '@playwright/test';
+import { holdExecuteQuery } from '../_helpers/grid';
 import { mountGrid, nextFrames, requestLog, savedSettings, waitForGridReady } from '../_helpers/query-grid';
 import { expect, frameStats, median, mountPrefetched, parkMouse, perfCase, perfPage, recordPerf, round, scrollToRow, setCpuThrottle, test, waitFilled } from '../_helpers/perf';
 
@@ -333,7 +334,7 @@ test.describe('Sort, search & grouping', () => {
         await recordPerf(page, testInfo, 'perf.gr-page-load-headers', { counts: { requests: log.requests.length, rowsMutated: Object.keys(after.mutations.perRow).length } });
     });
 
-    test('re-query from deep scroll sends no stale fetches', perfCase('perf.sq-sort-from-scrolled', { timing: true }), async ({ page }, testInfo) => {
+    test('re-query from deep scroll sends no stale fetches', perfCase('perf.sq-sort-from-scrolled'), async ({ page }, testInfo) => {
         await perfPage(page);
         const { grid } = await mountPrefetched(page, 'People');
         await parkMouse(page);
@@ -362,7 +363,12 @@ test.describe('Sort, search & grouping', () => {
                 }, 30000);
             });
 
+            // The new result is held for a few frames, so a fetch for the old rows would go out meanwhile
+            const release = await holdExecuteQuery(page);
             await trigger();
+            await expect.poll(() => log.of('ExecuteQuery').length, `${label}: the held request`).toBe(1);
+            await expect.poll(() => page.evaluate(() => (window as any).__coverage.filter((s: any) => s.busy).length), `${label}: frames while the request is held`).toBeGreaterThan(5);
+            release();
             await waitForGridReady(grid);
             await waitFilled(grid);
             await log.quiet();

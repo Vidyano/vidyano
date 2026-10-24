@@ -419,12 +419,14 @@ export async function valuesOf(grid: Locator, indexes: number[], column: string)
     }, { indexes, column });
 }
 
-/** Holds ExecuteQuery responses until the returned release function is called. */
-export async function holdExecuteQuery(page: Page) {
+/** Holds ExecuteQuery responses (those whose request body matches, when given) until the returned release function is called. */
+export async function holdExecuteQuery(page: Page, matches: (body: any) => boolean = () => true) {
     let release!: () => void;
     const gate = new Promise<void>(resolve => release = resolve);
     await page.route('**/ExecuteQuery', async route => {
-        await gate;
+        if (matches(route.request().postDataJSON()))
+            await gate;
+
         await route.continue();
     });
 

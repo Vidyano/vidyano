@@ -1,4 +1,5 @@
 import { Locator, Page } from '@playwright/test';
+import { holdExecuteQuery } from '../_helpers/grid';
 import { requestLog, waitForGridReady } from '../_helpers/query-grid';
 import { datasetOf, expect, gridLocator, mountPrefetched, parkMouse, perfCase, perfPage, recordPerf, round, scrollToRow, setCpuThrottle, test, waitFilled } from '../_helpers/perf';
 
@@ -15,6 +16,20 @@ async function jumpAndSettle(grid: Locator, row: number) {
         });
 
         return { ms: time - start, top: scroller.scrollTop, topIndex: perf.topRowIndex(g) };
+    }, row);
+}
+
+/**
+ * Scrolls to a row and waits until the grid decided which pages to fetch for it: the scroll event runs in the next frame,
+ * then the grid's 20ms fetch debounce and the query's 10ms batching run. A timer started later fires later, so this holds
+ * at any CPU speed.
+ */
+async function scrollAndLetFetch(grid: Locator, row: number) {
+    await grid.evaluate(async (g: any, row) => {
+        (window as any).__perf.scroller(g).scroller.scrollTop = row * g.rowHeight;
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        await new Promise(resolve => setTimeout(resolve, 20));
+        await new Promise(resolve => setTimeout(resolve, 10));
     }, row);
 }
 
@@ -80,33 +95,42 @@ test.describe('Lazy loading', () => {
         });
     }
 
-    test('linear scrolling requests each page once', perfCase('grid.pf-sequential-scroll-requests', { timing: true }), async ({ page }, testInfo) => {
+    test('linear scrolling requests each page once', perfCase('grid.pf-sequential-scroll-requests'), async ({ page }, testInfo) => {
         await perfPage(page);
 
-        // Wheel 160px every 30ms down to row 1,000
-        let grid = await mountFresh(page);
-        let log = requestLog(page);
-        const box = (await grid.boundingBox())!;
-        await page.mouse.move(box.x + 400, box.y + 300);
-        for (let top = 0; top < 1000 * 32; top += 160) {
-            await page.mouse.wheel(0, 160);
-            // The scenario's input pacing, not a wait for a result
-            await page.waitForTimeout(30);
-        }
-        await waitFilled(grid);
-        await log.quiet();
+        // Scroll 160px a step down to row 500, each step waited until the grid decided its fetch: once with the pages
+        // answered as they come, once with every page held until the end so the requests of the crossed pages overlap
+        const scrolls: Record<string, { requests: { skip?: number; top?: number }[]; pagesCrossed: number }> = {};
+        for (const held of [false, true]) {
+            const grid = await mountFresh(page);
+            const log = requestLog(page);
+            const release = held ? await holdExecuteQuery(page) : null;
+            const rowHeight = await grid.evaluate((g: any) => g.rowHeight);
+            for (let top = 160; top <= 500 * rowHeight; top += 160)
+                await scrollAndLetFetch(grid, top / rowHeight);
 
-        const wheelRequests = log.of('ExecuteQuery');
-        const lastRow = await grid.evaluate((g: any) => (window as any).__perf.visibleRows(g).length) + 1000;
-        const wheelPages = Math.floor(lastRow / 100); // pages 1..n were crossed (page 0 came with the query)
-        const wheelSkips = wheelRequests.map(r => r.skip);
-        expect(wheelRequests.every(pageAligned), JSON.stringify(wheelRequests.map(r => [r.skip, r.top]))).toBe(true);
-        expect(new Set(wheelSkips).size, 'duplicate pages').toBe(wheelSkips.length);
-        expect(wheelRequests.length).toBeLessThanOrEqual(wheelPages);
+            if (release) {
+                await expect.poll(() => log.of('ExecuteQuery').length, 'a page request is held').toBeGreaterThan(0);
+                release();
+            }
+
+            await waitFilled(grid);
+            await log.quiet();
+
+            const requests = log.of('ExecuteQuery');
+            const lastRow = await grid.evaluate((g: any) => (window as any).__perf.visibleRows(g).length) + 500;
+            const pagesCrossed = Math.floor(lastRow / 100); // pages 1..n were crossed (page 0 came with the query)
+            const skips = requests.map(r => r.skip);
+            const label = `${held ? 'held' : 'answered'}: ${JSON.stringify(requests.map(r => [r.skip, r.top]))}`;
+            expect(requests.every(pageAligned), label).toBe(true);
+            expect(new Set(skips).size, `${label}, duplicate pages`).toBe(skips.length);
+            expect(requests.length, label).toBeLessThanOrEqual(pagesCrossed);
+            scrolls[held ? 'held' : 'answered'] = { requests, pagesCrossed };
+        }
 
         // 33 jumps of +300 rows, each waited until filled
-        grid = await mountFresh(page);
-        log = requestLog(page);
+        const grid = await mountFresh(page);
+        const log = requestLog(page);
         const stepRequests: number[] = [];
         for (let step = 1; step <= 33; step++) {
             const before = log.of('ExecuteQuery').length;
@@ -123,7 +147,10 @@ test.describe('Lazy loading', () => {
         expect(jumpRequests.length).toBeLessThanOrEqual(33);
         expect(Math.max(...stepRequests)).toBeLessThanOrEqual(2);
 
-        await recordPerf(page, testInfo, 'grid.pf-sequential-scroll-requests', { counts: { wheelRequests: wheelRequests.length, wheelPagesCrossed: wheelPages, jumpRequests: jumpRequests.length }, requests: { wheel: wheelRequests.map(r => [r.skip, r.top]), jumps: jumpRequests.map(r => [r.skip, r.top]), perStep: stepRequests } });
+        await recordPerf(page, testInfo, 'grid.pf-sequential-scroll-requests', {
+            counts: { scrollRequests: scrolls.answered.requests.length, heldScrollRequests: scrolls.held.requests.length, scrollPagesCrossed: scrolls.answered.pagesCrossed, jumpRequests: jumpRequests.length },
+            requests: { scroll: scrolls.answered.requests.map(r => [r.skip, r.top]), heldScroll: scrolls.held.requests.map(r => [r.skip, r.top]), jumps: jumpRequests.map(r => [r.skip, r.top]), perStep: stepRequests }
+        });
     });
 
     test('a fast fling only loads where it stops', perfCase('grid.pf-fling-requests-final-only', { timing: true }), async ({ page }, testInfo) => {
@@ -200,23 +227,18 @@ test.describe('Lazy loading', () => {
         });
     });
 
-    test('page arrival re-renders only rows that were waiting', perfCase('perf.ll-page-arrival-touches-only-placeholders', { timing: true }), async ({ page }, testInfo) => {
+    test('page arrival re-renders only rows that were waiting', perfCase('perf.ll-page-arrival-touches-only-placeholders'), async ({ page }, testInfo) => {
         await perfPage(page);
         const grid = await mountFresh(page);
         const log = requestLog(page);
 
-        // Delay the second page by 300ms
-        await page.route('**/ExecuteQuery', async route => {
-            const body = route.request().postDataJSON();
-            if (body?.query?.skip === 100)
-                await new Promise(resolve => setTimeout(resolve, 300));
-
-            await route.continue();
-        });
-
+        // Hold the second page until its rows show as waiting, then record what its arrival changes
+        const release = await holdExecuteQuery(page, body => body?.query?.skip === 100);
         await scrollToRow(grid, 80);
         await expect.poll(() => log.of('ExecuteQuery').some(r => r.skip === 100)).toBe(true);
+        await expect.poll(() => grid.evaluate((g: any) => (window as any).__perf.coverage(g).blank), 'rows waiting for the held page').toBeGreaterThan(0);
         await grid.evaluate((g: any) => (window as any).__perf.observe(g));
+        release();
         await waitFilled(grid);
         await log.quiet();
 
@@ -248,19 +270,28 @@ test.describe('Lazy loading', () => {
         await recordPerf(page, testInfo, 'perf.ll-page-arrival-touches-only-placeholders', { counts: { loadedRows: loaded.length, waitingRows: waiting.length, cellTextWrites: result.mutations.cellTextWrites, maxTextWritesPerCell: result.mutations.maxTextWritesPerCell, rowRecords: result.mutations.rowRecords } });
     });
 
-    test('oscillating between two unloaded regions does not duplicate requests', perfCase('grid.pf-no-duplicate-page-requests', { timing: true }), async ({ page }, testInfo) => {
+    test('oscillating between two unloaded regions does not duplicate requests', perfCase('grid.pf-no-duplicate-page-requests'), async ({ page }, testInfo) => {
         await perfPage(page);
         const grid = await mountFresh(page);
         const log = requestLog(page);
 
+        // Every page is held: the page at row 4,000 is requested and both regions are revisited while it is pending, then
+        // both again once they arrived
+        const release = await holdExecuteQuery(page);
         for (let i = 0; i < 5; i++) {
             for (const row of [4000, 6000]) {
-                await scrollToRow(grid, row);
-                // The scenario's pacing between the jumps, not a wait for a result
-                await page.waitForTimeout(50);
+                await scrollAndLetFetch(grid, row);
+                if (i === 0 && row === 4000)
+                    await expect.poll(() => log.of('ExecuteQuery').map(r => r.skip), 'the held request').toEqual([4000]);
             }
         }
+
+        release();
         await waitFilled(grid);
+        for (const row of [4000, 6000]) {
+            await scrollAndLetFetch(grid, row);
+            await waitFilled(grid);
+        }
         await log.quiet();
 
         const pages = log.of('ExecuteQuery').map(r => r.skip ?? 0);
@@ -298,36 +329,41 @@ test.describe('Lazy loading', () => {
         await recordPerf(page, testInfo, 'perf.ll-stale-window-not-fetched', { counts: { requests: requests.length }, requests: { pages: requests } });
     });
 
-    test('arrived data fills all waiting rows in one frame', perfCase('perf.ll-fill-in-one-frame', { timing: true }), async ({ page }, testInfo) => {
+    test('arrived data fills all waiting rows in one frame', perfCase('perf.ll-fill-in-one-frame'), async ({ page }, testInfo) => {
         await perfPage(page);
         const grid = await mountFresh(page);
         const log = requestLog(page);
 
-        // Delay every page by 600ms
-        await page.route('**/ExecuteQuery', async route => {
-            await new Promise(resolve => setTimeout(resolve, 600));
-            await route.continue();
-        });
-
-        const result = await grid.evaluate(async (g: any) => {
-            const perf = (window as any).__perf;
-            const scroller = perf.scroller(g).scroller;
-            const samples: { rows: number; blank: number }[] = [];
-            scroller.scrollTop = 5000 * g.rowHeight;
-            await perf.whenFrame(() => {
+        // Sample every frame from the jump until all rows are filled; the page is held until frames with only waiting rows were seen
+        const release = await holdExecuteQuery(page);
+        await grid.evaluate((g: any) => {
+            const w = window as any;
+            const perf = w.__perf;
+            const samples = w.__fillSamples = [] as { rows: number; blank: number }[];
+            perf.scroller(g).scroller.scrollTop = 5000 * g.rowHeight;
+            w.__filled = perf.whenFrame(() => {
                 const c = perf.coverage(g);
                 samples.push({ rows: c.rows, blank: c.blank });
                 return c.rows > 0 && c.blank === 0;
             });
+        });
+        const waiting = () => page.evaluate(() => ((window as any).__fillSamples as { rows: number; blank: number }[]).filter(s => s.rows > 0 && s.blank === s.rows).length);
+        await expect.poll(() => log.of('ExecuteQuery').length, 'the held request').toBe(1);
+        await expect.poll(waiting, 'frames with only waiting rows').toBeGreaterThan(5);
+        release();
 
+        const result = await page.evaluate(async () => {
+            const w = window as any;
+            await w.__filled;
+            const samples = w.__fillSamples as { rows: number; blank: number }[];
             const firstFilled = samples.findIndex(s => s.rows > 0 && s.blank < s.rows);
             const allFilled = samples.findIndex(s => s.rows > 0 && s.blank === 0);
-            return { frames: samples.length, firstFilled, allFilled, waitingFrames: samples.filter(s => s.blank === s.rows).length };
+            return { frames: samples.length, firstFilled, allFilled, waitingFrames: samples.filter(s => s.rows > 0 && s.blank === s.rows).length };
         });
         await log.quiet();
 
         expect(log.of('ExecuteQuery').map(r => [r.skip, r.top])).toEqual([[5000, 100]]);
-        expect(result.waitingFrames, 'frames with only waiting rows (the delayed page)').toBeGreaterThan(5);
+        expect(result.waitingFrames, 'frames with only waiting rows (the held page)').toBeGreaterThan(5);
         expect(result.allFilled - result.firstFilled, 'frames between the first and the last filled row').toBe(0);
 
         await recordPerf(page, testInfo, 'perf.ll-fill-in-one-frame', { counts: { framesBetweenFirstAndLastFilled: result.allFilled - result.firstFilled, waitingFrames: result.waitingFrames } });
