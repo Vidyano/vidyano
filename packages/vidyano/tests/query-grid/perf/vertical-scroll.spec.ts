@@ -33,7 +33,7 @@ test.describe('Vertical scrolling', () => {
         await recordPerf(page, testInfo, 'perf.vw-small-scroll-zero-mutations', { counts: { pool: result.pool, steps: result.k, rowMutations: mutations.rowRecords, otherMutations: mutations.otherRecords, requests: log.requests.length } });
     });
 
-    test('rows cover the viewport in every frame while scrolling', perfCase('perf.vw-coverage-every-frame'), async ({ page }, testInfo) => {
+    test('rows cover the viewport in every frame while scrolling', perfCase('perf.vw-coverage-every-frame', { timing: true }), async ({ page }, testInfo) => {
         await perfPage(page);
         const grid = await mountGrid(page);
         await parkMouse(page);
