@@ -14,6 +14,7 @@ import "components/notification/notification"
         }
     },
     forwardObservers: [
+        "query.labelWithTotalItems",
         "_selectedItemsChanged(query.selectedItems)"
     ]
 }, "vi-select-reference-dialog")
