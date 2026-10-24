@@ -1140,10 +1140,21 @@ function testList(file, rows, cursor) {
         </section>`;
 }
 
+function outputLineClass(text) {
+    if (text.startsWith("──"))
+        return "accent";
+
+    // A passed test stays plain, also when its title says "Error" or "failed"
+    if (/^\s*ok\s/.test(text))
+        return "";
+
+    return /^\s*x\s|✘|Error|failed/.test(text) ? "error" : "";
+}
+
 function outputView() {
     return html`
         <section class="sheet log output" id="output" @scroll=${e => trackFollow(e, "outputFollow")}>
-            ${ui.output.length ? ui.output.map(line => html`<div class="line ${line.text.startsWith("──") ? "accent" : /✘|Error|failed/.test(line.text) ? "error" : ""}"><span class="line-text">${line.text}</span></div>`) : html`<div class="empty">${spinner(24)}</div>`}
+            ${ui.output.length ? ui.output.map(line => html`<div class="line ${outputLineClass(line.text)}"><span class="line-text">${line.text}</span></div>`) : html`<div class="empty">${spinner(24)}</div>`}
         </section>`;
 }
 
