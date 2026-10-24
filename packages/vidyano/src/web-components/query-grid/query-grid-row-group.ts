@@ -5,7 +5,8 @@ import * as Vidyano from "@vidyano/core"
         group: Object,
         first: {
             type: Boolean,
-            computed: "_computeFirst(group)"
+            computed: "_computeFirst(group)",
+            reflectToAttribute: true
         },
         collapsed: {
             type: Boolean,

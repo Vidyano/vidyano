@@ -10,6 +10,8 @@ import "./cell-templates/query-grid-cell-image"
 import { QueryGridCellDefault } from "./cell-templates/query-grid-cell-default"
 import { QueryGridRowGroup } from "./query-grid-row-group"
 
+const classNames = (extraclass: string) => extraclass.split(/\s+/).filter(Boolean);
+
 export interface IItemTapEventArgs {
     item: Vidyano.QueryResultItem;
 }
@@ -117,14 +119,20 @@ export class QueryGridRow extends Polymer.WebComponent {
         if (item instanceof Vidyano.QueryResultItem || oldItem instanceof Vidyano.QueryResultItem) {
             const extraclass = item instanceof Vidyano.QueryResultItem ? item.getTypeHint("extraclass", "") : "";
             if (this._extraclass && this._extraclass !== extraclass) {
-                this.classList.remove(...this._extraclass.split(" "));
+                this.classList.remove(...classNames(this._extraclass));
                 this._extraclass = null;
             }
 
+            const classes = classNames(extraclass);
             if (extraclass) {
-                this.classList.add(...(extraclass.split(" ")));
+                this.classList.add(...classes);
                 this._extraclass = extraclass;
             }
+
+            // The hint is matched case-insensitively, CSS class selectors are not
+            const upperClasses = classes.map(c => c.toUpperCase());
+            this.toggleAttribute("disabled-item", upperClasses.includes("DISABLED"));
+            this.toggleAttribute("readonly-item", upperClasses.includes("READONLY"));
 
             this._invisibleCellValues = [];
             // A cell gets null for a value missing from its item and undefined when the row has no item
@@ -195,7 +203,7 @@ export class QueryGridRow extends Polymer.WebComponent {
         if (!(this.item instanceof Vidyano.QueryResultItem))
             return;
 
-        if (this.item.getTypeHint("extraclass", "").split(" ").some(c => c.toUpperCase() === "DISABLED"))
+        if (classNames(this.item.getTypeHint("extraclass", "")).some(c => c.toUpperCase() === "DISABLED"))
             return;
 
         const tapEvent = new CustomEvent("item-tap", {
@@ -246,7 +254,7 @@ export class QueryGridRow extends Polymer.WebComponent {
         if (!(this.item instanceof Vidyano.QueryResultItem) || this.item.query.asLookup)
             return;
 
-        if (this.item.getTypeHint("extraclass", "").split(" ").map(c => c.toUpperCase()).some(c => c === "DISABLED" || c === "READONLY"))
+        if (classNames(this.item.getTypeHint("extraclass", "")).map(c => c.toUpperCase()).some(c => c === "DISABLED" || c === "READONLY"))
             return;
 
         const grid = <any>this.findParent(e => (e as HTMLElement).matches("vi-query-grid"));
@@ -257,7 +265,11 @@ export class QueryGridRow extends Polymer.WebComponent {
         if (grid.noInlineActions)
             return;
 
-        let [x, y] = [e.pageX, e.pageY];
+        // Without a qualifying action there is no menu, the native menu shows instead
+        if (this._getActions().length === 0)
+            return;
+
+        let [x, y] = [e.clientX, e.clientY];
 
         const actionsPopup = new Popup();
         actionsPopup.style.position = "fixed";
@@ -301,17 +313,29 @@ export class QueryGridRow extends Polymer.WebComponent {
         }));
     }
 
+    /**
+     * The actions the menu would list, counted with the selection it will have: opening it selects an unselected row exclusively.
+     */
+    private _getActions(): Vidyano.Action[] {
+        const query = this.item.query;
+        const count = query.selectedItems.indexOf(<Vidyano.QueryResultItem>this.item) < 0 ? 1 : Math.max(1, query.selectedItems.length);
+
+        return (<Vidyano.Action[]>query.actions || []).filter(a => a.isVisible && a.definition.selectionRule !== Vidyano.ExpressionParser.alwaysTrue && a.selectionRule(count));
+    }
+
     // TODO: Actions popup displays out of viewport
     private async _onActionsOpening(e: CustomEvent) {
+        const actions = this._getActions();
+        if (actions.length === 0) {
+            e.preventDefault();
+            return;
+        }
+
         // Always select this row when opening context menu (if not already selected)
         if (this.item.query.selectedItems.indexOf(<Vidyano.QueryResultItem>this.item) < 0) {
             this.item.query.selectAll.allSelected = this.item.query.selectAll.inverse = false;
             this.item.query.selectedItems = [<Vidyano.QueryResultItem>this.item];
         }
-
-        const actions = (<Vidyano.Action[]>this.item.query.actions || []).filter(a => a.isVisible && a.definition.selectionRule !== Vidyano.ExpressionParser.alwaysTrue && a.selectionRule(Math.max(1, this.item.query.selectedItems.length)));
-        if (actions.length === 0)
-            return;
 
         const actionGroups: { [name: string]: Vidyano.ActionGroup } = {};
         actions.forEach(action => {
