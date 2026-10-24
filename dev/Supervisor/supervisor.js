@@ -965,9 +965,10 @@ function taskView(view) {
         </div>`;
 }
 
-// The run's spec files hold tests that its projects and greps leave out, so only Playwright's own list counts
+// The run's spec files also hold tests that its projects and greps leave out: those stay pending, so the
+// total is Playwright's own count and only tests that started count as progress
 function progressItems(run) {
-    return run.total == null ? [] : testsOf(run);
+    return run.total == null ? [] : testsOf(run).filter(t => t.status !== "pending");
 }
 
 function progressBar(run) {
@@ -979,7 +980,7 @@ function progressBar(run) {
                 const count = items.filter(i => i.status === status).length;
                 return count ? html`<span style="flex: ${count}; background: ${color}"></span>` : nothing;
             })}
-            <span style="flex: ${items.filter(i => i.status === "pending").length}"></span>
+            <span style="flex: ${Math.max(0, (run?.total ?? 0) - items.length)}"></span>
         </div>`;
 }
 
@@ -1016,10 +1017,10 @@ function testTop(run, busy) {
 
         const items = progressItems(run);
         const done = items.filter(i => i.status !== "pending" && i.status !== "running").length;
-        if (items.length && done === items.length)
+        if (run.total && done === run.total)
             return top("busy", "Finishing up", `${took} elapsed`, tools);
 
-        return top(runState(run), `${done} / ${items.length}`, [c.failed ? `${c.failed} failed` : "", `${took} elapsed`, remaining(run, items.length, done)].filter(Boolean).join(" · "), tools);
+        return top(runState(run), `${done} / ${run.total}`, [c.failed ? `${c.failed} failed` : "", `${took} elapsed`, remaining(run, run.total, done)].filter(Boolean).join(" · "), tools);
     }
 
     if (run.status === "cancelled")
