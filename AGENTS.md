@@ -3,7 +3,7 @@
 ## IMPORTANT
 **When working with @vidyano/core code**, read `packages/core/docs/cheat-sheet.md` first for quick reference on core concepts and coding patterns.
 
-**File Types:** Only work with TypeScript source files (`.ts`). Do NOT modify JavaScript files (`.js`) or TypeScript declaration files (`.d.ts`).
+**Generated files:** Do NOT modify the JavaScript (`.js`) or declaration files (`.d.ts`) compiled from the TypeScript sources, or the `.css` compiled from `.scss`; change the `.ts` or `.scss` file instead.
 
 ## Quick Reference
 
