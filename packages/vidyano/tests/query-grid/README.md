@@ -32,13 +32,13 @@ Most specs mount a grid on a bare test page (`gridPage` + `mountGrid`); the `vie
 The specs use the shared dev backend (`npm run dev`, http://localhost:5000) and the views below. Run them through the dev supervisor:
 
 ```bash
-npm run test:dev -- --project=query-grid                                        # everything but the @timing tests
-npm run test:dev -- packages/vidyano/tests/query-grid/grid/continuation.spec.ts  # one spec
-npm run test:dev -- packages/vidyano/tests/query-grid/perf                      # all perf tests, @timing included, alone on one worker
+npm run test:dev -- packages/vidyano/tests/query-grid                                    # everything but the @timing tests
+npm run test:dev -- packages/vidyano/tests/query-grid/grid/continuation.spec.ts          # one spec
+npm run test:dev -- --project=vidyano-perf packages/vidyano/tests/query-grid/perf        # the @timing tests, alone on one worker
 ```
 
-- `query-grid` runs with 4 workers, perf/ included, but leaves out the tests tagged `@timing` (wall-clock and frame timings); `vidyano-perf` runs only those, with 1 worker and no retries, and only when nothing else runs.
-- Run core and query-grid specs in separate runs: core specs reset the shared data under the grid specs.
+- The grid specs run in the `vidyano` project with 4 workers, perf/ included, but without the tests tagged `@timing` (wall-clock and frame timings); `vidyano-perf` runs only those, with 1 worker and no retries, and only when nothing else runs.
+- Run core and grid specs in separate runs: core specs reset the shared data under the grid specs.
 - Each perf test writes its metrics to `perf-results/<case id>.json` (gitignored; Playwright empties `test-results/` on every run) and attaches them to the test.
 - The screenshot specs (`views/screenshots.spec.ts`, `views/select-reference-dialog.spec.ts`) have Windows baselines only and are skipped on other platforms.
 

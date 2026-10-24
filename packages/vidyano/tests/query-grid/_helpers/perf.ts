@@ -6,7 +6,7 @@ import { gridPage, nextFrames, waitForGridReady, writePerf } from './query-grid'
 
 /**
  * Helpers for the vi-query-grid performance specs. Tests tagged @timing (see perfCase) run in project vidyano-perf on
- * one worker, since parallel workers would skew their timings; the others run in project query-grid in parallel.
+ * one worker, since parallel workers would skew their timings; the others run in project vidyano in parallel.
  *
  * Everything is black-box: rendered DOM (deep, through open shadow roots), MutationObservers, rAF/ResizeObserver
  * frame sampling, PerformanceObserver (longtask, event), CDP metrics and the network log.

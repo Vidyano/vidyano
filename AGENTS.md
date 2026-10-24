@@ -13,14 +13,15 @@
 npm run dev          # Start backend + dev supervisor (localhost:5000, blocks terminal)
 npm run dev:status   # Print the supervisor's watcher status and problem counts
 npm run build        # Build pipeline (only when npm run dev is NOT running)
-npm test             # Run ALL Playwright tests (core + vidyano)
+npm test             # Run all Playwright tests (core + vidyano, without the @timing perf tests)
 
 # Testing while npm run dev is running (the way to run tests, in the main checkout and in worktrees)
 npm run test:dev -- <specs or folders> -x   # Queue a run in the dev supervisor, stream its output
 
 # Testing without the supervisor (CI, or when npm run dev is not running)
 npm run test:core           # Run all core tests
-npm run test:vidyano        # Run all vidyano tests
+npm run test:vidyano        # Run all vidyano tests (without the @timing perf tests)
+npm run test:perf           # Run the @timing perf tests (one worker; keep the machine quiet)
 npm run test:virtual-service # Run all virtual-service tests
 
 # Run specific test file (use package-specific command or npx directly)
@@ -53,8 +54,8 @@ curl -s -o /dev/null -w '%{http_code}' --head http://localhost:5000
 **Tests**: `npm run test:dev -- <specs or folders> -x` sends the run to the supervisor. It runs everything in one Playwright process, waits until the watchers have finished building, and passes the run `VIDYANO_BACKEND_URL` (the shared dev backend) and `VIDYANO_DEV_URL` (where it serves this checkout's build). The Tests view in the supervisor shows every spec with its results and can start runs too. Runs of all checkouts queue in one line, first come first served, and a waiting run says what it waits for ("Waiting for run #3 in main to finish"):
 - Runs that only hold vidyano component specs (outside `query-grid`) or virtual-service specs run in parallel with other runs: those specs start their own backends on a port the OS picks, or need none.
 - Runs that hold core or query-grid specs, or anything the supervisor cannot tell, use the shared dev backend and its data, so they run one at a time.
-- Inside one run the projects run at the same time, and core specs reset the shared data (`PersistentObject.ResetTest`, user store) under the query-grid specs. Run core and query-grid in separate runs, e.g. `npm run test:dev -- --project=core` and then `npm run test:dev -- --project=query-grid`.
-- The perf tests tagged `@timing` measure wall-clock and frame timings, so they run in the `vidyano-perf` project (one worker, no retries) and only in perf runs: runs that name that project, or name no project and hold only specs under a `perf` folder, e.g. `npm run test:dev -- packages/vidyano/tests/query-grid/perf`. Perf runs run alone, on one worker: they wait until no other run runs and no watcher builds, and run every test they hold, so a perf run of perf specs runs their other tests too (in the `query-grid` project), one at a time. Every other run leaves the `@timing` tests out (a run without `--project` gets `--grep-invert @timing`; its output says so) and runs the other perf tests in the `query-grid` project, in parallel. Perf results go to `<checkout>/perf-results/` (gitignored), since Playwright empties `test-results/` on every run.
+- Inside one run the projects run at the same time, and core specs reset the shared data (`PersistentObject.ResetTest`, user store) under the query-grid specs. Run core and vidyano in separate runs, e.g. `npm run test:dev -- --project=core` and then `npm run test:dev -- --project=vidyano`.
+- The perf tests tagged `@timing` measure wall-clock and frame timings. The `vidyano` project leaves them out; the `vidyano-perf` project holds the same spec files and runs only them (one worker, no retries). They run only in perf runs, runs that name that project, e.g. `npm run test:dev -- --project=vidyano-perf packages/vidyano/tests/query-grid/perf`. Perf runs run alone, on one worker: they wait until no other run runs and no watcher builds. Every other run leaves the `@timing` tests out (a run without `--project` gets `--grep-invert @timing`; its output says so) and runs the other perf tests in the `vidyano` project, in parallel. Perf results go to `<checkout>/perf-results/` (gitignored), since Playwright empties `test-results/` on every run.
 - One checkout runs one run at a time.
 - A run whose `npm run test:dev` is gone (no poll for 30 seconds) is cancelled, and a run ends after 90 minutes.
 

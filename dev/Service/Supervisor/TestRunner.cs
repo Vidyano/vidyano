@@ -218,12 +218,11 @@ namespace Dev.Service.Supervisor
         }
 
         /// <summary>
-        /// A perf run, one that runs the timing tests: it names the timing project, or names no project and holds only perf specs.
+        /// A perf run, one that runs the timing tests: it names the timing project.
         /// </summary>
-        public static bool IsPerfRun(IReadOnlyList<string> flags, IReadOnlyList<string> targets)
+        public static bool IsPerfRun(IReadOnlyList<string> flags)
         {
-            var projects = ProjectsOf(flags);
-            return projects.Any(p => Matches(p, TimingProject)) || (projects.Count == 0 && targets.Count > 0 && targets.All(IsPerf));
+            return ProjectsOf(flags).Any(p => Matches(p, TimingProject));
         }
 
         /// <summary>
@@ -232,9 +231,9 @@ namespace Dev.Service.Supervisor
         /// run runs every project it would run anyway, timing and other tests alike, but on one worker (its own worker
         /// count is dropped), so a timing test never shares the machine.
         /// </summary>
-        static List<string> PlaywrightFlags(IReadOnlyList<string> flags, IReadOnlyList<string> targets)
+        static List<string> PlaywrightFlags(IReadOnlyList<string> flags)
         {
-            if (IsPerfRun(flags, targets))
+            if (IsPerfRun(flags))
             {
                 var perf = new List<string>();
                 for (var i = 0; i < flags.Count; i++)
@@ -279,7 +278,7 @@ namespace Dev.Service.Supervisor
         /// </summary>
         public static string AccessOf(IReadOnlyList<string> flags, IReadOnlyList<string> targets)
         {
-            if (IsPerfRun(flags, targets))
+            if (IsPerfRun(flags))
                 return Machine;
 
             // No spec paths (e.g. an empty folder) leaves Playwright to run its whole config
@@ -570,7 +569,7 @@ namespace Dev.Service.Supervisor
             var targets = Expand(paths);
             var access = AccessOf(flags, targets);
             var perf = access == Machine ? null : targets.FirstOrDefault(IsPerf);
-            flags = PlaywrightFlags(flags, targets);
+            flags = PlaywrightFlags(flags);
 
             var files = targets.GroupBy(SpecOf).Select(g => new RunFile { File = g.Count() == 1 ? g.First() : g.Key }).ToList();
             lock (Gate)
@@ -584,7 +583,7 @@ namespace Dev.Service.Supervisor
 
                 Tell(run, $"Run #{run.Id} queued in the dev supervisor{(supervisor.IsMain ? "" : $" for worktree {supervisor.Workspace}")}:{(files.Count == 1 ? files[0].File : $"{files.Count} spec files")}{(flags.Count > 0 ? $" {string.Join(' ', flags)}" : "")}");
                 if (perf != null)
-                    Tell(run, $"Left out the {TimingTag} perf tests: they run alone, e.g. npm run test:dev -- {Path.GetDirectoryName(SpecOf(perf)).Replace('\\', '/')}");
+                    Tell(run, $"Left out the {TimingTag} perf tests: they run alone, e.g. npm run test:dev -- --project={TimingProject} {Path.GetDirectoryName(SpecOf(perf)).Replace('\\', '/')}");
 
                 if (run.Access == Machine)
                     Tell(run, $"Perf runs ({TimingTag} tests) run alone on one worker: this run waits until no other test run runs and no watcher builds");
