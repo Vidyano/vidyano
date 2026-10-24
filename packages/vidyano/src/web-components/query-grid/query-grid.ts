@@ -283,8 +283,12 @@ export class QueryGrid extends Polymer.WebComponent {
      * If the query changes, the grid will go back in initializing mode.
      */
     private _queryChanged(query: Vidyano.Query, oldQuery: Vidyano.Query) {
-        if (oldQuery)
+        if (oldQuery) {
             this._setInitializing(true);
+
+            // A new query has its own columns, the old horizontal offset means nothing there
+            this.horizontalScrollOffset = 0;
+        }
     }
 
     /**
@@ -335,8 +339,10 @@ export class QueryGrid extends Polymer.WebComponent {
         this._setColumnWidths(Object.fromEntries(Array.from(this._columnWidths).map(([column, width]) => [column, Math.ceil(width.current)])));
         this._setInitializing(false);
 
-        if (detail.save)
-            this.userSettings.save(false);
+        if (detail.save) {
+            const query = this.query;
+            this.userSettings.save(false).catch(e => query.setNotification(e));
+        }
     }
 
     private _scrollToTop() {
@@ -637,10 +643,15 @@ export class QueryGrid extends Polymer.WebComponent {
 
         const indexOfItem = this.query.items.indexOf(detail.item);
         if (!detail.item.isSelected && this._lastSelectedItemIndex >= 0 && detail.shift) {
-            if (this.query.selectRange(Math.min(this._lastSelectedItemIndex, indexOfItem), Math.max(this._lastSelectedItemIndex, indexOfItem))) {
+            const selected = this.query.selectRange(Math.min(this._lastSelectedItemIndex, indexOfItem), Math.max(this._lastSelectedItemIndex, indexOfItem));
+            if (selected) {
                 this._lastSelectedItemIndex = indexOfItem;
                 return;
             }
+
+            // A range over the selection limit leaves the selection unchanged, a range over unloaded items falls back to a plain click
+            if (selected === null)
+                return;
         }
 
         if (detail.ctrl) {
@@ -700,7 +711,14 @@ export class QueryGrid extends Polymer.WebComponent {
     }
 
     private async _onColumnUpdate() {
-        await this.userSettings.save();
+        try {
+            await this.userSettings.save();
+        }
+        catch (e) {
+            // The change stays for this session, the user is told it was not saved
+            this.query.setNotification(e);
+        }
+
         this._reset();
     }
 

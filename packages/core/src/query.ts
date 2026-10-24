@@ -648,9 +648,9 @@ export class Query extends ServiceObjectWithActions {
      * Selects a range of items in the query.
      * @param from - The starting index.
      * @param to - The ending index.
-     * @returns True if the selection was updated; otherwise, false.
+     * @returns True if the selection was updated, false if the range has unloaded items, or null if the range would exceed maxSelectedItems.
      */
-    selectRange(from: number, to: number): boolean {
+    selectRange(from: number, to: number): boolean | null {
         let selectionUpdated: boolean;
 
         try {
@@ -658,7 +658,7 @@ export class Query extends ServiceObjectWithActions {
             const itemsToSelect = this.items.slice(from, ++to);
 
             if (this.maxSelectedItems && this.selectedItems.concat(itemsToSelect).distinct().length > this.maxSelectedItems)
-                return;
+                return null;
 
             // Detect if array has gaps
             if (Object.keys(itemsToSelect).length === to - from) {

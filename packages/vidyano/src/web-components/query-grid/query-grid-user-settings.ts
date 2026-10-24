@@ -62,9 +62,14 @@ export class QueryGridUserSettings extends Vidyano.Observable<QueryGridUserSetti
         else if (this._query.service.application.userSettings["QueryGridSettings"][this._query.id])
             delete this._query.service.application.userSettings["QueryGridSettings"][this._query.id];
 
-        await this._query.service.application.saveUserSettings();
-        if (refreshOnComplete)
-            this.notifyPropertyChanged("columns", this._columns = this.columns.slice());
+        try {
+            await this._query.service.application.saveUserSettings();
+        }
+        finally {
+            // Re-render even when the save failed, the local change stays
+            if (refreshOnComplete)
+                this.notifyPropertyChanged("columns", this._columns = this.columns.slice());
+        }
     }
 
     static Load(query: Vidyano.Query): QueryGridUserSettings {
