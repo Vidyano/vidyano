@@ -846,6 +846,37 @@ test.describe('Unknown totals (continuation)', () => {
         expect((await rows(grid)).filter(r => r.selected).map(r => r.index)).toEqual([2]);
     });
 
+    test('select-all stays hidden while more pages follow and appears at the real end', { annotation: [{ type: 'case', description: 'grid.ct-select-all-at-end' }] }, async ({ page }) => {
+        const grid = await mountContinuation(page, { asLookup: true });
+        const paging = pagingLog(page);
+        // Enabled the way a query config with select-all enables it
+        await grid.evaluate((g: any) => g.query.selectAll.isAvailable = true);
+
+        const selectAll = grid.locator('vi-query-grid-select-all');
+        const icon = selectAll.locator('vi-icon[source=Selected]');
+        await expect(selectAll).toBeAttached();
+        await expect(selectAll).not.toHaveAttribute('can-select-all');
+        await expect(icon).toBeHidden();
+        expect(await grid.evaluate((g: any) => g.query.selectAll.isAvailable)).toBe(false);
+
+        await loadNextPage(grid);
+        expect((await state(grid)).hasMore).toBe(true);
+        await expect(selectAll).not.toHaveAttribute('can-select-all');
+        await expect(icon).toBeHidden();
+
+        // The last page makes the total known: the box appears without a new search
+        await scrollUntilComplete(grid);
+        await paging.quiet();
+        expect(paging.tokens()).toEqual(ALL_TOKENS);
+        expect((await state(grid)).hasMore).toBe(false);
+        await expect(selectAll).toHaveAttribute('can-select-all', '');
+        await expect(icon).toBeVisible();
+        expect(await grid.evaluate((g: any) => g.query.selectAll.isAvailable)).toBe(true);
+
+        await selectAll.click();
+        await expect.poll(() => grid.evaluate((g: any) => g.query.selectAll.allSelected)).toBe(true);
+    });
+
     test('the app view pages to the real total with the mouse wheel', { annotation: [{ type: 'case', description: 'grid.ct-app-wheel' }] }, async ({ page }) => {
         const grid = await openView(page, 'components/query-grid_continuation');
         const paging = pagingLog(page);
