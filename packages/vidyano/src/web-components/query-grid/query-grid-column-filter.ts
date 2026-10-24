@@ -175,6 +175,10 @@ export class QueryGridColumnFilter extends Polymer.WebComponent {
         }
     }
 
+    private _popupClosed() {
+        this.searchText = "";
+    }
+
     private _searchTextChanged(searchText: string, oldSearchText: string) {
         if (!searchText && !oldSearchText)
             return;
@@ -223,20 +227,45 @@ export class QueryGridColumnFilter extends Polymer.WebComponent {
         else
             this.queryColumn.selectedDistincts = this.queryColumn.selectedDistincts.filter(d => d !== distinctValue);
 
-        this._updateFilters();
-        this._updateDistincts();
+        this._updateDistincts(!this._updateFilters());
 
         e.stopPropagation();
     }
 
-    private async _updateFilters() {
-        if (!this.column.query.filters)
-            return;
+    /**
+     * Creates the current filter on the first selection, and drops an unsaved one again when no column has a selection left.
+     * Returns true when dropping it already ran the search.
+     */
+    private _updateFilters(): boolean {
+        const filters = this.column.query.filters;
+        if (!filters)
+            return false;
 
-        if (this.queryColumn.selectedDistincts.length > 0 && !this.column.query.filters.currentFilter) {
-            const filter = await this.queryColumn.query.filters.createNew();
-            this.column.query.filters.currentFilter = filter;
+        if (this.queryColumn.selectedDistincts.length > 0) {
+            if (!filters.currentFilter)
+                this._createCurrentFilter(filters);
+
+            return false;
         }
+
+        if (filters.currentFilter?.persistentObject.isNew && !this._hasSelection()) {
+            filters.currentFilter = null;
+            return true;
+        }
+
+        return false;
+    }
+
+    private async _createCurrentFilter(filters: Vidyano.QueryFilters) {
+        const filter = await filters.createNew();
+
+        // Skip it when the selection was cleared or another filter became current meanwhile
+        if (!filters.currentFilter && this._hasSelection())
+            filters.currentFilter = filter;
+    }
+
+    private _hasSelection(): boolean {
+        return this.column.query.columns.some(c => c.selectedDistincts.length > 0);
     }
 
     private async _updateDistincts(search: boolean = true) {
@@ -299,14 +328,24 @@ export class QueryGridColumnFilter extends Polymer.WebComponent {
     }
 
     private async _search() {
-        if (this.searchText) {
-            this.queryColumn.selectedDistincts = this.queryColumn.selectedDistincts.concat(["1|@" + this.searchText]);
+        const selectedDistincts = this.queryColumn.selectedDistincts;
+        const searchText = this.searchText;
+        if (searchText) {
+            this.queryColumn.selectedDistincts = selectedDistincts.concat(["1|@" + searchText]);
             this.searchText = "";
         }
 
         this._renderDistincts();
-        if (!await this.column.query.search())
+        if (!await this.column.query.search()) {
+            // Roll the text filter back and keep the text, so the user can retry
+            if (searchText) {
+                this.queryColumn.selectedDistincts = selectedDistincts;
+                this.searchText = searchText;
+            }
+
+            this._renderDistincts();
             return;
+        }
 
         this._renderDistincts();
         this._updateFilters();
@@ -329,7 +368,8 @@ export class QueryGridColumnFilter extends Polymer.WebComponent {
         }
 
         this.queryColumn.selectedDistincts = [];
-        this._updateDistincts();
+        this.queryColumn.selectedDistinctsInversed = false;
+        this._updateDistincts(!this._updateFilters());
 
         Popup.closeAll();
     }

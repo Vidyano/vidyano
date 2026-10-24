@@ -208,14 +208,6 @@
                     pointer-events: none;
                 }
 
-                vi-checkbox[checked] {
-                    --vi-checkbox-checked-color: green;
-                }
-
-                &[inversed] vi-checkbox[checked] {
-                    --vi-checkbox-checked-color: darkred;
-                }
-
                 > span {
                     display: -webkit-box;
                     overflow: hidden;

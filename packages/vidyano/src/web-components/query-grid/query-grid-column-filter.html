@@ -11,7 +11,7 @@
 
 <dom-if if="[[render]]">
     <template>
-        <vi-popup id="filter" on-popup-opening="_popupOpening" class="flex" disabled="[[!column.canFilter]]">
+        <vi-popup id="filter" on-popup-opening="_popupOpening" on-popup-closed="_popupClosed" class="flex" disabled="[[!column.canFilter]]">
             <vi-button slot="header" class="flex" inverse>
                 <span id="label">[[label]]</span>
                 <vi-icon source="Filter"></vi-icon>
