@@ -420,16 +420,26 @@ test.describe('Virtual scrolling and lazy loading', () => {
     });
 
     test('returning to a loaded region before the load cancels it', { annotation: [{ type: 'case', description: 'grid.vs-lazy-cancel-on-return' }] }, async ({ page }) => {
+        // The page clock holds the grid's page fetch debounce, so returning within it does not depend on the frame rate
+        await page.clock.install();
         await gridPage(page);
         const grid = await mountGrid(page);
         const log = requestLog(page);
+        // pauseAt throws for a time in the past and fires every timer due by then; a second ahead covers the round trip
+        await page.clock.pauseAt(await page.evaluate(() => Date.now()) + 1000);
 
-        await grid.evaluate(async (g: any) => {
-            const scroller = ([...g.shadowRoot.querySelectorAll('vi-scroller')].find((s: any) => !s.closest('header, vi-popup')) as any).scroller as HTMLElement;
-            scroller.scrollTop = 6000 * 32;
-            await new Promise(resolve => requestAnimationFrame(resolve));
-            scroller.scrollTop = 0;
-        });
+        const scrollTo = async (top: number) => {
+            await grid.evaluate((g: any, top) => {
+                ([...g.shadowRoot.querySelectorAll('vi-scroller')].find((s: any) => !s.closest('header, vi-popup')) as any).scroller.scrollTop = top;
+            }, top);
+            await expect.poll(() => grid.evaluate((g: any) => g.verticalScrollOffset)).toBe(top);
+        };
+
+        await scrollTo(6000 * RH);
+        await page.clock.runFor(19);
+        await scrollTo(0);
+        await page.clock.runFor(1000);
+        await page.clock.resume();
 
         await settle(grid);
         await log.quiet(500);

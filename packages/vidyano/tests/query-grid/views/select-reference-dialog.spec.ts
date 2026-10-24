@@ -497,7 +497,12 @@ test.describe('Select reference dialog: unknown total', () => {
 
         const item = (await itemDisplay(grid, 146, ['Code']))!;
         expect(item.values).toEqual(['Row 0147']);
-        await (await rowForItem(grid, 146)).locator('[part=selector]').click();
+        // The row sits below the viewport: scrolling it in as part of the click lets the grid hand its element to another item first
+        await (await rowForItem(grid, 146)).scrollIntoViewIfNeeded();
+        await settle(grid);
+        const row = await rowForItem(grid, 146);
+        await expect(row).toBeInViewport({ ratio: 1 });
+        await row.locator('[part=selector]').click();
         await expect.poll(() => selectedIds(grid)).toEqual([item.id]);
 
         await dialogButton(dialog, 'OK').click();
