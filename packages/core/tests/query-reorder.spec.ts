@@ -7,13 +7,20 @@ import { devBackendUrl } from "./_helpers/dev-backend";
  * Reordering changes the in-memory dev data, so every test resets it with PersistentObject.ResetTest.
  */
 
-/** Records the skip of every ExecuteQuery request. */
+/** Records the skip and text search of every ExecuteQuery request, and can run code while an ExecuteAction request is sent. */
 class ReorderHooks extends ServiceHooks {
     skips: number[] = [];
+    textSearches: string[] = [];
+    duringAction: (() => void) | null = null;
 
     override async onFetch(request: Request): Promise<Response> {
-        if (request.url.endsWith("/ExecuteQuery"))
-            this.skips.push((await request.clone().json()).query.skip ?? 0);
+        if (request.url.endsWith("/ExecuteQuery")) {
+            const query = (await request.clone().json()).query;
+            this.skips.push(query.skip ?? 0);
+            this.textSearches.push(query.textSearch || "");
+        }
+        else if (request.url.endsWith("/ExecuteAction"))
+            this.duringAction?.();
 
         return super.onFetch(request);
     }
@@ -71,5 +78,20 @@ test.describe("Reordering a query with more than one page", () => {
         const row = await query.items.atAsync(150);
         expect(row.id).toBe(oldRow149.id);
         expect(hooks.skips).toEqual([Math.floor(150 / query.pageSize) * query.pageSize]);
+    });
+
+    test("loads the other pages with the text search sent with the reorder", async ({ query, hooks }) => {
+        await query.search();
+        const first = loadedItem(query, 0), moved = await query.items.atAsync(1);
+
+        // A text search typed while the reorder runs is not part of its result
+        hooks.duringAction = () => query.textSearch = "zzzzqqq";
+        await query.reorder(null, moved, first);
+        hooks.duringAction = null;
+        expect(query.textSearch).toBe("zzzzqqq");
+
+        hooks.textSearches = [];
+        await query.items.atAsync(150);
+        expect(hooks.textSearches).toEqual([""]);
     });
 });

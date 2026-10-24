@@ -32,6 +32,12 @@ export interface ISortOption {
     direction: SortDirection;
 }
 
+/** The text search and column filters of a request, by column name */
+type QueryFilterState = {
+    textSearch: string;
+    columns: { [name: string]: { selectedDistincts: string[]; selectedDistinctsInversed: boolean; includeAllContent: boolean } };
+};
+
 /**
  * Represents a Vidyano query and provides methods to search, group, and manipulate its result set.
  * @inheritdoc
@@ -69,6 +75,8 @@ export class Query extends ServiceObjectWithActions {
     #groupingInfo: IQueryGroupingInfo;
     #resultSortOptions: ISortOption[];
     #resultGroupingInfo: IQueryGroupingInfo;
+    /** The text search and column filters sent for the last result */
+    #resultFilterState: QueryFilterState;
     #itemsProxy!: QueryItemsProxy;
     #tag: any;
 
@@ -707,8 +715,9 @@ export class Query extends ServiceObjectWithActions {
 
         return await this.queueWork(async () => {
             try {
+                const filterState = this.#filterState();
                 const po = await this.service.executeAction("QueryOrder.Reorder", this.parent, this, [before, item, after]);
-                this.#setResult((po.queries[0] as Query).#lastResult);
+                this.#setResult((po.queries[0] as Query).#lastResult, filterState);
 
                 return this.items;
             }
@@ -789,15 +798,7 @@ export class Query extends ServiceObjectWithActions {
             return requested();
 
         const generation = this.#searchGeneration;
-        const clonedQuery = this.clone(this.#asLookup);
-        let skip = startPage * this.pageSize;
-        clonedQuery.top = (endPage - startPage + 1) * this.pageSize;
-
         const usesContinuation = this.hasMore && this.items.length > 0 && !!this.#continuation;
-        if (usesContinuation)
-            clonedQuery.#continuation = this.#continuation;
-        else
-            clonedQuery.skip = skip;
 
         const work = async () => {
             // A search since this request was made replaced the result, so this page belongs to the old one
@@ -811,14 +812,19 @@ export class Query extends ServiceObjectWithActions {
                 // Pages may have been loaded while this work was queued, continue from the current continuation token
                 while (startPage < endPage && this.#queriedPages.indexOf(startPage) >= 0)
                     startPage++;
-
-                skip = startPage * this.pageSize;
-                clonedQuery.top = (endPage - startPage + 1) * this.pageSize;
-                clonedQuery.#continuation = this.#continuation;
             }
 
             if (!Array.range(startPage, endPage).some(p => this.#queriedPages.indexOf(p) < 0))
                 return requested();
+
+            // Cloned when the work runs, so the result it belongs to is fully applied
+            const clonedQuery = this.#cloneForResult();
+            const skip = startPage * this.pageSize;
+            clonedQuery.top = (endPage - startPage + 1) * this.pageSize;
+            if (usesContinuation)
+                clonedQuery.#continuation = this.#continuation;
+            else
+                clonedQuery.skip = skip;
 
             try {
                 const result = await this.service.executeQuery(this.parent, clonedQuery, this.#asLookup, true);
@@ -940,6 +946,7 @@ export class Query extends ServiceObjectWithActions {
 
                 const sent = this.#sentSearchGeneration = this.#searchGeneration;
                 const sentSortOptions = this.sortOptions, sentGroupingInfo = this.groupingInfo;
+                const sentFilterState = this.#filterState();
                 let failed = false, error: any;
                 try {
                     const result = await this.service.executeQuery(this.parent, this, this.#asLookup, true);
@@ -949,7 +956,7 @@ export class Query extends ServiceObjectWithActions {
                         return;
 
                     this.#setHasSearched(true);
-                    this.#setResult(result);
+                    this.#setResult(result, sentFilterState);
                 }
                 catch (e) {
                     if (sent !== this.#searchGeneration)
@@ -1027,6 +1034,46 @@ export class Query extends ServiceObjectWithActions {
     }
 
     /**
+     * Clones the query with the state of the last result, so a page load fetches rows in the order of that result.
+     * A sort, grouping, text search or filter changed without a search yet is not used.
+     * @returns The cloned query.
+     */
+    #cloneForResult(): Query {
+        const cloned = this.clone(this.#asLookup);
+        if (!this.#lastResult)
+            return cloned;
+
+        cloned.sortOptions = this.#resultSortOptions;
+        cloned.#setGroupingInfo(this.#resultGroupingInfo);
+
+        const state = this.#resultFilterState;
+        cloned.textSearch = state.textSearch;
+        cloned.columns.forEach(column => {
+            const filter = state.columns[column.name];
+            column.selectedDistincts = filter?.selectedDistincts || [];
+            column.selectedDistinctsInversed = !!filter?.selectedDistinctsInversed;
+            column.includeAllContent = !!filter?.includeAllContent;
+        });
+
+        return cloned;
+    }
+
+    /**
+     * Gets the text search and column filters that a request sends now.
+     * @returns The text search and the filter of each column by name.
+     */
+    #filterState(): QueryFilterState {
+        const columns: QueryFilterState["columns"] = {};
+        this.columns.forEach(column => columns[column.name] = {
+            selectedDistincts: column.selectedDistincts.slice(),
+            selectedDistinctsInversed: column.selectedDistinctsInversed,
+            includeAllContent: column.includeAllContent
+        });
+
+        return { textSearch: this.textSearch, columns };
+    }
+
+    /**
      * Converts the query to a service object.
      * @internal
      * @returns The service object representation of the query.
@@ -1084,8 +1131,9 @@ export class Query extends ServiceObjectWithActions {
     /**
      * Sets the result for the query.
      * @param result - The query result DTO.
+     * @param filterState - The text search and column filters sent for the result.
      */
-    #setResult(result: Dto.QueryResultDto) {
+    #setResult(result: Dto.QueryResultDto, filterState?: QueryFilterState) {
         this.#lastResult = result;
 
         // The result replaces every row, also those of pages loaded before (e.g. in the old order of a reorder)
@@ -1113,6 +1161,7 @@ export class Query extends ServiceObjectWithActions {
 
         this.#setHasSearched(true);
         this.#updateColumns(result.columns);
+        this.#resultFilterState = filterState ?? this.#filterState();
         this.#setItems(result.items.map(item => this.service.hooks.onConstructQueryResultItem(this.service, item, this)));
 
         // The service sends no groupingInfo for an empty grouped result, keep the requested grouping
