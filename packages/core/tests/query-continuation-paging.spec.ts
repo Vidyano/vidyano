@@ -213,3 +213,110 @@ test.describe("An empty last page of a continuation query", () => {
         expect(query.labelWithTotalItems).toBe("1.200 People");
     });
 });
+
+test.describe("Select-all on a query with an unknown total", () => {
+    test("is not available while the total is unknown", async ({ query }) => {
+        expect(query.hasMore).toBe(true);
+        expect(query.selectAll.isAvailable).toBe(false);
+
+        query.selectAll.allSelected = true;
+        expect(query.selectAll.allSelected).toBe(false);
+    });
+
+    test("becomes available, and says so, once the last page is in", async ({ query }) => {
+        const changes: string[] = [];
+        (query.selectAll as any).propertyChanged.attach((_, args) => changes.push(args.propertyName));
+
+        await query.items.toArrayAsync();
+        expect(query.hasMore).toBe(false);
+        expect(query.selectAll.isAvailable).toBe(true);
+        expect(changes).toContain("isAvailable");
+
+        query.selectAll.allSelected = true;
+        expect(query.selectAll.allSelected).toBe(true);
+    });
+
+    test("turns off when a search makes the total unknown again", async ({ query }) => {
+        await query.items.toArrayAsync();
+        query.selectAll.allSelected = true;
+
+        await query.search();
+        expect(query.hasMore).toBe(true);
+        expect(query.selectAll.isAvailable).toBe(false);
+        expect(query.selectAll.allSelected).toBe(false);
+        expect(query.selectedItems).toHaveLength(0);
+    });
+});
+
+test.describe("Select-all and a refresh that keeps the selection", () => {
+    test("keeps the selected rows when the new result has an unknown total", async ({ query }) => {
+        await query.items.toArrayAsync();
+        query.selectAll.allSelected = true;
+
+        // The refresh answers with the first page again, so the total is unknown
+        await query.search({ keepSelection: true });
+        expect(query.hasMore).toBe(true);
+        expect(query.selectAll.allSelected).toBe(false);
+        expect(ids(query.selectedItems)).toEqual(ids(query.items.slice(0, 100)));
+    });
+
+    test("does not announce an availability it does not have", async ({ query }) => {
+        const changes: string[] = [];
+        (query.selectAll as any).propertyChanged.attach((_, args) => changes.push(args.propertyName));
+
+        expect(query.hasMore).toBe(true);
+        query.selectAll.isAvailable = false;
+        query.selectAll.isAvailable = true;
+        expect(changes).not.toContain("isAvailable");
+    });
+});
+
+test.describe("Select-all when a page makes the total unknown", () => {
+    test("turns off without a new search", async ({ query, hooks }) => {
+        // The search answers its first page with a known total, the next page with a token again
+        let first = true;
+        hooks.rewrite = (_, result) => {
+            if (!first)
+                return;
+
+            first = false;
+            result.totalItems = 1000;
+            result.continuation = null;
+        };
+
+        await query.search();
+        expect(query.hasMore).toBe(false);
+        query.selectAll.allSelected = true;
+        expect(query.selectAll.allSelected).toBe(true);
+
+        await query.items.atAsync(150);
+        expect(query.hasMore).toBe(true);
+        expect(query.selectAll.isAvailable).toBe(false);
+        expect(query.selectAll.allSelected).toBe(false);
+        expect(query.selectedItems).toHaveLength(0);
+    });
+});
+
+test.describe("Select-all after a result without paging", () => {
+    test("is available again once a result has every row", async ({ query, hooks }) => {
+        expect(query.hasMore).toBe(true);
+
+        // The next search answers all its rows at once, without paging
+        hooks.rewrite = (_, result) => {
+            result.pageSize = 0;
+            result.continuation = null;
+            result.totalItems = result.items.length;
+        };
+
+        const changes: string[] = [];
+        (query.selectAll as any).propertyChanged.attach((_, args) => changes.push(args.propertyName));
+
+        await query.search();
+        expect(query.hasMore).toBe(false);
+        expect(query.selectAll.isAvailable).toBe(true);
+        expect(changes).toContain("isAvailable");
+
+        query.selectAll.allSelected = true;
+        expect(query.selectAll.allSelected).toBe(true);
+    });
+});

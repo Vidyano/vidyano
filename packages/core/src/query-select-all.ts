@@ -34,14 +34,22 @@ export class QuerySelectAll extends Observable<IQuerySelectAll> implements IQuer
         this.#query = query;
         this.#isAvailable = isAvailable;
         this.propertyChanged.attach(observer);
+        query.propertyChanged.attach((_, args) => {
+            if (args.propertyName === "hasMore")
+                this.#hasMoreChanged(!!args.oldValue, !!args.newValue);
+        });
     }
 
     /**
      * Gets or sets whether selecting all items is available.
+     * Not while the query's total is unknown (hasMore), because the action would act on rows nobody has seen.
      */
     get isAvailable(): boolean {
         if (this.#query.maxSelectedItems)
             return;
+
+        if (this.#query.hasMore)
+            return false;
 
         return this.#isAvailable;
     }
@@ -55,8 +63,11 @@ export class QuerySelectAll extends Observable<IQuerySelectAll> implements IQuer
 
         this.allSelected = this.inverse = false;
 
-        const oldValue = this.#isAvailable;
-        this.notifyPropertyChanged("isAvailable", this.#isAvailable = isAvailable, oldValue);
+        // Announce only a change of what the getter returns, which stays false while the total is unknown
+        const oldValue = this.isAvailable;
+        this.#isAvailable = isAvailable;
+        if (this.isAvailable !== oldValue)
+            this.notifyPropertyChanged("isAvailable", this.isAvailable, oldValue);
     }
 
     /**
@@ -100,5 +111,28 @@ export class QuerySelectAll extends Observable<IQuerySelectAll> implements IQuer
 
         const oldValue = this.#inverse;
         this.notifyPropertyChanged("inverse", this.#inverse = inverse, oldValue);
+    }
+
+    /**
+     * An unknown total ends select-all, a known one makes it available again.
+     */
+    #hasMoreChanged(hadMore: boolean, hasMore: boolean) {
+        if (hadMore === hasMore || this.#query.maxSelectedItems || !this.#isAvailable)
+            return;
+
+        // The guarded setters no longer accept a change once the total is unknown, so reset the fields here
+        if (hasMore && (this.#allSelected || this.#inverse)) {
+            const wasAllSelected = this.#allSelected, wasInverse = this.#inverse;
+            this.#allSelected = this.#inverse = false;
+
+            if (wasAllSelected)
+                this.notifyPropertyChanged("allSelected", false, true);
+
+            if (wasInverse)
+                this.notifyPropertyChanged("inverse", false, true);
+        }
+
+        // Passing the guards above, the total is the only thing that changes isAvailable here
+        this.notifyPropertyChanged("isAvailable", this.isAvailable, !hadMore);
     }
 }

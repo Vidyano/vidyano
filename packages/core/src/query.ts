@@ -965,11 +965,11 @@ export class Query extends ServiceObjectWithActions {
                 const items = this.items;
 
                 // Restore non-inverse select-all state if it was active before refresh
-                if (wasAllSelected) {
+                if (wasAllSelected && this.selectAll.isAvailable) {
                     this.selectAll.allSelected = true;
                 }
                 // Restore inverse select-all state if it was active before refresh
-                else if (wasAllSelectedInverse) {
+                else if (wasAllSelectedInverse && this.selectAll.isAvailable) {
                     this.selectAll.allSelected = true;
                     this.selectAll.inverse = true;
                     // Deselect the items that were deselected before
@@ -982,10 +982,10 @@ export class Query extends ServiceObjectWithActions {
                         });
                     }
                 }
-                // Otherwise restore individual selections
+                // Otherwise restore individual selections, also those of a select-all that is not available for the new result
                 else if (selectedIds != null && selectedIds.length > 0) {
                     const newSelectionItems = selectedIds.map(id => items.find((i: QueryResultItem) => i?.id === id)).filter(i => i != null);
-                    if (newSelectionItems.length === selectedIds.length)
+                    if (newSelectionItems.length === selectedIds.length || wasAllSelected || wasAllSelectedInverse)
                         this.selectedItems = newSelectionItems;
                 }
 
@@ -1080,8 +1080,11 @@ export class Query extends ServiceObjectWithActions {
             this.#setTotalItems(result.totalItems || 0);
             this.#queriedPages.push(Math.floor((this.skip || 0) / this.pageSize));
         }
-        else
+        else {
+            // A result without paging has every row, also after a result with an unknown total
             this.#setTotalItems(result.items.length);
+            this.#setHasMore(false);
+        }
 
         this.#setHasSearched(true);
         this.#updateColumns(result.columns);
