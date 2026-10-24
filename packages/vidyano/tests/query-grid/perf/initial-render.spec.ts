@@ -254,7 +254,7 @@ test.describe('Initial render', () => {
         await recordPerf(page, testInfo, 'perf.init-layout-and-forced-reflows', { counts: { LayoutCount: cdp.LayoutCount, RecalcStyleCount: cdp.RecalcStyleCount, traceLayouts: layouts!.layouts, forcedLayouts: layouts!.forced }, timings: { LayoutDuration: [cdp.LayoutDuration], RecalcStyleDuration: [cdp.RecalcStyleDuration], traceLayoutMs: [layouts!.layoutMs], traceStyleMs: [layouts!.styleMs] }, cdp: { ...cdp, forcedBy: layouts!.forcedBy } });
     });
 
-    test('no visible layout shift when widths apply', perfCase('perf.init-layout-shift', { timing: true }), async ({ page }, testInfo) => {
+    test('no visible layout shift when widths apply', perfCase('perf.init-layout-shift'), async ({ page }, testInfo) => {
         await perfPage(page);
         await prefetch(page, 'People');
         await page.evaluate(() => {
@@ -268,12 +268,12 @@ test.describe('Initial render', () => {
 
         const result = await appendGrid(page);
         await waitFilled(gridLocator(page));
-        // The scenario's observation window: settle + 500ms
-        await page.waitForTimeout(500);
+        // Shifts are reported per rendered frame: the frames after ready also catch widths that change late
+        await nextFrames(page, 30);
 
         const shifts: any[] = await page.evaluate(start => (window as any).__shifts.filter((s: any) => s.start >= start), result.start);
         const cls = round(shifts.reduce((sum, s) => sum + s.value, 0), 4);
-        expect(cls, `layout shifts: ${JSON.stringify(shifts)}`).toBeLessThanOrEqual(0.02);
+        expect(shifts, 'layout shifts').toEqual([]);
 
         await recordPerf(page, testInfo, 'perf.init-layout-shift', { counts: { shifts: shifts.length }, timings: { cls: [cls] } });
     });

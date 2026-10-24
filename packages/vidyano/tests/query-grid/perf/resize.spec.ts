@@ -115,21 +115,40 @@ test.describe('Viewport resize & maxRows', () => {
         await recordPerf(page, testInfo, 'grid.vs-row-count-monotonic', { counts: { pool300: sizes['300'].pool, pool800: sizes['800'].pool, poolAfterShrink: sizes['300 again'].pool, requests: log.requests.length } });
     });
 
-    test('continuous window resizing has bounded layout work', perfCase('perf.rs-continuous-resize', { timing: true }), async ({ page }, testInfo) => {
+    test('continuous window resizing has bounded layout work', perfCase('perf.rs-continuous-resize'), async ({ page }, testInfo) => {
         await perfPage(page, { width: 1280, height: 900 });
+
+        const sizes = Array.from({ length: 20 }, (_, i) => i < 10 ? { width: 1280, height: i % 2 ? 900 : 600 } : { width: i % 2 ? 1280 : 900, height: 900 });
+        // Each step renders 10 frames after the resize: frames are at least a vsync apart, so the grid's debounced
+        // more-columns update (50ms) has run and been laid out within the step at any CPU speed
+        const resizeTo = async (size: { width: number; height: number }) => {
+            await page.setViewportSize(size);
+            await page.evaluate(() => (window as any).__perf.runFrames(10, () => { }));
+        };
+        const resizeSteps = async () => {
+            const layouts: number[] = [];
+            for (const size of sizes) {
+                const metrics = await cdpMetrics(page);
+                await resizeTo(size);
+                layouts.push((await cdpMetrics(page)).LayoutCount - metrics.LayoutCount);
+            }
+
+            return layouts;
+        };
+
+        // The same steps without the grid: the browser's own layouts for a viewport change (two or three, so this varies
+        // by one) and the probe the frame helper lays out in every frame, which the grid's layouts share
+        const baseline = await resizeSteps();
+
         const { grid } = await mountPrefetched(page, 'People');
         await parkMouse(page);
+        // The first narrow width creates the more-columns buttons, a one-time cost that the steps should not count
+        await resizeTo({ width: 900, height: 900 });
+        await resizeTo({ width: 1280, height: 900 });
         const before = { template: await template(grid) };
         const start = await page.evaluate(() => performance.now());
 
-        const layouts: number[] = [];
-        const sizes = Array.from({ length: 20 }, (_, i) => i < 10 ? { width: 1280, height: i % 2 ? 900 : 600 } : { width: i % 2 ? 1280 : 900, height: 900 });
-        for (const size of sizes) {
-            const metrics = await cdpMetrics(page);
-            await page.setViewportSize(size);
-            await nextFrames(page, 1);
-            layouts.push((await cdpMetrics(page)).LayoutCount - metrics.LayoutCount);
-        }
+        const layouts = (await resizeSteps()).map((count, i) => count - baseline[i]);
         await page.setViewportSize({ width: 1280, height: 900 });
         await waitForGridReady(grid);
         await waitFilled(grid);
@@ -138,13 +157,19 @@ test.describe('Viewport resize & maxRows', () => {
         const blocking = await page.evaluate(start => (window as any).__perf.tbt(start, performance.now()), start);
         const after = await layoutState(grid);
 
-        expect(Math.max(...layouts), `layouts per step: ${layouts}`).toBeLessThanOrEqual(3);
+        // Beyond the browser's variance of one: the grid lays out its rows and headers for the new size once; a new width
+        // also shows or hides the horizontal scrollbar and the more-columns buttons, each laid out once more after the
+        // size trackers report them. Reading layout between writes per row or per column adds one per row or column.
+        layouts.forEach((count, i) => {
+            const widthChanged = sizes[i].width !== (i ? sizes[i - 1].width : 1280);
+            expect(count, `layouts in step ${i} (${sizes[i].width}x${sizes[i].height}): ${layouts}`).toBeLessThanOrEqual(1 + (widthChanged ? 3 : 1));
+        });
         expect(after.misaligned, 'columns with the header not above the cells').toEqual([]);
         expect(after.coverage.gap).toBeLessThanOrEqual(1);
         expect(after.coverage.blank).toBe(0);
         expect(await template(grid), 'column template').toBe(before.template);
 
-        await recordPerf(page, testInfo, 'perf.rs-continuous-resize', { counts: { maxLayoutsPerStep: Math.max(...layouts), layouts: layouts.reduce((a, b) => a + b, 0) }, timings: { tbt: [round(blocking.tbt)] } });
+        await recordPerf(page, testInfo, 'perf.rs-continuous-resize', { counts: { maxLayoutsPerStep: Math.max(...layouts), layouts: layouts.reduce((a, b) => a + b, 0), baselineLayouts: baseline.reduce((a, b) => a + b, 0) }, timings: { tbt: [round(blocking.tbt)] } });
     });
 
     test('width-only resize does not touch rows', perfCase('perf.rs-width-only'), async ({ page }, testInfo) => {

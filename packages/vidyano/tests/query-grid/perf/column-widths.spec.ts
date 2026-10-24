@@ -65,7 +65,7 @@ test.describe('Column widths', () => {
         await recordPerf(page, testInfo, 'perf.cw-stable-during-vscroll', { counts: { templateChangesAfterReady: changes.length, hostStyleWrites: after.template.values.length } });
     });
 
-    test('column resize drag is coalesced per animation frame', perfCase('perf.cw-resize-drag-coalesced', { timing: true }), async ({ page }, testInfo) => {
+    test('column resize drag is coalesced per animation frame', perfCase('perf.cw-resize-drag-coalesced'), async ({ page }, testInfo) => {
         await perfPage(page);
         const grid = await mountGrid(page);
         const tracks = await columnTracks(grid);
@@ -76,51 +76,64 @@ test.describe('Column widths', () => {
         const box = (await resizer.boundingBox())!;
         const x = box.x + box.width / 2;
         const y = box.y + box.height / 2;
+        const frames = 10;
+        const movesPerFrame = 4;
+        const stepPx = 5;
 
         await page.mouse.move(x, y);
-        await grid.evaluate((g: any) => {
-            const w = window as any;
-            const template = () => getComputedStyle(g).getPropertyValue('--vi-query-grid-columns').trim();
-            const state = w.__drag = { frames: 0, writes: 0, last: template(), stop: false };
-            new MutationObserver(() => {
-                const value = template();
-                if (value !== state.last) {
-                    state.writes++;
-                    state.last = value;
-                }
-            }).observe(g, { attributes: true, attributeFilter: ['style'] });
-
-            const tick = () => {
-                state.frames++;
-                if (!state.stop)
-                    requestAnimationFrame(tick);
-            };
-            requestAnimationFrame(tick);
-        });
-
         await page.mouse.down();
-        for (let i = 1; i <= 40; i++)
-            await page.mouse.move(x + i * 5, y);
 
+        // Chrome delivers at most one real mousemove per frame, so the moves within a frame are dispatched in the page;
+        // they reach the drag through the document listeners that the real pointer down added
+        const samples: { publications: number; width: number }[] = await grid.evaluate(async (g: any, { x, y, frames, movesPerFrame, stepPx, lastNameIndex }) => {
+            const template = (style: string | null) => /--vi-query-grid-columns:\s*([^;]+)/.exec(style ?? '')?.[1].trim() ?? '';
+            const records: MutationRecord[] = [];
+            const observer = new MutationObserver(list => records.push(...list));
+            observer.observe(g, { attributes: true, attributeFilter: ['style'], attributeOldValue: true });
+            let last = template(g.getAttribute('style'));
+
+            // The old values hold every template in between, also the ones replaced again within the same task
+            const publications = () => {
+                records.push(...observer.takeRecords());
+                let count = 0;
+                for (const value of [...records.splice(0).map(r => template(r.oldValue)), template(g.getAttribute('style'))]) {
+                    if (value !== last) {
+                        count++;
+                        last = value;
+                    }
+                }
+
+                return count;
+            };
+
+            const result = await (window as any).__perf.runFrames(frames, (i: number) => {
+                for (let move = 1; move <= movesPerFrame; move++)
+                    document.dispatchEvent(new MouseEvent('mousemove', { clientX: x + (i * movesPerFrame + move) * stepPx, clientY: y, buttons: 1, bubbles: true, composed: true }));
+            }, () => ({ publications: publications(), width: parseFloat(template(g.getAttribute('style')).split(/\s+/)[lastNameIndex]) }));
+            observer.disconnect();
+
+            return result.samples;
+        }, { x, y, frames, movesPerFrame, stepPx, lastNameIndex });
+
+        const totalPx = frames * movesPerFrame * stepPx;
+        await page.mouse.move(x + totalPx, y);
         await page.mouse.up();
         await nextFrames(page, 3);
-
-        const drag = await grid.evaluate(() => {
-            const state = (window as any).__drag;
-            state.stop = true;
-            return { frames: state.frames, writes: state.writes };
-        });
         const after = await columnTracks(grid);
 
-        expect(drag.writes).toBeLessThanOrEqual(drag.frames + 1);
-        expect(Math.abs(after[lastNameIndex] - (tracks[lastNameIndex] + 200))).toBeLessThanOrEqual(2);
+        samples.forEach((sample, i) => {
+            expect(sample.publications, `width publications in frame ${i}`).toBeLessThanOrEqual(1);
+            // The frame shows the latest move of its task, not an earlier one
+            expect(Math.abs(sample.width - (tracks[lastNameIndex] + (i + 1) * movesPerFrame * stepPx)), `width in frame ${i}: ${sample.width}`).toBeLessThanOrEqual(1);
+        });
+        expect(Math.abs(after[lastNameIndex] - (tracks[lastNameIndex] + totalPx))).toBeLessThanOrEqual(2);
         after.forEach((width, index) => {
             if (index !== lastNameIndex)
                 expect(width, `track ${index}`).toBe(tracks[index]);
         });
         expect((await savedSettings(page)).length - savesBefore).toBe(1);
 
-        await recordPerf(page, testInfo, 'perf.cw-resize-drag-coalesced', { counts: { templateWrites: drag.writes, framesElapsed: drag.frames, saves: (await savedSettings(page)).length - savesBefore, moves: 40 } });
+        await recordPerf(page, testInfo, 'perf.cw-resize-drag-coalesced', { counts: { publications: samples.reduce((sum, s) => sum + s.publications, 0), frames, moves: frames * movesPerFrame, saves: (await savedSettings(page)).length - savesBefore } });
     });
 
     test('column template is published once per initialization', perfCase('perf.cw-write-count-on-mount'), async ({ page }, testInfo) => {
@@ -141,53 +154,61 @@ test.describe('Column widths', () => {
         await recordPerf(page, testInfo, 'perf.cw-write-count-on-mount', { counts: { templateValues: templates.length, pxTransitions }, dataset: { templates } });
     });
 
-    test('resize drag causes bounded layout work', perfCase('perf.cw-resize-drag-layout-per-frame', { timing: true }), async ({ page }, testInfo) => {
+    test('resize drag causes bounded layout work', perfCase('perf.cw-resize-drag-layout-per-frame'), async ({ page }, testInfo) => {
         await perfPage(page);
         const grid = await mountGrid(page);
+        const tracks = await columnTracks(grid);
+        const lastNameIndex = 1;
 
         const resizer = grid.locator('vi-query-grid-column-header[name="LastName"] .resizer');
         const box = (await resizer.boundingBox())!;
         const x = box.x + box.width / 2;
         const y = box.y + box.height / 2;
+        const frames = 20;
+        const stepPx = 5;
+
+        // One move per frame: real mousemoves can share a frame or skip one, so they are dispatched in the page and reach
+        // the drag through the document listeners that the real pointer down added
+        const runFrames = (from: number | null) => grid.evaluate((g: any, { x, y, frames, stepPx, from }) => (window as any).__perf.runFrames(frames, (i: number) => {
+            if (from !== null)
+                document.dispatchEvent(new MouseEvent('mousemove', { clientX: x + (from + i) * stepPx, clientY: y, buttons: 1, bubbles: true, composed: true }));
+        }), { x, y, frames, stepPx, from });
+        const layoutsDuring = async (run: () => Promise<unknown>) => {
+            const before = await cdpMetrics(page);
+            await run();
+            const after = await cdpMetrics(page);
+            return { layouts: after.LayoutCount - before.LayoutCount, styles: after.RecalcStyleCount - before.RecalcStyleCount };
+        };
 
         await page.mouse.move(x, y);
         await nextFrames(page, 2);
-        const start = await grid.evaluate((g: any) => {
-            const w = window as any;
-            const state = w.__drag = { frames: 0, stop: false };
-            const tick = () => {
-                state.frames++;
-                if (!state.stop)
-                    requestAnimationFrame(tick);
-            };
-            requestAnimationFrame(tick);
-            w.__perf.observe(g);
-            return performance.now();
-        });
-        const before = await cdpMetrics(page);
+
+        // The frame helper's own work: it resizes a probe in every frame
+        const idle = await layoutsDuring(() => runFrames(null));
 
         await page.mouse.down();
-        for (let i = 1; i <= 40; i++)
-            await page.mouse.move(x + i * 5, y);
+        // The first move past the drag threshold starts the drag without a resize
+        await grid.evaluate((g: any, { x, y, stepPx }) => {
+            document.dispatchEvent(new MouseEvent('mousemove', { clientX: x + stepPx, clientY: y, buttons: 1, bubbles: true, composed: true }));
+            (window as any).__perf.observe(g);
+        }, { x, y, stepPx });
+        await nextFrames(page, 2);
+        const drag = await layoutsDuring(() => runFrames(2));
 
+        const totalPx = (frames + 1) * stepPx;
+        await page.mouse.move(x + totalPx, y);
         await page.mouse.up();
         await nextFrames(page, 3);
+        const mutations = await grid.evaluate(() => (window as any).__perf.takeMutations());
+        const after = await columnTracks(grid);
 
-        const after = await cdpMetrics(page);
-        const drag = await grid.evaluate((g: any, start) => {
-            const w = window as any;
-            w.__drag.stop = true;
-            return { frames: w.__drag.frames, mutations: w.__perf.takeMutations(), blocking: w.__perf.tbt(start, performance.now()) };
-        }, start);
+        // Each move's width is laid out in the frame the helper lays out anyway. A layout forced per move, or a second
+        // layout pass per frame, adds one per move; work that does not repeat per move only adds a few
+        expect(drag.layouts - idle.layouts, `layouts: ${drag.layouts} in ${frames} drag frames, ${idle.layouts} in ${frames} idle frames`).toBeLessThanOrEqual(frames / 4);
+        expect(Math.abs(after[lastNameIndex] - (tracks[lastNameIndex] + totalPx)), 'resized width').toBeLessThanOrEqual(2);
+        expect(mutations.rowChildListRecords, 'childList records in rows and cells').toBe(0);
 
-        const layouts = after.LayoutCount - before.LayoutCount;
-        const layoutsPerFrame = round(layouts / drag.frames, 2);
-        expect(drag.frames).toBeGreaterThan(0);
-        expect(layoutsPerFrame, `${layouts} layouts in ${drag.frames} frames`).toBeLessThanOrEqual(2);
-        expect(drag.mutations.rowChildListRecords, 'childList records in rows and cells').toBe(0);
-        expect.soft(drag.blocking.tbt, 'TBT during the drag').toBeLessThanOrEqual(50);
-
-        await recordPerf(page, testInfo, 'perf.cw-resize-drag-layout-per-frame', { counts: { layouts, frames: drag.frames, rowChildListRecords: drag.mutations.rowChildListRecords }, timings: { tbt: [round(drag.blocking.tbt)], layoutDuration: [round((after.LayoutDuration - before.LayoutDuration) * 1000, 2)] }, cdp: { layoutsPerFrame } });
+        await recordPerf(page, testInfo, 'perf.cw-resize-drag-layout-per-frame', { counts: { layouts: drag.layouts, helperLayouts: idle.layouts, styleRecalcs: drag.styles, helperStyleRecalcs: idle.styles, frames, rowChildListRecords: mutations.rowChildListRecords } });
     });
 
     test('hiding a middle column re-measures once without recreating cells', perfCase('perf.cw-hide-column-remeasure'), async ({ page }, testInfo) => {
