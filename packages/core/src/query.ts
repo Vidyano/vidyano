@@ -1273,6 +1273,8 @@ export class Query extends ServiceObjectWithActions {
         const groupedBy = this.groupingInfo?.groupedBy;
         this.#updateGroupingInfo(groupedBy ? { groupedBy, groups: [] } : null);
         this.#setTotalItem(null);
+        this.#setCharts(null);
+        this.#tag = null;
 
         console.error(error);
         this.#setLastUpdated();
