@@ -386,7 +386,13 @@ export class Query extends ServiceObjectWithActions {
             return;
 
         const oldValue = this.#maxSelectedItems;
-        this.notifyPropertyChanged("maxSelectedItems", this.#maxSelectedItems = maxSelectedItems, oldValue);
+        this.#maxSelectedItems = maxSelectedItems;
+
+        // Trim before announcing the limit, select-all trims when the announcement switches it off
+        if (!this.selectAll.allSelected)
+            this.#limitSelection();
+
+        this.notifyPropertyChanged("maxSelectedItems", maxSelectedItems, oldValue);
     }
 
     /**
@@ -1246,8 +1252,25 @@ export class Query extends ServiceObjectWithActions {
      */
     #selectAllPropertyChanged(selectAll: QuerySelectAll, args: PropertyChangedArgs) {
         if (args.propertyName === "allSelected") {
-            this.selectedItems = selectAll.allSelected ? this.items : [];
+            // Only a new limit switches select-all off while limited, keep the first rows up to the limit
+            if (!selectAll.allSelected && this.maxSelectedItems)
+                this.#limitSelection(true);
+            else
+                this.selectedItems = selectAll.allSelected ? this.items : [];
         }
+    }
+
+    /**
+     * Keeps the first selected rows up to maxSelectedItems.
+     * @param announce - Announce the selection also when it is within the limit.
+     */
+    #limitSelection(announce?: boolean) {
+        if (!this.maxSelectedItems)
+            return;
+
+        const selectedItems = this.selectedItems;
+        if (announce || selectedItems.length > this.maxSelectedItems)
+            this.selectedItems = selectedItems.slice(0, this.maxSelectedItems);
     }
 
     /**
