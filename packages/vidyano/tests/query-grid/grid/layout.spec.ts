@@ -75,17 +75,25 @@ test.describe('Layout, row height, controls width and spinner', () => {
 
         expect(await spinnerVisible(grid)).toBe(false);
 
+        const held: (() => void)[] = [];
+        let holding = false;
         await page.route('**/ExecuteQuery', async route => {
-            await new Promise(resolve => setTimeout(resolve, 400));
+            if (holding)
+                await new Promise<void>(resolve => held.push(resolve));
             await route.continue();
         });
 
         for (let i = 0; i < 3; i++) {
+            holding = true;
             await page.evaluate(() => {
                 (window as any).__search = (window as any).q.search();
             });
             await expect.poll(() => spinnerVisible(grid), `search ${i + 1} pending`).toBe(true);
             expect(await grid.evaluate((g: any) => g.query.isBusy)).toBe(true);
+
+            await expect.poll(() => held.length).toBeGreaterThan(0);
+            holding = false;
+            held.splice(0).forEach(release => release());
 
             // Discard the result: returning it would serialize the lazy items proxy and load every row
             await page.evaluate(async () => { await (window as any).__search; });

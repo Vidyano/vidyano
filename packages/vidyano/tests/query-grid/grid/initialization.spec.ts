@@ -454,8 +454,10 @@ test.describe('Initialization and column measuring', () => {
             w.q = await w.service.getQuery('People');
         });
 
+        let releaseSearch!: () => void;
+        const released = new Promise<void>(resolve => releaseSearch = resolve);
         await page.route('**/ExecuteQuery', async route => {
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await released;
             await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ exception: 'Search failed (test)' }) });
         });
 
@@ -467,6 +469,7 @@ test.describe('Initialization and column measuring', () => {
 
         const { grid } = await attachGrid(page, { reuseQuery: true });
         expect(await grid.evaluate((g: any) => g.query.isBusy)).toBe(true);
+        releaseSearch();
 
         // search() does not throw by default: the error ends up as the query notification
         await page.evaluate(() => (window as any).__search);
