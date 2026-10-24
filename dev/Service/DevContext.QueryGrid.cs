@@ -7,8 +7,8 @@ namespace Dev.Service;
 
 /// <summary>
 /// Read-only test data for the vi-query-grid Playwright tests (packages/vidyano/tests/query-grid/README.md).
-/// Everything is rebuilt deterministically by <see cref="InitializeQueryGridData"/>, which runs from
-/// <see cref="Initialize"/> (on startup and on every PersistentObject.ResetTest).
+/// Built once by <see cref="InitializeQueryGridData"/>, which runs from <see cref="Initialize"/> (on startup and on
+/// every PersistentObject.ResetTest); only the reorder lists, which tests change, are rebuilt on every reset.
 /// </summary>
 public partial class DevContext
 {
@@ -39,11 +39,16 @@ public partial class DevContext
 
     static void InitializeQueryGridData()
     {
+        // Only the reorder lists can change; the rest is read-only and seeded, so a reset keeps it instead of
+        // rebuilding 150k people and 2,000 wide rows on every test that resets the data
+        _reorderItems = CreateReorderItems(ReorderItemsSeed, ReorderItemCount, 0, "00");
+        _reorderItemsLarge = CreateReorderItems(ReorderItemsLargeSeed, ReorderItemLargeCount, ReorderItemLargeIdOffset, "000");
+        if (_peopleBig.Count > 0)
+            return;
+
         _gridDataTypes = CreateGridDataTypes();
         _peopleBig = CreatePeopleBig(_people);
         _wideRows = CreateWideRows();
-        _reorderItems = CreateReorderItems(ReorderItemsSeed, ReorderItemCount, 0, "00");
-        _reorderItemsLarge = CreateReorderItems(ReorderItemsLargeSeed, ReorderItemLargeCount, ReorderItemLargeIdOffset, "000");
         _continuationRows = CreateContinuationRows();
     }
 
