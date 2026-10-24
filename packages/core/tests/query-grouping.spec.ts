@@ -59,6 +59,17 @@ const test = base.extend<Fixtures>({
 });
 
 test.describe("Query grouping and lazy page loads", () => {
+    test("a group's items include its last row", async ({ query }) => {
+        const group = query.groupingInfo.groups[0];
+        expect(group.end).toBe(group.start + group.count - 1);
+
+        // Loads the page that holds the group's last row
+        const [last] = await query.items.sliceAsync(group.end, group.end + 1);
+
+        expect(group.items).toHaveLength(group.count);
+        expect(group.items[group.count - 1] === last, "the last row is in the group").toBe(true);
+    });
+
     test("a page load keeps the group objects when the groups did not change", async ({ query, hooks }) => {
         const groupingInfo = query.groupingInfo;
         const groups = [...groupingInfo.groups];

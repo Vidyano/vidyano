@@ -1456,7 +1456,7 @@ export class Query extends ServiceObjectWithActions {
         const current = this.groupingInfo;
         if (current?.groupedBy === groupingInfo.groupedBy && current.groups?.length === groups.length && current.groups.every((g, i) => g.name === groups[i].name && g.count === groups[i].count)) {
             for (const group of current.groups) {
-                const items = this.items.slice(group.start, group.end);
+                const items = this.items.slice(group.start, group.end + 1);
                 group.items.splice(0, items.length, ...items);
             }
 
