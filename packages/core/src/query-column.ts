@@ -307,13 +307,14 @@ export class QueryColumn extends ServiceObject {
     /**
      * Sorts the query by this column.
      * @param direction - The sort direction.
-     * @param multiSort - Whether to use multi-sort.
+     * @param multiSort - Whether to use multi-sort. A multi-sort that leaves the sort options as they are does not search.
      * @returns A promise resolving to the query result items.
      */
     async sort(direction: SortDirection, multiSort?: boolean): Promise<QueryItems> {
         if (!!multiSort) {
             const sortOption = this.query.sortOptions.find(option => option.name === this.name);
-            if (sortOption && sortOption.direction === direction)
+            // The sort options stay the same, there is nothing to load once the query has a result
+            if (this.query.hasSearched && (sortOption ? sortOption.direction === direction : direction === ""))
                 return this.query.items;
 
             if (!sortOption) {

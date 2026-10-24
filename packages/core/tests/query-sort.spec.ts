@@ -231,3 +231,46 @@ test.describe("A sort that fails", () => {
         expect(query.getColumn("LastName").sortDirection).toBe("ASC");
     });
 });
+
+test.describe("A multi-sort that changes nothing", () => {
+    test("removing the sort of a column that is not sorted keeps the rows", async ({ query, hooks, saves }) => {
+        await query.getColumn("FirstName").sort("ASC");
+        const items = query.items;
+        const requests = hooks.requests;
+
+        // A failing request would show an error for a sort that does nothing
+        hooks.fail = true;
+        expect(await query.getColumn("LastName").sort("", true)).toBe(items);
+
+        expect(hooks.requests).toBe(requests);
+        expect(saves.count).toBe(1);
+        expect(query.items).toBe(items);
+        expect(query.notification).toBeFalsy();
+        expect(sorts(query)).toEqual(["FirstName ASC"]);
+    });
+
+    test("sorting a column in the direction it has keeps the rows", async ({ query, hooks, saves }) => {
+        await query.getColumn("FirstName").sort("ASC");
+        await query.getColumn("LastName").sort("DESC", true);
+        const items = query.items;
+        const requests = hooks.requests;
+
+        hooks.fail = true;
+        expect(await query.getColumn("LastName").sort("DESC", true)).toBe(items);
+
+        expect(hooks.requests).toBe(requests);
+        expect(saves.count).toBe(2);
+        expect(sorts(query)).toEqual(["FirstName ASC", "LastName DESC"]);
+    });
+
+    test("still loads a query that has not searched yet", async ({ query: people, hooks }) => {
+        // A clone has no result yet
+        const query = people.clone();
+        expect(query.hasSearched).toBeFalsy();
+        const requests = hooks.requests;
+
+        await query.getColumn("LastName").sort("", true);
+        expect(hooks.requests).toBe(requests + 1);
+        expect(query.hasSearched).toBe(true);
+    });
+});
