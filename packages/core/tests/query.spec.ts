@@ -955,5 +955,57 @@ test.describe("Query", () => {
             peopleQuery.selectAll.allSelected = true;
             expect(peopleQuery.selectAll.allSelected).toBe(false);
         });
+
+        test("says so when the limit is set or removed later", async ({ peopleQuery }) => {
+            const changes: [string, unknown, unknown][] = [];
+            (peopleQuery.selectAll as any).propertyChanged.attach((_, args) => changes.push([args.propertyName, args.newValue, args.oldValue]));
+
+            peopleQuery.maxSelectedItems = 1;
+            expect(changes).toEqual([["isAvailable", false, true]]);
+
+            changes.length = 0;
+            peopleQuery.maxSelectedItems = 2;
+            expect(changes).toEqual([]);
+
+            peopleQuery.maxSelectedItems = undefined;
+            expect(changes).toEqual([["isAvailable", true, false]]);
+        });
+
+        test("switches select-all off when the limit is set", async ({ peopleQuery }) => {
+            peopleQuery.selectAll.allSelected = true;
+            peopleQuery.selectAll.inverse = true;
+            expect(peopleQuery.selectedItemCount).toBe(10_000);
+
+            peopleQuery.maxSelectedItems = 1;
+            expect(peopleQuery.selectAll.allSelected).toBe(false);
+            expect(peopleQuery.selectAll.inverse).toBe(false);
+            expect(peopleQuery.selectedItemCount).toBe(0);
+        });
+
+        test("stays unavailable on a query created with a limit, also when the limit is removed", async ({ service, peopleQuery }) => {
+            // Construct the clone with a limit, like a lookup that allows one row and is later opened up for more
+            const hooks = service.hooks, onConstructQuery = hooks.onConstructQuery;
+            hooks.onConstructQuery = (s, query, parent, asLookup) => onConstructQuery.call(hooks, s, query, parent, asLookup, 1);
+            const limited = peopleQuery.clone();
+            hooks.onConstructQuery = onConstructQuery;
+
+            expect(limited.selectAll.isAvailable).toBe(false);
+
+            limited.maxSelectedItems = 0;
+            expect(limited.selectAll.isAvailable).toBe(false);
+        });
+    });
+
+    test.describe("Select-all notifications", () => {
+        test("switching select-all on ends an inverse selection and says so", async ({ peopleQuery }) => {
+            peopleQuery.selectAll.inverse = true;
+
+            const changes: [string, unknown, unknown][] = [];
+            (peopleQuery.selectAll as any).propertyChanged.attach((_, args) => changes.push([args.propertyName, args.newValue, args.oldValue]));
+
+            peopleQuery.selectAll.allSelected = true;
+            expect(peopleQuery.selectAll.inverse).toBe(false);
+            expect(changes).toEqual([["allSelected", true, false], ["inverse", false, true]]);
+        });
     });
 });

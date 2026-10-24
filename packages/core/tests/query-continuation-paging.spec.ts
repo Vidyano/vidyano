@@ -246,6 +246,26 @@ test.describe("Select-all on a query with an unknown total", () => {
         expect(query.selectAll.allSelected).toBe(false);
         expect(query.selectedItems).toHaveLength(0);
     });
+
+    test("becomes available once, when both the limit is gone and the total is known", async ({ query }) => {
+        const changes: [unknown, unknown][] = [];
+        (query.selectAll as any).propertyChanged.attach((_, args) => {
+            if (args.propertyName === "isAvailable")
+                changes.push([args.newValue, args.oldValue]);
+        });
+
+        query.maxSelectedItems = 1;
+        query.maxSelectedItems = undefined;
+        expect(changes).toEqual([]);
+
+        query.maxSelectedItems = 1;
+        await query.items.toArrayAsync();
+        expect(query.hasMore).toBe(false);
+        expect(changes).toEqual([]);
+
+        query.maxSelectedItems = undefined;
+        expect(changes).toEqual([[true, false]]);
+    });
 });
 
 test.describe("Select-all and a refresh that keeps the selection", () => {
