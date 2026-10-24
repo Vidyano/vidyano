@@ -1,5 +1,5 @@
 import { test as base, expect } from "@playwright/test";
-import { Service, ServiceHooks, Query } from "@vidyano/core";
+import { Service, ServiceHooks, Query, ExecuteActionArgs, PersistentObject } from "@vidyano/core";
 import { devBackendUrl } from "./_helpers/dev-backend";
 
 /**
@@ -7,11 +7,18 @@ import { devBackendUrl } from "./_helpers/dev-backend";
  * Reordering changes the in-memory dev data, so every test resets it with PersistentObject.ResetTest.
  */
 
-/** Records the skip and text search of every ExecuteQuery request, and can run code while an ExecuteAction request is sent. */
+/** Records the skip and text search of every ExecuteQuery request and the text search of every reorder request, and can run code in the app's onAction hook or while an ExecuteAction request is sent. */
 class ReorderHooks extends ServiceHooks {
     skips: number[] = [];
     textSearches: string[] = [];
+    actionTextSearches: string[] = [];
     duringAction: (() => void) | null = null;
+    inOnAction: (() => void) | null = null;
+
+    override async onAction(args: ExecuteActionArgs): Promise<PersistentObject> {
+        this.inOnAction?.();
+        return super.onAction(args);
+    }
 
     override async onFetch(request: Request): Promise<Response> {
         if (request.url.endsWith("/ExecuteQuery")) {
@@ -19,8 +26,13 @@ class ReorderHooks extends ServiceHooks {
             this.skips.push(query.skip ?? 0);
             this.textSearches.push(query.textSearch || "");
         }
-        else if (request.url.endsWith("/ExecuteAction"))
+        else if (request.url.endsWith("/ExecuteAction")) {
+            const body = await request.clone().json();
+            if (body.action === "QueryOrder.Reorder")
+                this.actionTextSearches.push(body.query.textSearch || "");
+
             this.duringAction?.();
+        }
 
         return super.onFetch(request);
     }
@@ -93,5 +105,35 @@ test.describe("Reordering a query with more than one page", () => {
         hooks.textSearches = [];
         await query.items.atAsync(150);
         expect(hooks.textSearches).toEqual([""]);
+    });
+
+    test("loads the other pages with the text search sent with the reorder when the app's onAction hook changes it", async ({ query, hooks }) => {
+        await query.search();
+        const first = loadedItem(query, 0), moved = await query.items.atAsync(1);
+
+        // "Item" matches every row, so the reorder result has more than one page with either text search
+        hooks.inOnAction = () => query.textSearch = "Item";
+        await query.reorder(null, moved, first);
+        hooks.inOnAction = null;
+        expect(query.totalItems).toBe(250);
+
+        hooks.textSearches = [];
+        await query.items.atAsync(150);
+        expect(hooks.actionTextSearches).toEqual([""]);
+        expect(hooks.textSearches).toEqual(hooks.actionTextSearches);
+    });
+
+    test("loads the other pages with the text search sent with the reorder when a text search was typed before it", async ({ query, hooks }) => {
+        await query.search();
+        const first = loadedItem(query, 0), moved = await query.items.atAsync(1);
+
+        query.textSearch = "Item";
+        await query.reorder(null, moved, first);
+        expect(query.totalItems).toBe(250);
+
+        hooks.textSearches = [];
+        await query.items.atAsync(150);
+        expect(hooks.actionTextSearches).toEqual([""]);
+        expect(hooks.textSearches).toEqual(hooks.actionTextSearches);
     });
 });

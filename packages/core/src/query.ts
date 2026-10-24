@@ -721,9 +721,10 @@ export class Query extends ServiceObjectWithActions {
 
         return await this.queueWork(async () => {
             try {
-                const filterState = this.#filterState();
+                // An action sends the text search and filters of the last result, also when the app's onAction hook changed them
+                const sentFilterState = this.#resultFilterState;
                 const po = await this.service.executeAction("QueryOrder.Reorder", this.parent, this, [before, item, after]);
-                this.#setResult((po.queries[0] as Query).#lastResult, filterState);
+                this.#setResult((po.queries[0] as Query).#lastResult, sentFilterState);
 
                 return this.items;
             }
