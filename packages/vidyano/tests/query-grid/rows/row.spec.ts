@@ -1823,7 +1823,7 @@ test.describe('vi-query-grid-row: opening edge cases', () => {
             if (msg.type() === 'warning')
                 warnings.push(msg.text());
         });
-        await gridPage(page);
+        await gridPage(page, { expectedErrors: [/^No action definition found for DoesNotExist$/] });
         await patchItemHints(page, { '3': { openaction: 'DoesNotExist' } });
         const grid = await mountGrid(page);
         await spyTapAndOpen(page);

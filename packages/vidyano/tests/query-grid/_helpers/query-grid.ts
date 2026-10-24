@@ -41,6 +41,8 @@ export interface GridPageOptions {
     styles?: string;
     /** Values returned by the stub app's configuration.getSetting, e.g. { 'vi-query-grid.single-click': 'false' } */
     settings?: Record<string, string>;
+    /** Console errors the test causes on purpose, kept out of the output */
+    expectedErrors?: RegExp[];
 }
 
 function getGridTestHtml(styles: string) {
@@ -83,12 +85,13 @@ function getGridTestHtml(styles: string) {
  * and a stubbed settings save. Saves are recorded in `window.__saves` instead of reaching the backend.
  */
 export async function gridPage(page: Page, options: GridPageOptions = {}) {
-    const { width = 1280, height = 720, styles = '', settings = {} } = options;
+    const { width = 1280, height = 720, styles = '', settings = {}, expectedErrors = [] } = options;
 
     await page.setViewportSize({ width, height });
 
     page.on('console', msg => {
-        if (msg.type() === 'error')
+        // A request a test aborts with route.abort() fails as net::ERR_FAILED; real network failures have their own codes
+        if (msg.type() === 'error' && !/^Failed to load resource: net::ERR_FAILED$/.test(msg.text()) && !expectedErrors.some(e => e.test(msg.text())))
             console.error(`[Browser] ${msg.text()}`);
     });
 
