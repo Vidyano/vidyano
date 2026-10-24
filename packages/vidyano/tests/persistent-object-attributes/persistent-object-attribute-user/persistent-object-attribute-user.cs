@@ -29,7 +29,8 @@ builder.AddVidyanoMinimal<MockContext>(vidyano =>
         });
 
     var faker = new Faker();
-    for (var i = 0; i < 10; i++)
+    // Each user hashes a password at startup; the tests only need users besides admin to pick
+    for (var i = 0; i < 2; i++)
     {
         vidyano.WithUser(
             faker.Internet.UserName(),
