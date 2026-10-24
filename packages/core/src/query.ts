@@ -68,6 +68,7 @@ export class Query extends ServiceObjectWithActions {
     #hasMore: boolean = null;
     #groupingInfo: IQueryGroupingInfo;
     #resultSortOptions: ISortOption[];
+    #resultGroupingInfo: IQueryGroupingInfo;
     #itemsProxy!: QueryItemsProxy;
     #tag: any;
 
@@ -885,6 +886,7 @@ export class Query extends ServiceObjectWithActions {
                     this.notifyArrayChanged("items", notify.index, notify.removedItems, notify.removedItems.length);
 
                 this.#updateGroupingInfo(result.groupingInfo);
+                this.#resultGroupingInfo = this.groupingInfo;
 
                 if (isChanged) {
                     const result = await this.#getItems(requestedStart, requestedLength, true);
@@ -937,7 +939,7 @@ export class Query extends ServiceObjectWithActions {
                     return;
 
                 const sent = this.#sentSearchGeneration = this.#searchGeneration;
-                const sentSortOptions = this.sortOptions;
+                const sentSortOptions = this.sortOptions, sentGroupingInfo = this.groupingInfo;
                 let failed = false, error: any;
                 try {
                     const result = await this.service.executeQuery(this.parent, this, this.#asLookup, true);
@@ -961,9 +963,9 @@ export class Query extends ServiceObjectWithActions {
                 this.#searchWaiters = [];
                 waiters.forEach(w => failed ? w.reject(error) : w.resolve());
 
-                // Go back to the sort of the last result, unless it changed again after the request went out (the waiters continue after this)
-                if (failed && this.#lastResult && this.sortOptions === sentSortOptions)
-                    this.sortOptions = this.#resultSortOptions;
+                // The waiters continue after this
+                if (failed)
+                    this.#restoreResultState(sentSortOptions, sentGroupingInfo);
             }, false);
 
             // Each search settles by its own options, also when a later search answered it
@@ -1063,6 +1065,23 @@ export class Query extends ServiceObjectWithActions {
     }
 
     /**
+     * Goes back to the sort and grouping of the last result after a failed search, the failed ones were never applied.
+     * A sort or grouping changed again after the request went out is kept, and so is everything before the first result.
+     * @param sentSortOptions - The sort options sent with the failed request.
+     * @param sentGroupingInfo - The grouping info sent with the failed request.
+     */
+    #restoreResultState(sentSortOptions: ISortOption[], sentGroupingInfo: IQueryGroupingInfo) {
+        if (!this.#lastResult)
+            return;
+
+        if (this.sortOptions === sentSortOptions)
+            this.sortOptions = this.#resultSortOptions;
+
+        if (this.groupingInfo === sentGroupingInfo)
+            this.#setGroupingInfo(this.#resultGroupingInfo);
+    }
+
+    /**
      * Sets the result for the query.
      * @param result - The query result DTO.
      */
@@ -1099,6 +1118,7 @@ export class Query extends ServiceObjectWithActions {
         // The service sends no groupingInfo for an empty grouped result, keep the requested grouping
         const groupedBy = this.groupingInfo?.groupedBy;
         this.#updateGroupingInfo(result.groupingInfo ?? (groupedBy && !result.items.length ? { groupedBy, groups: [] } : null));
+        this.#resultGroupingInfo = this.groupingInfo;
         this.#setSortOptionsFromService(result.sortOptions);
         this.#resultSortOptions = this.sortOptions;
 

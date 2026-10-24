@@ -373,6 +373,8 @@ await peopleQuery.group(null);
 console.log('Grouping removed');
 ```
 
+A `group()` that fails goes back to the grouping of the last result, so the same grouping can be tried again.
+
 ## Query Actions
 
 ### Standard Actions

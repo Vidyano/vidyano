@@ -7,9 +7,10 @@ import { devBackendUrl } from "./_helpers/dev-backend";
  * Every ExecuteQuery response carries the groupingInfo, so a page load must keep the existing groups when they did not change.
  */
 
-/** Counts the ExecuteQuery requests and can change their responses. */
+/** Counts the ExecuteQuery requests, can make them fail like a network error and can change their responses. */
 class GroupingHooks extends ServiceHooks {
     executeQueries = 0;
+    fail = false;
     /** Optionally changes the result of an ExecuteQuery response */
     rewrite: ((result: any) => void) | null = null;
 
@@ -18,6 +19,9 @@ class GroupingHooks extends ServiceHooks {
             return super.onFetch(request);
 
         this.executeQueries++;
+        if (this.fail)
+            throw new TypeError("Failed to fetch");
+
         const response = await super.onFetch(request);
         if (!this.rewrite)
             return response;
@@ -167,5 +171,64 @@ test.describe("Query grouping on an empty result", () => {
         query.textSearch = "";
         await query.search();
         expect(query.groupingInfo).toBeNull();
+    });
+});
+
+test.describe("A group by that fails", () => {
+    test("can be tried again", async ({ people, hooks }) => {
+        await people.search();
+        expect(people.groupingInfo).toBeNull();
+
+        hooks.fail = true;
+        expect(await people.group("Gender")).toBeNull();
+        expect(people.groupingInfo).toBeNull();
+
+        hooks.fail = false;
+        const executeQueries = hooks.executeQueries;
+        await people.group("Gender");
+        expect(hooks.executeQueries).toBe(executeQueries + 1);
+        expect(people.groupingInfo?.groupedBy).toBe("Gender");
+        expect(people.groupingInfo.groups.length).toBeGreaterThan(1);
+    });
+
+    test("keeps the grouping of the last result", async ({ query, hooks }) => {
+        const groupingInfo = query.groupingInfo;
+
+        hooks.fail = true;
+        await query.group("FirstName");
+
+        // Identity check as a boolean: a failing toBe would try to print the query
+        expect(query.groupingInfo === groupingInfo, "the groupingInfo is kept").toBe(true);
+
+        hooks.fail = false;
+        const executeQueries = hooks.executeQueries;
+        await query.group("FirstName");
+        expect(hooks.executeQueries).toBe(executeQueries + 1);
+        expect(query.groupingInfo?.groupedBy).toBe("FirstName");
+    });
+
+    test("keeps the groups of a later page load", async ({ query, hooks }) => {
+        const original = query.groupingInfo;
+        // The page sees one row moved from the first group to the second
+        hooks.rewrite = result => {
+            result.groupingInfo.groups[0].count--;
+            result.groupingInfo.groups[1].count++;
+        };
+        await query.items.sliceAsync(5000, 5000 + query.pageSize);
+        hooks.rewrite = null;
+        expect(query.groupingInfo !== original, "the page load replaced the groupingInfo").toBe(true);
+        const groupingInfo = query.groupingInfo;
+
+        hooks.fail = true;
+        await query.group("FirstName");
+
+        expect(query.groupingInfo === groupingInfo, "the groupingInfo of the page load is kept").toBe(true);
+    });
+
+    test("keeps the grouping it tried to remove", async ({ query, hooks }) => {
+        hooks.fail = true;
+        await query.group("");
+
+        expect(query.groupingInfo?.groupedBy).toBe("Gender");
     });
 });
