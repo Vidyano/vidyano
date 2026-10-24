@@ -1063,6 +1063,9 @@ export class Query extends ServiceObjectWithActions {
     #setResult(result: Dto.QueryResultDto) {
         this.#lastResult = result;
 
+        // The result replaces every row, also those of pages loaded before (e.g. in the old order of a reorder)
+        this.#queriedPages = [];
+
         this.#continuation = result.continuation;
         this.pageSize = result.pageSize || 0;
 
