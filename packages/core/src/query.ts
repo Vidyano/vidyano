@@ -761,12 +761,8 @@ export class Query extends ServiceObjectWithActions {
     async #getItems(start: number, length: number = this.pageSize, skipQueue: boolean = false): Promise<QueryResultItem[]> {
         if (!this.hasSearched) {
             if (this.#searchWaiters.length > 0) {
-                // Wait for the running search instead of starting another one, which would replace its result
-                await new Promise<void>(resolve => this.#searchWaiters.push({ resolve, reject: () => resolve() }));
-
-                // The search failed and its notification shows it, don't send it again
-                if (!this.hasSearched)
-                    return [];
+                // Wait for the running search instead of starting another one, which would replace its result; when it fails, so does this read
+                await new Promise<void>((resolve, reject) => this.#searchWaiters.push({ resolve, reject }));
             }
             else
                 await this.search({ throwExceptions: true });

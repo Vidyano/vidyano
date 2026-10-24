@@ -224,4 +224,17 @@ test.describe("Rows read during a search", () => {
         expect(query.notification).toBe("Failed to fetch");
         expect(unhandled.map(String)).toEqual([]);
     });
+
+    test("fail an awaited read when the search fails", async ({ query, hooks, unhandled }) => {
+        hooks.fail = true;
+        const search = query.search();
+        await expect.poll(() => hooks.sorts.length).toBe(1);
+
+        const read = query.items.sliceAsync(150, 160);
+        await expect(read).rejects.toThrow("Failed to fetch");
+        await expect(search).resolves.toBeNull();
+
+        expect(hooks.sorts).toHaveLength(1);
+        expect(unhandled.map(String)).toEqual([]);
+    });
 });
