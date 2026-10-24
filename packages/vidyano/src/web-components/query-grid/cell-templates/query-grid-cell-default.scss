@@ -1,5 +1,5 @@
 :host {
-    padding: 0 var(--theme-h5);
+    padding: 0 var(--vi-query-grid-cell-padding, var(--theme-h5));
     height: var(--vi-query-grid-row-height);
     line-height: var(--vi-query-grid-row-height);
     min-width: var(--theme-h2);
@@ -27,6 +27,10 @@
             color: var(--foreground, white);
             line-height: var(--theme-h3);
             padding: 0 var(--theme-h5);
+        }
+
+        &[right] {
+            justify-content: flex-end;
         }
     }
 }

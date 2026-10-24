@@ -29,7 +29,8 @@ export class QueryGridCellBoolean extends QueryGridCell {
                 return;
         }
 
-        if (!value) {
+        // undefined means the row has no item; null is a value missing from the item and shows as null
+        if (value === undefined) {
             if (this._icon) {
                 this._icon.setAttribute("hidden", "");
                 this._isHidden = true;
@@ -38,18 +39,22 @@ export class QueryGridCellBoolean extends QueryGridCell {
             if (this._textNode && this._textNode.nodeValue)
                 this._textNode.nodeValue = "";
         } else {
-            const displayValue: boolean = value.getValue();
+            const displayValue: boolean = value ? value.getValue() : null;
+            // The cell's column is the grid's wrapper, so a missing value reads the hints from the query column
+            const typeHints = (value?.column ?? this.column?.query?.getColumn(this.column.name))?.typeHints;
             if (displayValue == null) {
                 if (this._icon) {
                     this._icon.setAttribute("hidden", "");
                     this._isHidden = true;
                 }
 
+                const nullKey = typeHints?.["nullkey"];
+                const nullText = nullKey ? (this.translations[nullKey] || nullKey) : "—";
                 if (!this._textNode)
-                    this._textNode = <Text>this.shadowRoot.appendChild(document.createTextNode(value.column.typeHints["nullkey"] || "—"));
+                    this._textNode = <Text>this.shadowRoot.appendChild(document.createTextNode(nullText));
                 else
-                    this._textNode.nodeValue = value.column.typeHints["nullkey"] || "—";
-            } else if (!value.column.typeHints || ((!value.column.typeHints["falsekey"] && !displayValue) || (!value.column.typeHints["truekey"] && displayValue))) {
+                    this._textNode.nodeValue = nullText;
+            } else if (!typeHints || ((!typeHints["falsekey"] && !displayValue) || (!typeHints["truekey"] && displayValue))) {
                 if (this._isHidden) {
                     this._icon.removeAttribute("hidden");
                     this._isHidden = false;
@@ -71,7 +76,7 @@ export class QueryGridCellBoolean extends QueryGridCell {
                     this._icon.setAttribute("is-selected", "");
             }
             else {
-                const displayTextKey = value.column.typeHints[displayValue ? "truekey" : "falsekey"];
+                const displayTextKey = typeHints[displayValue ? "truekey" : "falsekey"];
                 const displayTextValue = this.translations[displayTextKey] || displayTextKey;
                 if (!this._textNode)
                     this._textNode = <Text>this.shadowRoot.appendChild(document.createTextNode(displayTextValue));

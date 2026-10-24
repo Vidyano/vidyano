@@ -85,6 +85,7 @@ export class QueryGridRow extends Polymer.WebComponent {
             if (!cell) {
                 cell = new (QueryGridCell.getCellTypeConstructor(column.type) || QueryGridCellDefault)();
                 cell.classList.add("column");
+                cell.column = column;
                 cell.value = this.item instanceof Vidyano.QueryResultItem ? this.item.getFullValue(column.name) : undefined;
             }
             else
@@ -125,11 +126,12 @@ export class QueryGridRow extends Polymer.WebComponent {
             }
 
             this._invisibleCellValues = [];
+            // A cell gets null for a value missing from its item and undefined when the row has no item
             cells.forEach((cell: QueryGridCell, index: number) => {
                 if (!this._visibleCells || this._visibleCells.indexOf(cell) >= 0)
-                    cell.value = this.item instanceof Vidyano.QueryResultItem ? this.item.getFullValue(cell.column.name) : null;
+                    cell.value = this.item instanceof Vidyano.QueryResultItem ? this.item.getFullValue(cell.column.name) : undefined;
                 else
-                    this._invisibleCellValues.push([cell, this.item instanceof Vidyano.QueryResultItem ? this.item.getFullValue(cell.column.name) : null]);
+                    this._invisibleCellValues.push([cell, this.item instanceof Vidyano.QueryResultItem ? this.item.getFullValue(cell.column.name) : undefined]);
             });
         }
 

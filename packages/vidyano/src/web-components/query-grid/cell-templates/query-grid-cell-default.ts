@@ -27,6 +27,7 @@ export class QueryGridCellDefault extends QueryGridCell {
     #textNodeValue: string;
     private _tag: { currentValue?: any; originalValue?: any } = { currentValue: null };
     tag: boolean;
+    right: boolean;
 
     protected _valueChanged(itemValue: Vidyano.QueryResultItemValue, oldValue: Vidyano.QueryResultItemValue) {
         super._valueChanged(itemValue, oldValue);
@@ -56,21 +57,27 @@ export class QueryGridCellDefault extends QueryGridCell {
 
         if (value != null) {
             let format = this._getTypeHint(itemValue.column, "displayformat", null);
-            if (format == null || format === "{0}") {
+            // Dates use the cell's default pattern unless the format gives its own {0:...} spec
+            if (format == null || !format.contains("{0:")) {
+                let datePattern: string;
                 switch (itemValue.column.type) {
                     case "Date":
                     case "NullableDate":
-                        format = null;
-                        value = value.localeFormat(Vidyano.CultureInfo.currentCulture.dateFormat.shortDatePattern, true);
+                        datePattern = Vidyano.CultureInfo.currentCulture.dateFormat.shortDatePattern;
                         break;
 
                     case "DateTime":
                     case "NullableDateTime":
                     case "DateTimeOffset":
                     case "NullableDateTimeOffset":
-                        format = null;
-                        value = value.localeFormat(Vidyano.CultureInfo.currentCulture.dateFormat.shortDatePattern + " " + Vidyano.CultureInfo.currentCulture.dateFormat.shortTimePattern, true);
+                        datePattern = Vidyano.CultureInfo.currentCulture.dateFormat.shortDatePattern + " " + Vidyano.CultureInfo.currentCulture.dateFormat.shortTimePattern;
                         break;
+                }
+
+                if (datePattern) {
+                    value = value.localeFormat(datePattern, true);
+                    if (format === "{0}")
+                        format = null;
                 }
             }
 
@@ -117,6 +124,8 @@ export class QueryGridCellDefault extends QueryGridCell {
             this._tag.currentValue = tagHint;
         }
         this.tag = !!tagHint;
+        // The tag follows the cell's alignment (numbers are right-aligned)
+        this.right = this.tag && this.style.textAlign === "right";
     }
 
     private _clearTagTypeHint() {
@@ -128,6 +137,7 @@ export class QueryGridCellDefault extends QueryGridCell {
             this._tag.currentValue = null;
         }
         this.tag = false;
+        this.right = false;
     }
 
     protected _updateCell(value: string) {

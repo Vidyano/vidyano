@@ -51,8 +51,12 @@ export class QueryGridCellCommonMark extends QueryGridCellDefault {
 
             if (this.#markdownValue !== value) {
                 this.$.text.innerHTML = getMarkdown(this.#markdownValue = value, {
-                    addTags: "VI-ICON"
+                    addTags: "VI-ICON",
+                    forbidTags: "STYLE"
                 });
+
+                // The cell shows one row, so a line break becomes a space
+                this.$.text.querySelectorAll("br").forEach(br => br.replaceWith(" "));
             }
 
             return;
