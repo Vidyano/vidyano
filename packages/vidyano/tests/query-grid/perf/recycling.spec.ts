@@ -17,19 +17,22 @@ function scrollTypedCells(grid: Locator, tag: string, frames: number) {
         const scroller = perf.scroller(g).scroller;
         const max = scroller.scrollHeight - scroller.clientHeight;
         const cells = perf.rows(g).map((r: any) => r.querySelector(tag)).filter((c: any) => !!c);
-        const observers = cells.map((cell: any) => {
-            const observer = new MutationObserver(() => {});
+        // The callback runs at the microtask checkpoints inside the frame, before the measure: collect its records
+        const pending = cells.map(() => [] as MutationRecord[]);
+        const observers = cells.map((cell: any, n: number) => {
+            const observer = new MutationObserver(records => pending[n].push(...records));
             observer.observe(cell.shadowRoot, { subtree: true, childList: true, attributes: true, characterData: true });
             return observer;
         });
+        const takeRecords = (n: number) => pending[n].splice(0).concat(observers[n].takeRecords());
         const items = cells.map((c: any) => c.value?.item ?? null);
         const imageElements = (cell: any) => cell.shadowRoot.querySelectorAll('.image').length;
         const stats = { itemChanges: 0, frames: 0, contentRecords: 0, contentWithoutItemChange: 0, contentPerChangeMax: 0, styleRecords: 0, styleWithoutItemChange: 0, stylePerChangeMax: 0, imageAdds: 0, imageRemoves: 0, maxImagesPerCell: 0 };
 
         const run = await perf.runFrames(frames, (i: number) => scroller.scrollTop = Math.round(max * (i + 1) / frames), () => {
             cells.forEach((cell: any, n: number) => {
-                const records: MutationRecord[] = observers[n].takeRecords();
-                const item = cell.value?.item ?? null;
+                const records = takeRecords(n);
+                const item =cell.value?.item ?? null;
                 const changed = item !== items[n];
                 items[n] = item;
                 if (changed)
@@ -318,11 +321,14 @@ test.describe('Recycling & cell formatting', () => {
             const cells = perf.rows(g).map((r: any) => r.querySelector('vi-query-grid-cell-boolean')).filter((c: any) => !!c);
             const view = perf.scroller(g).getBoundingClientRect();
             const inView = cells.every((c: any) => c.getBoundingClientRect().right <= view.right);
-            const observers = cells.map((cell: any) => {
-                const observer = new MutationObserver(() => {});
+            // The callback runs at the microtask checkpoints inside the frame, before the measure: collect its records
+            const pending = cells.map(() => [] as MutationRecord[]);
+            const observers = cells.map((cell: any, n: number) => {
+                const observer = new MutationObserver(records => pending[n].push(...records));
                 observer.observe(cell.shadowRoot, { subtree: true, childList: true, attributes: true, characterData: true });
                 return observer;
             });
+            const takeRecords = (n: number) => pending[n].splice(0).concat(observers[n].takeRecords());
             const valueOf = (cell: any) => cell.value ? cell.value.getValue() : undefined;
             const values = cells.map(valueOf);
             const stats = { iconsAdded: 0, sameValueMutations: 0, changes: 0, frames: 0 };
@@ -331,7 +337,7 @@ test.describe('Recycling & cell formatting', () => {
             await perf.runFrames(250, (i: number) => scroller.scrollTop = (i + 1) * 8 * g.rowHeight, () => {
                 stats.frames++;
                 cells.forEach((cell: any, n: number) => {
-                    const records: MutationRecord[] = observers[n].takeRecords();
+                    const records = takeRecords(n);
                     const value = valueOf(cell);
                     stats.iconsAdded += records.flatMap(r => [...r.addedNodes]).filter((e: any) => e.tagName === 'VI-ICON').length;
                     if (value !== values[n])

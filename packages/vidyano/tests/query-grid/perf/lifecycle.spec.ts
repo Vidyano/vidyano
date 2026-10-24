@@ -151,17 +151,11 @@ test.describe('Lifecycle & leaks', () => {
 
     test('query swaps do not retain old queries', perfCase('perf.lc-query-swap'), async ({ page }, testInfo) => {
         await perfPage(page);
-        await page.evaluate(async () => {
-            const w = window as any;
-            w.queries = [await w.service.getQuery('People'), await w.service.getQuery('PeopleTop10')];
-        });
-
         const { grid } = await mountPrefetched(page, 'People');
-        await page.evaluate(() => (window as any).grid.query = (window as any).queries[0]);
-        await waitForGridReady(grid);
 
-        const swap = async (index: number) => {
-            await grid.evaluate((g: any, index) => g.query = (window as any).queries[index], index);
+        // Every swap binds a new query that only the grid references, so a grid that retains old queries keeps them alive
+        const swap = async (name: string) => {
+            await grid.evaluate(async (g: any, name) => { g.query = await (window as any).service.getQuery(name); }, name);
             await waitForGridReady(grid);
             return grid.evaluate((g: any) => {
                 const perf = (window as any).__perf;
@@ -171,20 +165,20 @@ test.describe('Lifecycle & leaks', () => {
         };
 
         // Warm-up swap, then the baseline with the grid on People
-        await swap(1);
-        await swap(0);
+        await swap('PeopleTop10');
+        await swap('People');
         await page.evaluate(() => (window as any).q = null);
         await collectGarbage(page);
         const before = await liveObjects(page, 'Vidyano.Query.prototype');
 
         const pools: { pool: number; bound: number }[] = [];
         for (let i = 0; i < 10; i++)
-            pools.push(await swap(i % 2 === 0 ? 1 : 0));
+            pools.push(await swap(i % 2 === 0 ? 'PeopleTop10' : 'People'));
 
         await collectGarbage(page);
         const after = await liveObjects(page, 'Vidyano.Query.prototype');
 
-        expect(await grid.evaluate((g: any) => g.query === (window as any).queries[0])).toBe(true);
+        expect(await grid.evaluate((g: any) => g.query.name)).toBe('People');
         for (const { pool, bound } of pools)
             expect(pool, 'row pool').toBeLessThanOrEqual(bound);
         expect(after, `live queries after 10 swaps (before ${before})`).toBeLessThanOrEqual(before);
