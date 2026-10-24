@@ -230,6 +230,18 @@ await peopleQuery.search({
 });
 ```
 
+When select-all was on and is no longer available for the new result (its total is unknown), `keepSelection` keeps the selected rows that are still in it instead.
+
+### Searches That Overlap
+
+A query holds one result, so the latest search wins. A search started while another one runs sends its own request once the running one returns; only the latest result is applied, and every `search()` that was waiting resolves with those rows. Searches queued behind a running one share one request for the latest state. To keep two results side by side, search two queries, for example `peopleQuery.clone()`.
+
+Reading rows while a search runs (`atAsync`, `sliceAsync`, `toArrayAsync`) waits for that search instead of starting another one; when the search fails, the read fails with the same error.
+
+Rows loaded lazily while scrolling use the sort, grouping, text search and filters of the last result, so a change that was not searched yet never mixes into the rows on screen. A page that fails to load sets the error as the query's notification and loads again on the next read.
+
+A row hook (`onConstructQueryResultItem`) that throws is a bug in the app: the query is left with an empty result, the error is logged to the console and passed to `search({ throwExceptions: true })` callers, and nothing is shown to the user.
+
 ## Sorting
 
 ### Single Column Sorting
@@ -320,6 +332,8 @@ Select-all is not available while the total is unknown (`hasMore`) or while the 
 Setting `maxSelectedItems` keeps the first selected rows up to the limit and deselects the rest. With select-all on, select-all is switched off and the first selected rows of the loaded result are kept.
 
 An action or export on the query (with a selection, select-all or neither) sends the sort, grouping, text search and filters of the last result, so it works on the rows that were shown. A `textSearch`, `sortOptions` or column filter changed without a search is only sent by the next `search()`; call it first to act on the new state.
+
+`query.clone()` keeps the selection limit of the query; `query.clone(true)` creates a lookup that picks other rows (such as the AddReference dialog) and has no limit.
 
 ### Clear Selection
 
