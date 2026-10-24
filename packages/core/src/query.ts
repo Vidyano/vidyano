@@ -987,6 +987,10 @@ export class Query extends ServiceObjectWithActions {
                         failed = true;
                         error = e;
                     }
+
+                    // A listener started a newer search while the result was applied, its answer settles the callers
+                    if (!failed && sent !== this.#searchGeneration)
+                        return;
                 }
 
                 const waiters = this.#searchWaiters;
@@ -1220,14 +1224,16 @@ export class Query extends ServiceObjectWithActions {
 
         this.#setHasSearched(true);
         this.#resultFilterState = filterState ?? this.#filterState();
+
+        // The sort is set before the rows are announced, so a listener sees the result's sort and a sort it sets is kept
+        this.#setSortOptionsFromService(result.sortOptions);
+        this.#resultSortOptions = this.sortOptions;
         this.#setItems(items);
 
         // The service sends no groupingInfo for an empty grouped result, keep the requested grouping
         const groupedBy = this.groupingInfo?.groupedBy;
         this.#updateGroupingInfo(result.groupingInfo ?? (groupedBy && !result.items.length ? { groupedBy, groups: [] } : null));
         this.#resultGroupingInfo = this.groupingInfo;
-        this.#setSortOptionsFromService(result.sortOptions);
-        this.#resultSortOptions = this.sortOptions;
 
         this.#setTotalItem(totalItem);
 

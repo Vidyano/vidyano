@@ -148,6 +148,29 @@ test.describe("Searches that follow each other", () => {
     });
 });
 
+test.describe("A search started while a result is applied", () => {
+    test("resolves with its own result", async ({ query, hooks }) => {
+        query.sortOptions = [{ name: "LastName", direction: "ASC" }];
+        let second: Promise<unknown> = null;
+        query.propertyChanged.attach((_, args) => {
+            // An items listener that starts a new search while the first result is applied
+            if (args.propertyName === "items" && query.hasSearched && !second) {
+                query.sortOptions = [{ name: "LastName", direction: "DESC" }];
+                second = query.search();
+            }
+        });
+
+        await query.search();
+        expect(second).not.toBeNull();
+        await second;
+
+        expect(hooks.sorts).toEqual(["LastName", "LastName DESC"]);
+        expect(query.hasSearched).toBe(true);
+        const names = lastNames(query);
+        expect(names).toEqual([...names].sort((a, b) => b.localeCompare(a)));
+    });
+});
+
 test.describe("Searches that fail", () => {
     test("a failing search that keeps the selection resolves with null", async ({ query, hooks, unhandled }) => {
         selectFirst(query, 3);
