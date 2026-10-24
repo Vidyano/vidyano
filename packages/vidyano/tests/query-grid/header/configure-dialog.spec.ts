@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { columnTracks, headerNames, nextFrames, openView, savedSettings, VIEWS, waitForGridReady } from '../_helpers/query-grid';
-import { configureDialog, dialogButton, dialogLabels, dialogLists, dialogRow, dragRowAbove, headerGrid, headerWidths, openConfigure, openMenu, pressRowButton, queryId, resizeColumn, storedGridSettings, waitForDialogClosed } from '../_helpers/header';
+import { configureDialog, dialogButton, dialogLabels, dialogLists, dialogRow, dragRowAbove, focusedRowButton, headerGrid, headerWidths, openConfigure, openMenu, pressRowButton, queryId, resizeColumn, storedGridSettings, waitForDialogClosed } from '../_helpers/header';
 
 const LABELS = ['First name', 'Last name', 'Birth date', 'Gender', 'Contact preference', 'Email', 'Phone number', 'Emergency contact', 'Is active'];
 const DEFAULT_ORDER = ['FirstName', 'LastName', 'BirthDate', 'Gender', 'ContactPreference', 'Email', 'PhoneNumber', 'EmergencyContact', 'IsActive'];
@@ -134,6 +134,40 @@ test.describe('Pin and visibility toggles', () => {
         await expect(dialogRow(dialog, 'Last name')).not.toHaveAttribute('is-pinned');
         await expect.poll(() => dialogLabels(dialog, 'unpinned')).toEqual(LABELS);
         await expect(dialog.locator('vi-sortable[group="pinned"]')).toBeHidden();
+    });
+
+    test('keeps focus on the Pin button of a row that moves to the other list', { annotation: [{ type: 'case', description: 'header.dlg-pin-keeps-focus' }] }, async ({ page }) => {
+        const grid = await headerGrid(page);
+        const dialog = await openConfigure(grid);
+
+        await pressRowButton(dialog, 'Last name', 'Pin');
+        await expect.poll(() => dialogLabels(dialog, 'pinned')).toEqual(['Last name']);
+        await nextFrames(page, 3);
+        expect(await focusedRowButton(dialog)).toEqual({ label: 'Last name', icon: 'Pin' });
+
+        await page.keyboard.press('Enter');
+        await expect.poll(() => dialogLabels(dialog, 'unpinned')).toEqual(LABELS);
+        await nextFrames(page, 3);
+        expect(await focusedRowButton(dialog)).toEqual({ label: 'Last name', icon: 'Pin' });
+    });
+
+    test('keeps focus on another row when a pin toggle updates the lists', { annotation: [{ type: 'case', description: 'header.dlg-pin-keeps-other-focus' }] }, async ({ page }) => {
+        const grid = await headerGrid(page);
+        const dialog = await openConfigure(grid);
+
+        // Focus moves before the lists are updated on the next frame
+        await dialog.evaluate((d: any) => {
+            const rows = [...d.shadowRoot.querySelectorAll('vi-query-grid-configure-dialog-column')] as any[];
+            const row = (label: string) => rows.find(r => r.shadowRoot.querySelector('label').textContent.trim() === label);
+            row('Last name').shadowRoot.querySelector('vi-button[icon="Pin"]').click();
+            row('Gender').shadowRoot.querySelector('vi-button[icon="Eye"]').focus();
+        });
+        await expect.poll(() => dialogLabels(dialog, 'pinned')).toEqual(['Last name']);
+        await nextFrames(page, 3);
+        expect(await focusedRowButton(dialog)).toEqual({ label: 'Gender', icon: 'Eye' });
+
+        await page.keyboard.press('Enter');
+        await expect(dialogRow(dialog, 'Gender')).toHaveAttribute('is-hidden', '');
     });
 });
 

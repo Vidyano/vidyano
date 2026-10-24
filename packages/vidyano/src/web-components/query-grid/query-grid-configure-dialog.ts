@@ -34,11 +34,25 @@ export class QueryGridConfigureDialog extends Polymer.Dialog {
         const columns = this._elements.orderBy(c => c.column.offset);
 
         Polymer.Async.animationFrame.run(() => {
+            // Moving a row drops the focus of the button inside it
+            const focused = this._focusedElement();
+
             this._updateColumns(this.$.pinned, columns.filter(c => c.isPinned));
             this._updateColumns(this.$.unpinned, columns.filter(c => !c.isPinned));
+
+            if (focused && this._focusedElement() !== focused)
+                focused.focus();
         });
 
         e?.stopPropagation();
+    }
+
+    private _focusedElement(): HTMLElement {
+        let element = this.shadowRoot.activeElement;
+        while (element?.shadowRoot?.activeElement)
+            element = element.shadowRoot.activeElement;
+
+        return element as HTMLElement;
     }
 
     private _updateLastVisible(e?: CustomEvent) {
@@ -50,7 +64,10 @@ export class QueryGridConfigureDialog extends Polymer.Dialog {
     }
 
     private _updateColumns(target: HTMLElement, columns: QueryGridConfigureDialogColumn[]) {
-        columns.orderBy(c => c.offset).forEach(col => target.appendChild(col));
+        columns.orderBy(c => c.offset).forEach((col, index) => {
+            if (target.children[index] !== col)
+                target.insertBefore(col, target.children[index] ?? null);
+        });
     }
 
     private _reorderColumns(e: CustomEvent) {

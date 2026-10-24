@@ -114,8 +114,29 @@ export async function dialogLabels(dialog: Locator, group: 'pinned' | 'unpinned'
     return (await dialogLists(dialog))[group].rows.map(r => r.label);
 }
 
-/** Presses Enter on a row's focused Pin or Eye button. */
+/** The label and icon of the dialog row button that has keyboard focus, or null when focus is elsewhere. */
+export async function focusedRowButton(dialog: Locator): Promise<{ label: string; icon: string } | null> {
+    return dialog.evaluate((d: any) => {
+        let element: any = document.activeElement;
+        const path = [element];
+        while (element?.shadowRoot?.activeElement)
+            path.push(element = element.shadowRoot.activeElement);
+
+        const index = path.indexOf(d);
+        const [row, button] = index < 0 ? [] : path.slice(index + 1);
+        if (row?.tagName !== 'VI-QUERY-GRID-CONFIGURE-DIALOG-COLUMN' || button?.tagName !== 'VI-BUTTON')
+            return null;
+
+        return { label: row.shadowRoot.querySelector('label').textContent.trim(), icon: button.getAttribute('icon') };
+    });
+}
+
+/** Presses Enter on a row's focused Pin or Eye button, once the lists show every row's pin state. */
 export async function pressRowButton(dialog: Locator, label: string, icon: 'Pin' | 'Eye') {
+    await expect.poll(async () => {
+        const { pinned, unpinned } = await dialogLists(dialog);
+        return pinned.rows.every(r => r.pinned) && unpinned.rows.every(r => !r.pinned);
+    }).toBe(true);
     await dialogRow(dialog, label).locator(`vi-button[icon="${icon}"]`).focus();
     await dialog.page().keyboard.press('Enter');
 }
