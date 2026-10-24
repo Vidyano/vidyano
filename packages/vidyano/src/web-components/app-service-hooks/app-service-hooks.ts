@@ -123,7 +123,8 @@ export class AppServiceHooks extends AppServiceHooksBase {
                     const poCacheEntriesWithQueries = <AppCacheEntryPersistentObject[]>this.app.cacheEntries.filter(e => e instanceof AppCacheEntryPersistentObject && !!e.persistentObject && e.persistentObject.queries.length > 0);
                     poCacheEntriesWithQueries.forEach(poEntry => queries.push(...poEntry.persistentObject.queries.filter(q => q.id === refresh.queryId && q.hasSearched)));
 
-                    refreshNow = () => queries.forEach(q => q.search());
+                    // The user did not ask for the refresh, so it keeps their selection
+                    refreshNow = () => queries.forEach(q => q.search({ keepSelection: true }));
                 }
                 else {
                     refreshNow = async () => {
