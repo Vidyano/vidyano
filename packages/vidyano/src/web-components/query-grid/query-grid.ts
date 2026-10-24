@@ -208,6 +208,7 @@ export class QueryGrid extends Polymer.WebComponent {
     private _programmaticScroll: boolean;
     private _renderedSkip: number;
     private _renderedMaxRows: number;
+    private _cancelledOnDisconnect: boolean;
 
     query: Vidyano.Query;
     asLookup: boolean;
@@ -237,15 +238,19 @@ export class QueryGrid extends Polymer.WebComponent {
         this._controlsSizeObserver = new ResizeObserver(this._controlsSizeChanged.bind(this));
         this._controlsSizeObserver.observe(this.shadowRoot.querySelector(".controls"));
 
-        // A re-attached grid renders its rows again instead of keeping placeholders until the next scroll
-        if (!this.initializing && this.items?.length) {
+        // Redo the work that was cancelled when the grid was removed, nothing else would start it again
+        if (this._cancelledOnDisconnect && this.items) {
+            this._cancelledOnDisconnect = false;
             this.items.forceUpdate = true;
             this._update(this.verticalScrollOffset, this.virtualRowCount, this.rowHeight, this.items, this.skip, this.maxRows);
+            this._updateMore(this.visibleColumnHeaderSize, this.horizontalScrollOffset);
         }
     }
 
     disconnectedCallback() {
         this._controlsSizeObserver.disconnect();
+
+        this._cancelledOnDisconnect = [this._getItemsDebouncer, this._updateCellDebouncer, this._updateMoreDebouncer].some(d => d?.isActive());
 
         // A removed grid sends nothing to the server
         this._getItemsDebouncer?.cancel();

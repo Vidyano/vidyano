@@ -265,7 +265,47 @@ test.describe('Query swap, detach, busy and errors', () => {
         expect(log.of('ExecuteQuery').map(r => r.skip)).toEqual([]);
     });
 
-    test('a full scenario produces no errors', { annotation: [{ type: 'case', description: 'grid.lc-no-console-errors' }] }, async ({ page }) => {
+    test('a grid re-attached before its new query renders still initializes', { annotation: [{ type: 'case', description: 'grid.lc-reattach-before-render' }] }, async ({ page }) => {
+        const errors = pageErrors(page);
+        await gridPage(page);
+        const grid = await mountGrid(page);
+
+        // Swap the query, then detach and re-attach before the frame that renders the new rows
+        await page.evaluate(async () => {
+            const w = window as any;
+            const q = await w.service.getQuery('PeopleTop10');
+            w.grid.query = q;
+            w.q = q;
+
+            const parent = w.grid.parentElement;
+            w.grid.remove();
+            parent.appendChild(w.grid);
+        });
+
+        await waitForGridReady(grid);
+        await expectRowsAtTheirIndex(grid, 're-attached');
+        expect(errors).toEqual([]);
+    });
+
+    test('a grid removed while its query searches sends no page load', { annotation: [{ type: 'case', description: 'grid.lc-detach-search' }] }, async ({ page }) => {
+        await gridPage(page);
+        const grid = await mountGrid(page);
+        await scrollGrid(grid, { top: 6000 * RH });
+        await settle(grid);
+        await grid.evaluate((g: any) => g.remove());
+
+        const log = requestLog(page);
+        await page.evaluate(async () => {
+            const q = (window as any).q;
+            q.textSearch = 'a';
+            await q.search();
+        });
+
+        await page.waitForTimeout(500);
+        expect(log.of('ExecuteQuery').map(r => r.skip ?? 0)).toEqual([0]);
+    });
+
+    test('a full scenario produces no errors',{ annotation: [{ type: 'case', description: 'grid.lc-no-console-errors' }] }, async ({ page }) => {
         const errors = pageErrors(page);
         const consoleErrorList = consoleErrors(page);
         await gridPage(page);

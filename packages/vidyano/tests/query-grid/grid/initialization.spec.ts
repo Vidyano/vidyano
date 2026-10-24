@@ -1,6 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { gridPage, mountGrid, waitForGridReady, headerNames, columnTracks, nextFrames, pageErrors, requestLog, getScrollOffset, recordTransitions, stopRecording } from '../_helpers/query-grid';
-import { attachGrid, columnTokens, consoleErrors, headerBoxes, hostVar, initializingAdds, initializingEvents, rows, settle, watchInitializing, wheelGrid } from '../_helpers/grid';
+import { attachGrid, columnTokens, consoleErrors, headerBoxes, holdExecuteQuery, hostVar, initializingAdds, initializingEvents, rows, settle, watchInitializing, wheelGrid } from '../_helpers/grid';
 
 const PEOPLE_COLUMNS = ['FirstName', 'LastName', 'BirthDate', 'Gender', 'ContactPreference', 'Email', 'PhoneNumber', 'EmergencyContact', 'IsActive'];
 const FILLER = 'minmax(0, 1fr)';
@@ -383,12 +383,7 @@ test.describe('Initialization and column measuring', () => {
             w.q = await w.service.getQuery('People');
         });
 
-        let responded = false;
-        await page.route('**/ExecuteQuery', async route => {
-            await new Promise(resolve => setTimeout(resolve, 800));
-            await route.continue();
-            responded = true;
-        });
+        const release = await holdExecuteQuery(page);
 
         await page.evaluate(() => {
             const w = window as any;
@@ -397,13 +392,14 @@ test.describe('Initialization and column measuring', () => {
         });
 
         const { grid } = await attachGrid(page, { reuseQuery: true });
-        await page.waitForTimeout(300);
+        // The headers report their widths while the search is still held
+        await expect.poll(() => grid.evaluate((g: any) => g.columns?.length > 0 && g.columns.every((c: any) => g._columnWidths.get(c.name)?.column >= 0))).toBe(true);
         expect(await grid.evaluate((g: any) => g.query.isBusy)).toBe(true);
         await expect(grid).toHaveAttribute('initializing');
 
+        await release();
         await page.evaluate(async () => { await (window as any).__search; });
         await expect(grid).not.toHaveAttribute('initializing');
-        expect(responded).toBe(true);
         await nextFrames(page, 2);
 
         // Same result as a grid attached to an already empty query: the tracks come from the header widths

@@ -1,6 +1,6 @@
 import { test, expect, Locator } from '@playwright/test';
 import { gridPage, mountGrid, getScrollOffset, scrollGrid, headerNames } from '../_helpers/query-grid';
-import { clickHeaderMenuItem, rows, settle, valuesOf, wheelGrid } from '../_helpers/grid';
+import { clickHeaderMenuItem, rows, settle, valuesOf } from '../_helpers/grid';
 
 const RH = 32;
 
@@ -48,8 +48,14 @@ test.describe('maxRows and skip', () => {
         const offset = await getScrollOffset(grid);
         expect(offset.scrollHeight).toBeLessThanOrEqual(Math.max(5 * 32 + 1, offset.height));
 
-        await wheelGrid(grid, 0, 300);
-        await expect.poll(async () => (await getScrollOffset(grid)).top).toBe(0);
+        // The browser clamps scrollTop when it is set, so a body that could scroll reads back more than 0 at once
+        const top = await grid.evaluate((g: any) => {
+            const scroller = ([...g.shadowRoot.querySelectorAll('vi-scroller')].find((s: any) => !s.closest('header, vi-popup')) as any).scroller as HTMLElement;
+            scroller.scrollTop = 300;
+            return scroller.scrollTop;
+        });
+        expect(top).toBe(0);
+        await settle(grid);
         expect((await rows(grid)).map(r => r.index)).toEqual([0, 1, 2, 3, 4]);
     });
 

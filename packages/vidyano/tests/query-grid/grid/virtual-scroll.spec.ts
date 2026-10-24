@@ -279,9 +279,12 @@ test.describe('Virtual scrolling and lazy loading', () => {
 
         await grid.evaluate(async (g: any) => {
             const scroller = ([...g.shadowRoot.querySelectorAll('vi-scroller')].find((s: any) => !s.closest('header, vi-popup')) as any).scroller as HTMLElement;
+            // Each jump reaches the grid at once (the scroll event itself waits for a frame), and a 0ms timer always runs
+            // before the grid's longer page load timer, so slow frames can't let an intermediate page load slip through
             for (let row = 1000; row <= 7000; row += 1000) {
                 scroller.scrollTop = row * 32;
-                await new Promise(resolve => requestAnimationFrame(resolve));
+                scroller.dispatchEvent(new Event('scroll'));
+                await new Promise(resolve => setTimeout(resolve, 0));
             }
         });
 

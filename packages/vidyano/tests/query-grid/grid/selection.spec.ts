@@ -151,12 +151,16 @@ test.describe('Selection', () => {
         const grid = await mountGrid(page, { query: 'PeopleTop10' });
 
         await selector(grid, 2).click();
-        await selector(grid, 5).click({ modifiers: ['Shift'] });
-        await expect.poll(() => sortedSelection(grid)).toEqual([2, 3, 4, 5]);
+        await selector(grid, 4).click({ modifiers: ['Shift'] });
+        await expect.poll(() => sortedSelection(grid)).toEqual([2, 3, 4]);
 
-        await selector(grid, 8).click({ modifiers: ['Shift'] });
-        await expect.poll(() => sortedSelection(grid)).toEqual([2, 3, 4, 5, 6, 7, 8]);
-        expect(await selectedRows(grid)).toEqual([2, 3, 4, 5, 6, 7, 8]);
+        // Deselecting 3 leaves a gap: a range from the old anchor (2) would select it again
+        await selector(grid, 3).click();
+        await expect.poll(() => sortedSelection(grid)).toEqual([2, 4]);
+
+        await selector(grid, 6).click({ modifiers: ['Shift'] });
+        await expect.poll(() => sortedSelection(grid)).toEqual([2, 4, 5, 6]);
+        expect(await selectedRows(grid)).toEqual([2, 4, 5, 6]);
     });
 
     test('shift-click on a selected row toggles only it', { annotation: [{ type: 'case', description: 'grid.sel-shift-on-selected' }] }, async ({ page }) => {
@@ -276,6 +280,10 @@ test.describe('Selection', () => {
         await gridPage(page, { settings: { 'vi-query-grid.single-click': 'false' } });
         const grid = await mountGrid(page, { query: 'PeopleTop10' });
         expect(await grid.evaluate((g: any) => g.query.selectAll.isAvailable)).toBe(true);
+
+        // With allSelected set the click toggles instead, so a left-over inverse flag is what the exclusive click must clear
+        await grid.evaluate((g: any) => g.query.selectAll.inverse = true);
+        expect(await grid.evaluate((g: any) => g.query.selectAll.inverse)).toBe(true);
 
         await selector(grid, 2).click();
         await expect.poll(() => selectedIndexes(grid)).toEqual([2]);
