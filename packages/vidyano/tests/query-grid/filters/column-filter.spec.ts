@@ -549,32 +549,89 @@ test.describe('Search', () => {
     });
 });
 
+/** Stops the page clock, so its timers only run through `page.clock.runFor`. */
+async function pauseClock(page: Page) {
+    // pauseAt throws for a time in the past and fires every timer due by then; a second ahead covers the round trip
+    await page.clock.pauseAt(await page.evaluate(() => Date.now()) + 1000);
+}
+
+/** Opens the Email filter (more distincts than listed) on a page clock that is installed before the grid creates its timers. */
+async function openEmailFilter(page: Page) {
+    await page.clock.install();
+    await gridPage(page);
+    const log = filterLog(page);
+    const grid = await mountGrid(page);
+    const cf = await openFilter(grid, 'Email');
+    await log.quiet();
+    expect(await grid.evaluate((g: any) => !!g.query.getColumn('Email').distincts.hasMore), 'Email has more distincts than listed').toBe(true);
+
+    await pauseClock(page);
+    log.clear();
+    return { log, cf };
+}
+
+/** Presses each key `gap` ms of page time after the previous one. */
+async function typeKeys(page: Page, cf: Locator, keys: string, gap: number) {
+    for (const [i, key] of [...keys].entries()) {
+        if (i > 0)
+            await page.clock.runFor(gap);
+
+        await searchInput(cf).press(key);
+    }
+}
+
+const searches = (log: ReturnType<typeof filterLog>) => log.refreshes('Email').map(r => r.body.parameters.Search);
+
 test.describe('Server search', () => {
     test('typing on a has-more column runs a debounced server search', { annotation: [{ type: 'case', description: 'filters.cf-search-server-request' }] }, async ({ page }) => {
-        await gridPage(page);
-        const log = filterLog(page);
-        const grid = await mountGrid(page);
-        const cf = await openFilter(grid, 'Email');
-        await log.quiet();
-        log.clear();
+        const { log, cf } = await openEmailFilter(page);
 
-        await searchInput(cf).press('a');
+        // The keys span longer than the debounce, so only a debounce that restarts on every key waits for the last one
+        await typeKeys(page, cf, 'aaron', 100);
         await expect(cf).toHaveAttribute('loading');
-        await searchInput(cf).pressSequentially('aron');
-        const lastKey = Date.now();
 
+        await page.clock.runFor(249);
+        await log.quiet();
+        expect(searches(log), 'no search within 250ms of the last key').toEqual([]);
+
+        await page.clock.runFor(1);
+        await expect.poll(() => searches(log)).toEqual(['aaron']);
+
+        await page.clock.resume();
         await expect(cf).not.toHaveAttribute('loading', { timeout: 10000 });
         await log.quiet();
-
-        const refreshes = log.refreshes('Email');
-        expect(refreshes).toHaveLength(1);
-        expect(refreshes[0].body.parameters.Search).toBe('aaron');
-        expect(refreshes[0].time - lastKey).toBeGreaterThanOrEqual(150);
+        expect(searches(log)).toEqual(['aaron']);
 
         const rows = (await allDistinctRows(cf)).filter(r => !r.hasMore);
         expect(rows.every(r => r.text.toLowerCase().includes('aaron'))).toBe(true);
         expect(rows.filter(r => r.color !== REMAINING)).toHaveLength(57);
         await expect(cf.locator('vi-spinner')).toBeHidden();
+    });
+
+    test('a pause longer than the debounce runs a server search per burst', { annotation: [{ type: 'case', description: 'filters.cf-search-server-request-per-burst' }] }, async ({ page }) => {
+        const { log, cf } = await openEmailFilter(page);
+
+        await typeKeys(page, cf, 'aa', 35);
+        await page.clock.runFor(250);
+        await expect.poll(() => searches(log)).toEqual(['aa']);
+        await log.quiet();
+
+        await page.clock.runFor(150);
+        await typeKeys(page, cf, 'ron', 35);
+        await page.clock.runFor(249);
+        await log.quiet();
+        expect(searches(log), 'no second search within 250ms of the last key').toEqual(['aa']);
+
+        await page.clock.runFor(1);
+        await expect.poll(() => searches(log)).toEqual(['aa', 'aaron']);
+
+        await page.clock.resume();
+        await expect(cf).not.toHaveAttribute('loading', { timeout: 10000 });
+        await log.quiet();
+        expect(searches(log)).toEqual(['aa', 'aaron']);
+
+        const rows = (await allDistinctRows(cf)).filter(r => !r.hasMore);
+        expect(rows.every(r => r.text.toLowerCase().includes('aaron'))).toBe(true);
     });
 });
 
@@ -621,6 +678,7 @@ test.describe('Text filter (Enter)', () => {
     });
 
     test('Enter on a has-more column refreshes the values once', { annotation: [{ type: 'case', description: 'filters.cf-search-enter-hasmore-single-refresh' }] }, async ({ page }) => {
+        await page.clock.install();
         await gridPage(page);
         const log = filterLog(page);
         const grid = await mountGrid(page);
@@ -633,13 +691,14 @@ test.describe('Text filter (Enter)', () => {
         await searchInput(cf).press('Enter');
         await expect(cf).not.toHaveAttribute('loading', { timeout: 10000 });
         await waitForQueryIdle(grid);
-        // Longer than the 250ms search debounce, so a queued refresh would have been sent
-        await page.waitForTimeout(600);
+        // Past the 250ms search debounce, so a queued refresh would have been sent
+        await page.clock.runFor(1000);
         await log.quiet();
 
         expect((await columnState(grid, 'FirstName')).selectedDistincts).toEqual(['1|@an']);
         expect(log.queries()).toHaveLength(1);
         expect(log.refreshes('FirstName')).toHaveLength(1);
+        expect(log.actions('Query.New')).toHaveLength(1);
     });
 });
 

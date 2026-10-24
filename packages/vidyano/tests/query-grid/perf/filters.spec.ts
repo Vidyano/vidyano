@@ -332,44 +332,6 @@ test.describe('Filter search & apply', () => {
         await recordPerf(page, testInfo, 'perf.cf-client-side-search', { counts: results });
     });
 
-    test('server distinct search is debounced to one request', perfCase('perf.cf-server-search-debounced', { timing: true }), async ({ page }, testInfo) => {
-        await perfPage(page);
-
-        const typeInEmail = async (parts: { text: string; pauseAfter?: number }[]) => {
-            const { grid } = await mountPrefetched(page, 'People');
-            await openFilter(grid, 'Email');
-            await expect(filterItems(grid, 'Email').first()).toBeVisible();
-            const log = requestLog(page);
-            await log.quiet();
-            expect(await grid.evaluate((g: any) => !!g.query.getColumn('Email').distincts.hasMore), 'Email has more distincts than listed').toBe(true);
-
-            log.clear();
-            let lastKey = 0;
-            for (const part of parts) {
-                await page.keyboard.type(part.text, { delay: 35 });
-                lastKey = Date.now();
-                if (part.pauseAfter)
-                    // The pause between the parts is the scenario's input timing
-                    await page.waitForTimeout(part.pauseAfter);
-            }
-
-            // The search is debounced by 250ms; wait past it and for the responses
-            await page.waitForTimeout(600);
-            await log.quiet();
-            const requests = refreshes(log);
-            return { requests: requests.map(r => r.body?.parameters?.Search), afterLastKey: requests.length ? requests[requests.length - 1].time - lastKey : NaN };
-        };
-
-        const single = await typeInEmail([{ text: 'aaron' }]);
-        expect(single.requests).toEqual(['aaron']);
-        expect(single.afterLastKey, 'request delay after the last key').toBeGreaterThanOrEqual(150);
-
-        const paused = await typeInEmail([{ text: 'aa', pauseAfter: 400 }, { text: 'ron' }]);
-        expect(paused.requests).toEqual(['aa', 'aaron']);
-
-        await recordPerf(page, testInfo, 'perf.cf-server-search-debounced', { counts: { single: single.requests.length, paused: paused.requests.length }, timings: { afterLastKey: [single.afterLastKey] }, requests: { single: single.requests, paused: paused.requests } });
-    });
-
     test('a distinct toggle sends a bounded number of requests', perfCase('perf.cf-distinct-click-requests'), async ({ page }, testInfo) => {
         await perfPage(page);
         const grid = await mountGrid(page);
@@ -451,37 +413,6 @@ test.describe('Filter search & apply', () => {
         expect(firstName, 'FirstName reopened').toEqual([]);
 
         await recordPerf(page, testInfo, 'perf.cf-dirty-refresh-other-column', { counts: { lastNameRefresh: lastName.length, firstNameRefresh: firstName.length } });
-    });
-
-    test('Enter in the filter search runs one search', perfCase('perf.cf-enter-text-filter-single-search', { timing: true }), async ({ page }, testInfo) => {
-        await perfPage(page);
-        const grid = await mountGrid(page);
-        await openFilter(grid, 'FirstName');
-        await expect(filterItems(grid, 'FirstName').first()).toBeVisible();
-        const log = requestLog(page);
-        await log.quiet();
-
-        await page.keyboard.type('An', { delay: 50 });
-        // A column with more distincts than listed searches them on the server (debounced): let that finish first
-        await page.waitForTimeout(400);
-        await log.quiet();
-        log.clear();
-
-        await page.keyboard.press('Enter');
-        await expect.poll(() => grid.evaluate((g: any) => g.query.getColumn('FirstName').selectedDistincts)).toEqual(['1|@An']);
-        // Debounced work after the search would show up within 250ms
-        await page.waitForTimeout(400);
-        await log.quiet();
-
-        const counts = {
-            executeQuery: log.of('ExecuteQuery').length,
-            refreshColumn: refreshes(log).length,
-            newFilter: log.of('ExecuteAction').filter(r => r.action === 'Query.New').length
-        };
-        expect(counts, `RefreshColumn parameters: ${JSON.stringify(refreshes(log).map(r => r.body?.parameters))}`).toEqual({ executeQuery: 1, refreshColumn: 1, newFilter: 1 });
-        await page.keyboard.press('Escape');
-
-        await recordPerf(page, testInfo, 'perf.cf-enter-text-filter-single-search', { counts, requests: { refreshColumn: refreshes(log).map(r => r.body?.parameters) } });
     });
 });
 
