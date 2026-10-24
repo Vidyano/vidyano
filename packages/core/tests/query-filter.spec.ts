@@ -206,9 +206,50 @@ test.describe('Query Filters and Distincts', () => {
             expect(latest.matching.length).toBeGreaterThan(4);
 
             release();
-            await stale;
-
+            expect(await stale).toBe(latest);
             expect(lastNameColumn.distincts).toBe(latest);
+        });
+
+        test('a refresh answered before a newer one resolves with the distincts of the newer one', async ({ service, peopleQuery }) => {
+            const lastNameColumn = peopleQuery.columns.find(c => c.name === 'LastName')!;
+
+            // Hold the response of the second refresh, the first one is answered before it
+            const executeAction = service.executeAction.bind(service);
+            let release!: () => void;
+            const held = new Promise<void>(resolve => release = resolve);
+            let markFirstAnswered!: () => void;
+            const firstAnswered = new Promise<void>(resolve => markFirstAnswered = resolve);
+            let calls = 0;
+            service.executeAction = (async (...args: Parameters<Service["executeAction"]>) => {
+                const call = ++calls;
+                const result = await executeAction(...args);
+                if (call === 2)
+                    await held;
+                else
+                    markFirstAnswered();
+
+                return result;
+            }) as Service["executeAction"];
+
+            const older = lastNameColumn.refreshDistincts('Cl');
+            const newer = lastNameColumn.refreshDistincts();
+            await firstAnswered;
+            release();
+
+            const [olderDistincts, newerDistincts] = await Promise.all([older, newer]);
+            expect(newerDistincts.matching.length).toBeGreaterThan(4);
+            expect(olderDistincts).toBe(newerDistincts);
+            expect(lastNameColumn.distincts).toBe(newerDistincts);
+        });
+
+        test('the distincts of a search are dirty, the full distincts are not', async ({ peopleQuery }) => {
+            const lastNameColumn = peopleQuery.columns.find(c => c.name === 'LastName')!;
+
+            await lastNameColumn.refreshDistincts('Cl');
+            expect(lastNameColumn.distincts.isDirty).toBe(true);
+
+            await lastNameColumn.refreshDistincts();
+            expect(lastNameColumn.distincts.isDirty).toBe(false);
         });
 
         test('supports multi-selection filtering', async ({ peopleQuery }) => {

@@ -1664,6 +1664,19 @@ test.describe('Server search (more)', () => {
             await route.continue();
         });
 
+        // Keep the promise of the 'a' refresh, to wait until the page handled its late response
+        await grid.evaluate((g: any) => {
+            const column = g.query.getColumn('Email');
+            const refreshDistincts = column.refreshDistincts;
+            column.refreshDistincts = function (search?: string) {
+                const refresh = refreshDistincts.call(this, search);
+                if (search === 'a')
+                    (window as any).__staleRefresh = refresh;
+
+                return refresh;
+            };
+        });
+
         await searchInput(cf).pressSequentially('a');
         await expect.poll(() => staleHeld).toBe(true);
         await searchInput(cf).pressSequentially('aron');
@@ -1674,7 +1687,7 @@ test.describe('Server search (more)', () => {
         release();
         const staleValues = ((await (await stale).json()).result.attributes as any[]).find(a => a.name === 'MatchingDistincts').options as string[];
         expect(staleValues.some(v => !v.toLowerCase().includes('aaron'))).toBe(true);
-        await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+        await page.evaluate(() => (window as any).__staleRefresh.then(() => {}));
 
         const distincts = await grid.evaluate((g: any) => g.query.getColumn('Email').distincts.matching as string[]);
         expect(distincts.length).toBeGreaterThan(0);
@@ -1765,6 +1778,32 @@ test.describe('Server search (more)', () => {
 
         await page.evaluate(() => document.getElementById('test-container')!.appendChild((window as any).grid));
         await waitForGridReady(grid);
+        await openFilter(grid, 'Email');
+        await expect(searchInput(cf)).toHaveValue('');
+        expect(await grid.evaluate((g: any) => g.query.getColumn('Email').distincts.matching[0])).toBe(`|${FIRST_EMAIL}`);
+        const rows = await allDistinctRows(cf);
+        expect(rows).toHaveLength(101);
+        expect(rows[0].text).toBe(FIRST_EMAIL);
+    });
+
+    test('a new grid on the same query after a search shows the full list', { annotation: [{ type: 'case', description: 'gap.cf-search-new-grid-same-query' }] }, async ({ page }) => {
+        const grid = await setup(page);
+        const cf = await openFilter(grid, 'Email');
+        await searchInput(cf).pressSequentially('an');
+        await expect(cf).not.toHaveAttribute('loading', { timeout: 10000 });
+        expect(await grid.evaluate((g: any) => g.query.getColumn('Email').distincts.matching[0])).not.toBe(`|${FIRST_EMAIL}`);
+
+        // Like returning to a view that is stamped again: the cached query gets a new grid
+        await page.evaluate(() => {
+            const w = window as any;
+            w.grid.remove();
+            const next = document.createElement('vi-query-grid') as any;
+            next.query = w.q;
+            document.getElementById('test-container')!.appendChild(next);
+            w.grid = next;
+        });
+        await waitForGridReady(grid);
+
         await openFilter(grid, 'Email');
         await expect(searchInput(cf)).toHaveValue('');
         expect(await grid.evaluate((g: any) => g.query.getColumn('Email').distincts.matching[0])).toBe(`|${FIRST_EMAIL}`);

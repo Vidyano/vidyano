@@ -77,7 +77,6 @@ export class QueryGridColumnFilter extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-column-filter.html">` }
 
     private _searchTextDebouncer: Polymer.Debounce.Debouncer;
-    private _reloadDistincts: boolean;
     private _resizeStart: ISize;
     readonly loading: boolean; private _setLoading: (loading: boolean) => void;
     readonly render: boolean; private _setRender: (render: boolean) => void;
@@ -92,15 +91,10 @@ export class QueryGridColumnFilter extends Polymer.WebComponent {
     disconnectedCallback() {
         super.disconnectedCallback();
 
-        const searched = !!this.searchText || !!this._searchTextDebouncer?.isActive();
         (<Popup>this.shadowRoot.querySelector("#filter"))?.close();
         this.searchText = "";
         this._searchTextDebouncer?.cancel();
         this._setLoading(false);
-
-        // The distincts can hold a server search result, also one that is still on its way, so the next open after a re-attach reloads them
-        if (searched)
-            this._reloadDistincts = true;
     }
 
     private _render(e: Event) {
@@ -168,8 +162,7 @@ export class QueryGridColumnFilter extends Polymer.WebComponent {
         const filter = <Popup>this.$.filter || (this.$.filter = <Popup>this.shadowRoot.querySelector("#filter"));
         filter.closeDelay = parseInt(this.app.configuration.getSetting("vi-query-grid-column-filter.close-delay", "750"));
 
-        if (this.column.canListDistincts && (!this.queryColumn.distincts || this.column.distincts.isDirty || this._reloadDistincts)) {
-            this._reloadDistincts = false;
+        if (this.column.canListDistincts && (!this.queryColumn.distincts || this.column.distincts.isDirty)) {
             this._setLoading(true);
 
             try {

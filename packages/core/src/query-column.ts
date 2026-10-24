@@ -37,7 +37,7 @@ export class QueryColumn extends ServiceObject {
     #type: string;
     #label: string;
     #distincts: IQueryColumnDistincts;
-    #distinctsRequest = 0;
+    #distinctsRefresh: Promise<IQueryColumnDistincts>;
     #selectedDistincts: string[];
     #selectedDistinctsInversed: boolean;
     #total: QueryResultItemValue;
@@ -276,15 +276,26 @@ export class QueryColumn extends ServiceObject {
 
     /**
      * Refreshes the distinct values for the column, optionally with a search string.
+     * The distincts of a search are marked dirty, because they do not hold all values of the column.
+     * When a newer refresh starts before this one is answered, only the newer one is applied and both resolve with its distincts.
      * @param search - Optional search string to filter distincts.
      * @returns A promise resolving to the distincts.
      */
-    async refreshDistincts(search?: string): Promise<IQueryColumnDistincts> {
+    refreshDistincts(search?: string): Promise<IQueryColumnDistincts> {
+        const refresh = this.#distinctsRefresh = this.#refreshDistincts(search, () => refresh === this.#distinctsRefresh);
+        return this.#latestDistincts(refresh);
+    }
+
+    async #latestDistincts(refresh: Promise<IQueryColumnDistincts>): Promise<IQueryColumnDistincts> {
+        const distincts = await refresh;
+        return refresh === this.#distinctsRefresh ? distincts : this.#latestDistincts(this.#distinctsRefresh);
+    }
+
+    async #refreshDistincts(search: string, isLatest: () => boolean): Promise<IQueryColumnDistincts> {
         const parameters: any = { ColumnName: this.name, AsLookup: this.query.asLookup };
         if (search)
             parameters.Search = search;
 
-        const request = ++this.#distinctsRequest;
         let result: PersistentObject;
         try {
             result = await this.service.executeAction("QueryFilter.RefreshColumn", this.query.parent, this.query.clone(), null, parameters);
@@ -293,8 +304,7 @@ export class QueryColumn extends ServiceObject {
             return this.distincts;
         }
 
-        // A newer refresh was started meanwhile, its distincts win
-        if (request !== this.#distinctsRequest)
+        if (!isLatest())
             return this.distincts;
 
         const matchingDistinctsAttr = result.attributes["MatchingDistincts"];
@@ -303,7 +313,7 @@ export class QueryColumn extends ServiceObject {
         this.distincts = {
             matching: <string[]>matchingDistinctsAttr.options,
             remaining: <string[]>remainingDistinctsAttr.options,
-            isDirty: false,
+            isDirty: !!search,
             hasMore: Boolean.parse(matchingDistinctsAttr.typeHints.hasmore || remainingDistinctsAttr.typeHints.hasmore)
         };
 
