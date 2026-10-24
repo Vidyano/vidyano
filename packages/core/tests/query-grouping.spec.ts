@@ -32,6 +32,7 @@ class GroupingHooks extends ServiceHooks {
 
 type Fixtures = {
     hooks: GroupingHooks;
+    people: Query;
     query: Query;
 };
 
@@ -40,13 +41,16 @@ const test = base.extend<Fixtures>({
         await use(new GroupingHooks());
     },
 
-    query: async ({ hooks }, use) => {
+    people: async ({ hooks }, use) => {
         const service = new Service(devBackendUrl(), hooks, false);
         await service.initialize(true);
         await service.signInUsingCredentials("admin", "admin");
-        const query = await service.getQuery("People");
-        await query.group("Gender");
-        await use(query);
+        await use(await service.getQuery("People"));
+    },
+
+    query: async ({ people }, use) => {
+        await people.group("Gender");
+        await use(people);
     },
 });
 
@@ -124,5 +128,44 @@ test.describe("Query grouping and lazy page loads", () => {
         expect(newSecond.start).toBe(first.count - 1);
         expect(newSecond.isCollapsed).toBe(false);
         expect(query.groupingInfo.groups.reduce((n, g) => n + g.count, 0)).toBe(10_000);
+    });
+});
+
+test.describe("Query grouping on an empty result", () => {
+    // The service sends no groupingInfo for an empty grouped result
+    test("grouping an empty result keeps the grouping for the next search", async ({ people }) => {
+        people.textSearch = "zzzzqqq";
+        await people.search();
+        expect(people.totalItems).toBe(0);
+
+        await people.group("Gender");
+        expect(people.groupingInfo?.groupedBy).toBe("Gender");
+        expect(people.groupingInfo.groups).toHaveLength(0);
+
+        people.textSearch = "";
+        await people.search();
+        expect(people.groupingInfo?.groupedBy).toBe("Gender");
+        expect(people.groupingInfo.groups.length).toBeGreaterThan(1);
+        expect(people.groupingInfo.groups.reduce((n, g) => n + g.count, 0)).toBe(10_000);
+    });
+
+    test("a search with no rows keeps the grouping", async ({ query }) => {
+        query.textSearch = "zzzzqqq";
+        await query.search();
+        expect(query.totalItems).toBe(0);
+        expect(query.groupingInfo?.groupedBy).toBe("Gender");
+        expect(query.groupingInfo.groups).toHaveLength(0);
+    });
+
+    test("removing the grouping on an empty result clears it", async ({ query }) => {
+        query.textSearch = "zzzzqqq";
+        await query.search();
+
+        await query.group("");
+        expect(query.groupingInfo).toBeNull();
+
+        query.textSearch = "";
+        await query.search();
+        expect(query.groupingInfo).toBeNull();
     });
 });

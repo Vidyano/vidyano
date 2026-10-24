@@ -1052,7 +1052,10 @@ export class Query extends ServiceObjectWithActions {
         this.#setHasSearched(true);
         this.#updateColumns(result.columns);
         this.#setItems(result.items.map(item => this.service.hooks.onConstructQueryResultItem(this.service, item, this)));
-        this.#updateGroupingInfo(result.groupingInfo);
+
+        // The service sends no groupingInfo for an empty grouped result, keep the requested grouping
+        const groupedBy = this.groupingInfo?.groupedBy;
+        this.#updateGroupingInfo(result.groupingInfo ?? (groupedBy && !result.items.length ? { groupedBy, groups: [] } : null));
         this.#setSortOptionsFromService(result.sortOptions);
 
         this.#setTotalItem(result.totalItem != null ? this.service.hooks.onConstructQueryResultItem(this.service, result.totalItem, this) : null);
