@@ -1,0 +1,1369 @@
+{
+  "PersistentObject": {
+    "$id": "PersistentObject:c9dbfcd2-12ff-4adc-9b03-07a48ced221f",
+    "Id": "c9dbfcd2-12ff-4adc-9b03-07a48ced221f",
+    "SchemaName": "Dev",
+    "Type": "WideRow",
+    "Salt": "uNRC9weZ_5IxftA8DL80EZORdpBjYbl0xzdIN08POtYau3PsLfccKA",
+    "Breadcrumb": "{Text01}",
+    "ContextProperty": "WideRows",
+    "Label": {
+      "en": "Wide row",
+      "nl": "Wide row"
+    },
+    "Groups": [
+      {
+        "$id": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604",
+        "Id": "a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+      }
+    ],
+    "Tabs": [
+      {
+        "$id": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621",
+        "Id": "90a42d56-6106-4dbd-a363-e7f834183621"
+      }
+    ],
+    "Attributes": [
+      {
+        "$id": "PersistentObjectAttribute:559a2f86-d3ae-459f-a183-16a535da3596",
+        "Id": "559a2f86-d3ae-459f-a183-16a535da3596",
+        "Offset": 370,
+        "Name": "Date01",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Date 01",
+          "nl": "Date 01"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Date"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:32cd064b-578d-4040-8433-58ad74b53647",
+        "Id": "32cd064b-578d-4040-8433-58ad74b53647",
+        "Offset": 380,
+        "Name": "Date02",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Date 02",
+          "nl": "Date 02"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Date"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:5f84b587-f9ac-4f7c-aa52-4f2b13caba75",
+        "Id": "5f84b587-f9ac-4f7c-aa52-4f2b13caba75",
+        "Offset": 390,
+        "Name": "Date03",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Date 03",
+          "nl": "Date 03"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Date"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:595e98c8-7a82-4dc6-813e-ab9d58893e0f",
+        "Id": "595e98c8-7a82-4dc6-813e-ab9d58893e0f",
+        "Offset": 400,
+        "Name": "Date04",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Date 04",
+          "nl": "Date 04"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Date"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:21170708-34e4-4fe8-80a1-ec005f68dd38",
+        "Id": "21170708-34e4-4fe8-80a1-ec005f68dd38",
+        "Offset": 410,
+        "Name": "Date05",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Date 05",
+          "nl": "Date 05"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Date"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:0dfdce44-cd7f-499f-9f70-8a05fe1af8cc",
+        "Id": "0dfdce44-cd7f-499f-9f70-8a05fe1af8cc",
+        "Offset": 420,
+        "Name": "DateTime01",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "DateTime 01",
+          "nl": "DateTime 01"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:DateTime"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:637dc109-42b2-4f82-8741-80545d5431aa",
+        "Id": "637dc109-42b2-4f82-8741-80545d5431aa",
+        "Offset": 430,
+        "Name": "DateTime02",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "DateTime 02",
+          "nl": "DateTime 02"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:DateTime"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:8d01b68c-870c-4cff-b5a9-70517337cb09",
+        "Id": "8d01b68c-870c-4cff-b5a9-70517337cb09",
+        "Offset": 440,
+        "Name": "DateTime03",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "DateTime 03",
+          "nl": "DateTime 03"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:DateTime"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:c3e3f013-df7d-4e7b-b1e3-253dc2d593cd",
+        "Id": "c3e3f013-df7d-4e7b-b1e3-253dc2d593cd",
+        "Offset": 320,
+        "Name": "Dec01",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Dec 01",
+          "nl": "Dec 01"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Decimal"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:32efab02-5a8c-4604-af4c-adc78cf3ced6",
+        "Id": "32efab02-5a8c-4604-af4c-adc78cf3ced6",
+        "Offset": 330,
+        "Name": "Dec02",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Dec 02",
+          "nl": "Dec 02"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Decimal"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:3a79052f-e6a8-463b-8a7c-75922d540e45",
+        "Id": "3a79052f-e6a8-463b-8a7c-75922d540e45",
+        "Offset": 340,
+        "Name": "Dec03",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Dec 03",
+          "nl": "Dec 03"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Decimal"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:bf116a32-43b2-4bf5-85a5-8374a3ac7099",
+        "Id": "bf116a32-43b2-4bf5-85a5-8374a3ac7099",
+        "Offset": 350,
+        "Name": "Dec04",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Dec 04",
+          "nl": "Dec 04"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Decimal"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:fed4af09-01f0-4fb2-9595-6a2a6f495c07",
+        "Id": "fed4af09-01f0-4fb2-9595-6a2a6f495c07",
+        "Offset": 360,
+        "Name": "Dec05",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Dec 05",
+          "nl": "Dec 05"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Decimal"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:ae35041d-7d6c-4913-b44a-c15c22f39837",
+        "Id": "ae35041d-7d6c-4913-b44a-c15c22f39837",
+        "Offset": 550,
+        "Name": "Enum01",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Enum 01",
+          "nl": "Enum 01"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Enum"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:fd42d608-6e44-40ac-85a2-7d8c824d2ad6",
+        "Id": "fd42d608-6e44-40ac-85a2-7d8c824d2ad6",
+        "Offset": 560,
+        "Name": "Enum02",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Enum 02",
+          "nl": "Enum 02"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Enum"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:9e5c7131-2dd5-4dae-ba70-45947dd581ff",
+        "Id": "9e5c7131-2dd5-4dae-ba70-45947dd581ff",
+        "Offset": 570,
+        "Name": "Enum03",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Enum 03",
+          "nl": "Enum 03"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Enum"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:015ac5c1-18cf-4b96-ad9f-1f2470d7a1f7",
+        "Id": "015ac5c1-18cf-4b96-ad9f-1f2470d7a1f7",
+        "Offset": 580,
+        "Name": "Enum04",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Enum 04",
+          "nl": "Enum 04"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Enum"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:cae0eacc-35cb-43b5-8096-24a55e47d996",
+        "Id": "cae0eacc-35cb-43b5-8096-24a55e47d996",
+        "Offset": 470,
+        "Name": "Flag01",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Flag 01",
+          "nl": "Flag 01"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Boolean"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:5dd1849d-bc50-4f3b-986f-f3369b2129be",
+        "Id": "5dd1849d-bc50-4f3b-986f-f3369b2129be",
+        "Offset": 480,
+        "Name": "Flag02",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Flag 02",
+          "nl": "Flag 02"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Boolean"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:0034f8b4-1c9e-424a-90ef-0bbcd50a9d7d",
+        "Id": "0034f8b4-1c9e-424a-90ef-0bbcd50a9d7d",
+        "Offset": 490,
+        "Name": "Flag03",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Flag 03",
+          "nl": "Flag 03"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Boolean"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:1372e4d2-03ab-470c-bff4-b1f817d9ab6b",
+        "Id": "1372e4d2-03ab-470c-bff4-b1f817d9ab6b",
+        "Offset": 500,
+        "Name": "Flag04",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Flag 04",
+          "nl": "Flag 04"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Boolean"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:d083a599-647f-40cc-b5af-ef61d4adb583",
+        "Id": "d083a599-647f-40cc-b5af-ef61d4adb583",
+        "Offset": 510,
+        "Name": "Flag05",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Flag 05",
+          "nl": "Flag 05"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Boolean"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:f72225c7-e752-4cdf-983d-a8e7c867ccf4",
+        "Id": "f72225c7-e752-4cdf-983d-a8e7c867ccf4",
+        "Offset": 10,
+        "Name": "Id",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Id",
+          "nl": "Id"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Int32"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:ce8e5a2b-78f4-44fd-8007-ad2c3e412e6a",
+        "Id": "ce8e5a2b-78f4-44fd-8007-ad2c3e412e6a",
+        "Offset": 590,
+        "Name": "Image01",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Image 01",
+          "nl": "Image 01"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Image"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:43f077b6-3d98-44fb-9f47-c221b4ca5270",
+        "Id": "43f077b6-3d98-44fb-9f47-c221b4ca5270",
+        "Offset": 220,
+        "Name": "Int01",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Int 01",
+          "nl": "Int 01"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Int32"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:8b893a5c-07bf-4515-9768-481eb128c318",
+        "Id": "8b893a5c-07bf-4515-9768-481eb128c318",
+        "Offset": 230,
+        "Name": "Int02",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Int 02",
+          "nl": "Int 02"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Int32"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:ae9d0f48-bcf4-4248-a434-943ec14ee788",
+        "Id": "ae9d0f48-bcf4-4248-a434-943ec14ee788",
+        "Offset": 240,
+        "Name": "Int03",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Int 03",
+          "nl": "Int 03"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Int32"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:a3fd3e16-51f7-4780-8576-19425da61eb4",
+        "Id": "a3fd3e16-51f7-4780-8576-19425da61eb4",
+        "Offset": 250,
+        "Name": "Int04",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Int 04",
+          "nl": "Int 04"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Int32"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:2ae0e0ca-840c-4ec5-8a64-ae3cfe350d1c",
+        "Id": "2ae0e0ca-840c-4ec5-8a64-ae3cfe350d1c",
+        "Offset": 260,
+        "Name": "Int05",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Int 05",
+          "nl": "Int 05"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Int32"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:334d6b0e-0bbb-4662-b011-0bc3258fa8c1",
+        "Id": "334d6b0e-0bbb-4662-b011-0bc3258fa8c1",
+        "Offset": 270,
+        "Name": "Int06",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Int 06",
+          "nl": "Int 06"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Int32"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:7ba31f70-85a2-4f92-92ef-79e242622da9",
+        "Id": "7ba31f70-85a2-4f92-92ef-79e242622da9",
+        "Offset": 280,
+        "Name": "Int07",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Int 07",
+          "nl": "Int 07"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Int32"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:d26cb313-45e8-45cf-99e9-694225edb933",
+        "Id": "d26cb313-45e8-45cf-99e9-694225edb933",
+        "Offset": 290,
+        "Name": "Int08",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Int 08",
+          "nl": "Int 08"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Int32"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:4a58bb1c-fb8b-4ebe-a08f-744fc24b03d8",
+        "Id": "4a58bb1c-fb8b-4ebe-a08f-744fc24b03d8",
+        "Offset": 300,
+        "Name": "Int09",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Int 09",
+          "nl": "Int 09"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Int32"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:430788aa-ef2b-4c6e-bd5a-c571e9a84203",
+        "Id": "430788aa-ef2b-4c6e-bd5a-c571e9a84203",
+        "Offset": 310,
+        "Name": "Int10",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Int 10",
+          "nl": "Int 10"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Int32"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:9afc5d5d-82cd-4f79-aaa5-ae30bdea5e67",
+        "Id": "9afc5d5d-82cd-4f79-aaa5-ae30bdea5e67",
+        "Offset": 600,
+        "Name": "Markdown01",
+        "IsReadOnly": true,
+        "DataTypeHints": "DisplayInGrid=True",
+        "Label": {
+          "en": "Markdown 01",
+          "nl": "Markdown 01"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:CommonMark"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:364cf8c1-0863-46a3-87e5-bb3b1627c765",
+        "Id": "364cf8c1-0863-46a3-87e5-bb3b1627c765",
+        "Offset": 520,
+        "Name": "NFlag01",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "NFlag 01",
+          "nl": "NFlag 01"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:NullableBoolean"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:68367983-99c8-4ca2-af73-77836239b757",
+        "Id": "68367983-99c8-4ca2-af73-77836239b757",
+        "Offset": 530,
+        "Name": "NFlag02",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "NFlag 02",
+          "nl": "NFlag 02"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:NullableBoolean"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:e35f295a-259d-4d0d-bc37-54311967f8df",
+        "Id": "e35f295a-259d-4d0d-bc37-54311967f8df",
+        "Offset": 20,
+        "Name": "Text01",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Text 01",
+          "nl": "Text 01"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:0b6a1961-8665-47c0-a578-ff91211b0a81",
+        "Id": "0b6a1961-8665-47c0-a578-ff91211b0a81",
+        "Offset": 30,
+        "Name": "Text02",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Text 02",
+          "nl": "Text 02"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:76c4b604-5aaf-401d-931e-56ad605911e9",
+        "Id": "76c4b604-5aaf-401d-931e-56ad605911e9",
+        "Offset": 40,
+        "Name": "Text03",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Text 03",
+          "nl": "Text 03"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:2ca3a74b-5389-470b-a0ff-f8c219332a48",
+        "Id": "2ca3a74b-5389-470b-a0ff-f8c219332a48",
+        "Offset": 50,
+        "Name": "Text04",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Text 04",
+          "nl": "Text 04"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:4eb0bd3e-b312-44e4-a21c-de6e79bc2ce7",
+        "Id": "4eb0bd3e-b312-44e4-a21c-de6e79bc2ce7",
+        "Offset": 60,
+        "Name": "Text05",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Text 05",
+          "nl": "Text 05"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:368564c9-cb56-4c58-b838-b918764926fe",
+        "Id": "368564c9-cb56-4c58-b838-b918764926fe",
+        "Offset": 70,
+        "Name": "Text06",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Text 06",
+          "nl": "Text 06"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:8362d609-8161-4975-bdad-31be3eab6111",
+        "Id": "8362d609-8161-4975-bdad-31be3eab6111",
+        "Offset": 80,
+        "Name": "Text07",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Text 07",
+          "nl": "Text 07"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:36f08351-b325-4a52-a179-cf10b3e4dc86",
+        "Id": "36f08351-b325-4a52-a179-cf10b3e4dc86",
+        "Offset": 90,
+        "Name": "Text08",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Text 08",
+          "nl": "Text 08"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:9ab3cf41-38cc-4f2c-ba9b-71529853ae01",
+        "Id": "9ab3cf41-38cc-4f2c-ba9b-71529853ae01",
+        "Offset": 100,
+        "Name": "Text09",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Text 09",
+          "nl": "Text 09"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:d953a3bc-642a-47f3-bd8f-56928c2ad21c",
+        "Id": "d953a3bc-642a-47f3-bd8f-56928c2ad21c",
+        "Offset": 110,
+        "Name": "Text10",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Text 10",
+          "nl": "Text 10"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:e5c4aed2-b083-411a-b4db-2db5aade4820",
+        "Id": "e5c4aed2-b083-411a-b4db-2db5aade4820",
+        "Offset": 120,
+        "Name": "Text11",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Text 11",
+          "nl": "Text 11"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:7b88193c-5ebf-4f1e-9789-c420e8e03075",
+        "Id": "7b88193c-5ebf-4f1e-9789-c420e8e03075",
+        "Offset": 130,
+        "Name": "Text12",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Text 12",
+          "nl": "Text 12"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:dc786a62-9228-4e7b-8fd8-2bf5699e78e4",
+        "Id": "dc786a62-9228-4e7b-8fd8-2bf5699e78e4",
+        "Offset": 140,
+        "Name": "Text13",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Text 13",
+          "nl": "Text 13"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:3488908b-efcb-4708-b1c8-2d17aaae0aa9",
+        "Id": "3488908b-efcb-4708-b1c8-2d17aaae0aa9",
+        "Offset": 150,
+        "Name": "Text14",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Text 14",
+          "nl": "Text 14"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:85cd451e-731c-4f50-9791-9f1a2a4d5836",
+        "Id": "85cd451e-731c-4f50-9791-9f1a2a4d5836",
+        "Offset": 160,
+        "Name": "Text15",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Text 15",
+          "nl": "Text 15"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:6bb9f40f-f034-42c7-b889-6df48b5ed1c7",
+        "Id": "6bb9f40f-f034-42c7-b889-6df48b5ed1c7",
+        "Offset": 170,
+        "Name": "Text16",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Text 16",
+          "nl": "Text 16"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:81415334-6bce-4dcc-9547-1524288a9c79",
+        "Id": "81415334-6bce-4dcc-9547-1524288a9c79",
+        "Offset": 180,
+        "Name": "Text17",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Text 17",
+          "nl": "Text 17"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:4d6172eb-0be8-4a78-9968-04e1ea7e794f",
+        "Id": "4d6172eb-0be8-4a78-9968-04e1ea7e794f",
+        "Offset": 190,
+        "Name": "Text18",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Text 18",
+          "nl": "Text 18"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:d7c64856-7284-476c-8dd1-4d10713d7dcb",
+        "Id": "d7c64856-7284-476c-8dd1-4d10713d7dcb",
+        "Offset": 200,
+        "Name": "Text19",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Text 19",
+          "nl": "Text 19"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:946920c4-1850-48c1-b8a1-607d27b5c302",
+        "Id": "946920c4-1850-48c1-b8a1-607d27b5c302",
+        "Offset": 210,
+        "Name": "Text20",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Text 20",
+          "nl": "Text 20"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:cd9204bf-5388-45cc-a4f5-763df265182d",
+        "Id": "cd9204bf-5388-45cc-a4f5-763df265182d",
+        "Offset": 450,
+        "Name": "Time01",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Time 01",
+          "nl": "Time 01"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Time"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:918f231f-17f3-4674-8abc-87cab51d15bc",
+        "Id": "918f231f-17f3-4674-8abc-87cab51d15bc",
+        "Offset": 460,
+        "Name": "Time02",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Time 02",
+          "nl": "Time 02"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Time"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:149e554d-163f-4b99-9c15-b89ec47a2fa0",
+        "Id": "149e554d-163f-4b99-9c15-b89ec47a2fa0",
+        "Offset": 540,
+        "Name": "YesNo01",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "YesNo 01",
+          "nl": "YesNo 01"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:YesNo"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:a0c6ed0b-026c-48a6-8db4-6ebf7c289604"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:90a42d56-6106-4dbd-a363-e7f834183621"
+        }
+      }
+    ],
+    "Queries": []
+  },
+  "Queries": [
+    {
+      "$id": "Query:8066f891-d25f-464b-b14c-413717e97761",
+      "Id": "8066f891-d25f-464b-b14c-413717e97761",
+      "Source": "Database.WideRows",
+      "AutoQuery": true,
+      "Name": "QueryGrid_Wide",
+      "Label": {
+        "en": "Wide (60 columns)",
+        "nl": "Wide (60 columns)"
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:c9dbfcd2-12ff-4adc-9b03-07a48ced221f"
+      },
+      "Columns": []
+    }
+  ],
+  "Reports": []
+}

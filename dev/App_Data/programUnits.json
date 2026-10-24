@@ -675,6 +675,104 @@
           "Group": {
             "$ref": "ProgramUnitItemGroup:ec3c90ce-728d-4495-aa71-295c89ab67ef"
           }
+        },
+        {
+          "Offset": 70,
+          "Title": {
+            "en": "Data types",
+            "nl": ""
+          },
+          "Name": "QueryGrid_DataTypes",
+          "Query": {
+            "$ref": "Query:5a3a6d21-40f2-4644-add7-45d26c825870"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:ec3c90ce-728d-4495-aa71-295c89ab67ef"
+          }
+        },
+        {
+          "Offset": 80,
+          "Title": {
+            "en": "Column options",
+            "nl": ""
+          },
+          "Name": "QueryGrid_ColumnOptions",
+          "Query": {
+            "$ref": "Query:f9358555-22da-496e-8bb1-59c00f6efefe"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:ec3c90ce-728d-4495-aa71-295c89ab67ef"
+          }
+        },
+        {
+          "Offset": 90,
+          "Title": {
+            "en": "Big (150k)",
+            "nl": ""
+          },
+          "Name": "PeopleBig",
+          "Query": {
+            "$ref": "Query:917a2e74-83d7-4cdd-9f0c-1707da7805f3"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:ec3c90ce-728d-4495-aa71-295c89ab67ef"
+          }
+        },
+        {
+          "Offset": 100,
+          "Title": {
+            "en": "Wide (60 columns)",
+            "nl": ""
+          },
+          "Name": "QueryGrid_Wide",
+          "Query": {
+            "$ref": "Query:8066f891-d25f-464b-b14c-413717e97761"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:ec3c90ce-728d-4495-aa71-295c89ab67ef"
+          }
+        },
+        {
+          "Offset": 110,
+          "Title": {
+            "en": "Reorder",
+            "nl": ""
+          },
+          "Name": "QueryGrid_Reorder",
+          "Query": {
+            "$ref": "Query:d9eb2100-12bd-4a23-90be-cf6c6f5e53fb"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:ec3c90ce-728d-4495-aa71-295c89ab67ef"
+          }
+        },
+        {
+          "Offset": 120,
+          "Title": {
+            "en": "Reorder (250)",
+            "nl": ""
+          },
+          "Name": "QueryGrid_ReorderLarge",
+          "Query": {
+            "$ref": "Query:e785a1bf-aea5-4c3e-89d0-33a5e722b559"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:ec3c90ce-728d-4495-aa71-295c89ab67ef"
+          }
+        },
+        {
+          "Offset": 130,
+          "Title": {
+            "en": "Continuation (unknown total)",
+            "nl": ""
+          },
+          "Name": "QueryGrid_Continuation",
+          "Query": {
+            "$ref": "Query:4148f499-8786-48b6-a4b0-b10ada9ff41c"
+          },
+          "Group": {
+            "$ref": "ProgramUnitItemGroup:ec3c90ce-728d-4495-aa71-295c89ab67ef"
+          }
         }
       ]
     },

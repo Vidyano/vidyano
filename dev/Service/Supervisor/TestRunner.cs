@@ -62,6 +62,8 @@ namespace Dev.Service.Supervisor
         public int? ExitCode;
         public List<JObject> Errors = new();
         public List<RunTest> Tests = new();
+        /// <summary>The number of tests Playwright runs after its project and grep filtering; null until it begins.</summary>
+        public int? Total;
         public List<OutputLine> Output = new();
         public long OutputCount;
         public Process Process;
@@ -103,6 +105,10 @@ namespace Dev.Service.Supervisor
         public const string Shared = "shared";
         /// <summary>A perf run, which runs alone on the machine.</summary>
         public const string Machine = "machine";
+        /// <summary>The Playwright project that runs the tests tagged TimingTag, on one worker (see playwright.config.js).</summary>
+        public const string TimingProject = "vidyano-perf";
+        /// <summary>The tag of the perf tests that measure wall-clock or frame timings.</summary>
+        public const string TimingTag = "@timing";
 
         // The spec folders whose specs never touch the shared dev backend; everything else is shared
         static readonly string[] FreeRoots = { "packages/vidyano/tests", "packages/labs/virtual-service/tests" };
@@ -206,12 +212,59 @@ namespace Dev.Service.Supervisor
             return spec.StartsWith("perf/", PathComparison) || spec.Contains("/perf/", PathComparison);
         }
 
+        static bool Matches(string projectFilter, string project)
+        {
+            return Regex.IsMatch(project, $"^{Regex.Escape(projectFilter).Replace(@"\*", ".*")}$", RegexOptions.IgnoreCase);
+        }
+
         /// <summary>
-        /// A perf run: one that names a perf project (vidyano-perf) or holds only perf specs.
+        /// A perf run, one that runs the timing tests: it names the timing project, or names no project and holds only perf specs.
         /// </summary>
         public static bool IsPerfRun(IReadOnlyList<string> flags, IReadOnlyList<string> targets)
         {
-            return ProjectsOf(flags).Any(p => p.Contains("perf", StringComparison.OrdinalIgnoreCase)) || (targets.Count > 0 && targets.All(IsPerf));
+            var projects = ProjectsOf(flags);
+            return projects.Any(p => Matches(p, TimingProject)) || (projects.Count == 0 && targets.Count > 0 && targets.All(IsPerf));
+        }
+
+        /// <summary>
+        /// The flags a run passes to Playwright: its own, plus what keeps the timing tests away from other tests. A run
+        /// without --project would run the timing project next to the others, so it leaves the timing tests out. A perf
+        /// run of perf specs runs only the timing project; when it runs other projects too (it names them, or it picks
+        /// single tests, which can be in either project), it runs on one worker instead.
+        /// </summary>
+        static List<string> PlaywrightFlags(IReadOnlyList<string> flags, IReadOnlyList<string> targets)
+        {
+            var projects = ProjectsOf(flags);
+            if (!IsPerfRun(flags, targets))
+            {
+                if (projects.Count > 0)
+                    return flags.ToList();
+
+                // Playwright keeps only the last --grep-invert, so the run's own one joins the tag
+                var result = new List<string>();
+                string invert = null;
+                for (var i = 0; i < flags.Count; i++)
+                {
+                    if (flags[i] == "--grep-invert" && i + 1 < flags.Count)
+                        invert = flags[++i];
+                    else if (flags[i].StartsWith("--grep-invert="))
+                        invert = flags[i]["--grep-invert=".Length..];
+                    else
+                        result.Add(flags[i]);
+                }
+
+                result.Add("--grep-invert");
+                result.Add(invert == null ? TimingTag : $"(?:{invert})|{TimingTag}");
+                return result;
+            }
+
+            if (projects.Count == 0 && targets.All(t => t == SpecOf(t)))
+                return flags.Concat(new[] { "--project", TimingProject }).ToList();
+
+            if (projects.All(p => string.Equals(p, TimingProject, StringComparison.OrdinalIgnoreCase)) || flags.Any(f => f is "-j" or "--workers" || f.StartsWith("--workers=")))
+                return flags.ToList();
+
+            return flags.Concat(new[] { "--workers", "1" }).ToList();
         }
 
         /// <summary>
@@ -511,15 +564,14 @@ namespace Dev.Service.Supervisor
         {
             var (flags, paths) = ParseArgs(args);
             var targets = Expand(paths);
-
-            // Perf specs measure timings, so they only run in a run of their own
-            var perf = IsPerfRun(flags, targets) ? new List<string>() : targets.Where(IsPerf).ToList();
-            targets = targets.Except(perf).ToList();
+            var access = AccessOf(flags, targets);
+            var perf = access == Machine ? null : targets.FirstOrDefault(IsPerf);
+            flags = PlaywrightFlags(flags, targets);
 
             var files = targets.GroupBy(SpecOf).Select(g => new RunFile { File = g.Count() == 1 ? g.First() : g.Key }).ToList();
             lock (Gate)
             {
-                var run = new TestRun { Id = nextId++, Sequence = ++sequence, Access = AccessOf(flags, targets), Followed = followed, LastPolled = Environment.TickCount64, Flags = flags, Targets = targets, Files = files, QueuedAt = DevSupervisor.Now() };
+                var run = new TestRun { Id = nextId++, Sequence = ++sequence, Access = access, Followed = followed, LastPolled = Environment.TickCount64, Flags = flags, Targets = targets, Files = files, QueuedAt = DevSupervisor.Now() };
                 Runs.Add(run);
 
                 var finished = Runs.Where(r => r.Done).ToList();
@@ -527,11 +579,11 @@ namespace Dev.Service.Supervisor
                     Runs.Remove(finished[0]);
 
                 Tell(run, $"Run #{run.Id} queued in the dev supervisor{(supervisor.IsMain ? "" : $" for worktree {supervisor.Workspace}")}:{(files.Count == 1 ? files[0].File : $"{files.Count} spec files")}{(flags.Count > 0 ? $" {string.Join(' ', flags)}" : "")}");
-                if (perf.Count > 0)
-                    Tell(run, $"Skipped {perf.Count} perf spec {(perf.Count == 1 ? "file" : "files")}: perf specs run alone, e.g. npm run test:dev -- {Path.GetDirectoryName(SpecOf(perf[0])).Replace('\\', '/')}");
+                if (perf != null)
+                    Tell(run, $"Left out the {TimingTag} perf tests: they run alone, e.g. npm run test:dev -- {Path.GetDirectoryName(SpecOf(perf)).Replace('\\', '/')}");
 
                 if (run.Access == Machine)
-                    Tell(run, "Perf runs run alone: this run waits until no other test run runs and no watcher builds");
+                    Tell(run, $"Perf runs ({TimingTag} tests) run alone: this run waits until no other test run runs and no watcher builds");
 
                 return run;
             }
@@ -663,6 +715,8 @@ namespace Dev.Service.Supervisor
                 case "begin":
                     foreach (var test in e["tests"].ToObject<List<CatalogTest>>())
                         run.Tests.Add(new RunTest { RunId = run.Id, Id = test.Id, Title = test.Title, File = test.File, Line = test.Line, Column = test.Column, Spec = run.Files.FirstOrDefault(f => Regex.Replace(f.File, @":\d+$", "") == test.File)?.File ?? test.File, Version = Touch() });
+
+                    run.Total = run.Tests.Count;
                     break;
 
                 case "test-begin":

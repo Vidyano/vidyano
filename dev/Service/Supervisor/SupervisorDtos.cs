@@ -31,9 +31,9 @@ namespace Dev.Service.Supervisor
         public static RunFileDto From(RunFile f) => new(f.File, f.Status, f.Took);
     }
 
-    public record RunDto(int Id, List<string> Flags, List<RunFileDto> Files, string Status, string QueuedAt, long? Started, long? Took, string WaitingFor, int? ExitCode, List<JObject> Errors)
+    public record RunDto(int Id, List<string> Flags, List<RunFileDto> Files, string Status, string QueuedAt, long? Started, long? Took, string WaitingFor, int? ExitCode, int? Total, List<JObject> Errors)
     {
-        public static RunDto From(TestRun r) => new(r.Id, r.Flags, r.Files.Select(RunFileDto.From).ToList(), r.Status, r.QueuedAt, r.Started, r.Took, r.WaitingFor, r.ExitCode, r.Errors);
+        public static RunDto From(TestRun r) => new(r.Id, r.Flags, r.Files.Select(RunFileDto.From).ToList(), r.Status, r.QueuedAt, r.Started, r.Took, r.WaitingFor, r.ExitCode, r.Total, r.Errors);
     }
 
     public record RunTestDto(int RunId, string Id, string Title, string File, int Line, int Column, string Spec, string Status, double? Duration, long? Ended, JArray Errors)

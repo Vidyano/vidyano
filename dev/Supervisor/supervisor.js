@@ -965,16 +965,9 @@ function taskView(view) {
         </div>`;
 }
 
+// The run's spec files hold tests that its projects and greps leave out, so only Playwright's own list counts
 function progressItems(run) {
-    const tests = testsOf(run);
-    return run.files.flatMap(file => {
-        const ofFile = tests.filter(t => t.spec === file.file);
-        if (ofFile.length || ["passed", "failed", "cancelled"].includes(file.status))
-            return ofFile;
-
-        const status = file.status === "skipped" ? "not run" : "pending";
-        return Array.from({ length: data.catalog.get(file.file)?.tests.length ?? 0 }, () => ({ status }));
-    });
+    return run.total == null ? [] : testsOf(run);
 }
 
 function progressBar(run) {
@@ -1018,6 +1011,9 @@ function testTop(run, busy) {
         return top("busy", "Queued", data.blockers.length ? `Waiting for ${data.blockers.join(", ")}` : "", tools);
 
     if (run.status === "running") {
+        if (run.total == null)
+            return top(runState(run), "Starting", `${took} elapsed`, tools);
+
         const items = progressItems(run);
         const done = items.filter(i => i.status !== "pending" && i.status !== "running").length;
         if (items.length && done === items.length)

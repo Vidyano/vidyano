@@ -44,9 +44,30 @@ export default defineConfig({
     {
       name: 'vidyano',
       testMatch: 'packages/vidyano/tests/**/*.spec.ts',
+      testIgnore: 'packages/vidyano/tests/query-grid/**',
       use: { ...devices['Desktop Chrome'], channel: 'chrome' },
       fullyParallel: true,
       workers: 4,
+    },
+    {
+      name: 'query-grid',
+      testMatch: 'packages/vidyano/tests/query-grid/**/*.spec.ts',
+      /* Runs against the shared dev backend (http://localhost:5000) and its People data. The perf specs' @timing
+         tests measure wall-clock and frame timings, which parallel workers would skew, so vidyano-perf runs those */
+      grepInvert: /@timing/,
+      use: { ...devices['Desktop Chrome'], channel: 'chrome' },
+      fullyParallel: true,
+      workers: 4,
+    },
+    {
+      name: 'vidyano-perf',
+      testMatch: 'packages/vidyano/tests/query-grid/perf/**/*.spec.ts',
+      grep: /@timing/,
+      /* Timings need a quiet machine: one worker and no retries that could hide regressions */
+      use: { ...devices['Desktop Chrome'], channel: 'chrome', viewport: { width: 1280, height: 720 } },
+      fullyParallel: false,
+      workers: 1,
+      retries: 0,
     },
     {
       name: 'virtual-service',
