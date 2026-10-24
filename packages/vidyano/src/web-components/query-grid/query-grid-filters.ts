@@ -2,6 +2,7 @@ import * as Polymer from "polymer"
 import * as Vidyano from "@vidyano/core"
 import { Popup } from "components/popup/popup"
 import { QueryGridFilterDialog } from "./query-grid-filter-dialog"
+import { splitFilterName } from "./query-grid-filter-dialog-name"
 
 interface IQueryFilter {
     filter?: Vidyano.QueryFilter;
@@ -98,44 +99,41 @@ export class QueryGridFilters extends Polymer.WebComponent {
         if (!filters)
             return null;
 
-        const orderedFilters = filters.filter(f => f.isLocked === isLocked).orderBy(f => f.name.split("\n", 2)[0].toLowerCase());
+        const orderedFilters = filters.filter(f => f.isLocked === isLocked).orderBy(f => {
+            const parts = splitFilterName(f.name);
+            return (parts.group ?? parts.name).toLowerCase();
+        });
         if (orderedFilters.length === 0)
             return null;
 
-        const result: IQueryFilter[] = [];
-        let group: IQueryFilter;
+        // Folders first, then the filters without a group
+        const groups: IQueryFilter[] = [];
+        const ungrouped: IQueryFilter[] = [];
         orderedFilters.forEach(filter => {
             if (!filter.name)
                 return;
 
-            const nameParts = filter.name.split("\n", 2);
-            if (nameParts.length === 1)
-                result.push({ filter: filter });
+            const groupName = splitFilterName(filter.name).group;
+            if (groupName == null)
+                ungrouped.push({ filter: filter });
             else {
-                if (group && group.groupName === nameParts[0])
+                const group = groups[groups.length - 1];
+                if (group && group.groupName === groupName)
                     group.children.push({ filter: filter });
                 else {
-                    result.push(group = {
-                        groupName: nameParts[0],
+                    groups.push({
+                        groupName: groupName,
                         children: [{ filter: filter }]
                     });
                 }
             }
         });
 
-        return result;
+        return groups.concat(ungrouped);
     }
 
     private _catchGroupTap(e: Polymer.Gestures.TapEvent) {
         e.stopPropagation();
-    }
-
-    private _filterNonGroupName(name: string): string {
-        if (!name)
-            return name;
-
-        const nameParts = name.split("\n", 2);
-        return nameParts.length === 1 ? nameParts[0] : nameParts[1];
     }
 
     private _computeHidden(filters: Vidyano.QueryFilters): boolean {
@@ -159,7 +157,7 @@ export class QueryGridFilters extends Polymer.WebComponent {
     }
 
     private _computeCurrentFilterSaveLabel(currentFilter: Vidyano.QueryFilter): string {
-        return !!currentFilter ? `${this.translateMessage("Save")} '${currentFilter.name}'` : "";
+        return !!currentFilter ? `${this.translateMessage("Save")} '${this._nonGroupName(currentFilter.name)}'` : "";
     }
 
     private _computeCanSaveAs(currentFilter: Vidyano.QueryFilter): boolean {
@@ -176,6 +174,7 @@ export class QueryGridFilters extends Polymer.WebComponent {
     }
 
     private _load(e: Polymer.Gestures.TapEvent) {
+        Popup.closeAll();
         this.queryFilters.currentFilter = <Vidyano.QueryFilter>e.model.filter.filter;
     }
 
@@ -224,10 +223,6 @@ export class QueryGridFilters extends Polymer.WebComponent {
     }
 
     private _nonGroupName(name: string): string {
-        if (!name)
-            return name;
-
-        const nameParts = name.split("\n", 2);
-        return nameParts.length === 1 ? nameParts[0] : nameParts[1];
+        return splitFilterName(name).name;
     }
 }

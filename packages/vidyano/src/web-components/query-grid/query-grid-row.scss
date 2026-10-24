@@ -27,9 +27,11 @@
     }
 
     &:not(.loading):hover {
-        cursor: pointer;
+        &:not([disabled-item]) {
+            cursor: pointer;
+        }
 
-        &, ::slotted(.column), .pinned {
+        &,::slotted(.column), .pinned {
             background-color: var(--color-semi-faint);
         }
     }
@@ -67,14 +69,14 @@
         display: none !important;
     }
 
-    &.disabled, &.readonly {
+    &[disabled-item], &[readonly-item] {
         .selector, .actions {
             visibility: hidden;
             pointer-events: none;
         }
     }
 
-    &.disabled {
+    &[disabled-item] {
         cursor: default;
     }
 

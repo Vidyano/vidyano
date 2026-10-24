@@ -2,6 +2,12 @@ import * as Polymer from "polymer"
 import * as Vidyano from "@vidyano/core"
 import type { QueryGridRow } from "components/query-grid/query-grid-row"
 
+// A value can hold a colon itself, as in url(https://...), so only the first colon separates the name
+function parseStyleDeclaration(declaration: string): [string, string] {
+    const index = declaration.indexOf(":");
+    return index < 0 ? [declaration.trim(), ""] : [declaration.slice(0, index).trim(), declaration.slice(index + 1).trim()];
+}
+
 let resizeObserver: ResizeObserver;
 resizeObserver = new ResizeObserver(allEntries => {
     window.requestAnimationFrame(() => {
@@ -108,8 +114,8 @@ export abstract class QueryGridCell extends Polymer.WebComponent {
             return;
 
         const row = this.parentElement as QueryGridRow;
-        // Don't measure the cell when the row is not a query result item (sanity check)
-        if (!(row.item instanceof Vidyano.QueryResultItem))
+        // Don't measure the cell when the row is not a query result item (sanity check), or still shows an item of the grid's previous query
+        if (!(row.item instanceof Vidyano.QueryResultItem) || row.item.query !== this.column?.query)
             return;
 
         // Only measure if this is the first non-group query grid row in the grid
@@ -167,7 +173,7 @@ export abstract class QueryGridCell extends Polymer.WebComponent {
         if (hoverStyleHint) {
             const styleProps = hoverStyleHint.split(';').map(s => s.trim()).filter(s => !!s);
             styleProps.forEach(prop => {
-                const [name, value] = prop.split(':').map(s => s.trim());
+                const [name, value] = parseStyleDeclaration(prop);
                 if (name && value) {
                     let styleEntry = this.#_customHoverStyles.get(name);
                     if (!styleEntry) {
@@ -229,7 +235,7 @@ export abstract class QueryGridCell extends Polymer.WebComponent {
             const styleProps = styleHint.split(';').map(s => s.trim()).filter(s => !!s);
             const newStyles = new Set<string>();
             styleProps.forEach(prop => {
-                const [name, value] = prop.split(':').map(s => s.trim());
+                const [name, value] = parseStyleDeclaration(prop);
                 if (name && value) {
                     newStyles.add(name);
                     let styleEntry = this.#_customStyles.get(name);

@@ -15,6 +15,10 @@ import { Path } from "libs/pathjs/pathjs"
             type: Boolean,
             reflectToAttribute: true
         },
+        center: {
+            type: Boolean,
+            reflectToAttribute: true
+        },
         tag: {
             type: Boolean,
             reflectToAttribute: true
@@ -51,8 +55,12 @@ export class QueryGridCellCommonMark extends QueryGridCellDefault {
 
             if (this.#markdownValue !== value) {
                 this.$.text.innerHTML = getMarkdown(this.#markdownValue = value, {
-                    addTags: "VI-ICON"
+                    addTags: "VI-ICON",
+                    forbidTags: "STYLE"
                 });
+
+                // The cell shows one row, so a line break becomes a space
+                this.$.text.querySelectorAll("br").forEach(br => br.replaceWith(" "));
             }
 
             return;
@@ -68,18 +76,24 @@ export class QueryGridCellCommonMark extends QueryGridCellDefault {
     }
 
     private _onClick(e: MouseEvent) {
-        if (e.target instanceof HTMLAnchorElement) {
-            e.stopPropagation();
+        const anchor = <HTMLAnchorElement>e.composedPath().find(n => n instanceof HTMLAnchorElement);
+        if (!anchor)
+            return;
 
-            if (!e.ctrlKey && e.target.href.startsWith(Path.routes.root || "") && !(e.target.getAttribute("rel") || "").contains("external")) {
-                e.preventDefault();
-    
-                let path = e.target.href.slice(Path.routes.root.length);
-                if (path.startsWith("#!/"))
-                    path = path.substring(3);
-    
-                this.app.changePath(path);
-            }
+        e.stopPropagation();
+
+        // Outside vi-app there is no app router, so the browser follows every link
+        if (Path.routes.root == null)
+            return;
+
+        if (!e.ctrlKey && anchor.href.startsWith(Path.routes.root) && !(anchor.getAttribute("rel") || "").contains("external")) {
+            e.preventDefault();
+
+            let path = anchor.href.slice(Path.routes.root.length);
+            if (path.startsWith("#!/"))
+                path = path.substring(3);
+
+            this.app.changePath(path);
         }
     }
 }

@@ -2,8 +2,11 @@ import * as Polymer from "polymer"
 import * as Vidyano from "@vidyano/core"
 import "components/popup-menu/popup-menu"
 import { PopupMenu } from "components/popup-menu/popup-menu"
+import { Popup } from "components/popup/popup"
 import { QueryGridColumn } from "./query-grid-column"
 import "./query-grid-column-filter"
+
+const observeOnConnected = new WeakSet<Element>();
 
 let resizeObserver: ResizeObserver;
 resizeObserver = new ResizeObserver(allEntries => {
@@ -12,6 +15,13 @@ resizeObserver = new ResizeObserver(allEntries => {
     
         const parents = new Map<HTMLElement, ResizeObserverEntry[]>();
         allEntries.forEach(e => {
+            // A detached grid does not listen for the width, the header reports again once it is re-attached
+            if (!e.target.isConnected) {
+                resizeObserver.unobserve(e.target);
+                observeOnConnected.add(e.target);
+                return;
+            }
+
             // A header inside a hidden (display: none) container has no size yet, keep observing it until it is shown
             if (!(e["borderBoxSize"] != null ? e["borderBoxSize"][0].inlineSize : (<HTMLElement>e.target).offsetWidth))
                 return;
@@ -85,6 +95,10 @@ resizeObserver = new ResizeObserver(allEntries => {
             type: String,
             reflectToAttribute: true,
             computed: "_computeName(column)"
+        },
+        lastVisible: {
+            type: Boolean,
+            value: false
         }
     },
     forwardObservers: [
@@ -106,6 +120,8 @@ export class QueryGridColumnHeader extends Polymer.WebComponent {
     #_resizingRAF: number;
 
     column: QueryGridColumn;
+    /** Whether this is the only visible column, which cannot be hidden. */
+    lastVisible: boolean;
     readonly canSort: boolean; private _setCanSort: (canSort: boolean) => void;
     readonly canGroupBy: boolean; private _setCanGroupBy: (canGroupBy: boolean) => void;
     readonly isPinned: boolean; private _setIsPinned: (isPinned: boolean) => void;
@@ -114,11 +130,17 @@ export class QueryGridColumnHeader extends Polymer.WebComponent {
     private _renderPopupMenu(e: Event) {
         e.stopPropagation();
 
+        const hadFocus = !this.renderPopupMenu && this.shadowRoot.activeElement != null;
+
         this._setRenderPopupMenu(true);
         Polymer.flush();
         
         const menu = <PopupMenu>this.shadowRoot.querySelector("#menu");
         menu.popup();
+
+        // The focused placeholder caret was replaced by the menu's own caret, which is only focusable once the menu has rendered
+        if (hadFocus)
+            Polymer.Async.animationFrame.run(() => menu.querySelector<HTMLElement>("vi-button[slot='header']").focus());
     }
 
     private _columnChanged(column: QueryGridColumn, oldColumn: QueryGridColumn) {
@@ -142,11 +164,10 @@ export class QueryGridColumnHeader extends Polymer.WebComponent {
         return isPinned ? this.translations.Unpin : this.translations.Pin;
     }
 
-    private _sort(direction: Vidyano.SortDirection);
+    private _sort(direction: Vidyano.SortDirection, multiSort?: boolean);
     private _sort(e: Polymer.Gestures.TapEvent);
-    private _sort(eventOrDirection: Vidyano.SortDirection | Polymer.Gestures.TapEvent) {
+    private _sort(eventOrDirection: Vidyano.SortDirection | Polymer.Gestures.TapEvent, multiSort = false) {
         let newSortingDirection: Vidyano.SortDirection;
-        let multiSort = false;
 
         if (!this.canSort)
             return;
@@ -181,19 +202,23 @@ export class QueryGridColumnHeader extends Polymer.WebComponent {
 
     private _sortAsc(e: Polymer.Gestures.TapEvent) {
         e.stopPropagation();
-        this._sort("ASC");
+        Popup.closeAll();
+        this._sort("ASC", !!(<any>e).detail.sourceEvent?.ctrlKey);
     }
 
     private _sortDesc(e: Polymer.Gestures.TapEvent) {
         e.stopPropagation();
-        this._sort("DESC");
+        Popup.closeAll();
+        this._sort("DESC", !!(<any>e).detail.sourceEvent?.ctrlKey);
     }
 
     private _group() {
+        Popup.closeAll();
         this.column.query.group(this.column.column);
     }
 
     private _togglePin() {
+        Popup.closeAll();
         this.column.isPinned = !this.column.isPinned;
         this._setIsPinned(this.column.isPinned);
 
@@ -204,6 +229,11 @@ export class QueryGridColumnHeader extends Polymer.WebComponent {
     }
 
     private _hide() {
+        // The only visible column cannot be hidden
+        if (this.lastVisible)
+            return;
+
+        Popup.closeAll();
         this.column.isHidden = !this.column.isHidden;
         this.dispatchEvent(new CustomEvent("query-grid-column:update", {
             bubbles: true,
@@ -216,6 +246,13 @@ export class QueryGridColumnHeader extends Polymer.WebComponent {
             bubbles: true,
             composed: true
         }));
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+
+        if (observeOnConnected.delete(this))
+            resizeObserver.observe(this, { box: "border-box" });
     }
 
     private _queueMeasure(column: QueryGridColumn, isConnected: boolean) {

@@ -720,6 +720,38 @@ test.describe("Query", () => {
             expect(peopleQuery.selectedItemCount).toBe(9_997); // Still 10000 - 3
         });
 
+        test("selectRange returns null over the selection limit and false over unloaded items", async ({ peopleQuery }) => {
+            peopleQuery.maxSelectedItems = 3;
+            peopleQuery.items[1].isSelected = true;
+
+            expect(peopleQuery.selectRange(1, 5)).toBeNull();
+            expect(peopleQuery.selectedItems.map(i => i.id)).toEqual([peopleQuery.items[1].id]);
+
+            peopleQuery.maxSelectedItems = undefined;
+            peopleQuery.disableLazyLoading = true;
+            expect(peopleQuery.selectRange(1, 9_000)).toBe(false);
+            expect(peopleQuery.selectedItems.map(i => i.id)).toEqual([peopleQuery.items[1].id]);
+
+            expect(peopleQuery.selectRange(1, 3)).toBe(true);
+            expect(peopleQuery.selectedItems.length).toBe(3);
+        });
+
+        test("assigning selectedItems keeps the first items up to the selection limit", async ({ peopleQuery }) => {
+            peopleQuery.maxSelectedItems = 2;
+
+            const announced: number[] = [];
+            peopleQuery.propertyChanged.attach((_, args) => args.propertyName === "selectedItems" && announced.push(args.newValue.length));
+
+            peopleQuery.selectedItems = [5, 3, 7].map(i => peopleQuery.items[i]);
+            expect(peopleQuery.selectedItems.map(i => i.id)).toEqual([3, 5].map(i => peopleQuery.items[i].id));
+            expect(peopleQuery.selectedItemCount).toBe(2);
+
+            peopleQuery.selectedItems = peopleQuery.items;
+            expect(peopleQuery.selectedItems.map(i => i.id)).toEqual([0, 1].map(i => peopleQuery.items[i].id));
+            expect(peopleQuery.selectedItemCount).toBe(2);
+            expect(announced).toEqual([2, 2]);
+        });
+
         test("clearSelection clears all selected items", async ({ peopleQuery }) => {
             // Select some items manually
             peopleQuery.items[0].isSelected = true;

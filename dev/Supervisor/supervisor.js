@@ -965,16 +965,10 @@ function taskView(view) {
         </div>`;
 }
 
+// The run's spec files also hold tests that its projects and greps leave out: those stay pending, so the
+// total is Playwright's own count and only tests that started count as progress
 function progressItems(run) {
-    const tests = testsOf(run);
-    return run.files.flatMap(file => {
-        const ofFile = tests.filter(t => t.spec === file.file);
-        if (ofFile.length || ["passed", "failed", "cancelled"].includes(file.status))
-            return ofFile;
-
-        const status = file.status === "skipped" ? "not run" : "pending";
-        return Array.from({ length: data.catalog.get(file.file)?.tests.length ?? 0 }, () => ({ status }));
-    });
+    return run.total == null ? [] : testsOf(run).filter(t => t.status !== "pending");
 }
 
 function progressBar(run) {
@@ -986,7 +980,7 @@ function progressBar(run) {
                 const count = items.filter(i => i.status === status).length;
                 return count ? html`<span style="flex: ${count}; background: ${color}"></span>` : nothing;
             })}
-            <span style="flex: ${items.filter(i => i.status === "pending").length}"></span>
+            <span style="flex: ${Math.max(0, (run?.total ?? 0) - items.length)}"></span>
         </div>`;
 }
 
@@ -1018,12 +1012,15 @@ function testTop(run, busy) {
         return top("busy", "Queued", data.blockers.length ? `Waiting for ${data.blockers.join(", ")}` : "", tools);
 
     if (run.status === "running") {
+        if (run.total == null)
+            return top(runState(run), "Starting", `${took} elapsed`, tools);
+
         const items = progressItems(run);
         const done = items.filter(i => i.status !== "pending" && i.status !== "running").length;
-        if (items.length && done === items.length)
+        if (run.total && done === run.total)
             return top("busy", "Finishing up", `${took} elapsed`, tools);
 
-        return top(runState(run), `${done} / ${items.length}`, [c.failed ? `${c.failed} failed` : "", `${took} elapsed`, remaining(run, items.length, done)].filter(Boolean).join(" · "), tools);
+        return top(runState(run), `${done} / ${run.total}`, [c.failed ? `${c.failed} failed` : "", `${took} elapsed`, remaining(run, run.total, done)].filter(Boolean).join(" · "), tools);
     }
 
     if (run.status === "cancelled")

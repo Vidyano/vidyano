@@ -44,9 +44,20 @@ export default defineConfig({
     {
       name: 'vidyano',
       testMatch: 'packages/vidyano/tests/**/*.spec.ts',
+      grepInvert: /@timing/,
       use: { ...devices['Desktop Chrome'], channel: 'chrome' },
       fullyParallel: true,
       workers: 4,
+    },
+    {
+      name: 'vidyano-perf',
+      testMatch: 'packages/vidyano/tests/**/*.spec.ts',
+      grep: /@timing/,
+      /* Timings need a quiet machine: one worker and no retries that could hide regressions */
+      use: { ...devices['Desktop Chrome'], channel: 'chrome', viewport: { width: 1280, height: 720 } },
+      fullyParallel: false,
+      workers: 1,
+      retries: 0,
     },
     {
       name: 'virtual-service',

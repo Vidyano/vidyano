@@ -69,7 +69,7 @@ export class QueryGridColumn extends Vidyano.Observable<QueryGridColumn> impleme
     }
 
     set isPinned(isPinned: boolean) {
-        const wasPinned = !!this._userSettingsColumnData.isPinned;
+        const wasPinned = this.isPinned;
         if (wasPinned === isPinned)
             return;
 

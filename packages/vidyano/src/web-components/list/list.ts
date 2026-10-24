@@ -41,6 +41,18 @@ export class List extends Polymer.WebComponent {
         });
     }
 
+    scrollToTop() {
+        if (!this.items?.length)
+            return;
+
+        // Through the iron-list, which otherwise restores its own first visible item on the next resize
+        (this.shadowRoot.querySelector("#list") as IronListElement)?.scrollToIndex(0);
+    }
+
+    notifyResize() {
+        this._sizeChanged();
+    }
+
     private _bindIronListDataHost() {
         // Workaround for making sure events are delegated to the correct host
         const list = this.shadowRoot.querySelector("#list");

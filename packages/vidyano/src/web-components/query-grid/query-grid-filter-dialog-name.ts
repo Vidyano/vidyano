@@ -1,5 +1,18 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "@vidyano/core"
+
+/**
+ * Splits a filter name at its first line break into a group (null without one) and a name.
+ * Further line breaks in the name become spaces, since an input can't show them.
+ */
+export function splitFilterName(value: string): { group: string; name: string } {
+    const index = value ? value.indexOf("\n") : -1;
+    if (index < 0)
+        return { group: null, name: value };
+
+    return { group: value.substring(0, index), name: value.substring(index + 1).replace(/\n/g, " ") };
+}
+
 @Polymer.WebComponent.register({
     properties: {
         attribute: {
@@ -43,16 +56,13 @@ export class QueryGridFilterDialogName extends Polymer.WebComponent {
         try {
             this._blockUpdate = true;
 
-            const name = <string>attribute.value;
-            this._setGrouping(name ? name.contains("\n") : false);
+            const parts = splitFilterName(<string>attribute.value);
+            this._setGrouping(parts.group != null);
 
-            if (!this.grouping)
-                this.name = name;
-            else {
-                const parts = name.split("\n");
-                this.group = parts[0];
-                this.name = parts[1];
-            }
+            if (this.grouping)
+                this.group = parts.group;
+
+            this.name = parts.name;
         }
         finally {
             this._blockUpdate = false;

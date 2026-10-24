@@ -4,5 +4,5 @@
 <label>[[column.column.label]]</label>
 <div class="buttons layout horizontal">
     <vi-button inverse icon="Pin" on-tap="_togglePin"></vi-button>
-    <vi-button inverse icon="Eye" on-tap="_toggleVisible"></vi-button>
+    <vi-button inverse icon="Eye" on-tap="_toggleVisible" disabled$="[[lastVisible]]"></vi-button>
 </div>

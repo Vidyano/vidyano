@@ -9,12 +9,14 @@ import { Sortable } from "components/sortable/sortable"
         query: Object
     },
     listeners: {
-        "distribute-columns": "_distributeColumns"
+        "distribute-columns": "_distributeColumns",
+        "column-visibility-toggled": "_updateLastVisible"
     }
 }, "vi-query-grid-configure-dialog")
 export class QueryGridConfigureDialog extends Polymer.Dialog {
     static get template() { return Polymer.Dialog.dialogTemplate(Polymer.html`<link rel="import" href="query-grid-configure-dialog.html">`); }
     private _elements: QueryGridConfigureDialogColumn[];
+    private _resetWidths: boolean;
 
     constructor(public query: Vidyano.Query, private _settings: QueryGridUserSettings) {
         super();
@@ -23,6 +25,7 @@ export class QueryGridConfigureDialog extends Polymer.Dialog {
     connectedCallback() {
         this._elements = this._settings.columns.filter(c => c.width !== "0").map(c => new QueryGridConfigureDialogColumn(c));
         this._distributeColumns();
+        this._updateLastVisible();
 
         super.connectedCallback();
     }
@@ -31,15 +34,40 @@ export class QueryGridConfigureDialog extends Polymer.Dialog {
         const columns = this._elements.orderBy(c => c.column.offset);
 
         Polymer.Async.animationFrame.run(() => {
+            // Moving a row drops the focus of the button inside it
+            const focused = this._focusedElement();
+
             this._updateColumns(this.$.pinned, columns.filter(c => c.isPinned));
             this._updateColumns(this.$.unpinned, columns.filter(c => !c.isPinned));
+
+            if (focused && this._focusedElement() !== focused)
+                focused.focus();
         });
 
         e?.stopPropagation();
     }
 
+    private _focusedElement(): HTMLElement {
+        let element = this.shadowRoot.activeElement;
+        while (element?.shadowRoot?.activeElement)
+            element = element.shadowRoot.activeElement;
+
+        return element as HTMLElement;
+    }
+
+    private _updateLastVisible(e?: CustomEvent) {
+        // The only visible column cannot be hidden
+        const visible = this._elements.filter(c => !c.isHidden);
+        this._elements.forEach(c => c.lastVisible = visible.length === 1 && visible[0] === c);
+
+        e?.stopPropagation();
+    }
+
     private _updateColumns(target: HTMLElement, columns: QueryGridConfigureDialogColumn[]) {
-        columns.orderBy(c => c.offset).forEach(col => target.appendChild(col));
+        columns.orderBy(c => c.offset).forEach((col, index) => {
+            if (target.children[index] !== col)
+                target.insertBefore(col, target.children[index] ?? null);
+        });
     }
 
     private _reorderColumns(e: CustomEvent) {
@@ -63,6 +91,9 @@ export class QueryGridConfigureDialog extends Polymer.Dialog {
             c.column.isPinned = c.isPinned;
             c.column.isHidden = c.isHidden;
             c.column.offset = c.offset;
+
+            if (this._resetWidths)
+                c.column.width = undefined;
         });
 
         this.close(true);
@@ -73,9 +104,11 @@ export class QueryGridConfigureDialog extends Polymer.Dialog {
             c.isPinned = c.column.column.isPinned;
             c.isHidden = c.column.column.isHidden;
             c.offset = c.column.column.offset;
-            c.column.width = undefined;
         });
 
+        this._resetWidths = true;
+
         this._distributeColumns();
+        this._updateLastVisible();
     }
 }

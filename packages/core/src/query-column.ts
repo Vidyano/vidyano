@@ -37,6 +37,7 @@ export class QueryColumn extends ServiceObject {
     #type: string;
     #label: string;
     #distincts: IQueryColumnDistincts;
+    #distinctsRefresh: Promise<IQueryColumnDistincts>;
     #selectedDistincts: string[];
     #selectedDistinctsInversed: boolean;
     #total: QueryResultItemValue;
@@ -275,10 +276,26 @@ export class QueryColumn extends ServiceObject {
 
     /**
      * Refreshes the distinct values for the column, optionally with a search string.
+     * The distincts of a search are marked dirty, because they do not hold all values of the column. The current distincts are marked dirty as soon as a search starts.
+     * When a newer refresh starts before this one is answered, only the newer one is applied and both resolve with its distincts.
      * @param search - Optional search string to filter distincts.
      * @returns A promise resolving to the distincts.
      */
-    async refreshDistincts(search?: string): Promise<IQueryColumnDistincts> {
+    refreshDistincts(search?: string): Promise<IQueryColumnDistincts> {
+        // They are about to be replaced by a search result, so code that needs the full list refreshes again
+        if (search && this.distincts)
+            this.distincts.isDirty = true;
+
+        const refresh = this.#distinctsRefresh = this.#refreshDistincts(search, () => refresh === this.#distinctsRefresh);
+        return this.#latestDistincts(refresh);
+    }
+
+    async #latestDistincts(refresh: Promise<IQueryColumnDistincts>): Promise<IQueryColumnDistincts> {
+        const distincts = await refresh;
+        return refresh === this.#distinctsRefresh ? distincts : this.#latestDistincts(this.#distinctsRefresh);
+    }
+
+    async #refreshDistincts(search: string, isLatest: () => boolean): Promise<IQueryColumnDistincts> {
         const parameters: any = { ColumnName: this.name, AsLookup: this.query.asLookup };
         if (search)
             parameters.Search = search;
@@ -291,13 +308,16 @@ export class QueryColumn extends ServiceObject {
             return this.distincts;
         }
 
+        if (!isLatest())
+            return this.distincts;
+
         const matchingDistinctsAttr = result.attributes["MatchingDistincts"];
         const remainingDistinctsAttr = result.attributes["RemainingDistincts"];
 
         this.distincts = {
             matching: <string[]>matchingDistinctsAttr.options,
             remaining: <string[]>remainingDistinctsAttr.options,
-            isDirty: false,
+            isDirty: !!search,
             hasMore: Boolean.parse(matchingDistinctsAttr.typeHints.hasmore || remainingDistinctsAttr.typeHints.hasmore)
         };
 

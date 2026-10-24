@@ -183,6 +183,81 @@ test.describe('Query Filters and Distincts', () => {
             expect(birthDateColumn.distincts.remaining.length).toBe(0);
         });
 
+        test('an older distincts response that arrives last does not replace the newer one', async ({ service, peopleQuery }) => {
+            const lastNameColumn = peopleQuery.columns.find(c => c.name === 'LastName')!;
+
+            // Hold the response of the first refresh until the second one is done
+            const executeAction = service.executeAction.bind(service);
+            let release!: () => void;
+            const held = new Promise<void>(resolve => release = resolve);
+            let holdNext = true;
+            service.executeAction = (async (...args: Parameters<Service["executeAction"]>) => {
+                const hold = holdNext;
+                holdNext = false;
+                const result = await executeAction(...args);
+                if (hold)
+                    await held;
+
+                return result;
+            }) as Service["executeAction"];
+
+            const stale = lastNameColumn.refreshDistincts('Cl');
+            const latest = await lastNameColumn.refreshDistincts();
+            expect(latest.matching.length).toBeGreaterThan(4);
+
+            release();
+            expect(await stale).toBe(latest);
+            expect(lastNameColumn.distincts).toBe(latest);
+        });
+
+        test('a refresh answered before a newer one resolves with the distincts of the newer one', async ({ service, peopleQuery }) => {
+            const lastNameColumn = peopleQuery.columns.find(c => c.name === 'LastName')!;
+
+            // Hold the response of the second refresh, the first one is answered before it
+            const executeAction = service.executeAction.bind(service);
+            let release!: () => void;
+            const held = new Promise<void>(resolve => release = resolve);
+            let markFirstAnswered!: () => void;
+            const firstAnswered = new Promise<void>(resolve => markFirstAnswered = resolve);
+            let calls = 0;
+            service.executeAction = (async (...args: Parameters<Service["executeAction"]>) => {
+                const call = ++calls;
+                const result = await executeAction(...args);
+                if (call === 2)
+                    await held;
+                else
+                    markFirstAnswered();
+
+                return result;
+            }) as Service["executeAction"];
+
+            const older = lastNameColumn.refreshDistincts('Cl');
+            const newer = lastNameColumn.refreshDistincts();
+            await firstAnswered;
+            release();
+
+            const [olderDistincts, newerDistincts] = await Promise.all([older, newer]);
+            expect(newerDistincts.matching.length).toBeGreaterThan(4);
+            expect(olderDistincts).toBe(newerDistincts);
+            expect(lastNameColumn.distincts).toBe(newerDistincts);
+        });
+
+        test('a search marks the current and its own distincts dirty, a full refresh does not', async ({ peopleQuery }) => {
+            const lastNameColumn = peopleQuery.columns.find(c => c.name === 'LastName')!;
+
+            await lastNameColumn.refreshDistincts();
+            const full = lastNameColumn.distincts;
+            const search = lastNameColumn.refreshDistincts('Cl');
+            expect(full.isDirty).toBe(true);
+
+            await search;
+            expect(lastNameColumn.distincts).not.toBe(full);
+            expect(lastNameColumn.distincts.isDirty).toBe(true);
+
+            await lastNameColumn.refreshDistincts();
+            expect(lastNameColumn.distincts.isDirty).toBe(false);
+        });
+
         test('supports multi-selection filtering', async ({ peopleQuery }) => {
             const genderColumn = peopleQuery.columns.find(c => c.name === 'Gender')!;
             expect(genderColumn).toBeInstanceOf(QueryColumn);

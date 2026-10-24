@@ -202,6 +202,17 @@ test.describe("A group by that fails", () => {
         expect(people.groupingInfo.groups.length).toBeGreaterThan(1);
     });
 
+    test("updates lastUpdated when it goes back to the last grouping", async ({ people, hooks }) => {
+        await people.search();
+        const lastUpdated = people.lastUpdated;
+
+        hooks.fail = true;
+        await people.group("Gender");
+
+        expect(people.groupingInfo).toBeNull();
+        expect(people.lastUpdated === lastUpdated, "lastUpdated changed").toBe(false);
+    });
+
     test("keeps the grouping of the last result", async ({ query, hooks }) => {
         const groupingInfo = query.groupingInfo;
 

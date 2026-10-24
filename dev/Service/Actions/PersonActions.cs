@@ -25,6 +25,8 @@ public partial class PersonActions
                     break;
 
                 case "Filter":
+                // Only used by the saved filters spec, so the default filters it saves never reach another spec
+                case "SavedFilters":
                     query.Actions = [ActionNames.Filter];
                     break;
 
@@ -39,12 +41,80 @@ public partial class PersonActions
                 case "SelectAndInlineActions":
                     query.Actions = query.Actions.Except(["Filter"]).ToArray();
                     break;
+
+                case "ColumnOptions":
+                    ApplyColumnOptions(query.Columns);
+                    break;
             }
         }
         else
         {
             query.EnableSelectAll = true;
+
+            // 150k projected copies of People: read-only, mutations would hit the real People list
+            if (query.Name == QueryNames.PeopleBig)
+                QueryGridTestData.MakeReadOnly(query);
         }
+    }
+
+    /// <summary>
+    /// Per-query column overrides for QueryGrid_ColumnOptions (see packages/vidyano/tests/query-grid/README.md).
+    /// </summary>
+    /// <remarks>
+    /// Applied to the query columns (OnConstruct) and to the result columns (QueryExecuted), the client uses the latter
+    /// when the query is returned with a result. CanSort/CanFilter/CanListDistincts have internal setters on QueryColumn.
+    /// </remarks>
+    static void ApplyColumnOptions(IEnumerable<QueryColumn>? columns)
+    {
+        if (columns == null)
+            return;
+
+        foreach (var column in columns)
+        {
+            switch (column.Name)
+            {
+                case AttributeNames.Person.FirstName:
+                    column.Label = "First name of the person as registered in the population register";
+                    break;
+
+                case AttributeNames.Person.LastName:
+                    column.IsSensitive = true;
+                    break;
+
+                case AttributeNames.Person.BirthDate:
+                    column.IsPinned = true;
+                    break;
+
+                case AttributeNames.Person.Gender:
+                    column.IsHidden = true;
+                    break;
+
+                case AttributeNames.Person.ContactPreference:
+                    column.Width = "200px";
+                    break;
+
+                case AttributeNames.Person.Email:
+                    QueryGridTestData.SetCanListDistincts(column, false);
+                    break;
+
+                case AttributeNames.Person.PhoneNumber:
+                    QueryGridTestData.SetCanSort(column, false);
+                    QueryGridTestData.SetCanFilter(column, false);
+                    break;
+
+                case AttributeNames.Person.EmergencyContact:
+                    column.Width = "0";
+                    break;
+            }
+        }
+    }
+
+    public override void QueryExecuted(QueryExecutedArgs args)
+    {
+        base.QueryExecuted(args);
+
+        if (args.Query.Name == QueryNames.QueryGrid_ColumnOptions)
+            ApplyColumnOptions(args.Result?.Columns);
     }
 
     public override void PreClient(PersistentObject obj)

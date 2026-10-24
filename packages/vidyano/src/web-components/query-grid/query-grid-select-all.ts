@@ -39,8 +39,12 @@ export class QueryGridSelectAll extends Polymer.WebComponent {
         if (!this.query)
             return;
 
-        if (this.query.selectAll.isAvailable && !this.partial)
+        if (this.query.selectAll.isAvailable && !this.partial) {
+            if (!this.query.selectAll.allSelected && this.query.totalItems === 0)
+                return;
+
             this.query.selectAll.allSelected = !this.query.selectAll.allSelected;
+        }
         else {
             if (this.query.selectAll.isAvailable)
                 this.query.selectAll.allSelected = false;

@@ -28,7 +28,7 @@
         <div class="relative flex" grid>
             <dom-repeat items="[[columns]]" as="column" id="columnHeadersDomRepeat">
                 <template>
-                    <vi-query-grid-column-header column="[[column]]"></vi-query-grid-column-header>
+                    <vi-query-grid-column-header column="[[column]]" last-visible="[[_computeLastVisibleColumn(columns)]]"></vi-query-grid-column-header>
                 </template>
             </dom-repeat>
             <vi-size-tracker size="{{visibleColumnHeaderSize}}"></vi-size-tracker>

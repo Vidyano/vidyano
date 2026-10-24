@@ -89,6 +89,22 @@ test.describe.serial('Refresh client operation', () => {
         expect(executeQueries).toHaveLength(1);
     });
 
+    test('a refresh keeps the selected rows', async () => {
+        const selected = await sharedPage.evaluate(() => {
+            const query = (window as any).query;
+            const row = (window as any).oldRow = query.items[0];
+            query.selectedItems = [row];
+            (window as any).refresh();
+
+            return row.id;
+        });
+        await expect.poll(() => executeQueries.length).toBe(1);
+
+        // The rows of the refresh replaced the old ones
+        await expect.poll(() => sharedPage.evaluate(() => (window as any).query.items[0] !== (window as any).oldRow)).toBe(true);
+        await expect.poll(() => sharedPage.evaluate(() => (window as any).query.selectedItems.map((i: any) => i.id))).toEqual([selected]);
+    });
+
     test('a refresh with a delay searches once the delay ends', async () => {
         const start = Date.now();
         await sharedPage.evaluate(() => (window as any).refresh(1000));

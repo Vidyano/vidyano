@@ -31,6 +31,10 @@ export class PopupMenuItem extends WebComponent {
     @property({ type: Boolean, reflect: true })
     checked: boolean = false;
 
+    /** Whether the menu item is disabled and cannot be activated. */
+    @property({ type: Boolean, reflect: true })
+    disabled: boolean = false;
+
     @state()
     hasChildren: boolean = false;
 
@@ -56,7 +60,7 @@ export class PopupMenuItem extends WebComponent {
 
         return html`
             <vi-popup open-on-hover class="flex" id="popup" placement="right-start">
-                <vi-button slot="header" ?inverse=${!this.checked} @click=${this._catchClick}>
+                <vi-button slot="header" ?inverse=${!this.checked} ?disabled=${this.disabled} @click=${this._catchClick}>
                     ${showIcon ? html`<vi-icon id="icon" source=${this.icon}></vi-icon>` : showIconSpace ? html`<div class="icon-space"></div>` : nothing}
                     <span class="label">${this.label}</span>
                     ${this.hasChildren ? html`<vi-icon source="Forward"></vi-icon>` : nothing}
@@ -79,6 +83,12 @@ export class PopupMenuItem extends WebComponent {
 
     @listener("click")
     private _onClick(e: MouseEvent) {
+        if (this.disabled) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            return;
+        }
+
         if (this._action) {
             this._action();
             Popup.closeAll();

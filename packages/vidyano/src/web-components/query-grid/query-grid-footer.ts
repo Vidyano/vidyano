@@ -1,29 +1,57 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "@vidyano/core"
+import { QueryGridCell } from "./cell-templates/query-grid-cell"
+import { QueryGridCellBoolean } from "./cell-templates/query-grid-cell-boolean"
+import "./cell-templates/query-grid-cell-common-mark"
+import "./cell-templates/query-grid-cell-image"
+import { QueryGridCellDefault } from "./cell-templates/query-grid-cell-default"
 import { QueryGridColumn } from "./query-grid-column"
 
 @Polymer.WebComponent.register({
     properties: {
         item: Object,
         columns: Array
-    }
+    },
+    observers: [
+        "_render(item, columns)"
+    ]
 }, "vi-query-grid-footer")
 export class QueryGridFooter extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-footer.html">` }
 
     item: Vidyano.QueryResultItem;
-    columns: Vidyano.QueryColumn[];
+    columns: QueryGridColumn[];
 
-    private _computeIsNumeric(column: QueryGridColumn) {
-        return Vidyano.DataType.isNumericType(column.type);
+    private _render(item: Vidyano.QueryResultItem, columns: QueryGridColumn[]) {
+        const existingCells = Array.from(this.children).filter(c => c instanceof QueryGridCell) as QueryGridCell[];
+
+        (columns || []).forEach(column => {
+            const fullValue = item ? item.getFullValue(column.name) : null;
+            const cellType = this._getCellType(item, column, fullValue);
+            // A boolean cell shows a null value as "—", a total without a value shows nothing
+            const value = cellType === QueryGridCellBoolean && fullValue?.value == null ? undefined : fullValue;
+
+            let cell = existingCells.find(c => c.column?.name === column.name && c.constructor === cellType);
+            if (cell)
+                existingCells.remove(cell);
+            else {
+                cell = new cellType();
+                cell.classList.add("column");
+            }
+
+            cell.column = <any>column;
+            cell.value = value;
+            this.appendChild(cell);
+        });
+
+        existingCells.forEach(cell => this.removeChild(cell));
     }
 
-    private _computeItemValue(item: Vidyano.QueryResultItem, column: QueryGridColumn) {
-        const value = item.getValue(column.name);
-        if (value == null)
-            return "";
-        
-        const format = item.getTypeHint("displayformat", column.column.getTypeHint("displayformat", null));
-        return !String.isNullOrEmpty(format) ? String.format(format, value) : value;
+    private _getCellType(item: Vidyano.QueryResultItem, column: QueryGridColumn, value: Vidyano.QueryResultItemValue) {
+        // A DisplayFormat keeps priority over the column's cell template, the default cell shows it as formatted text
+        if (item && !String.isNullOrEmpty(item.getTypeHint("displayformat", column.column.getTypeHint("displayformat", null), value?.typeHints)))
+            return QueryGridCellDefault;
+
+        return QueryGridCell.getCellTypeConstructor(column.type) || QueryGridCellDefault;
     }
 }

@@ -1,7 +1,3 @@
 <link rel="stylesheet" href="query-grid-footer.css" />
 
-<dom-repeat items="[[columns]]" as="column">
-    <template>
-        <div class="column" is-numeric$="[[_computeIsNumeric(column)]]">[[_computeItemValue(item, column)]]</div>
-    </template>
-</dom-repeat>
+<slot></slot>

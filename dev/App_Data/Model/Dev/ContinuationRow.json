@@ -1,0 +1,181 @@
+{
+  "PersistentObject": {
+    "$id": "PersistentObject:fb1580ba-03ba-45e3-b497-d002b6d2571b",
+    "Id": "fb1580ba-03ba-45e3-b497-d002b6d2571b",
+    "SchemaName": "Dev",
+    "Type": "ContinuationRow",
+    "Salt": "n_3aBtjqTEy9YlGK93cofkcffUdItSq9Z6lccemUJBIeU_xBCTZrVQ",
+    "Breadcrumb": "{Code}",
+    "ContextProperty": "ContinuationRows",
+    "Label": {
+      "en": "Continuation row",
+      "nl": "Continuation row"
+    },
+    "Groups": [
+      {
+        "$id": "PersistentObjectAttributeGroup:3567c2d7-be30-4024-ae24-e1b657472a33",
+        "Id": "3567c2d7-be30-4024-ae24-e1b657472a33"
+      }
+    ],
+    "Tabs": [
+      {
+        "$id": "PersistentObjectAttributeTab:b8c969e5-0e88-4611-b1c1-d56953f8e6ac",
+        "Id": "b8c969e5-0e88-4611-b1c1-d56953f8e6ac"
+      }
+    ],
+    "Attributes": [
+      {
+        "$id": "PersistentObjectAttribute:ada9a5f2-7f2a-4d85-a3e2-3f440979f7a1",
+        "Id": "ada9a5f2-7f2a-4d85-a3e2-3f440979f7a1",
+        "Offset": 10,
+        "Name": "Id",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Id",
+          "nl": "Id"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Int32"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:3567c2d7-be30-4024-ae24-e1b657472a33"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:b8c969e5-0e88-4611-b1c1-d56953f8e6ac"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:5aac174c-9457-4583-9a58-1d7cbd9bb01c",
+        "Id": "5aac174c-9457-4583-9a58-1d7cbd9bb01c",
+        "Offset": 20,
+        "Name": "Code",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Code",
+          "nl": "Code"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:3567c2d7-be30-4024-ae24-e1b657472a33"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:b8c969e5-0e88-4611-b1c1-d56953f8e6ac"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:fa03e765-7c64-4916-aeb9-794a554bb4c9",
+        "Id": "fa03e765-7c64-4916-aeb9-794a554bb4c9",
+        "Offset": 30,
+        "Name": "Name",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Name",
+          "nl": "Name"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:3567c2d7-be30-4024-ae24-e1b657472a33"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:b8c969e5-0e88-4611-b1c1-d56953f8e6ac"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:3372da4c-538c-4845-a1f5-760d7f64edac",
+        "Id": "3372da4c-538c-4845-a1f5-760d7f64edac",
+        "Offset": 40,
+        "Name": "Department",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Department",
+          "nl": "Department"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:3567c2d7-be30-4024-ae24-e1b657472a33"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:b8c969e5-0e88-4611-b1c1-d56953f8e6ac"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:975b918b-578c-4938-aeb1-c076b30cf19a",
+        "Id": "975b918b-578c-4938-aeb1-c076b30cf19a",
+        "Offset": 50,
+        "Name": "Amount",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Amount",
+          "nl": "Amount"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Decimal"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:3567c2d7-be30-4024-ae24-e1b657472a33"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:b8c969e5-0e88-4611-b1c1-d56953f8e6ac"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:bfb2626d-4b8a-42a6-954f-199eee633684",
+        "Id": "bfb2626d-4b8a-42a6-954f-199eee633684",
+        "Offset": 60,
+        "Name": "Date",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Date",
+          "nl": "Date"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Date"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:3567c2d7-be30-4024-ae24-e1b657472a33"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:b8c969e5-0e88-4611-b1c1-d56953f8e6ac"
+        }
+      }
+    ],
+    "Queries": []
+  },
+  "Queries": [
+    {
+      "$id": "Query:4148f499-8786-48b6-a4b0-b10ada9ff41c",
+      "Id": "4148f499-8786-48b6-a4b0-b10ada9ff41c",
+      "Source": "Custom.ContinuationPages",
+      "AutoQuery": true,
+      "Name": "QueryGrid_Continuation",
+      "PageSize": 100,
+      "Label": {
+        "en": "Continuation (unknown total)",
+        "nl": "Continuation (unknown total)"
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:fb1580ba-03ba-45e3-b497-d002b6d2571b"
+      },
+      "Columns": []
+    }
+  ],
+  "Reports": []
+}

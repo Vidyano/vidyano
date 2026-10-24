@@ -405,6 +405,8 @@ export class Query extends ServiceObjectWithActions {
         try {
             this.#isSelectionModifying = true;
             items = items.filter(i => !i.ignoreSelect) || [];
+            if (this.maxSelectedItems)
+                items = items.slice(0, this.maxSelectedItems);
 
             const selectedItems = this.selectedItems;
             if (selectedItems && selectedItems.length > 0)
@@ -648,9 +650,9 @@ export class Query extends ServiceObjectWithActions {
      * Selects a range of items in the query.
      * @param from - The starting index.
      * @param to - The ending index.
-     * @returns True if the selection was updated; otherwise, false.
+     * @returns True if the selection was updated, false if the range has unloaded items, or null if the range would exceed maxSelectedItems.
      */
-    selectRange(from: number, to: number): boolean {
+    selectRange(from: number, to: number): boolean | null {
         let selectionUpdated: boolean;
 
         try {
@@ -658,7 +660,7 @@ export class Query extends ServiceObjectWithActions {
             const itemsToSelect = this.items.slice(from, ++to);
 
             if (this.maxSelectedItems && this.selectedItems.concat(itemsToSelect).distinct().length > this.maxSelectedItems)
-                return;
+                return null;
 
             // Detect if array has gaps
             if (Object.keys(itemsToSelect).length === to - from) {
@@ -808,14 +810,14 @@ export class Query extends ServiceObjectWithActions {
             if (generation !== this.#searchGeneration)
                 return requested();
 
-            if (usesContinuation) {
-                if (!this.hasMore)
-                    return requested();
+            if (usesContinuation && !this.hasMore)
+                return requested();
 
-                // Pages may have been loaded while this work was queued, continue from the current continuation token
-                while (startPage < endPage && this.#queriedPages.indexOf(startPage) >= 0)
-                    startPage++;
-            }
+            // Work queued before this one may have loaded pages of this range since it was asked for
+            while (startPage < endPage && this.#queriedPages.indexOf(startPage) >= 0)
+                startPage++;
+            while (endPage > startPage && this.#queriedPages.indexOf(endPage) >= 0)
+                endPage--;
 
             if (!Array.range(startPage, endPage).some(p => this.#queriedPages.indexOf(p) < 0))
                 return requested();
@@ -1171,11 +1173,16 @@ export class Query extends ServiceObjectWithActions {
         if (!this.#lastResult)
             return;
 
+        const sortOptions = this.sortOptions, groupingInfo = this.groupingInfo;
         if (this.sortOptions === sentSortOptions)
             this.sortOptions = this.#resultSortOptions;
 
         if (this.groupingInfo === sentGroupingInfo)
             this.#setGroupingInfo(this.#resultGroupingInfo);
+
+        // Views that redraw on lastUpdated, like the grid, follow the restored state
+        if (this.sortOptions !== sortOptions || this.groupingInfo !== groupingInfo)
+            this.#setLastUpdated();
     }
 
     /**
@@ -1266,6 +1273,9 @@ export class Query extends ServiceObjectWithActions {
         const groupedBy = this.groupingInfo?.groupedBy;
         this.#updateGroupingInfo(groupedBy ? { groupedBy, groups: [] } : null);
         this.#setTotalItem(null);
+        this.#setCharts(null);
+        this.currentChart = null;
+        this.#tag = null;
 
         console.error(error);
         this.#setLastUpdated();
@@ -1296,7 +1306,7 @@ export class Query extends ServiceObjectWithActions {
 
         const selectedItems = this.selectedItems;
         if (announce || selectedItems.length > this.maxSelectedItems)
-            this.selectedItems = selectedItems.slice(0, this.maxSelectedItems);
+            this.selectedItems = selectedItems;
     }
 
     /**

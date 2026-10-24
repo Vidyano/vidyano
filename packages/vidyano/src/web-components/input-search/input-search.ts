@@ -86,6 +86,13 @@ export class InputSearch extends WebComponent {
 
     private _resetClick(e?: MouseEvent) {
         this.value = "";
+
+        // Notify now instead of on the next update, so hosts bound to value see the cleared text when they handle search
+        this.dispatchEvent(new CustomEvent("value-changed", {
+            detail: { value: this.value },
+            composed: true
+        }));
+
         this.dispatchEvent(new CustomEvent("search", {
             detail: this.value,
             bubbles: true,

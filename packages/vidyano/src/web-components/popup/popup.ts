@@ -378,7 +378,8 @@ export class Popup extends WebComponent {
             return;
         }
 
-        if (!this.sticky) {
+        // Closing the popup removes the content from under the mouse, a timer armed by that leave would close the next open
+        if (this.open && !this.sticky) {
             this.#closeOnMoveoutTimer = setTimeout(() => {
                 this.close();
             }, this.closeDelay);

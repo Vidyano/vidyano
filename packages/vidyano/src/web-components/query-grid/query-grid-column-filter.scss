@@ -208,14 +208,6 @@
                     pointer-events: none;
                 }
 
-                vi-checkbox[checked] {
-                    --vi-checkbox-checked-color: green;
-                }
-
-                &[inversed] vi-checkbox[checked] {
-                    --vi-checkbox-checked-color: darkred;
-                }
-
                 > span {
                     display: -webkit-box;
                     overflow: hidden;
@@ -280,10 +272,8 @@
             opacity: 0.5;
         }
     }
+}
 
-    &[sensitive] {
-        vi-checkbox[distinct-type="matching"], vi-checkbox[distinct-type="remaining"] {
-            --at-apply: --vi-app--sensitive;
-        }
-    }
+:host([is-app-sensitive][sensitive]) #distincts .item > span[distinct-type] {
+    filter: blur(5px);
 }
