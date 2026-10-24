@@ -810,14 +810,14 @@ export class Query extends ServiceObjectWithActions {
             if (generation !== this.#searchGeneration)
                 return requested();
 
-            if (usesContinuation) {
-                if (!this.hasMore)
-                    return requested();
+            if (usesContinuation && !this.hasMore)
+                return requested();
 
-                // Pages may have been loaded while this work was queued, continue from the current continuation token
-                while (startPage < endPage && this.#queriedPages.indexOf(startPage) >= 0)
-                    startPage++;
-            }
+            // Work queued before this one may have loaded pages of this range since it was asked for
+            while (startPage < endPage && this.#queriedPages.indexOf(startPage) >= 0)
+                startPage++;
+            while (endPage > startPage && this.#queriedPages.indexOf(endPage) >= 0)
+                endPage--;
 
             if (!Array.range(startPage, endPage).some(p => this.#queriedPages.indexOf(p) < 0))
                 return requested();
