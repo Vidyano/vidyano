@@ -1,5 +1,5 @@
 import { expect, Locator, Page } from '@playwright/test';
-import { BASE, getScrollOffset, VIEWS, waitForGridReady } from './query-grid';
+import { getScrollOffset, openApp, VIEWS, waitForGridReady } from './query-grid';
 
 /**
  * Helpers for the app view specs (tests/query-grid/views). VIEW_MATRIX holds the expected values per view; pixel
@@ -370,10 +370,7 @@ export function referenceDialog(page: Page): Locator {
 }
 
 export async function openAttributesReference(page: Page, attribute = 'Reference') {
-    await page.setViewportSize({ width: 1280, height: 720 });
-    await page.route('**/fonts.googleapis.com/**', route => route.fulfill({ contentType: 'text/css', body: '' }));
-    await page.route('**/fonts.gstatic.com/**', route => route.abort());
-    await page.goto(`${BASE}/${ATTRIBUTES_REFERENCE}`);
+    await openApp(page, ATTRIBUTES_REFERENCE);
 
     const reference = page.locator('vi-persistent-object-attribute-reference').filter({ has: page.locator('input') });
     await reference.first().waitFor({ timeout: 30000 });
@@ -396,10 +393,7 @@ export async function browseReference(reference: Locator) {
 
 /** Opens person 3 in edit mode and returns its EmergencyContact reference attribute. */
 export async function openEmergencyContact(page: Page) {
-    await page.setViewportSize({ width: 1280, height: 720 });
-    await page.route('**/fonts.googleapis.com/**', route => route.fulfill({ contentType: 'text/css', body: '' }));
-    await page.route('**/fonts.gstatic.com/**', route => route.abort());
-    await page.goto(`${BASE}/home/person/3`);
+    await openApp(page, 'home/person/3');
 
     const po = page.locator('vi-persistent-object').first();
     await po.locator('vi-action-button[name=Edit]').click({ timeout: 30000 });

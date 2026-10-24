@@ -346,11 +346,12 @@ export function header(grid: Locator, name: string): Locator {
  */
 export async function openHeaderMenu(grid: Locator, name: string) {
     const h = header(grid, name);
-    const caret = h.locator('vi-button[icon="CaretDown"]').first();
+    // The first opening swaps the caret for the menu's own one but keeps the first, hidden, in the header
+    const caret = h.locator('vi-button[icon="CaretDown"]').filter({ visible: true });
     await grid.evaluate((g: any, name) => {
         const scroller = ([...g.shadowRoot.querySelectorAll('vi-scroller')].find((s: any) => !s.closest('header, vi-popup')) as any).scroller as HTMLElement;
         const headerElement = g.shadowRoot.querySelector(`vi-query-grid-column-header[name="${name}"]`) as HTMLElement;
-        const button = headerElement.shadowRoot!.querySelector('vi-button[icon="CaretDown"]')!.getBoundingClientRect();
+        const button = [...headerElement.shadowRoot!.querySelectorAll('vi-button[icon="CaretDown"]')].find(b => b.getClientRects().length > 0)!.getBoundingClientRect();
         const view = scroller.getBoundingClientRect();
         // Keep clear of the "more columns" chevron at the right edge
         const limit = view.right - 40;

@@ -229,42 +229,46 @@ namespace Dev.Service.Supervisor
         /// <summary>
         /// The flags a run passes to Playwright: its own, plus what keeps the timing tests away from other tests. A run
         /// without --project would run the timing project next to the others, so it leaves the timing tests out. A perf
-        /// run of perf specs runs only the timing project; when it runs other projects too (it names them, or it picks
-        /// single tests, which can be in either project), it runs on one worker instead.
+        /// run runs every project it would run anyway, timing and other tests alike, but on one worker (its own worker
+        /// count is dropped), so a timing test never shares the machine.
         /// </summary>
         static List<string> PlaywrightFlags(IReadOnlyList<string> flags, IReadOnlyList<string> targets)
         {
-            var projects = ProjectsOf(flags);
-            if (!IsPerfRun(flags, targets))
+            if (IsPerfRun(flags, targets))
             {
-                if (projects.Count > 0)
-                    return flags.ToList();
-
-                // Playwright keeps only the last --grep-invert, so the run's own one joins the tag
-                var result = new List<string>();
-                string invert = null;
+                var perf = new List<string>();
                 for (var i = 0; i < flags.Count; i++)
                 {
-                    if (flags[i] == "--grep-invert" && i + 1 < flags.Count)
-                        invert = flags[++i];
-                    else if (flags[i].StartsWith("--grep-invert="))
-                        invert = flags[i]["--grep-invert=".Length..];
-                    else
-                        result.Add(flags[i]);
+                    if (flags[i] is "-j" or "--workers")
+                        i++;
+                    else if (!flags[i].StartsWith("--workers="))
+                        perf.Add(flags[i]);
                 }
 
-                result.Add("--grep-invert");
-                result.Add(invert == null ? TimingTag : $"(?:{invert})|{TimingTag}");
-                return result;
+                perf.Add("--workers");
+                perf.Add("1");
+                return perf;
             }
 
-            if (projects.Count == 0 && targets.All(t => t == SpecOf(t)))
-                return flags.Concat(new[] { "--project", TimingProject }).ToList();
-
-            if (projects.All(p => string.Equals(p, TimingProject, StringComparison.OrdinalIgnoreCase)) || flags.Any(f => f is "-j" or "--workers" || f.StartsWith("--workers=")))
+            if (ProjectsOf(flags).Count > 0)
                 return flags.ToList();
 
-            return flags.Concat(new[] { "--workers", "1" }).ToList();
+            // Playwright keeps only the last --grep-invert, so the run's own one joins the tag
+            var result = new List<string>();
+            string invert = null;
+            for (var i = 0; i < flags.Count; i++)
+            {
+                if (flags[i] == "--grep-invert" && i + 1 < flags.Count)
+                    invert = flags[++i];
+                else if (flags[i].StartsWith("--grep-invert="))
+                    invert = flags[i]["--grep-invert=".Length..];
+                else
+                    result.Add(flags[i]);
+            }
+
+            result.Add("--grep-invert");
+            result.Add(invert == null ? TimingTag : $"(?:{invert})|{TimingTag}");
+            return result;
         }
 
         /// <summary>
@@ -583,7 +587,7 @@ namespace Dev.Service.Supervisor
                     Tell(run, $"Left out the {TimingTag} perf tests: they run alone, e.g. npm run test:dev -- {Path.GetDirectoryName(SpecOf(perf)).Replace('\\', '/')}");
 
                 if (run.Access == Machine)
-                    Tell(run, $"Perf runs ({TimingTag} tests) run alone: this run waits until no other test run runs and no watcher builds");
+                    Tell(run, $"Perf runs ({TimingTag} tests) run alone on one worker: this run waits until no other test run runs and no watcher builds");
 
                 return run;
             }

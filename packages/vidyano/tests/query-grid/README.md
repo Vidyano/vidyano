@@ -34,7 +34,7 @@ The specs use the shared dev backend (`npm run dev`, http://localhost:5000) and 
 ```bash
 npm run test:dev -- --project=query-grid                                        # everything but the @timing tests
 npm run test:dev -- packages/vidyano/tests/query-grid/grid/continuation.spec.ts  # one spec
-npm run test:dev -- packages/vidyano/tests/query-grid/perf                      # the @timing tests (project vidyano-perf), alone
+npm run test:dev -- packages/vidyano/tests/query-grid/perf                      # all perf tests, @timing included, alone on one worker
 ```
 
 - `query-grid` runs with 4 workers, perf/ included, but leaves out the tests tagged `@timing` (wall-clock and frame timings); `vidyano-perf` runs only those, with 1 worker and no retries, and only when nothing else runs.
