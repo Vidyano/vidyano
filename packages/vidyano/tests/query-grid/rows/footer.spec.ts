@@ -97,6 +97,39 @@ test.describe('vi-query-grid-footer: values', () => {
         expect(texts.some(t => /null|undefined/.test(t ?? ''))).toBe(false);
     });
 
+    for (const [label, totals] of [
+        ['missing', TOTALS.filter(t => t.key !== 'IsActive')],
+        ['null', [...TOTALS.filter(t => t.key !== 'IsActive'), { key: 'IsActive', value: null }]]
+    ] as const) {
+        test(`a boolean column with a ${label} total stays empty`, case_('rows.ftr-boolean-empty'), async ({ page }) => {
+            await gridPage(page);
+            await injectTotalItem(page, [...totals]);
+            const grid = await mountGrid(page);
+
+            const footer = grid.locator('vi-query-grid-footer');
+            await expect(footer).toBeVisible();
+            const byName = await footerTexts(grid);
+            expect(byName.FirstName).toBe('Total');
+            expect(byName.IsActive).toBe('');
+            expect(await footer.locator('vi-query-grid-cell-boolean vi-icon:not([hidden])').count()).toBe(0);
+        });
+    }
+
+    test('a null total keeps the style hint of its column', case_('rows.ftr-null-style'), async ({ page }) => {
+        await gridPage(page);
+        await injectTotalItem(page, TOTALS);
+        const grid = await mountPrepared(page, {
+            prepare: (q: any) => {
+                const column = q.columns.find((c: any) => c.name === 'Email');
+                column.typeHints = { ...(column.typeHints ?? {}), style: 'background-color: rgb(1, 2, 3)' };
+            }
+        });
+
+        const names = await headerNames(grid);
+        const backgrounds = await grid.locator('vi-query-grid-footer .column').evaluateAll(cells => cells.map(c => getComputedStyle(c).backgroundColor));
+        expect(backgrounds[names.indexOf('Email')]).toBe('rgb(1, 2, 3)');
+    });
+
     test('the column DisplayFormat formats the total', case_('rows.ftr-displayformat-column'), async ({ page }) => {
         await gridPage(page);
         await injectTotalItem(page, TOTALS);

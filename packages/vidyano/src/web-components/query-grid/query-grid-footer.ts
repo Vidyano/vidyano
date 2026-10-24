@@ -1,7 +1,7 @@
 import * as Polymer from "polymer"
 import * as Vidyano from "@vidyano/core"
 import { QueryGridCell } from "./cell-templates/query-grid-cell"
-import "./cell-templates/query-grid-cell-boolean"
+import { QueryGridCellBoolean } from "./cell-templates/query-grid-cell-boolean"
 import "./cell-templates/query-grid-cell-common-mark"
 import "./cell-templates/query-grid-cell-image"
 import { QueryGridCellDefault } from "./cell-templates/query-grid-cell-default"
@@ -26,8 +26,10 @@ export class QueryGridFooter extends Polymer.WebComponent {
         const existingCells = Array.from(this.children).filter(c => c instanceof QueryGridCell) as QueryGridCell[];
 
         (columns || []).forEach(column => {
-            const value = item ? item.getFullValue(column.name) : null;
-            const cellType = this._getCellType(item, column, value);
+            const fullValue = item ? item.getFullValue(column.name) : null;
+            const cellType = this._getCellType(item, column, fullValue);
+            // A boolean cell shows a null value as "—", a total without a value shows nothing
+            const value = cellType === QueryGridCellBoolean && fullValue?.value == null ? undefined : fullValue;
 
             let cell = existingCells.find(c => c.column?.name === column.name && c.constructor === cellType);
             if (cell)
