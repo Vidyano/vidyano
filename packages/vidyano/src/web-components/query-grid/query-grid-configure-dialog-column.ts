@@ -11,6 +11,10 @@ import { QueryGridColumn } from "./query-grid-column"
         isHidden: {
             type: Boolean,
             reflectToAttribute: true
+        },
+        lastVisible: {
+            type: Boolean,
+            value: false
         }
     }
 }, "vi-query-grid-configure-dialog-column")
@@ -20,6 +24,8 @@ export class QueryGridConfigureDialogColumn extends Polymer.WebComponent {
     offset: number;
     isPinned: boolean;
     isHidden: boolean;
+    /** Whether this is the only visible column, which cannot be hidden. */
+    lastVisible: boolean;
 
     constructor(public column: QueryGridColumn) {
         super();
@@ -43,6 +49,14 @@ export class QueryGridConfigureDialogColumn extends Polymer.WebComponent {
     }
 
     private _toggleVisible() {
+        if (this.lastVisible)
+            return;
+
         this.isHidden = !this.isHidden;
+
+        this.dispatchEvent(new CustomEvent("column-visibility-toggled", {
+            bubbles: true,
+            composed: true
+        }));
     }
 }

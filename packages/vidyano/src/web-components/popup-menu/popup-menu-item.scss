@@ -52,6 +52,11 @@
     }
 }
 
+:host([disabled]) {
+    cursor: default;
+    pointer-events: none;
+}
+
 .icon-space {
     height: var(--vi-popup-menu-item-height, var(--theme-h1));
     width: var(--vi-popup-menu-item-icon-width, var(--theme-h2));

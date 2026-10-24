@@ -85,6 +85,10 @@ resizeObserver = new ResizeObserver(allEntries => {
             type: String,
             reflectToAttribute: true,
             computed: "_computeName(column)"
+        },
+        lastVisible: {
+            type: Boolean,
+            value: false
         }
     },
     forwardObservers: [
@@ -106,6 +110,8 @@ export class QueryGridColumnHeader extends Polymer.WebComponent {
     #_resizingRAF: number;
 
     column: QueryGridColumn;
+    /** Whether this is the only visible column, which cannot be hidden. */
+    lastVisible: boolean;
     readonly canSort: boolean; private _setCanSort: (canSort: boolean) => void;
     readonly canGroupBy: boolean; private _setCanGroupBy: (canGroupBy: boolean) => void;
     readonly isPinned: boolean; private _setIsPinned: (isPinned: boolean) => void;
@@ -142,11 +148,10 @@ export class QueryGridColumnHeader extends Polymer.WebComponent {
         return isPinned ? this.translations.Unpin : this.translations.Pin;
     }
 
-    private _sort(direction: Vidyano.SortDirection);
+    private _sort(direction: Vidyano.SortDirection, multiSort?: boolean);
     private _sort(e: Polymer.Gestures.TapEvent);
-    private _sort(eventOrDirection: Vidyano.SortDirection | Polymer.Gestures.TapEvent) {
+    private _sort(eventOrDirection: Vidyano.SortDirection | Polymer.Gestures.TapEvent, multiSort = false) {
         let newSortingDirection: Vidyano.SortDirection;
-        let multiSort = false;
 
         if (!this.canSort)
             return;
@@ -181,12 +186,12 @@ export class QueryGridColumnHeader extends Polymer.WebComponent {
 
     private _sortAsc(e: Polymer.Gestures.TapEvent) {
         e.stopPropagation();
-        this._sort("ASC");
+        this._sort("ASC", !!(<any>e).detail.sourceEvent?.ctrlKey);
     }
 
     private _sortDesc(e: Polymer.Gestures.TapEvent) {
         e.stopPropagation();
-        this._sort("DESC");
+        this._sort("DESC", !!(<any>e).detail.sourceEvent?.ctrlKey);
     }
 
     private _group() {
@@ -204,6 +209,10 @@ export class QueryGridColumnHeader extends Polymer.WebComponent {
     }
 
     private _hide() {
+        // The only visible column cannot be hidden
+        if (this.lastVisible)
+            return;
+
         this.column.isHidden = !this.column.isHidden;
         this.dispatchEvent(new CustomEvent("query-grid-column:update", {
             bubbles: true,

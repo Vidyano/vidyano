@@ -8,7 +8,8 @@ export class QueryGridUserSettings extends Vidyano.Observable<QueryGridUserSetti
     private constructor(private _query: Vidyano.Query, data: { [key: string]: IQueryGridUserSettingsColumnData; } = {}) {
         super();
 
-        this._columns = this._query.columns.filter(c => c.width !== "0").map(c => this._columnsByName[c.name] = new QueryGridColumn(c, data[c.name] || {
+        // Each column works on a copy of its stored entry, changes are only stored by save()
+        this._columns = this._query.columns.filter(c => c.width !== "0").map(c => this._columnsByName[c.name] = new QueryGridColumn(c, data[c.name] ? { ...data[c.name] } : {
             offset: c.offset,
             isPinned: c.isPinned,
             isHidden: c.isHidden,
@@ -38,6 +39,10 @@ export class QueryGridUserSettings extends Vidyano.Observable<QueryGridUserSetti
         let queryData: { [key: string]: IQueryGridUserSettingsColumnData; };
         const columnData = (name: string) => (queryData || (queryData = {}))[name] || (queryData[name] = {});
 
+        // Make sure at least one column is visible
+        if (this._columns.length > 0 && !this._columns.some(c => !c.isHidden))
+            this._columns[0].isHidden = false;
+
         this._columns.forEach(c => {
             if (c.offset !== c.column.offset)
                 columnData(c.name).offset = c.offset;
@@ -51,10 +56,6 @@ export class QueryGridUserSettings extends Vidyano.Observable<QueryGridUserSetti
             if (c.width !== c.column.width)
                 columnData(c.name).width = c.width;
         });
-
-        // Make sure at least one column is visible
-        if (this._columns.length > 0 && !this._columns.some(c => !c.isHidden))
-            this._columns[0].isHidden = false;
 
         if (queryData)
             this._query.service.application.userSettings["QueryGridSettings"][this._query.id] = queryData;

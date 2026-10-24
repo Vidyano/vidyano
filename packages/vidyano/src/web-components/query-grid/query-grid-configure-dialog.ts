@@ -9,7 +9,8 @@ import { Sortable } from "components/sortable/sortable"
         query: Object
     },
     listeners: {
-        "distribute-columns": "_distributeColumns"
+        "distribute-columns": "_distributeColumns",
+        "column-visibility-toggled": "_updateLastVisible"
     }
 }, "vi-query-grid-configure-dialog")
 export class QueryGridConfigureDialog extends Polymer.Dialog {
@@ -23,6 +24,7 @@ export class QueryGridConfigureDialog extends Polymer.Dialog {
     connectedCallback() {
         this._elements = this._settings.columns.filter(c => c.width !== "0").map(c => new QueryGridConfigureDialogColumn(c));
         this._distributeColumns();
+        this._updateLastVisible();
 
         super.connectedCallback();
     }
@@ -34,6 +36,14 @@ export class QueryGridConfigureDialog extends Polymer.Dialog {
             this._updateColumns(this.$.pinned, columns.filter(c => c.isPinned));
             this._updateColumns(this.$.unpinned, columns.filter(c => !c.isPinned));
         });
+
+        e?.stopPropagation();
+    }
+
+    private _updateLastVisible(e?: CustomEvent) {
+        // The only visible column cannot be hidden
+        const visible = this._elements.filter(c => !c.isHidden);
+        this._elements.forEach(c => c.lastVisible = visible.length === 1 && visible[0] === c);
 
         e?.stopPropagation();
     }
@@ -77,5 +87,6 @@ export class QueryGridConfigureDialog extends Polymer.Dialog {
         });
 
         this._distributeColumns();
+        this._updateLastVisible();
     }
 }

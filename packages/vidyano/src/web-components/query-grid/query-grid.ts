@@ -571,6 +571,10 @@ export class QueryGrid extends Polymer.WebComponent {
         return columns;
     }
 
+    private _computeLastVisibleColumn(columns: QueryGridColumn[]) {
+        return columns?.length === 1;
+    }
+
     private _computeVirtualRowCount(viewportHeight: number, rowHeight: number, canReorder: boolean, totalItems: number) {
         if (!viewportHeight)
             return 0;
