@@ -37,6 +37,7 @@ export class QueryColumn extends ServiceObject {
     #type: string;
     #label: string;
     #distincts: IQueryColumnDistincts;
+    #distinctsRequest = 0;
     #selectedDistincts: string[];
     #selectedDistinctsInversed: boolean;
     #total: QueryResultItemValue;
@@ -283,6 +284,7 @@ export class QueryColumn extends ServiceObject {
         if (search)
             parameters.Search = search;
 
+        const request = ++this.#distinctsRequest;
         let result: PersistentObject;
         try {
             result = await this.service.executeAction("QueryFilter.RefreshColumn", this.query.parent, this.query.clone(), null, parameters);
@@ -290,6 +292,10 @@ export class QueryColumn extends ServiceObject {
         catch (e) {
             return this.distincts;
         }
+
+        // A newer refresh was started meanwhile, its distincts win
+        if (request !== this.#distinctsRequest)
+            return this.distincts;
 
         const matchingDistinctsAttr = result.attributes["MatchingDistincts"];
         const remainingDistinctsAttr = result.attributes["RemainingDistincts"];

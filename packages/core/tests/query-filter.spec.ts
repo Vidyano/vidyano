@@ -183,6 +183,34 @@ test.describe('Query Filters and Distincts', () => {
             expect(birthDateColumn.distincts.remaining.length).toBe(0);
         });
 
+        test('an older distincts response that arrives last does not replace the newer one', async ({ service, peopleQuery }) => {
+            const lastNameColumn = peopleQuery.columns.find(c => c.name === 'LastName')!;
+
+            // Hold the response of the first refresh until the second one is done
+            const executeAction = service.executeAction.bind(service);
+            let release!: () => void;
+            const held = new Promise<void>(resolve => release = resolve);
+            let holdNext = true;
+            service.executeAction = (async (...args: Parameters<Service["executeAction"]>) => {
+                const hold = holdNext;
+                holdNext = false;
+                const result = await executeAction(...args);
+                if (hold)
+                    await held;
+
+                return result;
+            }) as Service["executeAction"];
+
+            const stale = lastNameColumn.refreshDistincts('Cl');
+            const latest = await lastNameColumn.refreshDistincts();
+            expect(latest.matching.length).toBeGreaterThan(4);
+
+            release();
+            await stale;
+
+            expect(lastNameColumn.distincts).toBe(latest);
+        });
+
         test('supports multi-selection filtering', async ({ peopleQuery }) => {
             const genderColumn = peopleQuery.columns.find(c => c.name === 'Gender')!;
             expect(genderColumn).toBeInstanceOf(QueryColumn);

@@ -1652,29 +1652,34 @@ test.describe('Server search (more)', () => {
         const grid = await setup(page);
         const cf = await openFilter(grid, 'Email');
         let staleHeld = false;
+        let release!: () => void;
+        const held = new Promise<void>(resolve => release = resolve);
         await page.route('**/ExecuteAction', async route => {
             const body = route.request().postDataJSON();
-            if (body?.action === 'QueryFilter.RefreshColumn' && body.parameters?.Search === 'aa') {
+            if (body?.action === 'QueryFilter.RefreshColumn' && body.parameters?.Search === 'a') {
                 staleHeld = true;
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                await held;
             }
 
             await route.continue();
         });
 
-        await searchInput(cf).pressSequentially('aa');
+        await searchInput(cf).pressSequentially('a');
         await expect.poll(() => staleHeld).toBe(true);
-        await searchInput(cf).pressSequentially('ron');
-
-        // Wait until the held 'aa' response arrived too
+        await searchInput(cf).pressSequentially('aron');
         await expect(cf).not.toHaveAttribute('loading', { timeout: 10000 });
-        await page.waitForTimeout(1600);
-        await expect(cf).not.toHaveAttribute('loading');
-        await expect(cf.locator('vi-spinner')).toBeHidden();
 
-        const rows = (await allDistinctRows(cf)).filter(r => !r.hasMore);
-        expect(rows.length).toBeGreaterThan(0);
-        expect(rows.every(r => r.text.toLowerCase().includes('aaron'))).toBe(true);
+        // Let the held 'a' search through, it answers after 'aaron'
+        const stale = page.waitForResponse(r => r.request().postDataJSON()?.parameters?.Search === 'a');
+        release();
+        const staleValues = ((await (await stale).json()).result.attributes as any[]).find(a => a.name === 'MatchingDistincts').options as string[];
+        expect(staleValues.some(v => !v.toLowerCase().includes('aaron'))).toBe(true);
+        await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+
+        const distincts = await grid.evaluate((g: any) => g.query.getColumn('Email').distincts.matching as string[]);
+        expect(distincts.length).toBeGreaterThan(0);
+        expect(distincts.every(v => v.toLowerCase().includes('aaron'))).toBe(true);
+        await expect(cf).not.toHaveAttribute('loading');
         await expect(searchInput(cf)).toHaveValue('aaron');
     });
 
@@ -1727,6 +1732,45 @@ test.describe('Server search (more)', () => {
         const rows = await allDistinctRows(cf);
         expect(rows).toHaveLength(101);
         expect(rows[100].hasMore).toBe(true);
+    });
+
+    test('a search answered after the grid was detached does not stay in the list', { annotation: [{ type: 'case', description: 'gap.cf-disconnect-search-in-flight' }] }, async ({ page }) => {
+        const grid = await setup(page);
+        const cf = await openFilter(grid, 'Email');
+        let searchHeld = false;
+        let release!: () => void;
+        const held = new Promise<void>(resolve => release = resolve);
+        await page.route('**/ExecuteAction', async route => {
+            const body = route.request().postDataJSON();
+            if (body?.action === 'QueryFilter.RefreshColumn' && body.parameters?.Search === 'an') {
+                searchHeld = true;
+                await held;
+            }
+
+            await route.continue();
+        });
+
+        await searchInput(cf).pressSequentially('an');
+        await expect.poll(() => searchHeld).toBe(true);
+
+        await page.evaluate(() => {
+            const w = window as any;
+            w.grid.remove();
+            w.__distincts = w.grid.query.getColumn('Email').distincts;
+        });
+        const search = page.waitForResponse(r => r.request().postDataJSON()?.parameters?.Search === 'an');
+        release();
+        await search;
+        await expect.poll(() => page.evaluate(() => (window as any).grid.query.getColumn('Email').distincts !== (window as any).__distincts)).toBe(true);
+
+        await page.evaluate(() => document.getElementById('test-container')!.appendChild((window as any).grid));
+        await waitForGridReady(grid);
+        await openFilter(grid, 'Email');
+        await expect(searchInput(cf)).toHaveValue('');
+        expect(await grid.evaluate((g: any) => g.query.getColumn('Email').distincts.matching[0])).toBe(`|${FIRST_EMAIL}`);
+        const rows = await allDistinctRows(cf);
+        expect(rows).toHaveLength(101);
+        expect(rows[0].text).toBe(FIRST_EMAIL);
     });
 });
 
