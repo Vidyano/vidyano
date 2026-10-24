@@ -5,7 +5,8 @@ import {
     QueryResultItem,
     PersistentObject,
     QueryColumn,
-    Action
+    Action,
+    PersistentObjectAttributeWithReference
 } from "@vidyano/core";
 import { devBackendUrl } from "./_helpers/dev-backend";
 
@@ -982,17 +983,43 @@ test.describe("Query", () => {
             expect(peopleQuery.selectedItemCount).toBe(0);
         });
 
-        test("stays unavailable on a query created with a limit, also when the limit is removed", async ({ service, peopleQuery }) => {
-            // Construct the clone with a limit, like a lookup that allows one row and is later opened up for more
-            const hooks = service.hooks, onConstructQuery = hooks.onConstructQuery;
-            hooks.onConstructQuery = (s, query, parent, asLookup) => onConstructQuery.call(hooks, s, query, parent, asLookup, 1);
+        test("stays unavailable on a query created with a limit, also when the limit is removed", async ({ peopleQuery }) => {
+            // A clone is created with the limit, like a lookup that allows one row and is later opened up for more
+            peopleQuery.maxSelectedItems = 1;
             const limited = peopleQuery.clone();
-            hooks.onConstructQuery = onConstructQuery;
 
             expect(limited.selectAll.isAvailable).toBe(false);
 
             limited.maxSelectedItems = 0;
             expect(limited.selectAll.isAvailable).toBe(false);
+        });
+    });
+
+    test.describe("Clone of a query that limits the selection", () => {
+        test("keeps the limit", async ({ service }) => {
+            const person = await service.getPersistentObject(null, "Person", "1");
+            const lookup = (person.getAttribute("EmergencyContact") as PersistentObjectAttributeWithReference).lookup;
+            expect(lookup.maxSelectedItems).toBe(1);
+
+            const cloned = lookup.clone();
+            expect(cloned.maxSelectedItems).toBe(1);
+
+            await cloned.search();
+            cloned.items[0].isSelected = true;
+            cloned.items[1].isSelected = true;
+            expect(cloned.selectedItems).toEqual([cloned.items[1]]);
+        });
+
+        test("does not offer select-all", async ({ peopleQuery }) => {
+            expect(peopleQuery.clone().selectAll.isAvailable).toBe(true);
+
+            peopleQuery.maxSelectedItems = 1;
+            expect(peopleQuery.clone().selectAll.isAvailable).toBe(false);
+        });
+
+        test("is not kept on a clone made as a lookup, which picks references to add", async ({ peopleQuery }) => {
+            peopleQuery.maxSelectedItems = 1;
+            expect(peopleQuery.clone(true).maxSelectedItems).toBeFalsy();
         });
     });
 

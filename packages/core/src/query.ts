@@ -1027,7 +1027,8 @@ export class Query extends ServiceObjectWithActions {
         const dto = Object.assign({}, this.#dto, this.#toServiceObject());
         dto[clonedFrom] = this.#dto; // Mark the DTO as cloned from the original query DTO.
         
-        const cloned = this.service.hooks.onConstructQuery(this.service, dto, this.parent, asLookup);
+        // A clone as a lookup picks other rows (e.g. references to add), the selection limit of this query does not apply to it
+        const cloned = this.service.hooks.onConstructQuery(this.service, dto, this.parent, asLookup, asLookup ? undefined : this.maxSelectedItems);
         cloned.#setOwnerAttributeWithReference(this.#ownerAttributeWithReference);
 
         return cloned;
