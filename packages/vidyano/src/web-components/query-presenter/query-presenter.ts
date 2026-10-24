@@ -117,14 +117,6 @@ export class QueryPresenter extends WebComponent {
     }
 
     /**
-     * Gets whether a query presenter showed the query and closed it since.
-     * @param query - The query to check
-     */
-    static isClosed(query: Vidyano.Query): boolean {
-        return query?.[QueryPresenter_Activated] === false;
-    }
-
-    /**
      * Activates a query by marking it as activated and notifying hooks.
      * Override this method to customize query activation behavior.
      * @param query - The query to activate

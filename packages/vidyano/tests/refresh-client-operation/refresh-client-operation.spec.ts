@@ -129,15 +129,14 @@ test.describe.serial('Refresh client operation', () => {
         await sharedPage.evaluate(() => (window as any).settled());
     });
 
-    test('a delayed refresh does not search a list closed during the delay', async () => {
+    test('a delayed refresh also searches a list closed during the delay', async () => {
         await sharedPage.evaluate(() => (window as any).openList());
         executeQueries = [];
 
         await sharedPage.evaluate(() => (window as any).refresh(1000));
         await sharedPage.evaluate(() => (window as any).goHome());
 
-        await sharedPage.waitForTimeout(2000);
-        expect(executeQueries).toHaveLength(0);
+        await expect.poll(() => executeQueries.length, { timeout: 5000 }).toBe(1);
     });
 
     test('a delayed refresh searches a list in a persistent object once the delay ends', async () => {
@@ -155,15 +154,14 @@ test.describe.serial('Refresh client operation', () => {
         expect(executeQueries).toHaveLength(1);
     });
 
-    test('a delayed refresh does not search a list whose persistent object was closed during the delay', async () => {
+    test('a delayed refresh also searches a list whose persistent object was closed during the delay', async () => {
         await sharedPage.evaluate(() => (window as any).openProject());
         executeQueries = [];
 
         await sharedPage.evaluate(() => (window as any).refreshProjectTickets(1000));
         await sharedPage.evaluate(() => (window as any).goHome());
 
-        await sharedPage.waitForTimeout(2000);
-        expect(executeQueries).toHaveLength(0);
+        await expect.poll(() => executeQueries.length, { timeout: 5000 }).toBe(1);
     });
 
     test('a delayed refresh of a persistent object reloads it once the delay ends', async () => {
@@ -178,15 +176,14 @@ test.describe.serial('Refresh client operation', () => {
         await expect.poll(() => getPersistentObjects, { timeout: 5000 }).toBe(1);
     });
 
-    test('a delayed refresh of a persistent object does not reload it when it was closed during the delay', async () => {
+    test('a delayed refresh of a persistent object also reloads it when it was closed during the delay', async () => {
         await sharedPage.evaluate(() => (window as any).openProject());
         getPersistentObjects = 0;
 
         await sharedPage.evaluate(() => (window as any).refreshProject(1000));
         await sharedPage.evaluate(() => (window as any).goHome());
 
-        await sharedPage.waitForTimeout(2000);
-        expect(getPersistentObjects).toBe(0);
+        await expect.poll(() => getPersistentObjects, { timeout: 5000 }).toBe(1);
     });
 
     // Signs out, so it runs last

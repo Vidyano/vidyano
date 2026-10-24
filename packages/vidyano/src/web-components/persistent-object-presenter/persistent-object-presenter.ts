@@ -81,14 +81,6 @@ export class PersistentObjectPresenter extends ConfigurableWebComponent {
     persistentObjectObjectId: string;
     persistentObject: Vidyano.PersistentObject;
 
-    /**
-     * Gets whether a persistent object presenter showed the persistent object and closed it since.
-     * @param persistentObject - The persistent object to check
-     */
-    static isClosed(persistentObject: Vidyano.PersistentObject): boolean {
-        return persistentObject?.[PersistentObjectPresenter_Activated] === false;
-    }
-
     private _activate(e: CustomEvent) {
         const { parameters }: { parameters: IPersistentObjectPresenterRouteParameters; } = e.detail;
         if (parameters.fromActionId) {
