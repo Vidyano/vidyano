@@ -59,7 +59,7 @@ const PHYSICAL_UPPER_LIMIT = 100000;
         },
         items: {
             type: Array,
-            computed: "_computeItems(query.lastUpdated)"
+            computed: "_computeItems(query.lastUpdated, query.items)"
         },
         columns: {
             type: Array,
