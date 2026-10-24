@@ -32,7 +32,7 @@ function scrollTypedCells(grid: Locator, tag: string, frames: number) {
         const run = await perf.runFrames(frames, (i: number) => scroller.scrollTop = Math.round(max * (i + 1) / frames), () => {
             cells.forEach((cell: any, n: number) => {
                 const records = takeRecords(n);
-                const item =cell.value?.item ?? null;
+                const item = cell.value?.item ?? null;
                 const changed = item !== items[n];
                 items[n] = item;
                 if (changed)
@@ -42,8 +42,8 @@ function scrollTypedCells(grid: Locator, tag: string, frames: number) {
                 const style = records.filter(r => r.type === 'attributes' && r.attributeName === 'style');
                 stats.contentRecords += content.length;
                 stats.styleRecords += style.length;
-                // innerHTML replaces the content in one childList record per container
-                const contentWrites = new Set(content.map(r => r.target)).size;
+                // A render replaces the content with one innerHTML write, which is one childList record
+                const contentWrites = content.length;
                 if (contentWrites > 0 && !changed)
                     stats.contentWithoutItemChange++;
                 if (style.length > 0 && !changed)
