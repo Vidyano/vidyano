@@ -2,6 +2,7 @@ import * as Polymer from "polymer"
 import * as Vidyano from "@vidyano/core"
 import "components/checkbox/checkbox"
 import "components/input-search/input-search"
+import { List } from "components/list/list"
 import { Popup } from "components/popup/popup"
 import { ISize } from "components/size-tracker/size-tracker"
 import { QueryGrid } from "./query-grid"
@@ -69,7 +70,8 @@ export interface IQueryGridColumnFilterDistinct {
         "queryColumn.selectedDistinctsInversed",
         "queryColumn.distincts",
         "queryColumn.query.isFiltering"
-    ]
+    ],
+    sensitive: true
 }, "vi-query-grid-column-filter")
 export class QueryGridColumnFilter extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-column-filter.html">` }
@@ -89,7 +91,15 @@ export class QueryGridColumnFilter extends Polymer.WebComponent {
     disconnectedCallback() {
         super.disconnectedCallback();
 
+        const searched = !!this.searchText || !!this._searchTextDebouncer?.isActive();
+        (<Popup>this.shadowRoot.querySelector("#filter"))?.close();
         this.searchText = "";
+        this._searchTextDebouncer?.cancel();
+        this._setLoading(false);
+
+        // The distincts can hold a server search result, so the next open after a re-attach reloads them
+        if (searched && this.queryColumn?.distincts)
+            this.queryColumn.distincts.isDirty = true;
     }
 
     private _render(e: Event) {
@@ -169,10 +179,12 @@ export class QueryGridColumnFilter extends Polymer.WebComponent {
                 this.app.showAlert(e, "Error");
             }
         }
-        else {
-            const distinctsList = <HTMLDivElement>this.$.distincts || (this.$.distincts = <HTMLDivElement>this.shadowRoot.querySelector("#distincts"));
-            distinctsList.scrollTop = 0;
-        }
+
+        const distinctsList = <List>this.$.distincts || (this.$.distincts = <List>this.shadowRoot.querySelector("#distincts"));
+        distinctsList.scrollToTop();
+
+        // A resize while the popup was hidden stopped the list from listening to scroll, and reopening at the same size reports no new resize
+        distinctsList.notifyResize();
     }
 
     private _popupClosed() {
@@ -212,6 +224,10 @@ export class QueryGridColumnFilter extends Polymer.WebComponent {
 
         searchText = searchText.toLowerCase();
         return distincts.filter(d => {
+            // The has-more row
+            if (!d.type)
+                return true;
+
             if (!d.displayValue)
                 return false;
 
@@ -327,12 +343,14 @@ export class QueryGridColumnFilter extends Polymer.WebComponent {
         return displayValue.split(exp).map((part, index) => index % 2 ? `<span class='match'>${this._escapeHTML(part)}</span>` : this._escapeHTML(part)).join("");
     }
 
-    private async _search() {
+    private async _search(e: CustomEvent<string>) {
         const selectedDistincts = this.queryColumn.selectedDistincts;
-        const searchText = this.searchText;
+        const searchText = e.detail;
         if (searchText) {
             this.queryColumn.selectedDistincts = selectedDistincts.concat(["1|@" + searchText]);
             this.searchText = "";
+            // _updateDistincts below refreshes the distincts already
+            this._searchTextDebouncer?.cancel();
         }
 
         this._renderDistincts();

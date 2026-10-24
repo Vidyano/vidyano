@@ -1,7 +1,7 @@
 <link rel="stylesheet" href="query-grid-grouping.css" />
 
-<vi-popup-menu disabled$="[[isBusy]]">
-    <vi-button slot="header" icon="QueryGrid_Group" inverse disabled$="[[isBusy]]"></vi-button>
+<vi-popup-menu disabled$="[[query.isBusy]]">
+    <vi-button slot="header" icon="QueryGrid_Group" inverse disabled$="[[query.isBusy]]"></vi-button>
     <vi-popup-menu-item icon="QueryGrid_Group_Collapse" label="Collapse all" on-tap="_toggleCollapse"></vi-popup-menu-item>
     <vi-popup-menu-item icon="QueryGrid_Group_Expand" label="Expand all" on-tap="_toggleCollapse"></vi-popup-menu-item>
     <vi-popup-menu-item-separator></vi-popup-menu-item-separator>

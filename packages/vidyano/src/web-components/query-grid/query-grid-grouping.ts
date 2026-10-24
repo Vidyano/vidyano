@@ -7,7 +7,10 @@ import { Popup } from "components/popup/popup"
 @Polymer.WebComponent.register({
     properties: {
         query: Object
-    }
+    },
+    forwardObservers: [
+        "query.isBusy"
+    ]
 }, "vi-query-grid-grouping")
 export class QueryGridGrouping extends Polymer.WebComponent {
     static get template() { return Polymer.html`<link rel="import" href="query-grid-grouping.html">` }

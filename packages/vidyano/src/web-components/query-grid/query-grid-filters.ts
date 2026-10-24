@@ -174,6 +174,7 @@ export class QueryGridFilters extends Polymer.WebComponent {
     }
 
     private _load(e: Polymer.Gestures.TapEvent) {
+        Popup.closeAll();
         this.queryFilters.currentFilter = <Vidyano.QueryFilter>e.model.filter.filter;
     }
 
