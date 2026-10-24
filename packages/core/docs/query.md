@@ -315,6 +315,8 @@ if (peopleQuery.selectAll.isAvailable) {
 }
 ```
 
+Select-all is not available while the total is unknown (`hasMore`) or while the selection is limited (`maxSelectedItems`); setting `selectAll.isAvailable` is ignored while it is limited. A query created with a limit, such as a lookup, never offers select-all, also when its limit is removed later.
+
 ### Clear Selection
 
 ```ts
