@@ -315,6 +315,21 @@
       "Columns": []
     },
     {
+      "$id": "Query:bf645f47-684d-4a1f-9f80-8a394d1fa784",
+      "Id": "bf645f47-684d-4a1f-9f80-8a394d1fa784",
+      "Source": "Database.People",
+      "AutoQuery": true,
+      "Name": "QueryGrid_SavedFilters",
+      "Label": {
+        "en": "People (Saved filters)",
+        "nl": "People (Saved filters)"
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:7d6563ff-5014-3606-bb4f-6de864b4519a"
+      },
+      "Columns": []
+    },
+    {
       "$id": "Query:2b7099d6-5553-4d1c-b9c1-da0d81db61bd",
       "Id": "2b7099d6-5553-4d1c-b9c1-da0d81db61bd",
       "Source": "Database.People",

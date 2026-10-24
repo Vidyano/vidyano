@@ -10,6 +10,9 @@ test.describe.configure({ mode: 'serial' });
 
 let grid: Locator | undefined;
 
+/** QueryGrid_SavedFilters: a People query with filtering that no other spec opens, so a default filter saved on it cannot change their results. */
+const SAVED_FILTERS_QUERY = 'query.bf645f47-684d-4a1f-9f80-8a394d1fa784';
+
 function filterName(testInfo: TestInfo, prefix = 'pw-') {
     return `${prefix}${testInfo.testId.slice(0, 8)}-${Date.now() % 100000}`;
 }
@@ -488,13 +491,13 @@ test.describe('Edit and delete', () => {
 
 test.describe('Default filter', () => {
     test('default filter applies when the query loads', { annotation: [{ type: 'case', description: 'filters.fl-default-filter' }] }, async ({ page }, testInfo) => {
-        grid = await openView(page, VIEWS.QueryGrid_Filter);
+        grid = await openView(page, SAVED_FILTERS_QUERY);
         await deleteTestFilters(grid);
         const name = filterName(testInfo);
         await createFilter(grid, name, ['|Female'], { isDefault: true });
         expect(await grid.evaluate((g: any) => g.query.filters.currentFilter?.isDefault)).toBe(true);
 
-        grid = await openView(page, VIEWS.QueryGrid_Filter);
+        grid = await openView(page, SAVED_FILTERS_QUERY);
         await expect.poll(() => filterLabel(columnFilter(grid!, 'Gender'))).toBe('= Female');
         expect(await grid.evaluate((g: any) => g.query.filters.currentFilter?.name)).toBe(name);
         expect(await totalItems(grid)).toBe(4587);
@@ -849,15 +852,25 @@ test.describe('Filter dialog', () => {
         await expect(toggle).toHaveAttribute('toggled');
         expect(await dialog.evaluate((d: any) => d.persistentObject.attributes.IsDefault.value)).toBe(true);
 
-        await footerButton(page, 'Save').click();
-        await expect(dialog).toHaveCount(0);
-        await waitForQueryIdle(grid);
+        // A stored default filter would apply to every other spec that loads this query, so the save stops at the request
+        let saved: any;
+        await page.route('**/ExecuteAction', async route => {
+            const body = route.request().postDataJSON();
+            if (body?.action !== 'PersistentObject.Save')
+                return route.continue();
 
-        const saved = await grid.evaluate((g: any, name) => {
-            const filter = g.query.filters.filters.find((f: any) => f.name === name);
-            return filter ? { isDefault: filter.isDefault, isNew: filter.persistentObject.isNew } : null;
-        }, name);
-        expect(saved).toEqual({ isDefault: true, isNew: false });
+            saved = body.parent;
+            await route.abort();
+        });
+
+        await footerButton(page, 'Save').click();
+        await expect.poll(() => saved).toBeDefined();
+
+        // The filter is saved as a detail object of the query's Filters persistent object
+        const value = (attributes: any[], name: string) => attributes.find(a => a.name === name)?.value;
+        const filter = saved.attributes.find((a: any) => a.name === 'Filters').objects.find((o: any) => value(o.attributes, 'Name') === name);
+        expect(filter).toBeDefined();
+        expect(value(filter.attributes, 'IsDefault')).toBe('True');
     });
 });
 

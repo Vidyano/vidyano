@@ -25,6 +25,8 @@ public partial class PersonActions
                     break;
 
                 case "Filter":
+                // Only used by the saved filters spec, so the default filters it saves never reach another spec
+                case "SavedFilters":
                     query.Actions = [ActionNames.Filter];
                     break;
 
