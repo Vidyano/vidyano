@@ -1,6 +1,6 @@
 import { test, expect, Locator } from '@playwright/test';
 import { gridPage, mountGrid, getScrollOffset, scrollGrid, headerNames, nextFrames, savedSettings, waitForGridReady } from '../_helpers/query-grid';
-import { clickHeaderMenuItem, controlsBox, header, headerBoxes, hostVar, initializingAdds, openHeaderMenu, openPopupCount, rowAt, rows, scrollerBox, settle, watchInitializing, wheelGrid } from '../_helpers/grid';
+import { attachGrid, clickHeaderMenuItem, controlsBox, header, headerBoxes, holdExecuteQuery, hostVar, initializingAdds, openHeaderMenu, openPopupCount, rowAt, rows, scrollerBox, settle, watchInitializing, wheelGrid } from '../_helpers/grid';
 
 const PINNED_ORDER = ['Email', 'FirstName', 'LastName', 'BirthDate', 'Gender', 'ContactPreference', 'PhoneNumber', 'EmergencyContact', 'IsActive'];
 const DEFAULT_ORDER = ['FirstName', 'LastName', 'BirthDate', 'Gender', 'ContactPreference', 'Email', 'PhoneNumber', 'EmergencyContact', 'IsActive'];
@@ -225,6 +225,45 @@ test.describe('Horizontal scroll, pinning and more columns', () => {
         const expected = headers.filter(h => h.x + h.width / 2 > area).map(h => h.label).sort((a, b) => a.localeCompare(b));
         expect(expected.length).toBeGreaterThan(0);
 
+        await grid.locator('vi-popup.more.right vi-button').click();
+        expect(await moreItems(grid, 'right')).toEqual(expected);
+    });
+
+    test('right popup lists the columns that overflow once the cell widths are measured', { annotation: [{ type: 'case', description: 'grid.mc-right-after-measure' }] }, async ({ page }) => {
+        await gridPage(page);
+        await page.evaluate(async () => {
+            const w = window as any;
+            w.q = await w.service.getQuery('People');
+            w.q.sortOptions = [{ name: 'FirstName', direction: 'ASC' }];
+        });
+
+        // While the search holds back the rows only the headers have a width: the grid is made just wide enough for them,
+        // so the more-columns lists are empty until the wider cell widths are applied
+        const release = await holdExecuteQuery(page);
+        await page.evaluate(() => {
+            const w = window as any;
+            w.__search = w.q.search();
+        });
+        const { grid } = await attachGrid(page, { reuseQuery: true });
+        await expect.poll(() => grid.evaluate((g: any) => g.columns?.length > 0 && g.columns.every((c: any) => g._columnWidths.get(c.name)?.column >= 0))).toBe(true);
+        await grid.evaluate((g: any) => {
+            const headers = [...g.shadowRoot.querySelectorAll('vi-query-grid-column-header')] as HTMLElement[];
+            g.style.width = `${headers.reduce((width, h) => width + h.offsetWidth, 0) + 40}px`;
+        });
+        await expect.poll(() => grid.evaluate((g: any) => g.moreColumns != null && !g._updateMoreDebouncer?.isActive() &&
+            g.visibleColumnHeaderSize?.width === g.shadowRoot.querySelector('header [grid]').offsetWidth)).toBe(true);
+        expect(await grid.evaluate((g: any) => g.moreColumns.right.length)).toBe(0);
+
+        await release();
+        await page.evaluate(async () => { await (window as any).__search; });
+        await waitForGridReady(grid);
+
+        const headers = await headerBoxes(grid);
+        const area = await grid.evaluate((g: any) => g.shadowRoot.querySelector('header [grid]').getBoundingClientRect().right);
+        const expected = headers.filter(h => h.x + h.width / 2 > area).map(h => h.label).sort((a, b) => a.localeCompare(b));
+        expect(expected.length).toBeGreaterThan(0);
+
+        await expect(grid.locator('vi-popup.more.right')).toBeVisible();
         await grid.locator('vi-popup.more.right vi-button').click();
         expect(await moreItems(grid, 'right')).toEqual(expected);
     });

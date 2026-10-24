@@ -420,6 +420,9 @@ export class QueryGrid extends Polymer.WebComponent {
         const widths = columns.map(c => Math.ceil(this._columnWidths.get(c.name).current));
         this.style.setProperty("--vi-query-grid-columns", `${widths.map(w => `${w}px`).join(" ")} minmax(0, 1fr)`);
         this.style.setProperty("--vi-query-grid-columns-width", `${widths.reduce((sum, w) => sum + w, 0)}px`);
+
+        // New widths move the headers without changing the header area size or the scroll offset that trigger this
+        this._updateMore(this.visibleColumnHeaderSize, this.horizontalScrollOffset);
     }
 
     private _update(verticalScrollOffset: number, virtualRowCount: number, rowHeight: number, items: QueryGridItems, skip: number, maxRows?: number) {
