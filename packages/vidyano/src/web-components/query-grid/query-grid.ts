@@ -38,6 +38,9 @@ type MoreColumns = { left: QueryGridColumnHeader[], right: QueryGridColumnHeader
 
 const PHYSICAL_UPPER_LIMIT = 100000;
 
+// The forwarded query properties the grid needs to see again when a change happened while it was detached
+const detachedQueryPaths: (keyof Vidyano.Query)[] = ["canReorder", "columns", "isBusy", "lastUpdated", "items", "totalItem", "totalItems"];
+
 @Polymer.WebComponent.register({
     properties: {
         initializing: {
@@ -209,6 +212,8 @@ export class QueryGrid extends Polymer.WebComponent {
     private _renderedSkip: number;
     private _renderedMaxRows: number;
     private _cancelledOnDisconnect: boolean;
+    private _queryOnDisconnect: Vidyano.Query;
+    private _queryValuesOnDisconnect: any[];
 
     query: Vidyano.Query;
     asLookup: boolean;
@@ -238,6 +243,14 @@ export class QueryGrid extends Polymer.WebComponent {
         this._controlsSizeObserver = new ResizeObserver(this._controlsSizeChanged.bind(this));
         this._controlsSizeObserver.observe(this.shadowRoot.querySelector(".controls"));
 
+        // Changes of the query are not forwarded while the grid is detached, catch up on the ones that happened
+        if (this.query && this.query === this._queryOnDisconnect) {
+            detachedQueryPaths.forEach((path, i) => {
+                if (this.query[path] !== this._queryValuesOnDisconnect[i])
+                    this.notifyPath(`query.${path}`);
+            });
+        }
+
         // Redo the work that was cancelled when the grid was removed, nothing else would start it again
         if (this._cancelledOnDisconnect && this.items) {
             this._cancelledOnDisconnect = false;
@@ -251,6 +264,8 @@ export class QueryGrid extends Polymer.WebComponent {
         this._controlsSizeObserver.disconnect();
 
         this._cancelledOnDisconnect = [this._getItemsDebouncer, this._updateCellDebouncer, this._updateMoreDebouncer].some(d => d?.isActive());
+        this._queryOnDisconnect = this.query;
+        this._queryValuesOnDisconnect = detachedQueryPaths.map(path => this.query?.[path]);
 
         // A removed grid sends nothing to the server
         this._getItemsDebouncer?.cancel();

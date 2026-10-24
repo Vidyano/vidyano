@@ -287,7 +287,7 @@ test.describe('Query swap, detach, busy and errors', () => {
         expect(errors).toEqual([]);
     });
 
-    test('a grid removed while its query searches sends no page load', { annotation: [{ type: 'case', description: 'grid.lc-detach-search' }] }, async ({ page }) => {
+    test('a grid removed while its query searches loads nothing and shows the new result when re-attached', { annotation: [{ type: 'case', description: 'grid.lc-detach-search' }] }, async ({ page }) => {
         await gridPage(page);
         const grid = await mountGrid(page);
         await scrollGrid(grid, { top: 6000 * RH });
@@ -303,9 +303,19 @@ test.describe('Query swap, detach, busy and errors', () => {
 
         await page.waitForTimeout(500);
         expect(log.of('ExecuteQuery').map(r => r.skip ?? 0)).toEqual([0]);
+
+        // Re-attached, the grid shows the new result from the top
+        await page.evaluate(() => document.getElementById('test-container')!.appendChild((window as any).grid));
+        await expect.poll(async () => (await getScrollOffset(grid)).top).toBe(0);
+        await settle(grid);
+        const totalItems = await page.evaluate(() => (window as any).q.totalItems);
+        expect(totalItems).toBeLessThan(10000);
+        expect((await getScrollOffset(grid)).scrollHeight).toBe(totalItems * RH);
+        expect((await rows(grid))[0].index).toBe(0);
+        await expectRowsAtTheirIndex(grid, 're-attached');
     });
 
-    test('a full scenario produces no errors',{ annotation: [{ type: 'case', description: 'grid.lc-no-console-errors' }] }, async ({ page }) => {
+    test('a full scenario produces no errors', { annotation: [{ type: 'case', description: 'grid.lc-no-console-errors' }] }, async ({ page }) => {
         const errors = pageErrors(page);
         const consoleErrorList = consoleErrors(page);
         await gridPage(page);
