@@ -16,6 +16,7 @@ import { Sortable } from "components/sortable/sortable"
 export class QueryGridConfigureDialog extends Polymer.Dialog {
     static get template() { return Polymer.Dialog.dialogTemplate(Polymer.html`<link rel="import" href="query-grid-configure-dialog.html">`); }
     private _elements: QueryGridConfigureDialogColumn[];
+    private _resetWidths: boolean;
 
     constructor(public query: Vidyano.Query, private _settings: QueryGridUserSettings) {
         super();
@@ -73,6 +74,9 @@ export class QueryGridConfigureDialog extends Polymer.Dialog {
             c.column.isPinned = c.isPinned;
             c.column.isHidden = c.isHidden;
             c.column.offset = c.offset;
+
+            if (this._resetWidths)
+                c.column.width = undefined;
         });
 
         this.close(true);
@@ -83,8 +87,9 @@ export class QueryGridConfigureDialog extends Polymer.Dialog {
             c.isPinned = c.column.column.isPinned;
             c.isHidden = c.column.column.isHidden;
             c.offset = c.column.column.offset;
-            c.column.width = undefined;
         });
+
+        this._resetWidths = true;
 
         this._distributeColumns();
         this._updateLastVisible();

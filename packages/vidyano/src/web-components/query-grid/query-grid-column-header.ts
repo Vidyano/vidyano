@@ -2,6 +2,7 @@ import * as Polymer from "polymer"
 import * as Vidyano from "@vidyano/core"
 import "components/popup-menu/popup-menu"
 import { PopupMenu } from "components/popup-menu/popup-menu"
+import { Popup } from "components/popup/popup"
 import { QueryGridColumn } from "./query-grid-column"
 import "./query-grid-column-filter"
 
@@ -129,11 +130,17 @@ export class QueryGridColumnHeader extends Polymer.WebComponent {
     private _renderPopupMenu(e: Event) {
         e.stopPropagation();
 
+        const hadFocus = !this.renderPopupMenu && this.shadowRoot.activeElement != null;
+
         this._setRenderPopupMenu(true);
         Polymer.flush();
         
         const menu = <PopupMenu>this.shadowRoot.querySelector("#menu");
         menu.popup();
+
+        // The focused placeholder caret was replaced by the menu's own caret, which is only focusable once the menu has rendered
+        if (hadFocus)
+            Polymer.Async.animationFrame.run(() => menu.querySelector<HTMLElement>("vi-button[slot='header']").focus());
     }
 
     private _columnChanged(column: QueryGridColumn, oldColumn: QueryGridColumn) {
@@ -195,19 +202,23 @@ export class QueryGridColumnHeader extends Polymer.WebComponent {
 
     private _sortAsc(e: Polymer.Gestures.TapEvent) {
         e.stopPropagation();
+        Popup.closeAll();
         this._sort("ASC", !!(<any>e).detail.sourceEvent?.ctrlKey);
     }
 
     private _sortDesc(e: Polymer.Gestures.TapEvent) {
         e.stopPropagation();
+        Popup.closeAll();
         this._sort("DESC", !!(<any>e).detail.sourceEvent?.ctrlKey);
     }
 
     private _group() {
+        Popup.closeAll();
         this.column.query.group(this.column.column);
     }
 
     private _togglePin() {
+        Popup.closeAll();
         this.column.isPinned = !this.column.isPinned;
         this._setIsPinned(this.column.isPinned);
 
@@ -222,6 +233,7 @@ export class QueryGridColumnHeader extends Polymer.WebComponent {
         if (this.lastVisible)
             return;
 
+        Popup.closeAll();
         this.column.isHidden = !this.column.isHidden;
         this.dispatchEvent(new CustomEvent("query-grid-column:update", {
             bubbles: true,

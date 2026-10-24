@@ -705,15 +705,16 @@ export class WebComponent extends GestureEventListeners(PolymerElement) {
                 readOnly: true
             };
 
-            info.observers.push("_mediaQueryObserver(app)");
+            info.observers.push("_mediaQueryObserver(app, isConnected)");
 
-            element.prototype._mediaQueryObserver = function (app: App) {
+            element.prototype._mediaQueryObserver = function (app: App, isConnected: boolean) {
                 if (this._mediaQueryObserverInfo) {
                     this._mediaQueryObserverInfo.app.removeEventListener("media-query-changed", this._mediaQueryObserverInfo.listener);
                     this._mediaQueryObserverInfo = null;
                 }
 
-                if (app) {
+                // The listener on app would keep a disconnected element alive
+                if (app && isConnected) {
                     this._mediaQueryObserverInfo = {
                         app: app,
                         listener: (e: Event) => {
