@@ -1811,6 +1811,56 @@ test.describe('Server search (more)', () => {
         expect(rows).toHaveLength(101);
         expect(rows[0].text).toBe(FIRST_EMAIL);
     });
+
+    test('a search answered after a re-attach and reopen does not replace the full list', { annotation: [{ type: 'case', description: 'gap.cf-reopen-search-in-flight' }] }, async ({ page }) => {
+        const grid = await setup(page);
+        const cf = await openFilter(grid, 'Email');
+        let searchHeld = false;
+        let release!: () => void;
+        const held = new Promise<void>(resolve => release = resolve);
+        await page.route('**/ExecuteAction', async route => {
+            const body = route.request().postDataJSON();
+            if (body?.action === 'QueryFilter.RefreshColumn' && body.parameters?.Search === 'an') {
+                searchHeld = true;
+                await held;
+            }
+
+            await route.continue();
+        });
+
+        // Keep the promise of the 'an' refresh, to wait until the page handled its late response
+        await grid.evaluate((g: any) => {
+            const column = g.query.getColumn('Email');
+            const refreshDistincts = column.refreshDistincts;
+            column.refreshDistincts = function (search?: string) {
+                const refresh = refreshDistincts.call(this, search);
+                if (search === 'an')
+                    (window as any).__searchRefresh = refresh;
+
+                return refresh;
+            };
+        });
+
+        await searchInput(cf).pressSequentially('an');
+        await expect.poll(() => searchHeld).toBe(true);
+
+        await page.evaluate(() => {
+            const w = window as any;
+            w.grid.remove();
+            document.getElementById('test-container')!.appendChild(w.grid);
+        });
+        await waitForGridReady(grid);
+        await openFilter(grid, 'Email');
+
+        release();
+        await page.evaluate(() => (window as any).__searchRefresh.then(() => {}));
+        await expect(cf).not.toHaveAttribute('loading');
+        await expect(searchInput(cf)).toHaveValue('');
+        expect(await grid.evaluate((g: any) => g.query.getColumn('Email').distincts.matching[0])).toBe(`|${FIRST_EMAIL}`);
+        const rows = await allDistinctRows(cf);
+        expect(rows).toHaveLength(101);
+        expect(rows[0].text).toBe(FIRST_EMAIL);
+    });
 });
 
 test.describe('Text filter (Enter) (more)', () => {

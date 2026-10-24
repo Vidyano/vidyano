@@ -276,12 +276,16 @@ export class QueryColumn extends ServiceObject {
 
     /**
      * Refreshes the distinct values for the column, optionally with a search string.
-     * The distincts of a search are marked dirty, because they do not hold all values of the column.
+     * The distincts of a search are marked dirty, because they do not hold all values of the column. The current distincts are marked dirty as soon as a search starts.
      * When a newer refresh starts before this one is answered, only the newer one is applied and both resolve with its distincts.
      * @param search - Optional search string to filter distincts.
      * @returns A promise resolving to the distincts.
      */
     refreshDistincts(search?: string): Promise<IQueryColumnDistincts> {
+        // They are about to be replaced by a search result, so code that needs the full list refreshes again
+        if (search && this.distincts)
+            this.distincts.isDirty = true;
+
         const refresh = this.#distinctsRefresh = this.#refreshDistincts(search, () => refresh === this.#distinctsRefresh);
         return this.#latestDistincts(refresh);
     }

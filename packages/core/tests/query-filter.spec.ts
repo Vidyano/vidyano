@@ -242,10 +242,16 @@ test.describe('Query Filters and Distincts', () => {
             expect(lastNameColumn.distincts).toBe(newerDistincts);
         });
 
-        test('the distincts of a search are dirty, the full distincts are not', async ({ peopleQuery }) => {
+        test('a search marks the current and its own distincts dirty, a full refresh does not', async ({ peopleQuery }) => {
             const lastNameColumn = peopleQuery.columns.find(c => c.name === 'LastName')!;
 
-            await lastNameColumn.refreshDistincts('Cl');
+            await lastNameColumn.refreshDistincts();
+            const full = lastNameColumn.distincts;
+            const search = lastNameColumn.refreshDistincts('Cl');
+            expect(full.isDirty).toBe(true);
+
+            await search;
+            expect(lastNameColumn.distincts).not.toBe(full);
             expect(lastNameColumn.distincts.isDirty).toBe(true);
 
             await lastNameColumn.refreshDistincts();
