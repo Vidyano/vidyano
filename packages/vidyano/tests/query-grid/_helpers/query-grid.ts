@@ -437,29 +437,38 @@ export function pageErrors(page: Page) {
     return errors;
 }
 
+export interface OpenAppOptions {
+    width?: number;
+    height?: number;
+    /** Keeps the user's stored grid and query settings, for a test that checks what is stored. */
+    storedSettings?: boolean;
+}
+
 /**
  * Opens a path of the real dev app (auto signs in as the default user) with Google Fonts blocked, the
  * user's stored grid and query settings left out (as gridPage does) and the user settings save stubbed.
  */
-export async function openApp(page: Page, path: string, options: { width?: number; height?: number } = {}) {
+export async function openApp(page: Page, path: string, options: OpenAppOptions = {}) {
     const { width = 1280, height = 720 } = options;
     await page.setViewportSize({ width, height });
 
     await page.route('**/fonts.googleapis.com/**', route => route.fulfill({ contentType: 'text/css', body: '' }));
     await page.route('**/fonts.gstatic.com/**', route => route.abort());
     // The settings arrive with the application, so they are cleared before any grid can read them
-    await page.route('**/GetApplication', async route => {
-        const response = await route.fetch();
-        const result = await response.json();
-        const attribute = result.application?.attributes?.find((a: any) => a.name === 'UserSettings');
-        if (attribute) {
-            const settings = attribute.value ? JSON.parse(attribute.value) : {};
-            settings.QueryGridSettings = {};
-            settings.QuerySettings = {};
-            attribute.value = JSON.stringify(settings);
-        }
-        await route.fulfill({ response, json: result });
-    });
+    if (!options.storedSettings) {
+        await page.route('**/GetApplication', async route => {
+            const response = await route.fetch();
+            const result = await response.json();
+            const attribute = result.application?.attributes?.find((a: any) => a.name === 'UserSettings');
+            if (attribute) {
+                const settings = attribute.value ? JSON.parse(attribute.value) : {};
+                settings.QueryGridSettings = {};
+                settings.QuerySettings = {};
+                attribute.value = JSON.stringify(settings);
+            }
+            await route.fulfill({ response, json: result });
+        });
+    }
     await page.addInitScript(() => {
         const w = window as any;
         w.__saves = [];
@@ -481,7 +490,7 @@ export async function openApp(page: Page, path: string, options: { width?: numbe
 }
 
 /** Opens a view of the real dev app (see openApp) and returns the grid on that view once it is ready. */
-export async function openView(page: Page, viewPath: string, options: { width?: number; height?: number } = {}): Promise<Locator> {
+export async function openView(page: Page, viewPath: string, options: OpenAppOptions = {}): Promise<Locator> {
     await openApp(page, viewPath, options);
 
     const grid = page.locator('vi-query-grid').first();

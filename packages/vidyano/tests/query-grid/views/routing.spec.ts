@@ -370,7 +370,7 @@ test.describe('User settings isolation', () => {
         const context = await browser.newContext();
         const page = await context.newPage();
         try {
-            const grid = await openView(page, 'home/people');
+            const grid = await openView(page, 'home/people', { storedSettings: true });
             await grid.waitFor();
 
             const settings = await page.evaluate(() => {
