@@ -31,7 +31,13 @@ export async function startBackend(testInfo: TestInfo, backendFile?: string): Pr
 
     const csFilePath = path.relative(process.cwd(), csFile);
 
-    return new Promise((resolve, reject) => {
+    // The start has its own budget: a cold compile or a busy runner can take longer than the hook or test timeout
+    const testTimeout = testInfo.timeout;
+    const started = Date.now();
+    if (testTimeout)
+        testInfo.setTimeout(testTimeout + startTimeout);
+
+    const backend = await new Promise<BackendProcess>((resolve, reject) => {
         // Kestrel rejects localhost:0, so it binds the loopback address and reports the port it got
         const backendProcess = spawn('dotnet', ['run', csFilePath], {
             stdio: 'pipe',
@@ -85,6 +91,11 @@ export async function startBackend(testInfo: TestInfo, backendFile?: string): Pr
             }
         });
     });
+
+    if (testTimeout)
+        testInfo.setTimeout(testTimeout + Date.now() - started);
+
+    return backend;
 }
 
 function killTree(process: ChildProcess) {
