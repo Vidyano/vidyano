@@ -736,6 +736,22 @@ test.describe("Query", () => {
             expect(peopleQuery.selectedItems.length).toBe(3);
         });
 
+        test("assigning selectedItems keeps the first items up to the selection limit", async ({ peopleQuery }) => {
+            peopleQuery.maxSelectedItems = 2;
+
+            const announced: number[] = [];
+            peopleQuery.propertyChanged.attach((_, args) => args.propertyName === "selectedItems" && announced.push(args.newValue.length));
+
+            peopleQuery.selectedItems = [5, 3, 7].map(i => peopleQuery.items[i]);
+            expect(peopleQuery.selectedItems.map(i => i.id)).toEqual([3, 5].map(i => peopleQuery.items[i].id));
+            expect(peopleQuery.selectedItemCount).toBe(2);
+
+            peopleQuery.selectedItems = peopleQuery.items;
+            expect(peopleQuery.selectedItems.map(i => i.id)).toEqual([0, 1].map(i => peopleQuery.items[i].id));
+            expect(peopleQuery.selectedItemCount).toBe(2);
+            expect(announced).toEqual([2, 2]);
+        });
+
         test("clearSelection clears all selected items", async ({ peopleQuery }) => {
             // Select some items manually
             peopleQuery.items[0].isSelected = true;

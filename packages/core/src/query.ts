@@ -405,6 +405,8 @@ export class Query extends ServiceObjectWithActions {
         try {
             this.#isSelectionModifying = true;
             items = items.filter(i => !i.ignoreSelect) || [];
+            if (this.maxSelectedItems)
+                items = items.slice(0, this.maxSelectedItems);
 
             const selectedItems = this.selectedItems;
             if (selectedItems && selectedItems.length > 0)
@@ -1301,7 +1303,7 @@ export class Query extends ServiceObjectWithActions {
 
         const selectedItems = this.selectedItems;
         if (announce || selectedItems.length > this.maxSelectedItems)
-            this.selectedItems = selectedItems.slice(0, this.maxSelectedItems);
+            this.selectedItems = selectedItems;
     }
 
     /**
