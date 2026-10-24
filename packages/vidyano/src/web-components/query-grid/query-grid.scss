@@ -107,6 +107,8 @@
 
         vi-query-grid-footer {
             margin-left: calc(var(--vi-query-grid-horizontal, 0) * -1);
+            // Totals scrolled to the left stay out of the controls gutter
+            clip-path: inset(0 0 0 var(--vi-query-grid-horizontal, 0));
         }
     }
 

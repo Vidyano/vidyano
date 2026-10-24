@@ -537,7 +537,7 @@ export class QueryGrid extends Polymer.WebComponent {
             this.shadowRoot.appendChild(this._pinnedStyle = document.createElement("style"));
             
         this._pinnedStyle.innerHTML = `
-            header [grid] > *:nth-child(-n+${pinnedColumns.length}), vi-query-grid-row > .column:nth-child(-n+${pinnedColumns.length}) {
+            header [grid] > *:nth-child(-n+${pinnedColumns.length}), vi-query-grid-row > .column:nth-child(-n+${pinnedColumns.length}), vi-query-grid-footer > .column:nth-child(-n+${pinnedColumns.length}) {
                 transform: translateX(var(--vi-query-grid-horizontal, 0));
             }
 
@@ -545,7 +545,7 @@ export class QueryGrid extends Polymer.WebComponent {
                 z-index: 1;
             }
 
-            vi-query-grid-row > .column:nth-child(${pinnedColumns.length}) {
+            vi-query-grid-row > .column:nth-child(${pinnedColumns.length}), vi-query-grid-footer > .column:nth-child(${pinnedColumns.length}) {
                 border-right: 1px solid var(--theme-light-border);
             }
         `;

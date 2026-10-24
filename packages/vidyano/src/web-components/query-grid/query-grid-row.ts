@@ -252,6 +252,10 @@ export class QueryGridRow extends Polymer.WebComponent {
         if (e.button !== 2 || e.shiftKey || e.ctrlKey || grid.asLookup)
             return true;
 
+        // Hiding the inline actions also hides them from the context menu, the native menu shows instead
+        if (grid.noInlineActions)
+            return;
+
         let [x, y] = [e.pageX, e.pageY];
 
         const actionsPopup = new Popup();
