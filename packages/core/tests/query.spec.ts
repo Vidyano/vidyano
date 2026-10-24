@@ -944,4 +944,16 @@ test.describe("Query", () => {
             expect(clonedColumn.selectedDistinctsInversed).toBe(true);
         });
     });
+
+    test.describe("Select-all on a query that limits the selection", () => {
+        test("is not available", async ({ peopleQuery }) => {
+            expect(peopleQuery.selectAll.isAvailable).toBe(true);
+
+            peopleQuery.maxSelectedItems = 1;
+            expect(peopleQuery.selectAll.isAvailable).toBe(false);
+
+            peopleQuery.selectAll.allSelected = true;
+            expect(peopleQuery.selectAll.allSelected).toBe(false);
+        });
+    });
 });

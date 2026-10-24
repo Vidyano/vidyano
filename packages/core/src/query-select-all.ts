@@ -46,7 +46,7 @@ export class QuerySelectAll extends Observable<IQuerySelectAll> implements IQuer
      */
     get isAvailable(): boolean {
         if (this.#query.maxSelectedItems)
-            return;
+            return false;
 
         if (this.#query.hasMore)
             return false;
