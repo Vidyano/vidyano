@@ -54,7 +54,7 @@ export class QueryGridFooter extends WebComponent {
         if (item && !String.isNullOrEmpty(item.getTypeHint("displayformat", column.column.getTypeHint("displayformat", null), value?.typeHints)))
             return QueryGridCellDefault;
 
-        return QueryGridCell.getCellTypeConstructor(column.type) || QueryGridCellDefault;
+        return QueryGridCell.resolveCellType(column);
     }
 }
 

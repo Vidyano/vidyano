@@ -9,7 +9,7 @@ import { QueryGridCell } from "./cell-templates/query-grid-cell"
 import "./cell-templates/query-grid-cell-boolean"
 import "./cell-templates/query-grid-cell-common-mark"
 import "./cell-templates/query-grid-cell-image"
-import { QueryGridCellDefault } from "./cell-templates/query-grid-cell-default"
+import "./cell-templates/query-grid-cell-default"
 import { QueryGridRowGroup } from "./query-grid-row-group"
 import "components/icon/icon"
 import styles from "./query-grid-row.css"
@@ -20,7 +20,7 @@ const classNames = (extraclass: string) => extraclass.split(/\s+/).filter(Boolea
 const TAP_DISTANCE = 25;
 
 function cellTypeFor(column: Vidyano.QueryColumn): new () => QueryGridCell {
-    return QueryGridCell.getCellTypeConstructor(column.type) || QueryGridCellDefault;
+    return QueryGridCell.resolveCellType(column);
 }
 
 export interface IItemTapEventArgs {
