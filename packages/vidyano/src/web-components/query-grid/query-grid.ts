@@ -98,6 +98,8 @@ export class QueryGrid extends WebComponent {
     #rowColumnCountChosen = false;
     #columnMeasure: Promise<void>;
     #measuredItems = new Set<QueryGridItem>();
+    #fontsLoaded: Promise<void>;
+    #measureAfterFontsOnConnected = false;
     private _pinnedStyle: HTMLStyleElement;
     private _lastSelectedItemIndex: number;
     private _controlsSizeObserver: ResizeObserver;
@@ -335,6 +337,11 @@ export class QueryGrid extends WebComponent {
         else {
             this._observeControlsSize();
             this._queueMeasureColumns();
+        }
+
+        if (this.#measureAfterFontsOnConnected) {
+            this.#measureAfterFontsOnConnected = false;
+            this._measureAfterFonts();
         }
 
         this._serviceBusDisposer = Vidyano.ServiceBus.subscribe("app-route:deactivate", this._onAppRouteDeactivate.bind(this), true);
@@ -636,18 +643,61 @@ export class QueryGrid extends WebComponent {
                 columnWidthDetail.current = Math.max(columnWidthDetail.cell, columnWidthDetail.column) || Number.NaN;
         });
 
-        if (!this.columns || this._columnWidths.size < this.columns.length)
+        if (!this._canApplyColumnWidths())
             return;
 
-        if (this._rowColumns.some(c => !this._unmeasuredColumns.has(c.name) && Number.isNaN(this._columnWidths.get(c.name)?.current)) && (this.query.items.length || this.query.isBusy))
-            return;
-
-        this._applyColumnWidths();
+        this._applyColumnWidthsAfterFonts();
 
         if (detail.save) {
             const query = this.query;
             this.userSettings.save(false).catch(e => query.setNotification(e));
         }
+    }
+
+    private _canApplyColumnWidths(): boolean {
+        if (!this.columns || this._columnWidths.size < this.columns.length)
+            return false;
+
+        return !this._rowColumns.some(c => !this._unmeasuredColumns.has(c.name) && Number.isNaN(this._columnWidths.get(c.name)?.current)) || (!this.query.items.length && !this.query.isBusy);
+    }
+
+    private _applyColumnWidthsAfterFonts() {
+        // Text measured before the web fonts load is narrower than it shows once they do
+        if (this.initializing && document.fonts.status === "loading") {
+            this.#fontsLoaded ??= document.fonts.ready.then(() => {
+                this.#fontsLoaded = null;
+                this._measureAfterFonts();
+            });
+            return;
+        }
+
+        this._applyColumnWidths();
+    }
+
+    /**
+     * Measures the headers and the first row's cells again once the web fonts are loaded, the max-content tracks still size them while initializing.
+     */
+    private _measureAfterFonts() {
+        if (!this.initializing)
+            return;
+
+        // The headers and cells reported their widths already, nothing else ends initializing
+        if (!this.isConnected) {
+            this.#measureAfterFontsOnConnected = true;
+            return;
+        }
+
+        const row = this.$.grid.querySelector<QueryGridRow>("vi-query-grid-row:not([is-group])");
+        const cellWidths = this._rowColumns.map((c, i) => [c.name, row?.cells[i]?.getBoundingClientRect().width] as const);
+        const headerWidths = Array.from(this.shadowRoot.querySelectorAll<QueryGridColumnHeader>("header [grid] > vi-query-grid-column-header")).map(h => [h.column.name, h.getBoundingClientRect().width] as const);
+
+        // A column without a cell width yet keeps waiting for its first row
+        cellWidths.filter(([name, width]) => width && this._columnWidths.get(name)?.cell !== undefined).forEach(([name, width]) => this._columnWidths.get(name).cell = width);
+        headerWidths.filter(([name, width]) => width && this._columnWidths.has(name)).forEach(([name, width]) => this._columnWidths.get(name).column = width);
+        this._columnWidths.forEach(w => w.current = Math.max(w.cell, w.column) || Number.NaN);
+
+        if (this._canApplyColumnWidths())
+            this._applyColumnWidthsAfterFonts();
     }
 
     /**
@@ -961,7 +1011,7 @@ export class QueryGrid extends WebComponent {
 
                 // The headers reported their widths while the search was busy, nothing will report them again
                 if (this.columns.every(c => this._columnWidths.get(c.name)?.column >= 0))
-                    this._applyColumnWidths();
+                    this._applyColumnWidthsAfterFonts();
                 else
                     this._setInitializing(false);
             });
