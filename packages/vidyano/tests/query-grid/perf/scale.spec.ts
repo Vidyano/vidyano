@@ -1,5 +1,5 @@
 import { Locator, Page } from '@playwright/test';
-import { requestLog, waitForGridReady } from '../_helpers/query-grid';
+import { requestLog, waitForGridReady, pauseClock } from '../_helpers/query-grid';
 import { appendGrid, cdpMetrics, checkFrameBudget, collectGarbage, datasetOf, droppedFrames, expect, frameStats, gridLocator, median, mountPrefetched, parkMouse, perfCase, perfPage, prefetch, recordPerf, round, scrollToRow, setCpuThrottle, startFrameTrace, stopFrameTrace, test, traceFrames, waitFilled } from '../_helpers/perf';
 
 /** A 120-frame rAF fling from the top to the end, with the number of frame gaps > 20ms and of scroll events more than 20ms apart. */
@@ -19,7 +19,7 @@ function flingToEnd(grid: Locator) {
 
 const WIDE_PINNED = { Id: { isPinned: true }, Text01: { isPinned: true } };
 
-/** Mounts `query` 4 times on a prefetched query (1 warm-up) and returns the time to first rows plus DOM counts. */
+/** Mounts `query` runs + 1 times on a prefetched query (1 warm-up) and returns the time to first rows plus DOM counts. */
 async function mountRuns(page: Page, query: string, column: string, runs = 3) {
     await prefetch(page, query);
     await appendGrid(page, { column });
@@ -42,6 +42,28 @@ async function mountRuns(page: Page, query: string, column: string, runs = 3) {
     return { times, ...dom, grid };
 }
 
+/** Mounts PeopleBig, sets scrollTop to the end and follows it until the first frame with every visible row filled. */
+async function jumpToBottom(page: Page) {
+    await perfPage(page);
+    const { grid } = await mountPrefetched(page, 'PeopleBig');
+    await parkMouse(page);
+    const log = requestLog(page);
+
+    const jump = await grid.evaluate(async (g: any) => {
+        const perf = (window as any).__perf;
+        const scroller = perf.scroller(g).scroller;
+        const start = performance.now();
+        scroller.scrollTop = scroller.scrollHeight;
+        const { time } = await perf.whenFrame(() => {
+            const c = perf.coverage(g);
+            return c.blank === 0 && c.rows > 0 && perf.firstColumnMatches(g, 'FirstName');
+        });
+        return { ms: time - start, topIndex: perf.topRowIndex(g) as number, totalItems: g.query.totalItems as number };
+    });
+
+    return { grid, jump, log };
+}
+
 function verticalFling(grid: Locator, toRow: number) {
     return grid.evaluate(async (g: any, toRow) => {
         const perf = (window as any).__perf;
@@ -56,43 +78,46 @@ function verticalFling(grid: Locator, toRow: number) {
 test.describe('Scale: 150k rows and 60 columns', () => {
     test.setTimeout(240000);
 
-    test('jumping to the end of 150k fetches only the last reachable page', perfCase('perf.bd-jump-bottom', { timing: true }), async ({ page }, testInfo) => {
-        await perfPage(page);
-        const { grid } = await mountPrefetched(page, 'PeopleBig');
-        await parkMouse(page);
-        const log = requestLog(page);
-
-        const jump = await grid.evaluate(async (g: any) => {
-            const perf = (window as any).__perf;
-            const scroller = perf.scroller(g).scroller;
-            const start = performance.now();
-            scroller.scrollTop = scroller.scrollHeight;
-            const { time } = await perf.whenFrame(() => {
-                const c = perf.coverage(g);
-                return c.blank === 0 && c.rows > 0 && perf.firstColumnMatches(g, 'FirstName');
-            });
-            return { ms: time - start, topIndex: perf.topRowIndex(g), totalItems: g.query.totalItems };
-        });
+    test('jumping to the end of 150k fetches only the last reachable page', perfCase('perf.bd-jump-bottom'), async ({ page }, testInfo) => {
+        const { grid, jump, log } = await jumpToBottom(page);
         await log.quiet();
 
+        // The scroll height stops at PHYSICAL_UPPER_LIMIT (100,000 rows), so the last reachable page is 99,900
         expect(jump.totalItems).toBe(150000);
         expect(jump.topIndex).toBeGreaterThan(99900);
         expect(log.of('ExecuteQuery').map(r => [r.skip, r.top])).toEqual([[99900, 100]]);
-        expect.soft(jump.ms, 'settle at the bottom of 150k').toBeLessThanOrEqual(1500);
 
-        await recordPerf(page, testInfo, 'perf.bd-jump-bottom', { dataset: await datasetOf(grid), counts: { requests: log.of('ExecuteQuery').length }, timings: { settleMs: [round(jump.ms)] } });
+        await recordPerf(page, testInfo, 'perf.bd-jump-bottom', { dataset: await datasetOf(grid), counts: { requests: log.of('ExecuteQuery').length } });
     });
 
-    test('mount cost does not scale with 150k rows', perfCase('perf.bd-rows-bounded-mount', { timing: true }), async ({ page }, testInfo) => {
+    test('time to settle at the end of 150k', perfCase('perf.bd-jump-bottom-speed', { timing: true }), async ({ page }, testInfo) => {
+        const { grid, jump } = await jumpToBottom(page);
+
+        expect(jump.topIndex).toBeGreaterThan(99900);
+        expect.soft(jump.ms, 'settle at the bottom of 150k').toBeLessThanOrEqual(1500);
+
+        await recordPerf(page, testInfo, 'perf.bd-jump-bottom-speed', { dataset: await datasetOf(grid), timings: { settleMs: [round(jump.ms)] } });
+    });
+
+    test('mount cost does not scale with 150k rows', perfCase('perf.bd-rows-bounded-mount'), async ({ page }, testInfo) => {
+        await perfPage(page);
+        const people = await mountRuns(page, 'People', 'FirstName', 1);
+        const big = await mountRuns(page, 'PeopleBig', 'FirstName', 1);
+
+        expect(big.rowElements).toBe(people.rowElements);
+        expect(Math.abs(big.deep - people.deep) / people.deep, `deep ${big.deep} vs ${people.deep}`).toBeLessThanOrEqual(0.02);
+
+        await recordPerf(page, testInfo, 'perf.bd-rows-bounded-mount', { counts: { rowElements: big.rowElements, deep10k: people.deep, deep150k: big.deep } });
+    });
+
+    test('time to first rows of 150k vs 10k', perfCase('perf.bd-rows-bounded-mount-speed', { timing: true }), async ({ page }, testInfo) => {
         await perfPage(page);
         const people = await mountRuns(page, 'People', 'FirstName');
         const big = await mountRuns(page, 'PeopleBig', 'FirstName');
 
-        expect(big.rowElements).toBe(people.rowElements);
-        expect(Math.abs(big.deep - people.deep) / people.deep, `deep ${big.deep} vs ${people.deep}`).toBeLessThanOrEqual(0.02);
         expect.soft(median(big.times), 'time to first rows of 150k vs 10k').toBeLessThanOrEqual(median(people.times) * 1.2 + 5);
 
-        await recordPerf(page, testInfo, 'perf.bd-rows-bounded-mount', { counts: { rowElements: big.rowElements, deep10k: people.deep, deep150k: big.deep }, timings: { firstRows10k: people.times, firstRows150k: big.times }, repetitions: 3 });
+        await recordPerf(page, testInfo, 'perf.bd-rows-bounded-mount-speed', { timings: { firstRows10k: people.times, firstRows150k: big.times }, repetitions: 3 });
     });
 
     test('wide query renders bounded cells per row', perfCase('perf.wd-cells-per-row'), async ({ page }, testInfo) => {
@@ -238,15 +263,67 @@ test.describe('Scale: 150k rows and 60 columns', () => {
             await waitFilled(grid);
             await log.quiet();
 
-            const requests = log.of('ExecuteQuery').map(r => [r.skip, r.top]);
-            runs[query] = { frames: frameStats(fling.deltas), frameGaps: fling.frameGaps, scrollGaps: fling.scrollGaps, requests };
-            expect(requests.length, `${query}: requests ${JSON.stringify(requests)}, gaps ${fling.scrollGaps}`).toBeLessThanOrEqual(1 + Math.max(fling.frameGaps, fling.scrollGaps));
+            runs[query] = { frames: frameStats(fling.deltas), frameGaps: fling.frameGaps, scrollGaps: fling.scrollGaps, requests: log.of('ExecuteQuery').map(r => [r.skip, r.top]) };
         }
 
         expect(await gridLocator(page).evaluate((g: any) => g.query.totalItems)).toBe(150000);
         expect.soft(runs.PeopleBig.frames.p95, 'p95 of the 150k fling vs the 10k fling').toBeLessThanOrEqual(runs.People.frames.p95 * 1.2 + 2);
 
-        await recordPerf(page, testInfo, 'perf.bd-fling', { frames: { fling10k: runs.People.frames, fling150k: runs.PeopleBig.frames }, counts: { requests10k: runs.People.requests.length, requests150k: runs.PeopleBig.requests.length }, requests: { fling10k: runs.People.requests, fling150k: runs.PeopleBig.requests } });
+        await recordPerf(page, testInfo, 'perf.bd-fling', { frames: { fling10k: runs.People.frames, fling150k: runs.PeopleBig.frames }, counts: { requests10k: runs.People.requests.length, requests150k: runs.PeopleBig.requests.length, frameGaps10k: runs.People.frameGaps, frameGaps150k: runs.PeopleBig.frameGaps }, requests: { fling10k: runs.People.requests, fling150k: runs.PeopleBig.requests } });
+    });
+
+    test('a fling through 150k fetches only where it stops', perfCase('perf.bd-fling-requests'), async ({ page }, testInfo) => {
+        // The page clock holds the 20ms page fetch debounce, so a scroll every 16ms keeps postponing it whatever the frame rate
+        await page.clock.install();
+        await perfPage(page);
+
+        const runs: Record<string, { during: any[]; requests: any[]; top: number }> = {};
+        for (const query of ['People', 'PeopleBig']) {
+            const { grid } = await mountPrefetched(page, query);
+            await parkMouse(page);
+            const log = requestLog(page);
+            const max = await grid.evaluate((g: any) => {
+                const scroller = (window as any).__perf.scroller(g).scroller;
+                return scroller.scrollHeight - scroller.clientHeight;
+            });
+            await pauseClock(page);
+
+            let last = 0;
+            for (let i = 0; i < 120; i++) {
+                const top = await grid.evaluate((g: any, top) => {
+                    const scroller = (window as any).__perf.scroller(g).scroller;
+                    scroller.scrollTop = top;
+                    return scroller.scrollTop;
+                }, max * (1 - Math.pow(1 - (i + 1) / 120, 3)));
+                // The last steps of the ease-out round to the same scrollTop, no scroll event, so no time passes either
+                if (top === last)
+                    continue;
+
+                last = top;
+                await expect.poll(() => grid.evaluate((g: any) => g.verticalScrollOffset)).toBe(top);
+                await page.clock.runFor(16);
+            }
+
+            // Request events reach the log asynchronously, a fetch sent during the fling shows up once the network is quiet
+            await log.quiet();
+            const during = log.of('ExecuteQuery').map(r => [r.skip, r.top]);
+            await page.clock.runFor(1000);
+            await page.clock.resume();
+            await waitFilled(grid);
+            await log.quiet();
+
+            runs[query] = { during, requests: log.of('ExecuteQuery').map(r => [r.skip, r.top]), top: await grid.evaluate((g: any) => (window as any).__perf.topRowIndex(g)) };
+        }
+
+        expect(runs.People.during, '10k: requests during the fling').toEqual([]);
+        expect(runs.People.requests, '10k: requests after the fling').toEqual([[9900, 100]]);
+        expect(runs.People.top).toBeGreaterThan(9900);
+        // The scroll height stops at PHYSICAL_UPPER_LIMIT (100,000 rows), so the fling ends on page 99,900
+        expect(runs.PeopleBig.during, '150k: requests during the fling').toEqual([]);
+        expect(runs.PeopleBig.requests, '150k: requests after the fling').toEqual([[99900, 100]]);
+        expect(runs.PeopleBig.top).toBeGreaterThan(99900);
+
+        await recordPerf(page, testInfo, 'perf.bd-fling-requests', { counts: { requests10k: runs.People.requests.length, requests150k: runs.PeopleBig.requests.length }, requests: { fling10k: runs.People.requests, fling150k: runs.PeopleBig.requests } });
     });
 
     test('sort turnaround on 150k', perfCase('perf.bd-sort'), async ({ page }, testInfo) => {

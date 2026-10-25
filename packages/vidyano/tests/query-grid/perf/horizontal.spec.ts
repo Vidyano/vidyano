@@ -1,5 +1,5 @@
 import { Locator, Page } from '@playwright/test';
-import { headerNames, mountGrid, requestLog, savedSettings, waitForGridReady } from '../_helpers/query-grid';
+import { headerNames, mountGrid, requestLog, savedSettings, waitForGridReady, pauseClock } from '../_helpers/query-grid';
 import { cdpMetrics, checkFrameBudget, droppedFrames, expect, frameStats, mountPrefetched, parkMouse, peopleWidths, perfCase, perfPage, recordPerf, round, scrollToRow, setCpuThrottle, startFrameTrace, stopFrameTrace, test, traceFrames, waitFilled } from '../_helpers/perf';
 
 async function mountWide(page: Page, pinned: string[] = []) {
@@ -188,7 +188,9 @@ test.describe('Horizontal scroll & pinning', () => {
         await recordPerf(page, testInfo, 'perf.hs-offscreen-text-on-arrival', { counts: { checkedAfterJumpRight: result.right.checked, checkedAfterShift: result.shifted.cells.checked } });
     });
 
-    test('\'more columns\' buttons update only after scrolling settles', perfCase('perf.hs-more-columns-debounced', { timing: true }), async ({ page }, testInfo) => {
+    test('\'more columns\' buttons update only after scrolling settles', perfCase('perf.hs-more-columns-debounced'), async ({ page }, testInfo) => {
+        // The page clock holds the 50ms debounce of the more buttons, so the scroll steps do not depend on the frame rate
+        await page.clock.install();
         const grid = await mountWide(page);
 
         // Visibility of the more buttons, and which side has headers cut off by the visible header area
@@ -204,42 +206,46 @@ test.describe('Horizontal scroll & pinning', () => {
                 cutRight: headers.some(b => b.left + b.width / 2 > area.right + 1)
             };
         });
+        const buttons = async () => {
+            const { left, right } = await state();
+            return { left, right };
+        };
 
         const initial = await state();
         expect(initial).toEqual({ left: false, right: true, cutLeft: false, cutRight: true });
 
-        const run = await grid.evaluate(async (g: any) => {
-            const perf = (window as any).__perf;
-            const scroller = perf.scroller(g).scroller;
-            const max = scroller.scrollWidth - scroller.clientWidth;
-            const visible = () => ({ left: !!g.shadowRoot.querySelector('vi-popup.more.left')?.checkVisibility(), right: !!g.shadowRoot.querySelector('vi-popup.more.right')?.checkVisibility() });
-            const result = await perf.runFrames(60, (i: number) => scroller.scrollLeft = Math.round(max * (i + 1) / 60), visible);
-            // A flip counts as during the scroll when the frame before it came within the debounce interval
-            let flips = 0;
-            let last = visible();
-            result.samples.forEach((s: any, i: number) => {
-                if ((s.left !== last.left || s.right !== last.right) && i > 0 && result.deltas[i - 1] < 40)
-                    flips++;
-                last = s;
-            });
-            return { flips, max, final: scroller.scrollLeft };
+        await pauseClock(page);
+
+        // 60 steps to the end, a frame (16ms) apart: each step restarts the debounce before it runs out
+        const max = await grid.evaluate((g: any) => {
+            const scroller = (window as any).__perf.scroller(g).scroller;
+            return scroller.scrollWidth - scroller.clientWidth;
         });
+        let flips = 0;
+        for (let i = 1; i <= 60; i++) {
+            if (i > 1)
+                await page.clock.runFor(16);
+
+            const left = await grid.evaluate((g: any, left) => (window as any).__perf.scroller(g).scroller.scrollLeft = left, Math.round(max * i / 60));
+            await expect.poll(() => grid.evaluate((g: any) => g.horizontalScrollOffset), 'the scroll event').toBe(left);
+            if (JSON.stringify(await buttons()) !== JSON.stringify({ left: false, right: true }))
+                flips++;
+        }
+
+        await page.clock.runFor(49);
+        expect(flips, 'visibility flips during the scroll').toBe(0);
+        expect(await buttons(), '49ms after the last scroll').toEqual({ left: false, right: true });
 
         // After the scroll settles both buttons match the cut-off headers of their side
-        await expect.poll(async () => {
-            const s = await state();
-            return s.left === s.cutLeft && s.right === s.cutRight;
-        }).toBe(true).catch(() => {});
+        await page.clock.runFor(1);
         const settled = await state();
         expect(settled.left, `more.left after the scroll settled: ${JSON.stringify(settled)}`).toBe(settled.cutLeft);
         expect(settled.right, `more.right after the scroll settled: ${JSON.stringify(settled)}`).toBe(settled.cutRight);
-
-        expect(run.final).toBe(run.max);
-        expect(run.flips, 'visibility flips during the scroll').toBe(0);
         expect(settled.cutLeft).toBe(true);
         expect(settled.left).toBe(true);
 
-        await recordPerf(page, testInfo, 'perf.hs-more-columns-debounced', { counts: { flipsDuringScroll: run.flips }, dataset: { initial, settled } });
+        await page.clock.resume();
+        await recordPerf(page, testInfo, 'perf.hs-more-columns-debounced', { counts: { flipsDuringScroll: flips }, dataset: { initial, settled } });
     });
 
     test('pinning a column moves cells without recreating them', perfCase('perf.hs-pin-toggle-moves-cells'), async ({ page }, testInfo) => {

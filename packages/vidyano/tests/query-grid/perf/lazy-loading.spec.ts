@@ -1,22 +1,32 @@
 import { Locator, Page } from '@playwright/test';
 import { holdExecuteQuery } from '../_helpers/grid';
-import { requestLog, waitForGridReady } from '../_helpers/query-grid';
+import { requestLog, waitForGridReady, pauseClock } from '../_helpers/query-grid';
 import { datasetOf, expect, gridLocator, mountPrefetched, parkMouse, perfCase, perfPage, recordPerf, round, scrollToRow, setCpuThrottle, test, waitFilled } from '../_helpers/perf';
 
-/** Scrolls to a row (row x rowHeight) in a task and resolves with the ms until the first frame in which every visible row is filled. */
-async function jumpAndSettle(grid: Locator, row: number) {
-    return grid.evaluate(async (g: any, row) => {
-        const perf = (window as any).__perf;
+/**
+ * Scrolls to a row (row x rowHeight, clamped to the end) and resolves with the ms until the first frame in which the
+ * scroller is there, the grid handled that scroll and every visible row is filled. Without `wheel` the scrollTop is set
+ * in the same task as the start; with it one mouse wheel over the grid scrolls, which lands in a later frame.
+ */
+async function scrollAndSettle(grid: Locator, row: number, wheel?: Page) {
+    const rowHeight = await grid.evaluate((g: any, { row, jump }) => {
+        const w = window as any;
+        const perf = w.__perf;
         const scroller = perf.scroller(g).scroller;
+        const target = Math.min(row * g.rowHeight, scroller.scrollHeight - scroller.clientHeight);
         const start = performance.now();
-        scroller.scrollTop = row * g.rowHeight;
-        const { time } = await perf.whenFrame(() => {
+        w.__settled = perf.whenFrame(() => {
             const c = perf.coverage(g);
-            return c.blank === 0 && c.rows > 0 && perf.firstColumnMatches(g, 'FirstName');
-        });
+            return Math.abs(scroller.scrollTop - target) < 1 && g.verticalScrollOffset === scroller.scrollTop && c.blank === 0 && c.rows > 0 && perf.firstColumnMatches(g, 'FirstName');
+        }).then(({ time }: any) => ({ ms: time - start, topIndex: perf.topRowIndex(g) }));
+        if (jump)
+            scroller.scrollTop = row * g.rowHeight;
 
-        return { ms: time - start, top: scroller.scrollTop, topIndex: perf.topRowIndex(g) };
-    }, row);
+        return g.rowHeight as number;
+    }, { row, jump: !wheel });
+
+    await wheel?.mouse.wheel(0, row * rowHeight);
+    return grid.evaluate(() => (window as any).__settled as Promise<{ ms: number; topIndex: number }>);
 }
 
 /**
@@ -41,8 +51,114 @@ async function mountFresh(page: Page) {
     return grid;
 }
 
+/** Sets scrollTop and waits until the grid handled the scroll event (scroll events do not depend on the page clock). */
+async function scrollAndWaitForEvent(grid: Locator, top: number) {
+    const scrollTop = await grid.evaluate((g: any, top) => {
+        const scroller = (window as any).__perf.scroller(g).scroller;
+        scroller.scrollTop = top;
+        return scroller.scrollTop;
+    }, top);
+    await expect.poll(() => grid.evaluate((g: any) => g.verticalScrollOffset), 'the scroll event').toBe(scrollTop);
+}
+
+/** Waits (in real time) until a native scroll, e.g. from wheel events, came to rest and the grid handled its last scroll event. */
+async function waitScrollStopped(grid: Locator) {
+    let last = -1;
+    await expect.poll(async () => {
+        const { top, offset } = await grid.evaluate((g: any) => ({ top: (window as any).__perf.scroller(g).scroller.scrollTop, offset: g.verticalScrollOffset }));
+        const stopped = top > 0 && top === last && offset === top;
+        last = top;
+        return stopped;
+    }, { message: 'the scroll came to rest', intervals: [100] }).toBe(true);
+}
+
+/** The item index of every visible row, the item count and the visible cells that do not show the value of their item. */
+const shownRows = (grid: Locator) => grid.evaluate((g: any) => {
+    const perf = (window as any).__perf;
+    const q = g.query;
+    const lazy = q.disableLazyLoading;
+    q.disableLazyLoading = true;
+    try {
+        return { indexes: perf.visibleRows(g).map(({ r }: any) => q.items.indexOf(r.item)) as number[], total: q.totalItems as number, wrong: perf.checkVisibleCells(g).wrong as string[] };
+    }
+    finally {
+        q.disableLazyLoading = lazy;
+    }
+});
+
+const consecutive = (from: number, count: number) => Array.from({ length: count }, (_, i) => from + i);
+
 test.describe('Lazy loading', () => {
     test.setTimeout(180000);
+
+    test('a jump into an unloaded region loads only the page at the target', perfCase('perf.vw-jump-middle-loads-target'), async ({ page }, testInfo) => {
+        // The page clock holds the grid's 20ms page fetch debounce while the wheel scroll below runs, whatever the frame rate
+        await page.clock.install();
+        await perfPage(page);
+        let grid = await mountFresh(page);
+        let log = requestLog(page);
+
+        // The page is held until the rows at the target show as waiting
+        const release = await holdExecuteQuery(page);
+        await scrollToRow(grid, 5000);
+        await expect.poll(() => log.of('ExecuteQuery').length, 'the held request').toBe(1);
+        await expect.poll(() => grid.evaluate((g: any) => (window as any).__perf.coverage(g).blank), 'rows waiting for the held page').toBeGreaterThan(0);
+        await release();
+        await waitFilled(grid);
+        await log.quiet();
+
+        const jumpRequests = log.of('ExecuteQuery').map(r => [r.skip, r.top]);
+        expect(jumpRequests).toEqual([[5000, 100]]);
+        const jumped = await shownRows(grid);
+        expect(jumped.indexes, 'item index of every visible row').toEqual(consecutive(5000, jumped.indexes.length));
+        expect(jumped.wrong).toEqual([]);
+
+        // One large wheel lands on the same row and also loads only that page
+        grid = await mountFresh(page);
+        log = requestLog(page);
+        const box = (await grid.boundingBox())!;
+        const rowHeight = await grid.evaluate((g: any) => g.rowHeight);
+        await page.mouse.move(box.x + 400, box.y + 300);
+        await pauseClock(page);
+        await page.mouse.wheel(0, 5000 * rowHeight);
+        await waitScrollStopped(grid);
+        await page.clock.runFor(20);
+        await page.clock.resume();
+        await waitFilled(grid);
+        await log.quiet();
+
+        const wheelRequests = log.of('ExecuteQuery').map(r => [r.skip, r.top]);
+        expect(wheelRequests).toEqual([[5000, 100]]);
+        const wheeled = await shownRows(grid);
+        expect(wheeled.indexes, 'item index of every visible row').toEqual(consecutive(5000, wheeled.indexes.length));
+        expect(wheeled.wrong).toEqual([]);
+
+        await recordPerf(page, testInfo, 'perf.vw-jump-middle-loads-target', { counts: { jumpRequests: jumpRequests.length, wheelRequests: wheelRequests.length }, requests: { jump: jumpRequests, wheel: wheelRequests } });
+    });
+
+    test('a jump to the bottom loads only the last page', perfCase('perf.vw-jump-bottom-loads-last-page'), async ({ page }, testInfo) => {
+        await perfPage(page);
+        const grid = await mountFresh(page);
+        const log = requestLog(page);
+
+        // The page is held until the rows at the bottom show as waiting
+        const release = await holdExecuteQuery(page);
+        await scrollToRow(grid, 10000);
+        await expect.poll(() => log.of('ExecuteQuery').length, 'the held request').toBe(1);
+        await expect.poll(() => grid.evaluate((g: any) => (window as any).__perf.coverage(g).blank), 'rows waiting for the held page').toBeGreaterThan(0);
+        await release();
+        await waitFilled(grid);
+        await log.quiet();
+
+        const requests = log.of('ExecuteQuery').map(r => [r.skip, r.top]);
+        expect(requests).toEqual([[9900, 100]]);
+        const rows = await shownRows(grid);
+        expect(rows.total).toBe(10000);
+        expect(rows.indexes, 'item index of every visible row').toEqual(consecutive(rows.total - rows.indexes.length, rows.indexes.length));
+        expect(rows.wrong).toEqual([]);
+
+        await recordPerf(page, testInfo, 'perf.vw-jump-bottom-loads-last-page', { counts: { requests: requests.length }, requests: { pages: requests } });
+    });
 
     for (const rate of [1, 4]) {
         test(`time to data after a jump into an unloaded region (${rate}x CPU)`, perfCase('perf.vw-settle-after-jump-middle', { timing: true }), async ({ page }, testInfo) => {
@@ -51,31 +167,25 @@ test.describe('Lazy loading', () => {
             const log = requestLog(page);
             await setCpuThrottle(page, rate);
 
-            const jump = await jumpAndSettle(grid, 5000);
+            const jump = await scrollAndSettle(grid, 5000);
             await log.quiet();
             await setCpuThrottle(page, 1);
 
             expect(jump.topIndex).toBe(5000);
-            expect(log.of('ExecuteQuery').map(r => [r.skip, r.top])).toEqual([[5000, 100]]);
             expect.soft(jump.ms, 'settle after jump').toBeLessThanOrEqual(rate === 1 ? 1000 : 2500);
 
-            // One large wheel lands on the same row and also loads only that page
-            let wheel: any = null;
+            // The same row through one large wheel
+            let wheelMs: number | null = null;
             if (rate === 1) {
                 const fresh = await mountFresh(page);
-                const wheelLog = requestLog(page);
                 const box = (await fresh.boundingBox())!;
-                const rowHeight = await fresh.evaluate((g: any) => g.rowHeight);
                 await page.mouse.move(box.x + 400, box.y + 300);
-                const start = await page.evaluate(() => performance.now());
-                await page.mouse.wheel(0, 5000 * rowHeight);
-                await waitFilled(fresh);
-                await wheelLog.quiet();
-                wheel = { ms: round(await page.evaluate(start => performance.now() - start, start)), requests: wheelLog.of('ExecuteQuery').map(r => [r.skip, r.top]) };
-                expect(wheel.requests).toEqual([[5000, 100]]);
+                const wheel = await scrollAndSettle(fresh, 5000, page);
+                expect(wheel.topIndex).toBe(5000);
+                wheelMs = round(wheel.ms);
             }
 
-            await recordPerf(page, testInfo, `perf.vw-settle-after-jump-middle.${rate}x`, { cpuThrottle: rate, dataset: await datasetOf(grid), counts: { requests: log.of('ExecuteQuery').length }, timings: { settleMs: [round(jump.ms)], ...(wheel ? { wheelSettleMs: [wheel.ms] } : {}) } });
+            await recordPerf(page, testInfo, `perf.vw-settle-after-jump-middle.${rate}x`, { cpuThrottle: rate, dataset: await datasetOf(grid), counts: { requests: log.of('ExecuteQuery').length }, timings: { settleMs: [round(jump.ms)], ...(wheelMs !== null ? { wheelSettleMs: [wheelMs] } : {}) } });
         });
 
         test(`time to settle at the bottom of 10,000 rows (${rate}x CPU)`, perfCase('perf.vw-settle-after-jump-bottom', { timing: true }), async ({ page }, testInfo) => {
@@ -84,11 +194,10 @@ test.describe('Lazy loading', () => {
             const log = requestLog(page);
             await setCpuThrottle(page, rate);
 
-            const jump = await jumpAndSettle(grid, 10000);
+            const jump = await scrollAndSettle(grid, 10000);
             await log.quiet();
             await setCpuThrottle(page, 1);
 
-            expect(log.of('ExecuteQuery').map(r => [r.skip, r.top])).toEqual([[9900, 100]]);
             expect.soft(jump.ms, 'settleBottomMs').toBeLessThanOrEqual(rate === 1 ? 1000 : 2500);
 
             await recordPerf(page, testInfo, `perf.vw-settle-after-jump-bottom.${rate}x`, { cpuThrottle: rate, dataset: await datasetOf(grid), counts: { requests: log.of('ExecuteQuery').length }, timings: { settleBottomMs: [round(jump.ms)] } });
@@ -153,19 +262,13 @@ test.describe('Lazy loading', () => {
         });
     });
 
-    test('a fast fling only loads where it stops', perfCase('grid.pf-fling-requests-final-only', { timing: true }), async ({ page }, testInfo) => {
+    test('a fast fling only loads where it stops', perfCase('grid.pf-fling-requests-final-only'), async ({ page }, testInfo) => {
+        // The page clock holds the grid's 20ms page fetch debounce: each scroll event of the fling restarts it before it runs
+        // out, whatever the frame rate
+        await page.clock.install();
         await perfPage(page);
 
         const covers = (requests: { skip?: number; top?: number }[], indexes: number[]) => indexes.every(index => requests.some(r => index >= (r.skip ?? 0) && index < (r.skip ?? 0) + (r.top ?? 100)));
-        const trackScrolls = (grid: Locator) => grid.evaluate((g: any) => {
-            const w = window as any;
-            const state = w.__scrolls = [] as number[];
-            w.__perf.scroller(g).scroller.addEventListener('scroll', () => state.push(performance.now()), { passive: true });
-        });
-        const scrollGaps = (page: Page) => page.evaluate(() => {
-            const times = (window as any).__scrolls as number[];
-            return times.slice(1).filter((t, i) => t - times[i] > 20).length;
-        });
         const finalIndexes = (grid: Locator) => grid.evaluate((g: any) => {
             const perf = (window as any).__perf;
             const q = g.query;
@@ -179,50 +282,63 @@ test.describe('Lazy loading', () => {
             }
         });
 
-        // 30 wheel events of 3000px within ~300ms
+        // 30 wheel events of 3000px, all while the page clock stands still
         let grid = await mountFresh(page);
         let log = requestLog(page);
-        await trackScrolls(grid);
         const box = (await grid.boundingBox())!;
         await page.mouse.move(box.x + 400, box.y + 300);
-        const started = Date.now();
+        await pauseClock(page);
         for (let i = 0; i < 30; i++)
             await page.mouse.wheel(0, 3000);
 
-        const wheelMs = Date.now() - started;
+        await waitScrollStopped(grid);
+        await page.clock.runFor(19);
+        await log.quiet();
+        const wheelBeforeDebounce = log.of('ExecuteQuery').length;
+        expect(wheelBeforeDebounce, 'requests within 20ms of the last scroll').toBe(0);
+        await page.clock.runFor(1);
+        await page.clock.resume();
         await waitFilled(grid);
         await log.quiet();
 
-        const wheelGaps = await scrollGaps(page);
         const wheelRequests = log.of('ExecuteQuery');
-        expect(wheelRequests.every(pageAligned)).toBe(true);
-        expect(wheelRequests.length, `requests ${JSON.stringify(wheelRequests.map(r => [r.skip, r.top]))}, gaps ${wheelGaps}`).toBeLessThanOrEqual(1 + wheelGaps);
-        expect(covers(wheelRequests, await finalIndexes(grid))).toBe(true);
+        const wheelLabel = `requests ${JSON.stringify(wheelRequests.map(r => [r.skip, r.top]))}`;
+        expect(wheelRequests, wheelLabel).toHaveLength(1);
+        expect(wheelRequests.every(pageAligned), wheelLabel).toBe(true);
+        expect(covers(wheelRequests, await finalIndexes(grid)), wheelLabel).toBe(true);
 
-        // 30-frame rAF fling to the bottom
+        // 30-frame fling to the bottom: a scroll step, then a frame (16ms) of page time
         grid = await mountFresh(page);
         log = requestLog(page);
-        await trackScrolls(grid);
-        const fling = await grid.evaluate(async (g: any) => {
-            const perf = (window as any).__perf;
-            const scroller = perf.scroller(g).scroller;
-            const max = scroller.scrollHeight - scroller.clientHeight;
-            const run = await perf.runFrames(30, (i: number) => scroller.scrollTop = max * (1 - Math.pow(1 - (i + 1) / 30, 3)));
-            return { frameGaps: run.deltas.filter((d: number) => d > 20).length };
+        await pauseClock(page);
+        const max = await grid.evaluate((g: any) => {
+            const scroller = (window as any).__perf.scroller(g).scroller;
+            return scroller.scrollHeight - scroller.clientHeight;
         });
+        for (let i = 0; i < 30; i++) {
+            if (i > 0)
+                await page.clock.runFor(16);
+
+            await scrollAndWaitForEvent(grid, Math.round(max * (1 - Math.pow(1 - (i + 1) / 30, 3))));
+        }
+
+        await page.clock.runFor(19);
+        await log.quiet();
         const midFling = log.of('ExecuteQuery').length;
+        expect(midFling, 'requests during the fling and within 20ms of its last scroll').toBe(0);
+        await page.clock.runFor(1);
+        await page.clock.resume();
         await waitFilled(grid);
         await log.quiet();
 
-        const flingGaps = await scrollGaps(page);
         const flingRequests = log.of('ExecuteQuery');
-        expect(flingRequests.every(pageAligned)).toBe(true);
-        expect(flingRequests.length, `requests ${JSON.stringify(flingRequests.map(r => [r.skip, r.top]))}, gaps ${flingGaps}`).toBeLessThanOrEqual(1 + flingGaps);
-        expect(covers(flingRequests, await finalIndexes(grid))).toBe(true);
+        const flingLabel = `requests ${JSON.stringify(flingRequests.map(r => [r.skip, r.top]))}`;
+        expect(flingRequests, flingLabel).toHaveLength(1);
+        expect(flingRequests.every(pageAligned), flingLabel).toBe(true);
+        expect(covers(flingRequests, await finalIndexes(grid)), flingLabel).toBe(true);
 
         await recordPerf(page, testInfo, 'grid.pf-fling-requests-final-only', {
-            counts: { wheelRequests: wheelRequests.length, wheelGaps, flingRequests: flingRequests.length, flingScrollGaps: flingGaps, flingFrameGaps: fling.frameGaps, midFlingRequests: midFling },
-            timings: { wheelInputMs: [wheelMs] },
+            counts: { wheelRequests: wheelRequests.length, flingRequests: flingRequests.length, midFlingRequests: midFling },
             requests: { wheel: wheelRequests.map(r => [r.skip, r.top]), fling: flingRequests.map(r => [r.skip, r.top]) }
         });
     });
@@ -304,20 +420,21 @@ test.describe('Lazy loading', () => {
         await recordPerf(page, testInfo, 'grid.pf-no-duplicate-page-requests', { counts: { requests: pages.length, maxPerPage: Math.max(...perPage.values()) }, requests: { pages } });
     });
 
-    test('abandoned windows are not fetched', perfCase('perf.ll-stale-window-not-fetched', { timing: true }), async ({ page }, testInfo) => {
+    test('abandoned windows are not fetched', perfCase('perf.ll-stale-window-not-fetched'), async ({ page }, testInfo) => {
+        // The page clock holds the grid's 20ms page fetch debounce, so the second jump comes before it runs out at any frame rate
+        await page.clock.install();
         await perfPage(page);
         const grid = await mountFresh(page);
         const log = requestLog(page);
+        const rowHeight = await grid.evaluate((g: any) => g.rowHeight);
 
-        // Jump to row 3,000 and, before the next frame, on to row 7,000
-        await grid.evaluate((g: any) => new Promise<void>(resolve => {
-            const scroller = (window as any).__perf.scroller(g).scroller;
-            scroller.scrollTop = 3000 * g.rowHeight;
-            requestAnimationFrame(() => {
-                scroller.scrollTop = 7000 * g.rowHeight;
-                resolve();
-            });
-        }));
+        // Jump to row 3,000 and, a frame later, on to row 7,000
+        await pauseClock(page);
+        await scrollAndWaitForEvent(grid, 3000 * rowHeight);
+        await page.clock.runFor(16);
+        await scrollAndWaitForEvent(grid, 7000 * rowHeight);
+        await page.clock.runFor(20);
+        await page.clock.resume();
         await waitFilled(grid);
         await log.quiet();
 

@@ -1,5 +1,5 @@
 import { test, expect, Locator } from '@playwright/test';
-import { gridPage, mountGrid, getScrollOffset, scrollGrid, requestLog, nextFrames, writePerf, waitForGridReady } from '../_helpers/query-grid';
+import { gridPage, mountGrid, getScrollOffset, scrollGrid, requestLog, nextFrames, writePerf, waitForGridReady, pauseClock } from '../_helpers/query-grid';
 import { attachGrid, holdExecuteQuery, rows, scrollerBox, settle, valuesOf, wheelGrid } from '../_helpers/grid';
 
 const RH = 32;
@@ -425,8 +425,7 @@ test.describe('Virtual scrolling and lazy loading', () => {
         await gridPage(page);
         const grid = await mountGrid(page);
         const log = requestLog(page);
-        // pauseAt throws for a time in the past and fires every timer due by then; a second ahead covers the round trip
-        await page.clock.pauseAt(await page.evaluate(() => Date.now()) + 1000);
+        await pauseClock(page);
 
         const scrollTo = async (top: number) => {
             await grid.evaluate((g: any, top) => {

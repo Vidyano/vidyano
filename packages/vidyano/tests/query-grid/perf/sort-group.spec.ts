@@ -22,6 +22,103 @@ async function collapseAll(page: Page, grid: Locator) {
     return item;
 }
 
+/**
+ * Groups People by BirthDate, clicks "Collapse all" and follows the 30 frames after the click: the frames with row
+ * mutations (1 = the first frame after pointerup) and the ms until only the collapsed group rows are shown.
+ */
+async function measureCollapseAll(page: Page) {
+    await perfPage(page);
+    const { grid } = await mountPrefetched(page, 'People');
+    await groupByBirthDate(grid);
+    await waitFilled(grid);
+    const log = requestLog(page);
+    await log.quiet();
+    log.clear();
+
+    const groups: number = await grid.evaluate((g: any) => g.query.groupingInfo.groups.length);
+    const item = await collapseAll(page, grid);
+    await grid.evaluate((g: any) => {
+        const w = window as any;
+        const perf = w.__perf;
+        perf.observe(g);
+        w.__collapse = new Promise(resolve => window.addEventListener('pointerup', () => {
+            const start = performance.now();
+            const frameTimes: number[] = [];
+            let shownAt = NaN;
+            perf.whenFrame(() => {
+                frameTimes.push(performance.now());
+                const scroller = perf.scroller(g).scroller;
+                const rows = perf.visibleRows(g);
+                if (Number.isNaN(shownAt) && rows.length > 0 && rows.every(({ r }: any) => r.hasAttribute('is-group')) && scroller.scrollHeight <= 56 * g.rowHeight + 1)
+                    shownAt = performance.now() - start;
+
+                return frameTimes.length >= 30;
+            }).then(() => {
+                // Map every row mutation to the frame it was rendered in (records are delivered before that frame's check)
+                const state = perf.__observer;
+                const late = state.observer.takeRecords();
+                state.records.push(...late);
+                late.forEach(() => state.times.push(performance.now()));
+                const inRow = (r: MutationRecord) => {
+                    for (let n: any = r.target; n; n = n.parentNode instanceof ShadowRoot ? n.parentNode.host : n.parentNode) {
+                        if (n.tagName === 'VI-QUERY-GRID-ROW')
+                            return true;
+                    }
+                    return false;
+                };
+                const commitFrames = [...new Set(state.records.map((r: MutationRecord, i: number) => inRow(r) && state.times[i] >= start ? frameTimes.findIndex(t => t >= state.times[i]) + 1 : null).filter((f: number | null) => f !== null))];
+                resolve({ commitFrames, shownAt, start });
+            });
+        }, { capture: true, once: true }));
+    });
+
+    await item.click();
+    const result: { commitFrames: number[]; shownAt: number; start: number } = await page.evaluate(() => (window as any).__collapse);
+    await grid.evaluate(() => (window as any).__perf.takeMutations());
+
+    return { grid, groups, item, result, log };
+}
+
+/** Runs a text search on the grid's query and follows it until the first frame that shows its rows. */
+function textSearch(grid: Locator, text: string) {
+    return grid.evaluate(async (g: any, text) => {
+        const perf = (window as any).__perf;
+        const q = g.query;
+        const items = q.items;
+        const start = performance.now();
+        q.textSearch = text;
+        q.search();
+        const { time } = await perf.whenFrame(() => {
+            if (q.items === items || q.isBusy)
+                return false;
+
+            const rows = perf.visibleRows(g);
+            return rows.length > 0 && perf.firstColumnMatches(g, 'FirstName') && (!text || rows.every(({ r }: any) => r.item.getValue('FirstName').startsWith('A')));
+        });
+        const scroller = perf.scroller(g).scroller;
+        return { ms: time - start, totalItems: q.totalItems as number, scrollHeight: scroller.scrollHeight as number, expectedHeight: q.totalItems * g.rowHeight as number };
+    }, text);
+}
+
+/** Narrows People to FirstName:A* and clears the search again, counting the queries of each. */
+async function searchAndClear(page: Page) {
+    await perfPage(page);
+    const { grid } = await mountPrefetched(page, 'People');
+    await parkMouse(page);
+    const log = requestLog(page);
+
+    const narrowed = await textSearch(grid, 'FirstName:A*');
+    await log.quiet();
+    const narrowRequests = log.of('ExecuteQuery').length;
+    log.clear();
+
+    const cleared = await textSearch(grid, '');
+    await log.quiet();
+    const clearRequests = log.of('ExecuteQuery').length;
+
+    return { narrowed, cleared, narrowRequests, clearRequests };
+}
+
 test.describe('Sort, search & grouping', () => {
     test.setTimeout(180000);
 
@@ -153,64 +250,13 @@ test.describe('Sort, search & grouping', () => {
         await recordPerf(page, testInfo, 'perf.gr-group-request-and-headers', { counts: { requests: requests.length, rowElements: rowsBefore }, timings: { settleMs: [settleMs] }, requests: { group: requests } });
     });
 
-    test('collapse-all of 56 groups is local and coalesced', perfCase('perf.gr-collapse-all-coalesced', { timing: true }), async ({ page }, testInfo) => {
-        await perfPage(page);
-        const { grid } = await mountPrefetched(page, 'People');
-        await groupByBirthDate(grid);
-        await waitFilled(grid);
-        const log = requestLog(page);
+    test('collapse-all of 56 groups is local and coalesced', perfCase('perf.gr-collapse-all-coalesced'), async ({ page }, testInfo) => {
+        const { grid, groups, item, result, log } = await measureCollapseAll(page);
         await log.quiet();
-        log.clear();
 
-        const groups = await grid.evaluate((g: any) => g.query.groupingInfo.groups.length);
         expect(groups).toBe(56);
-
-        const item = await collapseAll(page, grid);
-        await grid.evaluate((g: any) => {
-            const w = window as any;
-            const perf = w.__perf;
-            perf.observe(g);
-            w.__collapse = new Promise(resolve => window.addEventListener('pointerup', () => {
-                const start = performance.now();
-                const frameTimes: number[] = [];
-                let shownAt = NaN;
-                perf.whenFrame(() => {
-                    frameTimes.push(performance.now());
-                    const scroller = perf.scroller(g).scroller;
-                    const rows = perf.visibleRows(g);
-                    if (Number.isNaN(shownAt) && rows.length > 0 && rows.every(({ r }: any) => r.hasAttribute('is-group')) && scroller.scrollHeight <= 56 * g.rowHeight + 1)
-                        shownAt = performance.now() - start;
-
-                    return frameTimes.length >= 30;
-                }).then(() => {
-                    // Map every row mutation to the frame it was rendered in (records are delivered before that frame's check)
-                    const state = perf.__observer;
-                    const late = state.observer.takeRecords();
-                    state.records.push(...late);
-                    late.forEach(() => state.times.push(performance.now()));
-                    const inRow = (r: MutationRecord) => {
-                        for (let n: any = r.target; n; n = n.parentNode instanceof ShadowRoot ? n.parentNode.host : n.parentNode) {
-                            if (n.tagName === 'VI-QUERY-GRID-ROW')
-                                return true;
-                        }
-                        return false;
-                    };
-                    const commitFrames = [...new Set(state.records.map((r: MutationRecord, i: number) => inRow(r) && state.times[i] >= start ? frameTimes.findIndex(t => t >= state.times[i]) + 1 : null).filter((f: number | null) => f !== null))];
-                    resolve({ commitFrames, shownAt, start });
-                });
-            }, { capture: true, once: true }));
-        });
-
-        await item.click();
-        const result = await page.evaluate(() => (window as any).__collapse);
-        const blocking = await page.evaluate(start => (window as any).__perf.tbt(start, performance.now()), result.start);
-        await grid.evaluate(() => (window as any).__perf.takeMutations());
-        await log.quiet();
-
         expect(new Set(result.commitFrames).size, `frames with row mutations: ${result.commitFrames}`).toBeLessThanOrEqual(2);
-        expect(result.shownAt).not.toBeNaN();
-        expect.soft(result.shownAt, 'collapsed groups shown').toBeLessThanOrEqual(300);
-        expect.soft(blocking.longest, 'no task over 100ms').toBeLessThanOrEqual(100);
+        expect(result.shownAt, 'collapsed groups shown within 30 frames').not.toBeNaN();
         expect(log.requests).toHaveLength(0);
 
         // Collapse all closes the grouping menu
@@ -227,7 +273,18 @@ test.describe('Sort, search & grouping', () => {
         await log.quiet(300);
         expect(log.requests).toHaveLength(0);
 
-        await recordPerf(page, testInfo, 'perf.gr-collapse-all-coalesced', { counts: { groups, commitFrames: new Set(result.commitFrames).size, requests: log.requests.length }, timings: { shownMs: [round(result.shownAt)], longestTask: [round(blocking.longest)] } });
+        await recordPerf(page, testInfo, 'perf.gr-collapse-all-coalesced', { counts: { groups, commitFrames: new Set(result.commitFrames).size, requests: log.requests.length } });
+    });
+
+    test('time to show 56 collapsed groups', perfCase('perf.gr-collapse-all-coalesced-speed', { timing: true }), async ({ page }, testInfo) => {
+        const { result } = await measureCollapseAll(page);
+        const blocking = await page.evaluate(start => (window as any).__perf.tbt(start, performance.now()), result.start);
+
+        expect(result.shownAt).not.toBeNaN();
+        expect.soft(result.shownAt, 'collapsed groups shown').toBeLessThanOrEqual(300);
+        expect.soft(blocking.longest, 'no task over 100ms').toBeLessThanOrEqual(100);
+
+        await recordPerf(page, testInfo, 'perf.gr-collapse-all-coalesced-speed', { timings: { shownMs: [round(result.shownAt)], longestTask: [round(blocking.longest)] } });
     });
 
     test('expanding one group only touches rows below it', perfCase('perf.gr-toggle-one-group'), async ({ page }, testInfo) => {
@@ -396,38 +453,8 @@ test.describe('Sort, search & grouping', () => {
         await recordPerf(page, testInfo, 'perf.sq-sort-from-scrolled', { counts: { sortRequests: runs.sort.requests.length, searchRequests: runs.search.requests.length, uncoveredFrames: runs.sort.uncovered + runs.search.uncovered } });
     });
 
-    test('text search narrows rows and spacer with one request', perfCase('perf.sq-text-search', { timing: true }), async ({ page }, testInfo) => {
-        await perfPage(page);
-        const { grid } = await mountPrefetched(page, 'People');
-        await parkMouse(page);
-        const log = requestLog(page);
-
-        const search = (text: string) => grid.evaluate(async (g: any, text) => {
-            const perf = (window as any).__perf;
-            const q = g.query;
-            const items = q.items;
-            const start = performance.now();
-            q.textSearch = text;
-            q.search();
-            const { time } = await perf.whenFrame(() => {
-                if (q.items === items || q.isBusy)
-                    return false;
-
-                const rows = perf.visibleRows(g);
-                return rows.length > 0 && perf.firstColumnMatches(g, 'FirstName') && (!text || rows.every(({ r }: any) => r.item.getValue('FirstName').startsWith('A')));
-            });
-            const scroller = perf.scroller(g).scroller;
-            return { ms: time - start, totalItems: q.totalItems, scrollHeight: scroller.scrollHeight, expectedHeight: q.totalItems * g.rowHeight };
-        }, text);
-
-        const narrowed = await search('FirstName:A*');
-        await log.quiet();
-        const narrowRequests = log.of('ExecuteQuery').length;
-        log.clear();
-
-        const cleared = await search('');
-        await log.quiet();
-        const clearRequests = log.of('ExecuteQuery').length;
+    test('text search narrows rows and spacer with one request', perfCase('perf.sq-text-search'), async ({ page }, testInfo) => {
+        const { narrowed, cleared, narrowRequests, clearRequests } = await searchAndClear(page);
 
         expect(narrowed.totalItems).toBeLessThan(10000);
         expect(narrowed.totalItems).toBeGreaterThan(0);
@@ -436,9 +463,17 @@ test.describe('Sort, search & grouping', () => {
         expect(cleared.totalItems).toBe(10000);
         expect(Math.abs(cleared.scrollHeight - cleared.expectedHeight)).toBeLessThanOrEqual(1);
         expect(clearRequests).toBe(1);
+
+        await recordPerf(page, testInfo, 'perf.sq-text-search', { counts: { narrowRequests, clearRequests } });
+    });
+
+    test('time from text search to matching rows', perfCase('perf.sq-text-search-speed', { timing: true }), async ({ page }, testInfo) => {
+        const { narrowed, cleared } = await searchAndClear(page);
+
+        expect(narrowed.totalItems).toBeGreaterThan(0);
         expect.soft(narrowed.ms, 'time to matching rows').toBeLessThanOrEqual(1500);
 
-        await recordPerf(page, testInfo, 'perf.sq-text-search', { counts: { narrowRequests, clearRequests }, timings: { narrowMs: [round(narrowed.ms)], clearMs: [round(cleared.ms)] } });
+        await recordPerf(page, testInfo, 'perf.sq-text-search-speed', { timings: { narrowMs: [round(narrowed.ms)], clearMs: [round(cleared.ms)] } });
     });
 
     test('back-to-back searches settle once', perfCase('perf.sq-double-search'), async ({ page }, testInfo) => {

@@ -1,4 +1,5 @@
-import { mountGrid, requestLog } from '../_helpers/query-grid';
+import { holdExecuteQuery } from '../_helpers/grid';
+import { mountGrid, requestLog, pauseClock } from '../_helpers/query-grid';
 import { cdpMetrics, checkFrameBudget, datasetOf, droppedFrames, expect, frameStats, mountPrefetched, parkMouse, perfCase, perfPage, recordPerf, round, runScrollScenarios, scrollToRow, setCpuThrottle, startFrameTrace, stopFrameTrace, test, traceFrames, traceLayouts, waitFilled } from '../_helpers/perf';
 
 test.describe('Vertical scrolling', () => {
@@ -308,7 +309,9 @@ test.describe('Vertical scrolling', () => {
         });
     }
 
-    test('an idle settled grid does no work', perfCase('perf.vw-idle-no-work', { timing: true }), async ({ page }, testInfo) => {
+    test('an idle settled grid does no work', perfCase('perf.vw-idle-no-work'), async ({ page }, testInfo) => {
+        // On the page clock, idle page time passes on demand and runs every timer due in it
+        await page.clock.install();
         await perfPage(page);
         const grid = await mountGrid(page);
         await parkMouse(page);
@@ -339,31 +342,51 @@ test.describe('Vertical scrolling', () => {
             w.__perf.observe(g);
         });
 
+        await pauseClock(page);
+
         // Registrations in the first 200ms are allowed (trailing work of the settle); then reset and watch 2s
-        await page.waitForTimeout(200);
-        const start = await grid.evaluate((g: any) => {
+        await page.clock.runFor(200);
+        await grid.evaluate((g: any) => {
             const w = window as any;
             Object.assign(w.__idle, { raf: 0, timeout: 0, interval: 0, idle: 0, sources: [] });
             w.__perf.takeMutations();
             w.__perf.observe(g);
-            return performance.now();
         });
         log.clear();
 
-        // Idle on purpose: proving that nothing happens takes waiting
-        await page.waitForTimeout(2000);
-
-        const result = await grid.evaluate((g: any, start) => {
+        await page.clock.runFor(2000);
+        await log.quiet();
+        const result = await grid.evaluate(() => {
             const w = window as any;
-            return { counters: w.__idle, mutations: w.__perf.takeMutations(), blocking: w.__perf.tbt(start, performance.now()) };
-        }, start);
+            return { counters: w.__idle, mutations: w.__perf.takeMutations() };
+        });
+        await page.clock.resume();
 
         expect(result.mutations.total, `grid mutations: ${result.mutations.other.join(', ')}`).toBe(0);
         expect(log.requests).toHaveLength(0);
-        expect(result.blocking.count).toBe(0);
         expect({ raf: result.counters.raf, timeout: result.counters.timeout, interval: result.counters.interval, idle: result.counters.idle }, result.counters.sources.join('\n')).toEqual({ raf: 0, timeout: 0, interval: 0, idle: 0 });
 
-        await recordPerf(page, testInfo, 'perf.vw-idle-no-work', { counts: { mutations: result.mutations.total, requests: log.requests.length, longTasks: result.blocking.count, ...result.counters, sources: undefined } });
+        await recordPerf(page, testInfo, 'perf.vw-idle-no-work', { counts: { mutations: result.mutations.total, requests: log.requests.length, ...result.counters, sources: undefined } });
+    });
+
+    test('an idle settled grid runs no long tasks', perfCase('perf.vw-idle-no-long-tasks', { timing: true }), async ({ page }, testInfo) => {
+        await perfPage(page);
+        const grid = await mountGrid(page);
+        await parkMouse(page);
+        await waitFilled(grid);
+        const log = requestLog(page);
+        await log.quiet(500);
+
+        // The first 200ms are allowed trailing work of the settle; then watch 2s
+        await page.waitForTimeout(200);
+        const start = await page.evaluate(() => performance.now());
+        // Idle on purpose: proving that nothing happens takes waiting
+        await page.waitForTimeout(2000);
+        const blocking = await page.evaluate(start => (window as any).__perf.tbt(start, performance.now()), start);
+
+        expect(blocking.count).toBe(0);
+
+        await recordPerf(page, testInfo, 'perf.vw-idle-no-long-tasks', { counts: { longTasks: blocking.count }, timings: { tbt: [round(blocking.tbt)], longestTask: [round(blocking.longest)] } });
     });
 
     test('no layout thrash while scrolling', perfCase('perf.vw-forced-reflows-during-scroll', { timing: true }), async ({ page }, testInfo) => {
@@ -402,7 +425,7 @@ test.describe('Vertical scrolling', () => {
         await recordPerf(page, testInfo, 'perf.vw-forced-reflows-during-scroll', { counts: { forcedLayouts: layouts!.forced, windowShifts: fling.shifts, traceLayouts: layouts!.layouts, LayoutCount: after.LayoutCount - before.LayoutCount }, cdp: { layoutsPerFrame, forcedBy: layouts!.forcedBy }, timings: { traceLayoutMs: [layouts!.layoutMs] } });
     });
 
-    test('real wheel scrolling performance', perfCase('perf.vw-wheel-interaction', { timing: true }), async ({ page }, testInfo) => {
+    test('real wheel scrolling moves by the wheel deltas', perfCase('perf.vw-wheel-scroll-position'), async ({ page }, testInfo) => {
         await perfPage(page);
         const { grid } = await mountPrefetched(page, 'People');
         await parkMouse(page);
@@ -419,6 +442,61 @@ test.describe('Vertical scrolling', () => {
                 w.__wheelDelta += e.deltaY;
                 w.__wheelTops.push(scroller.scroller.scrollTop);
             }, { passive: true, capture: true });
+        });
+
+        // A page arrives between the wheel events: the first 20 are sent while the pages are held, the held pages arrive,
+        // then the other 20
+        const release = await holdExecuteQuery(page);
+        for (let i = 0; i < 20; i++)
+            await page.mouse.wheel(0, 600);
+
+        await expect.poll(() => log.of('ExecuteQuery').length, 'a held page request').toBeGreaterThan(0);
+        const held = log.of('ExecuteQuery').length;
+        await release();
+        await log.quiet();
+        for (let i = 0; i < 20; i++)
+            await page.mouse.wheel(0, 600);
+
+        // The native scroll comes to rest
+        let last = -1;
+        await expect.poll(async () => {
+            const top = await grid.evaluate((g: any) => (window as any).__perf.scroller(g).scroller.scrollTop);
+            const stopped = top === last;
+            last = top;
+            return stopped;
+        }, { message: 'the scroll came to rest', intervals: [100] }).toBe(true);
+        await waitFilled(grid);
+        await log.quiet();
+
+        const result = await grid.evaluate((g: any) => {
+            const perf = (window as any).__perf;
+            const scroller = perf.scroller(g).scroller;
+            return { top: scroller.scrollTop, viewport: scroller.clientHeight, wheelDelta: (window as any).__wheelDelta, wheelTops: (window as any).__wheelTops as number[], topIndex: perf.topRowIndex(g), expectedTopIndex: Math.floor(scroller.scrollTop / g.rowHeight), cells: perf.checkVisibleCells(g) };
+        });
+
+        // 40 x 600px end near 24,000px (the scroll position never jumps beyond the wheel deltas, e.g. when a page arrives)
+        const steps = [...result.wheelTops.slice(1), result.top].map((top, i) => top - result.wheelTops[i]);
+        expect(result.wheelDelta).toBe(24000);
+        expect(Math.abs(result.top - 24000), `scrollTop ${result.top}; scrollTop change per wheel event: ${steps}`).toBeLessThanOrEqual(result.viewport);
+        expect(result.topIndex).toBe(result.expectedTopIndex);
+        expect(result.cells.wrong).toEqual([]);
+
+        await recordPerf(page, testInfo, 'perf.vw-wheel-scroll-position', { counts: { requests: log.of('ExecuteQuery').length, heldRequests: held }, dataset: { scrollTopPerWheel: steps, end: result.top }, requests: { pages: log.of('ExecuteQuery').map(r => [r.skip, r.top]) } });
+    });
+
+    test('real wheel scrolling performance', perfCase('perf.vw-wheel-interaction', { timing: true }), async ({ page }, testInfo) => {
+        await perfPage(page);
+        const { grid } = await mountPrefetched(page, 'People');
+        await parkMouse(page);
+        const log = requestLog(page);
+
+        const box = (await grid.boundingBox())!;
+        await page.mouse.move(box.x + 400, box.y + 300);
+        await grid.evaluate((g: any) => {
+            const w = window as any;
+            w.__wheelTops = [];
+            const scroller = w.__perf.scroller(g);
+            scroller.addEventListener('wheel', () => w.__wheelTops.push(scroller.scroller.scrollTop), { passive: true, capture: true });
             w.__perf.startFrames();
         });
         for (let i = 0; i < 40; i++) {
@@ -432,17 +510,12 @@ test.describe('Vertical scrolling', () => {
         await log.quiet();
 
         const result = await grid.evaluate((g: any) => {
-            const perf = (window as any).__perf;
-            const scroller = perf.scroller(g).scroller;
-            return { top: scroller.scrollTop, viewport: scroller.clientHeight, wheelDelta: (window as any).__wheelDelta, wheelTops: (window as any).__wheelTops as number[], topIndex: perf.topRowIndex(g), expectedTopIndex: Math.floor(scroller.scrollTop / g.rowHeight) };
+            const scroller = (window as any).__perf.scroller(g).scroller;
+            return { top: scroller.scrollTop, wheelTops: (window as any).__wheelTops as number[] };
         });
         const frames = { ...frameStats(deltas), ...droppedFrames(deltas) };
 
-        // 40 x 600px end near 24,000px (the scroll position never jumps beyond the wheel deltas, e.g. when a page arrives)
         const steps = [...result.wheelTops.slice(1), result.top].map((top, i) => top - result.wheelTops[i]);
-        expect(result.wheelDelta).toBe(24000);
-        expect(Math.abs(result.top - 24000), `scrollTop ${result.top}; scrollTop change per wheel event: ${steps}`).toBeLessThanOrEqual(result.viewport);
-        expect(result.topIndex).toBe(result.expectedTopIndex);
         expect.soft(frames.p95, 'wheel frame p95').toBeLessThanOrEqual(50);
 
         await recordPerf(page, testInfo, 'perf.vw-wheel-interaction', { counts: { requests: log.of('ExecuteQuery').length }, frames, dataset: { scrollTopPerWheel: steps, end: result.top }, requests: { pages: log.of('ExecuteQuery').map(r => [r.skip, r.top]) } });

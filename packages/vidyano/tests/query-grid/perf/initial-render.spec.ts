@@ -1,5 +1,30 @@
-import { mountGrid, nextFrames, requestLog, scrollGrid, waitForGridReady } from '../_helpers/query-grid';
+import { Page } from '@playwright/test';
+import { mountGrid, nextFrames, requestLog, scrollGrid, waitForGridReady, pauseClock } from '../_helpers/query-grid';
 import { appendGrid, cdpMetrics, datasetOf, expect, gridLocator, median, mountPrefetched, perfCase, perfPage, prefetch, recordPerf, round, scrollToRow, setCpuThrottle, startFrameTrace, stopFrameTrace, test, traceLayouts, waitFilled } from '../_helpers/perf';
+import { consoleErrors } from '../_helpers/grid';
+
+/** Creates window.q: a People query that was never searched (a clone of the service's query). */
+async function unsearchedQuery(page: Page) {
+    const unsearched = await page.evaluate(async () => {
+        const w = window as any;
+        const source = await w.service.getQuery('People');
+        w.q = source.clone();
+        return { hasSearched: !!w.q.hasSearched, items: w.q.items?.length ?? 0 };
+    });
+    expect(unsearched).toEqual({ hasSearched: false, items: 0 });
+}
+
+/** Attaches a grid to window.q. */
+async function attachToQuery(page: Page) {
+    await page.evaluate(() => {
+        const w = window as any;
+        const grid = w.grid = document.createElement('vi-query-grid') as any;
+        grid.query = w.q;
+        document.getElementById('test-container')!.appendChild(grid);
+    });
+
+    return gridLocator(page);
+}
 
 test.describe('Initial render', () => {
     test.setTimeout(180000);
@@ -278,36 +303,40 @@ test.describe('Initial render', () => {
         await recordPerf(page, testInfo, 'perf.init-layout-shift', { counts: { shifts: shifts.length }, timings: { cls: [cls] } });
     });
 
-    test('grid does not trigger a search for an unsearched query', perfCase('perf.init-unsearched-query', { timing: true }), async ({ page }, testInfo) => {
+    test('grid does not trigger a search for an unsearched query', perfCase('perf.init-unsearched-no-search'), async ({ page }, testInfo) => {
+        await page.clock.install();
         await perfPage(page);
-        const consoleErrors: string[] = [];
-        page.on('console', msg => {
-            if (msg.type() === 'error')
-                consoleErrors.push(msg.text());
-        });
-
-        const unsearched = await page.evaluate(async () => {
-            const w = window as any;
-            const source = await w.service.getQuery('People');
-            w.q = source.clone();
-            return { hasSearched: !!w.q.hasSearched, items: w.q.items?.length ?? 0 };
-        });
-        expect(unsearched).toEqual({ hasSearched: false, items: 0 });
-
+        const errors = consoleErrors(page);
+        await unsearchedQuery(page);
         const log = requestLog(page);
-        await page.evaluate(() => {
-            const w = window as any;
-            const grid = w.grid = document.createElement('vi-query-grid') as any;
-            grid.query = w.q;
-            document.getElementById('test-container')!.appendChild(grid);
-        });
-        const grid = gridLocator(page);
+        const grid = await attachToQuery(page);
+        await expect(grid).not.toHaveAttribute('initializing');
 
-        // Proving that nothing is requested takes waiting
-        await page.waitForTimeout(1000);
-        expect(log.of('ExecuteQuery')).toHaveLength(0);
+        // Ten seconds of page time run every grid timer (page loads, more columns) that could start a search
+        await pauseClock(page);
+        await page.clock.runFor(10000);
+        await log.quiet();
+        expect(log.of('ExecuteQuery'), 'ExecuteQuery before the search').toHaveLength(0);
         const shownRows = await grid.evaluate((g: any) => (window as any).__perf.visibleRows(g).filter(({ r }: any) => r.item).length);
         expect(shownRows, 'data rows before the search').toBe(0);
+        await page.clock.resume();
+
+        await grid.evaluate((g: any) => { g.query.search(); });
+        await expect.poll(() => grid.evaluate((g: any) => !g.query.isBusy && (window as any).__perf.firstColumnMatches(g, 'FirstName'))).toBe(true);
+        await waitForGridReady(grid);
+        await log.quiet();
+
+        expect(log.of('ExecuteQuery'), 'ExecuteQuery after the search').toHaveLength(1);
+        expect(errors).toEqual([]);
+
+        await recordPerf(page, testInfo, 'perf.init-unsearched-no-search', { counts: { requestsBeforeSearch: 0, requestsAfterSearch: log.of('ExecuteQuery').length } });
+    });
+
+    test('time from search to first rows on an unsearched query', perfCase('perf.init-unsearched-query', { timing: true }), async ({ page }, testInfo) => {
+        await perfPage(page);
+        await unsearchedQuery(page);
+        const grid = await attachToQuery(page);
+        await expect(grid).not.toHaveAttribute('initializing');
 
         const ms = await grid.evaluate(async (g: any) => {
             const perf = (window as any).__perf;
@@ -317,13 +346,10 @@ test.describe('Initial render', () => {
             return time - start;
         });
         await waitForGridReady(grid);
-        await log.quiet();
 
-        expect(log.of('ExecuteQuery')).toHaveLength(1);
-        expect(consoleErrors).toEqual([]);
         expect.soft(ms, 'time from search to first rows').toBeLessThanOrEqual(1500);
 
-        await recordPerf(page, testInfo, 'perf.init-unsearched-query', { counts: { requestsBeforeSearch: 0, requestsAfterSearch: log.of('ExecuteQuery').length }, timings: { searchToFirstRows: [round(ms)] } });
+        await recordPerf(page, testInfo, 'perf.init-unsearched-query', { timings: { searchToFirstRows: [round(ms)] } });
     });
 
     test('empty result finishes initializing quickly', perfCase('perf.init-empty-result', { timing: true }), async ({ page }, testInfo) => {

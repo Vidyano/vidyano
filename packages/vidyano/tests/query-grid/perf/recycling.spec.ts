@@ -74,6 +74,53 @@ async function mountDataTypes(page: Page, column: string) {
     return grid;
 }
 
+/**
+ * Mounts the People grid with a known hover background and moves the mouse over its first 20 visible rows, one row
+ * per move. Returns the cell style mutations, per move what the frame after it showed, and the long tasks in between.
+ */
+async function hoverRows(page: Page) {
+    await perfPage(page, { styles: ':root { --color-semi-faint: rgb(1, 2, 3); }' });
+    const grid = await mountGrid(page);
+    await parkMouse(page);
+
+    const rows = await grid.evaluate((g: any) => {
+        const w = window as any;
+        const perf = w.__perf;
+        const records = w.__cellStyles = [] as string[];
+        const observer = new MutationObserver(list => list.forEach(r => records.push(`${(r.target as any).column?.name}: ${(r.target as Element).getAttribute('style')}`)));
+        perf.rows(g).forEach((r: any) => r.querySelectorAll('.column').forEach((c: any) => observer.observe(c, { attributes: true, attributeFilter: ['style'] })));
+        w.__hoverRows = perf.visibleRows(g).slice(0, 20).map(({ r }: any) => r);
+        return w.__hoverRows.map((r: any) => {
+            const b = r.getBoundingClientRect();
+            return { x: b.left + 400, y: b.top + b.height / 2 };
+        });
+    });
+    expect(rows).toHaveLength(20);
+
+    // In the frame after each move only the row under the pointer shows the hover background, on every cell
+    const frames: { hovered: number[]; backgrounds: string[]; others: number }[] = [];
+    const start = await page.evaluate(() => performance.now());
+    for (const row of rows) {
+        await page.mouse.move(row.x, row.y, { steps: 2 });
+        await nextFrames(page, 1);
+        frames.push(await page.evaluate(() => {
+            const hoverRows: any[] = (window as any).__hoverRows;
+            const hovered = hoverRows.map((r, i) => r.matches(':hover') ? i : -1).filter(i => i >= 0);
+            const backgrounds = [...new Set(hovered.flatMap(i => [...hoverRows[i].querySelectorAll('.column')].map((c: any) => getComputedStyle(c).backgroundColor)))];
+            const others = hoverRows.filter(r => !r.matches(':hover')).flatMap(r => [...r.querySelectorAll('.column')]).filter((c: any) => getComputedStyle(c).backgroundColor === 'rgb(1, 2, 3)').length;
+            return { hovered, backgrounds, others };
+        }));
+    }
+
+    const { records, blocking } = await page.evaluate(start => {
+        const w = window as any;
+        return { records: w.__cellStyles as string[], blocking: w.__perf.tbt(start, performance.now()) as { longest: number } };
+    }, start);
+    await parkMouse(page);
+
+    return { records, frames, blocking };
+}
+
 test.describe('Recycling & cell formatting', () => {
     test.setTimeout(120000);
 
@@ -467,39 +514,21 @@ test.describe('Recycling & cell formatting', () => {
         await recordPerf(page, testInfo, 'perf.fmt-image-scroll', { counts: { itemChanges: result.itemChanges, imageAdds: result.imageAdds, styleRecords: result.styleRecords }, frames: frameStats(result.deltas) });
     });
 
-    test('hovering rows without hover hints writes no cell styles', perfCase('perf.fmt-hover-no-style-writes', { timing: true }), async ({ page }, testInfo) => {
-        await perfPage(page, { styles: ':root { --color-semi-faint: rgb(1, 2, 3); }' });
-        const grid = await mountGrid(page);
-        await parkMouse(page);
+    test('hovering rows without hover hints writes no cell styles', perfCase('perf.fmt-hover-no-style-writes'), async ({ page }, testInfo) => {
+        const { records, frames } = await hoverRows(page);
 
-        const rows = await grid.evaluate((g: any) => {
-            const w = window as any;
-            const perf = w.__perf;
-            const records = w.__cellStyles = [] as string[];
-            const observer = new MutationObserver(list => list.forEach(r => records.push(`${(r.target as any).column?.name}: ${(r.target as Element).getAttribute('style')}`)));
-            perf.rows(g).forEach((r: any) => r.querySelectorAll('.column').forEach((c: any) => observer.observe(c, { attributes: true, attributeFilter: ['style'] })));
-            w.__hoverStart = performance.now();
-            return perf.visibleRows(g).slice(0, 20).map(({ b }: any) => ({ x: b.left + 400, y: b.top + b.height / 2 }));
-        });
-        expect(rows).toHaveLength(20);
+        expect(records, 'cell style mutations').toEqual([]);
+        for (const [i, frame] of frames.entries())
+            expect(frame, `frame after hovering row ${i}`).toEqual({ hovered: [i], backgrounds: ['rgb(1, 2, 3)'], others: 0 });
 
-        for (const row of rows)
-            await page.mouse.move(row.x, row.y, { steps: 2 });
+        await recordPerf(page, testInfo, 'perf.fmt-hover-no-style-writes', { counts: { cellStyleMutations: records.length, hoveredRows: frames.length } });
+    });
 
-        await nextFrames(page, 2);
-        const result = await grid.evaluate((g: any) => {
-            const w = window as any;
-            const perf = w.__perf;
-            const hovered = perf.rows(g).find((r: any) => r.matches(':hover'));
-            const cell = hovered?.querySelector('.column');
-            return { records: w.__cellStyles, background: cell ? getComputedStyle(cell).backgroundColor : null, blocking: perf.tbt(w.__hoverStart, performance.now()) };
-        });
-        await parkMouse(page);
+    test('hovering rows without hover hints runs no long task', perfCase('perf.fmt-hover-no-style-writes-speed', { timing: true }), async ({ page }, testInfo) => {
+        const { blocking } = await hoverRows(page);
 
-        expect(result.records, 'cell style mutations').toEqual([]);
-        expect(result.background, 'hovered row background').toBe('rgb(1, 2, 3)');
-        expect.soft(result.blocking.longest, 'no task over 50ms').toBeLessThanOrEqual(50);
+        expect.soft(blocking.longest, 'no task over 50ms').toBeLessThanOrEqual(50);
 
-        await recordPerf(page, testInfo, 'perf.fmt-hover-no-style-writes', { counts: { cellStyleMutations: result.records.length }, timings: { longestTask: [round(result.blocking.longest)] } });
+        await recordPerf(page, testInfo, 'perf.fmt-hover-no-style-writes-speed', { timings: { longestTask: [round(blocking.longest)] } });
     });
 });

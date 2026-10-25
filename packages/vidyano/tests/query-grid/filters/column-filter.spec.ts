@@ -1,13 +1,16 @@
 import { expect, Locator, Page, test } from '@playwright/test';
-import { getScrollOffset, gridPage, mountGrid, openView, pageErrors, scrollGrid, VIEWS, waitForGridReady, waitForQueryIdle } from '../_helpers/query-grid';
+import { getScrollOffset, gridPage, GridPageOptions, mountGrid, openView, pageErrors, scrollGrid, VIEWS, waitForGridReady, waitForQueryIdle, pauseClock } from '../_helpers/query-grid';
 import { scrollerBox } from '../_helpers/grid';
 import { allDistinctRows, settledRows, settledTexts, clearItem, clickDistinct, columnFilter, distinctItem, distinctRows, distinctTexts, filterButton, filterLabel, filterLog, filtersControl, inverseButton, listBox, openFilter, REMAINING, resizeHandleBox, searchInput, setSelectedDistincts, totalItems, columnState } from '../_helpers/filters';
 
 const PEOPLE_COLUMNS = ['FirstName', 'LastName', 'BirthDate', 'Gender', 'ContactPreference', 'Email', 'PhoneNumber', 'EmergencyContact', 'IsActive'];
 const FIRST_EMAIL = 'Aaron_Lemmens59@skynet.be';
 
-async function setup(page: Page) {
-    await gridPage(page);
+/** The console error of a response a test fails with status 500 on purpose. */
+const SERVER_ERROR = /^Failed to load resource: the server responded with a status of 500/;
+
+async function setup(page: Page, options?: GridPageOptions) {
+    await gridPage(page, options);
     return mountGrid(page);
 }
 
@@ -505,11 +508,13 @@ test.describe('Clear filter', () => {
 
 test.describe('Search', () => {
     test('typing filters loaded values locally without has-more', { annotation: [{ type: 'case', description: 'filters.cf-search-client-filter' }] }, async ({ page }) => {
+        await page.clock.install();
         await gridPage(page);
         const log = filterLog(page);
         const grid = await mountGrid(page);
         const cf = await openFilter(grid, 'LastName');
         await log.quiet();
+        await pauseClock(page);
         log.clear();
 
         await cf.evaluate((host: any) => {
@@ -521,10 +526,9 @@ test.describe('Search', () => {
         });
 
         await searchInput(cf).pressSequentially('cl');
+        // Well past the 250ms server search debounce, to prove that no request follows
+        await page.clock.runFor(1000);
         await expect.poll(() => distinctTexts(cf)).toEqual(['Claes', 'Claeys', 'Declerck', 'Declercq']);
-
-        // Let the 250ms server search debounce elapse to prove that no request follows
-        await page.waitForTimeout(500);
         await log.quiet();
         expect(log.refreshes()).toHaveLength(0);
         expect(await page.evaluate(() => (window as any).__cfLoading)).toBe(false);
@@ -548,12 +552,6 @@ test.describe('Search', () => {
         await expect(match).toHaveCSS('color', color);
     });
 });
-
-/** Stops the page clock, so its timers only run through `page.clock.runFor`. */
-async function pauseClock(page: Page) {
-    // pauseAt throws for a time in the past and fires every timer due by then; a second ahead covers the round trip
-    await page.clock.pauseAt(await page.evaluate(() => Date.now()) + 1000);
-}
 
 /** Opens the Email filter (more distincts than listed) on a page clock that is installed before the grid creates its timers. */
 async function openEmailFilter(page: Page) {
@@ -863,13 +861,11 @@ test.describe('Restricted columns and security', () => {
     });
 });
 
-/** Records when the pointer leaves the opened popup content and when the popup closes (performance.now()). */
+/** Records when the popup closes (performance.now()). */
 async function trackPopupClose(cf: Locator) {
     await cf.locator('vi-popup').first().evaluate((popup: any) => {
         const w = window as any;
-        w.__cfLeave = null;
         w.__cfClosed = null;
-        popup.shadowRoot.getElementById('popup').addEventListener('mouseleave', () => w.__cfLeave = performance.now());
         new MutationObserver(() => {
             if (!popup.hasAttribute('open') && w.__cfClosed == null)
                 w.__cfClosed = performance.now();
@@ -990,42 +986,45 @@ test.describe('Popup (more)', () => {
     });
 
     test('leaving the popup closes it after the default 750ms', { annotation: [{ type: 'case', description: 'filters.cf-popup-mouseleave-delay' }] }, async ({ page }) => {
+        await page.clock.install();
         const grid = await setup(page);
         const cf = await openFilter(grid, 'Gender');
         await trackPopupClose(cf);
+        await pauseClock(page);
 
         await hoverAndLeave(page, grid, cf);
-        await expect.poll(() => page.evaluate(() => (window as any).__cfClosed), { timeout: 3000 }).not.toBeNull();
-        const elapsed = await page.evaluate(() => (window as any).__cfClosed - (window as any).__cfLeave);
-        expect(elapsed).toBeGreaterThanOrEqual(500);
-        expect(elapsed).toBeLessThanOrEqual(1100);
+        await page.clock.runFor(749);
+        expect(await page.evaluate(() => (window as any).__cfClosed), 'still open 749ms after leaving').toBeNull();
+        await page.clock.runFor(1);
+        expect(await page.evaluate(() => (window as any).__cfClosed), 'closed 750ms after leaving').not.toBeNull();
         await expect(clearItem(cf)).toBeHidden();
 
-        // Coming back within 500ms keeps it open
+        // Coming back before the delay ends keeps it open
         await openFilter(grid, 'Gender');
         await trackPopupClose(cf);
         await hoverAndLeave(page, grid, cf);
-        await page.waitForTimeout(250);
+        await page.clock.runFor(250);
         const content = (await cf.locator('#filterContent').boundingBox())!;
         await page.mouse.move(content.x + content.width / 2, content.y + content.height / 2, { steps: 5 });
 
-        // Wait past the close delay to prove the popup stays open
-        await page.waitForTimeout(1200);
+        await page.clock.runFor(1000);
         expect(await page.evaluate(() => (window as any).__cfClosed)).toBeNull();
         await expect(clearItem(cf)).toBeVisible();
     });
 
     test('close-delay app setting overrides the 750ms delay', { annotation: [{ type: 'case', description: 'gap.cf-close-delay-setting' }] }, async ({ page }) => {
+        await page.clock.install();
         await gridPage(page, { settings: { 'vi-query-grid-column-filter.close-delay': '100' } });
         const grid = await mountGrid(page);
         const cf = await openFilter(grid, 'Gender');
         await trackPopupClose(cf);
+        await pauseClock(page);
 
         await hoverAndLeave(page, grid, cf);
-        await expect.poll(() => page.evaluate(() => (window as any).__cfClosed), { timeout: 3000 }).not.toBeNull();
-        const elapsed = await page.evaluate(() => (window as any).__cfClosed - (window as any).__cfLeave);
-        expect(elapsed).toBeGreaterThanOrEqual(50);
-        expect(elapsed).toBeLessThanOrEqual(300);
+        await page.clock.runFor(99);
+        expect(await page.evaluate(() => (window as any).__cfClosed), 'still open 99ms after leaving').toBeNull();
+        await page.clock.runFor(1);
+        expect(await page.evaluate(() => (window as any).__cfClosed), 'closed 100ms after leaving').not.toBeNull();
         await expect(clearItem(cf)).toBeHidden();
     });
 
@@ -1125,7 +1124,7 @@ test.describe('Distinct loading (more)', () => {
 
     test('failed distinct load hides the spinner without an alert', { annotation: [{ type: 'case', description: 'filters.cf-distincts-error' }] }, async ({ page }) => {
         const errors = pageErrors(page);
-        const grid = await setup(page);
+        const grid = await setup(page, { expectedErrors: [SERVER_ERROR] });
         await page.route('**/ExecuteAction', async route => {
             const body = route.request().postData() ?? '';
             if (!body.includes('QueryFilter.RefreshColumn'))
@@ -1781,6 +1780,7 @@ test.describe('Server search (more)', () => {
     });
 
     test('detaching the grid sends nothing and re-attaching shows an empty search', { annotation: [{ type: 'case', description: 'gap.cf-disconnect-clears-search' }] }, async ({ page }) => {
+        await page.clock.install();
         await gridPage(page);
         const log = filterLog(page);
         const grid = await mountGrid(page);
@@ -1788,14 +1788,16 @@ test.describe('Server search (more)', () => {
         await searchInput(cf).pressSequentially('aaron');
         await expect(cf).not.toHaveAttribute('loading', { timeout: 10000 });
         await log.quiet();
+        await pauseClock(page);
         log.clear();
 
         // Removed with the popup still open and the search text in place, like navigating away
         await page.evaluate(() => (window as any).grid.remove());
-        // Longer than the 250ms search debounce: a detached filter must not send anything
-        await page.waitForTimeout(600);
+        // Well past the 250ms search debounce: a detached filter must not send anything
+        await page.clock.runFor(1000);
         await log.quiet();
         expect(log.refreshes()).toHaveLength(0);
+        await page.clock.resume();
 
         await page.evaluate(() => document.getElementById('test-container')!.appendChild((window as any).grid));
         await waitForGridReady(grid);
@@ -1958,7 +1960,7 @@ test.describe('Text filter (Enter) (more)', () => {
     });
 
     test('a failed search after Enter rolls the text filter back', { annotation: [{ type: 'case', description: 'gap.cf-search-enter-search-fails' }] }, async ({ page }) => {
-        const grid = await setup(page);
+        const grid = await setup(page, { expectedErrors: [SERVER_ERROR] });
         const cf = await openFilter(grid, 'LastName');
         await page.route('**/ExecuteQuery', route => route.fulfill({ status: 500, contentType: 'text/plain', body: 'pw search error' }), { times: 1 });
 
@@ -2065,6 +2067,7 @@ test.describe('Resize (more)', () => {
     });
 
     test('popup stays open while resizing and the app is tracking', { annotation: [{ type: 'case', description: 'filters.cf-resize-sticky' }] }, async ({ page }) => {
+        await page.clock.install();
         const grid = await openView(page, VIEWS.People);
         const cf = await openFilter(grid, 'Gender');
         const app = page.locator('vi-app');
@@ -2076,11 +2079,12 @@ test.describe('Resize (more)', () => {
         await page.mouse.down();
         await page.mouse.move(x + 20, y + 20, { steps: 5 });
         await expect(app).toHaveAttribute('is-tracking');
+        await pauseClock(page);
 
         // Leave the content by moving the pointer far left and up, then hold it there past the close delay
         const content = (await cf.locator('#filterContentHost').boundingBox())!;
         await page.mouse.move(content.x - 60, y + 20, { steps: 5 });
-        await page.waitForTimeout(1200);
+        await page.clock.runFor(1000);
         await expect(clearItem(cf)).toBeVisible();
         await expect(app).toHaveAttribute('is-tracking');
 

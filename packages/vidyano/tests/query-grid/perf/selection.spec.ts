@@ -40,6 +40,47 @@ async function observed(page: Page, grid: Locator, action: () => Promise<void>) 
     return grid.evaluate(() => (window as any).__perf.takeMutations());
 }
 
+/**
+ * Clicks select-all on a fresh grid and follows it until every visible row is [selected]: the frames counted from
+ * pointerup, the row mutations and the longest Event Timing entry of the click.
+ */
+async function measureSelectAll(page: Page) {
+    await perfPage(page);
+    const grid = await mountGrid(page);
+    await parkMouse(page);
+    const log = requestLog(page);
+
+    const box = (await grid.locator('vi-query-grid-select-all').boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await nextFrames(page, 2);
+
+    await grid.evaluate((g: any) => {
+        const w = window as any;
+        const perf = w.__perf;
+        perf.observe(g);
+        w.__selectAll = new Promise(resolve => window.addEventListener('pointerup', () => {
+            const start = performance.now();
+            perf.whenFrame(() => {
+                const rows = perf.visibleRows(g);
+                return rows.length > 0 && rows.every(({ r }: any) => r.hasAttribute('selected'));
+            }).then((result: any) => resolve({ frames: result.frames, ms: result.time - start, start }));
+        }, { capture: true, once: true }));
+    });
+
+    await page.mouse.down();
+    await page.mouse.up();
+    const result: { frames: number; ms: number; start: number } = await page.evaluate(() => (window as any).__selectAll);
+    await nextFrames(page, 2);
+
+    const after = await grid.evaluate((g: any, start) => {
+        const w = window as any;
+        const events = w.__perf.events.filter((e: any) => e.start >= start - 50 && ['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'click'].includes(e.name));
+        return { mutations: w.__perf.takeMutations(), eventDuration: Math.max(0, ...events.map((e: any) => e.duration)) };
+    }, result.start);
+
+    return { result, after, log };
+}
+
 test.describe('Selection', () => {
     test.setTimeout(120000);
 
@@ -79,48 +120,25 @@ test.describe('Selection', () => {
         await recordPerf(page, testInfo, 'perf.sel-single-row-mutation', { counts: Object.fromEntries(changes.map(c => [c.label, { rows: Object.keys(c.mutations.perRow).length, rowRecords: c.mutations.rowRecords, cellRecords: c.mutations.cellRecords, other: c.mutations.otherRecords }])), requests: { count: log.requests.length } });
     });
 
-    test('select-all updates visible rows in at most 2 frames', perfCase('perf.sel-select-all-visible', { timing: true }), async ({ page }, testInfo) => {
-        await perfPage(page);
-        const grid = await mountGrid(page);
-        await parkMouse(page);
-        const log = requestLog(page);
-
-        const box = (await grid.locator('vi-query-grid-select-all').boundingBox())!;
-        await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-        await nextFrames(page, 2);
-
-        await grid.evaluate((g: any) => {
-            const w = window as any;
-            const perf = w.__perf;
-            perf.observe(g);
-            w.__selectAll = new Promise(resolve => window.addEventListener('pointerup', () => {
-                const start = performance.now();
-                perf.whenFrame(() => {
-                    const rows = perf.visibleRows(g);
-                    return rows.length > 0 && rows.every(({ r }: any) => r.hasAttribute('selected'));
-                }).then((result: any) => resolve({ frames: result.frames, ms: result.time - start, start }));
-            }, { capture: true, once: true }));
-        });
-
-        await page.mouse.down();
-        await page.mouse.up();
-        const result = await page.evaluate(() => (window as any).__selectAll);
-        await nextFrames(page, 2);
-
-        const after = await grid.evaluate((g: any, start) => {
-            const w = window as any;
-            const events = w.__perf.events.filter((e: any) => e.start >= start - 50 && ['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'click'].includes(e.name));
-            return { mutations: w.__perf.takeMutations(), eventDuration: Math.max(0, ...events.map((e: any) => e.duration)), visible: w.__perf.visibleRows(g).length };
-        }, result.start);
+    test('select-all updates visible rows in at most 2 frames', perfCase('perf.sel-select-all-visible'), async ({ page }, testInfo) => {
+        const { result, after, log } = await measureSelectAll(page);
+        const maxPerRow = Math.max(...Object.values<number>(after.mutations.perRow));
 
         // Counted from pointerup, the input that completes the click
         expect(result.frames, 'frames until every visible row is selected').toBeLessThanOrEqual(2);
-        expect(Math.max(...Object.values<number>(after.mutations.perRow)), 'mutations per row').toBeLessThanOrEqual(2);
+        expect(maxPerRow, 'mutations per row').toBeLessThanOrEqual(2);
         expect(after.mutations.cellRecords).toBe(0);
         expect(log.requests).toHaveLength(0);
+
+        await recordPerf(page, testInfo, 'perf.sel-select-all-visible', { counts: { frames: result.frames, rowsMutated: Object.keys(after.mutations.perRow).length, maxMutationsPerRow: maxPerRow, cellMutations: after.mutations.cellRecords, requests: log.requests.length } });
+    });
+
+    test('select-all interaction latency', perfCase('perf.sel-select-all-visible-speed', { timing: true }), async ({ page }, testInfo) => {
+        const { result, after } = await measureSelectAll(page);
+
         expect.soft(after.eventDuration, 'select-all event duration').toBeLessThanOrEqual(100);
 
-        await recordPerf(page, testInfo, 'perf.sel-select-all-visible', { counts: { frames: result.frames, rowsMutated: Object.keys(after.mutations.perRow).length, maxMutationsPerRow: Math.max(...Object.values<number>(after.mutations.perRow)), cellMutations: after.mutations.cellRecords, requests: log.requests.length }, timings: { selectAllMs: [round(result.ms)], eventDuration: [after.eventDuration] } });
+        await recordPerf(page, testInfo, 'perf.sel-select-all-visible-speed', { timings: { selectAllMs: [round(result.ms)], eventDuration: [after.eventDuration] } });
     });
 
     for (const rate of [1, 4]) {

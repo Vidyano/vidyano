@@ -29,6 +29,91 @@ async function closeFilter(page: Page, grid: Locator, column: string) {
     await expect(filterItems(grid, column).first()).toBeHidden();
 }
 
+/**
+ * Opens the Email filter and installs window.__list: the scrollable element of its distinct list and `sample()`,
+ * the list rows (distinct or has-more marker) in its view, the largest uncovered gap and the blank rows.
+ */
+async function openEmailList(page: Page, grid: Locator) {
+    await openFilter(grid, 'Email');
+    await expect(filterItems(grid, 'Email').first()).toBeVisible();
+    const log = requestLog(page);
+    await log.quiet();
+    const hasMore = await grid.evaluate((g: any) => !!g.query.getColumn('Email').distincts.hasMore);
+
+    await grid.evaluate((g: any) => {
+        const w = window as any;
+        const perf = w.__perf;
+        const header = g.shadowRoot.querySelector('vi-query-grid-column-header[name="Email"]');
+        const list = perf.deepAll(header, 'vi-list')[0];
+        const scrollable = [list, ...perf.deepAll(list, '*')].find((e: any) => e.scrollHeight > e.clientHeight + 1 && /(auto|scroll)/.test(getComputedStyle(e).overflowY));
+        w.__list = {
+            scrollable,
+            sample: () => {
+                const view = scrollable.getBoundingClientRect();
+                const rows = perf.deepAll(list, '.item, .hasMore')
+                    .map((e: any) => ({ e, b: e.getBoundingClientRect() }))
+                    .filter(({ e, b }: any) => b.height > 0 && b.bottom > view.top + 1 && b.top < view.bottom - 1 && e.checkVisibility())
+                    .sort((a: any, b: any) => a.b.top - b.b.top);
+                let covered = view.top;
+                let gap = 0;
+                for (const { b } of rows) {
+                    gap = Math.max(gap, b.top - covered);
+                    covered = Math.max(covered, b.bottom);
+                }
+                gap = Math.max(gap, Math.min(view.bottom, view.top + scrollable.scrollHeight - scrollable.scrollTop) - covered);
+                const blank = rows.filter(({ e }: any) => e.classList.contains('item') && e.textContent.trim() === '').length;
+                return { rows: rows.length, gap: Math.round(gap), blank, last: rows[rows.length - 1]?.e.classList.contains('hasMore') ?? false };
+            }
+        };
+    });
+
+    return { log, hasMore };
+}
+
+/** Scrolls the list of openEmailList to its end in 30 rAF steps (sampled per frame) and back up with 20 wheel steps. */
+async function scrollEmailList(page: Page) {
+    const raf = await page.evaluate(async () => {
+        const w = window as any;
+        const { scrollable, sample } = w.__list;
+        const max = scrollable.scrollHeight - scrollable.clientHeight;
+        const run = await w.__perf.runFrames(30, (i: number) => scrollable.scrollTop = Math.round(max * (i + 1) / 30), sample);
+        return { deltas: run.deltas as number[], samples: run.samples as any[], end: scrollable.scrollTop, max };
+    });
+
+    const box = await page.evaluate(() => {
+        const b = (window as any).__list.scrollable.getBoundingClientRect();
+        return { x: b.left + b.width / 2, y: b.top + b.height / 2 };
+    });
+    await page.mouse.move(box.x, box.y);
+    await page.evaluate(() => (window as any).__perf.startFrames());
+    for (let i = 0; i < 20; i++)
+        await page.mouse.wheel(0, -200);
+    const wheelDeltas: number[] = await page.evaluate(() => (window as any).__perf.stopFrames());
+
+    // The wheel steps end once the list holds its scroll position for two frames
+    let last = -1;
+    await expect.poll(async () => {
+        await nextFrames(page, 2);
+        const top = await page.evaluate(() => (window as any).__list.scrollable.scrollTop);
+        const stable = top === last;
+        last = top;
+        return stable;
+    }).toBe(true);
+    const wheelEnd = await page.evaluate(() => (window as any).__list.sample());
+
+    return { raf, wheelDeltas, wheelEnd };
+}
+
+/** The text to type in the filter of `column` and the distinct values the list shows after each of its keys. */
+async function clientSearch(grid: Locator, column: string) {
+    expect(await grid.evaluate((g: any, column) => !!g.query.getColumn(column).distincts.hasMore, column)).toBe(false);
+
+    const values: string[] = await grid.evaluate((g: any, column) => (window as any).__perf.filterItems(g, column).map((e: any) => e.textContent.trim()), column);
+    const text = column === 'Gender' ? 'ma' : values[values.length - 1].slice(0, 2).toLowerCase();
+    const expected = [...text].map((_, i) => values.filter(v => v.toLowerCase().includes(text.slice(0, i + 1))));
+    return { text, expected };
+}
+
 test.describe('Lazy menus', () => {
     test('header menus and filter popups render lazily', perfCase('perf.init-lazy-header-popups'), async ({ page }, testInfo) => {
         await perfPage(page);
@@ -201,89 +286,51 @@ test.describe('Distinct list', () => {
         await recordPerf(page, testInfo, 'perf.cf-list-virtualized', { counts: results });
     });
 
+    test('scrolling the distinct list keeps its rows filled and sends nothing', perfCase('perf.cf-list-scroll-contents'), async ({ page }, testInfo) => {
+        await perfPage(page);
+        const grid = await mountGrid(page);
+        const { log, hasMore } = await openEmailList(page, grid);
+
+        const { raf, wheelEnd } = await scrollEmailList(page);
+        await log.quiet();
+
+        const blankFrames = raf.samples.filter((s: any) => s.blank > 0 || s.gap > 1);
+        const atEnd = raf.samples[raf.samples.length - 1];
+
+        expect(raf.samples).toHaveLength(30);
+        expect(raf.end).toBe(raf.max);
+        expect(blankFrames, 'frames with blank list rows').toEqual([]);
+        expect(wheelEnd.blank).toBe(0);
+        expect(wheelEnd.gap).toBeLessThanOrEqual(1);
+        expect(atEnd.last, 'the last row at the end is the has-more marker').toBe(hasMore);
+        expect(log.requests, 'scrolling the list sends nothing').toHaveLength(0);
+
+        await recordPerf(page, testInfo, 'perf.cf-list-scroll-contents', { counts: { blankFrames: blankFrames.length, frames: raf.samples.length, requests: log.requests.length } });
+    });
+
     test('scrolling the distinct list', perfCase('perf.cf-list-scroll', { timing: true }), async ({ page }, testInfo) => {
         await perfPage(page);
         const grid = await mountGrid(page);
-        await openFilter(grid, 'Email');
-        await expect(filterItems(grid, 'Email').first()).toBeVisible();
-        const log = requestLog(page);
-        await log.quiet();
-        const hasMore = await grid.evaluate((g: any) => !!g.query.getColumn('Email').distincts.hasMore);
+        await openEmailList(page, grid);
 
-        // The scrollable element of the distinct list, and the list rows (distinct or has-more marker) in its view
-        await grid.evaluate((g: any) => {
-            const w = window as any;
-            const perf = w.__perf;
-            const header = g.shadowRoot.querySelector('vi-query-grid-column-header[name="Email"]');
-            const list = perf.deepAll(header, 'vi-list')[0];
-            const scrollable = [list, ...perf.deepAll(list, '*')].find((e: any) => e.scrollHeight > e.clientHeight + 1 && /(auto|scroll)/.test(getComputedStyle(e).overflowY));
-            w.__list = {
-                scrollable,
-                sample: () => {
-                    const view = scrollable.getBoundingClientRect();
-                    const rows = perf.deepAll(list, '.item, .hasMore')
-                        .map((e: any) => ({ e, b: e.getBoundingClientRect() }))
-                        .filter(({ e, b }: any) => b.height > 0 && b.bottom > view.top + 1 && b.top < view.bottom - 1 && e.checkVisibility())
-                        .sort((a: any, b: any) => a.b.top - b.b.top);
-                    let covered = view.top;
-                    let gap = 0;
-                    for (const { b } of rows) {
-                        gap = Math.max(gap, b.top - covered);
-                        covered = Math.max(covered, b.bottom);
-                    }
-                    gap = Math.max(gap, Math.min(view.bottom, view.top + scrollable.scrollHeight - scrollable.scrollTop) - covered);
-                    const blank = rows.filter(({ e }: any) => e.classList.contains('item') && e.textContent.trim() === '').length;
-                    return { rows: rows.length, gap: Math.round(gap), blank, last: rows[rows.length - 1]?.e.classList.contains('hasMore') ?? false };
-                }
-            };
-        });
-
-        // 30 rAF steps top -> bottom
         const start = await page.evaluate(() => performance.now());
-        const raf = await page.evaluate(async () => {
-            const w = window as any;
-            const { scrollable, sample } = w.__list;
-            const max = scrollable.scrollHeight - scrollable.clientHeight;
-            const run = await w.__perf.runFrames(30, (i: number) => scrollable.scrollTop = Math.round(max * (i + 1) / 30), sample);
-            return { deltas: run.deltas, samples: run.samples, end: scrollable.scrollTop, max };
-        });
-
-        // 20 wheel steps back up
-        const box = await page.evaluate(() => {
-            const b = (window as any).__list.scrollable.getBoundingClientRect();
-            return { x: b.left + b.width / 2, y: b.top + b.height / 2 };
-        });
-        await page.mouse.move(box.x, box.y);
-        await page.evaluate(() => (window as any).__perf.startFrames());
-        for (let i = 0; i < 20; i++)
-            await page.mouse.wheel(0, -200);
-        const wheelDeltas: number[] = await page.evaluate(() => (window as any).__perf.stopFrames());
-        await nextFrames(page, 2);
-        const wheelEnd = await page.evaluate(() => (window as any).__list.sample());
+        const { raf, wheelDeltas } = await scrollEmailList(page);
         const blocking = await page.evaluate(start => (window as any).__perf.tbt(start, performance.now()), start);
-        await log.quiet();
 
         const frames = { ...frameStats(raf.deltas), ...droppedFrames(raf.deltas) };
         const wheelFrames = frameStats(wheelDeltas);
-        const blankFrames = raf.samples.filter((s: any) => s.blank > 0 || s.gap > 1).length;
-        const atEnd = raf.samples[raf.samples.length - 1];
 
-        expect(raf.end).toBe(raf.max);
-        expect(blankFrames, `frames with blank list rows: ${JSON.stringify(raf.samples.filter((s: any) => s.blank > 0 || s.gap > 1))}`).toBe(0);
-        expect(wheelEnd.blank).toBe(0);
-        expect(atEnd.last, 'the last row at the end is the has-more marker').toBe(hasMore);
-        expect(log.requests, 'scrolling the list sends nothing').toHaveLength(0);
         expect.soft(frames.p95, 'distinct list scroll p95').toBeLessThanOrEqual(50);
         expect.soft(blocking.longest, 'no task over 50ms').toBeLessThanOrEqual(50);
 
-        await recordPerf(page, testInfo, 'perf.cf-list-scroll', { counts: { blankFrames }, frames: { raf: frames, wheel: wheelFrames }, timings: { longestTask: [round(blocking.longest)] } });
+        await recordPerf(page, testInfo, 'perf.cf-list-scroll', { frames: { raf: frames, wheel: wheelFrames }, timings: { longestTask: [round(blocking.longest)] } });
     });
 });
 
 test.describe('Filter search & apply', () => {
     test.setTimeout(120000);
 
-    test('client-side distinct search sends nothing and keeps up with typing', perfCase('perf.cf-client-side-search', { timing: true }), async ({ page }, testInfo) => {
+    test('client-side distinct search sends nothing and shows each key within 2 frames', perfCase('perf.cf-client-side-search-frames'), async ({ page }, testInfo) => {
         await perfPage(page);
         const grid = await mountGrid(page);
         const log = requestLog(page);
@@ -293,16 +340,13 @@ test.describe('Filter search & apply', () => {
             await openFilter(grid, column);
             await expect(filterItems(grid, column).first()).toBeVisible();
             await log.quiet();
-            expect(await grid.evaluate((g: any, column) => !!g.query.getColumn(column).distincts.hasMore, column)).toBe(false);
+            const { text, expected } = await clientSearch(grid, column);
 
-            const values: string[] = await grid.evaluate((g: any, column) => (window as any).__perf.filterItems(g, column).map((e: any) => e.textContent.trim()), column);
-            const text = column === 'Gender' ? 'ma' : values[values.length - 1].slice(0, 2).toLowerCase();
-            const expected = [...text].map((_, i) => values.filter(v => v.toLowerCase().includes(text.slice(0, i + 1))));
-
+            // Per key: the frames until the list shows the distincts that match the text so far (-1: never)
             await grid.evaluate((g: any, { column, expected }) => {
                 const w = window as any;
                 const perf = w.__perf;
-                const state = w.__typing = { key: 0, frames: [] as number[], start: performance.now() };
+                const state = w.__typing = { key: 0, frames: [] as number[] };
                 if (w.__typingListener)
                     window.removeEventListener('keydown', w.__typingListener, { capture: true });
 
@@ -314,18 +358,46 @@ test.describe('Filter search & apply', () => {
             }, { column, expected });
 
             log.clear();
-            await page.keyboard.type(text, { delay: 100 });
-            await expect.poll(() => page.evaluate(n => (window as any).__typing.frames.filter((f: number) => f != null).length, text.length)).toBe(text.length);
-            const typing = await page.evaluate(() => (window as any).__typing);
-            const blocking = await page.evaluate(start => (window as any).__perf.tbt(start, performance.now()), typing.start);
+            // The next key goes once the list settled on the previous one
+            for (const [i, key] of [...text].entries()) {
+                await page.keyboard.press(key);
+                await expect.poll(() => page.evaluate(i => (window as any).__typing.frames[i] ?? null, i), `${column}: key ${i + 1}`).not.toBeNull();
+            }
+            const frames: number[] = await page.evaluate(() => (window as any).__typing.frames);
             await log.quiet();
 
             expect(refreshes(log), `${column}: RefreshColumn while typing`).toHaveLength(0);
-            expect(typing.frames.every((f: number) => f >= 0 && f <= 2), `${column}: frames per key ${typing.frames}`).toBe(true);
-            expect.soft(blocking.longest, `${column}: no task over 50ms`).toBeLessThanOrEqual(50);
-            results[column] = { text, framesPerKey: typing.frames, longestTask: round(blocking.longest) };
+            expect(log.requests, `${column}: requests while typing`).toHaveLength(0);
+            expect(frames.every(f => f >= 1 && f <= 2), `${column}: frames per key ${frames}`).toBe(true);
+            results[column] = { text, framesPerKey: frames };
 
             await page.evaluate(() => window.removeEventListener('keydown', (window as any).__typingListener, { capture: true }));
+            await page.keyboard.press('Escape');
+        }
+
+        await recordPerf(page, testInfo, 'perf.cf-client-side-search-frames', { counts: results });
+    });
+
+    test('client-side distinct search keeps up with typing', perfCase('perf.cf-client-side-search', { timing: true }), async ({ page }, testInfo) => {
+        await perfPage(page);
+        const grid = await mountGrid(page);
+        const log = requestLog(page);
+
+        const results: Record<string, any> = {};
+        for (const column of ['Gender', 'ContactPreference']) {
+            await openFilter(grid, column);
+            await expect(filterItems(grid, column).first()).toBeVisible();
+            await log.quiet();
+            const { text, expected } = await clientSearch(grid, column);
+
+            const start = await page.evaluate(() => performance.now());
+            await page.keyboard.type(text, { delay: 100 });
+            await expect.poll(() => grid.evaluate((g: any, column) => (window as any).__perf.filterItems(g, column).map((e: any) => e.textContent.trim()), column)).toEqual(expected[expected.length - 1]);
+            const blocking = await page.evaluate(start => (window as any).__perf.tbt(start, performance.now()), start);
+
+            expect.soft(blocking.longest, `${column}: no task over 50ms`).toBeLessThanOrEqual(50);
+            results[column] = { text, longestTask: round(blocking.longest) };
+
             await page.keyboard.press('Escape');
         }
 

@@ -237,6 +237,12 @@ export async function waitForGridReady(grid: Locator, timeout = 15000) {
     await nextFrames(grid.page(), 2);
 }
 
+/** Stops the page clock (installed with `page.clock.install()` before the page loaded), so its timers only run through `page.clock.runFor`. */
+export async function pauseClock(page: Page) {
+    // pauseAt throws for a time in the past and fires every timer due by then; a second ahead covers the round trip
+    await page.clock.pauseAt(await page.evaluate(() => Date.now()) + 1000);
+}
+
 export async function nextFrames(page: Page, count = 1) {
     await page.evaluate(count => new Promise<void>(resolve => {
         const step = (n: number) => n === 0 ? resolve() : requestAnimationFrame(() => step(n - 1));

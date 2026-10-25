@@ -50,6 +50,23 @@ async function openApp(page: Page) {
     await installPerf(page);
 }
 
+/** Installs window.__peopleGrid (the shown People grid) and window.__peopleSettled (that grid is ready with filled rows). */
+async function installPeopleSettled(page: Page) {
+    await page.evaluate(() => {
+        const w = window as any;
+        const perf = w.__perf;
+        w.__peopleGrid = () => perf.deepAll(document, 'vi-query-grid').find((g: any) => g.query?.name === 'People' && g.getBoundingClientRect().height > 0);
+        w.__peopleSettled = () => {
+            const grid = w.__peopleGrid();
+            if (!grid || grid.hasAttribute('initializing') || grid.query.isBusy)
+                return false;
+
+            const c = perf.coverage(grid);
+            return c.rows > 0 && c.blank === 0;
+        };
+    });
+}
+
 test.describe('View matrix', () => {
     test.setTimeout(300000);
 
@@ -128,12 +145,35 @@ test.describe('Scrolling & selection', () => {
         await recordPerf(page, testInfo, 'views.perf-no-long-tasks', { frames, timings: { longestTask: [round(blocking.longest)], tbt: [round(blocking.tbt)] }, counts: { longTasks: blocking.count } });
     });
 
-    test('select-all on 10,000 rows is fast and fetches nothing', perfCase('views.perf-select-all-no-fetch', { timing: true }), async ({ page }, testInfo) => {
+    test('select-all on 10,000 rows selects every row and fetches nothing', perfCase('views.perf-select-all-state'), async ({ page }, testInfo) => {
         const grid = await openView(page, VIEWS.People);
         await installPerf(page);
         const log = requestLog(page);
         await log.quiet();
         log.clear();
+
+        const selectAll = grid.locator('vi-query-grid-select-all');
+        await selectAll.click();
+        await expect.poll(() => grid.evaluate((g: any) => {
+            const rows = (window as any).__perf.visibleRows(g);
+            return rows.length > 0 && rows.every(({ r }: any) => r.hasAttribute('selected'));
+        }), 'every rendered row is [selected]').toBe(true);
+        await nextFrames(page, 2);
+        await log.quiet();
+
+        expect(await grid.evaluate((g: any) => [g.query.selectAll.allSelected, g.query.selectedItemCount])).toEqual([true, 10000]);
+        expect(log.of('ExecuteQuery')).toHaveLength(0);
+
+        // Leave the selection as it was
+        await selectAll.click();
+        await expect.poll(() => grid.evaluate((g: any) => g.query.selectedItemCount)).toBe(0);
+
+        await recordPerf(page, testInfo, 'views.perf-select-all-state', { counts: { executeQuery: log.of('ExecuteQuery').length } });
+    });
+
+    test('select-all on 10,000 rows is fast', perfCase('views.perf-select-all-no-fetch', { timing: true }), async ({ page }, testInfo) => {
+        const grid = await openView(page, VIEWS.People);
+        await installPerf(page);
 
         const selectAll = grid.locator('vi-query-grid-select-all');
         const box = (await selectAll.boundingBox())!;
@@ -153,28 +193,31 @@ test.describe('Scrolling & selection', () => {
         await page.mouse.down();
         await page.mouse.up();
         const ms = await page.evaluate(() => (window as any).__selectAll);
-        await nextFrames(page, 2);
-        await log.quiet();
 
-        expect(await grid.evaluate((g: any) => [g.query.selectAll.allSelected, g.query.selectedItemCount])).toEqual([true, 10000]);
-        expect(log.of('ExecuteQuery')).toHaveLength(0);
         expect.soft(ms, 'select-all until every rendered row is [selected]').toBeLessThan(300);
 
         // Leave the selection as it was
         await selectAll.click();
         await expect.poll(() => grid.evaluate((g: any) => g.query.selectedItemCount)).toBe(0);
 
-        await recordPerf(page, testInfo, 'views.perf-select-all-no-fetch', { counts: { executeQuery: log.of('ExecuteQuery').length }, timings: { selectAllMs: [round(ms)] } });
+        await recordPerf(page, testInfo, 'views.perf-select-all-no-fetch', { timings: { selectAllMs: [round(ms)] } });
     });
 });
 
 test.describe('Navigation & consumers', () => {
     test.setTimeout(240000);
 
-    test('returning to a cached query needs no GetQuery', perfCase('views.perf-cached-return', { timing: true }), async ({ page }, testInfo) => {
+    test('returning to a cached query shows it again without GetQuery', perfCase('views.perf-cached-return-requests'), async ({ page }, testInfo) => {
         const grid = await openView(page, VIEWS.People);
         await installPerf(page);
+        await installPeopleSettled(page);
         const log = requestLog(page);
+        const firstRows = () => page.evaluate(() => {
+            const w = window as any;
+            return w.__perf.visibleRows(w.__peopleGrid()).slice(0, 5).map(({ r }: any) => w.__perf.cellText(r.querySelector('.column')));
+        });
+        const rowsBefore = await firstRows();
+        await grid.evaluate((g: any) => (window as any).__peopleQuery = g.query);
 
         // Open the first person
         await grid.locator('vi-query-grid-row:not(.hidden)').first().locator('.column').nth(1).click();
@@ -183,29 +226,43 @@ test.describe('Navigation & consumers', () => {
         await log.quiet();
         log.clear();
 
+        await page.goBack();
+        await page.waitForURL(/\/people$/);
+        await expect.poll(() => page.evaluate(() => (window as any).__peopleSettled()), 'the People grid is settled after Back').toBe(true);
+        await waitForGridReady(page.locator('vi-query-grid').filter({ visible: true }).first());
+        await log.quiet();
+
+        expect(await page.evaluate(() => (window as any).__peopleGrid().query === (window as any).__peopleQuery), 'the grid shows the cached query').toBe(true);
+        expect(await firstRows(), 'the first rows after Back').toEqual(rowsBefore);
+        expect(log.of('GetQuery'), 'GetQuery for the cached query').toHaveLength(0);
+        expect(log.of('ExecuteQuery'), 'ExecuteQuery for the cached query').toHaveLength(0);
+
+        await recordPerf(page, testInfo, 'views.perf-cached-return-requests', { counts: { getQuery: log.of('GetQuery').length, executeQuery: log.of('ExecuteQuery').length } });
+    });
+
+    test('returning to a cached query is fast', perfCase('views.perf-cached-return', { timing: true }), async ({ page }, testInfo) => {
+        const grid = await openView(page, VIEWS.People);
+        await installPerf(page);
+        await installPeopleSettled(page);
+
+        // Open the first person
+        await grid.locator('vi-query-grid-row:not(.hidden)').first().locator('.column').nth(1).click();
+        await page.waitForURL(/\/person\//);
+        await expect(page.locator('vi-persistent-object').filter({ visible: true }).first()).toBeVisible();
+
         const start = await page.evaluate(() => performance.now());
         await page.goBack();
         await page.waitForURL(/\/people$/);
         const ms = await page.evaluate(async start => {
-            const perf = (window as any).__perf;
-            const { time } = await perf.whenFrame(() => {
-                const grid = perf.deepAll(document, 'vi-query-grid').find((g: any) => g.query?.name === 'People' && g.getBoundingClientRect().height > 0);
-                if (!grid || grid.hasAttribute('initializing') || grid.query.isBusy)
-                    return false;
-
-                const c = perf.coverage(grid);
-                return c.rows > 0 && c.blank === 0;
-            }, 30000);
+            const w = window as any;
+            const { time } = await w.__perf.whenFrame(w.__peopleSettled, 30000);
             return time - start;
         }, start);
         await waitForGridReady(page.locator('vi-query-grid').filter({ visible: true }).first());
-        await log.quiet();
 
-        expect(log.of('GetQuery'), 'GetQuery for the cached query').toHaveLength(0);
-        expect(log.of('ExecuteQuery').length).toBeLessThanOrEqual(1);
         expect.soft(ms, 'grid ready after Back').toBeLessThanOrEqual(1000);
 
-        await recordPerf(page, testInfo, 'views.perf-cached-return', { counts: { getQuery: log.of('GetQuery').length, executeQuery: log.of('ExecuteQuery').length }, timings: { readyMs: [round(ms)] } });
+        await recordPerf(page, testInfo, 'views.perf-cached-return', { timings: { readyMs: [round(ms)] } });
     });
 
     test('switching across the 9 views leaves one grid', perfCase('views.perf-view-switch-single-grid'), async ({ page }, testInfo) => {
