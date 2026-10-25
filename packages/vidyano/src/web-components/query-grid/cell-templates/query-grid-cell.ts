@@ -1,6 +1,8 @@
+import type { nothing, TemplateResult } from "lit";
 import { property } from "lit/decorators.js";
 import * as Vidyano from "@vidyano/core"
 import { computed, observer, WebComponent } from "components/web-component/web-component"
+import { QueryGridColumn } from "components/query-grid/query-grid-column"
 import type { QueryGridRow } from "components/query-grid/query-grid-row"
 
 // A value can hold a colon itself, as in url(https://...), so only the first colon separates the name
@@ -341,6 +343,11 @@ export abstract class QueryGridCell extends WebComponent {
         return column.getTypeHint(name, defaultValue, this.#typeHints);
     }
 
+    /**
+     * The cell type for columns without a registered cell type, set by vi-query-grid-cell-default.
+     */
+    static defaultCellType: QueryGridCellConstructor;
+
     static registerCellType(type: string, constructor: QueryGridCellConstructor) {
         registeredQueyGridCellTypes[type] = constructor;
     }
@@ -348,8 +355,76 @@ export abstract class QueryGridCell extends WebComponent {
     static getCellTypeConstructor(type: string) {
         return registeredQueyGridCellTypes[type];
     }
+
+    /**
+     * Renders the cells of the matching columns with a template, inside the default cell.
+     * A cell type registered for the column's type takes precedence over every template,
+     * and the latest registered template that matches wins. A value with a displayformat type hint shows the formatted text instead.
+     * Cells that already show a column pick up a change with their next value.
+     * @param typeOrPredicate The column type, or a predicate over the column (e.g. on a type hint or the column name).
+     * @param render Returns the content of the cell for a value.
+     * @returns A function that removes the registration.
+     */
+    static registerCellTemplate(typeOrPredicate: string | QueryGridCellTemplatePredicate, render: QueryGridCellTemplate): () => void {
+        const registration: CellTemplateRegistration = {
+            matches: typeof typeOrPredicate === "string" ? column => column.type === typeOrPredicate : typeOrPredicate,
+            render
+        };
+
+        registeredCellTemplates.push(registration);
+        cellTemplatesVersion++;
+
+        return () => {
+            if (registeredCellTemplates.remove(registration))
+                cellTemplatesVersion++;
+        };
+    }
+
+    /**
+     * Increments on every template registration or removal.
+     */
+    static get cellTemplatesVersion(): number {
+        return cellTemplatesVersion;
+    }
+
+    /**
+     * Gets the template that renders the cells of a column, or undefined when a cell type is registered for its type or no template matches.
+     */
+    static getCellTemplate(column: QueryGridColumn | Vidyano.QueryColumn): QueryGridCellTemplate | undefined {
+        if (!column || registeredQueyGridCellTypes[column.type])
+            return undefined;
+
+        const queryColumn = column instanceof QueryGridColumn ? column.column : column;
+        for (let i = registeredCellTemplates.length - 1; i >= 0; i--) {
+            if (registeredCellTemplates[i].matches(queryColumn))
+                return registeredCellTemplates[i].render;
+        }
+
+        return undefined;
+    }
+
+    /**
+     * Gets the cell class to create for a column: the cell type registered for its type, else the default cell,
+     * which renders the column's cell template when one matches.
+     */
+    static resolveCellType(column: QueryGridColumn | Vidyano.QueryColumn): QueryGridCellConstructor {
+        return registeredQueyGridCellTypes[column.type] || QueryGridCell.defaultCellType;
+    }
 }
 
 export type QueryGridCellConstructor = new (...args:any[]) => QueryGridCell;
 
+/**
+ * Renders the content of a cell.
+ * @param value The typed value of the cell (as QueryResultItem.getValue returns it).
+ * @param column The query column of the cell.
+ * @param item The item the row shows.
+ */
+export type QueryGridCellTemplate = (value: any, column: Vidyano.QueryColumn, item: Vidyano.QueryResultItem) => TemplateResult | string | typeof nothing;
+export type QueryGridCellTemplatePredicate = (column: Vidyano.QueryColumn) => boolean;
+
+type CellTemplateRegistration = { matches: QueryGridCellTemplatePredicate; render: QueryGridCellTemplate };
+
 const registeredQueyGridCellTypes: { [type: string]: QueryGridCellConstructor} = {};
+const registeredCellTemplates: CellTemplateRegistration[] = [];
+let cellTemplatesVersion = 0;

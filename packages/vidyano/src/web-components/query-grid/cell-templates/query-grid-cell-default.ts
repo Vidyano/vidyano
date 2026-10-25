@@ -1,7 +1,8 @@
 import { CSSResultGroup, html, unsafeCSS } from "lit";
 import { property, state } from "lit/decorators.js";
 import * as Vidyano from "@vidyano/core"
-import { QueryGridCell } from "./query-grid-cell"
+import { computed } from "components/web-component/web-component"
+import { QueryGridCell, QueryGridCellTemplate } from "./query-grid-cell"
 import styles from "./query-grid-cell-default.css";
 
 const classNames = (value: string) => value.split(/\s+/).filter(Boolean);
@@ -10,6 +11,7 @@ export class QueryGridCellDefault extends QueryGridCell {
     static styles: CSSResultGroup = unsafeCSS(styles);
 
     private _extraClass: string;
+    #hasDisplayFormat: boolean;
     private _tag: { currentValue?: any; originalValue?: any } = { currentValue: null };
 
     @property({ type: Boolean, reflect: true })
@@ -24,12 +26,32 @@ export class QueryGridCellDefault extends QueryGridCell {
     @state()
     protected _text: string = "";
 
+    /**
+     * The template registered with QueryGridCell.registerCellTemplate that renders this cell's column, if any.
+     */
+    @state()
+    @computed(function(this: QueryGridCellDefault, column: Vidyano.QueryColumn): QueryGridCellTemplate {
+        return QueryGridCell.getCellTemplate(column);
+    }, "column", "_cellTemplatesVersion")
+    declare readonly cellTemplate: QueryGridCellTemplate;
+
+    @state()
+    private _cellTemplatesVersion: number = QueryGridCell.cellTemplatesVersion;
+
     render() {
-        return html`<div id="text">${this._text}</div>`;
+        // The template renders here instead of in _valueChanged, so a column swap without a new value re-renders it too
+        const value = this.value;
+        return html`<div id="text">${this.cellTemplate && value && !this.#hasDisplayFormat ? this.cellTemplate(value.getValue(), value.column, value.item) : this._text}</div>`;
     }
 
     protected _valueChanged(itemValue: Vidyano.QueryResultItemValue, oldValue: Vidyano.QueryResultItemValue) {
         super._valueChanged(itemValue, oldValue);
+
+        // Recomputes cellTemplate before rendering when templates were registered or removed since
+        this._cellTemplatesVersion = QueryGridCell.cellTemplatesVersion;
+
+        // A DisplayFormat keeps priority over the column's cell template, the cell shows it as formatted text
+        this.#hasDisplayFormat = !!itemValue && !String.isNullOrEmpty(this._getTypeHint(itemValue.column, "displayformat", null));
 
         if (!itemValue) {
             this._clearCell();
@@ -144,5 +166,7 @@ export class QueryGridCellDefault extends QueryGridCell {
         this._text = value;
     }
 }
+
+QueryGridCell.defaultCellType = QueryGridCellDefault;
 
 customElements.define("vi-query-grid-cell-default", QueryGridCellDefault);
