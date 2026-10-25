@@ -30,6 +30,31 @@ function visibleFilterIcons(cf: Locator) {
     return cf.locator('vi-icon[source="Filter"]').filter({ visible: true });
 }
 
+/** Per visible value row: whether the label text or one of its ancestors up to the row has a blur() filter. */
+function blurs(cf: Locator) {
+    return cf.evaluate((host: Element) => {
+        const deep = (root: ParentNode, out: Element[] = []): Element[] => {
+            for (const el of root.querySelectorAll('*')) {
+                out.push(el);
+                if (el.shadowRoot)
+                    deep(el.shadowRoot, out);
+            }
+
+            return out;
+        };
+
+        return deep(host.shadowRoot!).filter(el => el.classList.contains('item') && el.checkVisibility()).map(item => {
+            const label = item.querySelector('span[distinct-type]')!;
+            for (let el: Element | null = label; el && el !== item.parentElement; el = el.parentElement) {
+                if (getComputedStyle(el).filter.includes('blur'))
+                    return true;
+            }
+
+            return false;
+        });
+    });
+}
+
 async function isOpen(cf: Locator) {
     return cf.locator('vi-popup[open]').count().then(c => c > 0);
 }
@@ -142,6 +167,43 @@ test.describe('Button and label', () => {
 
         // After the popup was opened and closed
         await check();
+    });
+
+    test('label follows the column it is given, not the one it had before', { annotation: [{ type: 'case', description: 'filters.cf-label-column-swap' }] }, async ({ page }) => {
+        const grid = await setup(page);
+        const cf = columnFilter(grid, 'Gender');
+
+        await cf.evaluate((host: any) => {
+            const lastName = host.getRootNode().host.getRootNode().querySelector('vi-query-grid-column-header[name="LastName"]');
+            host.column = lastName.column;
+        });
+
+        await setSelectedDistincts(grid, 'LastName', ['|Claes']);
+        await expect.poll(() => filterLabel(cf)).toBe('= Claes');
+        await expect(cf).toHaveAttribute('filtered');
+
+        await setSelectedDistincts(grid, 'Gender', ['|Male'], true);
+        await setSelectedDistincts(grid, 'LastName', ['|Claes', '|Claeys']);
+        await expect.poll(() => filterLabel(cf)).toBe('= Claes, Claeys');
+    });
+
+    test('label catches up with a selection made while disconnected', { annotation: [{ type: 'case', description: 'filters.cf-label-reconnect' }] }, async ({ page }) => {
+        const grid = await setup(page);
+        const cf = columnFilter(grid, 'Gender');
+
+        await cf.evaluate(async (host: any) => {
+            const parent = host.parentNode;
+            const next = host.nextSibling;
+            host.remove();
+
+            host.column.column.selectedDistincts = ['|Female'];
+            await new Promise(r => setTimeout(r, 50));
+
+            parent.insertBefore(host, next);
+        });
+
+        await expect.poll(() => filterLabel(cf)).toBe('= Female');
+        await expect(cf).toHaveAttribute('filtered');
     });
 });
 
@@ -810,29 +872,6 @@ test.describe('Restricted columns and security', () => {
         await gridPage(page);
         const grid = await mountGrid(page, { query: 'QueryGrid_ColumnOptions' });
 
-        const blurs = (cf: Locator) => cf.evaluate((host: Element) => {
-            const deep = (root: ParentNode, out: Element[] = []): Element[] => {
-                for (const el of root.querySelectorAll('*')) {
-                    out.push(el);
-                    if (el.shadowRoot)
-                        deep(el.shadowRoot, out);
-                }
-
-                return out;
-            };
-
-            // Per value row: whether the label text or one of its ancestors up to the row has a blur() filter
-            return deep(host.shadowRoot!).filter(el => el.classList.contains('item') && el.checkVisibility()).map(item => {
-                const label = item.querySelector('span[distinct-type]')!;
-                for (let el: Element | null = label; el && el !== item.parentElement; el = el.parentElement) {
-                    if (getComputedStyle(el).filter.includes('blur'))
-                        return true;
-                }
-
-                return false;
-            });
-        });
-
         await page.evaluate(() => (window as any).Vidyano.ServiceBus.send('vi-app:sensitive-changed', true));
         try {
             const lastName = await openFilter(grid, 'LastName');
@@ -844,6 +883,36 @@ test.describe('Restricted columns and security', () => {
             const firstName = await openFilter(grid, 'FirstName');
             await settledRows(firstName);
             expect((await blurs(firstName)).some(b => b)).toBe(false);
+        }
+        finally {
+            await page.evaluate(() => (window as any).Vidyano.ServiceBus.send('vi-app:sensitive-changed', false));
+        }
+    });
+
+    test('sensitive mode turned on after the filter was moved still blurs its values', { annotation: [{ type: 'case', description: 'filters.cf-sensitive-after-reconnect' }] }, async ({ page }) => {
+        await gridPage(page);
+        const grid = await mountGrid(page, { query: 'QueryGrid_ColumnOptions' });
+
+        const lastName = await openFilter(grid, 'LastName');
+        await settledRows(lastName);
+        expect((await blurs(lastName)).some(b => b)).toBe(false);
+        await page.keyboard.press('Escape');
+        await expect(clearItem(lastName)).toBeHidden();
+
+        await lastName.evaluate((host: Element) => {
+            const parent = host.parentNode!;
+            const next = host.nextSibling;
+            host.remove();
+            parent.insertBefore(host, next);
+        });
+
+        await page.evaluate(() => (window as any).Vidyano.ServiceBus.send('vi-app:sensitive-changed', true));
+        try {
+            await openFilter(grid, 'LastName');
+            await settledRows(lastName);
+            const sensitive = await blurs(lastName);
+            expect(sensitive.length).toBeGreaterThan(0);
+            expect(sensitive.every(b => b)).toBe(true);
         }
         finally {
             await page.evaluate(() => (window as any).Vidyano.ServiceBus.send('vi-app:sensitive-changed', false));
