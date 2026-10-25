@@ -1,77 +1,59 @@
-import * as Polymer from "polymer"
+import { html, PropertyValues, unsafeCSS } from "lit";
 import { QueryGridCell } from "./query-grid-cell"
 import { QueryGridCellDefault } from "./query-grid-cell-default"
 import { getMarkdown } from "components/marked/marked"
 import { Path } from "libs/pathjs/pathjs"
+import styles from "./query-grid-cell-common-mark.css";
 
-@Polymer.WebComponent.register({
-    properties: {
-        value: {
-            type: Object,
-            observer: "_valueChanged"
-        },
-        column: Object,
-        right: {
-            type: Boolean,
-            reflectToAttribute: true
-        },
-        center: {
-            type: Boolean,
-            reflectToAttribute: true
-        },
-        tag: {
-            type: Boolean,
-            reflectToAttribute: true
-        }
-    },
-    sensitive: true
-}, "vi-query-grid-cell-common-mark")
 export class QueryGridCellCommonMark extends QueryGridCellDefault {
-    static get template() { return Polymer.html`<link rel="import" href="query-grid-cell-common-mark.html">` }
+    static styles = [QueryGridCellDefault.styles, unsafeCSS(styles)];
 
-    #asmarkdown: boolean;
-    #textNode: Text;
-    #textNodeValue: string;
     #markdownValue: string;
+    #renderedMarkdown: string;
+    #renderedText: string;
+
+    // #text is written in updated, so a new value replaces its content with one write instead of a node per markdown block
+    render() {
+        return html`<div id="text" @click=${this._onClick}></div>`;
+    }
+
+    protected updated(changedProperties: PropertyValues) {
+        super.updated(changedProperties);
+
+        const text = this.shadowRoot.getElementById("text");
+        if (this.#markdownValue != null) {
+            if (this.#renderedMarkdown === this.#markdownValue)
+                return;
+
+            text.innerHTML = getMarkdown(this.#renderedMarkdown = this.#markdownValue, {
+                addTags: "VI-ICON",
+                forbidTags: "STYLE"
+            });
+
+            // The cell shows one row, so a line break becomes a space
+            text.querySelectorAll("br").forEach(br => br.replaceWith(" "));
+            this.#renderedText = null;
+        }
+        else if (this.#renderedText !== this._text || this.#renderedMarkdown != null) {
+            text.textContent = this.#renderedText = this._text;
+            this.#renderedMarkdown = null;
+        }
+    }
 
     protected _clearCell() {
         super._clearCell();
 
-        if (this.#asmarkdown && this.#markdownValue) {
-            this.$.text.innerHTML = "";
-            this.#markdownValue = null;
-        }
+        this.#markdownValue = null;
     }
 
     protected _updateCell(value: string) {
         const asmarkdown = this._getTypeHint(this.value.column, "displayingrid", null);
-        this.#asmarkdown = Boolean.parse(asmarkdown);
-        if (this.#asmarkdown) {
-            if (this.#textNode) {
-                // In case the cell was previously rendered as text, remove the text node.
-                this.$.text.removeChild(this.#textNode);
-                this.#textNode = this.#textNodeValue = null;
-            }
-
-            if (this.#markdownValue !== value) {
-                this.$.text.innerHTML = getMarkdown(this.#markdownValue = value, {
-                    addTags: "VI-ICON",
-                    forbidTags: "STYLE"
-                });
-
-                // The cell shows one row, so a line break becomes a space
-                this.$.text.querySelectorAll("br").forEach(br => br.replaceWith(" "));
-            }
-
+        if (Boolean.parse(asmarkdown)) {
+            this.#markdownValue = value;
             return;
         }
 
-        if (this.#markdownValue) {
-            // In case the cell was previously rendered as markdown, clear the innerHTML.
-            this.$.text.innerHTML = "";
-            this.#markdownValue = null;
-        }
-
+        this.#markdownValue = null;
         super._updateCell(value);
     }
 
@@ -99,3 +81,5 @@ export class QueryGridCellCommonMark extends QueryGridCellDefault {
 }
 
 QueryGridCell.registerCellType("CommonMark", QueryGridCellCommonMark);
+
+customElements.define("vi-query-grid-cell-common-mark", QueryGridCellCommonMark);

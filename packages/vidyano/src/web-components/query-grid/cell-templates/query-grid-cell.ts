@@ -1,5 +1,6 @@
-import * as Polymer from "polymer"
+import { property } from "lit/decorators.js";
 import * as Vidyano from "@vidyano/core"
+import { computed, observer, WebComponent } from "components/web-component/web-component"
 import type { QueryGridRow } from "components/query-grid/query-grid-row"
 
 // A value can hold a colon itself, as in url(https://...), so only the first colon separates the name
@@ -12,7 +13,7 @@ let resizeObserver: ResizeObserver;
 resizeObserver = new ResizeObserver(allEntries => {
     window.requestAnimationFrame(() => {
         // Entries may be batched for multiple grids, make sure the event is dispatched to the correct grid
-        
+
         const parents = new Map<HTMLElement, ResizeObserverEntry[]>();
         allEntries.forEach(e => {
             const parent = parents.get(e.target.parentElement) || parents.set(e.target.parentElement, []).get(e.target.parentElement);
@@ -42,25 +43,7 @@ resizeObserver = new ResizeObserver(allEntries => {
     });
 });
 
-@Polymer.WebComponent.register({
-    properties: {
-        column: Object,
-        value: Object,
-        sensitive: {
-            type: Boolean,
-            readOnly: true,
-            reflectToAttribute: true
-        },
-        isRowHovered: {
-            type: Boolean,
-            observer: "_isRowHoveredChanged"
-        }
-    },
-    observers: [
-        "_queueMeasure(value, isConnected)"
-    ]
-}, "vi-query-grid-cell")
-export abstract class QueryGridCell extends Polymer.WebComponent {
+export abstract class QueryGridCell extends WebComponent {
     #_observeOnConnected: boolean;
     #_lastMeasuredColumn: Vidyano.QueryColumn;
     #_isObserved: boolean;
@@ -70,15 +53,35 @@ export abstract class QueryGridCell extends Polymer.WebComponent {
     #_customStyles: Map<string, { currentValue?: string; originalValue?: string }> = new Map();
     #_customHoverStyles: Map<string, { currentValue?: string; originalValue?: string }> = new Map();
 
-    readonly sensitive: boolean; protected _setSensitive: (sensitive: boolean) => void;
+    @property({ type: Boolean, reflect: true })
+    @computed(function(this: QueryGridCell, value: Vidyano.QueryResultItemValue): boolean {
+        return !!value?.column.isSensitive;
+    }, "value", { allowUndefined: true })
+    declare readonly sensitive: boolean;
 
+    @property({ type: Object })
     column: Vidyano.QueryColumn;
+
+    // Subclasses override _valueChanged, so the observer dispatches through this instead of binding the base method
+    @property({ type: Object })
+    @observer(function(this: QueryGridCell, value: Vidyano.QueryResultItemValue, oldValue: Vidyano.QueryResultItemValue) {
+        this._valueChanged(value, oldValue);
+    })
     value: Vidyano.QueryResultItemValue;
+
     valueQueued: Vidyano.QueryResultItemValue;
+
+    @property({ type: Boolean })
+    @observer(function(this: QueryGridCell, isHovered: boolean, wasHovered: boolean) {
+        this._isRowHoveredChanged(isHovered, wasHovered);
+    })
     isRowHovered: boolean;
 
     connectedCallback() {
         super.connectedCallback();
+
+        // Subscribes to the app's sensitivity, the subscription ends when the cell is disconnected
+        this.toggleAttribute("is-app-sensitive", this.isAppSensitive);
 
         // The element was disconnected and re-connected to the DOM, attach the observer
         if (this.#_observeOnConnected) {
@@ -86,6 +89,8 @@ export abstract class QueryGridCell extends Polymer.WebComponent {
 
             this._observe();
         }
+        else
+            this._queueMeasure();
     }
 
     disconnectedCallback() {
@@ -104,9 +109,14 @@ export abstract class QueryGridCell extends Polymer.WebComponent {
         return this.#_isObserved;
     }
 
-    private _queueMeasure(value: Vidyano.QueryResultItemValue, isConnected: boolean) {
+    @observer("isAppSensitive")
+    private _isAppSensitiveChanged(isAppSensitive: boolean) {
+        this.toggleAttribute("is-app-sensitive", isAppSensitive);
+    }
+
+    private _queueMeasure() {
         // Don't try to measure if the cell is disconnected
-        if (!isConnected)
+        if (!this.isConnected)
             return;
 
         // Don't try to measure if the column that needs to be measured hasn't changed
@@ -115,7 +125,7 @@ export abstract class QueryGridCell extends Polymer.WebComponent {
 
         const row = this.parentElement as QueryGridRow;
         // Don't measure the cell when the row is not a query result item (sanity check), or still shows an item of the grid's previous query
-        if (!(row.item instanceof Vidyano.QueryResultItem) || row.item.query !== this.column?.query)
+        if (!(row?.item instanceof Vidyano.QueryResultItem) || row.item.query !== this.column?.query)
             return;
 
         // Only measure if this is the first non-group query grid row in the grid
@@ -140,7 +150,7 @@ export abstract class QueryGridCell extends Polymer.WebComponent {
     }
 
     protected _valueChanged(itemValue: Vidyano.QueryResultItemValue, oldValue: Vidyano.QueryResultItemValue) {
-        this._setSensitive(itemValue?.column.isSensitive);
+        this._queueMeasure();
 
         // Prepare type hints for the cell
         this.#typeHints = Object.assign({}, itemValue?.item.typeHints, itemValue?.typeHints);

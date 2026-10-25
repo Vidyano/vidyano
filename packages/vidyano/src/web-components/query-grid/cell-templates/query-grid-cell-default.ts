@@ -1,41 +1,32 @@
-import * as Polymer from "polymer"
+import { CSSResultGroup, html, unsafeCSS } from "lit";
+import { property, state } from "lit/decorators.js";
 import * as Vidyano from "@vidyano/core"
 import { QueryGridCell } from "./query-grid-cell"
+import styles from "./query-grid-cell-default.css";
 
 const classNames = (value: string) => value.split(/\s+/).filter(Boolean);
 
-@Polymer.WebComponent.register({
-    properties: {
-        value: {
-            type: Object,
-            observer: "_valueChanged"
-        },
-        column: Object,
-        right: {
-            type: Boolean,
-            reflectToAttribute: true
-        },
-        center: {
-            type: Boolean,
-            reflectToAttribute: true
-        },
-        tag: {
-            type: Boolean,
-            reflectToAttribute: true
-        }
-    },
-    sensitive: true
-}, "vi-query-grid-cell-default")
 export class QueryGridCellDefault extends QueryGridCell {
-    static get template() { return Polymer.html`<link rel="import" href="query-grid-cell-default.html">` }
+    static styles: CSSResultGroup = unsafeCSS(styles);
 
     private _extraClass: string;
-    #textNode: Text;
-    #textNodeValue: string;
     private _tag: { currentValue?: any; originalValue?: any } = { currentValue: null };
+
+    @property({ type: Boolean, reflect: true })
     tag: boolean;
+
+    @property({ type: Boolean, reflect: true })
     right: boolean;
+
+    @property({ type: Boolean, reflect: true })
     center: boolean;
+
+    @state()
+    protected _text: string = "";
+
+    render() {
+        return html`<div id="text">${this._text}</div>`;
+    }
 
     protected _valueChanged(itemValue: Vidyano.QueryResultItemValue, oldValue: Vidyano.QueryResultItemValue) {
         super._valueChanged(itemValue, oldValue);
@@ -113,22 +104,21 @@ export class QueryGridCellDefault extends QueryGridCell {
     }
 
     protected _clearCell() {
-        if (this.#textNode && this.#textNodeValue !== "")
-            this.#textNode.nodeValue = this.#textNodeValue = "";
+        this._text = "";
     }
 
     private _applyTagTypeHint(itemValue: Vidyano.QueryResultItemValue) {
         const tagHint = this._getTypeHint(itemValue.column, "tag", null);
         if (tagHint !== this._tag.currentValue) {
             if (this._tag.originalValue === undefined) this._tag.originalValue = this.style.getPropertyValue("--tag-background");
-            
+
             if (tagHint)
                 this.style.setProperty("--tag-background", tagHint);
             else if (this._tag.originalValue)
                 this.style.setProperty("--tag-background", this._tag.originalValue);
             else
                 this.style.removeProperty("--tag-background");
-            
+
             this._tag.currentValue = tagHint;
         }
         this.tag = !!tagHint;
@@ -151,11 +141,8 @@ export class QueryGridCellDefault extends QueryGridCell {
     }
 
     protected _updateCell(value: string) {
-        if (this.#textNode) {
-            if (this.#textNodeValue !== value)
-                this.#textNode.nodeValue = this.#textNodeValue = <string>value;
-        }
-        else
-            this.$.text.appendChild(this.#textNode = document.createTextNode(this.#textNodeValue = <string>value));
+        this._text = value;
     }
 }
+
+customElements.define("vi-query-grid-cell-default", QueryGridCellDefault);
