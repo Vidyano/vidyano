@@ -25,4 +25,6 @@ import "./web-component/test-observer-deep-inheritance.js";
 import "./web-component/test-sibling-inheritance.js";
 import "./web-component/test-computed-chained-root.js";
 import "./web-component/test-app-sensitive.js";
+import "./web-component/test-observer-side-effect-root.js";
+import "./web-component/test-observer-disconnected-update.js";
 import "./dialog/test-dialog.js";

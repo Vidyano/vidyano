@@ -224,7 +224,7 @@ export class WebComponentReactiveController implements ReactiveController {
         // If any computed properties changed, check if we need to rebind forwarders
         // This handles the case where a computed property is a root for other dependencies
         if (changedComputedProps.size > 0) {
-            this.#rebindForwardersIfNeeded(changedComputedProps);
+            this.#rebindForwardersInsideUpdate(changedComputedProps);
         }
 
         const allChangesToObserve = new Map([...changedProperties.entries(), ...changedComputedProps.entries()]);
@@ -234,12 +234,32 @@ export class WebComponentReactiveController implements ReactiveController {
         }
 
         const sideEffectChanges = this.#executeObserversAndDetectSideEffects(
-            allChangesToObserve, 
-            dirtyPaths, 
+            allChangesToObserve,
+            dirtyPaths,
             lastComplexObserverArgs
         );
 
+        // A root that an observer replaced needs its forwarders on the new value as well
+        if (sideEffectChanges.size > 0)
+            this.#rebindForwardersInsideUpdate(sideEffectChanges);
+
         return { changedProperties: changedComputedProps, sideEffectChanges };
+    }
+
+    /**
+     * Rebinds forwarders while the update loop runs. The observers of a replaced root already run in the next pass,
+     * so the initial-state notifications of the new forwarders are dropped instead of being left as dirty paths that
+     * would run those observers again on the next, unrelated update.
+     * @param changedProperties The properties that changed in this pass.
+     */
+    #rebindForwardersInsideUpdate(changedProperties: Map<PropertyKey, unknown>): void {
+        const dirtyBefore = new Set(this.#dirtyForwardedPaths);
+        this.#rebindForwardersIfNeeded(changedProperties);
+
+        for (const path of this.#dirtyForwardedPaths) {
+            if (!dirtyBefore.has(path))
+                this.#dirtyForwardedPaths.delete(path);
+        }
     }
 
     /**
@@ -503,6 +523,11 @@ export class WebComponentReactiveController implements ReactiveController {
      * @param pathsToRebind A Set of dependency paths to create forwarders for.
      */
     #createForwarders(pathsToRebind: Set<string>): void {
+        // An update can still run after disconnect, its forwarders would never be disposed and keep the host alive.
+        // hostConnected creates them again.
+        if (!this.#host.isConnected)
+            return;
+
         for (const depPath of pathsToRebind) {
             const pathParts = depPath.split('.');
             const rootPropertyKey = pathParts[0];
