@@ -158,13 +158,13 @@ test.describe('Focus', () => {
 
         const plain = await mountName(page, 'My filter');
         await expect(plain.name).toBeFocused();
-        expect(await deepActive(page)).toBe('input.flex name');
+        expect(await deepActive(page)).toBe('input.name');
 
         const other = await browser.newPage();
         try {
             const grouped = await mountName(other, 'Group\nName');
             await expect(grouped.group).toBeFocused();
-            expect(await deepActive(other)).toBe('input.flex group');
+            expect(await deepActive(other)).toBe('input.group');
         }
         finally {
             await other.close();
@@ -238,5 +238,33 @@ test.describe('Lifecycle', () => {
 
         // Neither attribute was changed by the swap
         expect(await page.evaluate(() => [(window as any).attr.value, (window as any).otherAttr.value])).toEqual(['One', 'G\nTwo']);
+    });
+
+    test('assigning an attribute without a group drops the previous group', { annotation: [{ type: 'case', description: 'filters.dn-attribute-swap-ungrouped' }] }, async ({ page }) => {
+        const editor = await mountName(page, 'G\nOne');
+        await expect(editor.group).toHaveValue('G');
+
+        await page.evaluate(async () => {
+            const w = window as any;
+            const query = await w.service.getQuery('People');
+            const filter = await query.filters.createNew();
+            filter.persistentObject.beginEdit();
+
+            const attr = filter.persistentObject.attributes.Name;
+            await attr.setValue('Two');
+            w.attr = attr;
+            (document.querySelector('vi-query-grid-filter-dialog-name') as any).attribute = attr;
+        });
+
+        await expect(editor.group).toBeHidden();
+        await expect(editor.name).toHaveValue('Two');
+
+        await editor.name.click();
+        await page.keyboard.press('End');
+        await page.keyboard.type('x');
+        await expect.poll(editor.value).toBe('Twox');
+
+        await editor.folder.click();
+        await expect(editor.group).toHaveValue('');
     });
 });
