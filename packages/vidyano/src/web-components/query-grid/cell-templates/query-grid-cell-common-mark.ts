@@ -5,6 +5,31 @@ import { getMarkdown } from "components/marked/marked"
 import { Path } from "libs/pathjs/pathjs"
 import styles from "./query-grid-cell-common-mark.css";
 
+const MAX_CACHED_MARKDOWN = 1000;
+const markdownTemplates = new Map<string, HTMLTemplateElement>();
+
+// Cells share the sanitized markup per text, so recycling a cell to a text seen before only clones it
+function getMarkdownTemplate(markdown: string): HTMLTemplateElement {
+    let template = markdownTemplates.get(markdown);
+    if (template)
+        return template;
+
+    template = document.createElement("template");
+    template.innerHTML = getMarkdown(markdown, {
+        addTags: "VI-ICON",
+        forbidTags: "STYLE"
+    });
+
+    // The cell shows one row, so a line break becomes a space
+    template.content.querySelectorAll("br").forEach(br => br.replaceWith(" "));
+
+    if (markdownTemplates.size >= MAX_CACHED_MARKDOWN)
+        markdownTemplates.delete(markdownTemplates.keys().next().value);
+
+    markdownTemplates.set(markdown, template);
+    return template;
+}
+
 export class QueryGridCellCommonMark extends QueryGridCellDefault {
     static styles = [QueryGridCellDefault.styles, unsafeCSS(styles)];
 
@@ -25,13 +50,7 @@ export class QueryGridCellCommonMark extends QueryGridCellDefault {
             if (this.#renderedMarkdown === this.#markdownValue)
                 return;
 
-            text.innerHTML = getMarkdown(this.#renderedMarkdown = this.#markdownValue, {
-                addTags: "VI-ICON",
-                forbidTags: "STYLE"
-            });
-
-            // The cell shows one row, so a line break becomes a space
-            text.querySelectorAll("br").forEach(br => br.replaceWith(" "));
+            text.replaceChildren(document.importNode(getMarkdownTemplate(this.#renderedMarkdown = this.#markdownValue).content, true));
             this.#renderedText = null;
         }
         else if (this.#renderedText !== this._text || this.#renderedMarkdown != null) {
