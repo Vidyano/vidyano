@@ -1,6 +1,6 @@
 import { Page } from '@playwright/test';
 import { waitForGridReady } from '../_helpers/query-grid';
-import { appendGrid, cdpMetrics, datasetOf, expect, gridLocator, median, perfCase, perfPage, prefetch, recordPerf, round, setCpuThrottle, startFrameTrace, stopFrameTrace, test, traceLayouts, waitFilled } from '../_helpers/perf';
+import { appendGrid, cdpMetrics, datasetOf, expect, gridLocator, median, mountPrefetched, perfCase, perfPage, prefetch, recordPerf, round, setCpuThrottle, startFrameTrace, stopFrameTrace, test, traceLayouts, waitFilled } from '../_helpers/perf';
 
 const CELL_TAGS = ['vi-query-grid-cell-default', 'vi-query-grid-cell-boolean', 'vi-query-grid-cell-image', 'vi-query-grid-cell-common-mark'];
 
@@ -80,6 +80,58 @@ test.describe('Wide view load', () => {
         expect(layouts.forced, `forced layouts (${JSON.stringify(layouts.forcedBy)})`).toBeLessThan(renders.rows);
 
         await recordPerf(page, testInfo, 'perf.wd-load-structure', { dataset: await datasetOf(grid), counts: { ...renders, cellsAtFirstPaint: firstPaint.cells, rowsAtFirstPaint: firstPaint.rows, rowColumnsAtFirstPaint: firstPaint.rowColumns, layouts: layouts.layouts, forcedLayouts: layouts.forced, styleRecalcs: layouts.styleRecalcs }, timings: { layoutMs: [layouts.layoutMs], styleMs: [layouts.styleMs] }, cdp: { forcedBy: layouts.forcedBy } });
+    });
+
+    test('a change of the row count reads no layout from the grid', perfCase('perf.vs-no-layout-read-on-row-count'), async ({ page }, testInfo) => {
+        await perfPage(page);
+        const { grid } = await mountPrefetched(page, 'People');
+
+        const reads = await grid.evaluate(async (g: any) => {
+            const reads: Record<string, number> = {};
+            let counting = true;
+            const restore: (() => void)[] = [];
+            const spy = (proto: any, name: string, isMethod = false) => {
+                const descriptor = Object.getOwnPropertyDescriptor(proto, name)!;
+                const original = isMethod ? descriptor.value : descriptor.get;
+                const count = (el: any) => {
+                    if (counting && (el === g || el.getRootNode?.() === g.shadowRoot))
+                        reads[name] = (reads[name] ?? 0) + 1;
+                };
+                Object.defineProperty(proto, name, isMethod
+                    ? { ...descriptor, value: function (this: any, ...args: any[]) { count(this); return original.apply(this, args); } }
+                    : { ...descriptor, get: function (this: any) { count(this); return original.call(this); } });
+                restore.push(() => Object.defineProperty(proto, name, descriptor));
+            };
+
+            for (const name of ['clientHeight', 'clientWidth', 'scrollHeight', 'scrollWidth'])
+                spy(Element.prototype, name);
+            for (const name of ['offsetHeight', 'offsetWidth', 'offsetTop', 'offsetLeft'])
+                spy(HTMLElement.prototype, name);
+            spy(Element.prototype, 'getBoundingClientRect', true);
+
+            const frames = (n: number) => new Promise<void>(resolve => {
+                const step = () => --n <= 0 ? resolve() : requestAnimationFrame(step);
+                requestAnimationFrame(step);
+            });
+
+            try {
+                for (const textSearch of ['FirstName:A*', '', 'FirstName:B*']) {
+                    g.query.textSearch = textSearch;
+                    await g.query.search();
+                    await frames(4);
+                }
+            }
+            finally {
+                counting = false;
+                restore.forEach(r => r());
+            }
+
+            return reads;
+        });
+
+        expect(reads, 'layout reads by the grid while the row count changes').toEqual({});
+
+        await recordPerf(page, testInfo, 'perf.vs-no-layout-read-on-row-count', { counts: { reads: Object.values(reads).reduce((n, r) => n + r, 0) } });
     });
 
     test('main-thread time from append to settled rows', perfCase('perf.wd-load-main-thread', { timing: true }), async ({ page }, testInfo) => {

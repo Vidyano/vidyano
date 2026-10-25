@@ -43,6 +43,9 @@ type MoreColumns = { left: QueryGridColumnHeader[], right: QueryGridColumnHeader
 
 const PHYSICAL_UPPER_LIMIT = 100000;
 
+// Chrome and Firefox clamp an element's height at about 33.5 and 17.9 million pixels, divided by the zoom
+const SAFE_ELEMENT_HEIGHT = 5_000_000;
+
 // The columns measured per frame once the grid shows its rows
 const MEASURE_BATCH_SIZE = 8;
 
@@ -83,6 +86,9 @@ export class QueryGrid extends WebComponent {
     private _virtualGridStartIndex: number = 0;
     private _rowsOrigin: number = 0;
     private _verticalSpacerCorrection: number = 1;
+    private _spacerHeight: number;
+    private _spacerObserver: ResizeObserver;
+    private _spacerRenderedHeight: number;
     private readonly _getItemsDebouncer = timeOutDebouncer(20);
     private readonly _updateCellDebouncer = animationFrameDebouncer();
     private readonly _updateMoreDebouncer = timeOutDebouncer(50);
@@ -1007,14 +1013,30 @@ export class QueryGrid extends WebComponent {
 
         this.setAttribute("aria-rowcount", String(Math.min(items.length, PHYSICAL_UPPER_LIMIT)));
 
-        // Measured after the rows of this update are rendered
         this._verticalSpacerDebouncer.run(() => {
             const gridWrapper = this.$.gridWrapper;
-            const newHeight = Math.min(Math.max(0, Math.min(items.length, PHYSICAL_UPPER_LIMIT) - (skip || 0)), maxRows || Number.MAX_SAFE_INTEGER) * rowHeight;
+            const newHeight = this._spacerHeight = Math.min(Math.max(0, Math.min(items.length, PHYSICAL_UPPER_LIMIT) - (skip || 0)), maxRows || Number.MAX_SAFE_INTEGER) * rowHeight;
             gridWrapper.style.height = `${newHeight}px`;
 
-            this._verticalSpacerCorrection = (newHeight - this.viewportHeight) / (gridWrapper.clientHeight - viewportHeight);
+            // Every browser gives the wrapper this height, a larger one can be clamped: the observer reports the height it got without forcing a layout
+            if (newHeight <= SAFE_ELEMENT_HEIGHT)
+                this._verticalSpacerCorrection = 1;
+            else {
+                this._spacerObserver ??= new ResizeObserver(entries => {
+                    this._spacerRenderedHeight = entries[0].contentRect.height;
+                    this._correctVerticalSpacer();
+                });
+                this._spacerObserver.observe(gridWrapper);
+
+                // A new viewport height with an unchanged wrapper height is not reported
+                this._correctVerticalSpacer();
+            }
         });
+    }
+
+    private _correctVerticalSpacer() {
+        if (this._spacerHeight > SAFE_ELEMENT_HEIGHT && this._spacerRenderedHeight !== undefined)
+            this._verticalSpacerCorrection = (this._spacerHeight - this.viewportHeight) / (this._spacerRenderedHeight - this.viewportHeight);
     }
 
     @observer("columns", "columns.*.isPinned")
@@ -1216,15 +1238,24 @@ export class QueryGrid extends WebComponent {
             return;
 
         this._updateMoreDebouncer.run(() => {
+            // The header tracks have the applied column widths, or the header widths before any apply: the positions follow without reading the layout
             const headers = Array.from(this.shadowRoot.querySelectorAll("header [grid] > vi-query-grid-column-header")) as QueryGridColumnHeader[];
-            const unpinnedHeaders = headers.filter(h => !h.column.isPinned);
+            const boxes: { header: QueryGridColumnHeader; left: number; width: number }[] = [];
+            let left = 0;
+            for (const header of headers) {
+                const width = this.columnWidths?.[header.column.name] ?? this._columnWidths.get(header.column.name)?.column ?? 0;
+                boxes.push({ header, left, width });
+                left += width;
+            }
+
+            const unpinned = boxes.filter(b => !b.header.column.isPinned);
 
             // The pinned headers stay in view and cover the headers scrolled behind them
-            const pinnedWidth = headers.filter(h => h.column.isPinned).reduce((width, h) => width + h.offsetWidth, 0);
+            const pinnedWidth = boxes.filter(b => b.header.column.isPinned).reduce((width, b) => width + b.width, 0);
 
             this.moreColumns = {
-                left: unpinnedHeaders.filter(h => h.offsetLeft - horizontalScrollOffset < pinnedWidth).sort((a, b) => a.column.label.localeCompare(b.column.label)),
-                right: unpinnedHeaders.filter(h => (h.offsetLeft + h.offsetWidth / 2) > visibleColumnHeaderSize.width).sort((a, b) => a.column.label.localeCompare(b.column.label))
+                left: unpinned.filter(b => b.left - horizontalScrollOffset < pinnedWidth).map(b => b.header).sort((a, b) => a.column.label.localeCompare(b.column.label)),
+                right: unpinned.filter(b => (b.left + b.width / 2) > visibleColumnHeaderSize.width).map(b => b.header).sort((a, b) => a.column.label.localeCompare(b.column.label))
             };
         });
     }
