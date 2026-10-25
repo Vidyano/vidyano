@@ -83,7 +83,7 @@ test.describe('Column widths', () => {
         await page.mouse.move(x, y);
         await page.mouse.down();
 
-        // Chrome delivers at most one real mousemove per frame, so the moves within a frame are dispatched in the page;
+        // Chrome delivers at most one real pointermove per frame, so the moves within a frame are dispatched in the page;
         // they reach the drag through the document listeners that the real pointer down added
         const samples: { publications: number; width: number }[] = await grid.evaluate(async (g: any, { x, y, frames, movesPerFrame, stepPx, lastNameIndex }) => {
             const template = (style: string | null) => /--vi-query-grid-columns:\s*([^;]+)/.exec(style ?? '')?.[1].trim() ?? '';
@@ -108,7 +108,7 @@ test.describe('Column widths', () => {
 
             const result = await (window as any).__perf.runFrames(frames, (i: number) => {
                 for (let move = 1; move <= movesPerFrame; move++)
-                    document.dispatchEvent(new MouseEvent('mousemove', { clientX: x + (i * movesPerFrame + move) * stepPx, clientY: y, buttons: 1, bubbles: true, composed: true }));
+                    document.dispatchEvent(new PointerEvent('pointermove', { clientX: x + (i * movesPerFrame + move) * stepPx, clientY: y, buttons: 1, pointerId: 1, pointerType: 'mouse', bubbles: true, composed: true }));
             }, () => ({ publications: publications(), width: parseFloat(template(g.getAttribute('style')).split(/\s+/)[lastNameIndex]) }));
             observer.disconnect();
 
@@ -167,11 +167,11 @@ test.describe('Column widths', () => {
         const frames = 20;
         const stepPx = 5;
 
-        // One move per frame: real mousemoves can share a frame or skip one, so they are dispatched in the page and reach
+        // One move per frame: real pointermoves can share a frame or skip one, so they are dispatched in the page and reach
         // the drag through the document listeners that the real pointer down added
         const runFrames = (from: number | null) => grid.evaluate((g: any, { x, y, frames, stepPx, from }) => (window as any).__perf.runFrames(frames, (i: number) => {
             if (from !== null)
-                document.dispatchEvent(new MouseEvent('mousemove', { clientX: x + (from + i) * stepPx, clientY: y, buttons: 1, bubbles: true, composed: true }));
+                document.dispatchEvent(new PointerEvent('pointermove', { clientX: x + (from + i) * stepPx, clientY: y, buttons: 1, pointerId: 1, pointerType: 'mouse', bubbles: true, composed: true }));
         }), { x, y, frames, stepPx, from });
         const layoutsDuring = async (run: () => Promise<unknown>) => {
             const before = await cdpMetrics(page);
@@ -189,7 +189,7 @@ test.describe('Column widths', () => {
         await page.mouse.down();
         // The first move past the drag threshold starts the drag without a resize
         await grid.evaluate((g: any, { x, y, stepPx }) => {
-            document.dispatchEvent(new MouseEvent('mousemove', { clientX: x + stepPx, clientY: y, buttons: 1, bubbles: true, composed: true }));
+            document.dispatchEvent(new PointerEvent('pointermove', { clientX: x + stepPx, clientY: y, buttons: 1, pointerId: 1, pointerType: 'mouse', bubbles: true, composed: true }));
             (window as any).__perf.observe(g);
         }, { x, y, stepPx });
         await nextFrames(page, 2);

@@ -150,6 +150,47 @@ test.describe('Sort icon', () => {
         await expect(sortIcon(grid, 'Email')).toBeVisible();
         await expect(sortIcon(grid, 'FirstName')).toBeHidden();
     });
+
+    test('a header reused for another column follows that column\'s sort, not the old one\'s', { annotation: [{ type: 'case', description: 'header.hdr-sort-icon-reused-header' }] }, async ({ page }) => {
+        const grid = await headerGrid(page);
+        const reused = await header(grid, 'Gender').elementHandle();
+
+        const gender = await openMenu(grid, 'Gender');
+        await menuItem(gender, 'Hide column').click();
+        await expect.poll(() => headerNames(grid)).not.toContain('Gender');
+        await waitForGridReady(grid);
+        const name = await reused!.getAttribute('name');
+        expect(name).not.toBe('Gender');
+
+        const sortBy = (sortOptions: { name: string; direction: string }[]) => page.evaluate(async sortOptions => {
+            const q = (window as any).grid.query;
+            q.sortOptions = sortOptions;
+            await q.search();
+        }, sortOptions);
+        const source = () => reused!.evaluate((h: any) => h.shadowRoot.querySelector('div.label > vi-icon').getAttribute('source'));
+
+        await sortBy([{ name: name!, direction: 'DESC' }]);
+        await expect.poll(source).toBe('SortDesc');
+
+        await sortBy([{ name: 'Gender', direction: 'ASC' }]);
+        await expect.poll(source).toBeNull();
+    });
+
+    test('a re-attached grid shows a sort made while it was detached', { annotation: [{ type: 'case', description: 'header.hdr-sort-icon-reattached' }] }, async ({ page }) => {
+        const grid = await headerGrid(page);
+
+        await grid.evaluate(async (g: any) => {
+            const parent = g.parentNode;
+            g.remove();
+            g.query.sortOptions = [{ name: 'Email', direction: 'DESC' }];
+            await g.query.search();
+            parent.appendChild(g);
+        });
+
+        await expect(sortIcon(grid, 'Email')).toHaveAttribute('source', 'SortDesc');
+        await expect(sortIcon(grid, 'Email')).toBeVisible();
+        await expect(sortIcon(grid, 'FirstName')).toBeHidden();
+    });
 });
 
 test.describe('Column menu: items', () => {
@@ -211,6 +252,18 @@ test.describe('Column menu: items', () => {
 
         await page.keyboard.press('Escape');
         await openMenu(grid, 'Email');
+        await expect(pin.locator('span.label')).toHaveText('Unpin');
+        await expect(pin).toHaveAttribute('checked');
+    });
+
+    test('the open menu\'s pin item follows a pin change made on the column', { annotation: [{ type: 'case', description: 'header.hdr-menu-pin-tracks-model' }] }, async ({ page }) => {
+        const grid = await headerGrid(page);
+        const h = await openMenu(grid, 'FirstName');
+        const pin = h.locator('vi-popup-menu-item[icon="Pin"]');
+        await expect(pin.locator('span.label')).toHaveText('Pin');
+
+        // FirstName is already the first column, so pinning it keeps every header in place
+        await h.evaluate((el: any) => el.column.isPinned = true);
         await expect(pin.locator('span.label')).toHaveText('Unpin');
         await expect(pin).toHaveAttribute('checked');
     });
