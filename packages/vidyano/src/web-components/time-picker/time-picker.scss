@@ -144,6 +144,38 @@ $discSpacing: 20px;
 			}
 		}
 
+		.hand {
+			$center: math.div($discSize - $discSpacing, 2);
+			$outerRadius: math.div($discSize, 2) - $discSpacing;
+			$innerRadius: math.div($discSize * $innerDiscSize, 2) - $discSpacing;
+
+			position: absolute;
+			left: $center - 1px;
+			top: $center - $outerRadius;
+			width: 2px;
+			height: $outerRadius;
+			background-color: var(--color);
+			transform-origin: 50% 100%;
+			transition: transform 0.3s ease-in-out, top 0.3s ease-in-out, height 0.3s ease-in-out;
+			pointer-events: none;
+
+			&.inner {
+				top: $center - $innerRadius;
+				height: $innerRadius;
+			}
+
+			&::after {
+				position: absolute;
+				left: -2px;
+				bottom: -3px;
+				width: 6px;
+				height: 6px;
+				border-radius: 50%;
+				background-color: var(--color);
+				content: "";
+			}
+		}
+
 		> .face {
 			position: absolute;
 			width: $discSize;
