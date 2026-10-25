@@ -250,7 +250,59 @@ test.describe('Query swap, detach, busy and errors', () => {
         expect(errors).toEqual([]);
     });
 
-    test('a page that arrives while the grid is detached is used after re-attach', { annotation: [{ type: 'case', description: 'grid.lc-detach-page-arrives' }] }, async ({ page }) => {
+    test('re-attaching keeps the column settings and columns of the grid', { annotation: [{ type: 'case', description: 'grid.lc-reattach-keeps-settings' }] }, async ({ page }) => {
+        await gridPage(page);
+        const grid = await mountGrid(page);
+        await settle(grid);
+        await page.evaluate(() => {
+            const w = window as any;
+            w.__before = { userSettings: w.grid.userSettings, columns: w.grid.columns };
+            w.grid.remove();
+            document.getElementById('test-container')!.appendChild(w.grid);
+        });
+        await waitForGridReady(grid);
+        await settle(grid);
+
+        expect(await page.evaluate(() => {
+            const w = window as any;
+            return { userSettings: w.grid.userSettings === w.__before.userSettings, columns: w.grid.columns === w.__before.columns };
+        })).toEqual({ userSettings: true, columns: true });
+        expect(await headerNames(grid)).toEqual(PEOPLE_COLUMNS);
+        await expectRowsAtTheirIndex(grid, 're-attached');
+    });
+
+    test('after a swap the old query no longer drives the grid', { annotation: [{ type: 'case', description: 'grid.lc-query-swap-old-query' }] }, async ({ page }) => {
+        await gridPage(page);
+        const grid = await mountGrid(page);
+        await page.evaluate(() => (window as any).__old = (window as any).q);
+        await swapQuery(page, 'PeopleTop10');
+        await waitForGridReady(grid);
+        await settle(grid);
+        const before = await rows(grid);
+
+        const release = await holdExecuteQuery(page);
+        await page.evaluate(() => {
+            const old = (window as any).__old;
+            old.textSearch = 'a';
+            (window as any).__search = old.search();
+        });
+        await expect.poll(() => page.evaluate(() => (window as any).__old.isBusy)).toBe(true);
+        await nextFrames(page, 2);
+        expect(await spinnerVisible(grid)).toBe(false);
+
+        await release();
+        await page.evaluate(async () => {
+            await (window as any).__search;
+            await (window as any).__old.group('Gender');
+        });
+        await nextFrames(page, 2);
+
+        await expect(grid).not.toHaveAttribute('has-grouping');
+        await expect(grid).not.toHaveAttribute('initializing');
+        expect((await rows(grid)).map(r => [r.index, r.cells[0].text])).toEqual(before.map(r => [r.index, r.cells[0].text]));
+    });
+
+    test('a page that arrives while the grid is detached is used after re-attach',{ annotation: [{ type: 'case', description: 'grid.lc-detach-page-arrives' }] }, async ({ page }) => {
         await gridPage(page);
         const grid = await mountGrid(page);
 

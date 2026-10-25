@@ -1,5 +1,7 @@
-import * as Polymer from "polymer"
+import { html, nothing, unsafeCSS } from "lit"
+import { property, state } from "lit/decorators.js"
 import * as Vidyano from "@vidyano/core"
+import { WebComponent, computed, listener, notify, observer } from "components/web-component/web-component"
 import { AppRoute, IAppRouteDeactivateArgs } from "components/app-route/app-route"
 import "./cell-templates/query-grid-cell-default"
 import "./query-grid-column-measure"
@@ -11,14 +13,17 @@ import "./query-grid-grouping"
 import "./query-grid-row"
 import "./query-grid-select-all"
 import "components/scroller/scroller"
+import "components/size-tracker/size-tracker"
+import "components/sortable/sortable"
 import { Popup } from "components/popup/popup"
 import { QueryGridColumn } from "./query-grid-column"
 import { QueryGridConfigureDialog } from "./query-grid-configure-dialog"
 import { QueryGridRow } from "./query-grid-row"
 import { QueryGridUserSettings } from "./query-grid-user-settings"
-import { ISize, SizeTracker } from "components/size-tracker/size-tracker";
-import { ISortableDragEndDetails, Sortable } from "components/sortable/sortable"
+import { ISize } from "components/size-tracker/size-tracker"
+import { ISortableDragEndDetails } from "components/sortable/sortable"
 import { PopupMenuItem } from "components/popup-menu/popup-menu-item"
+import styles from "./query-grid.css"
 
 const placeholder: { query?: Vidyano.Query; } = {};
 
@@ -38,220 +43,272 @@ type MoreColumns = { left: QueryGridColumnHeader[], right: QueryGridColumnHeader
 
 const PHYSICAL_UPPER_LIMIT = 100000;
 
-// The forwarded query properties the grid needs to see again when a change happened while it was detached
-const detachedQueryPaths: (keyof Vidyano.Query)[] = ["canReorder", "columns", "isBusy", "lastUpdated", "items", "totalItem", "totalItems"];
+class Debouncer {
+    #handle: number = null;
 
-@Polymer.WebComponent.register({
-    properties: {
-        initializing: {
-            type: Boolean,
-            notify: true,
-            readOnly: true,
-            value: true,
-            reflectToAttribute: true,
-            observer: "_onInitializingChanged"
-        },
-        query: {
-            type: Object,
-            observer: "_queryChanged"
-        },
-        asLookup: {
-            type: Boolean,
-            reflectToAttribute: true,
-            value: false
-        },
-        items: {
-            type: Array,
-            computed: "_computeItems(query.lastUpdated, query.items)"
-        },
-        columns: {
-            type: Array,
-            computed: "_computeColumns(userSettings.columns)"
-        },
-        pinnedColumns: {
-            type: Array,
-            readOnly: true
-        },
-        columnWidths: {
-            type: Object,
-            readOnly: true
-        },
-        horizontalScrollOffset: {
-            type: Number,
-            observer: "_updateHorizontalScrollOffset"
-        },
-        rowHeight: {
-            type: Number,
-            observer: "_rowHeightChanged"
-        },
-        userSettings: {
-            type: Object,
-            readOnly: true
-        },
-        verticalScrollOffset: {
-            type: Number,
-            observer: "_onVerticalScrollOffsetChanged"
-        },
-        viewportHeight: {
-            type: Number,
-            value: 0
-        },
-        viewportWidth: Number,
-        contentWidth: Number,
-        virtualRowCount: {
-            type: Number,
-            computed: "_computeVirtualRowCount(viewportHeight, rowHeight, query.canReorder, query.totalItems)",
-            value: 0
-        },
-        virtualItems: {
-            type: Array,
-            readOnly: true
-        },
-        hasGrouping: {
-            type: Boolean,
-            readOnly: true,
-            reflectToAttribute: true
-        },
-        noSelection: {
-            type: Boolean,
-            reflectToAttribute: true,
-            value: false
-        },
-        canSelect: {
-            type: Boolean,
-            reflectToAttribute: true,
-            computed: "_computeCanSelect(query, noSelection, asLookup, query.actions.*)"
-        },
-        noInlineActions: {
-            type: Boolean,
-            reflectToAttribute: true,
-            value: false
-        },
-        inlineActions: {
-            type: Boolean,
-            reflectToAttribute: true,
-            computed: "_computeInlineActions(query, noInlineActions, asLookup, query.actions.*)"
-        },
-        canFilter: {
-            type: Boolean,
-            reflectToAttribute: true,
-            computed: "query.canFilter"
-        },
-        canReorder: {
-            type: Boolean,
-            reflectToAttribute: true,
-            computed: "_computeCanReorder(query.canReorder, hasGrouping)"
-        },
-        visibleColumnHeaderSize: Object,
-        moreColumns: {
-            type: Object,
-            readOnly: true
-        },
-        physicalUpperLimitExceeded: {
-            type: Boolean,
-            computed: "_computePhysicalUpperLimitExceeded(query.items.length)"
-        },
-        maxRows : {
-            type: Number,
-            reflectToAttribute: true,
-            value: null
-        },
-        hasMoreRows: {
-            type: Boolean,
-            reflectToAttribute: true,
-            computed: "_computeHasMoreRows(query.items.length, maxRows)"
-        },
-        skip: {
-            type: Number,
-            reflectToAttribute: true,
-            value: 0
-        },
-    },
-    forwardObservers: [
-        "query.actions.*.isVisible",
-        "query.canReorder",
-        "query.columns",
-        "query.isBusy",
-        "query.lastUpdated",
-        "query.items.*",
-        "query.totalItem",
-        "query.totalItems",
-        "_updatePinnedColumns(columns.*.isPinned)"
-    ],
-    listeners: {
-        "column-width-changed": "_columnWidthChanged",
-        "item-select": "_itemSelect",
-        "query-grid-column:configure": "_onConfigure",
-        "query-grid-column:update": "_onColumnUpdate"
-    },
-    observers: [
-        "_scrollToTop(query.items)", // Scroll to top when the query items reference changes, for example after search.
-        "_update(verticalScrollOffset, virtualRowCount, rowHeight, items, skip, maxRows)",
-        "_updateVerticalSpacer(viewportHeight, rowHeight, items, maxRows, skip)",
-        "_updateUserSettings(query, query.columns)",
-        "_updateMore(visibleColumnHeaderSize, horizontalScrollOffset)"
-    ],
-    serviceBusObservers: {
-        "app-route:deactivate": "_onAppRouteDeactivate"
+    constructor(private readonly _schedule: (callback: () => void) => number, private readonly _cancel: (handle: number) => void) {
     }
-}, "vi-query-grid")
-export class QueryGrid extends Polymer.WebComponent {
-    static get template() { return Polymer.html`<link rel="import" href="query-grid.html">` }
+
+    run(callback: () => void) {
+        this.cancel();
+        this.#handle = this._schedule(() => {
+            this.#handle = null;
+            callback();
+        });
+    }
+
+    cancel() {
+        if (this.#handle === null)
+            return;
+
+        this._cancel(this.#handle);
+        this.#handle = null;
+    }
+
+    isActive() {
+        return this.#handle !== null;
+    }
+}
+
+const animationFrameDebouncer = () => new Debouncer(callback => requestAnimationFrame(callback), handle => cancelAnimationFrame(handle));
+const timeOutDebouncer = (milliseconds: number) => new Debouncer(callback => window.setTimeout(callback, milliseconds), handle => window.clearTimeout(handle));
+
+export class QueryGrid extends WebComponent {
+    static styles = unsafeCSS(styles);
 
     private readonly _columnWidths = new Map<string, ColumnWidthDetail>();
-    private readonly items: QueryGridItems;
     private _virtualGridStartIndex: number = 0;
     private _verticalSpacerCorrection: number = 1;
-    private _getItemsDebouncer: Polymer.Debounce.Debouncer;
-    private _updateCellDebouncer: Polymer.Debounce.Debouncer;
+    private readonly _getItemsDebouncer = timeOutDebouncer(20);
+    private readonly _updateCellDebouncer = animationFrameDebouncer();
+    private readonly _updateMoreDebouncer = timeOutDebouncer(50);
+    private readonly _verticalSpacerDebouncer = animationFrameDebouncer();
     private _pinnedStyle: HTMLStyleElement;
     private _lastSelectedItemIndex: number;
     private _controlsSizeObserver: ResizeObserver;
-    private _updateMoreDebouncer: Polymer.Debounce.Debouncer;
     private _programmaticScroll: boolean;
     private _renderedSkip: number;
     private _renderedMaxRows: number;
     private _cancelledOnDisconnect: boolean;
-    private _queryOnDisconnect: Vidyano.Query;
-    private _queryValuesOnDisconnect: any[];
+    private _serviceBusDisposer: Vidyano.ServiceBusSubscriptionDisposer;
+    private _userSettingsSource: [query: Vidyano.Query, columns: Vidyano.QueryColumn[]];
+    private _itemsOnDisconnect: Vidyano.QueryItems;
+    private _rowsBeforeDragEnd: [row: QueryGridRow, marker: Node][];
+    #initializing = true;
 
+    @property({ type: Object })
+    @observer(function(this: QueryGrid, query: Vidyano.Query, oldQuery: Vidyano.Query) {
+        this._queryChanged(query, oldQuery);
+    })
     query: Vidyano.Query;
-    asLookup: boolean;
-    maxRows: number;
-    noSelection: boolean;
-    noInlineActions: boolean;
-    readonly initializing: boolean; private _setInitializing: (initializing: boolean) => void;
-    readonly virtualItems: QueryGridItem[]; private _setVirtualItems: (virtualItems: QueryGridItem[]) => void;
-    readonly columns: QueryGridColumn[];
-    readonly pinnedColumns: QueryGridColumn[]; private _setPinnedColumns: (pinnedColumns: QueryGridColumn[]) => void;
-    readonly columnWidths: Record<string, number>; private _setColumnWidths: (columnWidths: Record<string, number>) => void;
-    readonly viewportHeight: number;
-    readonly virtualRowCount: number;
-    readonly hasGrouping: boolean; private _setHasGrouping: (hasGrouping: boolean) => void;
-    readonly userSettings: QueryGridUserSettings; private _setUserSettings: (userSettings: QueryGridUserSettings) => void;
+
+    @property({ type: Boolean, reflect: true })
+    asLookup: boolean = false;
+
+    @property({ type: Boolean, reflect: true })
+    noSelection: boolean = false;
+
+    @property({ type: Boolean, reflect: true })
+    noInlineActions: boolean = false;
+
+    @property({ type: Number, reflect: true })
+    maxRows: number = null;
+
+    @property({ type: Number, reflect: true })
+    skip: number = 0;
+
+    // Read-only, the grid ends initializing itself once the column widths are measured
+    @property({ attribute: false, noAccessor: true })
+    @notify()
+    get initializing(): boolean {
+        return this.#initializing;
+    }
+    set initializing(_: boolean) {
+    }
+
+    @property({ attribute: false })
+    userSettings: QueryGridUserSettings;
+
+    @property({ attribute: false })
+    columns: QueryGridColumn[];
+
+    @property({ attribute: false })
+    pinnedColumns: QueryGridColumn[];
+
+    @property({ attribute: false })
+    columnWidths: Record<string, number>;
+
+    @property({ type: Number })
+    @observer(function(this: QueryGrid, rowHeight: number) {
+        this._rowHeightChanged(rowHeight);
+    })
     rowHeight: number;
-    skip: number;
+
+    @property({ type: Number })
+    @observer(function(this: QueryGrid, horizontalScrollOffset: number, oldHorizontalScrollOffset: number) {
+        this._updateHorizontalScrollOffset(horizontalScrollOffset, oldHorizontalScrollOffset);
+    })
     horizontalScrollOffset: number;
+
+    @property({ type: Number })
+    @observer(function(this: QueryGrid, verticalScrollOffset: number, oldVerticalScrollOffset: number) {
+        this._onVerticalScrollOffsetChanged(verticalScrollOffset, oldVerticalScrollOffset);
+    })
     verticalScrollOffset: number;
+
+    @state()
+    viewportHeight: number = 0;
+
+    @state()
+    viewportWidth: number;
+
+    @state()
     visibleColumnHeaderSize: ISize;
-    readonly moreColumns: MoreColumns; private _setMoreColumns: (moreColumns: MoreColumns) => void;
-    readonly physicalUpperLimitExceeded: boolean;
 
-    connectedCallback() {
-        super.connectedCallback();
+    @state()
+    moreColumns: MoreColumns;
 
-        this._controlsSizeObserver = new ResizeObserver(this._controlsSizeChanged.bind(this));
-        this._controlsSizeObserver.observe(this.shadowRoot.querySelector(".controls"));
+    /** The working copy of the virtual rows, the rendered rows follow it on the next animation frame. */
+    virtualItems: QueryGridItem[];
 
-        // Changes of the query are not forwarded while the grid is detached, catch up on the ones that happened
-        if (this.query && this.query === this._queryOnDisconnect) {
-            detachedQueryPaths.forEach((path, i) => {
-                if (this.query[path] !== this._queryValuesOnDisconnect[i])
-                    this.notifyPath(`query.${path}`);
-            });
+    @state()
+    private _renderedItems: QueryGridItem[];
+
+    @property({ attribute: false })
+    @computed(function(this: QueryGrid, query: Vidyano.Query): QueryGridItems {
+        if (!query) {
+            return {
+                length: 0,
+                groups: [],
+                forceUpdate: true
+            };
         }
 
-        this._queryOnDisconnect = this._queryValuesOnDisconnect = null;
+        let length: number;
+        let groups: Vidyano.QueryResultItemGroup[];
+
+        if (!query.groupingInfo?.groups)
+            length = query.totalItems || 0;
+        else {
+            groups = [];
+            length = query.groupingInfo.groups.reduce((n, g) => {
+                groups[n] = g;
+                return n + (g.isCollapsed ? 1 : 1 + g.count);
+            }, 0);
+
+            // Add terminator
+            groups[length] = null;
+        }
+
+        return {
+            length: length,
+            groups: groups,
+            forceUpdate: true
+        };
+    }, "query", "query.lastUpdated", "query.items", { allowUndefined: true })
+    declare readonly items: QueryGridItems;
+
+    // Same dependencies as items, so both are up to date when the rows are updated
+    @property({ type: Boolean, reflect: true })
+    @computed(function(this: QueryGrid, query: Vidyano.Query) {
+        return !!query?.groupingInfo?.groups;
+    }, "query", "query.lastUpdated", "query.items", { allowUndefined: true })
+    declare readonly hasGrouping: boolean;
+
+    @property({ type: Number })
+    @computed(function(this: QueryGrid, viewportHeight: number, rowHeight: number, canReorder: boolean, totalItems: number) {
+        if (!viewportHeight || !rowHeight)
+            return 0;
+
+        if (canReorder && totalItems > 0)
+            return totalItems;
+
+        return Math.ceil(Math.max(Math.ceil(viewportHeight / rowHeight) * 1.5, this.virtualRowCount || 0));
+    }, "viewportHeight", "rowHeight", "query.canReorder", "query.totalItems", { allowUndefined: true })
+    declare readonly virtualRowCount: number;
+
+    @property({ type: Boolean, reflect: true })
+    @computed(function(this: QueryGrid, query: Vidyano.Query, noSelection: boolean, asLookup: boolean) {
+        return !noSelection && !!query && (asLookup || query.actions.some(a => a.isVisible && a.definition.selectionRule !== Vidyano.ExpressionParser.alwaysTrue));
+    }, "query", "noSelection", "asLookup", "query.actions.*.isVisible", { allowUndefined: true })
+    declare readonly canSelect: boolean;
+
+    @property({ type: Boolean, reflect: true })
+    @computed(function(this: QueryGrid, query: Vidyano.Query, noInlineActions: boolean, asLookup: boolean) {
+        return !noInlineActions && !!query && !query.asLookup && !asLookup && (query.actions.some(a => a.isVisible && a.definition.selectionRule !== Vidyano.ExpressionParser.alwaysTrue && a.definition.selectionRule(1)));
+    }, "query", "noInlineActions", "asLookup", "query.actions.*.isVisible", { allowUndefined: true })
+    declare readonly inlineActions: boolean;
+
+    @property({ type: Boolean, reflect: true })
+    @computed("query.canFilter")
+    declare readonly canFilter: boolean;
+
+    @property({ type: Boolean, reflect: true })
+    @computed(function(this: QueryGrid, canReorder: boolean, hasGrouping: boolean) {
+        return !!canReorder && !hasGrouping;
+    }, "query.canReorder", "hasGrouping", { allowUndefined: true })
+    declare readonly canReorder: boolean;
+
+    @property({ type: Boolean })
+    @computed(function(this: QueryGrid, query: Vidyano.Query) {
+        return query?.items.length > PHYSICAL_UPPER_LIMIT;
+    }, "query", "query.totalItems", "query.items.*", { allowUndefined: true })
+    declare readonly physicalUpperLimitExceeded: boolean;
+
+    @property({ type: Boolean, reflect: true })
+    @computed(function(this: QueryGrid, query: Vidyano.Query, maxRows: number) {
+        return !!maxRows && query?.items.length > maxRows;
+    }, "query", "maxRows", "query.totalItems", "query.items.*", { allowUndefined: true })
+    declare readonly hasMoreRows: boolean;
+
+    @state()
+    @computed("query.isBusy")
+    private declare readonly _isBusy: boolean;
+
+    @state()
+    @computed("query.totalItem")
+    private declare readonly _totalItem: Vidyano.QueryResultItem;
+
+    @state()
+    @computed(function(this: QueryGrid, columns: QueryGridColumn[], columnWidths: Record<string, number>) {
+        if (!columns || !columnWidths)
+            return null;
+
+        let offset = 0;
+        return columns.map(column => {
+            return [offset, offset += columnWidths[column.name] || 0];
+        });
+    }, "columns", "columnWidths", { allowUndefined: true })
+    private declare readonly _offsets: [cellLeft: number, cellRight: number][];
+
+    @state()
+    @computed(function(this: QueryGrid, viewportWidth: number, horizontalScrollOffset: number) {
+        return [horizontalScrollOffset, viewportWidth + horizontalScrollOffset];
+    }, "viewportWidth", "horizontalScrollOffset")
+    private declare readonly _visibleRange: [left: number, right: number];
+
+    constructor() {
+        super();
+
+        this.requestUpdate("initializing", undefined);
+    }
+
+    connectedCallback() {
+        this.toggleAttribute("initializing", this.initializing);
+
+        super.connectedCallback();
+
+        // Callers read the initial column template and the rendered header right after attaching the grid
+        if (!this.hasUpdated)
+            this.performUpdate();
+        else
+            this._observeControlsSize();
+
+        this._serviceBusDisposer = Vidyano.ServiceBus.subscribe("app-route:deactivate", this._onAppRouteDeactivate.bind(this), true);
+
+        // The observed query paths are notified again on connect, a scroll to the top is only needed for items that changed while detached
+        if (this._itemsOnDisconnect !== undefined)
+            this.updateComplete.then(() => this._itemsOnDisconnect = undefined);
 
         // Redo the work that was cancelled when the grid was removed, nothing else would start it again
         if (this._cancelledOnDisconnect && this.items) {
@@ -263,22 +320,25 @@ export class QueryGrid extends Polymer.WebComponent {
     }
 
     disconnectedCallback() {
-        this._controlsSizeObserver.disconnect();
+        this._controlsSizeObserver?.disconnect();
+        this._serviceBusDisposer?.();
+        this._serviceBusDisposer = null;
 
-        this._cancelledOnDisconnect = [this._getItemsDebouncer, this._updateCellDebouncer, this._updateMoreDebouncer].some(d => d?.isActive());
-        this._queryOnDisconnect = this.query;
-        this._queryValuesOnDisconnect = detachedQueryPaths.map(path => this.query?.[path]);
+        this._cancelledOnDisconnect = [this._getItemsDebouncer, this._updateCellDebouncer, this._updateMoreDebouncer].some(d => d.isActive());
+        this._itemsOnDisconnect = this.query?.items ?? null;
 
         // A removed grid sends nothing to the server
-        this._getItemsDebouncer?.cancel();
-        this._updateCellDebouncer?.cancel();
-        this._updateMoreDebouncer?.cancel();
+        this._getItemsDebouncer.cancel();
+        this._updateCellDebouncer.cancel();
+        this._updateMoreDebouncer.cancel();
 
         super.disconnectedCallback();
     }
 
-    ready() {
-        super.ready();
+    firstUpdated(changedProperties: Map<PropertyKey, unknown>) {
+        super.firstUpdated(changedProperties);
+
+        this._observeControlsSize();
 
         requestAnimationFrame(() => {
             // The custom property keeps the length as written (e.g. 2.5em), a probe resolves it to pixels
@@ -288,6 +348,82 @@ export class QueryGrid extends Polymer.WebComponent {
             this.rowHeight = Math.round(parseFloat(window.getComputedStyle(probe).height));
             probe.remove();
         });
+    }
+
+    render() {
+        return html`
+            <header>
+                <div class="controls">
+                    ${this.canReorder ? html`<div class="reorder"></div>` : nothing}
+                    ${this.hasGrouping ? html`<vi-query-grid-grouping .query=${this.query} @scroll-top=${this._scrollToTop}></vi-query-grid-grouping>` : nothing}
+                    ${this.canSelect ? html`<vi-query-grid-select-all .query=${this.query}></vi-query-grid-select-all>` : nothing}
+                    ${this.canFilter ? html`<vi-query-grid-filters .query=${this.query}></vi-query-grid-filters>` : nothing}
+                    <div class="spacer"></div>
+                </div>
+                <div class="headers">
+                    <div grid>
+                        ${this.columns?.map(column => html`<vi-query-grid-column-header .column=${column} .lastVisible=${this.columns.length === 1}></vi-query-grid-column-header>`)}
+                        <vi-size-tracker @size-changed=${this._onHeaderSizeChanged}></vi-size-tracker>
+                    </div>
+                    ${this.moreColumns?.left.length ? html`
+                        <vi-popup class="more left" @popup-opening=${this._onMoreOpening} @popup-closed=${this._onMoreClosed}>
+                            <vi-button slot="header" inverse icon="ChevronLeft"></vi-button>
+                            <vi-scroller no-horizontal></vi-scroller>
+                        </vi-popup>` : nothing}
+                </div>
+                ${this.moreColumns?.right.length ? html`
+                    <vi-popup class="more right" @popup-opening=${this._onMoreOpening} @popup-closed=${this._onMoreClosed} placement="bottom-end">
+                        <vi-button slot="header" inverse icon="ChevronRight"></vi-button>
+                        <vi-scroller no-horizontal></vi-scroller>
+                    </vi-popup>` : nothing}
+            </header>
+
+            <vi-scroller .horizontalScrollOffset=${this.horizontalScrollOffset} @horizontal-scroll-offset-changed=${this._onScrollerHorizontalScrollOffsetChanged}
+                         .verticalScrollOffset=${this.verticalScrollOffset} @vertical-scroll-offset-changed=${this._onScrollerVerticalScrollOffsetChanged}
+                         @outer-height-changed=${this._onScrollerOuterHeightChanged} @outer-width-changed=${this._onScrollerOuterWidthChanged}>
+                <div id="gridWrapper">
+                    <vi-sortable id="grid" ?grid=${this.initializing} .disabled=${!this.canReorder} handle=".reorder" @drag-start=${this._onReorderStart} @drag-end=${this._onReorderEnd}>
+                        ${this._renderedItems?.map((item, index) => html`<vi-query-grid-row .item=${item} .index=${index} .columns=${this.columns} .offsets=${this._offsets} .visibleRange=${this._visibleRange} ?initializing=${this.initializing} .canReorder=${this.canReorder}></vi-query-grid-row>`)}
+                        ${this.physicalUpperLimitExceeded ? html`
+                            <div class="physical-upper-limit-exceeded">
+                                <vi-icon source="Ellipsis"></vi-icon>
+                            </div>` : nothing}
+                    </vi-sortable>
+                </div>
+            </vi-scroller>
+
+            ${this._totalItem ? html`
+                <footer>
+                    <vi-query-grid-footer .item=${this._totalItem} .columns=${this.columns}></vi-query-grid-footer>
+                </footer>` : nothing}
+
+            <vi-spinner ?hidden=${!this._isBusy}></vi-spinner>
+        `;
+    }
+
+    private _observeControlsSize() {
+        this._controlsSizeObserver ??= new ResizeObserver(this._controlsSizeChanged.bind(this));
+        this._controlsSizeObserver.observe(this.shadowRoot.querySelector(".controls"));
+    }
+
+    private _onScrollerHorizontalScrollOffsetChanged(e: CustomEvent) {
+        this.horizontalScrollOffset = e.detail.value;
+    }
+
+    private _onScrollerVerticalScrollOffsetChanged(e: CustomEvent) {
+        this.verticalScrollOffset = e.detail.value;
+    }
+
+    private _onScrollerOuterHeightChanged(e: CustomEvent) {
+        this.viewportHeight = e.detail.value;
+    }
+
+    private _onScrollerOuterWidthChanged(e: CustomEvent) {
+        this.viewportWidth = e.detail.value;
+    }
+
+    private _onHeaderSizeChanged(e: CustomEvent) {
+        this.visibleColumnHeaderSize = e.detail.value;
     }
 
     /**
@@ -304,17 +440,28 @@ export class QueryGrid extends Polymer.WebComponent {
         });
     }
 
-    private _onInitializingChanged(initializing: boolean, oldInitializing: boolean) {
+    private _setInitializing(initializing: boolean) {
+        const oldInitializing = this.#initializing;
+        if (oldInitializing === initializing)
+            return;
+
+        this.#initializing = initializing;
+        this.toggleAttribute("initializing", initializing);
+        this.requestUpdate("initializing", oldInitializing);
+    }
+
+    @observer("initializing")
+    private _onInitializingChanged(initializing: boolean) {
         if (initializing) {
             // Rows fill every cell while the column widths are measured from the cell content
-            this._setColumnWidths(null);
+            this.columnWidths = null;
             return;
         }
 
         const offset = queryScrollOffsets.get(this.query);
         if (offset !== undefined) {
             // Run as animation frame, otherwise the browser will set an incorrect scroll height
-            Polymer.Async.animationFrame.run(() => {
+            requestAnimationFrame(() => {
                 this._scrollProgrammatically(() => {
                     this.verticalScrollOffset = offset.vertical;
                     this.horizontalScrollOffset = offset.horizontal;
@@ -339,6 +486,32 @@ export class QueryGrid extends Polymer.WebComponent {
         }
     }
 
+    @observer("query", "query.columns", { allowUndefined: true })
+    private _queryColumnsChanged(query: Vidyano.Query, columns: Vidyano.QueryColumn[]) {
+        // A reconnected grid is notified of the same query columns again, its settings stay
+        if (this._userSettingsSource?.[0] === query && this._userSettingsSource[1] === columns)
+            return;
+
+        this._updateUserSettings(query);
+    }
+
+    private _updateUserSettings(query: Vidyano.Query) {
+        this._userSettingsSource = [query, query?.columns];
+        this.userSettings = query ? QueryGridUserSettings.Load(query) : null;
+    }
+
+    @observer("query.items")
+    private _queryItemsChanged(items: Vidyano.QueryItems) {
+        const itemsOnDisconnect = this._itemsOnDisconnect;
+        this._itemsOnDisconnect = undefined;
+
+        if (items === itemsOnDisconnect)
+            return;
+
+        // Scroll to top when the query items reference changes, for example after search.
+        this._scrollToTop();
+    }
+
     /**
      * Is called when the header controls wrapper changes size.
      */
@@ -350,6 +523,7 @@ export class QueryGrid extends Polymer.WebComponent {
     /**
      * Is called when the first query grid row or the header columns report their size.
      */
+    @listener("column-width-changed")
     private _columnWidthChanged(e: CustomEvent) {
         e.stopPropagation();
 
@@ -365,7 +539,7 @@ export class QueryGrid extends Polymer.WebComponent {
                 columnWidthDetail.current = Math.max(columnWidthDetail.cell, columnWidthDetail.column) || Number.NaN;
         });
 
-        if (this._columnWidths.size < this.columns.length)
+        if (!this.columns || this._columnWidths.size < this.columns.length)
             return;
 
         if (this.columns.some(c => Number.isNaN(this._columnWidths.get(c.name)?.current)) && (this.query.items.length || this.query.isBusy))
@@ -395,7 +569,7 @@ export class QueryGrid extends Polymer.WebComponent {
             this.style.removeProperty("--vi-query-grid-columns-no-data");
 
         // Rows defer the cells outside the horizontal viewport from now on
-        this._setColumnWidths(Object.fromEntries(Array.from(this._columnWidths).map(([column, width]) => [column, Math.ceil(width.current)])));
+        this.columnWidths = Object.fromEntries(Array.from(this._columnWidths).map(([column, width]) => [column, Math.ceil(width.current)]));
         this._setInitializing(false);
     }
 
@@ -407,13 +581,11 @@ export class QueryGrid extends Polymer.WebComponent {
     }
 
     private _scrollProgrammatically(scroll: () => void) {
+        // The offset observers run on the next update, the flag stays up until then
         this._programmaticScroll = true;
-        try {
-            scroll();
-        }
-        finally {
-            this._programmaticScroll = false;
-        }
+        scroll();
+
+        this.updateComplete.then(() => this._programmaticScroll = false);
     }
 
     private _setColumnTracks(columns: QueryGridColumn[]) {
@@ -425,8 +597,9 @@ export class QueryGrid extends Polymer.WebComponent {
         this._updateMore(this.visibleColumnHeaderSize, this.horizontalScrollOffset);
     }
 
+    @observer("verticalScrollOffset", "virtualRowCount", "rowHeight", "items", "skip", "maxRows", { allowUndefined: true })
     private _update(verticalScrollOffset: number, virtualRowCount: number, rowHeight: number, items: QueryGridItems, skip: number, maxRows?: number) {
-        if (!virtualRowCount)
+        if (!virtualRowCount || !items || !this.query)
             return;
 
         // The browser clamped the scroll height: the unscaled row position lies past it, the rows move back to the real scroll position
@@ -437,7 +610,7 @@ export class QueryGrid extends Polymer.WebComponent {
 
         const virtualItemsLength = Math.min(virtualRowCount, maxRows || Number.MAX_SAFE_INTEGER);
         if (!this.virtualItems || this.virtualItems.length !== virtualItemsLength) {
-            this._setVirtualItems(new Array(virtualItemsLength));
+            this.virtualItems = new Array(virtualItemsLength);
             items.forceUpdate = true;
         }
 
@@ -446,7 +619,7 @@ export class QueryGrid extends Polymer.WebComponent {
             this._renderedMaxRows = maxRows;
             items.forceUpdate = true;
         }
-        
+
         let newVirtualGridStartIndex: number = 0;
         if (viewportEndRowIndex - this._virtualGridStartIndex > virtualRowCount)
             newVirtualGridStartIndex = viewportStartRowIndex;
@@ -491,27 +664,19 @@ export class QueryGrid extends Polymer.WebComponent {
             }
         }
 
-        this._updateCellDebouncer = Polymer.Debounce.Debouncer.debounce(
-            this._updateCellDebouncer,
-            Polymer.Async.animationFrame,
-            () => {
-                this._virtualGridStartIndex = newVirtualGridStartIndex;
-                this.splice("virtualItems", 0, this.virtualRowCount, ...this.virtualItems);
+        this._updateCellDebouncer.run(() => {
+            this._virtualGridStartIndex = newVirtualGridStartIndex;
+            this._renderedItems = this.virtualItems.slice();
 
-                this.$.grid.style.transform = `translateY(${newVirtualGridStartIndex * rowHeight - clampOffset}px)`;
-            }
-        );
+            this.$.grid.style.transform = `translateY(${newVirtualGridStartIndex * rowHeight - clampOffset}px)`;
+        });
 
-        this._getItemsDebouncer = Polymer.Debounce.Debouncer.debounce(
-            this._getItemsDebouncer,
-            Polymer.Async.timeOut.after(20),
-            () => {
-                if (this._virtualGridStartIndex !== newVirtualGridStartIndex)
-                    return;
+        this._getItemsDebouncer.run(() => {
+            if (this._virtualGridStartIndex !== newVirtualGridStartIndex)
+                return;
 
-                queuedItemIndexes.forEach(index => this.query.items[index]);
-            }
-        );
+            queuedItemIndexes.forEach(index => this.query.items[index]);
+        });
 
         if (this.initializing && this.query.isBusy) {
             // Query grid is displayed for the first time but query has no items, there will be no rows to trigger the column width synchronization.
@@ -526,40 +691,6 @@ export class QueryGrid extends Polymer.WebComponent {
                     this._setInitializing(false);
             });
         }
-    }
-
-    private _computeItems(): QueryGridItems {
-        if (!this.query) {
-            return {
-                length: 0,
-                groups: [],
-                forceUpdate: true
-            };
-        }
-
-        let length: number;
-        let groups: Vidyano.QueryResultItemGroup[];
-
-        this._setHasGrouping(!!this.query.groupingInfo && !!this.query.groupingInfo.groups);
-
-        if (!this.hasGrouping)
-            length = this.query.totalItems || 0;
-        else {
-            groups = [];
-            length = this.query.groupingInfo.groups.reduce((n, g) => {
-                groups[n] = g;
-                return n + (g.isCollapsed ? 1 : 1 + g.count);
-            }, 0);
-
-            // Add terminator
-            groups[length] = null;
-        }
-
-        return {
-            length: length,
-            groups: groups,
-            forceUpdate: true
-        };
     }
 
     private _getItem(index: number, disableLazyLoading?: boolean): [QueryGridItem, number] {
@@ -600,18 +731,25 @@ export class QueryGrid extends Polymer.WebComponent {
         }
     }
 
-    private _updateVerticalSpacer(viewportHeight: number, rowHeight: number, items: QueryGridItem[], maxRows?: number, skip?: number) {
-        Polymer.Render.beforeNextRender(this, () => {
-            const newHeight = Math.min(Math.max(0, Math.min(items.length, PHYSICAL_UPPER_LIMIT) - (skip || 0)), maxRows || Number.MAX_SAFE_INTEGER) * rowHeight;
-            this.$.gridWrapper.style.height = `${newHeight}px`;
+    @observer("viewportHeight", "rowHeight", "items", "maxRows", "skip", { allowUndefined: true })
+    private _updateVerticalSpacer(viewportHeight: number, rowHeight: number, items: QueryGridItems, maxRows?: number, skip?: number) {
+        if (!items || !rowHeight)
+            return;
 
-            this._verticalSpacerCorrection = (newHeight - this.viewportHeight) / (this.$.gridWrapper.clientHeight - viewportHeight);
+        // Measured after the rows of this update are rendered
+        this._verticalSpacerDebouncer.run(() => {
+            const gridWrapper = this.$.gridWrapper;
+            const newHeight = Math.min(Math.max(0, Math.min(items.length, PHYSICAL_UPPER_LIMIT) - (skip || 0)), maxRows || Number.MAX_SAFE_INTEGER) * rowHeight;
+            gridWrapper.style.height = `${newHeight}px`;
+
+            this._verticalSpacerCorrection = (newHeight - this.viewportHeight) / (gridWrapper.clientHeight - viewportHeight);
         });
     }
 
-    private _updatePinnedColumns() {
-        const pinnedColumns = this.columns.filter(c => c.isPinned);
-        this._setPinnedColumns(pinnedColumns);
+    @observer("columns", "columns.*.isPinned")
+    private _updatePinnedColumns(columns: QueryGridColumn[]) {
+        const pinnedColumns = columns.filter(c => c.isPinned);
+        this.pinnedColumns = pinnedColumns;
 
         if (!pinnedColumns.length) {
             if (this._pinnedStyle != null) {
@@ -624,7 +762,7 @@ export class QueryGrid extends Polymer.WebComponent {
 
         if (this._pinnedStyle == null)
             this.shadowRoot.appendChild(this._pinnedStyle = document.createElement("style"));
-            
+
         this._pinnedStyle.innerHTML = `
             header [grid] > *:nth-child(-n+${pinnedColumns.length}), vi-query-grid-row > .column:nth-child(-n+${pinnedColumns.length} of .column), vi-query-grid-footer > .column:nth-child(-n+${pinnedColumns.length}) {
                 transform: translateX(var(--vi-query-grid-horizontal, 0));
@@ -640,12 +778,9 @@ export class QueryGrid extends Polymer.WebComponent {
         `;
     }
 
-    private _updateUserSettings(query: Vidyano.Query) {
-        this._setUserSettings(query ? QueryGridUserSettings.Load(query) : null)
-    }
-
-    private _computeColumns(columns: QueryGridColumn[]) {
-        columns = columns.filter(c => !c.isHidden);
+    @observer("userSettings.columns")
+    private _updateColumns(userSettingsColumns: QueryGridColumn[]) {
+        let columns = userSettingsColumns.filter(c => !c.isHidden);
         columns = [...columns.filter(c => c.isPinned), ...columns.filter(c => !c.isPinned)];
 
         if (this.columns) {
@@ -664,55 +799,8 @@ export class QueryGrid extends Polymer.WebComponent {
         else if (columns.every(c => this._columnWidths.get(c.name)?.current > 0))
             this._setColumnTracks(columns);
 
-        return columns;
-    }
-
-    private _computeLastVisibleColumn(columns: QueryGridColumn[]) {
-        return columns?.length === 1;
-    }
-
-    private _computeVirtualRowCount(viewportHeight: number, rowHeight: number, canReorder: boolean, totalItems: number) {
-        if (!viewportHeight)
-            return 0;
-
-        if (canReorder && totalItems > 0)
-            return totalItems;
-
-        return Math.ceil(Math.max(Math.ceil(viewportHeight / rowHeight) * 1.5, this.virtualRowCount || 0));
-    }
-
-    private _computeOffsets(columns: QueryGridColumn[], columnWidths: Record<string, number>) {
-        if (!columns || !columnWidths)
-            return null;
-
-        let offset = 0;
-        return columns.map(column => {
-            return [offset, offset += columnWidths[column.name] || 0];
-        });
-    }
-
-    private _computeVisibleRange(viewportWidth: number, horizontalScrollOffset: number) {
-        return [horizontalScrollOffset, viewportWidth + horizontalScrollOffset];
-    }
-
-    private _computeCanSelect(query: Vidyano.Query, noSelection: boolean, asLookup: boolean): boolean {
-        return !noSelection && !!query && (asLookup || query.actions.some(a => a.isVisible && a.definition.selectionRule !== Vidyano.ExpressionParser.alwaysTrue));
-    }
-
-    private _computeInlineActions(query: Vidyano.Query, noInlineActions: boolean, asLookup: boolean): boolean {
-        return !noInlineActions && !!query && !query.asLookup && !asLookup && (query.actions.some(a => a.isVisible && a.definition.selectionRule !== Vidyano.ExpressionParser.alwaysTrue && a.definition.selectionRule(1)));
-    }
-
-    private _computeCanReorder(canReorder: boolean, hasGrouping: boolean) {
-        return canReorder && !hasGrouping;
-    }
-
-    private _computePhysicalUpperLimitExceeded(totalItems: number) {
-        return totalItems > PHYSICAL_UPPER_LIMIT;
-    }
-
-    private _computeHasMoreRows(totalItems: number, maxRows: number) {
-        return !!maxRows && totalItems > maxRows;
+        // A re-attached grid is notified of the same columns again, the rows keep their cells
+        this.columns = this.memoize(this.columns, columns);
     }
 
     private _rowHeightChanged(rowHeight: number) {
@@ -736,6 +824,7 @@ export class QueryGrid extends Polymer.WebComponent {
         Popup.closeAll();
     }
 
+    @listener("item-select")
     private _itemSelect(e: CustomEvent) {
         const detail: { item: Vidyano.QueryResultItem; shift: boolean; ctrl: boolean; } = e.detail;
 
@@ -783,9 +872,9 @@ export class QueryGrid extends Polymer.WebComponent {
             this._lastSelectedItemIndex = indexOfItem;
     }
 
-    private __rowsBeforeDragEnd: QueryGridRow[]; 
-    private async _onReorderStart(e: CustomEvent) {
-        this.__rowsBeforeDragEnd = Array.from(this.$.grid.querySelectorAll("vi-query-grid-row"));
+    private _onReorderStart() {
+        // Each row is rendered right after its own marker, the rows go back there once the reordered items arrive
+        this._rowsBeforeDragEnd = Array.from(this.$.grid.querySelectorAll<QueryGridRow>("vi-query-grid-row")).map(row => [row, row.previousSibling]);
     }
 
     private async _onReorderEnd(e: CustomEvent) {
@@ -804,10 +893,11 @@ export class QueryGrid extends Polymer.WebComponent {
                 (details.element.nextElementSibling as QueryGridRow)?.item as Vidyano.QueryResultItem ?? null);
         }
         finally {
-            this.__rowsBeforeDragEnd.forEach(row => this.$.grid.appendChild(row));
+            this._rowsBeforeDragEnd.forEach(([row, marker]) => marker.parentNode.insertBefore(row, marker.nextSibling));
         }
     }
 
+    @listener("query-grid-column:update")
     private async _onColumnUpdate() {
         try {
             await this.userSettings.save();
@@ -820,6 +910,7 @@ export class QueryGrid extends Polymer.WebComponent {
         this._reset();
     }
 
+    @listener("query-grid-column:configure")
     private async _onConfigure() {
         if (await this.app.showDialog(new QueryGridConfigureDialog(this.query, this.userSettings)))
             this._onColumnUpdate();
@@ -830,33 +921,30 @@ export class QueryGrid extends Polymer.WebComponent {
         this._update(this.verticalScrollOffset, this.virtualRowCount, this.rowHeight, this.items, this.skip, this.maxRows);
     }
 
+    @observer("visibleColumnHeaderSize", "horizontalScrollOffset", { allowUndefined: true })
     private _updateMore(visibleColumnHeaderSize: ISize, horizontalScrollOffset: number) {
         if (visibleColumnHeaderSize == null || horizontalScrollOffset == null)
-            return;          
+            return;
 
-        this._updateMoreDebouncer = Polymer.Debounce.Debouncer.debounce(
-            this._updateMoreDebouncer,
-            Polymer.Async.timeOut.after(50),
-            () => {
-                const sizeTracker = this.$.columnHeadersDomRepeat as SizeTracker;
-                const headers = Array.from(sizeTracker.parentElement.querySelectorAll("vi-query-grid-column-header")) as QueryGridColumnHeader[];
-                const unpinnedHeaders = headers.filter(h => !h.column.isPinned);
+        this._updateMoreDebouncer.run(() => {
+            const headers = Array.from(this.shadowRoot.querySelectorAll("header [grid] > vi-query-grid-column-header")) as QueryGridColumnHeader[];
+            const unpinnedHeaders = headers.filter(h => !h.column.isPinned);
 
-                // The pinned headers stay in view and cover the headers scrolled behind them
-                const pinnedWidth = headers.filter(h => h.column.isPinned).reduce((width, h) => width + h.offsetWidth, 0);
+            // The pinned headers stay in view and cover the headers scrolled behind them
+            const pinnedWidth = headers.filter(h => h.column.isPinned).reduce((width, h) => width + h.offsetWidth, 0);
 
-                this._setMoreColumns({
-                    left: unpinnedHeaders.filter(h => h.offsetLeft - horizontalScrollOffset < pinnedWidth).sort((a, b) => a.column.label.localeCompare(b.column.label)),
-                    right: unpinnedHeaders.filter(h => (h.offsetLeft + h.offsetWidth / 2) > visibleColumnHeaderSize.width).sort((a, b) => a.column.label.localeCompare(b.column.label))
-                });
-            });
+            this.moreColumns = {
+                left: unpinnedHeaders.filter(h => h.offsetLeft - horizontalScrollOffset < pinnedWidth).sort((a, b) => a.column.label.localeCompare(b.column.label)),
+                right: unpinnedHeaders.filter(h => (h.offsetLeft + h.offsetWidth / 2) > visibleColumnHeaderSize.width).sort((a, b) => a.column.label.localeCompare(b.column.label))
+            };
+        });
     }
 
     private _onMoreOpening(e: CustomEvent) {
         const popup = e.target as Popup;
         const isLeft = popup.classList.contains("left");
         const headers = isLeft ? this.moreColumns.left : this.moreColumns.right;
-        
+
         popup.querySelector("vi-scroller").append(...headers.map(h => {
             return new PopupMenuItem(h.column.label, null, () => {
                 const pinnedColumns = this.columns.filter(c => c.isPinned);
@@ -871,3 +959,5 @@ export class QueryGrid extends Polymer.WebComponent {
         popup.querySelector("vi-scroller").innerHTML = "";
     }
 }
+
+customElements.define("vi-query-grid", QueryGrid);
