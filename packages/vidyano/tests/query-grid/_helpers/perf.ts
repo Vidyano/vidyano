@@ -654,6 +654,8 @@ export async function installPerf(page: Page) {
                 rowAdds: 0, rowRemoves: 0, cellAdds: 0, cellRemoves: 0,
                 rowRecords: 0, cellRecords: 0, cellTextWrites: 0, cellAttributeWrites: 0, rowAttributeWrites: 0,
                 hostRecords: 0, hostStyleRecords: 0, otherRecords: 0,
+                /** [after-highlighted] toggles on the row after a changed selection: the rows are not in display order, so it replaces a sibling selector */
+                adjacencyRecords: 0,
                 perRow: {} as Record<number, number>,
                 perRowText: {} as Record<number, number>,
                 maxTextWritesPerCell: 0,
@@ -681,6 +683,11 @@ export async function installPerf(page: Page) {
                     if (record.attributeName === 'style')
                         summary.hostStyleRecords++;
 
+                    continue;
+                }
+
+                if (isRow(record.target) && record.attributeName === 'after-highlighted') {
+                    summary.adjacencyRecords++;
                     continue;
                 }
 

@@ -81,6 +81,7 @@ export class QueryGrid extends WebComponent {
 
     private readonly _columnWidths = new Map<string, ColumnWidthDetail>();
     private _virtualGridStartIndex: number = 0;
+    private _rowsOrigin: number = 0;
     private _verticalSpacerCorrection: number = 1;
     private readonly _getItemsDebouncer = timeOutDebouncer(20);
     private readonly _updateCellDebouncer = animationFrameDebouncer();
@@ -317,6 +318,8 @@ export class QueryGrid extends WebComponent {
 
     connectedCallback() {
         this.toggleAttribute("initializing", this.initializing);
+        if (!this.hasAttribute("role"))
+            this.setAttribute("role", "grid");
 
         super.connectedCallback();
 
@@ -365,6 +368,8 @@ export class QueryGrid extends WebComponent {
 
         this._observeControlsSize();
 
+        new MutationObserver(() => this._updateRowOrder()).observe(this.$.grid, { childList: true, attributes: true, attributeFilter: ["selected", "actions-open"], subtree: true });
+
         requestAnimationFrame(() => {
             // The custom property keeps the length as written (e.g. 2.5em), a probe resolves it to pixels
             const probe = document.createElement("div");
@@ -372,6 +377,41 @@ export class QueryGrid extends WebComponent {
             this.shadowRoot.appendChild(probe);
             this.rowHeight = Math.round(parseFloat(window.getComputedStyle(probe).height));
             probe.remove();
+        });
+    }
+
+    /**
+     * The row ids in display order, assistive technology reads the rows in that order instead of their order in the document.
+     */
+    private _rowsInDisplayOrder(): string {
+        const count = this._renderedItems?.length;
+        if (!count || this.canReorder)
+            return null;
+
+        return Array.from({ length: count }, (_, index) => `row${(this._virtualGridStartIndex + index) % count}`).join(" ");
+    }
+
+    updated(changedProperties: Map<PropertyKey, unknown>) {
+        super.updated(changedProperties);
+
+        if (changedProperties.has("_renderedItems"))
+            this._updateRowOrder();
+    }
+
+    /**
+     * Marks the stripe, the first row and the rows that follow a selected row or a row with open actions, in display order: the rows are
+     * not in document order, so nth-of-type and sibling selectors can't. Reorderable rows are in document order, also while they are dragged.
+     */
+    private _updateRowOrder() {
+        const rows = Array.from(this.$.grid.querySelectorAll<QueryGridRow>(":scope > vi-query-grid-row"));
+        if (!this.canReorder)
+            rows.sort((a, b) => a.index - b.index);
+
+        rows.forEach((row, i) => {
+            const previous = rows[i - 1];
+            row.toggleAttribute("odd", (this._virtualGridStartIndex + i) % 2 === 0);
+            row.toggleAttribute("first", i === 0);
+            row.toggleAttribute("after-highlighted", !!previous && (previous.hasAttribute("selected") || previous.hasAttribute("actions-open")));
         });
     }
 
@@ -407,10 +447,16 @@ export class QueryGrid extends WebComponent {
                          .verticalScrollOffset=${this.verticalScrollOffset} @vertical-scroll-offset-changed=${this._onScrollerVerticalScrollOffsetChanged}
                          @outer-height-changed=${this._onScrollerOuterHeightChanged} @outer-width-changed=${this._onScrollerOuterWidthChanged}>
                 <div id="gridWrapper">
-                    <vi-sortable id="grid" ?grid=${this.initializing} .disabled=${!this.canReorder} handle=".reorder" @drag-start=${this._onReorderStart} @drag-end=${this._onReorderEnd}>
-                        ${this._renderedItems?.map((item, index) => html`<vi-query-grid-row .item=${item} .index=${index} .columns=${this._rowColumns} .offsets=${this._offsets} .visibleRange=${this._visibleRange} ?initializing=${this.initializing} .canReorder=${this.canReorder}></vi-query-grid-row>`)}
+                    <vi-sortable id="grid" role="rowgroup" aria-owns=${this._rowsInDisplayOrder() ?? nothing} ?grid=${this.initializing} .disabled=${!this.canReorder} handle=".reorder" @drag-start=${this._onReorderStart} @drag-end=${this._onReorderEnd}>
+                        ${this._renderedItems?.map((item, slot) => {
+                            // A row keeps its item while the item stays in the window, rows are placed by the item's index instead of their order
+                            const count = this._renderedItems.length;
+                            const index = (slot - this._virtualGridStartIndex % count + count) % count;
+                            const position = this._virtualGridStartIndex + index;
+                            return html`<vi-query-grid-row id=${`row${slot}`} aria-rowindex=${position + (this.skip || 0) + 1} .item=${item} .index=${index} .top=${this.canReorder ? null : (position - this._rowsOrigin) * this.rowHeight} .columns=${this._rowColumns} .offsets=${this._offsets} .visibleRange=${this._visibleRange} ?initializing=${this.initializing} .canReorder=${this.canReorder}></vi-query-grid-row>`;
+                        })}
                         ${this.physicalUpperLimitExceeded ? html`
-                            <div class="physical-upper-limit-exceeded">
+                            <div class="physical-upper-limit-exceeded" style="transform: translateY(${(Math.min(this._virtualGridStartIndex + (this._renderedItems?.length ?? 0), PHYSICAL_UPPER_LIMIT - (this.skip || 0)) - this._rowsOrigin) * this.rowHeight}px)">
                                 <vi-icon source="Ellipsis"></vi-icon>
                             </div>` : nothing}
                     </vi-sortable>
@@ -882,9 +928,16 @@ export class QueryGrid extends WebComponent {
             }
 
             this._virtualGridStartIndex = newVirtualGridStartIndex;
-            this._renderedItems = this.virtualItems.slice();
 
-            this.$.grid.style.transform = `translateY(${newVirtualGridStartIndex * rowHeight - clampOffset}px)`;
+            // An item keeps its row while it stays in the window: the row of an index is that index modulo the row count
+            const count = this.virtualItems.length;
+            const rendered = new Array<QueryGridItem>(count);
+            this.virtualItems.forEach((item, index) => rendered[(newVirtualGridStartIndex + index) % count] = item);
+            this._renderedItems = rendered;
+
+            // Past the browser's height limit the rows are placed from the window start, offsets from 0 would exceed what it renders
+            this._rowsOrigin = this._verticalSpacerCorrection > 1 ? newVirtualGridStartIndex : 0;
+            this.$.grid.style.transform = `translateY(${this._rowsOrigin * rowHeight - clampOffset}px)`;
         });
 
         this._getItemsDebouncer.run(() => {
@@ -951,6 +1004,8 @@ export class QueryGrid extends WebComponent {
     private _updateVerticalSpacer(viewportHeight: number, rowHeight: number, items: QueryGridItems, maxRows?: number, skip?: number) {
         if (!items || !rowHeight)
             return;
+
+        this.setAttribute("aria-rowcount", String(Math.min(items.length, PHYSICAL_UPPER_LIMIT)));
 
         // Measured after the rows of this update are rendered
         this._verticalSpacerDebouncer.run(() => {

@@ -39,6 +39,13 @@ export class QueryGridRow extends WebComponent {
     @property({ type: Number })
     index: number;
 
+    /** The offset of the row in the grid, or null when the row stays in flow. */
+    @property({ type: Number })
+    @observer(function(this: QueryGridRow, top: number) {
+        this.style.transform = top == null ? "" : `translateY(${top}px)`;
+    })
+    top: number;
+
     @property({ type: Array })
     @observer(function(this: QueryGridRow, columns: Vidyano.QueryColumn[]) {
         this._columnsChanged(columns);
@@ -77,6 +84,9 @@ export class QueryGridRow extends WebComponent {
 
     override connectedCallback() {
         super.connectedCallback();
+
+        if (!this.hasAttribute("role"))
+            this.setAttribute("role", "row");
 
         this._observeItem(this.item);
     }
