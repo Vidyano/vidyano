@@ -29,8 +29,18 @@ export class Scroller extends WebComponent {
     #horizontalScrollWidth: number;
     #horizontalScrollLeft: number;
     #horizontalScrollSpace: number;
-    #trackStart: number;
     #cachedScroller: HTMLElement | null = null;
+    #observedContent: Element[] = [];
+
+    static #contentOwners = new WeakMap<Element, Scroller>();
+
+    /** Shared by all scrollers so every scroller measures before any of their updates write to the DOM */
+    static #contentObserver = new ResizeObserver(entries => {
+        new Set(entries.map(entry => Scroller.#contentOwners.get(entry.target))).forEach(scroller => {
+            if (scroller)
+                scroller.#contentSizeChanged();
+        });
+    });
 
     /** Whether the mouse is currently hovering over the scroller */
     @property({ type: Boolean, reflect: true })
@@ -135,12 +145,7 @@ export class Scroller extends WebComponent {
     @listener("mouseenter")
     private _mouseenter() {
         this.hovering = true;
-
-        // Update scrollable content size on hover to show scrollbars
-        if (this.scroller) {
-            this.innerHeight = this.scroller.scrollHeight;
-            this.innerWidth = this.scroller.scrollWidth;
-        }
+        this.#measureAfterLayout();
     }
 
     @listener("mouseleave")
@@ -162,8 +167,7 @@ export class Scroller extends WebComponent {
                 <div id="wrapper" class="wrapper" tabindex="-1">
                     <vi-size-tracker class="fit" @sizechanged=${this._outerSizeChanged}></vi-size-tracker>
                     <div id="content" class="relative content">
-                        <vi-size-tracker @sizechanged=${this._innerSizeChanged} trigger-zero></vi-size-tracker>
-                        <slot></slot>
+                        <slot @slotchange=${this._slotChanged}></slot>
                     </div>
                 </div>
 
@@ -208,6 +212,8 @@ export class Scroller extends WebComponent {
         if (this.scroller) {
             this.scroller.addEventListener("scroll", this.#scrollEventListener = this.#scroll.bind(this), { capture: true, passive: true });
         }
+
+        this.#observeContent();
     }
 
     firstUpdated() {
@@ -215,8 +221,6 @@ export class Scroller extends WebComponent {
         if (actualWrapper) {
             this.#cachedScroller = actualWrapper;
         }
-
-        this.#updateScrollOffsets();
     }
 
     disconnectedCallback() {
@@ -226,6 +230,13 @@ export class Scroller extends WebComponent {
             this.#cachedScroller.removeEventListener("scroll", this.#scrollEventListener);
         }
         this.#cachedScroller = null;
+
+        const content = this.shadowRoot?.querySelector("#content");
+        [...this.#observedContent, ...(content ? [content] : [])].forEach(e => {
+            Scroller.#contentObserver.unobserve(e);
+            Scroller.#contentOwners.delete(e);
+        });
+        this.#observedContent = [];
     }
 
     /**
@@ -294,14 +305,64 @@ export class Scroller extends WebComponent {
         e.stopPropagation();
     }
 
-    private _innerSizeChanged(e: CustomEvent<{ width: number; height: number }>) {
+    private _slotChanged() {
+        this.#observeContent();
+    }
+
+    /**
+     * Observes #content and the slotted elements themselves: when both directions scroll, #content is stretched
+     * to the viewport and keeps that size while the slotted content grows or shrinks.
+     */
+    #observeContent() {
+        const content = this.shadowRoot?.querySelector("#content");
+        if (!this.isConnected || !content)
+            return;
+
+        // A display: contents element has no box to observe, so its children are observed instead
+        const elements: Element[] = [];
+        const add = (element: Element) => {
+            if (getComputedStyle(element).display === "contents")
+                Array.from(element.children).forEach(add);
+            else
+                elements.push(element);
+        };
+        content.querySelector("slot").assignedElements({ flatten: true }).forEach(add);
+
+        this.#observedContent.filter(e => !elements.includes(e)).forEach(e => {
+            Scroller.#contentObserver.unobserve(e);
+            Scroller.#contentOwners.delete(e);
+        });
+        elements.filter(e => !this.#observedContent.includes(e)).forEach(e => {
+            Scroller.#contentOwners.set(e, this);
+            Scroller.#contentObserver.observe(e);
+        });
+        this.#observedContent = elements;
+
+        // Removed elements leave the remaining ones unresized
+        this.#measureAfterLayout();
+    }
+
+    /**
+     * Observing #content anew makes the observer measure the content after the next layout, without forcing one.
+     * Catches size changes no observed box reports, e.g. removed slotted elements or content overflowing them.
+     */
+    #measureAfterLayout() {
+        const content = this.shadowRoot?.querySelector("#content");
+        if (!this.isConnected || !content)
+            return;
+
+        Scroller.#contentOwners.set(content, this);
+        Scroller.#contentObserver.unobserve(content);
+        Scroller.#contentObserver.observe(content);
+    }
+
+    #contentSizeChanged() {
         if (this.scroller) {
             this.innerHeight = this.scroller.scrollHeight;
             this.innerWidth = this.scroller.scrollWidth;
         }
 
         this.#updateScrollOffsets();
-        e.stopPropagation();
     }
 
     /**
@@ -382,13 +443,11 @@ export class Scroller extends WebComponent {
         if (!this.scroller) return;
 
         this.scrolling = direction;
+        this.#measureAfterLayout();
         const isVertical = direction === "vertical";
 
-        this.#trackStart = isVertical ? this.#verticalScrollTop : this.#horizontalScrollLeft;
+        const trackStart = isVertical ? this.#verticalScrollTop : this.#horizontalScrollLeft;
         const startPos = isVertical ? e.clientY : e.clientX;
-        const inner = isVertical ? this.innerHeight : this.innerWidth;
-        const outer = isVertical ? this.outerHeight : this.outerWidth;
-        const space = isVertical ? this.#verticalScrollSpace : this.#horizontalScrollSpace;
 
         const pointerId = e.pointerId;
         const target = e.currentTarget as HTMLElement;
@@ -396,7 +455,10 @@ export class Scroller extends WebComponent {
 
         const onPointerMove = (e: PointerEvent) => {
             const delta = (isVertical ? e.clientY : e.clientX) - startPos;
-            const newScrollbarPos = this.#trackStart + delta;
+            const newScrollbarPos = trackStart + delta;
+            const inner = isVertical ? this.innerHeight : this.innerWidth;
+            const outer = isVertical ? this.outerHeight : this.outerWidth;
+            const space = isVertical ? this.#verticalScrollSpace : this.#horizontalScrollSpace;
             const scrollValue = newScrollbarPos === 0 ? 0 : (inner - outer) * ((1 / space) * newScrollbarPos);
 
             if (isVertical) {
@@ -425,12 +487,8 @@ export class Scroller extends WebComponent {
      * Handles scroll events to update scrollbar positions and content size.
      */
     #scroll(e: Event) {
-        if (this.scroller) {
-            this.innerHeight = this.scroller.scrollHeight;
-            this.innerWidth = this.scroller.scrollWidth;
-        }
-
         this.#updateScrollOffsets();
+        this.#measureAfterLayout();
     }
 
     /**
@@ -444,14 +502,14 @@ export class Scroller extends WebComponent {
             this.verticalScrollOffset = newVerticalScrollOffset;
         }
         this.atTop = this.verticalScrollOffset === 0;
-        this.atBottom = Math.abs(Math.round(this.scroller.scrollTop + this.scroller.offsetHeight) - this.scroller.scrollHeight) <= 1;
+        this.atBottom = Math.abs(Math.round(newVerticalScrollOffset + this.outerHeight) - this.innerHeight) <= 1;
 
         const newHorizontalScrollOffset = this.scroller.scrollLeft;
         if (this.horizontalScrollOffset !== newHorizontalScrollOffset) {
             this.horizontalScrollOffset = newHorizontalScrollOffset;
         }
         this.atStart = this.horizontalScrollOffset === 0;
-        this.atEnd = Math.abs(Math.round(this.scroller.scrollLeft + this.scroller.offsetWidth) - this.scroller.scrollWidth) <= 1;
+        this.atEnd = Math.abs(Math.round(newHorizontalScrollOffset + this.outerWidth) - this.innerWidth) <= 1;
     }
 
     private _verticalScrollOffsetChanged(newVerticalScrollOffset: number) {
