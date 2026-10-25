@@ -77,6 +77,7 @@ export * from "./web-components/persistent-object-attribute/attributes/persisten
 export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-password/persistent-object-attribute-password"
 export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-reference/persistent-object-attribute-reference"
 export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-string/persistent-object-attribute-string"
+export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-time/persistent-object-attribute-time"
 export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-translated-string/persistent-object-attribute-translated-string-dialog"
 export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-translated-string/persistent-object-attribute-translated-string"
 export * from "./web-components/persistent-object-attribute/attributes/persistent-object-attribute-user/persistent-object-attribute-user"

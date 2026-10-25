@@ -32,6 +32,18 @@ builder.AddVidyanoMinimal<MockContext>(vidyano => vidyano
 
             var dateTimeMinMax = po.GetOrCreateAttribute(nameof(Mock_Attribute.DateTimeMinMax));
             dateTimeMinMax.DataTypeHints = "mindate=2024-01-01;maxdate=2024-12-31";
+
+            var timeReadOnly = po.GetOrCreateAttribute(nameof(Mock_Attribute.TimeReadOnly));
+            timeReadOnly.IsReadOnly = true;
+
+            var nullableTimeRequired = po.GetOrCreateAttribute(nameof(Mock_Attribute.NullableTimeRequired));
+            nullableTimeRequired.AddRule("Required");
+
+            var timeTriggersRefresh = po.GetOrCreateAttribute(nameof(Mock_Attribute.TimeTriggersRefresh));
+            timeTriggersRefresh.TriggersRefresh = true;
+
+            var nullableTimeTriggersRefresh = po.GetOrCreateAttribute(nameof(Mock_Attribute.NullableTimeTriggersRefresh));
+            nullableTimeTriggersRefresh.TriggersRefresh = true;
         })
     );
 
@@ -117,4 +129,18 @@ public class Mock_Attribute
     public DateTime Date { get; set; } = DateTime.Today;
 
     public DateTime? NullableDate { get; set; } = null;
+
+    public TimeSpan Time { get; set; } = new TimeSpan(14, 30, 0);
+
+    public TimeSpan TimeWithSeconds { get; set; } = new TimeSpan(8, 15, 45);
+
+    public TimeSpan? NullableTime { get; set; } = null;
+
+    public TimeSpan TimeReadOnly { get; set; } = new TimeSpan(9, 5, 0);
+
+    public TimeSpan? NullableTimeRequired { get; set; } = new TimeSpan(11, 0, 0);
+
+    public TimeSpan TimeTriggersRefresh { get; set; } = new TimeSpan(14, 30, 0);
+
+    public TimeSpan? NullableTimeTriggersRefresh { get; set; } = new TimeSpan(10, 0, 0);
 }

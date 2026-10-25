@@ -1,17 +1,19 @@
 import { html, nothing, unsafeCSS, type TemplateResult } from "lit";
 import { query, state } from "lit/decorators.js";
 import * as Vidyano from "@vidyano/core";
+import type { MaskedInput } from "components/masked-input/masked-input";
 import "components/masked-input/masked-input";
 import { computed } from "components/web-component/web-component";
 import { PersistentObjectAttribute } from "components/persistent-object-attribute/persistent-object-attribute";
 import * as PersistentObjectAttributeRegister from "components/persistent-object-attribute/persistent-object-attribute-register";
-import type { TimePicker } from "../../../time-picker/time-picker.js";
-import "../../../time-picker/time-picker.js";
-import type { MaskedInput } from "../../../masked-input/masked-input.js";
+import type { TimePicker } from "components/time-picker/time-picker";
+import "components/time-picker/time-picker";
 import styles from "./persistent-object-attribute-time.css";
 
 export class PersistentObjectAttributeTime extends PersistentObjectAttribute {
     static styles = [super.styles, unsafeCSS(styles)];
+
+    private _pendingRefresh: boolean;
 
     @state()
     selectedTime: Date;
@@ -119,13 +121,27 @@ export class PersistentObjectAttributeTime extends PersistentObjectAttribute {
         return String.format("0:{0:D2}:{1:D2}:{2:D2}.{3:D3}0000", time.getHours(), time.getMinutes(), time.getSeconds(), time.getMilliseconds());
     }
 
+    /**
+     * Typing over a filled mask fires `filled` on every keystroke, so a refresh is deferred
+     * until focus leaves the input, unless the picker is open or there was no value yet.
+     */
+    #shouldTriggerImmediateRefresh(newValue: string | null): boolean {
+        if (newValue != null && this.value == null)
+            return true;
+
+        return !!this.timePicker?.isOpen;
+    }
+
     #updateAttributeValue(time: Date | null) {
         const serviceValue = this.#toServiceValue(time);
         if (serviceValue === this.value)
             return;
 
         this._timeInvalid = false;
-        this.attribute.setValue(serviceValue, true).catch(Vidyano.noop);
+
+        const allowRefresh = this.#shouldTriggerImmediateRefresh(serviceValue);
+        this._pendingRefresh = this.attribute.triggersRefresh && !allowRefresh;
+        this.attribute.setValue(serviceValue, allowRefresh).catch(Vidyano.noop);
     }
 
     private _timeChanged(e: CustomEvent) {
@@ -179,11 +195,20 @@ export class PersistentObjectAttributeTime extends PersistentObjectAttribute {
             return;
 
         const value = this.timeInput?.value;
-        if ((value === this.timeFormat || value === "") && !this.attribute.isRequired)
+        if ((value === this.timeFormat || value === "") && !this.attribute.isRequired) {
             this._timeInvalid = false;
+            this.#updateAttributeValue(null);
+        }
+
+        if (this._pendingRefresh) {
+            this._pendingRefresh = false;
+            // this.value only follows the attribute on the next render, after a null committed above
+            this.attribute.setValue(this.attribute.value, true).catch(Vidyano.noop);
+        }
     }
 
     private _clear() {
+        this._timeInvalid = false;
         this.attribute.setValue(null, true).catch(Vidyano.noop);
     }
 

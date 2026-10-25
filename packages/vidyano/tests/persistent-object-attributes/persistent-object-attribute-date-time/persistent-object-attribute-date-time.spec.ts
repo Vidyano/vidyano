@@ -1081,4 +1081,268 @@ test.describe('Min/Max Date', () => {
     });
 });
 
+test.describe('Time', () => {
+    const tag = 'vi-persistent-object-attribute-time';
+
+    async function typeTime(component: any, digits: string) {
+        const input = component.locator('vi-masked-input input');
+        await input.click();
+        await sharedPage.keyboard.press('Control+A');
+        await sharedPage.keyboard.type(digits, { delay: 50 });
+    }
+
+    test.describe('Non-edit mode', () => {
+        test('displays the time as hours and minutes', async () => {
+            const component = await setupAttribute(sharedPage, tag, 'Time');
+
+            await expect(component.locator('vi-sensitive > span').first()).toHaveText('14:30');
+            await expect(component.locator('vi-masked-input')).toHaveCount(0);
+        });
+
+        test('displays seconds when the time has them', async () => {
+            const component = await setupAttribute(sharedPage, tag, 'TimeWithSeconds');
+
+            await expect(component.locator('vi-sensitive > span').first()).toHaveText('08:15:45');
+        });
+    });
+
+    test.describe('Edit mode', () => {
+        test('shows the time in the masked input with a time picker', async () => {
+            const component = await setupAttribute(sharedPage, tag, 'Time');
+
+            await beginEdit(sharedPage, component);
+
+            const timeInput = component.locator('vi-masked-input');
+            await expect(timeInput).toBeVisible();
+            await expect.poll(() => timeInput.evaluate((el: any) => el.value)).toBe('14:30');
+            await expect(component.locator('#timepicker')).toBeVisible();
+        });
+
+        test('saves a typed time as a TimeSpan', async () => {
+            const component = await setupAttribute(sharedPage, tag, 'Time');
+
+            await beginEdit(sharedPage, component);
+            await typeTime(component, '0915');
+            await sharedPage.waitForTimeout(200);
+
+            const savedValue = await save(sharedPage, component);
+            expect(savedValue).toBe('0:09:15:00.0000000');
+            await expect(component.locator('vi-sensitive > span').first()).toHaveText('09:15');
+        });
+
+        test('saves a time picked from the time picker', async () => {
+            const component = await setupAttribute(sharedPage, tag, 'Time');
+
+            await beginEdit(sharedPage, component);
+            await selectTimeFromPicker(sharedPage, component, 9, 45);
+
+            await expect.poll(() => component.locator('vi-masked-input').evaluate((el: any) => el.value)).toBe('09:45');
+
+            const savedValue = await save(sharedPage, component);
+            expect(savedValue).toBe('0:09:45:00.0000000');
+        });
+
+        test('marks an out of range time as invalid and keeps the old value', async () => {
+            const component = await setupAttribute(sharedPage, tag, 'Time');
+
+            await beginEdit(sharedPage, component);
+            await typeTime(component, '2560');
+            await sharedPage.waitForTimeout(100);
+
+            await expect(component.locator('vi-masked-input')).toHaveAttribute('invalid', '');
+
+            const savedValue = await save(sharedPage, component);
+            expect(savedValue).toBe('0:14:30:00.0000000');
+        });
+
+        test('keeps the seconds when the time is not changed', async () => {
+            const component = await setupAttribute(sharedPage, tag, 'TimeWithSeconds');
+
+            await beginEdit(sharedPage, component);
+            await sharedPage.waitForTimeout(100);
+
+            const savedValue = await save(sharedPage, component);
+            expect(savedValue).toBe('0:08:15:45.0000000');
+        });
+
+        test('restores the original value after cancel', async () => {
+            const component = await setupAttribute(sharedPage, tag, 'Time');
+
+            await beginEdit(sharedPage, component);
+            await typeTime(component, '0600');
+            await sharedPage.waitForTimeout(200);
+            await cancelEdit(sharedPage, component);
+
+            await expect(component.locator('vi-sensitive > span').first()).toHaveText('14:30');
+        });
+
+        test('disables the input while frozen', async () => {
+            const component = await setupAttribute(sharedPage, tag, 'Time');
+
+            await beginEdit(sharedPage, component);
+
+            const input = component.locator('vi-masked-input input');
+            await expect(input).toBeEnabled();
+
+            await freeze(sharedPage, component);
+            await expect(input).toBeDisabled();
+
+            await unfreeze(sharedPage, component);
+            await expect(input).toBeEnabled();
+        });
+    });
+
+    test.describe('NullableTime', () => {
+        test('displays a dash for a null value', async () => {
+            const component = await setupAttribute(sharedPage, tag, 'NullableTime');
+
+            await expect(component.locator('vi-sensitive > span').first()).toHaveText('—');
+        });
+
+        test('shows the placeholder and no clear button for a null value', async () => {
+            const component = await setupAttribute(sharedPage, tag, 'NullableTime');
+
+            await beginEdit(sharedPage, component);
+
+            await expect.poll(() => component.locator('vi-masked-input').evaluate((el: any) => el.value)).toBe('__:__');
+            await expect(component.locator('#clearButton')).toHaveCount(0);
+        });
+
+        test('can set a time and clear it again', async () => {
+            const component = await setupAttribute(sharedPage, tag, 'NullableTime');
+
+            await beginEdit(sharedPage, component);
+            await typeTime(component, '1030');
+            await sharedPage.waitForTimeout(200);
+
+            const clearButton = component.locator('#clearButton');
+            await expect(clearButton).toBeVisible();
+            await clearButton.click();
+
+            await expect.poll(() => component.locator('vi-masked-input').evaluate((el: any) => el.value)).toBe('__:__');
+
+            const savedValue = await save(sharedPage, component);
+            expect(savedValue).toBeNull();
+            await expect(component.locator('vi-sensitive > span').first()).toHaveText('—');
+        });
+
+        test('clears the value when the input is emptied with the keyboard', async () => {
+            const component = await setupAttribute(sharedPage, tag, 'NullableTime');
+
+            await beginEdit(sharedPage, component);
+            await typeTime(component, '1030');
+            await sharedPage.waitForTimeout(200);
+
+            const input = component.locator('vi-masked-input input');
+            await input.click();
+            await sharedPage.keyboard.press('Control+A');
+            await sharedPage.keyboard.press('Backspace');
+            await input.blur();
+            await sharedPage.waitForTimeout(200);
+
+            const savedValue = await save(sharedPage, component);
+            expect(savedValue).toBeNull();
+        });
+
+        test('clear button removes the invalid marker', async () => {
+            const component = await setupAttribute(sharedPage, tag, 'NullableTime');
+
+            await beginEdit(sharedPage, component);
+            await typeTime(component, '1030');
+            await sharedPage.waitForTimeout(200);
+            await typeTime(component, '2500');
+            await sharedPage.waitForTimeout(100);
+
+            const timeInput = component.locator('vi-masked-input');
+            await expect(timeInput).toHaveAttribute('invalid', '');
+
+            await component.locator('#clearButton').click();
+
+            await expect.poll(() => timeInput.evaluate((el: any) => el.value)).toBe('__:__');
+            await expect(timeInput).not.toHaveAttribute('invalid');
+        });
+    });
+
+    test.describe('TriggersRefresh', () => {
+        test('refreshes once with the final time after typing over a value', async () => {
+            const component = await setupAttribute(sharedPage, tag, 'TimeTriggersRefresh');
+
+            await beginEdit(sharedPage, component);
+
+            const refreshes: string[] = [];
+            const onRequest = (request: any) => {
+                const postData = request.postData();
+                if (request.url().includes('ExecuteAction') && postData?.includes('PersistentObject.Refresh')) {
+                    const attribute = JSON.parse(postData).parent.attributes.find((a: any) => a.name === 'TimeTriggersRefresh');
+                    refreshes.push(attribute.value);
+                }
+            };
+            sharedPage.on('request', onRequest);
+
+            try {
+                const input = component.locator('vi-masked-input input');
+                await input.click();
+                await input.press('Home');
+                await sharedPage.keyboard.type('1545', { delay: 50 });
+                await sharedPage.waitForTimeout(300);
+
+                expect(refreshes).toHaveLength(0);
+
+                await input.blur();
+                await expect.poll(() => refreshes.length).toBe(1);
+                await sharedPage.waitForTimeout(500);
+                expect(refreshes).toEqual(['0:15:45:00.0000000']);
+            }
+            finally {
+                sharedPage.off('request', onRequest);
+            }
+
+            const savedValue = await save(sharedPage, component);
+            expect(savedValue).toBe('0:15:45:00.0000000');
+        });
+
+        test('keeps a keyboard clear of an optional time', async () => {
+            const component = await setupAttribute(sharedPage, tag, 'NullableTimeTriggersRefresh');
+
+            await beginEdit(sharedPage, component);
+
+            const input = component.locator('vi-masked-input input');
+            await input.click();
+            await sharedPage.keyboard.press('Control+A');
+            await sharedPage.keyboard.press('Backspace');
+            await input.blur();
+            await sharedPage.waitForTimeout(500);
+
+            const savedValue = await save(sharedPage, component);
+            expect(savedValue).toBeNull();
+        });
+    });
+
+    test.describe('ReadOnly', () => {
+        test('shows a disabled input without picker or clear button', async () => {
+            const component = await setupAttribute(sharedPage, tag, 'TimeReadOnly');
+
+            await beginEdit(sharedPage, component);
+
+            const timeInput = component.locator('vi-masked-input');
+            await expect(timeInput).toBeVisible();
+            await expect(timeInput).toHaveAttribute('disabled', '');
+            await expect.poll(() => timeInput.evaluate((el: any) => el.value)).toBe('09:05');
+            await expect(component.locator('vi-time-picker')).toHaveCount(0);
+            await expect(component.locator('#clearButton')).toHaveCount(0);
+        });
+    });
+
+    test.describe('Required', () => {
+        test('does not show a clear button', async () => {
+            const component = await setupAttribute(sharedPage, tag, 'NullableTimeRequired');
+
+            await beginEdit(sharedPage, component);
+
+            await expect(component.locator('vi-masked-input')).toBeVisible();
+            await expect(component.locator('#clearButton')).toHaveCount(0);
+        });
+    });
+});
+
 }); // End of DateTime Attribute wrapper
