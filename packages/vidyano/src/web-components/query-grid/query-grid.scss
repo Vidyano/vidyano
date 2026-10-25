@@ -15,9 +15,23 @@
             display: contents;
         }
 
+        // The rows measure only the leading columns, the header keeps a track for every column
+        #grid[grid] {
+            grid-template-columns: var(--vi-query-grid-row-columns, var(--vi-query-grid-columns));
+        }
+
         .filler {
             display: none;
         }
+    }
+
+    vi-query-grid-row > .column[unmeasured] {
+        display: none;
+    }
+
+    // A width from a style type hint wins, as it does in a max-content track
+    vi-query-grid-row > .column[measuring] {
+        width: max-content;
     }
 
     vi-scroller {
@@ -45,7 +59,17 @@
 
     // Scroll anchoring would push scrollTop forward when a page arrives and the virtualized rows are re-rendered
     #grid {
+        position: relative;
         overflow-anchor: none;
+    }
+
+    // Each row is placed at its item's index, a row that keeps its item is neither moved nor repainted when the window shifts.
+    // Reordering moves the rows themselves, it keeps them in flow.
+    &:not([can-reorder]) #grid > vi-query-grid-row, &:not([can-reorder]) .physical-upper-limit-exceeded {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
     }
 
     header {
@@ -56,6 +80,21 @@
 
         [grid] {
             margin-left: calc(var(--vi-query-grid-horizontal, 0) * -1);
+        }
+
+        .headers {
+            display: flex;
+            position: relative;
+            flex: 1;
+            min-width: 0;
+            min-height: 0;
+
+            > [grid] {
+                position: relative;
+                flex: 1;
+                min-width: 0;
+                min-height: 0;
+            }
         }
 
         .controls {
@@ -171,16 +210,12 @@
     }
 
     // Hide top border when rows with selection/actions are adjacent
-    vi-query-grid-row[selected] + vi-query-grid-row[selected]::before,
-    vi-query-grid-row[actions-open] + vi-query-grid-row[actions-open]::before,
-    vi-query-grid-row[selected] + vi-query-grid-row[actions-open]::before,
-    vi-query-grid-row[actions-open] + vi-query-grid-row[selected]::before {
+    vi-query-grid-row[after-highlighted]:is([selected], [actions-open])::before {
         display: none;
     }
 
     // Hide top border for the first row when selected or has actions open
-    vi-query-grid-row[selected]:first-of-type::before,
-    vi-query-grid-row[actions-open]:first-of-type::before {
+    vi-query-grid-row[first]:is([selected], [actions-open])::before {
         display: none;
     }
 

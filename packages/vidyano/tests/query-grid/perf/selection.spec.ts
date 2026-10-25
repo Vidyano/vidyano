@@ -114,6 +114,7 @@ test.describe('Selection', () => {
         for (const change of changes) {
             expect(Object.keys(change.mutations.perRow).map(Number), `${change.label}: mutated rows`).toEqual([change.pool]);
             expect(change.mutations.cellRecords, `${change.label}: cell mutations`).toBe(0);
+            expect(change.mutations.adjacencyRecords, `${change.label}: border marks on the next row`).toBeLessThanOrEqual(1);
         }
         expect(log.requests).toHaveLength(0);
 

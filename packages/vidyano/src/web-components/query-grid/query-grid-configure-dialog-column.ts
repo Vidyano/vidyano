@@ -1,42 +1,49 @@
-import * as Polymer from "polymer"
-import { QueryGridColumn } from "./query-grid-column"
+import { html, unsafeCSS } from "lit";
+import { property } from "lit/decorators.js";
+import { WebComponent } from "components/web-component/web-component";
+import { QueryGridColumn } from "./query-grid-column";
+import styles from "./query-grid-configure-dialog-column.css";
 
-@Polymer.WebComponent.register({
-    properties: {
-        column: Object,
-        isPinned: {
-            type: Boolean,
-            reflectToAttribute: true
-        },
-        isHidden: {
-            type: Boolean,
-            reflectToAttribute: true
-        },
-        lastVisible: {
-            type: Boolean,
-            value: false
-        }
-    }
-}, "vi-query-grid-configure-dialog-column")
-export class QueryGridConfigureDialogColumn extends Polymer.WebComponent {
-    static get template() { return Polymer.html`<link rel="import" href="query-grid-configure-dialog-column.html">`; }
+export class QueryGridConfigureDialogColumn extends WebComponent {
+    static styles = unsafeCSS(styles);
 
     offset: number;
-    isPinned: boolean;
-    isHidden: boolean;
-    /** Whether this is the only visible column, which cannot be hidden. */
-    lastVisible: boolean;
 
-    constructor(public column: QueryGridColumn) {
+    @property({ attribute: false })
+    column: QueryGridColumn;
+
+    @property({ type: Boolean, reflect: true })
+    isPinned: boolean;
+
+    @property({ type: Boolean, reflect: true })
+    isHidden: boolean;
+
+    /** Whether this is the only visible column, which cannot be hidden. */
+    @property({ type: Boolean })
+    lastVisible: boolean = false;
+
+    constructor(column: QueryGridColumn) {
         super();
 
         // Column can be null when sorting since the sorting component clones the element.
         if (!column)
             return;
 
-        this.offset = this.column.offset;
-        this.isPinned = this.column.isPinned;
-        this.isHidden = this.column.isHidden;
+        this.column = column;
+        this.offset = column.offset;
+        this.isPinned = column.isPinned;
+        this.isHidden = column.isHidden;
+    }
+
+    render() {
+        return html`
+            <vi-icon source="Hamburger"></vi-icon>
+            <label>${this.column?.column.label}</label>
+            <div class="buttons">
+                <vi-button inverse icon="Pin" @click=${this._togglePin}></vi-button>
+                <vi-button inverse icon="Eye" @click=${this._toggleVisible} ?disabled=${this.lastVisible}></vi-button>
+            </div>
+        `;
     }
 
     private _togglePin() {
@@ -60,3 +67,5 @@ export class QueryGridConfigureDialogColumn extends Polymer.WebComponent {
         }));
     }
 }
+
+customElements.define("vi-query-grid-configure-dialog-column", QueryGridConfigureDialogColumn);

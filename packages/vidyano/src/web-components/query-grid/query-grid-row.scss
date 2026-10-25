@@ -9,12 +9,13 @@
     white-space: nowrap;
     background-color: white;
 
-    &:nth-of-type(even) > ::slotted(.column),
-    &:nth-of-type(even) > .pinned {
+    // [odd] marks the first, third, ... item: the rows are not in display order
+    &:not([odd]) > ::slotted(.column),
+    &:not([odd]) > .pinned {
         background-color: var(--vi-query-grid-row-even-color, white);
     }
 
-    &:nth-of-type(odd) {
+    &[odd] {
         &, ::slotted(.column), .pinned {
             background-color: var(--vi-query-grid-row-odd-color, #FAFAFA);
         }

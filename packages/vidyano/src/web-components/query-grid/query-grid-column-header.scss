@@ -4,8 +4,20 @@
     border-right: 1px solid var(--theme-light-border);
     background-color: white;
 
+    .container {
+        position: relative;
+    }
+
+    .row {
+        display: flex;
+        flex-direction: row;
+        position: relative;
+    }
+
     .label {
         display: flex;
+        flex: 1;
+        min-width: 0;
         position: relative;
         padding: 0 var(--vi-query-grid-cell-padding, var(--theme-h5));
         position: relative;
@@ -19,6 +31,8 @@
 
         > label {
             display: block;
+            flex: 1;
+            min-width: 0;
             line-height: var(--vi-query-grid-header-height, var(--vi-query-grid-row-height));
             white-space: nowrap;
             overflow: hidden;
@@ -37,6 +51,10 @@
     }
 
     vi-popup-menu {
+        > [hidden] {
+            display: none !important;
+        }
+
         vi-button {
             height: var(--vi-query-grid-header-height, var(--vi-query-grid-row-height));
         }
@@ -60,6 +78,7 @@
         bottom: 0;
         background-color: transparent;
         cursor: ew-resize;
+        touch-action: none;
         transform: translate3d(0.25em, 0, 0);
     }
 

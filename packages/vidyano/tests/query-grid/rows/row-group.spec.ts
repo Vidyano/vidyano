@@ -99,6 +99,48 @@ test.describe('vi-query-grid-row-group: collapse', () => {
         await grid.evaluate((g: any) => g.query.groupingInfo.groups[0].isCollapsed = false);
         await expect(await header(grid, 0)).not.toHaveAttribute('collapsed', '');
     });
+
+    test('[collapsed] follows only the current group, also after a reconnect', case_('rows.grp-collapsed-follows-current-group'), async ({ page }) => {
+        const grid = await groupedGrid(page, 'Gender');
+
+        const states = await grid.evaluate(async (g: any) => {
+            const [first, second] = g.query.groupingInfo.groups;
+            const element = document.createElement('vi-query-grid-row-group') as any;
+            document.body.appendChild(element);
+            const collapsed = async () => {
+                await element.updateComplete;
+                return element.hasAttribute('collapsed');
+            };
+
+            const result: boolean[] = [];
+            element.group = first;
+            first.isCollapsed = true;
+            result.push(await collapsed());
+
+            element.group = second;
+            result.push(await collapsed());
+            second.isCollapsed = true;
+            result.push(await collapsed());
+
+            first.isCollapsed = false;
+            result.push(await collapsed());
+
+            element.remove();
+            second.isCollapsed = false;
+            document.body.appendChild(element);
+            result.push(await collapsed());
+
+            element.remove();
+            second.isCollapsed = true;
+            document.body.appendChild(element);
+            result.push(await collapsed());
+
+            element.remove();
+            return result;
+        });
+
+        expect(states).toEqual([true, false, true, true, false, true]);
+    });
 });
 
 test.describe('vi-query-grid-row-group: grid integration', () => {

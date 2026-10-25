@@ -1,89 +1,152 @@
-import * as Polymer from "polymer"
 import * as Vidyano from "@vidyano/core"
+import { html, nothing, unsafeCSS } from "lit"
+import { property } from "lit/decorators.js"
 import { Path } from "libs/pathjs/pathjs"
 import { ActionButton } from "components/action-button/action-button"
 import { Popup } from "components/popup/popup"
+import { listener, observer, WebComponent } from "components/web-component/web-component"
 import { QueryGridCell } from "./cell-templates/query-grid-cell"
 import "./cell-templates/query-grid-cell-boolean"
 import "./cell-templates/query-grid-cell-common-mark"
 import "./cell-templates/query-grid-cell-image"
-import { QueryGridCellDefault } from "./cell-templates/query-grid-cell-default"
+import "./cell-templates/query-grid-cell-default"
 import { QueryGridRowGroup } from "./query-grid-row-group"
+import "components/icon/icon"
+import styles from "./query-grid-row.css"
 
 const classNames = (extraclass: string) => extraclass.split(/\s+/).filter(Boolean);
+
+// Same as the tap gesture: a click released further than this from where it was pressed is a drag
+const TAP_DISTANCE = 25;
+
+function cellTypeFor(column: Vidyano.QueryColumn): new () => QueryGridCell {
+    return QueryGridCell.resolveCellType(column);
+}
 
 export interface IItemTapEventArgs {
     item: Vidyano.QueryResultItem;
 }
 
-@Polymer.WebComponent.register({
-    properties: {
-        item: {
-            type: Object,
-            observer: "_itemChanged"
-        },
-        index: Number,
-        columns: {
-            type: Array,
-            observer: "_columnsChanged"
-        },
-        isGroup: {
-            type: Boolean,
-            readOnly: true,
-            reflectToAttribute: true
-        },
-        offsets: Array,
-        visibleRange: Array,
-        initializing: {
-            type: Boolean,
-            reflectToAttribute: true,
-            value: false
-        },
-        canReorder: Boolean,
-        selected: {
-            type: Boolean,
-            computed: "item.isSelected",
-            reflectToAttribute: true
-        }
-    },
-    forwardObservers: [
-        "item.isSelected"
-    ],
-    listeners: {
-        "tap": "_onTap",
-        "contextmenu": "_onContextmenu",
-        "mouseenter": "_onMouseEnter",
-        "mouseleave": "_onMouseLeave"
-    },
-    observers: [
-        "_flush(offsets, visibleRange)"
-    ]
-}, "vi-query-grid-row")
-export class QueryGridRow extends Polymer.WebComponent {
-    static get template() { return Polymer.html`<link rel="import" href="query-grid-row.html">` }
+export class QueryGridRow extends WebComponent {
+    static styles = unsafeCSS(styles);
 
+    @property({ type: Object })
+    @observer(function(this: QueryGridRow, item: Vidyano.QueryResultItem | Vidyano.QueryResultItemGroup, oldItem: Vidyano.QueryResultItem | Vidyano.QueryResultItemGroup) {
+        this._itemChanged(item, oldItem);
+    })
     item: Vidyano.QueryResultItem | Vidyano.QueryResultItemGroup;
+
+    @property({ type: Number })
     index: number;
 
+    /** The offset of the row in the grid, or null when the row stays in flow. */
+    @property({ type: Number })
+    @observer(function(this: QueryGridRow, top: number) {
+        this.style.transform = top == null ? "" : `translateY(${top}px)`;
+    })
+    top: number;
+
+    @property({ type: Array })
+    @observer(function(this: QueryGridRow, columns: Vidyano.QueryColumn[]) {
+        this._columnsChanged(columns);
+    })
+    columns: Vidyano.QueryColumn[];
+
+    @property({ type: Boolean, reflect: true })
+    isGroup: boolean;
+
+    @property({ type: Array })
+    offsets: [cellLeft: number, cellRight: number][];
+
+    @property({ type: Array })
+    visibleRange: [left: number, right: number];
+
+    @property({ type: Boolean, reflect: true })
+    initializing: boolean = false;
+
+    @property({ type: Boolean })
+    canReorder: boolean;
+
+    @property({ type: Boolean, reflect: true })
+    selected: boolean;
+
+    private _cells: QueryGridCell[] = [];
     private _groupElement: QueryGridRowGroup;
     private _visibleCells: QueryGridCell[];
     private _invisibleCellValues: [QueryGridCell, Vidyano.QueryResultItemValue][] = [];
     private _extraclass: string;
-    readonly isGroup: boolean; private _setIsGroup: (isGroup: boolean) => void;
-    columns: Vidyano.QueryColumn[];
-    offsets: [cellLeft: number, cellRight: number][];
-    visibleRange: [ left: number, right: number];
+    private _itemPropertyChangedDisposer: () => void;
+    private _pointerDown: [x: number, y: number];
 
     get cells(): QueryGridCell[] {
-        return (<HTMLSlotElement>this.$.columns)?.assignedElements().filter(c => c instanceof QueryGridCell) as QueryGridCell[] || [];
+        return this._cells.slice();
+    }
+
+    override connectedCallback() {
+        super.connectedCallback();
+
+        if (!this.hasAttribute("role"))
+            this.setAttribute("role", "row");
+
+        this._observeItem(this.item);
+    }
+
+    override disconnectedCallback() {
+        super.disconnectedCallback();
+
+        this._observeItem(null);
+    }
+
+    render() {
+        return html`
+            ${!this.initializing ? html`
+                <slot name="group"></slot>
+                <div part="groupspacer" class="pinned"></div>
+                ${this.canReorder ? html`
+                    <div class="reorder pinned sort-handle" @click=${this._catchTap} part="reorder">
+                        <vi-icon source="Hamburger"></vi-icon>
+                    </div>
+                ` : nothing}
+                <div class="selector pinned" @click=${this._onSelect} part="selector">
+                    <vi-icon source="Selected" ?is-selected=${this.selected}></vi-icon>
+                </div>
+                <vi-popup id="actions" class="actions pinned" part="actions" @popup-opening=${this._onActionsOpening} @popup-closed=${this._onActionsClosed} @click=${this._preventOpen}>
+                    <vi-icon slot="header" source="EllipsisVertical"></vi-icon>
+                </vi-popup>
+                <div part="filter" class="pinned"></div>
+            ` : nothing}
+            <slot id="columns"></slot>
+        `;
+    }
+
+    /**
+     * Keeps `selected` in sync with the item. A single listener on the item is cheaper than a deep path forwarder on every recycled row.
+     */
+    private _observeItem(item: Vidyano.QueryResultItem | Vidyano.QueryResultItemGroup) {
+        this._itemPropertyChangedDisposer?.();
+        this._itemPropertyChangedDisposer = null;
+
+        if (!(item instanceof Vidyano.QueryResultItem)) {
+            this.selected = undefined;
+            return;
+        }
+
+        this.selected = item.isSelected;
+        if (this.isConnected) {
+            this._itemPropertyChangedDisposer = item.propertyChanged.attach((_, args) => {
+                if (args.propertyName === "isSelected")
+                    this.selected = args.newValue;
+            });
+        }
     }
 
     private _columnsChanged(columns: Vidyano.QueryColumn[]) {
-        const existingCells = <QueryGridCell[]>Array.from((<HTMLSlotElement>this.$.columns).assignedElements());
+        const existingCells = this._cells.slice();
+        const cells: QueryGridCell[] = [];
 
-        for (let i=0; i < columns.length; i++) {
+        for (let i=0; i < (columns?.length ?? 0); i++) {
             const column = columns[i];
-            const cellType = QueryGridCell.getCellTypeConstructor(column.type) || QueryGridCellDefault;
+            const cellType = cellTypeFor(column);
             let cell: QueryGridCell = existingCells.find(c => c.column.name === column.name && c.constructor === cellType);
             if (!cell) {
                 cell = new cellType();
@@ -95,12 +158,24 @@ export class QueryGridRow extends Polymer.WebComponent {
                 existingCells.remove(cell);
 
             cell.column = column;
-            this.appendChild(cell);
+
+            // A cell that is already in place stays connected, moving it would reconnect it
+            const next = cells.length ? cells[cells.length - 1].nextSibling : this.querySelector(":scope > .column");
+            if (cell !== next)
+                this.insertBefore(cell, next);
+
+            cells.push(cell);
         }
 
         existingCells.forEach(cell => {
             this.removeChild(cell);
         });
+
+        this._cells = cells;
+        this._invisibleCellValues = this._invisibleCellValues.filter(([cell]) => cells.indexOf(cell) >= 0);
+
+        if (this._groupElement)
+            this._groupElement.style.gridColumn = `1 / span ${cells.length + 3}`;
 
         // The cells were added, removed or reordered, the offsets of the visible cells changed
         this._flush(this.offsets, this.visibleRange);
@@ -114,7 +189,8 @@ export class QueryGridRow extends Polymer.WebComponent {
         else if (item === null)
             this.classList.add("hidden");
 
-        const cells = (<HTMLSlotElement>this.$.columns).assignedElements();
+        if (item !== oldItem)
+            this._observeItem(item);
 
         if (item instanceof Vidyano.QueryResultItem || oldItem instanceof Vidyano.QueryResultItem) {
             const extraclass = item instanceof Vidyano.QueryResultItem ? item.getTypeHint("extraclass", "") : "";
@@ -136,17 +212,18 @@ export class QueryGridRow extends Polymer.WebComponent {
 
             this._invisibleCellValues = [];
             // A cell gets null for a value missing from its item and undefined when the row has no item
-            cells.forEach((cell: QueryGridCell, index: number) => {
+            this._cells.forEach(cell => {
+                const value = item instanceof Vidyano.QueryResultItem ? item.getFullValue(cell.column.name) : undefined;
                 if (!this._visibleCells || this._visibleCells.indexOf(cell) >= 0)
-                    cell.value = this.item instanceof Vidyano.QueryResultItem ? this.item.getFullValue(cell.column.name) : undefined;
+                    cell.value = value;
                 else
-                    this._invisibleCellValues.push([cell, this.item instanceof Vidyano.QueryResultItem ? this.item.getFullValue(cell.column.name) : undefined]);
+                    this._invisibleCellValues.push([cell, value]);
             });
         }
 
         if (oldItem instanceof Vidyano.QueryResultItemGroup) {
             this._groupElement.group = null;
-            this._setIsGroup(false);
+            this.isGroup = false;
         }
 
         if (item instanceof Vidyano.QueryResultItemGroup) {
@@ -154,17 +231,18 @@ export class QueryGridRow extends Polymer.WebComponent {
                 this._groupElement = new QueryGridRowGroup();
                 this.appendChild(this._groupElement);
             }
-            
+
             this._groupElement.slot = "group";
-            this._setIsGroup(true);
+            this.isGroup = true;
 
             this._groupElement.group = item;
-            this._groupElement.style.gridColumn = `1 / span ${this.columns.length + 3}`;
+            this._groupElement.style.gridColumn = `1 / span ${this._cells.length + 3}`;
         }
     }
 
+    @observer("offsets", "visibleRange", { allowUndefined: true })
     private _flush(offsets: [cellLeft: number, cellRight: number][], visibleRange: [left: number, right: number]) {
-        const cells = <QueryGridCell[]>(<HTMLSlotElement>this.$.columns).assignedElements();
+        const cells = this._cells;
 
         // Without measured column widths (e.g. while the grid is initializing) every cell is filled
         const virtualize = !!offsets && !!visibleRange && offsets.length === cells.length;
@@ -181,26 +259,42 @@ export class QueryGridRow extends Polymer.WebComponent {
         this._visibleCells = virtualize ? visibleCells : null;
     }
 
-    private _preventOpen(e: Polymer.Gestures.TapEvent) {
+    private _preventOpen(e: MouseEvent) {
         e.stopPropagation();
     }
 
+    @listener("mouseenter")
     private _onMouseEnter() {
         if (!(this.item instanceof Vidyano.QueryResultItem))
             return;
 
-        this.cells.forEach(cell => cell.isRowHovered = true);
+        this._cells.forEach(cell => cell.isRowHovered = true);
     }
 
+    @listener("mouseleave")
     private _onMouseLeave() {
         if (!(this.item instanceof Vidyano.QueryResultItem))
             return;
 
-        this.cells.forEach(cell => cell.isRowHovered = false);
+        this._cells.forEach(cell => cell.isRowHovered = false);
     }
 
-    private async _onTap(e: Polymer.Gestures.TapEvent) {
-        if (!(this.item instanceof Vidyano.QueryResultItem))
+    @listener("pointerdown")
+    private _onPointerDown(e: PointerEvent) {
+        this._pointerDown = [e.clientX, e.clientY];
+    }
+
+    private _isDrag(e: MouseEvent) {
+        // Keyboard and synthetic clicks have no pointer
+        if (!this._pointerDown || e.detail === 0)
+            return false;
+
+        return Math.abs(e.clientX - this._pointerDown[0]) > TAP_DISTANCE || Math.abs(e.clientY - this._pointerDown[1]) > TAP_DISTANCE;
+    }
+
+    @listener("click")
+    private async _onTap(e: MouseEvent) {
+        if (!(this.item instanceof Vidyano.QueryResultItem) || this._isDrag(e))
             return;
 
         if (classNames(this.item.getTypeHint("extraclass", "")).some(c => c.toUpperCase() === "DISABLED"))
@@ -229,7 +323,7 @@ export class QueryGridRow extends Polymer.WebComponent {
 
         const grid = (this.getRootNode() as ShadowRoot).host as any;
         if (this.item.query.canRead && !this.item.query.asLookup && !grid.asLookup) {
-            if (e.detail.sourceEvent && ((<KeyboardEvent>e.detail.sourceEvent).ctrlKey || (<KeyboardEvent>e.detail.sourceEvent).shiftKey) && 'getUrlForPersistentObject' in this.app) {
+            if ((e.ctrlKey || e.shiftKey) && 'getUrlForPersistentObject' in this.app) {
                 // Open in new window/tab
                 window.open(Path.routes.root + (<any>this.app).getUrlForPersistentObject(this.item.query.persistentObject.id, this.item.id));
 
@@ -250,6 +344,7 @@ export class QueryGridRow extends Polymer.WebComponent {
         }
     }
 
+    @listener("contextmenu")
     private async _onContextmenu(e: MouseEvent) {
         if (!(this.item instanceof Vidyano.QueryResultItem) || this.item.query.asLookup)
             return;
@@ -277,7 +372,7 @@ export class QueryGridRow extends Polymer.WebComponent {
         actionsPopup.style.top = `${y}px`;
 
         const anchor = document.createElement("div");
-        
+
         anchor.style.width = `1px`;
         anchor.style.height = `1px`;
         anchor.setAttribute("slot", "header");
@@ -285,7 +380,6 @@ export class QueryGridRow extends Polymer.WebComponent {
 
         actionsPopup.addEventListener("popup-opening", this._onActionsOpening.bind(this));
         actionsPopup.addEventListener("popup-closed", this._onActionsClosed.bind(this));
-        this.shadowRoot.appendChild(actionsPopup);
         grid.shadowRoot.appendChild(actionsPopup);
 
         e.preventDefault();
@@ -298,15 +392,17 @@ export class QueryGridRow extends Polymer.WebComponent {
         }
     }
 
-    private _onSelect(e: Polymer.Gestures.TapEvent) {
+    private _onSelect(e: MouseEvent) {
         e.stopPropagation();
 
-        const mouse = e.detail.sourceEvent instanceof MouseEvent ? e.detail.sourceEvent : null;
+        if (this._isDrag(e))
+            return;
+
         this.dispatchEvent(new CustomEvent("item-select", {
             detail: {
                 item: this.item,
-                shift: mouse ? mouse.shiftKey : false,
-                ctrl: this.app.configuration.getSetting("vi-query-grid.single-click", "true").toLowerCase() === "true" || (mouse ? mouse.ctrlKey : true)
+                shift: e.shiftKey,
+                ctrl: this.app.configuration.getSetting("vi-query-grid.single-click", "true").toLowerCase() === "true" || e.ctrlKey || (e as PointerEvent).pointerType === "touch"
             },
             bubbles: true,
             composed: true
@@ -385,7 +481,7 @@ export class QueryGridRow extends Polymer.WebComponent {
         e.stopPropagation();
     }
 
-    private _catchTap(e: Polymer.Gestures.TapEvent) {
+    private _catchTap(e: MouseEvent) {
         e.stopPropagation();
     }
 
@@ -393,3 +489,5 @@ export class QueryGridRow extends Polymer.WebComponent {
         this._itemChanged(this.item, this.item);
     }
 }
+
+customElements.define("vi-query-grid-row", QueryGridRow);

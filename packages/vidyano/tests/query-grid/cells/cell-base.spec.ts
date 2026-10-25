@@ -681,6 +681,28 @@ test.describe('Sensitive', () => {
             await page.evaluate(() => (window as any).Vidyano.ServiceBus.send('vi-app:sensitive-changed', false));
         }
     });
+
+    test('cells of a re-attached grid still follow app sensitivity', { annotation: [{ type: 'case', description: 'cells.base-sens-reattach' }] }, async ({ page }) => {
+        await gridPage(page);
+        const grid = await mountGrid(page, { query: 'QueryGrid_ColumnOptions' });
+        await grid.evaluate(g => {
+            const container = g.parentElement!;
+            g.remove();
+            container.appendChild(g);
+        });
+
+        const blurred = async () => Object.fromEntries(Object.values(await rowCells(grid, 0)).map(c => [c.column, c.filters.some(f => /blur\(/.test(f))]));
+        try {
+            await page.evaluate(() => (window as any).Vidyano.ServiceBus.send('vi-app:sensitive-changed', true));
+            await expect.poll(async () => (await blurred()).LastName).toBe(true);
+            expect(Object.entries(await blurred()).filter(([, blur]) => blur).map(([column]) => column)).toEqual(['LastName']);
+        }
+        finally {
+            await page.evaluate(() => (window as any).Vidyano.ServiceBus.send('vi-app:sensitive-changed', false));
+        }
+
+        await expect.poll(async () => (await blurred()).LastName).toBe(false);
+    });
 });
 
 test.describe('Width measurement', () => {

@@ -1,5 +1,8 @@
-import * as Polymer from "polymer"
+import type { nothing, TemplateResult } from "lit";
+import { property } from "lit/decorators.js";
 import * as Vidyano from "@vidyano/core"
+import { computed, observer, WebComponent } from "components/web-component/web-component"
+import { QueryGridColumn } from "components/query-grid/query-grid-column"
 import type { QueryGridRow } from "components/query-grid/query-grid-row"
 
 // A value can hold a colon itself, as in url(https://...), so only the first colon separates the name
@@ -12,7 +15,7 @@ let resizeObserver: ResizeObserver;
 resizeObserver = new ResizeObserver(allEntries => {
     window.requestAnimationFrame(() => {
         // Entries may be batched for multiple grids, make sure the event is dispatched to the correct grid
-        
+
         const parents = new Map<HTMLElement, ResizeObserverEntry[]>();
         allEntries.forEach(e => {
             const parent = parents.get(e.target.parentElement) || parents.set(e.target.parentElement, []).get(e.target.parentElement);
@@ -42,25 +45,7 @@ resizeObserver = new ResizeObserver(allEntries => {
     });
 });
 
-@Polymer.WebComponent.register({
-    properties: {
-        column: Object,
-        value: Object,
-        sensitive: {
-            type: Boolean,
-            readOnly: true,
-            reflectToAttribute: true
-        },
-        isRowHovered: {
-            type: Boolean,
-            observer: "_isRowHoveredChanged"
-        }
-    },
-    observers: [
-        "_queueMeasure(value, isConnected)"
-    ]
-}, "vi-query-grid-cell")
-export abstract class QueryGridCell extends Polymer.WebComponent {
+export abstract class QueryGridCell extends WebComponent {
     #_observeOnConnected: boolean;
     #_lastMeasuredColumn: Vidyano.QueryColumn;
     #_isObserved: boolean;
@@ -70,15 +55,35 @@ export abstract class QueryGridCell extends Polymer.WebComponent {
     #_customStyles: Map<string, { currentValue?: string; originalValue?: string }> = new Map();
     #_customHoverStyles: Map<string, { currentValue?: string; originalValue?: string }> = new Map();
 
-    readonly sensitive: boolean; protected _setSensitive: (sensitive: boolean) => void;
+    @property({ type: Boolean, reflect: true })
+    @computed(function(this: QueryGridCell, value: Vidyano.QueryResultItemValue): boolean {
+        return !!value?.column.isSensitive;
+    }, "value", { allowUndefined: true })
+    declare readonly sensitive: boolean;
 
+    @property({ type: Object })
     column: Vidyano.QueryColumn;
+
+    // Subclasses override _valueChanged, so the observer dispatches through this instead of binding the base method
+    @property({ type: Object })
+    @observer(function(this: QueryGridCell, value: Vidyano.QueryResultItemValue, oldValue: Vidyano.QueryResultItemValue) {
+        this._valueChanged(value, oldValue);
+    })
     value: Vidyano.QueryResultItemValue;
+
     valueQueued: Vidyano.QueryResultItemValue;
+
+    @property({ type: Boolean })
+    @observer(function(this: QueryGridCell, isHovered: boolean, wasHovered: boolean) {
+        this._isRowHoveredChanged(isHovered, wasHovered);
+    })
     isRowHovered: boolean;
 
     connectedCallback() {
         super.connectedCallback();
+
+        // Subscribes to the app's sensitivity, the subscription ends when the cell is disconnected
+        this.toggleAttribute("is-app-sensitive", this.isAppSensitive);
 
         // The element was disconnected and re-connected to the DOM, attach the observer
         if (this.#_observeOnConnected) {
@@ -86,6 +91,8 @@ export abstract class QueryGridCell extends Polymer.WebComponent {
 
             this._observe();
         }
+        else
+            this._queueMeasure();
     }
 
     disconnectedCallback() {
@@ -104,9 +111,14 @@ export abstract class QueryGridCell extends Polymer.WebComponent {
         return this.#_isObserved;
     }
 
-    private _queueMeasure(value: Vidyano.QueryResultItemValue, isConnected: boolean) {
+    @observer("isAppSensitive")
+    private _isAppSensitiveChanged(isAppSensitive: boolean) {
+        this.toggleAttribute("is-app-sensitive", isAppSensitive);
+    }
+
+    private _queueMeasure() {
         // Don't try to measure if the cell is disconnected
-        if (!isConnected)
+        if (!this.isConnected)
             return;
 
         // Don't try to measure if the column that needs to be measured hasn't changed
@@ -115,7 +127,7 @@ export abstract class QueryGridCell extends Polymer.WebComponent {
 
         const row = this.parentElement as QueryGridRow;
         // Don't measure the cell when the row is not a query result item (sanity check), or still shows an item of the grid's previous query
-        if (!(row.item instanceof Vidyano.QueryResultItem) || row.item.query !== this.column?.query)
+        if (!(row?.item instanceof Vidyano.QueryResultItem) || row.item.query !== this.column?.query)
             return;
 
         // Only measure if this is the first non-group query grid row in the grid
@@ -140,7 +152,7 @@ export abstract class QueryGridCell extends Polymer.WebComponent {
     }
 
     protected _valueChanged(itemValue: Vidyano.QueryResultItemValue, oldValue: Vidyano.QueryResultItemValue) {
-        this._setSensitive(itemValue?.column.isSensitive);
+        this._queueMeasure();
 
         // Prepare type hints for the cell
         this.#typeHints = Object.assign({}, itemValue?.item.typeHints, itemValue?.typeHints);
@@ -331,6 +343,11 @@ export abstract class QueryGridCell extends Polymer.WebComponent {
         return column.getTypeHint(name, defaultValue, this.#typeHints);
     }
 
+    /**
+     * The cell type for columns without a registered cell type, set by vi-query-grid-cell-default.
+     */
+    static defaultCellType: QueryGridCellConstructor;
+
     static registerCellType(type: string, constructor: QueryGridCellConstructor) {
         registeredQueyGridCellTypes[type] = constructor;
     }
@@ -338,8 +355,76 @@ export abstract class QueryGridCell extends Polymer.WebComponent {
     static getCellTypeConstructor(type: string) {
         return registeredQueyGridCellTypes[type];
     }
+
+    /**
+     * Renders the cells of the matching columns with a template, inside the default cell.
+     * A cell type registered for the column's type takes precedence over every template,
+     * and the latest registered template that matches wins. A value with a displayformat type hint shows the formatted text instead.
+     * Cells that already show a column pick up a change with their next value.
+     * @param typeOrPredicate The column type, or a predicate over the column (e.g. on a type hint or the column name).
+     * @param render Returns the content of the cell for a value.
+     * @returns A function that removes the registration.
+     */
+    static registerCellTemplate(typeOrPredicate: string | QueryGridCellTemplatePredicate, render: QueryGridCellTemplate): () => void {
+        const registration: CellTemplateRegistration = {
+            matches: typeof typeOrPredicate === "string" ? column => column.type === typeOrPredicate : typeOrPredicate,
+            render
+        };
+
+        registeredCellTemplates.push(registration);
+        cellTemplatesVersion++;
+
+        return () => {
+            if (registeredCellTemplates.remove(registration))
+                cellTemplatesVersion++;
+        };
+    }
+
+    /**
+     * Increments on every template registration or removal.
+     */
+    static get cellTemplatesVersion(): number {
+        return cellTemplatesVersion;
+    }
+
+    /**
+     * Gets the template that renders the cells of a column, or undefined when a cell type is registered for its type or no template matches.
+     */
+    static getCellTemplate(column: QueryGridColumn | Vidyano.QueryColumn): QueryGridCellTemplate | undefined {
+        if (!column || registeredQueyGridCellTypes[column.type])
+            return undefined;
+
+        const queryColumn = column instanceof QueryGridColumn ? column.column : column;
+        for (let i = registeredCellTemplates.length - 1; i >= 0; i--) {
+            if (registeredCellTemplates[i].matches(queryColumn))
+                return registeredCellTemplates[i].render;
+        }
+
+        return undefined;
+    }
+
+    /**
+     * Gets the cell class to create for a column: the cell type registered for its type, else the default cell,
+     * which renders the column's cell template when one matches.
+     */
+    static resolveCellType(column: QueryGridColumn | Vidyano.QueryColumn): QueryGridCellConstructor {
+        return registeredQueyGridCellTypes[column.type] || QueryGridCell.defaultCellType;
+    }
 }
 
 export type QueryGridCellConstructor = new (...args:any[]) => QueryGridCell;
 
+/**
+ * Renders the content of a cell.
+ * @param value The typed value of the cell (as QueryResultItem.getValue returns it).
+ * @param column The query column of the cell.
+ * @param item The item the row shows.
+ */
+export type QueryGridCellTemplate = (value: any, column: Vidyano.QueryColumn, item: Vidyano.QueryResultItem) => TemplateResult | string | typeof nothing;
+export type QueryGridCellTemplatePredicate = (column: Vidyano.QueryColumn) => boolean;
+
+type CellTemplateRegistration = { matches: QueryGridCellTemplatePredicate; render: QueryGridCellTemplate };
+
 const registeredQueyGridCellTypes: { [type: string]: QueryGridCellConstructor} = {};
+const registeredCellTemplates: CellTemplateRegistration[] = [];
+let cellTemplatesVersion = 0;

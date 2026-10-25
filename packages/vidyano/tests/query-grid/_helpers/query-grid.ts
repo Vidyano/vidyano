@@ -217,7 +217,8 @@ export async function mountGrid(page: Page, options: MountOptions = {}): Promise
  */
 export async function waitForGridReady(grid: Locator, timeout = 15000) {
     await expect.poll(() => grid.evaluate((g: any) => {
-        if (g.hasAttribute('initializing') || !g.query || g.query.isBusy)
+        // The columns outside the visible width are measured after the rows show
+        if (g.hasAttribute('initializing') || !g.query || g.query.isBusy || g._hasUnmeasuredColumns)
             return false;
 
         const tracks = getComputedStyle(g).getPropertyValue('--vi-query-grid-columns').trim();
@@ -451,6 +452,8 @@ export interface OpenAppOptions {
     height?: number;
     /** Keeps the user's stored grid and query settings, for a test that checks what is stored. */
     storedSettings?: boolean;
+    /** Loads the Google Fonts this many milliseconds late instead of blocking them, so the text widens after the first layout. */
+    fontsDelay?: number;
 }
 
 /**
@@ -461,8 +464,17 @@ export async function openApp(page: Page, path: string, options: OpenAppOptions 
     const { width = 1280, height = 720 } = options;
     await page.setViewportSize({ width, height });
 
-    await page.route('**/fonts.googleapis.com/**', route => route.fulfill({ contentType: 'text/css', body: '' }));
-    await page.route('**/fonts.gstatic.com/**', route => route.abort());
+    if (options.fontsDelay === undefined) {
+        await page.route('**/fonts.googleapis.com/**', route => route.fulfill({ contentType: 'text/css', body: '' }));
+        await page.route('**/fonts.gstatic.com/**', route => route.abort());
+    }
+    else {
+        await page.route('**/fonts.gstatic.com/**', async route => {
+            await new Promise(resolve => setTimeout(resolve, options.fontsDelay));
+            await route.continue();
+        });
+    }
+
     // The settings arrive with the application, so they are cleared before any grid can read them
     if (!options.storedSettings) {
         await page.route('**/GetApplication', async route => {

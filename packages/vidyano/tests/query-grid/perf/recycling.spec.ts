@@ -144,6 +144,78 @@ test.describe('Recycling & cell formatting', () => {
         await recordPerf(page, testInfo, 'perf.rc-no-cell-creation-on-scroll', { counts: { cellAdds: mutations.cellAdds, cellRemoves: mutations.cellRemoves, cellsPerRow: before[0], cellTextWrites: mutations.cellTextWrites } });
     });
 
+    test('a vertical shift gives new items only to the rows whose item left the window', perfCase('perf.rc-rebind-only-left-rows'), async ({ page }, testInfo) => {
+        await perfPage(page);
+        const grid = await mountGrid(page);
+        await preload(grid, 0, 300);
+
+        const snapshot = () => grid.evaluate((g: any) => {
+            const rows = (window as any).__perf.rows(g);
+            (window as any).__rowItems = new Map(rows.map((r: any) => [r, r.item]));
+            return rows.length;
+        });
+
+        const shifts: { changed: number; left: number }[] = [];
+        const rowCount = await snapshot();
+        for (const row of [12, 30, 61, 40, 3]) {
+            await scrollToRow(grid, row);
+            await waitFilled(grid);
+            shifts.push(await grid.evaluate((g: any) => {
+                const before: Map<any, any> = (window as any).__rowItems;
+                const rows = (window as any).__perf.rows(g);
+                const items = new Set(rows.map((r: any) => r.item));
+                return {
+                    changed: rows.filter((r: any) => before.get(r) !== r.item).length,
+                    left: [...before.values()].filter(item => item && !items.has(item)).length
+                };
+            }));
+            await snapshot();
+        }
+
+        expect(shifts.some(s => s.left > 0), 'a scroll shifted the window').toBe(true);
+        expect(shifts.some(s => s.left < rowCount), 'a shift kept rows in the window').toBe(true);
+        for (const shift of shifts)
+            expect(shift.changed, 'rows that got a new item').toBe(shift.left);
+
+        await recordPerf(page, testInfo, 'perf.rc-rebind-only-left-rows', { counts: { rows: rowCount, changed: shifts.reduce((n, s) => n + s.changed, 0), left: shifts.reduce((n, s) => n + s.left, 0) } });
+    });
+
+    test('columns added to a row leave its other cells in place', perfCase('perf.rc-cells-stay-on-column-add'), async ({ page }, testInfo) => {
+        await perfPage(page);
+        const grid = await mountGrid(page);
+
+        const result = await grid.evaluate(async (g: any) => {
+            const row = (window as any).__perf.rows(g).find((r: any) => r.item && !r.hasAttribute('is-group'));
+            const columns = row.columns;
+            row.columns = columns.slice(0, 4);
+            await row.updateComplete;
+
+            const kept = row.cells;
+            const records: MutationRecord[] = [];
+            const observer = new MutationObserver(list => records.push(...list));
+            observer.observe(row, { childList: true });
+            row.columns = columns;
+            await row.updateComplete;
+            records.push(...observer.takeRecords());
+            observer.disconnect();
+
+            return {
+                removed: records.reduce((n, r) => n + r.removedNodes.length, 0),
+                added: records.reduce((n, r) => n + r.addedNodes.length, 0),
+                kept: kept.every((cell: any, i: number) => row.cells[i] === cell),
+                order: row.cells.map((cell: any) => cell.column.name).join() === columns.map((c: any) => c.name).join(),
+                columns: columns.length
+            };
+        });
+
+        expect(result.removed, 'cells removed').toBe(0);
+        expect(result.added, 'cells added').toBe(result.columns - 4);
+        expect(result.kept).toBe(true);
+        expect(result.order).toBe(true);
+
+        await recordPerf(page, testInfo, 'perf.rc-cells-stay-on-column-add', { counts: { removed: result.removed, added: result.added } });
+    });
+
     test('each cell is written at most once per shift', perfCase('perf.rc-text-writes-per-shift'), async ({ page }, testInfo) => {
         await perfPage(page);
         const grid = await mountGrid(page);

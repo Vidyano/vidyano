@@ -2237,4 +2237,28 @@ test.describe('vi-query-grid-row: initialization and lifecycle', () => {
         await (await rowOf(grid, 2)).locator('.column').first().click();
         await expect.poll(() => opens(page)).toHaveLength(1);
     });
+
+    test('a detached row stops following its item\'s selection and catches up when reattached', case_('rows.row-reattach-selection'), async ({ page }) => {
+        await gridPage(page);
+        const grid = await mountGrid(page);
+        const row = await rowOf(grid, 2);
+        await row.evaluate((r: any) => {
+            const w = window as any;
+            w.__detached = { row: r, parent: r.parentNode, next: r.nextSibling };
+            r.remove();
+        });
+
+        await setSelected(grid, 2, true);
+        await nextFrames(page, 2);
+        expect(await page.evaluate(() => (window as any).__detached.row.hasAttribute('selected'))).toBe(false);
+
+        await page.evaluate(() => {
+            const { row, parent, next } = (window as any).__detached;
+            parent.insertBefore(row, next);
+        });
+        await expect(row).toHaveAttribute('selected', '');
+
+        await setSelected(grid, 2, false);
+        await expect(row).not.toHaveAttribute('selected', '');
+    });
 });

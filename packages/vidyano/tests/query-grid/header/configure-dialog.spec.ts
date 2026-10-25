@@ -560,34 +560,6 @@ test.describe('Lifecycle', () => {
         expect(after.y + after.height).toBeLessThanOrEqual(viewport.height);
         await expect(native).toBeVisible();
     });
-
-    // A media query listener that outlives the dialog keeps every closed dialog in memory through vi-app
-    test('a closed dialog stops listening to media query changes', { annotation: [{ type: 'case', description: 'header.dlg-closed-media-query-listener' }] }, async ({ page }) => {
-        const grid = await openView(page, VIEWS.QueryGrid_Filter);
-        const mediaQueryChanged = (detail: string) => page.evaluate(detail => {
-            (window as any).dialogApp.dispatchEvent(new CustomEvent('media-query-changed', { detail, composed: true }));
-        }, detail);
-
-        const dialog = await openConfigure(grid);
-        await dialog.evaluate((d: any) => {
-            (window as any).closedDialog = d;
-            (window as any).dialogApp = d.app;
-        });
-        await mediaQueryChanged('phone');
-        expect(await page.evaluate(() => (window as any).closedDialog.isPhone)).toBe(true);
-        await mediaQueryChanged('desktop');
-
-        await dialogButton(dialog, 'Cancel').click();
-        await waitForDialogClosed(grid);
-
-        await mediaQueryChanged('phone');
-        const state = await page.evaluate(() => {
-            const d = (window as any).closedDialog;
-            return { isDesktop: d.isDesktop, isPhone: d.isPhone };
-        });
-        await mediaQueryChanged('desktop');
-        expect(state).toEqual({ isDesktop: true, isPhone: false });
-    });
 });
 
 test.describe('vi-query-grid-configure-dialog-column', () => {

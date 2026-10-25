@@ -98,6 +98,60 @@ test.describe('Grouping', () => {
         log.of('ExecuteQuery').forEach(r => expect(r.skip, 'lazy page load only').toBeGreaterThan(0));
     });
 
+    test('the scroll range ends at the last expanded group after collapsing the groups above it', { annotation: [{ type: 'case', description: 'grid.grp-collapse-scroll-range' }] }, async ({ page }) => {
+        await gridPage(page);
+        const grid = await mountGrid(page);
+        await grid.evaluate(async (g: any) => { await g.query.group('Gender'); });
+        await expect(grid).toHaveAttribute('has-grouping');
+        await settle(grid);
+
+        const counts: Record<string, number> = await grid.evaluate((g: any) => Object.fromEntries(g.query.groupingInfo.groups.map((x: any) => [x.name, x.count])));
+        expect(Object.keys(counts)).toEqual(['Female', 'Male', 'Unknown']);
+
+        await clickGroup(grid, 'Female');
+        await settle(grid);
+        await clickGroup(grid, 'Male');
+        await settle(grid);
+
+        const visibleRows = 3 + counts.Unknown;
+        await expect.poll(async () => (await getScrollOffset(grid)).scrollHeight).toBe(visibleRows * RH);
+
+        // The thumb maps onto the collapsed scroll range, though nothing scrolled since the collapse
+        const thumb = await grid.evaluate((g: any) => {
+            const vs = [...g.shadowRoot.querySelectorAll('vi-scroller')].find((s: any) => !s.closest('header, vi-popup')) as any;
+            const b = vs.shadowRoot.querySelector('#vertical').getBoundingClientRect();
+            return { x: b.left + b.width / 2, y: b.top + b.height / 2, height: b.height, track: vs.scroller.clientHeight };
+        });
+        await page.mouse.move(thumb.x, thumb.y);
+        await page.mouse.down();
+        await page.mouse.move(thumb.x, thumb.y + 100, { steps: 5 });
+        const dragged = await getScrollOffset(grid);
+        expect(Math.abs(dragged.top - 100 * (visibleRows * RH - dragged.height) / (thumb.track - thumb.height))).toBeLessThanOrEqual(RH);
+        await page.mouse.move(thumb.x, thumb.y + thumb.track, { steps: 5 });
+        await page.mouse.up();
+        await settle(grid);
+
+        const offset = await getScrollOffset(grid);
+        expect(offset.top).toBe(visibleRows * RH - offset.height);
+
+        const all = await rows(grid, { all: true });
+        const shown = all.filter(r => r.height > 0 && !r.loading);
+        const last = shown[shown.length - 1];
+        expect(last.position).toBe(visibleRows - 1);
+        expect(last.index).toBe(9999);
+        const view = await grid.evaluate((g: any) => ([...g.shadowRoot.querySelectorAll('vi-scroller')].find((s: any) => !s.closest('header, vi-popup')) as any).scroller.getBoundingClientRect().bottom);
+        expect(Math.abs(last.bottom - view)).toBeLessThanOrEqual(1);
+
+        await scrollGrid(grid, { top: 0 });
+        await settle(grid);
+        await clickGroup(grid, 'Male');
+        await settle(grid);
+        await expect.poll(async () => (await getScrollOffset(grid)).scrollHeight).toBe((visibleRows + counts.Male) * RH);
+        await clickGroup(grid, 'Female');
+        await settle(grid);
+        await expect.poll(async () => (await getScrollOffset(grid)).scrollHeight).toBe((10000 + 3) * RH);
+    });
+
     test('Collapse all scrolls to top and leaves only group headers', { annotation: [{ type: 'case', description: 'grid.grp-collapse-all' }] }, async ({ page }) => {
         await gridPage(page, { height: 1900 });
         const grid = await mountGrid(page);

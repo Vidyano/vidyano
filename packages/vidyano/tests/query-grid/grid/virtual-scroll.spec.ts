@@ -6,7 +6,7 @@ const RH = 32;
 /** Page height that gives the People grid body a viewport of exactly 640px (the header is 66px) */
 const HEIGHT_640 = 706;
 
-/** Every row of the pool in DOM order */
+/** Every row of the pool in display order, the hidden rows last */
 async function rowPool(grid: Locator) {
     return grid.evaluate((g: any) => {
         const q = g.query;
@@ -19,8 +19,9 @@ async function rowPool(grid: Locator) {
                 loading: r.classList.contains('loading'),
                 index: q.items.indexOf(r.item),
                 top: r.getBoundingClientRect().top,
+                rowIndex: Number(r.getAttribute('aria-rowindex')),
                 background: getComputedStyle(r).backgroundColor
-            }));
+            })).sort((a: any, b: any) => (a.hidden ? Infinity : a.top) - (b.hidden ? Infinity : b.top));
         }
         finally {
             q.disableLazyLoading = lazy;
@@ -173,7 +174,58 @@ test.describe('Virtual scrolling and lazy loading', () => {
         }
     });
 
-    test('row DOM order and stripes follow the absolute index', { annotation: [{ type: 'case', description: 'grid.vs-even-start-zebra' }] }, async ({ page }) => {
+    test('assistive technology reads the rows in display order after the window shifts', { annotation: [{ type: 'case', description: 'grid.vs-a11y-row-order' }] }, async ({ page }) => {
+        await gridPage(page);
+        const grid = await mountGrid(page);
+        const cdp = await page.context().newCDPSession(page);
+
+        // The rows of the accessibility tree in tree order, by the DOM node's aria-rowindex
+        const treeRows = async () => {
+            const { nodes } = await cdp.send('Accessibility.getFullAXTree') as { nodes: any[] };
+            const byId = new Map(nodes.map(n => [n.nodeId, n]));
+            const order: any[] = [];
+            const walk = (node: any) => {
+                if (!node)
+                    return;
+
+                if (node.role?.value === 'row')
+                    order.push(node);
+
+                (node.childIds ?? []).forEach((id: string) => walk(byId.get(id)));
+            };
+            walk(nodes[0]);
+
+            const indexes: number[] = [];
+            for (const node of order) {
+                const { object } = await cdp.send('DOM.resolveNode', { backendNodeId: node.backendDOMNodeId });
+                const { result } = await cdp.send('Runtime.callFunctionOn', { objectId: object.objectId, functionDeclaration: 'function() { return this.classList.contains("hidden") ? -1 : Number(this.getAttribute("aria-rowindex")); }', returnByValue: true });
+                if (result.value > 0)
+                    indexes.push(result.value);
+            }
+
+            return indexes;
+        };
+
+        let shuffled = false;
+        for (const row of [12, 30, 61, 3001, 3020]) {
+            await scrollGrid(grid, { top: row * RH });
+            await settle(grid);
+
+            const domOrder = await grid.evaluate((g: any) => [...g.shadowRoot.querySelectorAll('vi-query-grid-row')].filter((r: any) => !r.classList.contains('hidden')).map((r: any) => Number(r.getAttribute('aria-rowindex'))));
+            shuffled ||= domOrder.some((index, i) => i > 0 && index < domOrder[i - 1]);
+
+            const indexes = await treeRows();
+            expect(indexes.length, `scroll to row ${row}: rows in the accessibility tree`).toBe(domOrder.length);
+            expect(indexes, `scroll to row ${row}: accessibility order`).toEqual([...domOrder].sort((a, b) => a - b));
+            expect(indexes[0], `scroll to row ${row}: first row`).toBeLessThanOrEqual(row + 1);
+        }
+
+        // The document order differs from the display order after a shift, the tree still follows the display
+        expect(shuffled).toBe(true);
+        expect(await grid.evaluate((g: any) => [g.getAttribute('role'), g.getAttribute('aria-rowcount')])).toEqual(['grid', '10000']);
+    });
+
+    test('rows show in the order of their absolute index, with its stripe and aria-rowindex', { annotation: [{ type: 'case', description: 'grid.vs-even-start-zebra' }] }, async ({ page }) => {
         await gridPage(page);
         const grid = await mountGrid(page);
         await page.mouse.move(0, 0);
@@ -189,8 +241,10 @@ test.describe('Virtual scrolling and lazy loading', () => {
             const pool = (await rowPool(grid)).filter(r => !r.hidden);
             const inView = pool.filter(r => r.top + RH > box && r.top < box + height);
             expect(inView.length, step).toBeGreaterThan(0);
-            for (let i = 1; i < pool.length; i++)
-                expect(pool[i].top, `${step}: DOM order`).toBeGreaterThan(pool[i - 1].top);
+            const items = pool.filter(r => r.index >= 0);
+            for (let i = 1; i < items.length; i++)
+                expect(items[i].index, `${step}: display order`).toBe(items[i - 1].index + 1);
+            items.forEach(r => expect(r.rowIndex, `${step}: aria-rowindex of row ${r.index}`).toBe(r.index + 1));
 
             inView.forEach(r => expect(r.background, `${step}: row ${r.index}`).toBe(r.index % 2 === 0 ? 'rgb(250, 250, 250)' : 'rgb(255, 255, 255)'));
             expect(inView[0].index, `${step}: first row near scrollTop ${top}`).toBeGreaterThanOrEqual(Math.floor(top / RH) - 1);
