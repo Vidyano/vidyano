@@ -1,6 +1,6 @@
 import { expect, Locator, Page, test } from '@playwright/test';
 import { gridPage, mountGrid, waitForQueryIdle } from '../_helpers/query-grid';
-import { clearItem, clickDistinct, columnFilter, filterButton, filterLabel, filterLog, filtersControl, filtersMenuItems, injectFilters, inverseButton, openFilter, openFiltersMenu, removeFilters, totalItems } from '../_helpers/filters';
+import { clearItem, clickDistinct, columnFilter, filterButton, filterLabel, filterLog, filtersControl, filtersMenuItems, injectFilters, inverseButton, openFilter, openFiltersMenu, removeFilters, setSelectedDistincts, totalItems } from '../_helpers/filters';
 
 const PEOPLE_COLUMNS = ['FirstName', 'LastName', 'BirthDate', 'Gender', 'ContactPreference', 'Email', 'PhoneNumber', 'EmergencyContact', 'IsActive'];
 
@@ -68,6 +68,43 @@ test.describe('State and rendering', () => {
         expect(Math.abs(box.width - rowHeight)).toBeLessThanOrEqual(1);
         expect(Math.abs(box.height - rowHeight)).toBeLessThanOrEqual(1);
         await expect(control.locator('vi-popup-menu')).toHaveCSS('visibility', 'hidden');
+    });
+
+    test('follows the query it is given and stops following the previous one', async ({ page }) => {
+        const grid = await setup(page);
+        const control = filtersControl(grid);
+        await expect(control).toHaveAttribute('disabled');
+
+        const query = await control.evaluateHandle((c: any) => c.query);
+        await control.evaluate((c: any) => c.query = null);
+        await setSelectedDistincts(grid, 'Gender', ['Female']);
+        expect(await grid.evaluate((g: any) => g.query.isFiltering)).toBe(true);
+        await expect(control).not.toHaveAttribute('is-filtering');
+
+        await control.evaluate((c: any, q) => c.query = q, query);
+        await expect(control).toHaveAttribute('is-filtering');
+
+        await setSelectedDistincts(grid, 'Gender', []);
+        await expect(control).not.toHaveAttribute('is-filtering');
+        await expect(control).toHaveAttribute('disabled');
+    });
+
+    test('catches up with changes made while disconnected', async ({ page }) => {
+        const grid = await setup(page);
+        const control = filtersControl(grid);
+        await expect(control).not.toHaveAttribute('is-filtering');
+
+        const element = await control.elementHandle();
+        const position = await element!.evaluateHandle((c: Element) => {
+            const position = { parent: c.parentNode!, next: c.nextSibling };
+            c.remove();
+            return position;
+        });
+        await setSelectedDistincts(grid, 'Gender', ['Female']);
+        expect(await element!.evaluate((c: Element) => c.hasAttribute('is-filtering'))).toBe(false);
+
+        await element!.evaluate((c: Element, p: any) => p.parent.insertBefore(c, p.next), position);
+        await expect(control).toHaveAttribute('is-filtering');
     });
 });
 
