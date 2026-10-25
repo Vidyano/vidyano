@@ -55,6 +55,7 @@ namespace Dev.Service.Supervisor
             Refresh();
             Watch(host.Root);
             sweep = new Timer(_ => Supervisors().ForEach(s => s.Tests.CancelAbandoned(AbandonedMs)), null, 5000, 5000);
+            Live.Start(host);
             QueueHeldRuns(host);
         }
 
@@ -479,6 +480,10 @@ namespace Dev.Service.Supervisor
             }
 
             removed.ForEach(s => s.StopAll());
+            // Changes in a worktree count from the moment it is found, not from when someone opens the Live view
+            foreach (var worktree in Known)
+                Live.Track(worktree.Name, worktree.Root);
+
             ChangedAll();
             return true;
         }

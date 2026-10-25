@@ -822,13 +822,47 @@ public sealed class DevSupervisor
         }
     }
 
-    public void OpenInEditor(string file, int? line, int? column)
+    public static void OpenInEditor(string root, string file, int? line, int? column)
     {
-        var full = Path.GetFullPath(Path.Combine(Root, file));
-        if (!full.StartsWith(Path.GetFullPath(Root), StringComparison.OrdinalIgnoreCase) || !File.Exists(full))
+        var full = Path.GetFullPath(Path.Combine(root, file));
+        if (!full.StartsWith(Path.GetFullPath(root), StringComparison.OrdinalIgnoreCase) || !File.Exists(full))
             return;
 
-        var target = $"{full}{(line != null ? $":{line}:{column ?? 1}" : "")}";
+        Code("-g", $"{full}{(line != null ? $":{line}:{column ?? 1}" : "")}");
+    }
+
+    /// <summary>
+    /// Opens the file's changes since its last commit in a VS Code diff; a new file is compared with an empty one, and so
+    /// is a deleted one.
+    /// </summary>
+    public static void OpenDiff(string root, string file)
+    {
+        var full = Path.GetFullPath(Path.Combine(root, file));
+        if (!full.StartsWith(Path.GetFullPath(root), StringComparison.OrdinalIgnoreCase))
+            return;
+
+        var relative = Path.GetRelativePath(root, full).Replace('\\', '/');
+        var (exitCode, committed) = Capture("git", "-C", root, "show", $"HEAD:{relative}");
+        // One folder per checkout and file, so two diffs of files with the same name keep their own HEAD
+        var folder = Path.Combine(Path.GetTempPath(), "vidyano-dev-diff", Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(full)))[..12]);
+        var name = Path.GetFileName(full);
+        var before = Path.Combine(folder, "HEAD", name);
+        Directory.CreateDirectory(Path.GetDirectoryName(before));
+        File.WriteAllText(before, exitCode == 0 ? committed : "");
+
+        var after = full;
+        if (!File.Exists(full))
+        {
+            after = Path.Combine(folder, "deleted", name);
+            Directory.CreateDirectory(Path.GetDirectoryName(after));
+            File.WriteAllText(after, "");
+        }
+
+        Code("--diff", before, after);
+    }
+
+    static void Code(params string[] arguments)
+    {
         var info = OperatingSystem.IsWindows() ? new ProcessStartInfo("cmd.exe") { UseShellExecute = false, CreateNoWindow = true } : new ProcessStartInfo("code") { UseShellExecute = false };
         if (OperatingSystem.IsWindows())
         {
@@ -836,8 +870,9 @@ public sealed class DevSupervisor
             info.ArgumentList.Add("code");
         }
 
-        info.ArgumentList.Add("-g");
-        info.ArgumentList.Add(target);
+        foreach (var argument in arguments)
+            info.ArgumentList.Add(argument);
+
         Process.Start(info);
     }
 }

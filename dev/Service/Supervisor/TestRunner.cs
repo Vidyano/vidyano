@@ -51,9 +51,12 @@ namespace Dev.Service.Supervisor
         public List<RunFile> Files;
         public string Status = "queued";
         public string QueuedAt;
+        public long QueuedMs;
         public long? Started;
         public long? Took;
         public string WaitingFor;
+        // The last thing the run waited for, kept after it started (the Live view shows the wait)
+        public string WaitedFor;
         public long Sequence;
         public string Access;
         public bool Followed;
@@ -581,7 +584,7 @@ namespace Dev.Service.Supervisor
                 if (queued != null)
                     return queued;
 
-                var run = new TestRun { Id = nextId++, Sequence = ++sequence, Access = access, Followed = followed, Args = args.ToList(), Key = key, LastPolled = Environment.TickCount64, Flags = flags, Targets = targets, Files = files, QueuedAt = DevSupervisor.Now() };
+                var run = new TestRun { Id = nextId++, Sequence = ++sequence, Access = access, Followed = followed, Args = args.ToList(), Key = key, LastPolled = Environment.TickCount64, Flags = flags, Targets = targets, Files = files, QueuedAt = DevSupervisor.Now(), QueuedMs = Live.Now() };
                 Runs.Add(run);
 
                 var finished = Runs.Where(r => r.Done).ToList();
@@ -614,6 +617,7 @@ namespace Dev.Service.Supervisor
                 return;
 
             run.WaitingFor = reason;
+            run.WaitedFor = reason;
             Tell(run, $"Waiting for {reason} to finish");
         }
 
@@ -632,6 +636,7 @@ namespace Dev.Service.Supervisor
                 Output(run, line);
 
             Tell(run, $"── Run #{run.Id} failed: {reason}");
+            Live.Record(supervisor, run);
         }
 
         /// <summary>
@@ -735,6 +740,11 @@ namespace Dev.Service.Supervisor
                         run.Tests.Add(new RunTest { RunId = run.Id, Id = test.Id, Title = test.Title, File = test.File, Line = test.Line, Column = test.Column, Spec = run.Files.FirstOrDefault(f => Regex.Replace(f.File, @":\d+$", "") == test.File)?.File ?? test.File, Version = Touch() });
 
                     run.Total = run.Tests.Count;
+                    // A --project or grep leaves some targeted spec files without a test: they don't run, so they don't
+                    // wait as pending until the end and then show as passed
+                    if (run.Tests.Count > 0)
+                        run.Files.RemoveAll(f => run.Tests.All(t => t.Spec != f.File));
+
                     break;
 
                 case "test-begin":
@@ -801,6 +811,7 @@ namespace Dev.Service.Supervisor
             var ran = run.Files.Count(f => f.Status != "skipped");
             run.ExitCode = run.Cancelled ? 130 : failedFiles.Count > 0 ? 1 : exitCode;
             Tell(run, $"── Run #{run.Id} {run.Status}: {ran}/{run.Files.Count} spec files run{(failedFiles.Count > 0 ? $", failed: {string.Join(", ", failedFiles.Select(f => f.File))}" : "")}");
+            Live.Record(supervisor, run);
         }
 
         public void Cancel(TestRun run)
@@ -813,6 +824,7 @@ namespace Dev.Service.Supervisor
                     run.ExitCode = 130;
                     run.Files.ForEach(f => f.Status = "skipped");
                     Tell(run, $"Run #{run.Id} was cancelled in the dev supervisor");
+                    Live.Record(supervisor, run);
                     return;
                 }
 

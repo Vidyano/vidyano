@@ -75,8 +75,11 @@ namespace Dev.Service.Supervisor
                 case (false, "busy"):
                     await Json(context, new BusyDto(Worktrees.ActiveRuns(), Worktrees.Held, main.InstanceId));
                     return;
-                case (false, "lit-html.js"):
+                case (false, "lit"):
                     await LitHtml(context, main);
+                    return;
+                case (false, "live"):
+                    await Json(context, Live.Snapshot());
                     return;
                 case (true, "workspace"):
                     Workspace(context, await ReadBody<WorkspaceRequest>(context));
@@ -87,6 +90,24 @@ namespace Dev.Service.Supervisor
                     return;
                 case (true, "run"):
                     await Run(context, context.Request.Query["workspace"], await ReadBody<RunRequest>(context));
+                    return;
+                // Opening a file needs only the checkout's folder, not its supervisor, which a stopped worktree would start
+                case (true, "open"):
+                case (true, "diff"):
+                    var request = await ReadBody<OpenRequest>(context);
+                    string name = context.Request.Query["workspace"];
+                    var root = string.IsNullOrEmpty(name) ? main.Root : Worktrees.Known.FirstOrDefault(w => w.Name == name)?.Root;
+                    if (string.IsNullOrEmpty(request?.File) || root == null)
+                        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    else
+                    {
+                        if (action == "open")
+                            DevSupervisor.OpenInEditor(root, request.File, request.Line, request.Column);
+                        else
+                            DevSupervisor.OpenDiff(root, request.File);
+
+                        context.Response.StatusCode = StatusCodes.Status204NoContent;
+                    }
                     return;
             }
 
@@ -116,16 +137,6 @@ namespace Dev.Service.Supervisor
                     else
                     {
                         supervisor.Tests.LoadTests(load.File, load.Refresh);
-                        context.Response.StatusCode = StatusCodes.Status204NoContent;
-                    }
-                    break;
-                case (true, "open"):
-                    var open = await ReadBody<OpenRequest>(context);
-                    if (string.IsNullOrEmpty(open?.File))
-                        context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    else
-                    {
-                        supervisor.OpenInEditor(open.File, open.Line, open.Column);
                         context.Response.StatusCode = StatusCodes.Status204NoContent;
                     }
                     break;
@@ -210,10 +221,14 @@ namespace Dev.Service.Supervisor
             await Json(context, new StatusDto(new ServiceStatusDto("ok", DevSupervisor.ServerUrl), tasks));
         }
 
+        // lit-html and its directives, under one path: a directive imports ../lit-html.js, which must be the module the
+        // page imported, or it renders with a second copy
         static async Task LitHtml(HttpContext context, DevSupervisor supervisor)
         {
-            var file = Path.Combine(supervisor.Root, "node_modules", "lit-html", "lit-html.js");
-            if (!File.Exists(file))
+            var package = Path.GetFullPath(Path.Combine(supervisor.Root, "node_modules", "lit-html"));
+            var path = string.Join('/', context.Request.Path.Value.Split('/', StringSplitOptions.RemoveEmptyEntries).Skip(3));
+            var file = Path.GetFullPath(Path.Combine(package, path));
+            if (!file.StartsWith(package + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) || !file.EndsWith(".js") || !File.Exists(file))
             {
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
                 return;
