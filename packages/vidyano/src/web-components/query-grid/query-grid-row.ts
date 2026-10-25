@@ -148,8 +148,13 @@ export class QueryGridRow extends WebComponent {
                 existingCells.remove(cell);
 
             cell.column = column;
+
+            // A cell that is already in place stays connected, moving it would reconnect it
+            const next = cells.length ? cells[cells.length - 1].nextSibling : this.querySelector(":scope > .column");
+            if (cell !== next)
+                this.insertBefore(cell, next);
+
             cells.push(cell);
-            this.appendChild(cell);
         }
 
         existingCells.forEach(cell => {
