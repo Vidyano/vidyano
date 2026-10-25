@@ -57,6 +57,8 @@ namespace Dev.Service.Supervisor
         public long Sequence;
         public string Access;
         public bool Followed;
+        public List<string> Args;
+        public string Key;
         public long LastPolled;
         public bool Cancelled;
         public int? ExitCode;
@@ -563,7 +565,7 @@ namespace Dev.Service.Supervisor
         /// Queues a run. A followed run belongs to a client (npm run test:dev) that polls its output; it is cancelled
         /// when that client stops polling (see CancelAbandoned).
         /// </summary>
-        public TestRun CreateRun(IReadOnlyList<string> args, bool followed = false)
+        public TestRun CreateRun(IReadOnlyList<string> args, bool followed = false, string key = null)
         {
             var (flags, paths) = ParseArgs(args);
             var targets = Expand(paths);
@@ -574,7 +576,12 @@ namespace Dev.Service.Supervisor
             var files = targets.GroupBy(SpecOf).Select(g => new RunFile { File = g.Count() == 1 ? g.First() : g.Key }).ToList();
             lock (Gate)
             {
-                var run = new TestRun { Id = nextId++, Sequence = ++sequence, Access = access, Followed = followed, LastPolled = Environment.TickCount64, Flags = flags, Targets = targets, Files = files, QueuedAt = DevSupervisor.Now() };
+                // A client that lost the answer to its request sends it again; it gets the run it already queued
+                var queued = key != null ? Runs.FirstOrDefault(r => r.Key == key) : null;
+                if (queued != null)
+                    return queued;
+
+                var run = new TestRun { Id = nextId++, Sequence = ++sequence, Access = access, Followed = followed, Args = args.ToList(), Key = key, LastPolled = Environment.TickCount64, Flags = flags, Targets = targets, Files = files, QueuedAt = DevSupervisor.Now() };
                 Runs.Add(run);
 
                 var finished = Runs.Where(r => r.Done).ToList();
@@ -625,6 +632,14 @@ namespace Dev.Service.Supervisor
                 Output(run, line);
 
             Tell(run, $"── Run #{run.Id} failed: {reason}");
+        }
+
+        /// <summary>
+        /// Adds a line to a run's output. Worktrees.NextRun calls this under the Gate.
+        /// </summary>
+        public void Note(TestRun run, string text)
+        {
+            Tell(run, text);
         }
 
         /// <summary>

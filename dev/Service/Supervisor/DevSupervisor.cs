@@ -18,6 +18,10 @@ public sealed class Problem
     public string Bundle;
 }
 
+public sealed record BundleSpec(string Bundle, string Bundler, string[] Builders, string[] Sources);
+
+public sealed record StaleSource(BundleSpec Spec, string Source, DateTime Changed);
+
 public sealed class SupervisorTask
 {
     public string Key;
@@ -43,6 +47,9 @@ public sealed class SupervisorTask
     public bool Once;
     public string Bundle;
     public bool Collecting;
+    public DateTime BundlingSince;
+    // When rollup started the last build that wrote each bundle: it read its inputs then, so a change after that is not in
+    public Dictionary<string, DateTime> BuiltFrom = new();
     public Timer Recovery;
 }
 
@@ -65,6 +72,18 @@ public sealed class DevSupervisor
     const string VidyanoSources = "packages/vidyano/src";
     // The SHA-256 of the package-lock.json of a worktree's last successful npm ci
     const string InstallStamp = "node_modules/.cache/vidyano-dev/lock.sha";
+    // How long after a source change a run waits for a rebuild that never comes, e.g. for a file no bundle imports
+    public static readonly TimeSpan RebuildGrace = TimeSpan.FromSeconds(10);
+
+    // The bundles the tests load, each with the watchers that build it and its sources. Core tests load the core
+    // bundle, the virtual-service tests its compiled src (rollup bundles it right after) and the vidyano tests the
+    // dev bundle, which includes the core bundle.
+    static readonly BundleSpec[] Bundles =
+    {
+        new("packages/core/dist/index.js", "rollup-core", new[] { "ts-core", "rollup-core" }, new[] { "packages/core/src" }),
+        new("packages/labs/virtual-service/dist/index.js", "rollup-virtual-service", new[] { "ts-virtual-service", "rollup-virtual-service" }, new[] { "packages/labs/virtual-service/src" }),
+        new("dev/wwwroot/index.js", "rollup-vidyano", new[] { "ts-vidyano", "sass", "rollup-vidyano" }, new[] { "packages/core/dist/index.js", VidyanoSources, "packages/vidyano/tests/index.ts", "packages/vidyano/tests/index.js", "packages/vidyano/tests/web-component", "packages/vidyano/tests/dialog" })
+    };
 
     static readonly Regex Ansi = new(@"\x1b\[[0-9;?]*[A-Za-z]");
     static readonly Regex Timestamp = new(@"^(\d{1,2}:\d{2}:\d{2}( [AP]M)? - |\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}(:\d{2})?\] |\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z )");
@@ -87,6 +106,8 @@ public sealed class DevSupervisor
     long version;
     long nextLogId = 1;
     TaskCompletionSource changed = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    Timer recheckRuns;
+    readonly HashSet<StaleSource> acceptedChanges = new();
 
     DevSupervisor(string root, DevSupervisor host = null, string workspace = null)
     {
@@ -358,6 +379,84 @@ public sealed class DevSupervisor
         return (Path.IsPathRooted(file) ? Path.GetRelativePath(Root, file) : file).Replace('\\', '/');
     }
 
+    /// <summary>
+    /// The changed sources the bundles the tests load miss. A watcher only reports building once it notices a change, so
+    /// right after a save all watchers still look done. A change accepted for a run (see AcceptStale) no longer counts, so
+    /// a file no bundle imports doesn't keep every run waiting.
+    /// </summary>
+    public List<StaleSource> FindStaleSources()
+    {
+        return Bundles.SelectMany(Scan).Where(stale => !acceptedChanges.Contains(stale)).ToList();
+    }
+
+    public void AcceptStale(StaleSource stale)
+    {
+        acceptedChanges.Add(stale);
+    }
+
+    List<StaleSource> Scan(BundleSpec spec)
+    {
+        try
+        {
+            // Without a build seen since the supervisor started, the bundle's own time is the best guess
+            var built = Find(spec.Bundler) is { } bundler && bundler.BuiltFrom.TryGetValue(spec.Bundle, out var from) ? from : File.GetLastWriteTimeUtc(Path.Combine(Root, spec.Bundle));
+            var files = spec.Sources.SelectMany(SourceFiles).Select(file => (File: file, Changed: File.GetLastWriteTimeUtc(file))).ToList();
+            var styles = files.Where(f => f.File.EndsWith(".scss")).ToDictionary(f => f.File, f => File.ReadAllText(f.File));
+            return files.Where(f => f.Changed > built || f.Changed > CompiledAt(f.File, styles, 0)).Select(f => new StaleSource(spec, Relative(f.File), f.Changed)).ToList();
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            // A checkout or clean in progress; the run waits for the watchers that follow it instead
+            return new List<StaleSource>();
+        }
+    }
+
+    IEnumerable<string> SourceFiles(string source)
+    {
+        var path = Path.Combine(Root, source);
+        if (File.Exists(path))
+            return new[] { path };
+
+        return Directory.Exists(path) ? Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories).Where(IsSource) : Array.Empty<string>();
+    }
+
+    static bool IsSource(string file)
+    {
+        return Regex.IsMatch(file, @"\.(ts|js|scss|css|html)$") && !Regex.IsMatch(file, @"\.(d|spec)\.ts$");
+    }
+
+    /// <summary>
+    /// When tsc wrote a .ts file's .js, or sass a .scss file's .css, next to it. A bundle newer than the source doesn't prove
+    /// the change is in: rollup can finish a build it started before the save, while tsc or sass have yet to notice it.
+    /// </summary>
+    static DateTime CompiledAt(string file, Dictionary<string, string> styles, int depth)
+    {
+        if (file.EndsWith(".ts"))
+            return File.GetLastWriteTimeUtc(Path.ChangeExtension(file, ".js"));
+
+        if (!file.EndsWith(".scss"))
+            return DateTime.MaxValue;
+
+        // sass also compiles the stylesheets that use this one again, so its change is in once theirs is too; a partial has
+        // no .css of its own
+        var name = Path.GetFileNameWithoutExtension(file);
+        var own = name.StartsWith('_') ? DateTime.MaxValue : File.GetLastWriteTimeUtc(Path.ChangeExtension(file, ".css"));
+        if (depth > 5)
+            return own;
+
+        var used = new Regex($@"@(use|import)\s+[""'](?:[^""']*/)?_?{Regex.Escape(name.TrimStart('_'))}(\.scss)?[""']");
+        return styles.Where(s => s.Key != file && used.IsMatch(s.Value)).Select(s => CompiledAt(s.Key, styles, depth + 1)).Append(own).Min();
+    }
+
+    /// <summary>
+    /// Has NextRun look at the queued runs again after the delay, for a run that waits on time rather than on a change.
+    /// </summary>
+    public void RecheckRunsAfter(TimeSpan delay)
+    {
+        recheckRuns?.Dispose();
+        recheckRuns = new Timer(_ => Worktrees.NextRun(), null, TimeSpan.FromTicks(Math.Clamp(delay.Ticks, 0, RebuildGrace.Ticks)), Timeout.InfiniteTimeSpan);
+    }
+
     string RelativeTo(SupervisorTask t, string file)
     {
         return Relative(Path.GetFullPath(Path.Combine(Root, t.Cwd, file)));
@@ -468,6 +567,7 @@ public sealed class DevSupervisor
         {
             t.Bundle = Path.GetFileName(bundles.Groups[1].Value.Split(',')[0].Trim());
             t.Problems = t.Problems.Where(p => p.Bundle != t.Bundle).ToList();
+            t.BundlingSince = DateTime.UtcNow;
             Set(t, "building", $"bundling {t.Bundle}");
             return;
         }
@@ -475,6 +575,9 @@ public sealed class DevSupervisor
         var created = Regex.Match(line, "^created (.+) in (.+)$");
         if (created.Success)
         {
+            foreach (var output in created.Groups[1].Value.Split(','))
+                t.BuiltFrom[RelativeTo(t, output.Trim())] = t.BundlingSince;
+
             Set(t, t.Problems.Count > 0 ? "error" : "ok", $"created {Path.GetFileName(created.Groups[1].Value.Split(',')[0].Trim())}");
             return;
         }

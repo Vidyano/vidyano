@@ -78,27 +78,29 @@ namespace Dev.Service.Supervisor
 
     public record OutputLineDto(long Id, string Text);
 
-    public record RunOutputDto(int Id, string Status, int? ExitCode, bool Done, List<OutputLineDto> Lines);
+    public record RunOutputDto(int Id, string Instance, string Status, int? ExitCode, bool Done, List<OutputLineDto> Lines);
 
     public record StatusDto(ServiceStatusDto Server, List<TaskDto> Tasks);
 
     public record ServiceStatusDto(string Status, string Url);
 
-    public record RunRequest(List<string> Args, string Cwd, bool Follow);
+    public record RunRequest(List<string> Args, string Cwd, bool Follow, string Key);
 
-    public record RunCreatedDto(int Id, string Workspace);
+    public record RunCreatedDto(int Id, string Workspace, string Instance, string Host);
 
     public record ErrorDto(string Error);
 
-    public record ActiveRunDto(string Workspace, int Id, string Status);
+    public record ActiveRunDto(string Workspace, int Id, string Status, bool Followed);
 
-    public record BusyDto(List<ActiveRunDto> Runs);
+    public record BusyDto(List<ActiveRunDto> Runs, string Held, string Host);
+
+    public record HoldRequest(string Reason);
 
     public record WorkspaceDto(string Name, string Branch, string Root, bool Running);
 
     public record WorkspaceRequest(string Name, string Action);
 
-    public record RunIdRequest(int? Id);
+    public record RunIdRequest(int? Id, string Instance = null);
 
     public record LoadTestsRequest(string File, bool Refresh);
 

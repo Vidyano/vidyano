@@ -73,13 +73,17 @@ namespace Dev.Service.Supervisor
                     await Status(context, main);
                     return;
                 case (false, "busy"):
-                    await Json(context, new BusyDto(Worktrees.ActiveRuns()));
+                    await Json(context, new BusyDto(Worktrees.ActiveRuns(), Worktrees.Held, main.InstanceId));
                     return;
                 case (false, "lit-html.js"):
                     await LitHtml(context, main);
                     return;
                 case (true, "workspace"):
                     Workspace(context, await ReadBody<WorkspaceRequest>(context));
+                    return;
+                case (true, "hold"):
+                    Worktrees.Hold((await ReadBody<HoldRequest>(context))?.Reason);
+                    context.Response.StatusCode = StatusCodes.Status204NoContent;
                     return;
                 case (true, "run"):
                     await Run(context, context.Request.Query["workspace"], await ReadBody<RunRequest>(context));
@@ -103,7 +107,7 @@ namespace Dev.Service.Supervisor
                     await Output(context, supervisor);
                     break;
                 case (true, "cancel"):
-                    await Cancel(context, supervisor, (await ReadBody<RunIdRequest>(context))?.Id);
+                    await Cancel(context, supervisor, await ReadBody<RunIdRequest>(context));
                     break;
                 case (true, "load-tests"):
                     var load = await ReadBody<LoadTestsRequest>(context);
@@ -154,8 +158,8 @@ namespace Dev.Service.Supervisor
                 return;
             }
 
-            var run = supervisor.Tests.CreateRun(request?.Args ?? new List<string>(), request?.Follow == true);
-            await Json(context, new RunCreatedDto(run.Id, supervisor.Workspace));
+            var run = supervisor.Tests.CreateRun(request?.Args ?? new List<string>(), request?.Follow == true, request?.Key);
+            await Json(context, new RunCreatedDto(run.Id, supervisor.Workspace, supervisor.InstanceId, DevSupervisor.Instance.InstanceId));
         }
 
         static void Workspace(HttpContext context, WorkspaceRequest request)
@@ -234,17 +238,19 @@ namespace Dev.Service.Supervisor
             lock (supervisor.Gate)
             {
                 run.LastPolled = Environment.TickCount64;
-                output = new RunOutputDto(run.Id, run.Status, run.ExitCode, run.Done, run.Output.Where(l => l.Id > after).Select(l => new OutputLineDto(l.Id, l.Text)).ToList());
+                output = new RunOutputDto(run.Id, supervisor.InstanceId, run.Status, run.ExitCode, run.Done, run.Output.Where(l => l.Id > after).Select(l => new OutputLineDto(l.Id, l.Text)).ToList());
             }
 
             await Json(context, output);
         }
 
-        static async Task Cancel(HttpContext context, DevSupervisor supervisor, int? id)
+        static async Task Cancel(HttpContext context, DevSupervisor supervisor, RunIdRequest request)
         {
+            // A run id of another backend instance is another run: ids start at 1 again after a restart
+            var id = request?.Instance == null || request.Instance == supervisor.InstanceId ? request?.Id : -1;
             TestRun run;
             lock (supervisor.Gate)
-                run = id != null ? supervisor.Tests.Runs.FirstOrDefault(r => r.Id == id) : supervisor.Tests.Runs.FirstOrDefault(r => r.Status == "running") ?? supervisor.Tests.Runs.FirstOrDefault(r => r.Status == "queued");
+                run = request?.Id != null ? supervisor.Tests.Runs.FirstOrDefault(r => r.Id == id) : supervisor.Tests.Runs.FirstOrDefault(r => r.Status == "running") ?? supervisor.Tests.Runs.FirstOrDefault(r => r.Status == "queued");
 
             if (run == null)
             {

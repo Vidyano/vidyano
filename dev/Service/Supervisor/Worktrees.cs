@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
+using Newtonsoft.Json;
 
 namespace Dev.Service.Supervisor
 {
@@ -42,11 +43,71 @@ namespace Dev.Service.Supervisor
 
         static DevSupervisor Host => DevSupervisor.Instance;
 
+        // The runs queued without a client while a restart was held, so the new backend queues them again (see Hold)
+        const string HeldRunsFile = "node_modules/.cache/vidyano-dev/held-runs.json";
+        static string savedHeldRuns;
+        static bool stopping;
+
+        sealed record HeldRun(string Workspace, List<string> Args);
+
         public static void Start(DevSupervisor host)
         {
             Refresh();
             Watch(host.Root);
             sweep = new Timer(_ => Supervisors().ForEach(s => s.Tests.CancelAbandoned(AbandonedMs)), null, 5000, 5000);
+            QueueHeldRuns(host);
+        }
+
+        static void QueueHeldRuns(DevSupervisor host)
+        {
+            var path = Path.Combine(host.Root, HeldRunsFile);
+            List<HeldRun> held;
+            try
+            {
+                if (!File.Exists(path))
+                    return;
+
+                held = JsonConvert.DeserializeObject<List<HeldRun>>(File.ReadAllText(path)) ?? new List<HeldRun>();
+                File.Delete(path);
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException or JsonException)
+            {
+                return;
+            }
+
+            foreach (var run in held)
+                (run.Workspace == null ? host : Run(run.Workspace))?.Tests.CreateRun(run.Args);
+        }
+
+        /// <summary>
+        /// Saves the queued runs without a client while a restart is held. Called under the Gate.
+        /// </summary>
+        static void SaveHeldRuns(List<DevSupervisor> supervisors)
+        {
+            if (Held != null && !stopping)
+                SaveHeldRuns(supervisors.SelectMany(s => s.Tests.Runs.Where(r => r.Status == "queued" && !r.Followed).Select(r => new HeldRun(s.IsMain ? null : s.Workspace, r.Args))).ToList());
+        }
+
+        static void SaveHeldRuns(List<HeldRun> held)
+        {
+            var json = JsonConvert.SerializeObject(held);
+            if (json == savedHeldRuns)
+                return;
+
+            var path = Path.Combine(Host.Root, HeldRunsFile);
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                if (held.Count > 0)
+                    File.WriteAllText(path, json);
+                else
+                    File.Delete(path);
+
+                savedHeldRuns = json;
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+            {
+            }
         }
 
         public static IReadOnlyList<Worktree> Known
@@ -70,6 +131,25 @@ namespace Dev.Service.Supervisor
                 return known.Select(w => w.Supervisor).Where(s => s != null).Prepend(host).ToList();
         }
 
+        /// <summary>
+        /// Why tools/dev/index.mjs is about to restart the backend, which ends every test run; null when it is not. Until the
+        /// restart no queued run starts, so the running ones can finish and the restart never cuts one off. npm run
+        /// test:dev queues its run again on the new backend; a run queued without a client is saved for it (see Start).
+        /// </summary>
+        public static string Held { get; private set; }
+
+        public static void Hold(string reason)
+        {
+            lock (Host.Gate)
+            {
+                Held = string.IsNullOrWhiteSpace(reason) ? null : reason;
+                if (Held == null)
+                    SaveHeldRuns(new List<HeldRun>());
+            }
+
+            ChangedAll();
+        }
+
         public static void ChangedAll()
         {
             foreach (var supervisor in Supervisors())
@@ -83,7 +163,11 @@ namespace Dev.Service.Supervisor
         {
             var supervisors = Supervisors();
             lock (Host.Gate)
-                return supervisors.SelectMany(s => s.Tests.Runs.Where(r => !r.Done).Select(r => new ActiveRunDto(Label(s), r.Id, r.Status))).ToList();
+            {
+                // tools/dev/index.mjs restarts the backend right after this answer, so the held runs are saved before it
+                SaveHeldRuns(supervisors);
+                return supervisors.SelectMany(s => s.Tests.Runs.Where(r => !r.Done).Select(r => new ActiveRunDto(Label(s), r.Id, r.Status, r.Followed))).ToList();
+            }
         }
 
         /// <summary>
@@ -143,6 +227,12 @@ namespace Dev.Service.Supervisor
                     if (supervisor.ShuttingDown)
                         continue;
 
+                    if (Held != null)
+                    {
+                        supervisor.Tests.Wait(run, $"the backend restart ({Held})");
+                        continue;
+                    }
+
                     // Without its packages a worktree runs nothing, so its runs fail now instead of waiting forever
                     var installFailure = supervisor.InstallFailure();
                     if (installFailure != null)
@@ -172,9 +262,45 @@ namespace Dev.Service.Supervisor
                         continue;
                     }
 
+                    // A perf run also waits for the other checkouts' rebuilds, for the same reason
+                    var checkouts = run.Access == TestRunner.Machine ? supervisors.Where(s => !s.ShuttingDown) : new[] { supervisor };
+                    var stale = checkouts.SelectMany(s => s.FindStaleSources().Select(source => (Supervisor: s, Stale: source))).ToList();
+                    var now = DateTime.UtcNow;
+                    // Also a change dated after now: it may have been saved during the scan
+                    var rebuilding = stale.Where(x => (now - x.Stale.Changed).Duration() < DevSupervisor.RebuildGrace).OrderByDescending(x => x.Stale.Changed).ToList();
+                    if (rebuilding.Count > 0)
+                    {
+                        var (owner, newest) = rebuilding[0];
+                        supervisor.Tests.Wait(run, $"the rebuild after the change to {Path.GetFileName(newest.Source)}{(owner != supervisor ? $" in {Label(owner)}" : "")}");
+                        supervisor.RecheckRunsAfter(rebuilding.Min(x => x.Stale.Changed) + DevSupervisor.RebuildGrace - now);
+                        ahead.Add((supervisor, run, run.Access == TestRunner.Machine));
+                        continue;
+                    }
+
+                    // tsc and sass still write their output on an error, so only a failed bundle or a crashed watcher leaves the
+                    // last good bundle in place, which the run would test without saying so
+                    var missed = stale.Where(x => x.Supervisor == supervisor).Select(x => x.Stale).ToList();
+                    var broken = supervisor.Watchers.Where(t => missed.Any(m => m.Spec.Builders.Contains(t.Key) && (t.Status == "stopped" || t.Status == "error" && t.Key == m.Spec.Bundler))).ToList();
+                    if (broken.Count > 0)
+                    {
+                        var first = missed.First(m => broken.Any(t => m.Spec.Builders.Contains(t.Key)));
+                        supervisor.Tests.Fail(run, $"{string.Join(", ", broken.Select(t => $"{t.Label} ({t.Detail})"))} did not build the change to {first.Source}, so {first.Spec.Bundle} is out of date; fix the build and run again", broken.SelectMany(t => t.Problems.Select(p => $"{t.Label}: {(p.File != null ? $"{p.File}{(p.Line != null ? $":{p.Line}" : "")} " : "")}{p.Message}")));
+                        continue;
+                    }
+
+                    foreach (var bundle in missed.GroupBy(m => m.Spec.Bundle))
+                    {
+                        foreach (var source in bundle)
+                            supervisor.AcceptStale(source);
+
+                        supervisor.Tests.Note(run, $"{string.Join(", ", bundle.Select(m => m.Source))} changed after the last build of {bundle.Key}, but no rebuild came within {DevSupervisor.RebuildGrace.TotalSeconds:0} seconds (no bundle may import {(bundle.Count() == 1 ? "it" : "them")}), so this run tests the current build");
+                    }
+
                     supervisor.Tests.Begin(run);
                     ahead.Add((supervisor, run, true));
                 }
+
+                SaveHeldRuns(supervisors);
             }
         }
 
@@ -249,6 +375,8 @@ namespace Dev.Service.Supervisor
             List<DevSupervisor> running;
             lock (Host.Gate)
             {
+                // The worktrees' runs are cancelled below, which must not reach the held runs saved for the next backend
+                stopping = true;
                 running = known.Select(w => w.Supervisor).Where(s => s != null).ToList();
                 known.ForEach(w => w.Supervisor = null);
             }
