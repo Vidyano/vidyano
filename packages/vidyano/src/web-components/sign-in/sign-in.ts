@@ -76,6 +76,11 @@ interface INotification {
             readOnly: true,
             value: false
         },
+        hasPasskey: {
+            type: Boolean,
+            readOnly: true,
+            value: false
+        },
         register: {
             type: Object,
             readOnly: true,
@@ -122,6 +127,7 @@ export class SignIn extends Polymer.WebComponent {
     readonly hasOther: boolean; private _setHasOther: (hasOther: boolean) => void;
     readonly hasForgot: boolean; private _setHasForgot: (hasForgot: boolean) => void;
     readonly hasRegister: boolean; private _setHasRegister: (hasRegister: boolean) => void;
+    readonly hasPasskey: boolean; private _setHasPasskey: (hasPasskey: boolean) => void;
     readonly register: Vidyano.PersistentObject; private _setRegister: (register: Vidyano.PersistentObject) => void;
     readonly initial: Vidyano.PersistentObject;
     readonly description: string; private _setDescription: (description: string) => void;
@@ -131,8 +137,12 @@ export class SignIn extends Polymer.WebComponent {
     password: string;
     staySignedIn: boolean;
     twoFactorCode: string;
+    private _activation: AbortController;
+    private _conditionalPasskey: AbortController;
 
     private async _activate(e: CustomEvent) {
+        this._activation = new AbortController();
+
         const { parameters }: { parameters: ISignInRouteParameters; } = e.detail;
         if (parameters.stateOrReturnUrl) {
             if (/^(register)$/i.test(parameters.stateOrReturnUrl)) {
@@ -186,6 +196,7 @@ export class SignIn extends Polymer.WebComponent {
         if (this.hasVidyano) {
             this._setHasForgot(this.service.providers.Vidyano.forgotPassword || false);
             this._setHasRegister(!!this.service.providers.Vidyano.registerUser && !!this.service.providers.Vidyano.registerPersistentObjectId);
+            this._setHasPasskey(!!this.service.providers.Vidyano.passkeys && typeof PublicKeyCredential !== "undefined");
         }
 
         if (this.hasVidyano)
@@ -235,17 +246,80 @@ export class SignIn extends Polymer.WebComponent {
             }
 
             this.step = this.hasVidyano && this.userName ? "password" : "username";
+            this._offerConditionalPasskey();
         }
     }
 
     private _deactivate() {
+        this._activation?.abort();
+        this._abortConditionalPasskey();
         this.password = this.twoFactorCode = "";
+    }
+
+    private async _offerConditionalPasskey() {
+        this._abortConditionalPasskey();
+        if (!this.hasPasskey || this.step !== "username" || this._activation.signal.aborted || typeof PublicKeyCredential.isConditionalMediationAvailable !== "function")
+            return;
+
+        const controller = this._conditionalPasskey = new AbortController();
+        const activation = this._activation.signal;
+
+        try {
+            if (!await PublicKeyCredential.isConditionalMediationAvailable() || controller.signal.aborted)
+                return;
+
+            await this.service.signInUsingPasskey({ staySignedIn: this.staySignedIn, mediation: "conditional", signal: controller.signal });
+
+            // An in-page abort after the passkey was picked still signs in
+            if (!activation.aborted)
+                this.app.changePath(decodeURIComponent(this.returnUrl || ""));
+        }
+        catch (error) {
+            if (!this._isPasskeyCancellation(error))
+                this._error(error);
+        }
+        finally {
+            if (this._conditionalPasskey === controller)
+                this._conditionalPasskey = null;
+        }
+    }
+
+    private _abortConditionalPasskey() {
+        this._conditionalPasskey?.abort();
+        this._conditionalPasskey = null;
+    }
+
+    private async _signInWithPasskey() {
+        this._abortConditionalPasskey();
+        this._setIsBusy(true);
+
+        const activation = this._activation.signal;
+
+        try {
+            await this.service.signInUsingPasskey({ staySignedIn: this.staySignedIn, signal: activation });
+            if (!activation.aborted)
+                this.app.changePath(decodeURIComponent(this.returnUrl || ""));
+        }
+        catch (error) {
+            if (!this._isPasskeyCancellation(error))
+                this._error(error);
+
+            this._offerConditionalPasskey();
+        }
+        finally {
+            this._setIsBusy(false);
+        }
+    }
+
+    private _isPasskeyCancellation(error: unknown): boolean {
+        return error instanceof DOMException && (error.name === "NotAllowedError" || error.name === "AbortError");
     }
 
     private _back() {
         if (this.step === "password") {
             this.userName = "";
             this.step = "username";
+            this._offerConditionalPasskey();
         }
         else if (this.step === "twofactor") {
             this.password = this.twoFactorCode = "";
@@ -376,6 +450,7 @@ export class SignIn extends Polymer.WebComponent {
     }
 
     private async _authenticate() {
+        this._abortConditionalPasskey();
         this._setIsBusy(true);
 
         try {
@@ -417,6 +492,7 @@ export class SignIn extends Polymer.WebComponent {
         catch (error) {
             this._error(error);
             this._setIsBusy(false);
+            this._offerConditionalPasskey();
         }
     }
 

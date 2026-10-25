@@ -1,0 +1,473 @@
+{
+  "PersistentObject": {
+    "$id": "PersistentObject:93398af7-11ee-4318-8706-0adc6d36210d",
+    "Id": "93398af7-11ee-4318-8706-0adc6d36210d",
+    "SchemaName": "Dev",
+    "Type": "GridDataType",
+    "Salt": "gkScOLuYxOHg1-JlBgjDf0yALU2ZGzJRa7c3JNrM9Z0J5QtIlPmKGQ",
+    "Breadcrumb": "{Text}",
+    "ContextProperty": "GridDataTypes",
+    "Label": {
+      "en": "Grid data type",
+      "nl": "Grid data type"
+    },
+    "Groups": [
+      {
+        "$id": "PersistentObjectAttributeGroup:8c230b97-7b05-4094-9bac-e428259e870b",
+        "Id": "8c230b97-7b05-4094-9bac-e428259e870b"
+      }
+    ],
+    "Tabs": [
+      {
+        "$id": "PersistentObjectAttributeTab:173e872a-e14e-4e3f-b4aa-0764331b54b0",
+        "Id": "173e872a-e14e-4e3f-b4aa-0764331b54b0"
+      }
+    ],
+    "Attributes": [
+      {
+        "$id": "PersistentObjectAttribute:fd182bf3-6962-4eaa-b123-292f41673741",
+        "Id": "fd182bf3-6962-4eaa-b123-292f41673741",
+        "Offset": 180,
+        "Name": "CommonMark",
+        "IsReadOnly": true,
+        "DataTypeHints": "DisplayInGrid=True",
+        "Label": {
+          "en": "CommonMark",
+          "nl": "CommonMark"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:CommonMark"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:8c230b97-7b05-4094-9bac-e428259e870b"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:173e872a-e14e-4e3f-b4aa-0764331b54b0"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:c6afd4ba-cf63-4b75-9b34-2479214e1389",
+        "Id": "c6afd4ba-cf63-4b75-9b34-2479214e1389",
+        "Offset": 100,
+        "Name": "DateTime",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "DateTime",
+          "nl": "DateTime"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:DateTime"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:8c230b97-7b05-4094-9bac-e428259e870b"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:173e872a-e14e-4e3f-b4aa-0764331b54b0"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:c7efb9b6-840a-4fe7-b3fe-92ec82eaa8eb",
+        "Id": "c7efb9b6-840a-4fe7-b3fe-92ec82eaa8eb",
+        "Offset": 110,
+        "Name": "DateTimeOffset",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "DateTimeOffset",
+          "nl": "DateTimeOffset"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:DateTimeOffset"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:8c230b97-7b05-4094-9bac-e428259e870b"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:173e872a-e14e-4e3f-b4aa-0764331b54b0"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:36076108-1121-47ac-8c3d-4638573ea885",
+        "Id": "36076108-1121-47ac-8c3d-4638573ea885",
+        "Offset": 60,
+        "Name": "Decimal",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Decimal",
+          "nl": "Decimal"
+        },
+        "Visibility": 7,
+        "DisplaySum": true,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Decimal"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:8c230b97-7b05-4094-9bac-e428259e870b"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:173e872a-e14e-4e3f-b4aa-0764331b54b0"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:67ec5b8c-bd5a-435a-b6ae-bc59d665651f",
+        "Id": "67ec5b8c-bd5a-435a-b6ae-bc59d665651f",
+        "Offset": 70,
+        "Name": "DecimalFormatted",
+        "IsReadOnly": true,
+        "DataTypeHints": "DisplayFormat={0:N2}",
+        "Label": {
+          "en": "Decimal (N2)",
+          "nl": "Decimal (N2)"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Decimal"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:8c230b97-7b05-4094-9bac-e428259e870b"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:173e872a-e14e-4e3f-b4aa-0764331b54b0"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:dcd7c10e-9dc2-4779-96a8-35c36e9b4442",
+        "Id": "dcd7c10e-9dc2-4779-96a8-35c36e9b4442",
+        "Offset": 80,
+        "Name": "Double",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Double",
+          "nl": "Double"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Double"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:8c230b97-7b05-4094-9bac-e428259e870b"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:173e872a-e14e-4e3f-b4aa-0764331b54b0"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:6eb6926f-d3c5-4ccc-b243-185149f32da5",
+        "Id": "6eb6926f-d3c5-4ccc-b243-185149f32da5",
+        "Offset": 10,
+        "Name": "Id",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Id",
+          "nl": "Id"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Int32"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:8c230b97-7b05-4094-9bac-e428259e870b"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:173e872a-e14e-4e3f-b4aa-0764331b54b0"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:12b7161c-4f70-4feb-b052-6b061f73ef82",
+        "Id": "12b7161c-4f70-4feb-b052-6b061f73ef82",
+        "Offset": 170,
+        "Name": "Image",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Image",
+          "nl": "Image"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Image"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:8c230b97-7b05-4094-9bac-e428259e870b"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:173e872a-e14e-4e3f-b4aa-0764331b54b0"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:e708c5ca-98d5-4311-9607-9f23785caca7",
+        "Id": "e708c5ca-98d5-4311-9607-9f23785caca7",
+        "Offset": 40,
+        "Name": "Int32",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Int32",
+          "nl": "Int32"
+        },
+        "Visibility": 7,
+        "DisplaySum": true,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Int32"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:8c230b97-7b05-4094-9bac-e428259e870b"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:173e872a-e14e-4e3f-b4aa-0764331b54b0"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:14aa4966-cfd4-420a-bd89-e78e03f60074",
+        "Id": "14aa4966-cfd4-420a-bd89-e78e03f60074",
+        "Offset": 90,
+        "Name": "Int64",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Int64",
+          "nl": "Int64"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Int64"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:8c230b97-7b05-4094-9bac-e428259e870b"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:173e872a-e14e-4e3f-b4aa-0764331b54b0"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:ea8a51f8-54c7-47de-b4ce-7375c186ded4",
+        "Id": "ea8a51f8-54c7-47de-b4ce-7375c186ded4",
+        "Offset": 30,
+        "Name": "MultiLine",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Multi line",
+          "nl": "Multi line"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:MultiLineString"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:8c230b97-7b05-4094-9bac-e428259e870b"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:173e872a-e14e-4e3f-b4aa-0764331b54b0"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:161d7a5e-e64b-4e43-9fe3-b094ea55e38e",
+        "Id": "161d7a5e-e64b-4e43-9fe3-b094ea55e38e",
+        "Offset": 140,
+        "Name": "NullableBoolean",
+        "IsReadOnly": true,
+        "DataTypeHints": "TrueKey=OK; FalseKey=Cancel; NullKey=Unknown",
+        "Label": {
+          "en": "Nullable boolean (hints)",
+          "nl": "Nullable boolean (hints)"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:NullableBoolean"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:8c230b97-7b05-4094-9bac-e428259e870b"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:173e872a-e14e-4e3f-b4aa-0764331b54b0"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:06a48208-f66f-42b8-92c3-2bfd12194645",
+        "Id": "06a48208-f66f-42b8-92c3-2bfd12194645",
+        "Offset": 150,
+        "Name": "NullableBooleanPlain",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Nullable boolean",
+          "nl": "Nullable boolean"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:NullableBoolean"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:8c230b97-7b05-4094-9bac-e428259e870b"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:173e872a-e14e-4e3f-b4aa-0764331b54b0"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:14819417-5e51-4ea4-8c4c-b7c40c35992b",
+        "Id": "14819417-5e51-4ea4-8c4c-b7c40c35992b",
+        "Offset": 130,
+        "Name": "NullableDate",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Nullable date",
+          "nl": "Nullable date"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:NullableDate"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:8c230b97-7b05-4094-9bac-e428259e870b"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:173e872a-e14e-4e3f-b4aa-0764331b54b0"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:6d7bdaa9-dee6-4abe-afb3-7390fe298dd9",
+        "Id": "6d7bdaa9-dee6-4abe-afb3-7390fe298dd9",
+        "Offset": 50,
+        "Name": "NullableInt32",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Nullable Int32",
+          "nl": "Nullable Int32"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:NullableInt32"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:8c230b97-7b05-4094-9bac-e428259e870b"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:173e872a-e14e-4e3f-b4aa-0764331b54b0"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:0799b6b7-56c9-47e9-9c42-7b5b211062cc",
+        "Id": "0799b6b7-56c9-47e9-9c42-7b5b211062cc",
+        "Offset": 190,
+        "Name": "Secret",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Secret",
+          "nl": "Secret"
+        },
+        "Visibility": 7,
+        "IsSensitive": true,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:8c230b97-7b05-4094-9bac-e428259e870b"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:173e872a-e14e-4e3f-b4aa-0764331b54b0"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:fa2e7c7f-8fe5-4d33-a5bf-3b2b9540c72c",
+        "Id": "fa2e7c7f-8fe5-4d33-a5bf-3b2b9540c72c",
+        "Offset": 20,
+        "Name": "Text",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Text",
+          "nl": "Text"
+        },
+        "Visibility": 7,
+        "DisplaySum": true,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:8c230b97-7b05-4094-9bac-e428259e870b"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:173e872a-e14e-4e3f-b4aa-0764331b54b0"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:67ea9917-641e-4051-af6c-8f6cd8076456",
+        "Id": "67ea9917-641e-4051-af6c-8f6cd8076456",
+        "Offset": 120,
+        "Name": "Time",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Time",
+          "nl": "Time"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Time"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:8c230b97-7b05-4094-9bac-e428259e870b"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:173e872a-e14e-4e3f-b4aa-0764331b54b0"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:f14968fc-b651-4417-8a95-074d9e618b48",
+        "Id": "f14968fc-b651-4417-8a95-074d9e618b48",
+        "Offset": 160,
+        "Name": "YesNo",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "YesNo",
+          "nl": "YesNo"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:YesNo"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:8c230b97-7b05-4094-9bac-e428259e870b"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:173e872a-e14e-4e3f-b4aa-0764331b54b0"
+        }
+      }
+    ],
+    "Queries": []
+  },
+  "Queries": [
+    {
+      "$id": "Query:5a3a6d21-40f2-4644-add7-45d26c825870",
+      "Id": "5a3a6d21-40f2-4644-add7-45d26c825870",
+      "Source": "Database.GridDataTypes",
+      "AutoQuery": true,
+      "Name": "QueryGrid_DataTypes",
+      "Label": {
+        "en": "Data types",
+        "nl": "Data types"
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:93398af7-11ee-4318-8706-0adc6d36210d"
+      },
+      "Columns": []
+    }
+  ],
+  "Reports": []
+}

@@ -108,12 +108,15 @@ function execCommand(command, options) {
 
         await execCommand("npx sass --no-source-map packages/vidyano/src:packages/vidyano/src -q");
 
+        // Not .bin/tsc: that is the TypeScript 6 that rollup-plugin-dts pulls in through @typescript/typescript6
+        const tsc = "node node_modules/typescript/bin/tsc";
+
         // Build core first (tsc then rollup) so @vidyano/core is available
-        await execCommand("tsc --project packages/core/tsconfig.json");
+        await execCommand(`${tsc} --project packages/core/tsconfig.json`);
         await execCommand("npx rollup -c --environment NODE_ENV:production --bundleConfigAsCjs", { cwd: path.join(packagesDir, "core") });
 
         // Now build vidyano (depends on @vidyano/core being built)
-        await execCommand("tsc --project packages/vidyano/tsconfig.json");
+        await execCommand(`${tsc} --project packages/vidyano/tsconfig.json`);
         await execCommand("npx rollup -c --environment NODE_ENV:production --bundleConfigAsCjs", { cwd: path.join(packagesDir, "vidyano") });
 
         console.info("Build completed successfully!");

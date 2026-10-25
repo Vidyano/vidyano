@@ -27,6 +27,7 @@ import { VirtualQueryRegistry } from "./registry/virtual-query-registry.js";
  */
 export class VirtualService extends Service {
     #isInitialized = false;
+    readonly #desiredCulture: string;
     readonly #businessRuleValidator: BusinessRuleValidator;
     readonly #actionsRegistry: VirtualPersistentObjectActionsRegistry;
     readonly #persistentObjectRegistry: VirtualPersistentObjectRegistry;
@@ -103,11 +104,18 @@ export class VirtualService extends Service {
 
     /**
      * Creates a new VirtualService instance.
-     * @param hooks - Optional custom hooks instance.
+     * @param optionsOrHooks - Custom hooks instance, or an options object.
+     *
+     * The `culture` option is only applied when no global culture is already
+     * established; an established global culture is adopted instead. Precedence:
+     * established global → `culture` option → `"en-US"`.
      */
-    constructor(hooks?: VirtualServiceHooks) {
-        super("http://virtual.local", hooks ?? new VirtualServiceHooks(), true);
+    constructor(optionsOrHooks?: VirtualServiceHooks | { culture?: string; hooks?: VirtualServiceHooks }) {
+        const options = optionsOrHooks instanceof VirtualServiceHooks ? { hooks: optionsOrHooks } : (optionsOrHooks ?? {});
 
+        super("http://virtual.local", options.hooks ?? new VirtualServiceHooks(), true);
+
+        this.#desiredCulture = options.culture ?? "en-US";
         this.#businessRuleValidator = new BusinessRuleValidator(this);
         this.#actionsRegistry = new VirtualPersistentObjectActionsRegistry(this.#businessRuleValidator, this);
         this.#queryRegistry = new VirtualQueryRegistry();
@@ -127,6 +135,11 @@ export class VirtualService extends Service {
         this.#actionDefinitions.set("SelectReference", { name: "SelectReference", displayName: "Select", isPinned: false });
 
         (this.hooks as VirtualServiceHooks).initialize(this);
+    }
+
+    /** @internal */
+    get desiredCulture(): string {
+        return this.#desiredCulture;
     }
 
     /** @internal */

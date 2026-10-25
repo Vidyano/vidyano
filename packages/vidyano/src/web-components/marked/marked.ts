@@ -9,7 +9,8 @@ DOMPurify.addHook("afterSanitizeAttributes", function (node) {
     // set all elements owning target to target=_blank
     if (node instanceof HTMLAnchorElement && node.getAttribute("href")?.startsWith("http")) {
         node.setAttribute("target", "_blank");
-        node.setAttribute("rel", "noopener");
+        const rel = (node.getAttribute("rel") || "").split(/\s+/).filter(Boolean);
+        node.setAttribute("rel", [...new Set([...rel, "noopener"])].join(" "));
     }
 });
 

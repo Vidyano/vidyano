@@ -1,82 +1,121 @@
-import * as Polymer from "polymer"
+import { html, unsafeCSS } from "lit"
+import { property } from "lit/decorators.js"
 import * as Vidyano from "@vidyano/core"
-@Polymer.WebComponent.register({
-    properties: {
-        attribute: {
-            type: Object,
-            observer: "_attributeChanged"
-        },
-        grouping: {
-            type: String,
-            readOnly: true
-        },
-        group: {
-            type: String,
-            notify: true,
-            value: null
-        },
-        name: {
-            type: String,
-            notify: true,
-            value: null
-        }
-    },
-    observers: [
-        "_focusInput(grouping, isConnected)",
-        "_updateAttributeValue(attribute, name, group, isConnected)",
-    ]
-}, "vi-query-grid-filter-dialog-name")
-export class QueryGridFilterDialogName extends Polymer.WebComponent {
-    static get template() { return Polymer.html`<link rel="import" href="query-grid-filter-dialog-name.html">` }
+import { notify, observer, WebComponent } from "components/web-component/web-component"
+import styles from "./query-grid-filter-dialog-name.css"
 
-    private _blockUpdate: boolean;
+/**
+ * Splits a filter name at its first line break into a group (null without one) and a name.
+ * Further line breaks in the name become spaces, since an input can't show them.
+ */
+export function splitFilterName(value: string): { group: string; name: string } {
+    const index = value ? value.indexOf("\n") : -1;
+    if (index < 0)
+        return { group: null, name: value };
 
-    readonly grouping: boolean; private _setGrouping: (grouping: boolean) => void;
+    return { group: value.substring(0, index), name: value.substring(index + 1).replace(/\n/g, " ") };
+}
+
+export class QueryGridFilterDialogName extends WebComponent {
+    static styles = unsafeCSS(styles);
+
+    @property({ type: Object })
+    @observer(function(this: QueryGridFilterDialogName, attribute: Vidyano.PersistentObjectAttribute) {
+        this._attributeChanged(attribute);
+    })
     attribute: Vidyano.PersistentObjectAttribute;
-    group: string;
-    name: string;
+
+    @property({ type: Boolean })
+    @observer(function(this: QueryGridFilterDialogName) {
+        this._focusInput();
+    })
+    grouping: boolean = false;
+
+    @property({ type: String })
+    @notify()
+    group: string = null;
+
+    @property({ type: String })
+    @notify()
+    name: string = null;
+
+    connectedCallback() {
+        super.connectedCallback();
+
+        this._focusInput();
+    }
+
+    render() {
+        return html`
+            <vi-persistent-object-attribute-edit .attribute=${this.attribute} reverse>
+                <vi-button slot="left" icon="Folder" @click=${this._toggleGrouping} inverse tabindex="-1"></vi-button>
+                <div class="inputs">
+                    <input class="group" .value=${this.group ?? ""} @input=${this._groupInput} ?hidden=${!this.grouping} />
+                    <vi-icon source="ChevronRight" ?hidden=${!this.grouping}></vi-icon>
+                    <input class="name" .value=${this.name ?? ""} @input=${this._nameInput} />
+                </div>
+            </vi-persistent-object-attribute-edit>
+        `;
+    }
 
     private _attributeChanged(attribute: Vidyano.PersistentObjectAttribute) {
         if (!attribute)
             return;
 
-        try {
-            this._blockUpdate = true;
-
-            const name = <string>attribute.value;
-            this._setGrouping(name ? name.contains("\n") : false);
-
-            if (!this.grouping)
-                this.name = name;
-            else {
-                const parts = name.split("\n");
-                this.group = parts[0];
-                this.name = parts[1];
-            }
-        }
-        finally {
-            this._blockUpdate = false;
-        }
+        const parts = splitFilterName(<string>attribute.value);
+        this.grouping = parts.group != null;
+        this.group = parts.group;
+        this.name = parts.name;
     }
 
-    private _focusInput(grouping: boolean, isConnected: boolean) {
+    private async _focusInput() {
+        await this.updateComplete;
         if (!this.isConnected)
             return;
 
-        const input = <HTMLInputElement>this.shadowRoot.querySelector(`input.${grouping ? "group" : "name"}`);
-        this._focusElement(input);
+        this.#focusElement(this.shadowRoot.querySelector(`input.${this.grouping ? "group" : "name"}`));
+    }
+
+    #focusElement(element: HTMLElement, attempt: number = 0) {
+        if (!this.isConnected)
+            return;
+
+        if (element) {
+            const oldActiveElementPath = this.app?.activeElementPath || [];
+            if (oldActiveElementPath.some(e => e === element))
+                return;
+
+            element.focus();
+
+            if (this.app?.activeElementPath?.some(e => e === element))
+                return;
+        }
+
+        if (attempt < 10)
+            setTimeout(() => this.#focusElement(element, attempt + 1), 100);
     }
 
     private _toggleGrouping() {
-        this._setGrouping(!this.grouping);
-        if (!this.grouping)
+        this.grouping = !this.grouping;
+        if (!this.grouping) {
             this.group = "";
+            this._updateAttributeValue();
+        }
     }
 
-    private _updateAttributeValue(attribute: Vidyano.PersistentObjectAttribute, name: string, group: string, isConnected: boolean) {
-        if (!this.isConnected || this._blockUpdate)
-            return;
+    private _groupInput(e: InputEvent) {
+        this.group = (<HTMLInputElement>e.target).value;
+        this._updateAttributeValue();
+    }
 
-        attribute.setValue(name && group ? `${group}\n${name}` : name);
+    private _nameInput(e: InputEvent) {
+        this.name = (<HTMLInputElement>e.target).value;
+        this._updateAttributeValue();
+    }
+
+    private _updateAttributeValue() {
+        this.attribute?.setValue(this.name && this.group ? `${this.group}\n${this.name}` : this.name).catch(Vidyano.noop);
     }
 }
+
+customElements.define("vi-query-grid-filter-dialog-name", QueryGridFilterDialogName);

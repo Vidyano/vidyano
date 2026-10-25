@@ -3,20 +3,25 @@
 ## IMPORTANT
 **When working with @vidyano/core code**, read `packages/core/docs/cheat-sheet.md` first for quick reference on core concepts and coding patterns.
 
-**File Types:** Only work with TypeScript source files (`.ts`). Do NOT modify JavaScript files (`.js`) or TypeScript declaration files (`.d.ts`).
+**Generated files:** Do NOT modify the JavaScript (`.js`) or declaration files (`.d.ts`) compiled from the TypeScript sources, or the `.css` compiled from `.scss`; change the `.ts` or `.scss` file instead.
 
 ## Quick Reference
 
 ### Commands
 ```bash
 # Development
-npm run dev          # Start backend (localhost:5000, blocks terminal)
-npm run build        # Build pipeline (only after packages/ changes, NOT for test changes)
-npm test             # Run ALL Playwright tests (core + vidyano)
+npm run dev          # Start backend + dev supervisor (localhost:5000, blocks terminal)
+npm run dev:status   # Print the supervisor's watcher status and problem counts
+npm run build        # Build pipeline (only when npm run dev is NOT running)
+npm test             # Run all Playwright tests (core + vidyano, without the @timing perf tests)
 
-# Testing
+# Testing while npm run dev is running (the way to run tests, in the main checkout and in worktrees)
+npm run test:dev -- <specs or folders> -x   # Queue a run in the dev supervisor, stream its output
+
+# Testing without the supervisor (CI, or when npm run dev is not running)
 npm run test:core           # Run all core tests
-npm run test:vidyano        # Run all vidyano tests
+npm run test:vidyano        # Run all vidyano tests (without the @timing perf tests)
+npm run test:perf           # Run the @timing perf tests (one worker; keep the machine quiet)
 npm run test:virtual-service # Run all virtual-service tests
 
 # Run specific test file (use package-specific command or npx directly)
@@ -24,6 +29,9 @@ npm run test:core -- path/to/test.spec.ts
 npm run test:virtual-service -- packages/labs/virtual-service/tests/validation.spec.ts
 npx playwright test --project=core path/to/test.spec.ts
 npx playwright test --project=virtual-service packages/labs/virtual-service/tests/validation.spec.ts
+
+# Specs that use the shared dev backend (core) refuse direct runs while npm run dev is running;
+# VIDYANO_DIRECT=1 overrides that. Specs that start their own backend run directly any time.
 
 # NOTE: Don't use "npm test -- <file>" - it won't work due to command chaining
 
@@ -36,15 +44,26 @@ npm run dist         # Production build
 
 # Check if backend is running
 curl -s -o /dev/null -w '%{http_code}' --head http://localhost:5000
-
-# Check if rollup watch is running
-pgrep -f rollup
 ```
 
-### Build Warning
-**NEVER run `npm run build` when rollup is running in watch mode.** The watch mode (started via VS Code task "rollup: watch") automatically rebuilds on file changes. Running the build command simultaneously will cause conflicts.
+### Dev Supervisor
+`npm run dev` starts the `dev/` backend, and in Development the backend starts the **Dev Supervisor** (`dev/Service/Supervisor/`). It runs every watcher: TypeScript, Rollup for core, vidyano and virtual-service, and Sass. It shows their status, compiler problems and logs at http://localhost:5000/supervisor/ (localhost only). Edited `.ts` and `.scss` files rebuild on save; the backend restarts itself when a `.cs` file or a model JSON in `dev/` changes. Start order matters and the supervisor enforces it: TypeScript core → core rollup watch (which also bundles `packages/core/dist/index.d.ts`) → the vidyano and virtual-service compiles, with vidyano also waiting for Sass.
 
-Check if rollup is running before building: `pgrep -f rollup` (returns PIDs if running, empty if not).
+**NEVER run `npm run build` while `npm run dev` is running.** The watchers already rebuild on save; a parallel build conflicts with them. Check with `npm run dev:status`.
+
+**Tests**: `npm run test:dev -- <specs or folders> -x` sends the run to the supervisor. It runs everything in one Playwright process, waits until the watchers have finished building, and passes the run `VIDYANO_BACKEND_URL` (the dev backend; a worktree's own, see below) and `VIDYANO_DEV_URL` (where it serves this checkout's build). The Tests view in the supervisor shows every spec with its results and can start runs too. Runs of all checkouts queue in one line, first come first served, and a waiting run says what it waits for ("Waiting for run #3 in main to finish"):
+- Runs that only hold vidyano component specs (outside `query-grid`) or virtual-service specs run in parallel with other runs: those specs start their own backends on a port the OS picks, or need none.
+- Runs that hold core or query-grid specs, or anything the supervisor cannot tell, use the dev backend and its data. In the main checkout that is the backend on port 5000; a worktree gets a backend of its own: the main checkout's build of `dev/` on a port the OS picks, started with the worktree's first such run and serving its `dev/wwwroot` under `/<worktree>/`. So no run changes the data under a run of another checkout, and they run in parallel.
+- Inside one run the projects run at the same time, and core specs reset the backend's data (`PersistentObject.ResetTest`, user store) under the query-grid specs. Run core and vidyano in separate runs, e.g. `npm run test:dev -- --project=core` and then `npm run test:dev -- --project=vidyano`.
+- The perf tests tagged `@timing` measure wall-clock and frame timings. The `vidyano` project leaves them out; the `vidyano-perf` project holds the same spec files and runs only them (one worker, no retries). They run only in perf runs, runs that name that project, e.g. `npm run test:dev -- --project=vidyano-perf packages/vidyano/tests/query-grid/perf`. Perf runs run alone, on one worker: they wait until no other run runs and no watcher builds. Every other run leaves the `@timing` tests out (a run without `--project` gets `--grep-invert @timing`; its output says so) and runs the other perf tests in the `vidyano` project, in parallel. Perf results go to `<checkout>/perf-results/` (gitignored), since Playwright empties `test-results/` on every run.
+- One checkout runs one run at a time.
+- The runs of all checkouts share a budget of test slots: at most that many tests run at once, 12 unless set with the − and + next to the count at the top of the supervisor (it is saved) or with `VIDYANO_DEV_WORKERS` on `npm run dev`. A run starts at once with its own `-j`/`--workers`, or else the workers of its projects (core 1, vidyano 4, virtual-service 4, added up when a run holds several), at most the budget. Each worker waits for a slot before every test (`tools/dev/slots.cjs`, loaded into the run's Playwright processes), so a run speeds up as soon as others finish and a lower budget applies from the next test on.
+- A run whose `npm run test:dev` is gone (no poll for 30 seconds) is cancelled, and a run ends after 90 minutes.
+
+**Worktrees**: the main checkout is a clean host on `v5.0` that runs `npm run dev`: nobody edits files in it or switches its branch, and all work happens in worktrees. Changes reach it only when the user merges them into `v5.0` there. Create them under a short root outside `%TEMP%` (which Windows cleans up) and outside `.claude/`, e.g. `git worktree add C:\Users\<you>\Documents\Projects\vidyano.wt\<name> -b <branch> v5.0`, with names of at most 20 characters (`[a-z0-9-]`) to stay below Windows' path length limit. The supervisor finds every git worktree of the repo, runs that worktree's watchers on first use (with `npm ci` when its `package-lock.json` differs from its last install; one worktree installs at a time, and runs of a worktree whose install failed fail at once), and serves its `dev/wwwroot` at `http://localhost:5000/<worktree>/`. `npm run test:dev` inside a worktree runs that worktree's specs against its own build.
+- **Never run `npm run dev` or `npm run build` in a worktree**: main's supervisor runs its watchers.
+- The worktree's backend C# code does not run: main's backend serves every worktree, and worktrees do not have backends of their own yet. C# changes in `dev/` are only tested once they are in the main checkout. A backend restart there waits for active test runs (at most 10 minutes).
+- Stop a worktree in the supervisor's picker before `git worktree remove`.
 
 ### Documentation Map
 | Component | Documentation | Tests |
@@ -106,11 +125,11 @@ Create `plans/[plan-name]-YYYYMMDD-HHMMSS-plan.md` with:
 - [ ] Define test cases
 
 ## Implementation
-- [ ] Start dev server if needed: `npm run dev`
+- [ ] Start dev server if needed: `npm run dev` (in the main checkout only)
 - [ ] Write tests first
 - [ ] Write code to pass tests
 - [ ] Refactor if needed
-- [ ] Run all tests: `npm test`
+- [ ] Run all tests: `npm run test:dev` (or `npm test` without the supervisor)
 
 ## Validation
 - [ ] All tests pass

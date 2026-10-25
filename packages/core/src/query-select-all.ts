@@ -34,16 +34,21 @@ export class QuerySelectAll extends Observable<IQuerySelectAll> implements IQuer
         this.#query = query;
         this.#isAvailable = isAvailable;
         this.propertyChanged.attach(observer);
+        query.propertyChanged.attach((_, args) => {
+            if (args.propertyName === "hasMore")
+                this.#availabilityChanged(this.#computeAvailable(args.oldValue, query.maxSelectedItems));
+            else if (args.propertyName === "maxSelectedItems")
+                this.#availabilityChanged(this.#computeAvailable(query.hasMore, args.oldValue));
+        });
     }
 
     /**
      * Gets or sets whether selecting all items is available.
+     * Not while the query's total is unknown (hasMore), because the action would act on rows nobody has seen, nor while the selection is limited (maxSelectedItems).
+     * Setting it is ignored while the selection is limited.
      */
     get isAvailable(): boolean {
-        if (this.#query.maxSelectedItems)
-            return;
-
-        return this.#isAvailable;
+        return this.#computeAvailable(this.#query.hasMore, this.#query.maxSelectedItems);
     }
 
     set isAvailable(isAvailable: boolean) {
@@ -53,10 +58,9 @@ export class QuerySelectAll extends Observable<IQuerySelectAll> implements IQuer
         if (this.#isAvailable === isAvailable)
             return;
 
-        this.allSelected = this.inverse = false;
-
-        const oldValue = this.#isAvailable;
-        this.notifyPropertyChanged("isAvailable", this.#isAvailable = isAvailable, oldValue);
+        const wasAvailable = this.isAvailable;
+        this.#isAvailable = isAvailable;
+        this.#availabilityChanged(wasAvailable);
     }
 
     /**
@@ -81,7 +85,7 @@ export class QuerySelectAll extends Observable<IQuerySelectAll> implements IQuer
         this.notifyPropertyChanged("allSelected", this.#allSelected = allSelected, oldValue);
 
         if (oldInverse)
-            this.notifyPropertyChanged("inverse", this.#inverse, oldValue);
+            this.notifyPropertyChanged("inverse", this.#inverse, oldInverse);
     }
 
     /**
@@ -100,5 +104,36 @@ export class QuerySelectAll extends Observable<IQuerySelectAll> implements IQuer
 
         const oldValue = this.#inverse;
         this.notifyPropertyChanged("inverse", this.#inverse = inverse, oldValue);
+    }
+
+    /**
+     * Whether select-all is available for the given state of the query.
+     */
+    #computeAvailable(hasMore: boolean, maxSelectedItems: number): boolean {
+        return this.#isAvailable && !hasMore && !maxSelectedItems;
+    }
+
+    /**
+     * Disabling it, an unknown total or a limit on the selection ends select-all; the opposite makes it available again.
+     * @param wasAvailable - What isAvailable returned before the query changed.
+     */
+    #availabilityChanged(wasAvailable: boolean) {
+        const isAvailable = this.isAvailable;
+        if (isAvailable === wasAvailable)
+            return;
+
+        // The guarded setters no longer accept a change once select-all is unavailable, so reset the fields here
+        if (!isAvailable && (this.#allSelected || this.#inverse)) {
+            const wasAllSelected = this.#allSelected, wasInverse = this.#inverse;
+            this.#allSelected = this.#inverse = false;
+
+            if (wasAllSelected)
+                this.notifyPropertyChanged("allSelected", false, true);
+
+            if (wasInverse)
+                this.notifyPropertyChanged("inverse", false, true);
+        }
+
+        this.notifyPropertyChanged("isAvailable", isAvailable, wasAvailable);
     }
 }

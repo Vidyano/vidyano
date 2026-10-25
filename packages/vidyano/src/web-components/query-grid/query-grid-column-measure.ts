@@ -1,29 +1,36 @@
-import * as Polymer from "polymer"
+import { html } from "lit"
+import { property, state } from "lit/decorators.js"
 import * as Vidyano from "@vidyano/core"
+import { WebComponent, observer } from "components/web-component/web-component"
 import type { QueryGrid } from "./query-grid"
-import { ISize } from "components/size-tracker/size-tracker"
+import type { ISize } from "components/size-tracker/size-tracker"
+import "components/size-tracker/size-tracker"
 
-@Polymer.WebComponent.register({
-    properties: {
-        grid: Object,
-        column: Object,
-        key: String
-    },
-    observers: [
-        "_report(grid, column, size)"
-    ]
-}, "vi-query-grid-column-measure")
-export class QueryGridColumnMeasure extends Polymer.WebComponent {
+export class QueryGridColumnMeasure extends WebComponent {
     private _reported: boolean;
 
-    static get template() {
-        return Polymer.html`
+    @property({ type: Object })
+    grid: QueryGrid;
+
+    @property({ type: Object })
+    column: Vidyano.QueryColumn;
+
+    @property({ type: String })
+    key: string;
+
+    @state()
+    private _size: ISize;
+
+    render() {
+        return html`
             <style>:host { height: 0; }</style>
             <div style="position: relative; height: 1px;">
-                <vi-size-tracker size="{{size}}"></vi-size-tracker>
-            </div>`
+                <vi-size-tracker @sizechanged=${(e: CustomEvent<ISize>) => this._size = e.detail}></vi-size-tracker>
+            </div>
+        `;
     }
 
+    @observer("grid", "column", "_size")
     private _report(grid: QueryGrid, column: Vidyano.QueryColumn, size: ISize) {
         if (this._reported)
             return;
@@ -36,3 +43,5 @@ export class QueryGridColumnMeasure extends Polymer.WebComponent {
         this._reported = true;
     }
 }
+
+customElements.define("vi-query-grid-column-measure", QueryGridColumnMeasure);

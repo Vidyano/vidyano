@@ -1,35 +1,57 @@
-import * as Polymer from "polymer"
+import { CSSResultGroup, html, unsafeCSS } from "lit";
+import { property, state } from "lit/decorators.js";
 import * as Vidyano from "@vidyano/core"
-import { QueryGridCell } from "./query-grid-cell"
-@Polymer.WebComponent.register({
-    properties: {
-        value: {
-            type: Object,
-            observer: "_valueChanged"
-        },
-        column: Object,
-        right: {
-            type: Boolean,
-            reflectToAttribute: true
-        },
-        tag: {
-            type: Boolean,
-            reflectToAttribute: true
-        }
-    },
-    sensitive: true
-}, "vi-query-grid-cell-default")
+import { computed } from "components/web-component/web-component"
+import { QueryGridCell, QueryGridCellTemplate } from "./query-grid-cell"
+import styles from "./query-grid-cell-default.css";
+
+const classNames = (value: string) => value.split(/\s+/).filter(Boolean);
+
 export class QueryGridCellDefault extends QueryGridCell {
-    static get template() { return Polymer.html`<link rel="import" href="query-grid-cell-default.html">` }
+    static styles: CSSResultGroup = unsafeCSS(styles);
 
     private _extraClass: string;
-    #textNode: Text;
-    #textNodeValue: string;
+    #hasDisplayFormat: boolean;
     private _tag: { currentValue?: any; originalValue?: any } = { currentValue: null };
+
+    @property({ type: Boolean, reflect: true })
     tag: boolean;
+
+    @property({ type: Boolean, reflect: true })
+    right: boolean;
+
+    @property({ type: Boolean, reflect: true })
+    center: boolean;
+
+    @state()
+    protected _text: string = "";
+
+    /**
+     * The template registered with QueryGridCell.registerCellTemplate that renders this cell's column, if any.
+     */
+    @state()
+    @computed(function(this: QueryGridCellDefault, column: Vidyano.QueryColumn): QueryGridCellTemplate {
+        return QueryGridCell.getCellTemplate(column);
+    }, "column", "_cellTemplatesVersion")
+    declare readonly cellTemplate: QueryGridCellTemplate;
+
+    @state()
+    private _cellTemplatesVersion: number = QueryGridCell.cellTemplatesVersion;
+
+    render() {
+        // The template renders here instead of in _valueChanged, so a column swap without a new value re-renders it too
+        const value = this.value;
+        return html`<div id="text">${this.cellTemplate && value && !this.#hasDisplayFormat ? this.cellTemplate(value.getValue(), value.column, value.item) : this._text}</div>`;
+    }
 
     protected _valueChanged(itemValue: Vidyano.QueryResultItemValue, oldValue: Vidyano.QueryResultItemValue) {
         super._valueChanged(itemValue, oldValue);
+
+        // Recomputes cellTemplate before rendering when templates were registered or removed since
+        this._cellTemplatesVersion = QueryGridCell.cellTemplatesVersion;
+
+        // A DisplayFormat keeps priority over the column's cell template, the cell shows it as formatted text
+        this.#hasDisplayFormat = !!itemValue && !String.isNullOrEmpty(this._getTypeHint(itemValue.column, "displayformat", null));
 
         if (!itemValue) {
             this._clearCell();
@@ -42,7 +64,7 @@ export class QueryGridCellDefault extends QueryGridCell {
         value = itemValue.item.getValue(itemValue.column.name);
         if (value != null && (itemValue.column.type === "Boolean" || itemValue.column.type === "NullableBoolean"))
             value = itemValue.item.query.service.getTranslatedMessage(value ? this._getTypeHint(itemValue.column, "truekey", "True") : this._getTypeHint(itemValue.column, "falsekey", "False"));
-        else if (itemValue.column.type === "YesNo")
+        else if (value != null && itemValue.column.type === "YesNo")
             value = itemValue.item.query.service.getTranslatedMessage(value ? this._getTypeHint(itemValue.column, "truekey", "Yes") : this._getTypeHint(itemValue.column, "falsekey", "No"));
         else if (itemValue.column.type === "Time" || itemValue.column.type === "NullableTime") {
             if (typeof value === "string") {
@@ -56,21 +78,27 @@ export class QueryGridCellDefault extends QueryGridCell {
 
         if (value != null) {
             let format = this._getTypeHint(itemValue.column, "displayformat", null);
-            if (format == null || format === "{0}") {
+            // Dates use the cell's default pattern unless the format gives its own {0:...} spec
+            if (format == null || !format.contains("{0:")) {
+                let datePattern: string;
                 switch (itemValue.column.type) {
                     case "Date":
                     case "NullableDate":
-                        format = null;
-                        value = value.localeFormat(Vidyano.CultureInfo.currentCulture.dateFormat.shortDatePattern, true);
+                        datePattern = Vidyano.CultureInfo.currentCulture.dateFormat.shortDatePattern;
                         break;
 
                     case "DateTime":
                     case "NullableDateTime":
                     case "DateTimeOffset":
                     case "NullableDateTimeOffset":
-                        format = null;
-                        value = value.localeFormat(Vidyano.CultureInfo.currentCulture.dateFormat.shortDatePattern + " " + Vidyano.CultureInfo.currentCulture.dateFormat.shortTimePattern, true);
+                        datePattern = Vidyano.CultureInfo.currentCulture.dateFormat.shortDatePattern + " " + Vidyano.CultureInfo.currentCulture.dateFormat.shortTimePattern;
                         break;
+                }
+
+                if (datePattern) {
+                    value = value.localeFormat(datePattern, true);
+                    if (format === "{0}")
+                        format = null;
                 }
             }
 
@@ -87,36 +115,38 @@ export class QueryGridCellDefault extends QueryGridCell {
         const extraClass = itemValue.column.getTypeHint("extraclass", undefined, value && itemValue.typeHints);
         if (extraClass !== this._extraClass) {
             if (!String.isNullOrEmpty(this._extraClass))
-                this.classList.remove(...this._extraClass.split(" "));
+                this.classList.remove(...classNames(this._extraClass));
 
             this._extraClass = extraClass;
             if (!String.isNullOrEmpty(extraClass))
-                this.classList.add(...this._extraClass.split(" "));
+                this.classList.add(...classNames(this._extraClass));
         }
 
         this._updateCell(value);
     }
 
     protected _clearCell() {
-        if (this.#textNode && this.#textNodeValue !== "")
-            this.#textNode.nodeValue = this.#textNodeValue = "";
+        this._text = "";
     }
 
     private _applyTagTypeHint(itemValue: Vidyano.QueryResultItemValue) {
         const tagHint = this._getTypeHint(itemValue.column, "tag", null);
         if (tagHint !== this._tag.currentValue) {
             if (this._tag.originalValue === undefined) this._tag.originalValue = this.style.getPropertyValue("--tag-background");
-            
+
             if (tagHint)
                 this.style.setProperty("--tag-background", tagHint);
             else if (this._tag.originalValue)
                 this.style.setProperty("--tag-background", this._tag.originalValue);
             else
                 this.style.removeProperty("--tag-background");
-            
+
             this._tag.currentValue = tagHint;
         }
         this.tag = !!tagHint;
+        // The tag follows the cell's alignment (numbers are right-aligned)
+        this.right = this.tag && this.style.textAlign === "right";
+        this.center = this.tag && this.style.textAlign === "center";
     }
 
     private _clearTagTypeHint() {
@@ -128,14 +158,15 @@ export class QueryGridCellDefault extends QueryGridCell {
             this._tag.currentValue = null;
         }
         this.tag = false;
+        this.right = false;
+        this.center = false;
     }
 
     protected _updateCell(value: string) {
-        if (this.#textNode) {
-            if (this.#textNodeValue !== value)
-                this.#textNode.nodeValue = this.#textNodeValue = <string>value;
-        }
-        else
-            this.$.text.appendChild(this.#textNode = document.createTextNode(this.#textNodeValue = <string>value));
+        this._text = value;
     }
 }
+
+QueryGridCell.defaultCellType = QueryGridCellDefault;
+
+customElements.define("vi-query-grid-cell-default", QueryGridCellDefault);

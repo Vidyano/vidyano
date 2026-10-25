@@ -1,5 +1,21 @@
 :host {
     display: flex;
+    font-family: var(--theme-font-family);
+
+    vi-persistent-object-attribute-edit {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .inputs {
+        display: flex;
+        flex: 1;
+        min-width: 0;
+    }
+
+    [hidden] {
+        display: none !important;
+    }
 
     vi-icon {
         width: var(--theme-h2);
@@ -7,19 +23,12 @@
     }
 
     input {
+        flex: 1;
+        min-width: 0;
+        margin: 0;
+        border: 0;
+        outline: 0;
         padding: 0 var(--theme-h5);
-    }
-
-    #group {
-        &:not([grouping]) {
-            & > vi-persistent-object-attribute-edit, & > vi-icon {
-                display: none !important;
-            }
-        }
-
-        > vi-icon {
-            width: var(--theme-h2);
-            height: var(--theme-h2);
-        }
+        font-family: inherit;
     }
 }

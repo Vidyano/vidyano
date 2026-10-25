@@ -141,8 +141,9 @@ export type InternalQuery = {
 
     /**
      * Converts the query to a service object.
+     * @param forResult - Whether the request is about the current result, it then sends the state of the last result.
      */
-    toServiceObject(): any;
+    toServiceObject(forResult?: boolean): any;
 
     /**
      * Gets a range of items from the query.

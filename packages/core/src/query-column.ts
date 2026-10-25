@@ -37,6 +37,7 @@ export class QueryColumn extends ServiceObject {
     #type: string;
     #label: string;
     #distincts: IQueryColumnDistincts;
+    #distinctsRefresh: Promise<IQueryColumnDistincts>;
     #selectedDistincts: string[];
     #selectedDistinctsInversed: boolean;
     #total: QueryResultItemValue;
@@ -275,10 +276,26 @@ export class QueryColumn extends ServiceObject {
 
     /**
      * Refreshes the distinct values for the column, optionally with a search string.
+     * The distincts of a search are marked dirty, because they do not hold all values of the column. The current distincts are marked dirty as soon as a search starts.
+     * When a newer refresh starts before this one is answered, only the newer one is applied and both resolve with its distincts.
      * @param search - Optional search string to filter distincts.
      * @returns A promise resolving to the distincts.
      */
-    async refreshDistincts(search?: string): Promise<IQueryColumnDistincts> {
+    refreshDistincts(search?: string): Promise<IQueryColumnDistincts> {
+        // They are about to be replaced by a search result, so code that needs the full list refreshes again
+        if (search && this.distincts)
+            this.distincts.isDirty = true;
+
+        const refresh = this.#distinctsRefresh = this.#refreshDistincts(search, () => refresh === this.#distinctsRefresh);
+        return this.#latestDistincts(refresh);
+    }
+
+    async #latestDistincts(refresh: Promise<IQueryColumnDistincts>): Promise<IQueryColumnDistincts> {
+        const distincts = await refresh;
+        return refresh === this.#distinctsRefresh ? distincts : this.#latestDistincts(this.#distinctsRefresh);
+    }
+
+    async #refreshDistincts(search: string, isLatest: () => boolean): Promise<IQueryColumnDistincts> {
         const parameters: any = { ColumnName: this.name, AsLookup: this.query.asLookup };
         if (search)
             parameters.Search = search;
@@ -291,10 +308,8 @@ export class QueryColumn extends ServiceObject {
             return this.distincts;
         }
 
-        this.query.columns.filter(q => q !== this).forEach(col => {
-            if (col.distincts)
-                col.distincts.isDirty = true;
-        });
+        if (!isLatest())
+            return this.distincts;
 
         const matchingDistinctsAttr = result.attributes["MatchingDistincts"];
         const remainingDistinctsAttr = result.attributes["RemainingDistincts"];
@@ -302,7 +317,7 @@ export class QueryColumn extends ServiceObject {
         this.distincts = {
             matching: <string[]>matchingDistinctsAttr.options,
             remaining: <string[]>remainingDistinctsAttr.options,
-            isDirty: false,
+            isDirty: !!search,
             hasMore: Boolean.parse(matchingDistinctsAttr.typeHints.hasmore || remainingDistinctsAttr.typeHints.hasmore)
         };
 
@@ -312,24 +327,23 @@ export class QueryColumn extends ServiceObject {
     /**
      * Sorts the query by this column.
      * @param direction - The sort direction.
-     * @param multiSort - Whether to use multi-sort.
+     * @param multiSort - Whether to use multi-sort. A multi-sort that leaves the sort options as they are does not search.
      * @returns A promise resolving to the query result items.
      */
     async sort(direction: SortDirection, multiSort?: boolean): Promise<QueryItems> {
         if (!!multiSort) {
             const sortOption = this.query.sortOptions.find(option => option.name === this.name);
-            if (sortOption && sortOption.direction === direction)
-                return;
+            // The sort options stay the same, there is nothing to load once the query has a result
+            if (this.query.hasSearched && (sortOption ? sortOption.direction === direction : direction === ""))
+                return this.query.items;
 
             if (!sortOption) {
                 if (direction !== "")
                     this.query.sortOptions = this.query.sortOptions.concat([{ name: this.name, direction: direction }]);
             }
             else {
-                if (direction !== "") {
-                    sortOption.direction = direction;
-                    this.query.sortOptions = this.query.sortOptions.slice();
-                }
+                if (direction !== "")
+                    this.query.sortOptions = this.query.sortOptions.map(option => option === sortOption ? { name: this.name, direction: direction } : option);
                 else
                     this.query.sortOptions = this.query.sortOptions.filter(option => option !== sortOption);
             }

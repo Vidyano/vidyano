@@ -10,6 +10,7 @@ const tagsHtml = `
         </style>
       </head>
       <body>
+        <button id="outside">Outside</button>
         <div id="test-container"></div>
       </body>
     </html>
@@ -114,7 +115,7 @@ test.describe('Tags', () => {
 
         await input.click();
         await input.fill('blurtag');
-        await sharedPage.click('body', { position: { x: 10, y: 10 } });
+        await sharedPage.click('#outside');
 
         await sharedPage.waitForTimeout(50);
 
@@ -511,7 +512,7 @@ test.describe('Tags', () => {
             (node as any).disabled = true;
         });
 
-        await sharedPage.click('body', { position: { x: 10, y: 10 } });
+        await sharedPage.click('#outside');
         await sharedPage.waitForTimeout(50);
 
         const state = await getTagsState(component);

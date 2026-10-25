@@ -1,46 +1,34 @@
-import * as Polymer from "polymer"
+import { html, nothing, unsafeCSS } from "lit";
+import { state } from "lit/decorators.js";
 import * as Vidyano from "@vidyano/core"
 import { QueryGridCell } from "./query-grid-cell"
-@Polymer.WebComponent.register({
-    properties: {
-        value: {
-            type: Object,
-            observer: "_valueChanged"
-        }
-    },
-    sensitive: true
-}, "vi-query-grid-cell-image")
-export class QueryGridCellImage extends QueryGridCell {
-    static get template() { return Polymer.html`<link rel="import" href="query-grid-cell-image.html">` }
+import styles from "./query-grid-cell-image.css";
 
-    private _isHidden: boolean;
-    private _image: HTMLDivElement;
+export class QueryGridCellImage extends QueryGridCell {
+    static styles = unsafeCSS(styles);
+
+    // Undefined until the first image, then an empty string hides the element instead of removing it
+    @state()
+    private _image: string;
+
+    render() {
+        return this._image === undefined ? nothing : html`<div class="image" ?hidden=${!this._image} style=${this._image ? `background-image: ${this._image}` : ""}></div>`;
+    }
 
     protected _valueChanged(value: Vidyano.QueryResultItemValue, oldValue: Vidyano.QueryResultItemValue) {
         super._valueChanged(value, oldValue);
 
         if (!value || !value.value) {
-            if (this._image && !this._image.hasAttribute("hidden")) {
-                this._image.style.backgroundImage = "";
-                this._image.setAttribute("hidden", "");
-                this._isHidden = true;
-            }
+            if (this._image)
+                this._image = "";
 
             return;
         }
 
-        if (!this._image) {
-            this.shadowRoot.appendChild(this._image = document.createElement("div"));
-            this._image.classList.add("image");
-        }
-
-        if (this._isHidden) {
-            this._image.removeAttribute("hidden");
-            this._isHidden = false;
-        }
-
-        this._image.style.backgroundImage = "url(" + value.value.asDataUri() + ")";
+        this._image = "url(" + value.value.asDataUri() + ")";
     }
 }
 
 QueryGridCell.registerCellType("Image", QueryGridCellImage);
+
+customElements.define("vi-query-grid-cell-image", QueryGridCellImage);

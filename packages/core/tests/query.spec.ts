@@ -5,8 +5,10 @@ import {
     QueryResultItem,
     PersistentObject,
     QueryColumn,
-    Action
+    Action,
+    PersistentObjectAttributeWithReference
 } from "@vidyano/core";
+import { devBackendUrl } from "./_helpers/dev-backend";
 
 type Fixtures = {
     service: Service;
@@ -15,7 +17,7 @@ type Fixtures = {
 
 const test = base.extend<Fixtures>({
     service: async ({}, use) => {
-        const service = new Service("http://localhost:5000", undefined, false);
+        const service = new Service(devBackendUrl(), undefined, false);
         await service.initialize(true);
         await service.signInUsingCredentials("admin", "admin");
         await service.executeAction("PersistentObject.ResetTest", service.application);
@@ -458,7 +460,7 @@ test.describe("Query", () => {
             const initialAccess = peopleQuery.items[testIndex];
             expect(initialAccess).toBeNull();
 
-            await new Promise((resolve) => setTimeout(resolve, 500));
+            await expect.poll(() => becameBusy && !peopleQuery.isBusy).toBe(true);
             disposer();
 
             const afterWaitAccess = peopleQuery.items[testIndex];
@@ -718,6 +720,38 @@ test.describe("Query", () => {
             expect(peopleQuery.selectedItemCount).toBe(9_997); // Still 10000 - 3
         });
 
+        test("selectRange returns null over the selection limit and false over unloaded items", async ({ peopleQuery }) => {
+            peopleQuery.maxSelectedItems = 3;
+            peopleQuery.items[1].isSelected = true;
+
+            expect(peopleQuery.selectRange(1, 5)).toBeNull();
+            expect(peopleQuery.selectedItems.map(i => i.id)).toEqual([peopleQuery.items[1].id]);
+
+            peopleQuery.maxSelectedItems = undefined;
+            peopleQuery.disableLazyLoading = true;
+            expect(peopleQuery.selectRange(1, 9_000)).toBe(false);
+            expect(peopleQuery.selectedItems.map(i => i.id)).toEqual([peopleQuery.items[1].id]);
+
+            expect(peopleQuery.selectRange(1, 3)).toBe(true);
+            expect(peopleQuery.selectedItems.length).toBe(3);
+        });
+
+        test("assigning selectedItems keeps the first items up to the selection limit", async ({ peopleQuery }) => {
+            peopleQuery.maxSelectedItems = 2;
+
+            const announced: number[] = [];
+            peopleQuery.propertyChanged.attach((_, args) => args.propertyName === "selectedItems" && announced.push(args.newValue.length));
+
+            peopleQuery.selectedItems = [5, 3, 7].map(i => peopleQuery.items[i]);
+            expect(peopleQuery.selectedItems.map(i => i.id)).toEqual([3, 5].map(i => peopleQuery.items[i].id));
+            expect(peopleQuery.selectedItemCount).toBe(2);
+
+            peopleQuery.selectedItems = peopleQuery.items;
+            expect(peopleQuery.selectedItems.map(i => i.id)).toEqual([0, 1].map(i => peopleQuery.items[i].id));
+            expect(peopleQuery.selectedItemCount).toBe(2);
+            expect(announced).toEqual([2, 2]);
+        });
+
         test("clearSelection clears all selected items", async ({ peopleQuery }) => {
             // Select some items manually
             peopleQuery.items[0].isSelected = true;
@@ -941,6 +975,147 @@ test.describe("Query", () => {
             // Verify selectedDistincts and inversed flag were preserved
             expect(clonedColumn.selectedDistincts).toEqual([firstDistinctValue]);
             expect(clonedColumn.selectedDistinctsInversed).toBe(true);
+        });
+    });
+
+    test.describe("Select-all on a query that limits the selection", () => {
+        test("is not available", async ({ peopleQuery }) => {
+            expect(peopleQuery.selectAll.isAvailable).toBe(true);
+
+            peopleQuery.maxSelectedItems = 1;
+            expect(peopleQuery.selectAll.isAvailable).toBe(false);
+
+            peopleQuery.selectAll.allSelected = true;
+            expect(peopleQuery.selectAll.allSelected).toBe(false);
+        });
+
+        test("says so when the limit is set or removed later", async ({ peopleQuery }) => {
+            const changes: [string, unknown, unknown][] = [];
+            (peopleQuery.selectAll as any).propertyChanged.attach((_, args) => changes.push([args.propertyName, args.newValue, args.oldValue]));
+
+            peopleQuery.maxSelectedItems = 1;
+            expect(changes).toEqual([["isAvailable", false, true]]);
+
+            changes.length = 0;
+            peopleQuery.maxSelectedItems = 2;
+            expect(changes).toEqual([]);
+
+            peopleQuery.maxSelectedItems = undefined;
+            expect(changes).toEqual([["isAvailable", true, false]]);
+        });
+
+        test("switches select-all off when the limit is set and keeps the first selected rows up to the limit", async ({ peopleQuery }) => {
+            peopleQuery.selectAll.allSelected = true;
+            peopleQuery.items[0].isSelected = false;
+            expect(peopleQuery.selectAll.inverse).toBe(true);
+            expect(peopleQuery.selectedItemCount).toBe(9_999);
+
+            peopleQuery.maxSelectedItems = 2;
+            expect(peopleQuery.selectAll.allSelected).toBe(false);
+            expect(peopleQuery.selectAll.inverse).toBe(false);
+            expect(peopleQuery.selectedItems.map(i => i.id)).toEqual([1, 2].map(i => peopleQuery.items[i].id));
+            expect(peopleQuery.selectedItemCount).toBe(2);
+        });
+
+        test("keeps the first loaded rows up to the limit when the limit is set while all rows are selected", async ({ peopleQuery }) => {
+            peopleQuery.selectAll.allSelected = true;
+
+            const counts: number[] = [];
+            peopleQuery.propertyChanged.attach((_, args) => args.propertyName === "selectedItems" && counts.push(args.newValue.length));
+
+            peopleQuery.maxSelectedItems = 2;
+            expect(peopleQuery.selectedItems.map(i => i.id)).toEqual([0, 1].map(i => peopleQuery.items[i].id));
+            expect(peopleQuery.selectedItemCount).toBe(2);
+            expect(counts).toEqual([2]);
+        });
+
+        test("keeps all loaded rows when the limit is set above them while all rows are selected", async ({ peopleQuery }) => {
+            peopleQuery.selectAll.allSelected = true;
+            const loaded = peopleQuery.selectedItems.length;
+            expect(loaded).toBeLessThan(500);
+
+            peopleQuery.maxSelectedItems = 500;
+            expect(peopleQuery.selectAll.allSelected).toBe(false);
+            expect(peopleQuery.selectedItems.length).toBe(loaded);
+            expect(peopleQuery.selectedItemCount).toBe(loaded);
+        });
+
+        test("trims a manual selection to the first selected rows when the limit is set", async ({ peopleQuery }) => {
+            [1, 3, 5, 7].forEach(i => peopleQuery.items[i].isSelected = true);
+
+            peopleQuery.maxSelectedItems = 10;
+            expect(peopleQuery.selectedItems.map(i => i.id)).toEqual([1, 3, 5, 7].map(i => peopleQuery.items[i].id));
+
+            const seen: number[] = [];
+            peopleQuery.propertyChanged.attach((_, args) => args.propertyName === "maxSelectedItems" && seen.push(peopleQuery.selectedItems.length));
+
+            peopleQuery.maxSelectedItems = 2;
+            expect(seen).toEqual([2]);
+            expect(peopleQuery.selectedItems.map(i => i.id)).toEqual([1, 3].map(i => peopleQuery.items[i].id));
+            expect(peopleQuery.selectedItemCount).toBe(2);
+        });
+
+        test("keeps the selection when the limit is removed", async ({ peopleQuery }) => {
+            peopleQuery.maxSelectedItems = 3;
+            [1, 3, 5].forEach(i => peopleQuery.items[i].isSelected = true);
+
+            peopleQuery.maxSelectedItems = 0;
+            expect(peopleQuery.selectedItems.map(i => i.id)).toEqual([1, 3, 5].map(i => peopleQuery.items[i].id));
+
+            peopleQuery.maxSelectedItems = undefined;
+            expect(peopleQuery.selectedItems.map(i => i.id)).toEqual([1, 3, 5].map(i => peopleQuery.items[i].id));
+        });
+
+        test("stays unavailable on a query created with a limit, also when the limit is removed", async ({ peopleQuery }) => {
+            // A clone is created with the limit, like a lookup that allows one row and is later opened up for more
+            peopleQuery.maxSelectedItems = 1;
+            const limited = peopleQuery.clone();
+
+            expect(limited.selectAll.isAvailable).toBe(false);
+
+            limited.maxSelectedItems = 0;
+            expect(limited.selectAll.isAvailable).toBe(false);
+        });
+    });
+
+    test.describe("Clone of a query that limits the selection", () => {
+        test("keeps the limit", async ({ service }) => {
+            const person = await service.getPersistentObject(null, "Person", "1");
+            const lookup = (person.getAttribute("EmergencyContact") as PersistentObjectAttributeWithReference).lookup;
+            expect(lookup.maxSelectedItems).toBe(1);
+
+            const cloned = lookup.clone();
+            expect(cloned.maxSelectedItems).toBe(1);
+
+            await cloned.search();
+            cloned.items[0].isSelected = true;
+            cloned.items[1].isSelected = true;
+            expect(cloned.selectedItems).toEqual([cloned.items[1]]);
+        });
+
+        test("does not offer select-all", async ({ peopleQuery }) => {
+            expect(peopleQuery.clone().selectAll.isAvailable).toBe(true);
+
+            peopleQuery.maxSelectedItems = 1;
+            expect(peopleQuery.clone().selectAll.isAvailable).toBe(false);
+        });
+
+        test("is not kept on a clone made as a lookup, which picks references to add", async ({ peopleQuery }) => {
+            peopleQuery.maxSelectedItems = 1;
+            expect(peopleQuery.clone(true).maxSelectedItems).toBeFalsy();
+        });
+    });
+
+    test.describe("Select-all notifications", () => {
+        test("switching select-all on ends an inverse selection and says so", async ({ peopleQuery }) => {
+            peopleQuery.selectAll.inverse = true;
+
+            const changes: [string, unknown, unknown][] = [];
+            (peopleQuery.selectAll as any).propertyChanged.attach((_, args) => changes.push([args.propertyName, args.newValue, args.oldValue]));
+
+            peopleQuery.selectAll.allSelected = true;
+            expect(peopleQuery.selectAll.inverse).toBe(false);
+            expect(changes).toEqual([["allSelected", true, false], ["inverse", false, true]]);
         });
     });
 });

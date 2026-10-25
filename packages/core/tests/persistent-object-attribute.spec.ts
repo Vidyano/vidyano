@@ -11,6 +11,7 @@ import {
     PersistentObjectAttributeGroup,
     PersistentObjectAttributeTab,
 } from "@vidyano/core";
+import { devBackendUrl } from "./_helpers/dev-backend";
 
 type Fixtures = {
     service: Service;
@@ -20,7 +21,7 @@ type Fixtures = {
 
 const test = base.extend<Fixtures>({
     service: async ({ }, use) => {
-        const service = new Service("http://localhost:5000", undefined, false);
+        const service = new Service(devBackendUrl(), undefined, false);
         await service.initialize(true);
         await service.signInUsingCredentials("admin", "admin");
         await service.executeAction("PersistentObject.ResetTest", service.application);
@@ -65,7 +66,7 @@ test.describe("Standard Attributes", () => {
         await newPerson.setAttributeValue("Email", "john.smith@example.com");
         await newPerson.setAttributeValue("IsActive", true);
         await newPerson.setAttributeValue("PhoneNumber", "+1-555-0123");
-        await newPerson.setAttributeValue("BirthDate", new Date("1990-01-01"));
+        await newPerson.setAttributeValue("BirthDate", new Date(1990, 0, 1));
         await newPerson.setAttributeValue("Gender", "Male");
         await newPerson.setAttributeValue("ContactPreference", "Email");
 
@@ -76,7 +77,8 @@ test.describe("Standard Attributes", () => {
         expect(newPerson.getAttributeValue("IsActive")).toBe(true);
         expect(newPerson.getAttributeValue("PhoneNumber")).toBe("+1-555-0123");
         expect(newPerson.getAttributeValue("BirthDate")).toBeInstanceOf(Date);
-        expect(newPerson.getAttributeValue("BirthDate").toISOString()).toBe("1990-01-01T00:00:00.000Z");
+        // Date attributes hold a local calendar date
+        expect(newPerson.getAttributeValue("BirthDate").getTime()).toBe(new Date(1990, 0, 1).getTime());
         expect(newPerson.getAttributeValue("Gender")).toBe("Male");
         expect(newPerson.getAttributeValue("ContactPreference")).toBe("Email");
     });
@@ -157,7 +159,8 @@ test.describe("Attribute Reading and Types", () => {
 
         const birthDate = person.getAttributeValue("BirthDate");
         expect(birthDate).toBeInstanceOf(Date);
-        expect(birthDate.toISOString()).toBe("1976-03-06T01:56:22.582Z");
+        // The service sends the wall-clock time, which is read as local time
+        expect(birthDate.getTime()).toBe(new Date(1976, 2, 6, 1, 56, 22, 582).getTime());
     });
 
     test("has all expected attributes with correct types", async ({ person }) => {
@@ -165,7 +168,7 @@ test.describe("Attribute Reading and Types", () => {
             FirstName:         { type: "String",    label: "First name",        isReadOnly: false, isRequired: true, value: "Jonas" },
             LastName:          { type: "String",    label:"Last name",          isReadOnly: false, isRequired: true, value: "Devos" },
             FullName:          { type: "String",    label:"Full name",          isReadOnly: true,  isRequired: true, value: "Jonas Devos" },
-            BirthDate:         { type: "Date",      label:"Birth date",         isReadOnly: false, isRequired: true, value: new Date("1976-03-06T01:56:22.582Z") },
+            BirthDate:         { type: "Date",      label:"Birth date",         isReadOnly: false, isRequired: true, value: new Date(1976, 2, 6, 1, 56, 22, 582) },
             Gender:            { type: "Enum",      label:"Gender",             isReadOnly: false, isRequired: true, value: "Female" },
             ContactPreference: { type: "Enum",      label:"Contact preference", isReadOnly: false, isRequired: true, value: "Email" },
             Email:             { type: "String",    label:"Email",              isReadOnly: false, isRequired: person.getAttributeValue("ContactPreference") === "Email", value: "Jonas_Devos34@gmail.com" },

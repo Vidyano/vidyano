@@ -24,11 +24,17 @@
     }
 
     footer {
-        > vi-button {
+        display: flex;
+        justify-content: space-between;
+
+        > vi-button.reset {
             margin: 0;
+            align-self: flex-end;
         }
 
-        > div {
+        > .buttons {
+            display: flex;
+
             vi-button:first-child {
                 margin-right: var(--theme-h5);
             }

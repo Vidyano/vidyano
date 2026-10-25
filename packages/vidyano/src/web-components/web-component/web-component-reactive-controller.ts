@@ -1,7 +1,7 @@
 import { ReactiveController, PropertyValueMap } from "lit";
 import { Observable, ForwardObservedPropertyChangedArgs, ForwardObservedArrayChangedArgs } from "@vidyano/core";
 import type { WebComponent } from "./web-component";
-import { ComputedConfig, getComputedConfig } from "./web-component-computed-decorator";
+import { getComputedConfig } from "./web-component-computed-decorator";
 import { getMethodObserversConfig, executePropertyObservers } from "./web-component-observer-decorator";
 import { getNotifyConfig } from "./web-component-notify-decorator";
 
@@ -19,6 +19,57 @@ interface ObserverExecutionResult {
 }
 
 const MAX_ITERATIONS = 10;
+
+type Dependency = { path: string; root: string; segments: string[]; hasWildcard: boolean };
+
+/**
+ * The dependency analysis of a component class, derived once from its static observer and computed configuration.
+ */
+interface ReactiveMetadata {
+    observedRoots: string[];
+    deepPaths: Dependency[];
+    complexObservers: { name: string; config: { dependencies: string[], allowUndefined: boolean }; dependencies: Dependency[] }[];
+    computed: { prop: string; config: { dependencies: string[], computeFunction?: Function, allowUndefined: boolean }; dependencies: Dependency[] }[];
+    propertyKeys: PropertyKey[];
+}
+
+const metadataByClass = new WeakMap<Function, ReactiveMetadata>();
+const dependencies = new Map<string, Dependency>();
+
+function dependency(path: string): Dependency {
+    let dep = dependencies.get(path);
+    if (!dep) {
+        const segments = path.split('.');
+        dependencies.set(path, dep = { path, root: segments[0], segments, hasWildcard: segments.includes('*') });
+    }
+
+    return dep;
+}
+
+function getReactiveMetadata(host: WebComponent): ReactiveMetadata {
+    const ctor = host.constructor as typeof WebComponent;
+    let metadata = metadataByClass.get(ctor);
+    if (metadata)
+        return metadata;
+
+    const observersConfig = getMethodObserversConfig(host);
+    const computedConfig = getComputedConfig(host);
+    const complexObservers = Object.entries(observersConfig).map(([name, config]) => ({ name, config, dependencies: config.dependencies.map(dependency) }));
+    const computed = Object.entries(computedConfig).map(([prop, config]) => ({ prop, config, dependencies: config.dependencies.map(dependency) }));
+    const allDependencies = new Set([...complexObservers, ...computed].flatMap(entry => entry.dependencies));
+
+    metadata = {
+        observedRoots: Array.from(new Set(Array.from(allDependencies).map(dep => dep.root).filter(root => !!root))),
+        // Forwarders are only for deep paths. Simple properties are handled by Lit.
+        deepPaths: Array.from(allDependencies).filter(dep => dep.segments.length > 1),
+        complexObservers,
+        computed,
+        propertyKeys: Array.from(ctor.elementProperties.keys())
+    };
+
+    metadataByClass.set(ctor, metadata);
+    return metadata;
+}
 
 /**
  * A Reactive Controller that orchestrates the entire reactive update cycle,
@@ -90,62 +141,14 @@ export class WebComponentReactiveController implements ReactiveController {
      * @param changedProperties The map of properties that have changed in this update cycle.
      */
     #rebindForwardersIfNeeded(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-        const observersConfig = getMethodObserversConfig(this.#host);
-        const computedConfig = getComputedConfig(this.#host);
+        let changedRoots: Set<string>;
+        for (const root of getReactiveMetadata(this.#host).observedRoots) {
+            if (changedProperties.has(root))
+                (changedRoots ??= new Set()).add(root);
+        }
 
-        if (Object.keys(observersConfig).length === 0 && Object.keys(computedConfig).length === 0)
-            return;
-
-        const observedRoots = this.#extractObservedRoots(observersConfig, computedConfig);
-        const changedRoots = this.#findChangedRoots(observedRoots, changedProperties);
-
-        if (changedRoots.size > 0) {
+        if (changedRoots)
             this.#setupForwardersForRoots(changedRoots);
-        }
-    }
-
-    /**
-     * Scans the static observer configurations and extracts the unique root property names.
-     * For a dependency path like "app.user.name", the root is "app".
-     * @param observersConfig The complete observer configuration for the component.
-     * @returns A Set of unique root property names.
-     */
-    #extractObservedRoots(observersConfig: Record<string, { dependencies: string[], allowUndefined: boolean }>, computedConfig: ComputedConfig): Set<string> {
-        const observedRoots = new Set<string>();
-
-        Object.values(observersConfig).forEach(config =>
-            config.dependencies.forEach(depPath => {
-                const root = depPath.split('.')[0];
-                if (root) observedRoots.add(root);
-            })
-        );
-
-        Object.values(computedConfig).forEach(config => {
-            config.dependencies.forEach(depPath => {
-                const root = depPath.split('.')[0];
-                if (root) observedRoots.add(root);
-            })
-        });
-
-        return observedRoots;
-    }
-
-    /**
-     * Compares the set of all observed roots against the currently changed properties
-     * to determine which roots need their forwarders rebound.
-     * @param observedRoots A Set of all root properties that are part of an observer.
-     * @param changedProperties The map of properties that have changed in this cycle.
-     * @returns A Set containing only the root properties that have actually changed.
-     */
-    #findChangedRoots(observedRoots: Set<string>, changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): Set<string> {
-        const changedRoots = new Set<string>();
-        for (const rootKey of observedRoots) {
-            if (changedProperties.has(rootKey)) {
-                changedRoots.add(rootKey);
-            }
-        }
-
-        return changedRoots;
     }
 
     /**
@@ -224,7 +227,7 @@ export class WebComponentReactiveController implements ReactiveController {
         // If any computed properties changed, check if we need to rebind forwarders
         // This handles the case where a computed property is a root for other dependencies
         if (changedComputedProps.size > 0) {
-            this.#rebindForwardersIfNeeded(changedComputedProps);
+            this.#rebindForwardersInsideUpdate(changedComputedProps);
         }
 
         const allChangesToObserve = new Map([...changedProperties.entries(), ...changedComputedProps.entries()]);
@@ -234,12 +237,32 @@ export class WebComponentReactiveController implements ReactiveController {
         }
 
         const sideEffectChanges = this.#executeObserversAndDetectSideEffects(
-            allChangesToObserve, 
-            dirtyPaths, 
+            allChangesToObserve,
+            dirtyPaths,
             lastComplexObserverArgs
         );
 
+        // A root that an observer replaced needs its forwarders on the new value as well
+        if (sideEffectChanges.size > 0)
+            this.#rebindForwardersInsideUpdate(sideEffectChanges);
+
         return { changedProperties: changedComputedProps, sideEffectChanges };
+    }
+
+    /**
+     * Rebinds forwarders while the update loop runs. The observers of a replaced root already run in the next pass,
+     * so the initial-state notifications of the new forwarders are dropped instead of being left as dirty paths that
+     * would run those observers again on the next, unrelated update.
+     * @param changedProperties The properties that changed in this pass.
+     */
+    #rebindForwardersInsideUpdate(changedProperties: Map<PropertyKey, unknown>): void {
+        const dirtyBefore = new Set(this.#dirtyForwardedPaths);
+        this.#rebindForwardersIfNeeded(changedProperties);
+
+        for (const path of this.#dirtyForwardedPaths) {
+            if (!dirtyBefore.has(path))
+                this.#dirtyForwardedPaths.delete(path);
+        }
     }
 
     /**
@@ -266,8 +289,11 @@ export class WebComponentReactiveController implements ReactiveController {
      * @returns A map where keys are property names and values are their current values.
      */
     #capturePropertyState(): Map<PropertyKey, any> {
-        const allPropKeys = Array.from((this.#host.constructor as typeof WebComponent).elementProperties.keys());
-        return new Map(allPropKeys.map(prop => [prop, this.#host[prop]]));
+        const state = new Map<PropertyKey, any>();
+        for (const prop of getReactiveMetadata(this.#host).propertyKeys)
+            state.set(prop, this.#host[prop]);
+
+        return state;
     }
 
     /**
@@ -321,47 +347,21 @@ export class WebComponentReactiveController implements ReactiveController {
      * @param lastComplexObserverArgs A map tracking the last arguments passed to complex observers.
      */
     #executeComplexObservers(changedProperties: Map<PropertyKey, unknown>, dirtyPaths: Set<string>, lastComplexObserverArgs: Map<string, any[]>): void {
-        const observersConfig = getMethodObserversConfig(this.#host);
-        if (!observersConfig) return;
-
-        const observersToCall = this.#identifyObserversToCall(observersConfig, changedProperties, dirtyPaths);
-        
-        for (const observerIdentifier of observersToCall) {
-            this.#executeComplexObserver(observerIdentifier, observersConfig, lastComplexObserverArgs);
-        }
+        for (const observer of this.#identifyObserversToCall(changedProperties, dirtyPaths))
+            this.#executeComplexObserver(observer, lastComplexObserverArgs);
     }
 
     /**
      * Identifies which complex observers should be called based on their dependencies.
      * An observer is triggered if one of its dependency properties, the root of a dependency path,
      * or a full deep dependency path has changed.
-     * @param observersConfig The complete observer configuration.
      * @param changedProperties A map of properties that have changed.
      * @param dirtyPaths The set of deep paths marked as dirty.
-     * @returns A Set of observer method names that should be called.
+     * @returns The observers that should be called.
      */
-    #identifyObserversToCall(observersConfig: Record<string, { dependencies: string[], allowUndefined: boolean }>, changedProperties: Map<PropertyKey, unknown>, dirtyPaths: Set<string>): Set<string> {
-        const observersToCall = new Set<string>();
-        const allChangedKeys = new Set(changedProperties.keys());
-
-        for (const [observerIdentifier, config] of Object.entries(observersConfig)) {
-            if (typeof this.#host[observerIdentifier] !== 'function') continue;
-
-            const hasChangedDep = config.dependencies.some(dep => {
-                const rootDep = dep.split('.')[0];
-                return (
-                    allChangedKeys.has(dep) ||
-                    allChangedKeys.has(rootDep) ||
-                    dirtyPaths.has(dep)
-                );
-            });
-
-            if (hasChangedDep) {
-                observersToCall.add(observerIdentifier);
-            }
-        }
-
-        return observersToCall;
+    #identifyObserversToCall(changedProperties: Map<PropertyKey, unknown>, dirtyPaths: Set<string>): ReactiveMetadata["complexObservers"] {
+        return getReactiveMetadata(this.#host).complexObservers.filter(observer =>
+            typeof this.#host[observer.name] === 'function' && observer.dependencies.some(dep => changedProperties.has(dep.path) || changedProperties.has(dep.root) || dirtyPaths.has(dep.path)));
     }
 
     /**
@@ -372,16 +372,18 @@ export class WebComponentReactiveController implements ReactiveController {
      * By default, the observer is only called if none of the arguments are undefined.
      * If allowUndefined is true, the observer will be called regardless.
      *
-     * @param observerIdentifier The name of the observer method to call.
-     * @param observersConfig The complete observer configuration.
+     * @param observer The observer to call.
      * @param lastComplexObserverArgs A map for tracking observer arguments to prevent redundant calls.
      */
-    #executeComplexObserver(observerIdentifier: string, observersConfig: Record<string, { dependencies: string[], allowUndefined: boolean }>, lastComplexObserverArgs: Map<string, any[]>): void {
-        const config = observersConfig[observerIdentifier];
+    #executeComplexObserver(observer: ReactiveMetadata["complexObservers"][number], lastComplexObserverArgs: Map<string, any[]>): void {
+        const { name: observerIdentifier, config } = observer;
 
         // Filter out array wildcard dependencies - they are trigger-only and can't be resolved to values
-        const resolvableDeps = config.dependencies.filter(dep => !this.#isArrayWildcardPath(dep));
-        const newArgs = resolvableDeps.map(dep => this.#resolvePath(dep));
+        const newArgs: any[] = [];
+        for (const dep of observer.dependencies) {
+            if (!dep.hasWildcard || !this.#isArrayWildcardPath(dep))
+                newArgs.push(this.#resolvePath(dep));
+        }
 
         // Check for undefined values unless allowUndefined is true
         // Only check resolvable dependencies (non-wildcard paths)
@@ -456,57 +458,29 @@ export class WebComponentReactiveController implements ReactiveController {
      * @param rootsToRebind Optional set of root property names to rebind forwarders for.
      */
     #setupForwardersForRoots(rootsToRebind?: Set<string>) {
-        const staticObserversConfig = getMethodObserversConfig(this.#host);
-        const staticComputedConfig = getComputedConfig(this.#host);
-
-        if (Object.keys(staticObserversConfig).length === 0 && Object.keys(staticComputedConfig).length === 0)
+        const deepPaths = getReactiveMetadata(this.#host).deepPaths;
+        if (deepPaths.length === 0)
             return;
 
-        const pathsToRebind = this.#determinePathsToRebind(staticObserversConfig, staticComputedConfig, rootsToRebind);
-        this.#disposeForwarders(pathsToRebind);
-        this.#createForwarders(pathsToRebind);
-    }
-
-    /**
-     * Analyzes observer configurations to determine which specific dependency paths
-     * require an active forwarder.
-     * @param observersConfig The complete observer configuration.
-     * @param computedConfig The computed properties configuration.
-     * @param rootsToRebind An optional set of roots to scope the rebinding to.
-     * @returns A Set of full dependency paths (e.g., "app.user.name") that need a forwarder.
-     */
-    #determinePathsToRebind(observersConfig: Record<string, { dependencies: string[], allowUndefined: boolean }>, computedConfig: ComputedConfig, rootsToRebind?: Set<string>): Set<string> {
-        const allDependencies = new Set<string>();
-        Object.values(observersConfig).forEach(config => config.dependencies.forEach(dep => allDependencies.add(dep)));
-        Object.values(computedConfig).forEach(config => config.dependencies.forEach(dep => allDependencies.add(dep)));
-
         const setupAll = !rootsToRebind || rootsToRebind.size === 0;
-        const pathsToRebind = new Set<string>();
-
-        for (const depPath of allDependencies) {
-            // Forwarders are only for deep paths. Simple properties are handled by Lit.
-            if (!depPath.includes('.'))
-                continue;
-
-            const rootKey = depPath.split('.')[0];
-            if (setupAll || (rootsToRebind && rootsToRebind.has(rootKey))) {
-                pathsToRebind.add(depPath);
-            }
-        }
-
-        return pathsToRebind;
+        const pathsToRebind = deepPaths.filter(dep => setupAll || rootsToRebind.has(dep.root));
+        this.#disposeForwarders(pathsToRebind.map(dep => dep.path));
+        this.#createForwarders(pathsToRebind);
     }
 
     /**
      * Creates deep-path observers (`forwarders`) for a given set of paths and
      * stores their disposer functions for future cleanup.
-     * @param pathsToRebind A Set of dependency paths to create forwarders for.
+     * @param pathsToRebind The dependency paths to create forwarders for.
      */
-    #createForwarders(pathsToRebind: Set<string>): void {
-        for (const depPath of pathsToRebind) {
-            const pathParts = depPath.split('.');
-            const rootPropertyKey = pathParts[0];
-            const relativePathInSource = pathParts.slice(1).join('.');
+    #createForwarders(pathsToRebind: Dependency[]): void {
+        // An update can still run after disconnect, its forwarders would never be disposed and keep the host alive.
+        // hostConnected creates them again.
+        if (!this.#host.isConnected)
+            return;
+
+        for (const { path: depPath, root: rootPropertyKey, segments } of pathsToRebind) {
+            const relativePathInSource = segments.slice(1).join('.');
             const sourceObject = this.#host[rootPropertyKey];
 
             if (!sourceObject)
@@ -539,20 +513,14 @@ export class WebComponentReactiveController implements ReactiveController {
      * @returns A Map of computed properties that changed, mapping to their old values.
      */
     #updateComputedProperties(changedProperties?: PropertyValueMap<any> | Map<PropertyKey, unknown>, dirtyPaths?: Set<string>): Map<string, any> {
-        const computedConfig = getComputedConfig(this.#host);
         const changedComputedProps = new Map<string, any>();
 
-        if (!computedConfig)
-            return changedComputedProps;
-
-        const changedKeys = changedProperties ? new Set(changedProperties.keys()) : null;
-
-        for (const [prop, config] of Object.entries(computedConfig)) {
-            const shouldUpdate = this.#shouldUpdateComputedProperty(config.dependencies, changedKeys, dirtyPaths);
+        for (const { prop, config, dependencies } of getReactiveMetadata(this.#host).computed) {
+            const shouldUpdate = this.#shouldUpdateComputedProperty(dependencies, changedProperties, dirtyPaths);
 
             if (shouldUpdate) {
                 const oldValue = this.#host[prop];
-                const newValue = this.#computePropertyValue(config);
+                const newValue = this.#computePropertyValue(config, dependencies);
 
                 if (newValue instanceof Promise) {
                     const token = ++this.#tokenCounter;
@@ -586,19 +554,19 @@ export class WebComponentReactiveController implements ReactiveController {
      * Determines if a computed property should be re-evaluated.
      * A re-evaluation is needed if any of its direct dependencies, the root of a deep dependency,
      * or a full deep dependency path has changed.
-     * @param dependencies The list of dependency paths for the computed property.
-     * @param changedKeys A Set of property keys that have changed.
+     * @param dependencies The dependencies of the computed property.
+     * @param changedProperties The properties that have changed.
      * @param dirtyPaths A Set of deep paths that have changed.
      * @returns True if the property should be updated, false otherwise.
      */
-    #shouldUpdateComputedProperty(dependencies: string[], changedKeys: Set<PropertyKey> | null, dirtyPaths?: Set<string>): boolean {
-        if (!changedKeys)
+    #shouldUpdateComputedProperty(dependencies: Dependency[], changedProperties: Map<PropertyKey, unknown> | undefined, dirtyPaths?: Set<string>): boolean {
+        if (!changedProperties)
             return true; // Initial run: always update
 
         return dependencies.some(dep =>
-            changedKeys.has(dep) ||
-            changedKeys.has(dep.split('.')[0]) ||
-            (dirtyPaths && dirtyPaths.has(dep))
+            changedProperties.has(dep.path) ||
+            changedProperties.has(dep.root) ||
+            (dirtyPaths && dirtyPaths.has(dep.path))
         );
     }
 
@@ -610,10 +578,11 @@ export class WebComponentReactiveController implements ReactiveController {
      * If allowUndefined is true, the computation will proceed regardless.
      *
      * @param config The computed property configuration including dependencies, computeFunction, and allowUndefined.
+     * @param dependencies The parsed dependencies of the computed property.
      * @returns The newly computed value, or undefined if blocked by undefined dependencies.
      */
-    #computePropertyValue(config: { dependencies: string[], computeFunction?: Function, allowUndefined: boolean }): any {
-        const args = config.dependencies.map(dep => this.#resolvePath(dep));
+    #computePropertyValue(config: { dependencies: string[], computeFunction?: Function, allowUndefined: boolean }, dependencies: Dependency[]): any {
+        const args = dependencies.map(dep => this.#resolvePath(dep));
 
         // Check for undefined values unless allowUndefined is true
         if (!config.allowUndefined && args.some(arg => arg === undefined)) {
@@ -651,11 +620,15 @@ export class WebComponentReactiveController implements ReactiveController {
 
     /**
      * Resolves a dot-separated property path string to a value, starting from the host component.
-     * @param path The dot-separated property path (e.g., "app.user.name").
+     * @param path The dependency path (e.g., "app.user.name").
      * @returns The resolved value, or undefined if any part of the path is nullish.
      */
-    #resolvePath(path: string): any {
-        return path.split('.').reduce((obj, key) => obj?.[key], this.#host);
+    #resolvePath(path: Dependency): any {
+        let value: any = this.#host;
+        for (const key of path.segments)
+            value = value?.[key];
+
+        return value;
     }
 
     /**
@@ -665,16 +638,15 @@ export class WebComponentReactiveController implements ReactiveController {
      * @param path The dependency path to check.
      * @returns True if the path contains an array wildcard, false otherwise.
      */
-    #isArrayWildcardPath(path: string): boolean {
-        const segments = path.split('.');
-        const wildcardIndex = segments.indexOf('*');
+    #isArrayWildcardPath(path: Dependency): boolean {
+        const wildcardIndex = path.segments.indexOf('*');
 
         if (wildcardIndex === -1)
             return false;
 
         // Resolve the path up to (but not including) the wildcard
-        const pathBeforeWildcard = segments.slice(0, wildcardIndex).join('.');
-        const valueBeforeWildcard = pathBeforeWildcard ? this.#resolvePath(pathBeforeWildcard) : this.#host;
+        const pathBeforeWildcard = path.segments.slice(0, wildcardIndex).join('.');
+        const valueBeforeWildcard = pathBeforeWildcard ? this.#resolvePath(dependency(pathBeforeWildcard)) : this.#host;
 
         return Array.isArray(valueBeforeWildcard);
     }

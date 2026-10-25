@@ -1773,3 +1773,90 @@ test('TestSiblingInheritance: two children from same parent both inherit correct
     // This confirms that registering Child1 didn't pollute or modify the parent's configs
     // and Child2 was able to independently collect the same configs
 });
+
+test('TestAppSensitive: follows app sensitivity across a disconnect and reconnect', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-app-sensitive');
+    const state = component.locator('#state');
+    const send = (sensitive: boolean) => page.evaluate(s => (customElements.get('test-app-sensitive') as any).sendSensitive(s), sensitive);
+
+    await send(false);
+    await expect(state).toHaveText('plain');
+
+    await send(true);
+    await expect(state).toHaveText('sensitive');
+
+    // A change sent while the component is detached shows once it is attached again
+    await component.evaluate(node => (window as any).__detached = node.parentNode.removeChild(node));
+    await send(false);
+    await page.evaluate(() => document.body.appendChild((window as any).__detached));
+    await expect(state).toHaveText('plain');
+
+    // And it keeps following changes after the reconnect
+    await send(true);
+    await expect(state).toHaveText('sensitive');
+});
+
+test('TestObserverSideEffectRoot: deep path observed on a root that another observer sets', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-observer-side-effect-root');
+    await expect(component.locator('#derived-value')).toContainText('first');
+
+    // In place on the root the source observer set
+    await component.evaluate(node => { (node as any).source.value = "second"; });
+    await expect(component.locator('#derived-value')).toContainText('second');
+
+    // A new root set by the observer is observed instead of the old one
+    await component.evaluate(node => {
+        const inst = node as any;
+        inst.oldSource = inst.source;
+        inst.source = new inst.source.constructor("third");
+    });
+    await expect(component.locator('#derived-value')).toContainText('third');
+
+    // The new root's own notifications do not run the observer again on an unrelated update
+    const afterSwap = await component.evaluate(node => (node as any).derivedValueCallCount);
+    await component.evaluate(async node => {
+        (node as any).requestUpdate();
+        await (node as any).updateComplete;
+    });
+    expect(await component.evaluate(node => (node as any).derivedValueCallCount)).toBe(afterSwap);
+
+    const count = await component.evaluate(node => (node as any).derivedValueCallCount);
+    await component.evaluate(node => { (node as any).oldSource.value = "stale"; });
+    await component.evaluate(node => { (node as any).source.value = "fourth"; });
+    await expect(component.locator('#derived-value')).toContainText('fourth');
+    expect(await component.evaluate(node => (node as any).derivedValueCallCount)).toBe(count + 1);
+});
+
+test('TestObserverDisconnectedUpdate: an update that runs after disconnect observes nothing', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-observer-disconnected-update');
+    await expect(component.locator('#source-value')).toContainText('first');
+
+    // The new root is set right before the element is removed, its update runs while disconnected
+    await page.evaluate(async () => {
+        const w = window as any;
+        const element = document.querySelector('test-observer-disconnected-update') as any;
+        w.__element = element;
+        element.source = new element.source.constructor("second");
+        element.remove();
+        await element.updateComplete;
+    });
+
+    const count = await page.evaluate(() => (window as any).__element.sourceValueCallCount);
+    await page.evaluate(async () => {
+        const element = (window as any).__element;
+        element.source.value = "third";
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        await element.updateComplete;
+    });
+    expect(await page.evaluate(() => (window as any).__element.sourceValueCallCount)).toBe(count);
+
+    // Re-attached, the element observes its root again
+    await page.evaluate(async () => {
+        const element = (window as any).__element;
+        document.body.appendChild(element);
+        await element.updateComplete;
+        element.source.value = "fourth";
+        await element.updateComplete;
+    });
+    await expect(page.locator('test-observer-disconnected-update #source-value')).toContainText('fourth');
+});

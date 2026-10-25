@@ -1,4 +1,4 @@
-import { ServiceHooks, Dto } from "@vidyano/core";
+import { ServiceHooks, Dto, CultureInfo } from "@vidyano/core";
 import { BusinessRuleValidator } from "./business-rules.js";
 import { VirtualQueryRegistry } from "./registry/virtual-query-registry.js";
 import { VirtualPersistentObjectAttributeConfig } from "./types.js";
@@ -481,10 +481,21 @@ export class VirtualServiceHooks extends ServiceHooks {
             ]
         };
 
+        // Adopt the host app's already-established global culture instead of clobbering it; only establish the desired culture when none is set.
+        const established = CultureInfo.currentCulture !== CultureInfo.invariantCulture;
+        let culture: string;
+        if (established)
+            culture = CultureInfo.currentCulture.name;
+        else {
+            culture = this.#service.desiredCulture;
+            if (!CultureInfo.cultures[culture])
+                console.warn(`VirtualService: desired culture "${culture}" is not a registered culture; date and number formatting will fall back to the invariant culture.`);
+        }
+
         return {
             application: appPo,
-            userCultureInfo: "en-US",
-            userLanguage: "en",
+            userCultureInfo: culture,
+            userLanguage: culture.split("-")[0],
             userName: "VirtualUser",
             hasSensitive: false
         };

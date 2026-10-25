@@ -1,0 +1,153 @@
+{
+  "PersistentObject": {
+    "$id": "PersistentObject:26bd15e3-9dec-4db4-be6c-6ad9886f0f1c",
+    "Id": "26bd15e3-9dec-4db4-be6c-6ad9886f0f1c",
+    "SchemaName": "Dev",
+    "Type": "ReorderItem",
+    "Salt": "jabUveo8lKQLSjBCRzHOv9z2JkuAsj__Xjd1Hu3dr0y79C1SWUS6Ug",
+    "Breadcrumb": "{Name}",
+    "ContextProperty": "AllReorderItems",
+    "Label": {
+      "en": "Reorder item",
+      "nl": "Reorder item"
+    },
+    "Groups": [
+      {
+        "$id": "PersistentObjectAttributeGroup:1f9bc4ca-55f5-4f20-a5ef-63781ac0dcb0",
+        "Id": "1f9bc4ca-55f5-4f20-a5ef-63781ac0dcb0"
+      }
+    ],
+    "Tabs": [
+      {
+        "$id": "PersistentObjectAttributeTab:2ddf274d-b4cf-4d8b-b5dc-f73faf8ea8fd",
+        "Id": "2ddf274d-b4cf-4d8b-b5dc-f73faf8ea8fd"
+      }
+    ],
+    "Attributes": [
+      {
+        "$id": "PersistentObjectAttribute:df41cb59-de5d-452b-9207-79daff9c8b1b",
+        "Id": "df41cb59-de5d-452b-9207-79daff9c8b1b",
+        "Offset": 30,
+        "Name": "Description",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Description",
+          "nl": "Description"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:1f9bc4ca-55f5-4f20-a5ef-63781ac0dcb0"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:2ddf274d-b4cf-4d8b-b5dc-f73faf8ea8fd"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:753e54bb-ad37-4315-bf8c-29b615046d3f",
+        "Id": "753e54bb-ad37-4315-bf8c-29b615046d3f",
+        "Offset": 10,
+        "Name": "Id",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Id",
+          "nl": "Id"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Int32"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:1f9bc4ca-55f5-4f20-a5ef-63781ac0dcb0"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:2ddf274d-b4cf-4d8b-b5dc-f73faf8ea8fd"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:53802e07-e974-44ac-a650-e4f1248125be",
+        "Id": "53802e07-e974-44ac-a650-e4f1248125be",
+        "Offset": 20,
+        "Name": "Name",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Name",
+          "nl": "Name"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:String"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:1f9bc4ca-55f5-4f20-a5ef-63781ac0dcb0"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:2ddf274d-b4cf-4d8b-b5dc-f73faf8ea8fd"
+        }
+      },
+      {
+        "$id": "PersistentObjectAttribute:14ab91a1-f3a3-4ccc-82de-92d4abf258be",
+        "Id": "14ab91a1-f3a3-4ccc-82de-92d4abf258be",
+        "Offset": 40,
+        "Name": "Offset",
+        "IsReadOnly": true,
+        "Label": {
+          "en": "Offset",
+          "nl": "Offset"
+        },
+        "Visibility": 7,
+        "ColumnSpan": 1,
+        "DataType": {
+          "$ref": "DataType:Int32"
+        },
+        "Group": {
+          "$ref": "PersistentObjectAttributeGroup:1f9bc4ca-55f5-4f20-a5ef-63781ac0dcb0"
+        },
+        "Tab": {
+          "$ref": "PersistentObjectAttributeTab:2ddf274d-b4cf-4d8b-b5dc-f73faf8ea8fd"
+        }
+      }
+    ],
+    "Queries": []
+  },
+  "Queries": [
+    {
+      "$id": "Query:d9eb2100-12bd-4a23-90be-cf6c6f5e53fb",
+      "Id": "d9eb2100-12bd-4a23-90be-cf6c6f5e53fb",
+      "Source": "Custom.ReorderItems",
+      "AutoQuery": true,
+      "Name": "QueryGrid_Reorder",
+      "CanReorder": true,
+      "Label": {
+        "en": "Reorder",
+        "nl": "Reorder"
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:26bd15e3-9dec-4db4-be6c-6ad9886f0f1c"
+      },
+      "Columns": []
+    },
+    {
+      "$id": "Query:e785a1bf-aea5-4c3e-89d0-33a5e722b559",
+      "Id": "e785a1bf-aea5-4c3e-89d0-33a5e722b559",
+      "Source": "Custom.ReorderItemsLarge",
+      "AutoQuery": true,
+      "Name": "QueryGrid_ReorderLarge",
+      "CanReorder": true,
+      "Label": {
+        "en": "Reorder (250)",
+        "nl": "Reorder (250)"
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:26bd15e3-9dec-4db4-be6c-6ad9886f0f1c"
+      },
+      "Columns": []
+    }
+  ],
+  "Reports": []
+}

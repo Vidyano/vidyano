@@ -10,6 +10,10 @@
 
     > vi-icon {
         position: unset;
+
+        &[hidden] {
+            display: none;
+        }
     }
 
     &[is-app-sensitive][sensitive] {

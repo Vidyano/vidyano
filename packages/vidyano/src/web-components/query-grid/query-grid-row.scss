@@ -9,12 +9,13 @@
     white-space: nowrap;
     background-color: white;
 
-    &:nth-of-type(even) > ::slotted(.column),
-    &:nth-of-type(even) > .pinned {
+    // [odd] marks the first, third, ... item: the rows are not in display order
+    &:not([odd]) > ::slotted(.column),
+    &:not([odd]) > .pinned {
         background-color: var(--vi-query-grid-row-even-color, white);
     }
 
-    &:nth-of-type(odd) {
+    &[odd] {
         &, ::slotted(.column), .pinned {
             background-color: var(--vi-query-grid-row-odd-color, #FAFAFA);
         }
@@ -27,9 +28,11 @@
     }
 
     &:not(.loading):hover {
-        cursor: pointer;
+        &:not([disabled-item]) {
+            cursor: pointer;
+        }
 
-        &, ::slotted(.column), .pinned {
+        &,::slotted(.column), .pinned {
             background-color: var(--color-semi-faint);
         }
     }
@@ -67,14 +70,14 @@
         display: none !important;
     }
 
-    &.disabled, &.readonly {
+    &[disabled-item], &[readonly-item] {
         .selector, .actions {
             visibility: hidden;
             pointer-events: none;
         }
     }
 
-    &.disabled {
+    &[disabled-item] {
         cursor: default;
     }
 
@@ -87,8 +90,13 @@
     &[is-group] {
         grid-template-columns: 1fr !important;
 
-        ::slotted(.column), .pinned {
+        ::slotted(.column) {
             display: none;
+        }
+
+        // !important: the grid's [has-grouping] ::part(groupspacer) and [can-filter] ::part(filter) rules would win otherwise
+        .pinned {
+            display: none !important;
         }
     }
 

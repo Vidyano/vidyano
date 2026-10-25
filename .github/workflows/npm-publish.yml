@@ -36,7 +36,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
 
@@ -111,9 +111,6 @@ jobs:
               echo "Publishing stable with tags: ${VERSION_TAG}, ${NEXT_TAG}"
             fi
           fi
-
-      - name: Update npm
-        run: npm install -g npm@latest
 
       - name: Configure Git
         run: |
@@ -273,15 +270,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Remove always-auth from .npmrc
         run: npm config delete always-auth --location=user 2>/dev/null || true
-
-      # Ensure npm 11.5.1 or later for trusted publishing
-      - name: Update npm
-        run: npm install -g npm@latest
 
       - name: Install semver library
         run: npm install --no-save semver@7

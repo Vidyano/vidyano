@@ -72,7 +72,7 @@ declare module "@polymer/polymer/lib/utils/gestures" {
     }
 }
 
-export declare module IronFocusablesHelper {
+export declare namespace IronFocusablesHelper {
     /**
       * Returns a sorted array of tabbable nodes, including the root node.
       * It searches the tabbable nodes in the light and shadow dom of the chidren,

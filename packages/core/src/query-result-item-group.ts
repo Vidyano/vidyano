@@ -42,7 +42,7 @@ export class QueryResultItemGroup extends Observable<QueryResultItemGroup> imple
         this.#notifier = notifier;
 
         this.#items = new Array(this.#count);
-        const items = query.items.slice(start, end);
+        const items = query.items.slice(start, end + 1);
         this.#items.splice(0, items.length, ...items);
 
         this.#isCollapsed = false;

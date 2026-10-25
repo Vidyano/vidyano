@@ -238,6 +238,11 @@ export declare type ProviderParametersDto = {
      * Indicates whether the authentication provider supports getting the credential type.
      */
     getCredentialType?: boolean;
+
+    /**
+     * Indicates whether the authentication provider supports signing in with a passkey (WebAuthn).
+     */
+    passkeys?: boolean;
 };
 
 export declare type ClientDataDto = {

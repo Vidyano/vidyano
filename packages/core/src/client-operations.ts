@@ -35,6 +35,18 @@ export interface IOpenOperation extends IClientOperation {
 }
 
 /**
+ * Represents an operation that executes an action against a query or persistent object.
+ */
+export interface IExecuteActionOperation extends IClientOperation {
+    action: string;
+    queryId?: string;
+    persistentObjectId?: string;
+    objectId?: string;
+    selectedItems?: string[];
+    parameters?: Record<string, string>;
+}
+
+/**
  * Provides various client-side operations that can be triggered by the service.
  */
 export const ClientOperations = {

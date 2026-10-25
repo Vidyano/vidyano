@@ -229,19 +229,39 @@ export class AppServiceHooksBase extends Vidyano.ServiceHooks {
 
     async onStreamingAction(action: string, messages: () => Vidyano.StreamingActionMessages, abort?: () => void): Promise<void> {
         const messageIterator = messages();
-
-        const firstMessage = await messageIterator.next(); // Wait for the first message before showing the dialog
-        const streamingActionDialog = new StreamingActionDialog(this.service.actionDefinitions[action], abort);
-        this.app.showDialog(streamingActionDialog);
-        streamingActionDialog.appendMessage(<string>firstMessage.value); // Append the first message
+        let streamingActionDialog: StreamingActionDialog;
 
         try {
             for await (const message of messageIterator) {
+                // A streaming action produces no response envelope, so an operation only reaches the client here.
+                const operation = this._tryGetClientOperation(message);
+                if (operation) {
+                    this.onClientOperation(operation);
+                    continue;
+                }
+
+                // Only shown once there is something to render, so an operation-only stream stays silent.
+                if (!streamingActionDialog) {
+                    streamingActionDialog = new StreamingActionDialog(this.service.actionDefinitions[action], abort);
+                    this.app.showDialog(streamingActionDialog);
+                }
+
                 streamingActionDialog.appendMessage(message);
             }
         }
         finally {
-            streamingActionDialog.completed();
+            streamingActionDialog?.completed();
+        }
+    }
+
+    // A frame that is not JSON is not a client operation.
+    private _tryGetClientOperation(message: string): Vidyano.IClientOperation | null {
+        try {
+            const data = JSON.parse(message);
+            return data?.type === "clientOperation" ? data.value : null;
+        }
+        catch {
+            return null;
         }
     }
 

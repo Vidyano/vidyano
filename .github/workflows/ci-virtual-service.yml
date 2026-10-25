@@ -34,7 +34,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright browsers
+      # GitHub's runner image ships Google Chrome, which channel: 'chrome' uses; act's image has none
+      - name: Install Playwright browsers (act only)
+        if: ${{ env.ACT }}
         run: npx playwright install --with-deps chrome
 
       - name: Build core (dependency)

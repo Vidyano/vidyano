@@ -11,10 +11,10 @@ import styles from "./persistent-object-attribute-numeric.css";
 export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute {
     static styles = [super.styles, unsafeCSS(styles)];
 
-    private _allowDecimal: boolean;
-    private _isNullable: boolean;
-    private _decimalSeparator: string;
-    private _attributeValueChangedBlock: boolean = false;
+    #allowDecimal: boolean;
+    #isNullable: boolean;
+    #decimalSeparator: string;
+    #attributeValueChangedBlock: boolean = false;
 
     @computed(function(this: PersistentObjectAttributeNumeric): string {
         return this._computeInputtype();
@@ -30,6 +30,7 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
     @property({ type: Boolean, reflect: true })
     focused: boolean = false;
 
+    // @observer resolves observers by method name, so this cannot be a # private.
     @observer("attribute.typeHints")
     private _updateDisplayFormat() {
         if (!(this.attribute instanceof Vidyano.PersistentObjectAttribute))
@@ -47,8 +48,8 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
         }
     }
 
-    private static _decimalTypes = ["NullableDecimal", "Decimal", "NullableSingle", "Single", "NullableDouble", "Double"];
-    private static _unsignedTypes = ["Byte", "NullableByte", "UInt16", "NullableUInt16", "UInt32", "NullableUInt32", "UInt64", "NullableUInt64"];
+    static #decimalTypes = ["NullableDecimal", "Decimal", "NullableSingle", "Single", "NullableDouble", "Double"];
+    static #unsignedTypes = ["Byte", "NullableByte", "UInt16", "NullableUInt16", "UInt32", "NullableUInt32", "UInt64", "NullableUInt64"];
 
     protected override _attributeChanged() {
         super._attributeChanged();
@@ -56,18 +57,18 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
         if (!(this.attribute instanceof Vidyano.PersistentObjectAttribute))
             return;
 
-        this._allowDecimal = PersistentObjectAttributeNumeric._decimalTypes.indexOf(numericSynonyms[this.attribute.type] || this.attribute.type) >= 0;
-        this._isNullable = (numericSynonyms[this.attribute.type] || this.attribute.type).startsWith("Nullable") && !this.attribute.parent.isBulkEdit;
-        this._decimalSeparator = Vidyano.CultureInfo.currentCulture.numberFormat.numberDecimalSeparator;
+        this.#allowDecimal = this._allowsDecimal();
+        this.#isNullable = (numericSynonyms[this.attribute.type] || this.attribute.type).startsWith("Nullable") && !this.attribute.parent.isBulkEdit;
+        this.#decimalSeparator = Vidyano.CultureInfo.currentCulture.numberFormat.numberDecimalSeparator;
     }
 
     protected override _attributeValueChanged() {
         // Block flag prevents circular updates: attribute.value → this.value → _valueChanged → attribute.value
-        if (this._attributeValueChangedBlock)
+        if (this.#attributeValueChangedBlock)
             return;
 
         try {
-            this._attributeValueChangedBlock = true;
+            this.#attributeValueChangedBlock = true;
 
             if (this.attribute.value == null) {
                 if (this.value !== "")
@@ -77,7 +78,7 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
             }
 
             const attributeValue = this.attribute.value.toString();
-            let newDisplayValue = this._unNormalize(attributeValue);
+            let newDisplayValue = this.#unNormalize(attributeValue);
 
             // If focused and input has trailing separator or trailing zeros, preserve them in the display value
             // This allows users to type decimal numbers like "123.45" or "150.10" without formatting being applied mid-typing
@@ -86,12 +87,12 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
                 const inputValue = input.value;
 
                 // Preserve input if user is typing just a decimal separator (e.g., "." or ",")
-                if (inputValue === this._decimalSeparator || inputValue === ".") {
+                if (inputValue === this.#decimalSeparator || inputValue === ".") {
                     newDisplayValue = inputValue;
                 } else {
                     // Normalize both values to compare numeric equality
-                    const inputNormalized = this._normalize(inputValue);
-                    const newDisplayNormalized = this._normalize(newDisplayValue);
+                    const inputNormalized = this.#normalize(inputValue);
+                    const newDisplayNormalized = this.#normalize(newDisplayValue);
 
                     // Parse to numbers for comparison (handles trailing zeros: 150.10 === 150.1)
                     const inputNumeric = parseFloat(inputNormalized);
@@ -114,7 +115,7 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
             }
         }
         finally {
-            this._attributeValueChangedBlock = false;
+            this.#attributeValueChangedBlock = false;
         }
     }
 
@@ -126,17 +127,17 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
             return;
 
         // Block flag prevents circular updates: this.value → attribute.value → _attributeValueChanged → this.value
-        if (this._attributeValueChangedBlock)
+        if (this.#attributeValueChangedBlock)
             return;
 
         if (newValue != null)
-            newValue = this._normalize(newValue);
+            newValue = this.#normalize(newValue);
 
         try {
             // While focused, allow trailing decimal separator so users can type decimal numbers like "123.45"
             // Normalize empty values and single minus sign
             if (this.focused && (newValue === "" || newValue === "-")) {
-                newValue = this.attribute.isRequired && !this._isNullable ? "0" : "";
+                newValue = this.attribute.isRequired && !this.#isNullable ? "0" : "";
             }
 
             // Allow trailing decimal separator while focused, but validate the number without it
@@ -148,7 +149,7 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
                 return;
             }
 
-            if (!this._canParse(valueToValidate)) {
+            if (!this.#canParse(valueToValidate)) {
                 this.value = oldValue;
                 // Manually update the input element's value to reflect the revert
                 const input = this.shadowRoot?.querySelector("input");
@@ -176,11 +177,25 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
     }
 
     protected _computeInputtype(): string {
-        // Don't default to "number" as that would prevent proper handling of decimals and large numbers
-        return this.attribute?.getTypeHint("inputtype", undefined, undefined);
+        // type="number" is incompatible with this component's text-based caret/value handling.
+        const inputtype = this.attribute?.getTypeHint("inputtype", undefined, undefined);
+        return inputtype?.toLowerCase() === "number" ? "text" : inputtype;
     }
 
-    private _editInputBlur() {
+    // Resolved from attribute.type so it is valid before _attributeChanged runs.
+    protected _allowsDecimal(): boolean {
+        if (!(this.attribute instanceof Vidyano.PersistentObjectAttribute))
+            return false;
+
+        const type = numericSynonyms[this.attribute.type] || this.attribute.type;
+        return PersistentObjectAttributeNumeric.#decimalTypes.indexOf(type) >= 0;
+    }
+
+    protected _computeInputmode(): string {
+        return this.attribute?.getTypeHint("inputmode", this._allowsDecimal() ? "decimal" : "numeric");
+    }
+
+    #editInputBlur() {
         if (!(this.attribute instanceof Vidyano.PersistentObjectAttribute))
             return;
 
@@ -188,10 +203,10 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
         let normalizedValue = this.value;
 
         if (normalizedValue != null)
-            normalizedValue = this._normalize(normalizedValue);
+            normalizedValue = this.#normalize(normalizedValue);
 
         if (normalizedValue === "" || normalizedValue === "-")
-            normalizedValue = this.attribute.isRequired && !this._isNullable ? "0" : "";
+            normalizedValue = this.attribute.isRequired && !this.#isNullable ? "0" : "";
         else if (normalizedValue && normalizedValue.endsWith("."))
             normalizedValue = normalizedValue.substring(0, normalizedValue.length - 1);
 
@@ -209,21 +224,21 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
             // Just ensure display is synced with model (handles formatting)
             // Use block flag to prevent _valueChanged from triggering circular update
             try {
-                this._attributeValueChangedBlock = true;
+                this.#attributeValueChangedBlock = true;
 
-                const attributeValue = this.attribute.value ? this.attribute.value.toString() : ((this.attribute.isRequired && !this._isNullable) || this.value ? "0" : "");
-                const newDisplayValue = this._unNormalize(attributeValue);
+                const attributeValue = this.attribute.value ? this.attribute.value.toString() : ((this.attribute.isRequired && !this.#isNullable) || this.value ? "0" : "");
+                const newDisplayValue = this.#unNormalize(attributeValue);
 
                 if (this.value !== newDisplayValue)
                     this.value = newDisplayValue;
             }
             finally {
-                this._attributeValueChangedBlock = false;
+                this.#attributeValueChangedBlock = false;
             }
         }
     }
 
-    private _editInputFocus(e: Event) {
+    #editInputFocus(e: Event) {
         this.focused = true;
 
         const input = <HTMLInputElement>e.target;
@@ -234,76 +249,76 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
         input.selectionEnd = input.value.length;
     }
 
-    private _normalize(value: string): string {
-        if (!value || this._decimalSeparator === ".")
+    #normalize(value: string): string {
+        if (!value || this.#decimalSeparator === ".")
             return value;
 
-        return value.replace(this._decimalSeparator, ".");
+        return value.replace(this.#decimalSeparator, ".");
     }
 
-    private _unNormalize(value: string): string {
-        if (!value || this._decimalSeparator === ".")
+    #unNormalize(value: string): string {
+        if (!value || this.#decimalSeparator === ".")
             return value;
 
-        return value.replace(".", this._decimalSeparator);
+        return value.replace(".", this.#decimalSeparator);
     }
 
-    private _canParse(value: string): boolean {
-        if (!value && this._isNullable)
+    #canParse(value: string): boolean {
+        if (!value && this.#isNullable)
             return true;
 
-        if (value && value.startsWith(this._decimalSeparator))
+        if (value && value.startsWith(this.#decimalSeparator))
             value = `0${value}`;
 
         switch (numericSynonyms[this.attribute.type] || this.attribute.type) {
             case "Byte":
             case "NullableByte":
-                return this._between(parseInt(value, 10), 0, 255);
+                return this.#between(parseInt(value, 10), 0, 255);
             case "SByte":
             case "NullableSByte":
-                return this._between(parseInt(value, 10), -128, 127);
+                return this.#between(parseInt(value, 10), -128, 127);
             case "Int16":
             case "NullableInt16":
-                return this._between(parseInt(value, 10), -32768, 32767);
+                return this.#between(parseInt(value, 10), -32768, 32767);
             case "UInt16":
             case "NullableUInt16":
-                return this._between(parseInt(value, 10), 0, 65535);
+                return this.#between(parseInt(value, 10), 0, 65535);
             case "Int32":
             case "NullableInt32":
-                return this._between(parseInt(value, 10), -2147483648, 2147483647);
+                return this.#between(parseInt(value, 10), -2147483648, 2147483647);
             case "UInt32":
             case "NullableUInt32":
-                return this._between(parseFloat(value), 0, 4294967295);
+                return this.#between(parseFloat(value), 0, 4294967295);
             case "Int64":
             case "NullableInt64":
-                return this._between(parseFloat(value), -9223372036854775808, 9223372036854775807);
+                return this.#between(parseFloat(value), -9223372036854775808, 9223372036854775807);
             case "UInt64":
             case "NullableUInt64":
-                return this._between(parseFloat(value), 0, 18446744073709551615);
+                return this.#between(parseFloat(value), 0, 18446744073709551615);
             case "Decimal":
             case "NullableDecimal":
-                return this._between(parseFloat(value), -79228162514264337593543950335, 79228162514264337593543950335);
+                return this.#between(parseFloat(value), -79228162514264337593543950335, 79228162514264337593543950335);
             case "Single":
             case "NullableSingle":
-                return this._between(parseFloat(value), -3.40282347E+38, 3.40282347E+38);
+                return this.#between(parseFloat(value), -3.40282347E+38, 3.40282347E+38);
             case "Double":
             case "NullableDouble":
-                return this._between(parseFloat(value), -1.7976931348623157E+308, 1.7976931348623157E+308);
+                return this.#between(parseFloat(value), -1.7976931348623157E+308, 1.7976931348623157E+308);
             default:
                 return false;
         }
     }
 
-    private _between(value: number, minValue: number, maxValue: number): boolean {
+    #between(value: number, minValue: number, maxValue: number): boolean {
         return !isNaN(value) && value >= minValue && value <= maxValue;
     }
 
-    private _setCarretIndex(input: HTMLInputElement, carretIndex: number): void {
+    #setCarretIndex(input: HTMLInputElement, carretIndex: number): void {
         input.selectionEnd = carretIndex;
         input.selectionStart = carretIndex;
     }
 
-    private _keypress(e: KeyboardEvent): void {
+    #keypress(e: KeyboardEvent): void {
         if (e.key === Keyboard.Keys.Tab || e.key === Keyboard.Keys.Shift || e.key === Keyboard.Keys.Control || e.key === Keyboard.Keys.Alt || e.key === Keyboard.Keys.ArrowLeft || e.key === Keyboard.Keys.ArrowRight || e.key === Keyboard.Keys.ArrowUp || e.key === Keyboard.Keys.ArrowDown || e.key === Keyboard.Keys.Backspace)
             return;
 
@@ -314,24 +329,24 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
             value = value.slice(0, Math.min(input.selectionEnd, carretIndex)) + value.slice(Math.max(input.selectionEnd, carretIndex));
 
         if (e.key.length === 1 && /^\d+$/.test(e.key)) {
-            if (!this._canParse(value.insert(e.key, carretIndex)))
+            if (!this.#canParse(value.insert(e.key, carretIndex)))
                 e.preventDefault();
         }
         else {
-            if ((e.key === Keyboard.Keys.Comma || e.key === Keyboard.Keys.Period) && !value.contains(this._decimalSeparator) && this._allowDecimal) {
-                this.value = input.value = value.insert(this._decimalSeparator, carretIndex);
-                this._setCarretIndex(input, carretIndex + 1);
+            if ((e.key === Keyboard.Keys.Comma || e.key === Keyboard.Keys.Period) && !value.contains(this.#decimalSeparator) && this.#allowDecimal) {
+                this.value = input.value = value.insert(this.#decimalSeparator, carretIndex);
+                this.#setCarretIndex(input, carretIndex + 1);
             }
-            else if (e.key === Keyboard.Keys.Subtract && !value.contains("-") && carretIndex === 0 && PersistentObjectAttributeNumeric._unsignedTypes.indexOf(numericSynonyms[this.attribute.type] || this.attribute.type) === -1) {
+            else if (e.key === Keyboard.Keys.Subtract && !value.contains("-") && carretIndex === 0 && PersistentObjectAttributeNumeric.#unsignedTypes.indexOf(numericSynonyms[this.attribute.type] || this.attribute.type) === -1) {
                 this.value = input.value = value.insert("-", carretIndex);
-                this._setCarretIndex(input, carretIndex + 1);
+                this.#setCarretIndex(input, carretIndex + 1);
             }
 
             e.preventDefault();
         }
     }
 
-    private _onPaste(e: ClipboardEvent): void {
+    #onPaste(e: ClipboardEvent): void {
         if (!(this.attribute instanceof Vidyano.PersistentObjectAttribute) || !e.clipboardData)
             return;
 
@@ -340,29 +355,11 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
         if (!pastedText)
             return;
 
-        // Get only digits, decimal and thousand separator from pasted text
-        const regex = new RegExp(`[^0-9.,]`, 'g');
+        // Get only sign, digits, decimal and thousand separator from pasted text
+        const regex = new RegExp(`[^-0-9.,]`, 'g');
         pastedText = pastedText.replace(regex, '');
 
-        // Get the current number format from culture
-        const nf = Vidyano.CultureInfo.currentCulture.numberFormat;
-        const thousandSeparator = nf.numberGroupSeparator;
-        const decimalSeparator = nf.numberDecimalSeparator;
-
-        // Remove thousand separators but preserve decimal separator
-        let cleanedText = pastedText.replace(new RegExp(`\\${thousandSeparator}`, 'g'), '');
-
-        // Replace any potential decimal separator that isn't matching the current culture with the correct one
-        if (decimalSeparator !== "." && cleanedText.includes("."))
-            cleanedText = cleanedText.replace(/\./g, decimalSeparator);
-
-        if (decimalSeparator !== "," && cleanedText.includes(","))
-            cleanedText = cleanedText.replace(/,/g, decimalSeparator);
-
-        // Allow only one decimal separator
-        const parts = cleanedText.split(decimalSeparator);
-        if (parts.length > 2)
-            cleanedText = parts[0] + decimalSeparator + parts.slice(1).join('');
+        const cleanedText = this.#normalizePastedNumber(pastedText);
 
         // Only replace clipboard data if resulting value would be valid
         const input = <HTMLInputElement>e.target;
@@ -371,7 +368,7 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
         const currentValue = input.value;
         const newValue = currentValue.substring(0, selStart) + cleanedText + currentValue.substring(selEnd);
 
-        if (this._canParse(newValue)) {
+        if (this.#canParse(newValue)) {
             e.preventDefault();
 
             input.value = newValue;
@@ -385,12 +382,64 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
         }
     }
 
+    #normalizePastedNumber(value: string): string {
+        const decimalSeparator = this.#decimalSeparator;
+        const groupSeparator = Vidyano.CultureInfo.currentCulture.numberFormat.numberGroupSeparator;
+        const pastedDecimalSeparator = this.#getPastedDecimalSeparator(value, decimalSeparator, groupSeparator);
+        let normalizedValue = value.startsWith("-") ? "-" : "";
+
+        for (const char of value) {
+            if (/^\d$/.test(char))
+                normalizedValue += char;
+            else if (char === pastedDecimalSeparator)
+                normalizedValue += decimalSeparator;
+        }
+
+        const parts = normalizedValue.split(decimalSeparator);
+        if (parts.length > 2)
+            normalizedValue = parts[0] + decimalSeparator + parts.slice(1).join('');
+
+        return normalizedValue;
+    }
+
+    // With both separators the rightmost one is decimal; with one separator, valid culture grouping wins.
+    #getPastedDecimalSeparator(value: string, decimalSeparator: string, groupSeparator: string): string | null {
+        const lastPeriod = value.lastIndexOf(".");
+        const lastComma = value.lastIndexOf(",");
+
+        if (lastPeriod >= 0 && lastComma >= 0)
+            return lastPeriod > lastComma ? "." : ",";
+
+        const separator = lastPeriod >= 0 ? "." : lastComma >= 0 ? "," : null;
+        if (!separator)
+            return null;
+
+        if (separator === decimalSeparator)
+            return separator;
+
+        return separator === groupSeparator && this.#hasValidGrouping(value, separator) ? null : separator;
+    }
+
+    #hasValidGrouping(value: string, groupSeparator: string): boolean {
+        const digits = value.startsWith("-") ? value.substring(1) : value;
+        const groups = digits.split(groupSeparator);
+        if (groups.length < 2 || groups[0].length === 0 || groups[0].length > 3)
+            return false;
+
+        return groups.slice(1).every(group => group.length === 3);
+    }
+
     protected override renderDisplay() {
         return super.renderDisplay(html`<span>${this.attribute?.displayValue}</span>`);
     }
 
-    private _onInput(e: InputEvent) {
+    #onInput(e: InputEvent) {
         const input = e.target as HTMLInputElement;
+
+        // _keypress only covers physical keyboards; normalize soft-keyboard / IME / paste input here.
+        if (this.#allowDecimal)
+            this.#normalizeInputSeparators(input);
+
         const newValue = input.value;
         const oldValue = this.value;
 
@@ -404,6 +453,43 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
         }, 0);
     }
 
+    // Normalizes separators in the input value, keeping the caret/selection aligned.
+    #normalizeInputSeparators(input: HTMLInputElement): void {
+        const value = input.value;
+
+        // A value already containing the decimal separator is locale-formatted (e.g. dropped
+        // "1,234.56"), so the alternative separator is grouping; otherwise it is a mistyped decimal.
+        const dropGrouping = value.includes(this.#decimalSeparator);
+
+        const normalizedValue = this.#normalizeSeparators(value, dropGrouping);
+        if (normalizedValue === value)
+            return;
+
+        const selectionStart = input.selectionStart ?? normalizedValue.length;
+        const selectionEnd = input.selectionEnd ?? selectionStart;
+
+        input.value = normalizedValue;
+        input.setSelectionRange(
+            this.#normalizeSeparators(value.substring(0, selectionStart), dropGrouping).length,
+            this.#normalizeSeparators(value.substring(0, selectionEnd), dropGrouping).length);
+    }
+
+    // Drops the alternative separator as grouping or converts it to the decimal separator, then collapses extra decimal separators.
+    #normalizeSeparators(value: string, dropGrouping: boolean): string {
+        const alternativeSeparator = this.#decimalSeparator === "." ? "," : ".";
+        let normalizedValue = dropGrouping
+            ? value.replaceAll(alternativeSeparator, "")
+            : value.replaceAll(alternativeSeparator, this.#decimalSeparator);
+
+        const separatorIndex = normalizedValue.indexOf(this.#decimalSeparator);
+        if (separatorIndex >= 0) {
+            normalizedValue = normalizedValue.substring(0, separatorIndex + 1)
+                + normalizedValue.substring(separatorIndex + 1).replaceAll(this.#decimalSeparator, "");
+        }
+
+        return normalizedValue;
+    }
+
     protected override renderEdit(innerTemplate?: TemplateResult) {
         return super.renderEdit(html`
             <slot name="left" slot="left"></slot>
@@ -412,12 +498,13 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
                 <vi-sensitive ?disabled=${!this.sensitive}>
                     <input
                         .value=${this.value || ""}
-                        @input=${this._onInput}
+                        @input=${this.#onInput}
                         type=${this.inputtype}
-                        @keypress=${this._keypress}
-                        @paste=${this._onPaste}
-                        @focus=${this._editInputFocus}
-                        @blur=${this._editInputBlur}
+                        inputmode=${this._computeInputmode()}
+                        @keypress=${this.#keypress}
+                        @paste=${this.#onPaste}
+                        @focus=${this.#editInputFocus}
+                        @blur=${this.#editInputBlur}
                         ?readonly=${this.readOnly}
                         tabindex=${this.readOnlyTabIndex || nothing}
                         placeholder=${this.placeholder || nothing}
@@ -434,17 +521,8 @@ export class PersistentObjectAttributeNumeric extends PersistentObjectAttribute 
     }
 }
 
-// customElements.define("vi-persistent-object-attribute-numeric", PersistentObjectAttributeNumeric);
+customElements.define("vi-persistent-object-attribute-numeric", PersistentObjectAttributeNumeric);
 
 PersistentObjectAttributeRegister.add("Numeric", PersistentObjectAttributeNumeric);
-
-class Test extends PersistentObjectAttributeNumeric
-{
-    
-}
-
-customElements.define("vi-persistent-object-attribute-numeric", Test);
-
-PersistentObjectAttributeRegister.add("Numeric", Test);
 
 const numericSynonyms: { [type: string]: string } = {};

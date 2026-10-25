@@ -26,13 +26,21 @@
         pointer-events: none;
         overflow: hidden;
         text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .buttons {
+        display: flex;
         background-color: #f9f9f9;
 
         vi-button {
             fill: var(--color);
+
+            // A disabled Eye button stays at full opacity, half opacity means hidden
+            &[disabled] {
+                opacity: 1;
+                fill: #888;
+            }
         }
     }
 

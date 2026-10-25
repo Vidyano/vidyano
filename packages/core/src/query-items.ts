@@ -494,6 +494,8 @@ export class QueryItemsProxy {
 
         try {
             await this.#atAsync(queuedLazyItemIndexes);
+        } catch {
+            // Nobody awaits a lazy load; the query's notification already shows the error
         } finally {
             queuedLazyItemIndexes.forEach(i => {
                 if (target[i] == null) {
@@ -636,12 +638,12 @@ export class QueryItemsProxy {
         let actualEnd: number;
         if (end === undefined) {
             // If no end specified, use totalItems if known, otherwise load all available
-            actualEnd = totalItems > 0 ? totalItems : Number.MAX_SAFE_INTEGER;
+            actualEnd = totalItems > 0 && !this.#query.hasMore ? totalItems : Number.MAX_SAFE_INTEGER;
         } else if (end < 0) {
             actualEnd = Math.max(0, totalItems + end);
         } else {
             // If end is specified, use it but cap at totalItems if known
-            actualEnd = totalItems > 0 ? Math.min(end, totalItems) : end;
+            actualEnd = totalItems > 0 && !this.#query.hasMore ? Math.min(end, totalItems) : end;
         }
 
         const results: QueryResultItem[] = [];
@@ -799,8 +801,9 @@ export class QueryItemsProxy {
 
         const actualIndices = indicesArray.map(idx => idx < 0 ? this.#query.totalItems + idx : idx);
 
+        // With a continuation token (hasMore), totalItems only counts the loaded items, so indices past it are still valid
         const validIndices = actualIndices.filter(idx =>
-            idx >= 0 && (this.#query.totalItems === 0 || idx < this.#query.totalItems)
+            idx >= 0 && (this.#query.hasMore || this.#query.totalItems === 0 || idx < this.#query.totalItems)
         );
 
         const uniqueValidIndices = [...new Set(validIndices)];
@@ -818,7 +821,8 @@ export class QueryItemsProxy {
                 for (let i = 1; i < sortedIndexes.length; i++) {
                     const idx = sortedIndexes[i];
 
-                    if (idx <= currentRangeEnd + this.#query.pageSize) {
+                    // A continuation token can only fetch the next page, so everything past the loaded items is fetched as one range
+                    if (idx <= currentRangeEnd + this.#query.pageSize || (this.#query.hasMore && idx >= this.#query.totalItems)) {
                         currentRangeEnd = idx;
                     } else {
                         const skip = Math.floor(currentRangeStart / this.#query.pageSize) * this.#query.pageSize;

@@ -84,24 +84,27 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
     get isAppSensitive(): boolean {
         if (this[IS_APP_SENSITIVE_SYMBOL] === undefined) {
             this[IS_APP_SENSITIVE_SYMBOL] = false;
-
-            let isInitializing = true;
-
-            this[IS_APP_SENSITIVE_SUBSCRIPTION_SYMBOL] = ServiceBus.subscribe("vi-app:sensitive-changed", (_, __, sensitive: boolean) => {
-                const oldValue = this[IS_APP_SENSITIVE_SYMBOL];
-                if (oldValue !== sensitive) {
-                    this[IS_APP_SENSITIVE_SYMBOL] = sensitive;
-
-                    // Only trigger requestUpdate if we're not initializing
-                    if (!isInitializing)
-                        this.requestUpdate("isAppSensitive", oldValue);
-                }
-            }, true); // receiveLast = true to get current value
-
-            isInitializing = false;
+            this.#subscribeToAppSensitive(true);
         }
 
         return this[IS_APP_SENSITIVE_SYMBOL];
+    }
+
+    #subscribeToAppSensitive(initializing: boolean) {
+        let isInitializing = initializing;
+
+        this[IS_APP_SENSITIVE_SUBSCRIPTION_SYMBOL] = ServiceBus.subscribe("vi-app:sensitive-changed", (_, __, sensitive: boolean) => {
+            const oldValue = this[IS_APP_SENSITIVE_SYMBOL];
+            if (oldValue !== sensitive) {
+                this[IS_APP_SENSITIVE_SYMBOL] = sensitive;
+
+                // Only trigger requestUpdate if we're not initializing
+                if (!isInitializing)
+                    this.requestUpdate("isAppSensitive", oldValue);
+            }
+        }, true); // receiveLast = true to get current value
+
+        isInitializing = false;
     }
 
     get translations(): TypedTranslations<TTranslations> {
@@ -174,6 +177,10 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
 
         if (this.app && !this.app.service)
             this.#listenForService(this.app);
+
+        // Disconnecting dropped the subscription; resubscribing delivers the sensitivity that changed meanwhile
+        if (this[IS_APP_SENSITIVE_SYMBOL] !== undefined && !this[IS_APP_SENSITIVE_SUBSCRIPTION_SYMBOL])
+            this.#subscribeToAppSensitive(false);
 
         super.connectedCallback();
     }

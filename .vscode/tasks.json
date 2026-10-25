@@ -3,102 +3,20 @@
     "tasks": [
         {
             "type": "shell",
-            "command": "npm run build:bootstrap",
-            "problemMatcher": ["$tsc"],
-            "group": "build",
-            "label": "build: bootstrap"
-        },
-        {
-            "type": "shell",
-            "command": "npx tsc -p packages/core/tsconfig.json -w",
-            "problemMatcher": ["$tsc-watch"],
-            "group": "build",
-            "label": "typescript: watch (core)",
-            "isBackground": true,
-            "dependsOn": ["build: bootstrap"]
-        },
-        {
-            "type": "shell",
-            "label": "rollup: watch (core)",
-            "command": "npx rollup -c -w --bundleConfigAsCjs",
-            "options": {
-                "cwd": "${workspaceFolder}/packages/core"
-            },
+            "command": "npm run dev",
+            "label": "dev: supervisor",
+            "detail": "Backend + TypeScript, Sass and Rollup watchers; dashboard at http://localhost:5000/supervisor/",
             "group": "build",
             "isBackground": true,
             "problemMatcher": {
-                "owner": "rollup-core",
+                "owner": "vidyano-dev",
                 "pattern": { "regexp": "^$" },
                 "background": {
                     "activeOnStart": true,
-                    "beginsPattern": "^rollup",
-                    "endsPattern": "^(created|bundles)"
+                    "beginsPattern": "^◆ Starting the backend",
+                    "endsPattern": "^Supervisor: http"
                 }
-            },
-            "dependsOn": ["typescript: watch (core)"]
-        },
-        {
-            "type": "shell",
-            "label": "sass: watch",
-            "command": "npx sass --watch --no-source-map packages/vidyano/src:packages/vidyano/src --poll",
-            "group": "build",
-            "isBackground": true,
-            "problemMatcher": [{
-                "owner": "sass-watch",
-                "fileLocation": "relative",
-                "pattern": {
-                    "regexp": "^(Error|Warn|Deprecation Warning):\\s*(.*)$",
-                    "message": 2
-                },
-                "background": {
-                    "activeOnStart": true,
-                    "beginsPattern": "^Sass is watching for changes",
-                    "endsPattern": "^(Sass is watching for changes|Compiled .+ to .+)"
-                }
-            }],
-            "dependsOn": ["rollup: watch (core)"]
-        },
-        {
-            "type": "shell",
-            "command": "npx tsc -p packages/vidyano/tsconfig.json -w",
-            "problemMatcher": ["$tsc-watch"],
-            "group": "build",
-            "label": "typescript: watch (vidyano)",
-            "isBackground": true,
-            "dependsOn": ["sass: watch"]
-        },
-        {
-            "type": "shell",
-            "label": "rollup: watch (vidyano)",
-            "command": "npx rollup -c -w --bundleConfigAsCjs",
-            "options": {
-                "cwd": "${workspaceFolder}/packages/vidyano"
-            },
-            "group": "build",
-            "isBackground": true,
-            "problemMatcher": [],
-            "dependsOn": ["typescript: watch (vidyano)"]
-        },
-        {
-            "type": "shell",
-            "command": "npx tsc -p packages/labs/virtual-service/tsconfig.json -w",
-            "problemMatcher": ["$tsc-watch"],
-            "group": "build",
-            "label": "typescript: watch (virtual-service)",
-            "isBackground": true,
-            "dependsOn": ["rollup: watch (core)"]
-        },
-        {
-            "type": "shell",
-            "label": "rollup: watch (virtual-service)",
-            "command": "npx rollup -c rollup.config.mjs -w --bundleConfigAsCjs",
-            "options": {
-                "cwd": "${workspaceFolder}/packages/labs/virtual-service"
-            },
-            "group": "build",
-            "isBackground": true,
-            "problemMatcher": [],
-            "dependsOn": ["typescript: watch (virtual-service)"]
+            }
         }
     ]
 }

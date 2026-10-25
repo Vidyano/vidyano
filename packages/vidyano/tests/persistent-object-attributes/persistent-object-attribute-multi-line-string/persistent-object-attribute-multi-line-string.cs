@@ -17,6 +17,18 @@ builder.AddVidyanoMinimal<MockContext>(vidyano => vidyano
         {
             var po = builder.GetOrCreatePersistentObject(nameof(Mock_Attribute));
 
+            // Multiline attributes must declare their data type explicitly.
+            // Otherwise, sanitization treats line breaks as whitespace and collapses them to spaces.
+            foreach (var attr in new[]
+            {
+                nameof(Mock_Attribute.MultiLineString),
+                nameof(Mock_Attribute.MultiLineStringMaxLength),
+                nameof(Mock_Attribute.MultiLineStringReadOnly),
+            })
+            {
+                po.GetOrCreateAttribute(attr).DataType = "MultiLineString";
+            }
+
             var maxLengthAttr = po.GetOrCreateAttribute(nameof(Mock_Attribute.MultiLineStringMaxLength));
             maxLengthAttr.DataTypeHints = "MaxLength=100";
 

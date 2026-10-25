@@ -42,7 +42,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
 
@@ -87,9 +87,6 @@ jobs:
             echo "is_stable=true" >> $GITHUB_OUTPUT
             echo "Publishing as stable with tag: latest"
           fi
-
-      - name: Update npm
-        run: npm install -g npm@latest
 
       - name: Configure Git
         run: |

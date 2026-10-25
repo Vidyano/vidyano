@@ -1,23 +1,23 @@
-import * as Polymer from "polymer"
+import { html, nothing, unsafeCSS } from "lit";
+import { state } from "lit/decorators.js";
 import * as Vidyano from "@vidyano/core"
 import { QueryGridCell } from "./query-grid-cell"
-import { Icon } from "components/icon/icon"
-@Polymer.WebComponent.register({
-    properties: {
-        value: {
-            type: Object,
-            observer: "_valueChanged"
-        }
-    },
-    sensitive: true
-}, "vi-query-grid-cell-boolean")
-export class QueryGridCellBoolean extends QueryGridCell {
-    static get template() { return Polymer.html`<link rel="import" href="query-grid-cell-boolean.html">` }
+import "components/icon/icon"
+import styles from "./query-grid-cell-boolean.css";
 
-    #foreground: { currentValue?: any; originalValue?: any } = { currentValue: null };
-    private _isHidden: boolean;
-    private _icon: HTMLElement;
-    private _textNode: Text;
+export class QueryGridCellBoolean extends QueryGridCell {
+    static styles = unsafeCSS(styles);
+
+    // Once shown, the icon is hidden instead of removed, so recycling the cell does not recreate it
+    @state()
+    private _icon: { selected: boolean; hidden: boolean };
+
+    @state()
+    private _text: string;
+
+    render() {
+        return html`${this._icon ? html`<vi-icon source="Selected" ?is-selected=${this._icon.selected} ?hidden=${this._icon.hidden}></vi-icon>` : nothing}${this._text}`;
+    }
 
     protected _valueChanged(value: Vidyano.QueryResultItemValue, oldValue: Vidyano.QueryResultItemValue) {
         super._valueChanged(value, oldValue);
@@ -29,59 +29,40 @@ export class QueryGridCellBoolean extends QueryGridCell {
                 return;
         }
 
-        if (!value) {
-            if (this._icon) {
-                this._icon.setAttribute("hidden", "");
-                this._isHidden = true;
-            }
-
-            if (this._textNode && this._textNode.nodeValue)
-                this._textNode.nodeValue = "";
+        // undefined means the row has no item; null is a value missing from the item and shows as null
+        if (value === undefined) {
+            this._hideIcon();
+            this._text = "";
         } else {
-            const displayValue: boolean = value.getValue();
+            const displayValue: boolean = value ? value.getValue() : null;
+            // The cell's column is the grid's wrapper, so a missing value reads the hints from the query column
+            const typeHints = (value?.column ?? this.column?.query?.getColumn(this.column.name))?.typeHints;
             if (displayValue == null) {
-                if (this._icon) {
-                    this._icon.setAttribute("hidden", "");
-                    this._isHidden = true;
-                }
+                this._hideIcon();
 
-                if (!this._textNode)
-                    this._textNode = <Text>this.shadowRoot.appendChild(document.createTextNode(value.column.typeHints["nullkey"] || "—"));
-                else
-                    this._textNode.nodeValue = value.column.typeHints["nullkey"] || "—";
-            } else if (!value.column.typeHints || ((!value.column.typeHints["falsekey"] && !displayValue) || (!value.column.typeHints["truekey"] && displayValue))) {
-                if (this._isHidden) {
-                    this._icon.removeAttribute("hidden");
-                    this._isHidden = false;
-                }
-
-                if (this._textNode && this._textNode.nodeValue)
-                    this._textNode.nodeValue = "";
-
-                if (!this._icon) {
-                    const icon = new Icon();
-                    icon.source = "Selected";
-
-                    this._icon = <HTMLElement>this.shadowRoot.appendChild(icon);
-                }
-
-                if (!value.getValue())
-                    this._icon.removeAttribute("is-selected");
-                else
-                    this._icon.setAttribute("is-selected", "");
+                const nullKey = typeHints?.["nullkey"];
+                this._text = nullKey ? this.translateMessage(nullKey) : "—";
+            } else if (!typeHints || ((!typeHints["falsekey"] && !displayValue) || (!typeHints["truekey"] && displayValue))) {
+                this._text = "";
+                this._icon = { selected: !!displayValue, hidden: false };
             }
             else {
-                const displayTextKey = value.column.typeHints[displayValue ? "truekey" : "falsekey"];
-                const displayTextValue = this.translations[displayTextKey] || displayTextKey;
-                if (!this._textNode)
-                    this._textNode = <Text>this.shadowRoot.appendChild(document.createTextNode(displayTextValue));
-                else
-                    this._textNode.nodeValue = displayTextValue;
+                this._hideIcon();
+
+                const displayTextKey = typeHints[displayValue ? "truekey" : "falsekey"];
+                this._text = this.translateMessage(displayTextKey);
             }
         }
+    }
+
+    private _hideIcon() {
+        if (this._icon && !this._icon.hidden)
+            this._icon = { selected: this._icon.selected, hidden: true };
     }
 }
 
 QueryGridCell.registerCellType("Boolean", QueryGridCellBoolean);
 QueryGridCell.registerCellType("NullableBoolean", QueryGridCellBoolean);
 QueryGridCell.registerCellType("YesNo", QueryGridCellBoolean);
+
+customElements.define("vi-query-grid-cell-boolean", QueryGridCellBoolean);

@@ -6,7 +6,8 @@
     "useDefineForClassFields": false,
     "allowSyntheticDefaultImports": true,
     "importHelpers": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
+    "strict": false,
     "lib": [
       "ES2022",
       "DOM",

@@ -2,16 +2,12 @@
     display: grid;
     grid-template-columns: var(--vi-query-grid-columns);
 
-    .column {
-        padding: 0 var(--theme-h5);
+    ::slotted(.column) {
         line-height: var(--vi-query-grid-row-height);
         font-weight: bold;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-
-        &[is-numeric] {
-            text-align: right;
-        }
+        background-color: white;
     }
 }

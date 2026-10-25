@@ -315,6 +315,21 @@
       "Columns": []
     },
     {
+      "$id": "Query:bf645f47-684d-4a1f-9f80-8a394d1fa784",
+      "Id": "bf645f47-684d-4a1f-9f80-8a394d1fa784",
+      "Source": "Database.People",
+      "AutoQuery": true,
+      "Name": "QueryGrid_SavedFilters",
+      "Label": {
+        "en": "People (Saved filters)",
+        "nl": "People (Saved filters)"
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:7d6563ff-5014-3606-bb4f-6de864b4519a"
+      },
+      "Columns": []
+    },
+    {
       "$id": "Query:2b7099d6-5553-4d1c-b9c1-da0d81db61bd",
       "Id": "2b7099d6-5553-4d1c-b9c1-da0d81db61bd",
       "Source": "Database.People",
@@ -338,6 +353,21 @@
       "Label": {
         "en": "People (None)",
         "nl": "People (None)"
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:7d6563ff-5014-3606-bb4f-6de864b4519a"
+      },
+      "Columns": []
+    },
+    {
+      "$id": "Query:917a2e74-83d7-4cdd-9f0c-1707da7805f3",
+      "Id": "917a2e74-83d7-4cdd-9f0c-1707da7805f3",
+      "Source": "Custom.PeopleBig",
+      "AutoQuery": true,
+      "Name": "PeopleBig",
+      "Label": {
+        "en": "People (Big, 150k)",
+        "nl": "People (Big, 150k)"
       },
       "PersistentObject": {
         "$ref": "PersistentObject:7d6563ff-5014-3606-bb4f-6de864b4519a"
@@ -413,6 +443,21 @@
       "Label": {
         "en": "People (Top 10)",
         "nl": "People"
+      },
+      "PersistentObject": {
+        "$ref": "PersistentObject:7d6563ff-5014-3606-bb4f-6de864b4519a"
+      },
+      "Columns": []
+    },
+    {
+      "$id": "Query:f9358555-22da-496e-8bb1-59c00f6efefe",
+      "Id": "f9358555-22da-496e-8bb1-59c00f6efefe",
+      "Source": "Database.People",
+      "AutoQuery": true,
+      "Name": "QueryGrid_ColumnOptions",
+      "Label": {
+        "en": "People (Column options)",
+        "nl": "People (Column options)"
       },
       "PersistentObject": {
         "$ref": "PersistentObject:7d6563ff-5014-3606-bb4f-6de864b4519a"

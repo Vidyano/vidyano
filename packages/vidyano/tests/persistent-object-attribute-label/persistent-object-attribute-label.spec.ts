@@ -10,7 +10,7 @@ test.describe.serial('PersistentObjectAttributeLabel', () => {
     test.beforeAll(async ({ browser }, testInfo) => {
         backend = await startBackend(testInfo);
         sharedPage = await browser.newPage();
-        await setupPage(sharedPage, '', backend.port);
+        await setupPage(sharedPage, '', backend.url);
     });
 
     test.afterAll(async () => {

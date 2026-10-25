@@ -14,7 +14,7 @@ test.describe.serial("Attribute Visibility", () => {
     });
 
     async function createService(): Promise<Service> {
-        const service = new Service(`http://localhost:${backend.port}`, undefined, false);
+        const service = new Service(backend.url, undefined, false);
         await service.initialize(true);
         await service.signInUsingDefaultCredentials();
         return service;
