@@ -33,16 +33,14 @@ test.describe("BigNumber format types", () => {
         fs.rmSync(dir, { recursive: true, force: true });
     });
 
-    for (const moduleResolution of ["bundler", "node10"]) {
-        test(`consumers get format and localeFormat on BigNumber with moduleResolution ${moduleResolution}`, () => {
-            let output = "";
-            try {
-                execFileSync(process.execPath, [tsc, "--noEmit", "--strict", "--target", "ES2022", "--module", "ESNext", "--moduleResolution", moduleResolution, "consumer.ts"], { cwd: dir, encoding: "utf8" });
-            } catch (e) {
-                output = `${e.stdout}${e.stderr}` || e.message;
-            }
+    test("consumers get format and localeFormat on BigNumber", () => {
+        let output = "";
+        try {
+            execFileSync(process.execPath, [tsc, "--ignoreConfig", "--noEmit", "--strict", "--target", "ES2022", "--module", "ESNext", "--moduleResolution", "bundler", "consumer.ts"], { cwd: dir, encoding: "utf8" });
+        } catch (e) {
+            output = `${e.stdout}${e.stderr}` || e.message;
+        }
 
-            expect(output).toBe("");
-        });
-    }
+        expect(output).toBe("");
+    });
 });

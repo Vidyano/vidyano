@@ -4,11 +4,10 @@
     "outDir": ".",
     "rootDir": ".",
     "declarationDir": "rollup",
-    "baseUrl": "src",
     "paths": {
-      "components/*": ["web-components/*"],
-      "libs/*": ["libs/*"],
-      "polymer": ["libs/polymer/polymer"]
+      "components/*": ["./src/web-components/*"],
+      "libs/*": ["./src/libs/*"],
+      "polymer": ["./src/libs/polymer/polymer"]
     }
   },
   "include": [
