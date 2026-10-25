@@ -25,9 +25,10 @@ export function fetchIcon(name: string): Promise<Icon> {
 
     // Create a placeholder and register it immediately.
     // This makes `exists(name)` return true right away.
+    // The placeholder is filled in below, so it is registered itself rather than copied
     const placeholder = document.createElement("vi-icon") as Icon;
     placeholder.name = name;
-    add(placeholder);
+    icons[name] = placeholder;
 
     const promise = (async (): Promise<Icon> => {
         try {
@@ -84,7 +85,14 @@ export function add(arg: Element | HTMLTemplateElement | TemplateStringsArray | 
     // add(Element) for where the element is a <vi-icon>
     if (arg instanceof Element && arg.tagName === "VI-ICON") {
         const icon = arg as Icon;
-        icons[icon.name] = icon;
+
+        // Store a copy: the register lives as long as the app, so keeping the element would keep its whole tree alive
+        const wrapper = document.createElement("div") as any;
+        wrapper.name = icon.name;
+        wrapper.aliases = icon.aliases;
+        Array.from(icon.childNodes).forEach(child => wrapper.appendChild(child.cloneNode(true)));
+
+        icons[wrapper.name] = wrapper;
         return;
     }
     
