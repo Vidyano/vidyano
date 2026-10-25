@@ -74,6 +74,97 @@ test.describe('Markdown, image and boolean cells on a wide query', () => {
         await recordPerf(page, testInfo, 'perf.wc-markdown-parse-once', { counts: { parses: result.parses, distinctValues: result.distinct } });
     });
 
+    test('image and boolean cells only write what they show differently', perfCase('perf.wc-image-boolean-writes'), async ({ page }, testInfo) => {
+        const grid = await mountWideRight(page);
+
+        const result = await grid.evaluate(async (g: any) => {
+            const perf = (window as any).__perf;
+            const scroller = perf.scroller(g).scroller;
+            // Off-screen cells are deferred and never written, so only the cells in view count
+            const view = perf.scroller(g).getBoundingClientRect();
+            const cells = perf.rows(g).flatMap((r: any) => [...r.querySelectorAll('vi-query-grid-cell-image, vi-query-grid-cell-boolean')]).filter((c: any) => {
+                const b = c.getBoundingClientRect();
+                return b.left >= view.left && b.right <= view.right;
+            });
+            const shown = (cell: any) => {
+                const root = cell.shadowRoot;
+                if (cell.tagName === 'VI-QUERY-GRID-CELL-IMAGE') {
+                    const image = root.querySelector('.image');
+                    return image && !image.hidden ? image.style.backgroundImage : '';
+                }
+
+                const icon = root.querySelector('vi-icon');
+                return `${icon && !icon.hidden ? (icon.hasAttribute('is-selected') ? 'checked' : 'unchecked') : ''}|${root.textContent.trim()}`;
+            };
+            // The callback runs at the microtask checkpoints inside the frame, before the measure: collect its records
+            const pending = cells.map(() => [] as MutationRecord[]);
+            const observers = cells.map((cell: any, n: number) => {
+                const observer = new MutationObserver(records => pending[n].push(...records));
+                observer.observe(cell.shadowRoot, { subtree: true, childList: true, attributes: true, characterData: true });
+                return observer;
+            });
+            const takeRecords = (n: number) => pending[n].splice(0).concat(observers[n].takeRecords());
+            const states = cells.map(shown);
+            const stats = { changes: 0, unchanged: 0, writesWithoutChange: 0, elementsRemoved: 0, nullToggles: 0 };
+            const changesByType: Record<string, number> = { image: 0, boolean: 0 };
+            const typeOf = (cell: any) => cell.tagName === 'VI-QUERY-GRID-CELL-IMAGE' ? 'image' : 'boolean';
+            const elementCount = (cell: any) => cell.shadowRoot.querySelectorAll('vi-icon, .image').length;
+            const initialElements = cells.map(elementCount);
+            const added = cells.map(() => 0);
+            const isElement = (node: Node) => node instanceof Element && (node.tagName === 'VI-ICON' || node.classList.contains('image'));
+
+            await perf.runFrames(238, (i: number) => scroller.scrollTop = (i + 1) * 8 * g.rowHeight, () => {
+                cells.forEach((cell: any, n: number) => {
+                    const records = takeRecords(n);
+                    const state = shown(cell);
+                    if (state !== states[n]) {
+                        stats.changes++;
+                        changesByType[typeOf(cell)]++;
+                        if (!state || !states[n] || state.startsWith('|') !== states[n].startsWith('|'))
+                            stats.nullToggles++;
+                    }
+                    else {
+                        stats.unchanged++;
+                        if (records.length)
+                            stats.writesWithoutChange++;
+                    }
+
+                    for (const r of records) {
+                        added[n] += [...r.addedNodes].filter(isElement).length;
+                        stats.elementsRemoved += [...r.removedNodes].filter(isElement).length;
+                    }
+                    states[n] = state;
+                });
+            });
+
+            observers.forEach((o: MutationObserver) => o.disconnect());
+
+            // Each cell shows its own item: an image for a value, a check state for true or false and a text for null
+            const wrong = cells.map((cell: any, n: number) => {
+                const value = cell.parentElement.item.getValue(cell.column.name);
+                const ok = typeOf(cell) === 'image' ? (value ?/^url\("data:image\//.test(states[n]) : states[n] === '') :
+                    value === true ? states[n] === 'checked|' : value === false ? states[n] === 'unchecked|' : /^\|.+/.test(states[n]);
+                return ok ? null : `${cell.column.name} ${value}: ${states[n].slice(0, 40)}`;
+            }).filter((s: string | null) => s);
+            // An element is added only by a cell that had none yet, and a cell never holds more than one
+            const extraElements = cells.filter((cell: any, n: number) => added[n] > (initialElements[n] ? 0 : 1) || elementCount(cell) > 1).length;
+
+            return { ...stats, changesByType, wrong, extraElements, elementsAdded: added.reduce((a: number, b: number) => a + b, 0), cells: cells.length, topIndex: perf.topRowIndex(g) };
+        });
+
+        expect(result.topIndex).toBe(1904);
+        expect(result.changesByType.image, 'image changes').toBeGreaterThan(0);
+        expect(result.changesByType.boolean, 'boolean changes').toBeGreaterThan(0);
+        expect(result.wrong).toEqual([]);
+        expect(result.nullToggles, 'changes between a value and null').toBeGreaterThan(0);
+        expect(result.unchanged, 'recycles that show the same image or check state').toBeGreaterThan(0);
+        expect(result.writesWithoutChange, 'shadow DOM writes while the cell shows the same').toBe(0);
+        expect(result.elementsRemoved, 'icon and image elements removed').toBe(0);
+        expect(result.extraElements, 'cells that added a second icon or image element').toBe(0);
+
+        await recordPerf(page, testInfo, 'perf.wc-image-boolean-writes', { counts: { cells: result.cells, changes: result.changes, unchanged: result.unchanged, nullToggles: result.nullToggles, writesWithoutChange: result.writesWithoutChange, elementsAdded: result.elementsAdded } });
+    });
+
     test('vertical fling scrolled fully right', perfCase('perf.wc-vscroll-right', { timing: true }), async ({ page }, testInfo) => {
         const grid = await mountWideRight(page);
         await setCpuThrottle(page, 4);
