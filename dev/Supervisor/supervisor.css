@@ -1767,6 +1767,48 @@ main {
 .adds { color: var(--ok); }
 .dels { color: var(--error); }
 
+.workers {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-right: 8px;
+}
+
+.workers button {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 40px;
+    border-radius: 10px;
+    color: var(--muted);
+    transition: background .15s, color .15s;
+}
+
+.workers button:hover {
+    color: var(--text);
+    background: var(--hover);
+}
+
+.workers button:disabled {
+    opacity: .4;
+    background: none;
+    color: var(--muted);
+}
+
+.workers-count {
+    padding: 0 6px;
+    font-size: 13px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.workers-label {
+    margin-left: 6px;
+    color: var(--muted);
+    font-weight: 400;
+}
+
 .live-spans {
     display: flex;
     align-items: center;

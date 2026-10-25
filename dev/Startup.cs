@@ -44,17 +44,24 @@ public class Startup
         {
             app.UseDeveloperExceptionPage();
 
-            // The dev supervisor runs the watchers and test runs; see /supervisor/
-            lifetime.ApplicationStarted.Register(() =>
+            // A worktree's own backend, which the dev supervisor starts for its test runs, serves that worktree only
+            var worktree = Environment.GetEnvironmentVariable(DevSupervisor.WorktreeVariable);
+            if (worktree != null)
+                Worktrees.ServeOnly(worktree, Environment.GetEnvironmentVariable(DevSupervisor.WorktreeRootVariable), Path.GetFullPath(Path.Combine(env.ContentRootPath, "..")));
+            else
             {
-                DevSupervisor.Start(Path.GetFullPath(Path.Combine(env.ContentRootPath, "..")));
-                DevSupervisor.StopWithParent(lifetime.StopApplication);
-            });
-            lifetime.ApplicationStopping.Register(DevSupervisor.Stop);
+                // The dev supervisor runs the watchers and test runs; see /supervisor/
+                lifetime.ApplicationStarted.Register(() =>
+                {
+                    DevSupervisor.Start(Path.GetFullPath(Path.Combine(env.ContentRootPath, "..")));
+                    DevSupervisor.StopWithParent(lifetime.StopApplication);
+                });
+                lifetime.ApplicationStopping.Register(DevSupervisor.Stop);
+            }
 
             app.Use(async (context, next) =>
             {
-                if (!await SupervisorApi.TryServe(context) && !await Worktrees.TryServe(context))
+                if ((worktree != null || !await SupervisorApi.TryServe(context)) && !await Worktrees.TryServe(context))
                     await next();
             });
         }

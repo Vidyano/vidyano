@@ -59,6 +59,8 @@ namespace Dev.Service.Supervisor
         public string WaitedFor;
         public long Sequence;
         public string Access;
+        /// <summary>The Playwright workers the run starts, at most TestRunner.MaxWorkers; they take turns on the TestSlots.</summary>
+        public int Workers;
         public bool Followed;
         public List<string> Args;
         public string Key;
@@ -106,7 +108,7 @@ namespace Dev.Service.Supervisor
 
         /// <summary>A run that uses no shared state: its specs start their own backends or need none.</summary>
         public const string Free = "free";
-        /// <summary>A run that uses the shared dev backend, so it runs alone among the shared runs.</summary>
+        /// <summary>A run that uses the dev backend and its data: a worktree's run uses the worktree's own backend.</summary>
         public const string Shared = "shared";
         /// <summary>A perf run, which runs alone on the machine.</summary>
         public const string Machine = "machine";
@@ -114,8 +116,13 @@ namespace Dev.Service.Supervisor
         public const string TimingProject = "vidyano-perf";
         /// <summary>The tag of the perf tests that measure wall-clock or frame timings.</summary>
         public const string TimingTag = "@timing";
+        // The worker budget set in the supervisor, so it outlives a backend restart
+        const string WorkersFile = "node_modules/.cache/vidyano-dev/workers";
+        static int maxWorkers;
+        // The workers each project runs on, as in playwright.config.js
+        static readonly Dictionary<string, int> ProjectWorkers = new() { ["core"] = 1, ["vidyano"] = 4, ["virtual-service"] = 4 };
 
-        // The spec folders whose specs never touch the shared dev backend; everything else is shared
+        // The spec folders whose specs never use the dev backend's data; everything else is shared
         static readonly string[] FreeRoots = { "packages/vidyano/tests", "packages/labs/virtual-service/tests" };
         static readonly string[] SharedRoots = { "packages/vidyano/tests/query-grid" };
         static readonly StringComparison PathComparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
@@ -276,8 +283,89 @@ namespace Dev.Service.Supervisor
         }
 
         /// <summary>
+        /// The tests the runs of all checkouts may run at once (see TestSlots): the number set in the supervisor, else
+        /// VIDYANO_DEV_WORKERS, else 12.
+        /// </summary>
+        public static int MaxWorkers
+        {
+            get
+            {
+                if (maxWorkers == 0)
+                {
+                    var saved = Path.Combine(DevSupervisor.Instance?.Root ?? "", WorkersFile);
+                    maxWorkers = File.Exists(saved) && int.TryParse(File.ReadAllText(saved).Trim(), out var set) && set > 0 ? set
+                        : int.TryParse(Environment.GetEnvironmentVariable("VIDYANO_DEV_WORKERS"), out var variable) && variable > 0 ? variable : 12;
+                }
+
+                return maxWorkers;
+            }
+        }
+
+        public static void SetMaxWorkers(int workers)
+        {
+            maxWorkers = Math.Clamp(workers, 1, 64);
+            try
+            {
+                var saved = Path.Combine(DevSupervisor.Instance.Root, WorkersFile);
+                Directory.CreateDirectory(Path.GetDirectoryName(saved));
+                File.WriteAllText(saved, maxWorkers.ToString());
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+            {
+            }
+        }
+
+        static string WorkersValue(IReadOnlyList<string> flags, int i)
+        {
+            if (flags[i] is "-j" or "--workers")
+                return i + 1 < flags.Count ? flags[i + 1] : null;
+
+            if (flags[i].StartsWith("--workers="))
+                return flags[i]["--workers=".Length..];
+
+            return flags[i].StartsWith("-j") && flags[i].Length > 2 && flags[i][2] != '-' ? flags[i][2..] : null;
+        }
+
+        /// <summary>
+        /// The workers a run asks for: its own -j or --workers, or else those of the projects that run its specs together.
+        /// Playwright runs the projects of one run side by side. Worktrees.NextRun starts at most MaxWorkers.
+        /// </summary>
+        static int WorkersOf(IReadOnlyList<string> flags, IReadOnlyList<string> targets)
+        {
+            for (var i = flags.Count - 1; i >= 0; i--)
+            {
+                var value = WorkersValue(flags, i);
+                if (value != null && value.EndsWith('%') && int.TryParse(value[..^1], out var percent) && percent > 0)
+                    return Math.Max(1, Environment.ProcessorCount * percent / 100);
+
+                if (int.TryParse(value, out var own) && own > 0)
+                    return own;
+            }
+
+            var projects = ProjectsOf(flags);
+            var specs = targets.Select(SpecOf).ToList();
+            var workers = SpecRoots.Where(r => (projects.Count == 0 || projects.Contains(r.Name)) && specs.Any(s => IsUnder(s, r.Path))).Sum(r => ProjectWorkers[r.Name]);
+            return workers > 0 ? workers : ProjectWorkers["vidyano"];
+        }
+
+        /// <summary>The flags without their worker count, which RunAll passes as the workers the run got.</summary>
+        static List<string> WithoutWorkers(IReadOnlyList<string> flags)
+        {
+            var result = new List<string>();
+            for (var i = 0; i < flags.Count; i++)
+            {
+                if (flags[i] is "-j" or "--workers")
+                    i++;
+                else if (WorkersValue(flags, i) == null)
+                    result.Add(flags[i]);
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// What a run shares with other runs, by the Playwright projects it names and the specs it holds: Free when every
-        /// spec it can run lies in a folder that never uses the shared dev backend (the vidyano component specs outside
+        /// spec it can run lies in a folder that never uses the dev backend's data (the vidyano component specs outside
         /// query-grid, and virtual-service), Shared otherwise, including anything this cannot tell (another config, an
         /// unknown project, a filter that is no spec path).
         /// </summary>
@@ -314,23 +402,49 @@ namespace Dev.Service.Supervisor
         }
 
         /// <summary>
-        /// Whether runs of two different checkouts cannot run at the same time: when either is a perf run, or when both
-        /// use the shared dev backend. Runs of one checkout never run at the same time, since they share its test-results/ folder.
+        /// Whether runs of two different checkouts cannot run at the same time: when either is a perf run. Runs that use the
+        /// dev backend's data each use their own checkout's backend (see UsesOwnBackend). Runs of one checkout never run at
+        /// the same time, since they share its test-results/ folder.
         /// </summary>
         public static bool Conflicts(string a, string b)
         {
-            return a == Machine || b == Machine || (a == Shared && b == Shared);
+            return a == Machine || b == Machine;
         }
 
-        ProcessStartInfo PlaywrightStartInfo(IEnumerable<string> arguments)
+        /// <summary>
+        /// Whether a run uses its worktree's own backend (see DevSupervisor.BackendTask), so no run of another checkout
+        /// changes the data under it. A Free run uses the main backend, which only serves it the worktree's build.
+        /// </summary>
+        public bool UsesOwnBackend(TestRun run)
+        {
+            return !supervisor.IsMain && run.Access != Free;
+        }
+
+        /// <summary>The run's name in TestSlots, unique across backend restarts and checkouts.</summary>
+        string SlotsKey(TestRun run)
+        {
+            return $"{supervisor.InstanceId}:{run.Id}";
+        }
+
+        ProcessStartInfo PlaywrightStartInfo(IEnumerable<string> arguments, string backend, TestRun run = null)
         {
             var info = supervisor.StartInfo(supervisor.Node, new[] { PlaywrightCli, "test" }.Concat(arguments));
             info.Environment["FORCE_COLOR"] = "0";
             info.Environment["VIDYANO_DEV_EVENTS"] = "1";
-            // The shared dev backend, and where it serves this checkout's build (/<worktree>/ for a worktree)
-            info.Environment["VIDYANO_BACKEND_URL"] = DevSupervisor.ServerUrl;
-            info.Environment["VIDYANO_DEV_URL"] = supervisor.IsMain ? DevSupervisor.ServerUrl : $"{DevSupervisor.ServerUrl}/{supervisor.Workspace}";
-            info.Environment["NODE_OPTIONS"] = $"{Environment.GetEnvironmentVariable("NODE_OPTIONS")} --disable-warning=DEP0205".Trim();
+            // The backend, and where it serves this checkout's build (/<worktree>/ for a worktree)
+            info.Environment["VIDYANO_BACKEND_URL"] = backend;
+            info.Environment["VIDYANO_DEV_URL"] = supervisor.IsMain ? backend : $"{backend}/{supervisor.Workspace}";
+            var options = $"{Environment.GetEnvironmentVariable("NODE_OPTIONS")} --disable-warning=DEP0205";
+            if (run != null)
+            {
+                // Every test waits for one of the TestSlots; the main checkout's preload serves the worktrees' runs too
+                info.Environment["VIDYANO_DEV_RUN"] = SlotsKey(run);
+                info.Environment["VIDYANO_DEV_SLOTS"] = $"{DevSupervisor.ServerUrl}/api/supervisor";
+                // NODE_OPTIONS reads a backslash in quotes as an escape
+                options += $" --require \"{Path.Combine(supervisor.Host.Root, "tools", "dev", "slots.cjs").Replace('\\', '/')}\"";
+            }
+
+            info.Environment["NODE_OPTIONS"] = options.Trim();
             return info;
         }
 
@@ -377,7 +491,7 @@ namespace Dev.Service.Supervisor
                     var exitCode = -1;
                     try
                     {
-                        using var process = Process.Start(PlaywrightStartInfo(targets.Append("--list")));
+                        using var process = Process.Start(PlaywrightStartInfo(targets.Append("--list"), DevSupervisor.ServerUrl));
                         ProcessJob.Add(process);
                         process.ErrorDataReceived += (_, _) => { };
                         process.BeginErrorReadLine();
@@ -575,6 +689,8 @@ namespace Dev.Service.Supervisor
             var access = AccessOf(flags, targets);
             var perf = access == Machine ? null : targets.FirstOrDefault(IsPerf);
             flags = PlaywrightFlags(flags);
+            var workers = WorkersOf(flags, targets);
+            flags = WithoutWorkers(flags);
 
             var files = targets.GroupBy(SpecOf).Select(g => new RunFile { File = g.Count() == 1 ? g.First() : g.Key }).ToList();
             lock (Gate)
@@ -584,7 +700,7 @@ namespace Dev.Service.Supervisor
                 if (queued != null)
                     return queued;
 
-                var run = new TestRun { Id = nextId++, Sequence = ++sequence, Access = access, Followed = followed, Args = args.ToList(), Key = key, LastPolled = Environment.TickCount64, Flags = flags, Targets = targets, Files = files, QueuedAt = DevSupervisor.Now(), QueuedMs = Live.Now() };
+                var run = new TestRun { Id = nextId++, Sequence = ++sequence, Access = access, Workers = workers, Followed = followed, Args = args.ToList(), Key = key, LastPolled = Environment.TickCount64, Flags = flags, Targets = targets, Files = files, QueuedAt = DevSupervisor.Now(), QueuedMs = Live.Now() };
                 Runs.Add(run);
 
                 var finished = Runs.Where(r => r.Done).ToList();
@@ -662,7 +778,7 @@ namespace Dev.Service.Supervisor
         {
             Output(run, $"── {(run.Files.Count == 1 ? run.Files[0].File : $"{run.Files.Count} spec files")}");
 
-            var process = new Process { StartInfo = PlaywrightStartInfo(run.Targets.Concat(run.Flags)), EnableRaisingEvents = true };
+            var process = new Process { StartInfo = PlaywrightStartInfo(run.Targets.Concat(run.Flags).Append("--workers").Append(run.Workers.ToString()), UsesOwnBackend(run) ? supervisor.BackendUrl : DevSupervisor.ServerUrl, run), EnableRaisingEvents = true };
             DataReceivedEventHandler onLine = (_, e) =>
             {
                 if (e.Data == null)
@@ -811,6 +927,7 @@ namespace Dev.Service.Supervisor
             var ran = run.Files.Count(f => f.Status != "skipped");
             run.ExitCode = run.Cancelled ? 130 : failedFiles.Count > 0 ? 1 : exitCode;
             Tell(run, $"── Run #{run.Id} {run.Status}: {ran}/{run.Files.Count} spec files run{(failedFiles.Count > 0 ? $", failed: {string.Join(", ", failedFiles.Select(f => f.File))}" : "")}");
+            TestSlots.ReleaseRun(SlotsKey(run));
             Live.Record(supervisor, run);
         }
 

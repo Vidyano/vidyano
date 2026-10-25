@@ -6,6 +6,8 @@ const views = [{ key: "frontend", label: "Frontend", icon: "layers" }, { key: "b
 const taskIcons = { ts: "code", sass: "brush", rollup: "package", server: "server", install: "package" };
 
 const data = { instance: "", version: 0, logId: 0, tasks: [], log: [], runs: new Map(), tests: new Map(), catalog: new Map(), specRoots: [], specFiles: [], blockers: [], workspaces: [] };
+// The test workers of all checkouts: the budget set in the supervisor and those the running runs use
+const workers = { budget: 0, inUse: 0 };
 const ui = { view: views.some(v => v.key === stored("view")) ? stored("view") : "frontend", workspace: stored("workspace") || null, workspaceMenu: false, connected: false, filter: null, follow: true, chosenFile: null, testId: null, open: {}, showOutput: false, outputRun: null, output: [], outputId: -1, outputFollow: true, railCollapsed: stored("railCollapsed") === "true", failFast: stored("failFast") !== "false", retryFlaky: stored("retryFlaky") !== "false", runMode: stored("runMode") === "remaining" ? "remaining" : "all", runMenu: false, contextMenu: null, notice: null, requested: new Set() };
 const runModes = [{ key: "all", label: "Run all", hint: "Every test in the suite runs." }, { key: "remaining", label: "Run remaining", hint: "Only tests that failed or haven't run yet." }];
 const finished = ["passed", "flaky", "skipped"];
@@ -70,7 +72,9 @@ const paths = {
     back: svg`<path d="m15 6-6 6 6 6"></path>`,
     branch: svg`<circle class="duo" cx="6" cy="6" r="2.2"></circle><circle class="duo" cx="6" cy="18" r="2.2"></circle><circle class="duo" cx="18" cy="9" r="2.2"></circle><path d="M6 8.2v7.6M18 11.2c0 3.5-4 3.5-10.2 5.4"></path>`,
     follow: svg`<path d="M5 12h12M13 6l6 6-6 6"></path>`,
-    close: svg`<path d="M6 6l12 12M18 6 6 18"></path>`
+    close: svg`<path d="M6 6l12 12M18 6 6 18"></path>`,
+    minus: svg`<path d="M6 12h12"></path>`,
+    plus: svg`<path d="M12 6v12M6 12h12"></path>`
 };
 
 function icon(name, size = 18) {
@@ -210,6 +214,8 @@ function merge(state) {
     data.tasks = state.tasks;
     data.specRoots = state.specRoots;
     data.blockers = state.blockers;
+    workers.budget = state.workers;
+    workers.inUse = state.workersInUse;
 
     if (state.log.length) {
         data.log.push(...state.log);
@@ -933,8 +939,26 @@ function top(state, title, detail, actions = nothing) {
                 <h1>${title}</h1>
                 <span class="detail">${detail || ""}</span>
             </div>
-            <div class="tools">${actions}</div>
+            <div class="tools">${workersControl()}${actions}</div>
         </header>`;
+}
+
+function setWorkers(budget) {
+    workers.budget = budget;
+    update();
+    act("workers", { workers: budget });
+}
+
+function workersControl() {
+    if (!workers.budget)
+        return nothing;
+
+    return html`
+        <div class="workers" role="group" aria-label="Test workers">
+            <button title="Fewer test workers" aria-label="Fewer test workers" ?disabled=${workers.budget <= 1} @click=${() => setWorkers(workers.budget - 1)}>${icon("minus", 15)}</button>
+            <span class="workers-count" title="Test workers in use, of all checkouts">${workers.inUse} / ${workers.budget}<span class="workers-label">workers</span></span>
+            <button title="More test workers" aria-label="More test workers" ?disabled=${workers.budget >= 64} @click=${() => setWorkers(workers.budget + 1)}>${icon("plus", 15)}</button>
+        </div>`;
 }
 
 function taskTop(view, shown) {
@@ -1293,6 +1317,8 @@ async function pollLive() {
                 live.offset = result.now - Date.now();
                 live.checkouts = result.checkouts;
                 live.loaded = true;
+                workers.budget = result.workers;
+                workers.inUse = result.workersInUse;
                 update();
             }
         } catch {

@@ -21,7 +21,7 @@ namespace Dev.Service.Supervisor
 
     public record LiveCheckoutDto(string Name, string Branch, bool Running, string Building, long? BuildingSince, List<LiveRunDto> Runs, List<LiveChangeDto> Changes);
 
-    public record LiveDto(long Now, List<LiveCheckoutDto> Checkouts);
+    public record LiveDto(long Now, List<LiveCheckoutDto> Checkouts, int Workers, int WorkersInUse);
 
     /// <summary>
     /// What the Live view of the supervisor shows: the test runs and file changes of every checkout in the last hour.
@@ -141,6 +141,7 @@ namespace Dev.Service.Supervisor
 
             removed.ForEach(t => t.Dispose());
 
+            var workersInUse = TestSlots.InUse;
             var current = new Dictionary<string, List<LiveRunDto>>();
             var building = new Dictionary<string, (string, long?)>();
             lock (host.Gate)
@@ -164,7 +165,7 @@ namespace Dev.Service.Supervisor
                     var kept = runs.Values.Where(r => (r.Workspace ?? "") == key && live.All(l => l.Key != r.Key));
                     var (label, since) = building.GetValueOrDefault(key);
                     return new LiveCheckoutDto(checkout.Name, checkout.Branch, checkout.Supervisor != null, label, since, kept.Concat(live).OrderBy(r => r.Queued).ToList(), changes.Where(c => (c.Workspace ?? "") == key).ToList());
-                }).ToList());
+                }).ToList(), TestRunner.MaxWorkers, workersInUse);
             }
         }
 

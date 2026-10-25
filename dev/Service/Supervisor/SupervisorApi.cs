@@ -84,6 +84,34 @@ namespace Dev.Service.Supervisor
                 case (true, "workspace"):
                     Workspace(context, await ReadBody<WorkspaceRequest>(context));
                     return;
+                case (true, "workers"):
+                    var workers = await ReadBody<WorkersRequest>(context);
+                    if (workers == null || workers.Workers < 1)
+                        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    else
+                    {
+                        TestRunner.SetMaxWorkers(workers.Workers);
+                        TestSlots.Rebalance();
+                        Worktrees.ChangedAll();
+                        context.Response.StatusCode = StatusCodes.Status204NoContent;
+                    }
+                    return;
+                // A Playwright worker asks for a slot before every test and lets go after it (tools/dev/slots.cjs); it asks
+                // again when the answer is no, so a long wait never trips a request timeout
+                case (true, "slot"):
+                    var acquire = await ReadBody<SlotRequest>(context);
+                    if (string.IsNullOrEmpty(acquire?.Run))
+                        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    else
+                        await Json(context, new SlotDto(await TestSlots.Acquire(acquire.Run, acquire.Pid, TimeSpan.FromSeconds(20))));
+                    return;
+                case (true, "slot-release"):
+                    var release = await ReadBody<SlotRequest>(context);
+                    if (!string.IsNullOrEmpty(release?.Run))
+                        TestSlots.Release(release.Run, release.Pid);
+
+                    context.Response.StatusCode = StatusCodes.Status204NoContent;
+                    return;
                 case (true, "hold"):
                     Worktrees.Hold((await ReadBody<HoldRequest>(context))?.Reason);
                     context.Response.StatusCode = StatusCodes.Status204NoContent;

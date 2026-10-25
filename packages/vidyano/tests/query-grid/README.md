@@ -29,7 +29,7 @@ Most specs mount a grid on a bare test page (`gridPage` + `mountGrid`); the `vie
 
 ## Running
 
-The specs use the shared dev backend (`npm run dev`, http://localhost:5000) and the views below. Run them through the dev supervisor:
+The specs use the dev backend (`npm run dev`, http://localhost:5000; a worktree's supervisor runs get a backend of their own) and the views below. Run them through the dev supervisor:
 
 ```bash
 npm run test:dev -- packages/vidyano/tests/query-grid                                    # everything but the @timing tests

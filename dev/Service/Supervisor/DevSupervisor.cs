@@ -2,6 +2,7 @@
 
 using System.Diagnostics;
 using System.Net;
+using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -39,6 +40,7 @@ public sealed class SupervisorTask
     public string FileName;
     public string[] Arguments;
     public string Cwd = "";
+    public Dictionary<string, string> Variables = new();
     public Action<SupervisorTask, string> Parse;
     public long? Since;
     public List<Problem> PendingErrors;
@@ -65,6 +67,9 @@ public sealed class LogEntry
 public sealed class DevSupervisor
 {
     public const string ServerUrl = "http://localhost:5000";
+    // Set on a worktree's own backend (see BackendTask): the worktree it serves, and its folder
+    public const string WorktreeVariable = "VIDYANO_DEV_WORKTREE";
+    public const string WorktreeRootVariable = "VIDYANO_DEV_WORKTREE_ROOT";
     const int RecoverySeconds = 10;
     const string Tsc = "node_modules/typescript/bin/tsc";
     const string Rollup = "node_modules/rollup/dist/bin/rollup";
@@ -97,6 +102,8 @@ public sealed class DevSupervisor
     public readonly DevSupervisor Host;
     public readonly string InstanceId = Guid.NewGuid().ToString("N");
     public readonly string Node = Environment.GetEnvironmentVariable("VIDYANO_NODE") ?? "node";
+    /// <summary>The backend this checkout's test runs use: the main one for the main checkout, its own for a worktree.</summary>
+    public string BackendUrl { get; private set; }
     public readonly List<SupervisorTask> Tasks;
     public readonly TestRunner Tests;
     public bool ShuttingDown { get; private set; }
@@ -135,14 +142,57 @@ public sealed class DevSupervisor
             Tasks.Insert(0, InstallTask());
 
         if (host == null)
+        {
+            BackendUrl = ServerUrl;
             Tasks.Add(new SupervisorTask { Key = "server", Label = "Server", Group = "backend", Status = "ok", Detail = ServerUrl, Updated = Now(), Ready = true });
+        }
+        else
+            Tasks.Add(BackendTask());
 
         Tests = new TestRunner(this);
     }
 
     public bool IsMain => Host == this;
 
-    public IEnumerable<SupervisorTask> ViewTasks => IsMain ? Tasks : Tasks.Concat(Host.Tasks.Where(t => t.Group == "backend"));
+    public IEnumerable<SupervisorTask> ViewTasks => Tasks;
+
+    static int FreePort()
+    {
+        var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+        listener.Stop();
+        return port;
+    }
+
+    /// <summary>
+    /// A worktree's own backend: the main checkout's build of dev/ on a port of its own, so the data its test runs use is
+    /// never changed by another checkout's runs. It starts with the first run that uses it (see BackendReady), on a port
+    /// picked at every start, since one picked earlier may be taken by then.
+    /// </summary>
+    SupervisorTask BackendTask()
+    {
+        var executable = Environment.ProcessPath;
+        // Started as dotnet Dev.dll, the process is dotnet itself
+        var arguments = Path.GetFileNameWithoutExtension(executable) == "dotnet" ? new[] { typeof(DevSupervisor).Assembly.Location } : Array.Empty<string>();
+        var task = new SupervisorTask { Key = "server", Label = "Server", Group = "backend", Detail = "starts with the first test run that uses it", Updated = Now(), FileName = executable, Arguments = arguments, Cwd = Path.Combine(Host.Root, "dev"), Parse = ParseServer };
+        task.Variables["ASPNETCORE_ENVIRONMENT"] = "Development";
+        task.Variables[WorktreeVariable] = Workspace;
+        task.Variables[WorktreeRootVariable] = Root;
+        return task;
+    }
+
+    /// <summary>
+    /// Whether this worktree's own backend answers, starting it when it does not run. Worktrees.NextRun calls this under the Gate.
+    /// </summary>
+    public bool BackendReady()
+    {
+        var backend = Find("server");
+        if (backend.Process == null && backend.Recovery == null && !ShuttingDown)
+            StartTask(backend);
+
+        return backend.Process != null && backend.Status == "ok";
+    }
 
     public IEnumerable<SupervisorTask> Watchers => Tasks.Where(t => t.Group == "frontend");
 
@@ -249,6 +299,12 @@ public sealed class DevSupervisor
 
     public static void Start(string root)
     {
+        // Every child process ties up two pool threads, which block reading its redirected stdout and stderr. With the
+        // watchers of several worktrees and their test runs that is well over a hundred, and a pool that only adds threads
+        // slowly then leaves requests (a test run's output poll among them) waiting long enough to count as abandoned.
+        ThreadPool.GetMinThreads(out var workerThreads, out var completionThreads);
+        ThreadPool.SetMinThreads(Math.Max(workerThreads, 512), completionThreads);
+
         var supervisor = new DevSupervisor(root);
         SupervisorLoggerProvider.Flush(supervisor);
         Instance = supervisor;
@@ -336,7 +392,7 @@ public sealed class DevSupervisor
         }
 
         previous.TrySetResult();
-        ThreadPool.QueueUserWorkItem(_ => Worktrees.NextRun());
+        Worktrees.NextRunSoon();
         return current;
     }
 
@@ -610,6 +666,15 @@ public sealed class DevSupervisor
         }
     }
 
+    void ParseServer(SupervisorTask t, string line)
+    {
+        if (!line.Contains("Now listening on:"))
+            return;
+
+        Set(t, "ok", BackendUrl);
+        MarkReady(t);
+    }
+
     void ParseInstall(SupervisorTask t, string line)
     {
         if (t.Status == "starting")
@@ -656,7 +721,14 @@ public sealed class DevSupervisor
         t.PendingMessage = null;
         Set(t, "starting", "");
 
-        var process = new Process { StartInfo = StartInfo(t.FileName, t.Arguments, t.Cwd), EnableRaisingEvents = true };
+        if (t.Key == "server" && !IsMain)
+            t.Variables["ASPNETCORE_URLS"] = BackendUrl = $"http://localhost:{FreePort()}";
+
+        var info = StartInfo(t.FileName, t.Arguments, t.Cwd);
+        foreach (var (name, value) in t.Variables)
+            info.Environment[name] = value;
+
+        var process = new Process { StartInfo = info, EnableRaisingEvents = true };
         process.OutputDataReceived += (_, e) => OnLine(t, e.Data);
         process.ErrorDataReceived += (_, e) => OnLine(t, e.Data);
         process.Exited += (_, _) => OnExit(t, process);

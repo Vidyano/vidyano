@@ -50,7 +50,7 @@ namespace Dev.Service.Supervisor
 
     public record SpecRootDto(string Name, string Path);
 
-    public record StateDto(string Instance, string Workspace, List<WorkspaceDto> Workspaces, long Version, List<TaskDto> Tasks, List<LogEntryDto> Log, List<int> RunIds, List<RunDto> Runs, List<RunTestDto> Tests, List<CatalogEntryDto> Catalog, List<SpecRootDto> SpecRoots, List<string> SpecFiles, List<string> Blockers)
+    public record StateDto(string Instance, string Workspace, List<WorkspaceDto> Workspaces, long Version, List<TaskDto> Tasks, List<LogEntryDto> Log, List<int> RunIds, List<RunDto> Runs, List<RunTestDto> Tests, List<CatalogEntryDto> Catalog, List<SpecRootDto> SpecRoots, List<string> SpecFiles, List<string> Blockers, int Workers, int WorkersInUse)
     {
         public static StateDto Snapshot(DevSupervisor supervisor, long since, long logAfter)
         {
@@ -71,7 +71,9 @@ namespace Dev.Service.Supervisor
                     tests.Catalog.Where(c => c.Value.Version > since).Select(c => new CatalogEntryDto(c.Key, c.Value.Status, c.Value.Tests.Select(CatalogTestDto.From).ToList())).ToList(),
                     TestRunner.SpecRoots.Select(r => new SpecRootDto(r.Name, r.Path)).ToList(),
                     tests.SpecFilesVersion > since ? tests.SpecFiles : null,
-                    tests.Blockers());
+                    tests.Blockers(),
+                    TestRunner.MaxWorkers,
+                    TestSlots.InUse);
             }
         }
     }
@@ -95,6 +97,12 @@ namespace Dev.Service.Supervisor
     public record BusyDto(List<ActiveRunDto> Runs, string Held, string Host);
 
     public record HoldRequest(string Reason);
+
+    public record WorkersRequest(int Workers);
+
+    public record SlotRequest(string Run, int Pid);
+
+    public record SlotDto(bool Granted);
 
     public record WorkspaceDto(string Name, string Branch, string Root, bool Running);
 

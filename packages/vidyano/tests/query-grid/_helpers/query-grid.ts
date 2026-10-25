@@ -13,8 +13,8 @@ import path from 'path';
 /**
  * Where this checkout's build is served: VIDYANO_DEV_URL from the dev supervisor's test runs, otherwise the dev backend
  * or this git worktree's build on it. The dev supervisor serves every worktree of the repo under /<worktree>/ (its own
- * index.js and app pages, while service calls fall through to the shared backend), so specs run from a worktree test
- * that worktree's source.
+ * index.js and app pages, while service calls fall through to the backend that serves it, in a supervisor run the
+ * worktree's own), so specs run from a worktree test that worktree's source.
  */
 export const BASE = process.env.VIDYANO_DEV_URL || devBase('http://localhost:5000');
 

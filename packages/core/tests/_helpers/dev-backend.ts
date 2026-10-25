@@ -14,17 +14,17 @@ function supervisorAnswers(url: string): boolean {
 }
 
 /**
- * The URL of the shared dev backend (`npm run dev`) that the core specs run against. The dev supervisor passes it to
- * its test runs; outside the supervisor it is http://localhost:5000.
+ * The URL of the dev backend (`npm run dev`) that the core specs run against. The dev supervisor passes it to its test
+ * runs, and a worktree's runs get the worktree's own; outside the supervisor it is http://localhost:5000.
  *
- * Other worktrees' test runs use that backend too, and the supervisor runs them one at a time, so a direct Playwright
- * run of these specs is refused while npm run dev is running, unless VIDYANO_DIRECT=1. CI runs are never refused.
+ * The supervisor's test runs of the main checkout use that backend too, so a direct Playwright run of these specs is
+ * refused while npm run dev is running, unless VIDYANO_DIRECT=1. CI runs are never refused.
  */
 export function devBackendUrl(): string {
     const url = process.env.VIDYANO_BACKEND_URL || 'http://localhost:5000';
     if (refusal === undefined)
         refusal = !process.env.VIDYANO_DEV_EVENTS && !process.env.VIDYANO_DIRECT && !process.env.CI && supervisorAnswers(url)
-            ? `npm run dev is running, and this spec uses its shared dev backend (${url}), which test runs of other worktrees use too. Run it with npm run test:dev -- <specs>, which queues it in the dev supervisor, or set VIDYANO_DIRECT=1 to run it directly anyway.`
+            ? `npm run dev is running, and this spec uses its shared dev backend (${url}), which the dev supervisor's test runs use too. Run it with npm run test:dev -- <specs>, which queues it in the dev supervisor, or set VIDYANO_DIRECT=1 to run it directly anyway.`
             : null;
 
     if (refusal)

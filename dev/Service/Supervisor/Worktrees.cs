@@ -48,6 +48,10 @@ namespace Dev.Service.Supervisor
         static string savedHeldRuns;
         static bool stopping;
 
+        // On a worktree's own backend (see ServeOnly): the one worktree it serves, and the main checkout
+        static Worktree only;
+        static string mainRoot;
+
         sealed record HeldRun(string Workspace, List<string> Args);
 
         public static void Start(DevSupervisor host)
@@ -203,11 +207,27 @@ namespace Dev.Service.Supervisor
             return supervisor.IsMain ? "main" : supervisor.Workspace;
         }
 
+        static int nextRunPending;
+
+        /// <summary>
+        /// Has NextRun run once more after every change, with at most one pass waiting: every log and output line is a
+        /// change, and a pass per line would tie up the thread pool on the Gate until the supervisor stops answering.
+        /// </summary>
+        public static void NextRunSoon()
+        {
+            if (Interlocked.Exchange(ref nextRunPending, 1) == 0)
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    Interlocked.Exchange(ref nextRunPending, 0);
+                    NextRun();
+                });
+        }
+
         /// <summary>
         /// Starts every queued run, of all checkouts in the order they were queued, that conflicts with no running run
         /// and no run queued before it (see TestRunner.Conflicts), once its own watchers are done building (all
-        /// checkouts' watchers for a perf run). A run that only waits for watchers holds back later runs of its own
-        /// checkout only, unless it is a perf run.
+        /// checkouts' watchers for a perf run). A run that only waits for
+        /// watchers holds back later runs of its own checkout only, unless it is a perf run.
         /// </summary>
         public static void NextRun()
         {
@@ -247,6 +267,13 @@ namespace Dev.Service.Supervisor
                     {
                         supervisor.Tests.Wait(run, $"run #{blocker.Run.Id} in {Label(blocker.Supervisor)}{(blocker.Run.Running ? "" : " (queued)")}");
                         ahead.Add((supervisor, run, true));
+                        continue;
+                    }
+
+                    if (supervisor.Tests.UsesOwnBackend(run) && !supervisor.BackendReady())
+                    {
+                        supervisor.Tests.Wait(run, supervisor.Find("server").Status == "stopped" ? "the restart of this worktree's backend" : "the start of this worktree's backend");
+                        ahead.Add((supervisor, run, run.Access == TestRunner.Machine));
                         continue;
                     }
 
@@ -297,6 +324,8 @@ namespace Dev.Service.Supervisor
                         supervisor.Tests.Note(run, $"{string.Join(", ", bundle.Select(m => m.Source))} changed after the last build of {bundle.Key}, but no rebuild came within {DevSupervisor.RebuildGrace.TotalSeconds:0} seconds (no bundle may import {(bundle.Count() == 1 ? "it" : "them")}), so this run tests the current build");
                     }
 
+                    // More workers than the budget would only wait for slots (see TestSlots)
+                    run.Workers = Math.Min(run.Workers, TestRunner.MaxWorkers);
                     supervisor.Tests.Begin(run);
                     ahead.Add((supervisor, run, true));
                 }
@@ -567,21 +596,36 @@ namespace Dev.Service.Supervisor
             pending = new Timer(_ => Refresh(), null, 1000, Timeout.Infinite);
         }
 
+        /// <summary>
+        /// Makes this process a worktree's own backend (see DevSupervisor.BackendTask), which has no supervisor: TryServe
+        /// serves only that worktree.
+        /// </summary>
+        public static void ServeOnly(string name, string root, string main)
+        {
+            only = new Worktree { Name = name, Root = root };
+            mainRoot = main;
+        }
+
         public static async Task<bool> TryServe(HttpContext context)
         {
             var path = context.Request.Path.Value ?? "";
             var segment = path.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-            if (segment == null || Host == null)
+            if (segment == null || (Host == null && only == null))
                 return false;
 
             Worktree worktree;
-            lock (Host.Gate)
-                worktree = known.FirstOrDefault(w => w.Name == segment);
+            if (only != null)
+                worktree = only.Name == segment ? only : null;
+            else
+            {
+                lock (Host.Gate)
+                    worktree = known.FirstOrDefault(w => w.Name == segment);
+            }
 
             if (worktree == null)
                 return false;
 
-            if (worktree.Supervisor == null)
+            if (only == null && worktree.Supervisor == null)
                 Resume(worktree.Name);
 
             var rest = path[(segment.Length + 1)..];
@@ -595,14 +639,14 @@ namespace Dev.Service.Supervisor
             var file = HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsHead(context.Request.Method) ? Resolve(webRoot, rest) : null;
             if (file == null)
             {
-                // The worktree's app pages come from its own index template; its service calls go to the main backend.
+                // The worktree's app pages come from its own index template; its service calls go to the backend that serves it.
                 if (!HttpMethods.IsGet(context.Request.Method) || Path.GetExtension(rest).Length > 0 || !context.Request.Headers.Accept.ToString().Contains("text/html"))
                 {
                     context.Request.Path = rest;
                     return false;
                 }
 
-                var template = new[] { worktree.Root, Host.Root }.Select(root => Path.Combine(root, IndexTemplate)).FirstOrDefault(File.Exists);
+                var template = new[] { worktree.Root, only != null ? mainRoot : Host.Root }.Select(root => Path.Combine(root, IndexTemplate)).FirstOrDefault(File.Exists);
                 if (template == null)
                     return NotFound(context);
 
