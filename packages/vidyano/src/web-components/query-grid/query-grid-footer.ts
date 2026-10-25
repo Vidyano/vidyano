@@ -1,27 +1,29 @@
-import * as Polymer from "polymer"
+import { html, unsafeCSS } from "lit"
+import { property } from "lit/decorators.js"
 import * as Vidyano from "@vidyano/core"
+import { WebComponent, observer } from "components/web-component/web-component"
 import { QueryGridCell } from "./cell-templates/query-grid-cell"
 import { QueryGridCellBoolean } from "./cell-templates/query-grid-cell-boolean"
 import "./cell-templates/query-grid-cell-common-mark"
 import "./cell-templates/query-grid-cell-image"
 import { QueryGridCellDefault } from "./cell-templates/query-grid-cell-default"
 import { QueryGridColumn } from "./query-grid-column"
+import styles from "./query-grid-footer.css"
 
-@Polymer.WebComponent.register({
-    properties: {
-        item: Object,
-        columns: Array
-    },
-    observers: [
-        "_render(item, columns)"
-    ]
-}, "vi-query-grid-footer")
-export class QueryGridFooter extends Polymer.WebComponent {
-    static get template() { return Polymer.html`<link rel="import" href="query-grid-footer.html">` }
+export class QueryGridFooter extends WebComponent {
+    static styles = unsafeCSS(styles);
 
+    @property({ type: Object })
     item: Vidyano.QueryResultItem;
+
+    @property({ type: Array })
     columns: QueryGridColumn[];
 
+    render() {
+        return html`<slot></slot>`;
+    }
+
+    @observer("item", "columns")
     private _render(item: Vidyano.QueryResultItem, columns: QueryGridColumn[]) {
         const existingCells = Array.from(this.children).filter(c => c instanceof QueryGridCell) as QueryGridCell[];
 
@@ -55,3 +57,5 @@ export class QueryGridFooter extends Polymer.WebComponent {
         return QueryGridCell.getCellTypeConstructor(column.type) || QueryGridCellDefault;
     }
 }
+
+customElements.define("vi-query-grid-footer", QueryGridFooter);
