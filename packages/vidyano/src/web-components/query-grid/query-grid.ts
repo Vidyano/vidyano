@@ -43,6 +43,9 @@ type MoreColumns = { left: QueryGridColumnHeader[], right: QueryGridColumnHeader
 
 const PHYSICAL_UPPER_LIMIT = 100000;
 
+// The columns measured per frame once the grid shows its rows
+const MEASURE_BATCH_SIZE = 8;
+
 class Debouncer {
     #handle: number = null;
 
@@ -83,6 +86,11 @@ export class QueryGrid extends WebComponent {
     private readonly _updateCellDebouncer = animationFrameDebouncer();
     private readonly _updateMoreDebouncer = timeOutDebouncer(50);
     private readonly _verticalSpacerDebouncer = animationFrameDebouncer();
+    private readonly _measureColumnsDebouncer = animationFrameDebouncer();
+    private readonly _unmeasuredColumns = new Set<string>();
+    #rowColumnCountChosen = false;
+    #columnMeasure: Promise<void>;
+    #measuredItems = new Set<QueryGridItem>();
     private _pinnedStyle: HTMLStyleElement;
     private _lastSelectedItemIndex: number;
     private _controlsSizeObserver: ResizeObserver;
@@ -270,16 +278,29 @@ export class QueryGrid extends WebComponent {
     @computed("query.totalItem")
     private declare readonly _totalItem: Vidyano.QueryResultItem;
 
+    /** The number of leading columns the rows render, the columns after them are measured later. Undefined until the first rows are rendered. */
+    @state()
+    private _rowColumnCount: number;
+
+    @state()
+    @computed(function(this: QueryGrid, columns: QueryGridColumn[], rowColumnCount: number) {
+        return this.memoize(this._rowColumns, columns?.slice(0, rowColumnCount ?? columns.length));
+    }, "columns", "_rowColumnCount", { allowUndefined: true })
+    private declare readonly _rowColumns: QueryGridColumn[];
+
     @state()
     @computed(function(this: QueryGrid, columns: QueryGridColumn[], columnWidths: Record<string, number>) {
         if (!columns || !columnWidths)
             return null;
 
         let offset = 0;
-        return columns.map(column => {
-            return [offset, offset += columnWidths[column.name] || 0];
+        const offsets = columns.map(column => {
+            return [offset, offset += columnWidths[column.name] || 0] as [number, number];
         });
-    }, "columns", "columnWidths", { allowUndefined: true })
+
+        // Widths that are applied again unchanged leave the rows alone
+        return this.memoize(this._offsets, offsets, (a, b) => a?.length === b.length && a.every(([left, right], i) => left === b[i][0] && right === b[i][1]));
+    }, "_rowColumns", "columnWidths", { allowUndefined: true })
     private declare readonly _offsets: [cellLeft: number, cellRight: number][];
 
     @state()
@@ -302,8 +323,10 @@ export class QueryGrid extends WebComponent {
         // Callers read the initial column template and the rendered header right after attaching the grid
         if (!this.hasUpdated)
             this.performUpdate();
-        else
+        else {
             this._observeControlsSize();
+            this._queueMeasureColumns();
+        }
 
         this._serviceBusDisposer = Vidyano.ServiceBus.subscribe("app-route:deactivate", this._onAppRouteDeactivate.bind(this), true);
 
@@ -325,13 +348,14 @@ export class QueryGrid extends WebComponent {
         this._serviceBusDisposer?.();
         this._serviceBusDisposer = null;
 
-        this._cancelledOnDisconnect = [this._getItemsDebouncer, this._updateCellDebouncer, this._updateMoreDebouncer].some(d => d.isActive());
+        this._cancelledOnDisconnect = [this._getItemsDebouncer, this._updateCellDebouncer, this._updateMoreDebouncer, this._measureColumnsDebouncer].some(d => d.isActive());
         this._itemsOnDisconnect = this.query?.items ?? null;
 
         // A removed grid sends nothing to the server
         this._getItemsDebouncer.cancel();
         this._updateCellDebouncer.cancel();
         this._updateMoreDebouncer.cancel();
+        this._measureColumnsDebouncer.cancel();
 
         super.disconnectedCallback();
     }
@@ -384,7 +408,7 @@ export class QueryGrid extends WebComponent {
                          @outer-height-changed=${this._onScrollerOuterHeightChanged} @outer-width-changed=${this._onScrollerOuterWidthChanged}>
                 <div id="gridWrapper">
                     <vi-sortable id="grid" ?grid=${this.initializing} .disabled=${!this.canReorder} handle=".reorder" @drag-start=${this._onReorderStart} @drag-end=${this._onReorderEnd}>
-                        ${this._renderedItems?.map((item, index) => html`<vi-query-grid-row .item=${item} .index=${index} .columns=${this.columns} .offsets=${this._offsets} .visibleRange=${this._visibleRange} ?initializing=${this.initializing} .canReorder=${this.canReorder}></vi-query-grid-row>`)}
+                        ${this._renderedItems?.map((item, index) => html`<vi-query-grid-row .item=${item} .index=${index} .columns=${this._rowColumns} .offsets=${this._offsets} .visibleRange=${this._visibleRange} ?initializing=${this.initializing} .canReorder=${this.canReorder}></vi-query-grid-row>`)}
                         ${this.physicalUpperLimitExceeded ? html`
                             <div class="physical-upper-limit-exceeded">
                                 <vi-icon source="Ellipsis"></vi-icon>
@@ -448,6 +472,17 @@ export class QueryGrid extends WebComponent {
 
         this.#initializing = initializing;
         this.toggleAttribute("initializing", initializing);
+
+        if (initializing) {
+            // The columns are measured again on the rows that are rendered next
+            this.#rowColumnCountChosen = false;
+            this._unmeasuredColumns.clear();
+            this._measureColumnsDebouncer.cancel();
+
+            // A row keeps the cells of the columns with the same name and type, a hidden one would stay hidden
+            this.shadowRoot?.querySelectorAll("vi-query-grid-row > [unmeasured]").forEach(cell => cell.removeAttribute("unmeasured"));
+        }
+
         this.requestUpdate("initializing", oldInitializing);
     }
 
@@ -536,7 +571,10 @@ export class QueryGrid extends WebComponent {
 
         // Always attempt to update column widths when this event is triggered.
         const detail: { type: "cell" | "column" | "current", entries: [column: string, width: number][], save?: boolean } = e.detail;
-        detail.entries.forEach(([column, width]) => {
+
+        // Once the widths apply, the first row only reports a cell width a column does not have yet: a measured column keeps the widest cell over the rows
+        const entries = detail.type === "cell" && !this.initializing ? detail.entries.filter(([column]) => this._columnWidths.get(column)?.cell === undefined && !this._unmeasuredColumns.has(column)) : detail.entries;
+        entries.forEach(([column, width]) => {
             let columnWidthDetail: ColumnWidthDetail = this._columnWidths.get(column);
             if (!columnWidthDetail)
                 this._columnWidths.set(column, columnWidthDetail = {});
@@ -549,7 +587,7 @@ export class QueryGrid extends WebComponent {
         if (!this.columns || this._columnWidths.size < this.columns.length)
             return;
 
-        if (this.columns.some(c => Number.isNaN(this._columnWidths.get(c.name)?.current)) && (this.query.items.length || this.query.isBusy))
+        if (this._rowColumns.some(c => !this._unmeasuredColumns.has(c.name) && Number.isNaN(this._columnWidths.get(c.name)?.current)) && (this.query.items.length || this.query.isBusy))
             return;
 
         this._applyColumnWidths();
@@ -566,18 +604,174 @@ export class QueryGrid extends WebComponent {
     private _applyColumnWidths() {
         // Remove previously added columns which are no longer relevant
         Array.from(this._columnWidths).filter(cw => !this.columns.find(c => c.name === cw[0])).forEach(c => this._columnWidths.delete(c[0]));
+        Array.from(this._unmeasuredColumns).filter(name => !this._columnWidths.has(name)).forEach(name => this._unmeasuredColumns.delete(name));
 
-        const widths = Array.from(this._columnWidths.values());
-        if (widths.some(w => Number.isNaN(w.current)))
+        if (this._rowColumns.some(c => !this._unmeasuredColumns.has(c.name) && Number.isNaN(this._columnWidths.get(c.name)?.current))) {
+            // Without data cells every column takes its header width, the rows render all columns once data arrives
             this._columnWidths.forEach(cw => cw.current = cw.column);
+            this._rowColumnCount = undefined;
+            this._unmeasuredColumns.clear();
+        }
+        else {
+            // The columns the rows add later are measured on the same items
+            if (this.initializing) {
+                this.columns.slice(this._rowColumns.length).forEach(c => this._unmeasuredColumns.add(c.name));
+                this.#measuredItems = new Set(this._renderedItems);
+            }
+
+            // A column that is not measured yet takes its header width, which its measured width can only exceed
+            this._unmeasuredColumns.forEach(name => this._columnWidths.get(name).current = this._columnWidths.get(name).column);
+        }
 
         this._setColumnTracks(this.columns);
-        if (widths.every(w => w.cell >= 0))
+        // The rows have no cells yet for the columns that are measured later, their tracks already hold a width
+        if (Array.from(this._columnWidths).every(([name, w]) => w.cell >= 0 || this._unmeasuredColumns.has(name)))
             this.style.removeProperty("--vi-query-grid-columns-no-data");
 
         // Rows defer the cells outside the horizontal viewport from now on
         this.columnWidths = Object.fromEntries(Array.from(this._columnWidths).map(([column, width]) => [column, Math.ceil(width.current)]));
         this._setInitializing(false);
+        this._queueMeasureColumns();
+    }
+
+    /**
+     * Gets the number of leading columns the first rows render: the columns that start inside the visible width, using the header widths,
+     * which the measured widths can only exceed. The other columns are measured once the rows show.
+     */
+    private _initialRowColumnCount(): number {
+        const headers = Array.from(this.shadowRoot.querySelectorAll<HTMLElement>("header [grid] > vi-query-grid-column-header"));
+        if (!this.viewportWidth || headers.length !== this.columns.length)
+            return this.columns.length;
+
+        // A restored scroll offset shows columns further to the right
+        const right = (queryScrollOffsets.get(this.query)?.horizontal ?? this.horizontalScrollOffset ?? 0) + this.viewportWidth;
+
+        let count = 0;
+        for (let left = 0; count < headers.length && (left < right || this.columns[count].isPinned); count++)
+            left += headers[count].getBoundingClientRect().width;
+
+        return count;
+    }
+
+    private _setRowColumnCount(count: number, columns = this.columns) {
+        this._rowColumnCount = count;
+
+        // The measuring rows share one grid, it has a track for each column they render
+        if (this.initializing)
+            this.style.setProperty("--vi-query-grid-row-columns", columns.slice(0, count).map(c => c.width || "max-content").join(" "));
+    }
+
+    private get _hasUnmeasuredColumns(): boolean {
+        return !!this.columns && (this._rowColumns.length < this.columns.length || this._unmeasuredColumns.size > 0);
+    }
+
+    private _queueMeasureColumns() {
+        if (!this.initializing && this._hasUnmeasuredColumns) {
+            this._measureColumnsDebouncer.run(async () => {
+                await this._measureColumns(MEASURE_BATCH_SIZE, false);
+                this._measureVisibleColumns();
+                this._queueMeasureColumns();
+            });
+        }
+    }
+
+    /**
+     * Adds the next `count` columns to the rows, and every column that starts left of the visible width's right edge when `measure` is set.
+     * Added cells stay hidden until the columns are measured: when `measure` is set or the last column is added. Each column then takes the
+     * widest cell over the rows that measured the other columns, as when all columns were measured together.
+     */
+    private _measureColumns(count: number, measure = true): Promise<void> {
+        // A measure that runs already is awaited instead of measuring the same columns twice
+        return this.#columnMeasure ??= this._measureNextColumns(count, measure).finally(() => this.#columnMeasure = null);
+    }
+
+    private async _measureNextColumns(count: number, measure: boolean) {
+        const columns = this.columns;
+        const offset = this.horizontalScrollOffset ?? 0;
+
+        let end = Math.min(columns.length, this._rowColumns.length + count);
+        if (measure) {
+            let left = columns.slice(0, end).reduce((sum, c) => sum + (this.columnWidths?.[c.name] ?? 0), 0);
+            for (; end < columns.length && left < offset + this.viewportWidth; end++)
+                left += this.columnWidths?.[columns[end].name] ?? 0;
+        }
+
+        // Stay unmeasured when the grid is removed or its columns change before the widths are read
+        const added = columns.slice(this._rowColumns.length, end);
+        added.forEach(c => this._unmeasuredColumns.add(c.name));
+        if (added.length)
+            this._rowColumnCount = end === columns.length ? undefined : end;
+
+        // The rows create the cells of the new columns and fill them
+        await this.updateComplete;
+        const rows = Array.from(this.$.grid.querySelectorAll<QueryGridRow>("vi-query-grid-row"));
+        await Promise.all(rows.map(row => row.updateComplete));
+        const addedCells = rows.flatMap(row => added.map(c => row.cells[this._rowColumns.indexOf(c)]).filter(cell => !!cell));
+        await Promise.all(addedCells.map(cell => cell.updateComplete));
+
+        if (!this.isConnected || this.initializing || this.columns !== columns)
+            return;
+
+        // Hidden cells take no style or layout work until they are measured
+        if (!measure && end < columns.length) {
+            addedCells.forEach(cell => cell.toggleAttribute("unmeasured", true));
+            return;
+        }
+
+        const unmeasured = this._rowColumns.filter(c => this._unmeasuredColumns.has(c.name));
+        const indexes = unmeasured.map(c => this._rowColumns.indexOf(c));
+        const measuredRows = rows.filter(row => this.#measuredItems.has(row.item) && !row.classList.contains("hidden") && !row.isGroup);
+
+        // The column at the left edge of the visible width keeps its place when the columns before it get their measured widths
+        const left = (column: QueryGridColumn) => columns.slice(0, columns.indexOf(column)).reduce((sum, c) => sum + (this.columnWidths?.[c.name] ?? 0), 0);
+        const edge = offset + columns.filter(c => c.isPinned).reduce((sum, c) => sum + (this.columnWidths?.[c.name] ?? 0), 0);
+        const anchor = offset > 0 ? columns.find(c => !c.isPinned && left(c) + (this.columnWidths?.[c.name] ?? 0) > edge) : null;
+        const anchorOffset = anchor ? edge - left(anchor) : 0;
+
+        // A measuring cell takes its max-content width, the width a max-content track gives it, without restyling the other cells
+        const cells = rows.flatMap(row => indexes.map(index => row.cells[index]).filter(cell => !!cell));
+        cells.forEach(cell => {
+            cell.removeAttribute("unmeasured");
+            cell.toggleAttribute("measuring", !cell.column.width);
+        });
+        const cellWidths = indexes.map(index => measuredRows.reduce((max, row) => Math.max(max, row.cells[index]?.getBoundingClientRect().width ?? 0), 0));
+        cells.forEach(cell => cell.removeAttribute("measuring"));
+
+        unmeasured.forEach((column, i) => {
+            const width = this._columnWidths.get(column.name);
+            // A saved width is not measured, its header has that width
+            width.cell = column.width ? width.column : cellWidths[i];
+            width.current = Math.max(width.cell, width.column) || Number.NaN;
+            this._unmeasuredColumns.delete(column.name);
+        });
+
+        this._applyColumnWidths();
+
+        const shift = anchor ? left(anchor) + anchorOffset - edge : 0;
+        if (shift !== 0)
+            this._scrollProgrammatically(() => this.horizontalScrollOffset = offset + shift);
+    }
+
+    /**
+     * Measures the columns that come into view before their turn, before the frame shows them.
+     */
+    @observer("horizontalScrollOffset", "viewportWidth", "columnWidths")
+    private _measureVisibleColumns() {
+        // A measure that runs checks again when it is done
+        if (this.initializing || this.#columnMeasure || !this.columnWidths || !this._hasUnmeasuredColumns)
+            return;
+
+        let left = 0;
+        const right = (this.horizontalScrollOffset ?? 0) + this.viewportWidth;
+        const visibleUnmeasured = this.columns.some((column, index) => {
+            const unmeasured = index >= this._rowColumns.length || this._unmeasuredColumns.has(column.name);
+            const isVisible = left < right;
+            left += this.columnWidths[column.name] ?? 0;
+            return unmeasured && isVisible;
+        });
+
+        if (visibleUnmeasured)
+            this._measureColumns(0);
     }
 
     private _scrollToTop() {
@@ -671,7 +865,22 @@ export class QueryGrid extends WebComponent {
             }
         }
 
-        this._updateCellDebouncer.run(() => {
+        this._updateCellDebouncer.run(async () => {
+            if (this.initializing && !this.#rowColumnCountChosen) {
+                this.#rowColumnCountChosen = true;
+                this._setRowColumnCount(this._initialRowColumnCount());
+            }
+            // The columns that are not measured yet are measured on the rows that measured the others, before those show other items
+            else if (!this.initializing && this._hasUnmeasuredColumns && Array.from(this.#measuredItems).some(item => this.virtualItems.indexOf(item) < 0)) {
+                this._measureColumnsDebouncer.cancel();
+                let pending: number;
+                while ((pending = this.columns.length - this._rowColumns.length + this._unmeasuredColumns.size) > 0 && this.isConnected && !this.initializing) {
+                    await this._measureColumns(this.columns.length);
+                    if (this.columns.length - this._rowColumns.length + this._unmeasuredColumns.size >= pending)
+                        break;
+                }
+            }
+
             this._virtualGridStartIndex = newVirtualGridStartIndex;
             this._renderedItems = this.virtualItems.slice();
 
@@ -801,10 +1010,19 @@ export class QueryGrid extends WebComponent {
             this.style.setProperty("--vi-query-grid-columns-no-data", init);
             this.style.setProperty("--vi-query-grid-columns", init);
             this.style.removeProperty("--vi-query-grid-columns-width");
+            this._setRowColumnCount(this._rowColumnCount, columns);
         }
-        // Columns were hidden, pinned or reordered: each column keeps its own measured width instead of the width of its old position
-        else if (columns.every(c => this._columnWidths.get(c.name)?.current > 0))
-            this._setColumnTracks(columns);
+        else {
+            // A reordered column that is not measured yet can land among the measured ones, the rows render all columns and measure it there
+            if (this._rowColumns.length < this.columns.length) {
+                this.columns.slice(this._rowColumns.length).forEach(c => this._unmeasuredColumns.add(c.name));
+                this._rowColumnCount = undefined;
+            }
+
+            // Columns were hidden, pinned or reordered: each column keeps its own measured width instead of the width of its old position
+            if (columns.every(c => this._columnWidths.get(c.name)?.current > 0))
+                this._setColumnTracks(columns);
+        }
 
         // A re-attached grid is notified of the same columns again, the rows keep their cells
         this.columns = this.memoize(this.columns, columns);

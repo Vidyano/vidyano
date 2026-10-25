@@ -217,7 +217,8 @@ export async function mountGrid(page: Page, options: MountOptions = {}): Promise
  */
 export async function waitForGridReady(grid: Locator, timeout = 15000) {
     await expect.poll(() => grid.evaluate((g: any) => {
-        if (g.hasAttribute('initializing') || !g.query || g.query.isBusy)
+        // The columns outside the visible width are measured after the rows show
+        if (g.hasAttribute('initializing') || !g.query || g.query.isBusy || g._hasUnmeasuredColumns)
             return false;
 
         const tracks = getComputedStyle(g).getPropertyValue('--vi-query-grid-columns').trim();

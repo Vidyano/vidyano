@@ -15,9 +15,23 @@
             display: contents;
         }
 
+        // The rows measure only the leading columns, the header keeps a track for every column
+        #grid[grid] {
+            grid-template-columns: var(--vi-query-grid-row-columns, var(--vi-query-grid-columns));
+        }
+
         .filler {
             display: none;
         }
+    }
+
+    vi-query-grid-row > .column[unmeasured] {
+        display: none;
+    }
+
+    // A width from a style type hint wins, as it does in a max-content track
+    vi-query-grid-row > .column[measuring] {
+        width: max-content;
     }
 
     vi-scroller {
