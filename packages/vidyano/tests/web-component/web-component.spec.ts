@@ -1773,3 +1773,24 @@ test('TestSiblingInheritance: two children from same parent both inherit correct
     // This confirms that registering Child1 didn't pollute or modify the parent's configs
     // and Child2 was able to independently collect the same configs
 });
+test('TestAppSensitive: follows app sensitivity across a disconnect and reconnect', async ({ page }) => {
+    const component = await setupComponentTest(page, 'test-app-sensitive');
+    const state = component.locator('#state');
+    const send = (sensitive: boolean) => page.evaluate(s => (customElements.get('test-app-sensitive') as any).sendSensitive(s), sensitive);
+
+    await send(false);
+    await expect(state).toHaveText('plain');
+
+    await send(true);
+    await expect(state).toHaveText('sensitive');
+
+    // A change sent while the component is detached shows once it is attached again
+    await component.evaluate(node => (window as any).__detached = node.parentNode.removeChild(node));
+    await send(false);
+    await page.evaluate(() => document.body.appendChild((window as any).__detached));
+    await expect(state).toHaveText('plain');
+
+    // And it keeps following changes after the reconnect
+    await send(true);
+    await expect(state).toHaveText('sensitive');
+});
