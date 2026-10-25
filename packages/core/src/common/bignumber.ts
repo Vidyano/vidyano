@@ -1,15 +1,13 @@
 import { BigNumber } from "bignumber.js"
 import { CultureInfo } from "../cultures.js"
 
-declare module "bignumber.js" {
-    export interface BigNumber {
+declare global {
+    export interface Number {
         format(format: string): string;
         localeFormat(format: string): string;
     }
-}
 
-declare global {
-    export interface Number {
+    export interface BigNumber {
         format(format: string): string;
         localeFormat(format: string): string;
     }

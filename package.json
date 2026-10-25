@@ -27,6 +27,7 @@
     "@types/dompurify": "^3.2.0",
     "@types/node": "^22.15.32",
     "@types/qunit": "2.19.6",
+    "@typescript/typescript6": "^6.0.2",
     "bignumber.js": "^9.3.0",
     "chokidar": "^4.0.3",
     "dompurify": "^3.2.6",
@@ -38,13 +39,14 @@
     "qunit": "2.20.0",
     "rollup": "^4.44.0",
     "rollup-plugin-cleanup": "^3.2.1",
-    "rollup-plugin-dts": "^6.2.1",
+    "rollup-plugin-dts": "^6.5.1",
     "rollup-plugin-execute": "1.1.1",
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-watch": "^1.0.5",
     "sass": "^1.89.2",
     "semver": "^7.7.2",
-    "tslib": "^2.8.1"
+    "tslib": "^2.8.1",
+    "typescript": "^7.0.2"
   },
   "workspaces": [
     "packages/core",
@@ -53,9 +55,9 @@
   ],
   "scripts": {
     "build:sass": "npx sass --no-source-map packages/vidyano/src:packages/vidyano/src",
-    "build:ts:core": "npx tsc -p packages/core/tsconfig.json",
-    "build:ts:vidyano": "npx tsc -p packages/vidyano/tsconfig.json",
-    "build:ts:virtual-service": "npx tsc -p packages/labs/virtual-service/tsconfig.json",
+    "build:ts:core": "node node_modules/typescript/bin/tsc -p packages/core/tsconfig.json",
+    "build:ts:vidyano": "node node_modules/typescript/bin/tsc -p packages/vidyano/tsconfig.json",
+    "build:ts:virtual-service": "node node_modules/typescript/bin/tsc -p packages/labs/virtual-service/tsconfig.json",
     "build:ts": "npm run build:ts:core && npm run build:core && npm run build:ts:vidyano",
     "build:bootstrap": "npm run build:ts:core && npm run build:core",
     "build:core": "npm run build -w @vidyano/core",
