@@ -94,6 +94,7 @@ export class QueryGrid extends WebComponent {
     private _userSettingsSource: [query: Vidyano.Query, columns: Vidyano.QueryColumn[]];
     private _itemsOnDisconnect: Vidyano.QueryItems;
     private _rowsBeforeDragEnd: [row: QueryGridRow, marker: Node][];
+    private _pendingReorders = 0;
     #initializing = true;
 
     @property({ type: Object })
@@ -508,6 +509,12 @@ export class QueryGrid extends WebComponent {
         if (items === itemsOnDisconnect)
             return;
 
+        // The reordered items take the place of the old ones, the dropped row stays where it was released
+        if (this._pendingReorders > 0) {
+            this._lastSelectedItemIndex = undefined;
+            return;
+        }
+
         // Scroll to top when the query items reference changes, for example after search.
         this._scrollToTop();
     }
@@ -873,6 +880,10 @@ export class QueryGrid extends WebComponent {
     }
 
     private _onReorderStart() {
+        // The row of a pending drop is still out of place, the snapshot from before that drop stays
+        if (this._pendingReorders > 0)
+            return;
+
         // Each row is rendered right after its own marker, the rows go back there once the reordered items arrive
         this._rowsBeforeDragEnd = Array.from(this.$.grid.querySelectorAll<QueryGridRow>("vi-query-grid-row")).map(row => [row, row.previousSibling]);
     }
@@ -886,6 +897,7 @@ export class QueryGrid extends WebComponent {
         if (details.newIndex === details.oldIndex)
             return;
 
+        this._pendingReorders++;
         try {
             await this.query.reorder(
                 (details.element.previousElementSibling as QueryGridRow)?.item as Vidyano.QueryResultItem ?? null,
@@ -894,6 +906,10 @@ export class QueryGrid extends WebComponent {
         }
         finally {
             this._rowsBeforeDragEnd.forEach(([row, marker]) => marker.parentNode.insertBefore(row, marker.nextSibling));
+
+            // The items observer runs on the next update
+            await this.updateComplete;
+            this._pendingReorders--;
         }
     }
 

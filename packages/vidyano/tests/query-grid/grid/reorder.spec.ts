@@ -199,4 +199,111 @@ test.describe('Reorder', () => {
         expect(await domOrder(grid)).toEqual(before);
         expect(log.of('ExecuteAction')).toHaveLength(0);
     });
+
+    test('a dropped row stays where it was released while the reordered items replace the old ones', { annotation: [{ type: 'case', description: 'grid.ro-drop-keeps-scroll' }] }, async ({ page }) => {
+        const grid = await mountScrolledWithReorderResults(page, [[7, 5]]);
+        const dropped = await rowOf(grid, 7);
+
+        await dragRow(page, grid, 7, 5);
+        await expect.poll(() => page.evaluate(() => (window as any).__reorders)).toBe(1);
+        await waitForQueryIdle(grid);
+
+        (await sampleFrames(grid, dropped.id)).forEach(f => {
+            expect(f.index).toBe(5);
+            expect(f.scrollTop).toBe(3 * 32);
+            expect(Math.abs(f.top - (dropped.top - 2 * 32))).toBeLessThanOrEqual(1);
+        });
+    });
+
+    test('a drop while the previous reorder is pending also keeps the grid in place', { annotation: [{ type: 'case', description: 'grid.ro-overlapping-drops-keep-scroll' }] }, async ({ page }) => {
+        const grid = await mountScrolledWithReorderResults(page, [[7, 5], [8, 6]], true);
+        const dropped = await rowOf(grid, 8);
+
+        await dragRow(page, grid, 7, 5);
+        await expect.poll(() => page.evaluate(() => (window as any).__reorders)).toBe(1);
+        await dragRow(page, grid, 8, 6);
+
+        await page.evaluate(() => (window as any).__release());
+        await expect.poll(() => page.evaluate(() => (window as any).__reorders)).toBe(2);
+        await nextFrames(page, 2);
+        await page.evaluate(() => (window as any).__release());
+        await waitForQueryIdle(grid);
+
+        (await sampleFrames(grid, dropped.id)).forEach(f => {
+            expect(f.index).toBe(6);
+            expect(f.scrollTop).toBe(3 * 32);
+            expect(Math.abs(f.top - (dropped.top - 2 * 32))).toBeLessThanOrEqual(1);
+        });
+    });
 });
+
+/**
+ * Mounts QueryGrid_Reorder scrolled down three rows. QueryOrder.Reorder answers with the query in its new order, built from
+ * the GetQuery response so the shared order never changes; each answer applies the next move. Held answers wait for window.__release().
+ */
+async function mountScrolledWithReorderResults(page: Page, moves: [from: number, to: number][], held = false) {
+    await gridPage(page, { height: 300 });
+    let queryDto: any;
+    await page.route('**/GetQuery', async route => {
+        const response = await route.fetch();
+        const json = await response.json();
+        queryDto = json.query;
+        await route.fulfill({ response, json });
+    });
+    const grid = await mountGrid(page, { query: 'QueryGrid_Reorder' });
+
+    await grid.evaluate((g: any, { dto, moves, held }) => {
+        const w = window as any;
+        const service = w.service;
+        const executeAction = service.executeAction.bind(service);
+        const waiting: (() => void)[] = [];
+        w.__release = () => waiting.shift()?.();
+        w.__reorders = 0;
+        service.executeAction = async (action: string, parent: any, ...args: any[]) => {
+            if (action !== 'QueryOrder.Reorder')
+                return executeAction(action, parent, ...args);
+
+            const [from, to] = moves[w.__reorders++];
+            if (held)
+                await new Promise<void>(resolve => waiting.push(resolve));
+
+            const items = dto.result.items;
+            items.splice(to, 0, ...items.splice(from, 1));
+            return { queries: [service.hooks.onConstructQuery(service, dto, parent)] };
+        };
+    }, { dto: queryDto, moves, held });
+
+    await scrollGrid(grid, { top: 3 * 32 });
+    await expect.poll(async () => (await getScrollOffset(grid)).top).toBe(3 * 32);
+    await settle(grid);
+
+    return grid;
+}
+
+/** The item id and on-screen top of the row of the item at the index. */
+async function rowOf(grid: Locator, index: number) {
+    return grid.evaluate((g: any, index) => {
+        const row = [...g.shadowRoot.querySelectorAll('vi-query-grid-row')].find((r: any) => g.query.items.indexOf(r.item) === index) as any;
+        return { id: row.item.id as string, top: row.getBoundingClientRect().top as number };
+    }, index);
+}
+
+/** The scroll offset, and the on-screen top and item index of the row with the item id, over ten animation frames. */
+async function sampleFrames(grid: Locator, id: string) {
+    return grid.evaluate((g: any, id) => new Promise<{ scrollTop: number, top: number, index: number }[]>((resolve, reject) => {
+        const scroller = ([...g.shadowRoot.querySelectorAll('vi-scroller')].find((s: any) => !s.closest('header, vi-popup')) as any).scroller as HTMLElement;
+        const samples: { scrollTop: number, top: number, index: number }[] = [];
+        const deadline = setTimeout(() => reject(new Error('no animation frames')), 5000);
+        const sample = () => {
+            const row = [...g.shadowRoot.querySelectorAll('vi-query-grid-row')].find((r: any) => r.item?.id === id) as any;
+            samples.push({ scrollTop: scroller.scrollTop, top: row?.getBoundingClientRect().top ?? NaN, index: g.query.items.findIndex((i: any) => i?.id === id) });
+            if (samples.length < 10)
+                requestAnimationFrame(sample);
+            else {
+                clearTimeout(deadline);
+                resolve(samples);
+            }
+        };
+        requestAnimationFrame(sample);
+    }), id);
+}
