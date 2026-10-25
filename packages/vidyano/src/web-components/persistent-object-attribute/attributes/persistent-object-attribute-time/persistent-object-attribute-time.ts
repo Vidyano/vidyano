@@ -10,10 +10,14 @@ import type { TimePicker } from "components/time-picker/time-picker";
 import "components/time-picker/time-picker";
 import styles from "./persistent-object-attribute-time.css";
 
+// .NET TimeSpan string format: [d. or d:]HH:mm:ss[.fffffff]
+const timeSpanPattern = /^(?:(\d+)[.:])?(\d{1,2}):(\d{1,2}):(\d{1,2})(?:\.(\d+))?$/;
+
 export class PersistentObjectAttributeTime extends PersistentObjectAttribute {
     static styles = [super.styles, unsafeCSS(styles)];
 
     private _pendingRefresh: boolean;
+    #days = 0;
 
     @state()
     selectedTime: Date;
@@ -65,6 +69,9 @@ export class PersistentObjectAttributeTime extends PersistentObjectAttribute {
     protected override _valueChanged(value: Date | string, oldValue: any) {
         super._valueChanged(value, oldValue);
 
+        // Only hours and minutes are edited, a TimeSpan's days are kept as they are
+        this.#days = typeof value === "string" ? parseInt(timeSpanPattern.exec(value)?.[1] ?? "0", 10) : 0;
+
         const parsed = this.#parseTime(value);
         if (this.#sameHM(this.selectedTime, parsed))
             return;
@@ -97,8 +104,7 @@ export class PersistentObjectAttributeTime extends PersistentObjectAttribute {
         if (typeof value !== "string" || value.length === 0)
             return null;
 
-        // Parse .NET TimeSpan string format: [d. or d:]HH:mm:ss[.fffffff]
-        const match = /^(?:(\d+)[.:])?(\d{1,2}):(\d{1,2}):(\d{1,2})(?:\.(\d+))?$/.exec(value);
+        const match = timeSpanPattern.exec(value);
         if (!match)
             return null;
 
@@ -118,7 +124,7 @@ export class PersistentObjectAttributeTime extends PersistentObjectAttribute {
         if (!time)
             return null;
 
-        return String.format("0:{0:D2}:{1:D2}:{2:D2}.{3:D3}0000", time.getHours(), time.getMinutes(), time.getSeconds(), time.getMilliseconds());
+        return String.format("{0}:{1:D2}:{2:D2}:{3:D2}.{4:D3}0000", this.#days, time.getHours(), time.getMinutes(), time.getSeconds(), time.getMilliseconds());
     }
 
     /**

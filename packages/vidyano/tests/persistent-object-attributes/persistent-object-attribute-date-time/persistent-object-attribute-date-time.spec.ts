@@ -1165,6 +1165,17 @@ test.describe('Time', () => {
             expect(savedValue).toBe('0:08:15:45.0000000');
         });
 
+        test('keeps the days of a TimeSpan when the time is changed', async () => {
+            const component = await setupAttribute(sharedPage, tag, 'TimeWithDays');
+
+            await beginEdit(sharedPage, component);
+            await typeTime(component, '0215');
+            await sharedPage.waitForTimeout(200);
+
+            const savedValue = await save(sharedPage, component);
+            expect(savedValue).toBe('1:02:15:00.0000000');
+        });
+
         test('restores the original value after cancel', async () => {
             const component = await setupAttribute(sharedPage, tag, 'Time');
 

@@ -134,6 +134,8 @@ public class Mock_Attribute
 
     public TimeSpan TimeWithSeconds { get; set; } = new TimeSpan(8, 15, 45);
 
+    public TimeSpan TimeWithDays { get; set; } = new TimeSpan(1, 2, 0, 0);
+
     public TimeSpan? NullableTime { get; set; } = null;
 
     public TimeSpan TimeReadOnly { get; set; } = new TimeSpan(9, 5, 0);
