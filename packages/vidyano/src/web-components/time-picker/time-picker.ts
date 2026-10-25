@@ -75,6 +75,7 @@ export class TimePicker extends WebComponent {
                         <span class="minutes" @click=${this._switch}>${this._minutes.toString().padStart(2, '0')}</span>
                     </div>
                     <div id="clockHost" @click=${this._click}>
+                        <div class=${classMap({ hand: true, inner: this.state === "hours" && this._hours >= 1 && this._hours <= 12 })} style="transform: rotate(${this.state === "hours" ? (this._hours % 12) * 30 : this._minutes * 6}deg)"></div>
                         <div class="face">
                             <div class="list">
                                 ${TimePicker.OUTER_HOURS.map(hour => html`
