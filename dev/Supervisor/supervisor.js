@@ -1279,7 +1279,7 @@ function title() {
 const liveSpans = [{ minutes: 1, label: "Now", step: 15 }, { minutes: 5, label: "5m", step: 60 }, { minutes: 15, label: "15m", step: 300 }, { minutes: 30, label: "30m", step: 300 }, { minutes: 60, label: "1h", step: 900 }];
 const liveTints = ["var(--accent)", "#b391f7", "#f07ac0", "#5fd4c0", "#f59a5b", "#e6d36a", "#7ee2a8", "#ff9fd6"];
 const live = {
-    checkouts: [], offset: 0, loaded: false, primed: false, follow: true, listContext: null, listShown: new Map(), leaving: new Map(), tops: new Map(), frozen: 0, hover: null, selected: null, resizing: false, trackWidth: 600, appeared: new Map(),
+    checkouts: [], offset: 0, loaded: false, primed: false, follow: true, fileUpdates: new Map(), rowHeight: 112, settled: false, observed: null, laidOut: 0, listContext: null, listShown: new Map(), leaving: new Map(), tops: new Map(), frozen: 0, hover: null, selected: null, resizing: false, trackWidth: 600, appeared: new Map(),
     span: liveSpans.some(s => String(s.minutes) === stored("liveSpan")) ? Number(stored("liveSpan")) : 5,
     paneWidth: Math.min(Math.max(Number(stored("livePane")) || 440, 320), 760)
 };
@@ -1483,7 +1483,7 @@ function liveStatus(checkout, now) {
     const state = liveRunState(run);
     const why = run.status !== "failed" ? null : run.files.find(f => f.status === "failed" && f.failed)?.file.split("/").at(-1) ?? run.errors?.[0]?.split("\n")[0];
     return html`
-        <button class="step ${state}" title=${why ?? ""} @click=${() => liveSelect(`run:${run.key}`)}>
+        <button class="step ${state}" title=${why ?? ""} @click=${ev => { ev.stopPropagation(); liveSelect(`run:${run.key}`); }}>
             ${stateIcon(state, 12)}<span>${liveRunText(run)}</span>${why ? html`<span class="live-sub">${why}</span>` : nothing}
         </button>`;
 }
@@ -1542,16 +1542,17 @@ function liveRow(checkout, index, now, window) {
     const pct = t => Math.min(Math.max((t - window.start) / window.span * 100, 0), 100);
     const events = liveEvents(checkout, now).filter(e => e.t1 >= window.start && e.t0 <= window.end);
     const run = liveCurrentRun(checkout);
-    const hovered = events.find(e => e.key === live.hover);
     const tint = `--tint: ${liveTints[index % liveTints.length]}`;
     const list = `checkout:${checkoutName(checkout)}`;
+    // Anywhere on the row selects the worktree; the link, the status chip and the events have their own action
     return html`
-        <div class="live-row ${hovered ? "raised" : ""} ${live.focus === checkoutName(checkout) ? "focus" : ""}" style=${tint}>
+        <div class="live-row ${live.focus === checkoutName(checkout) ? "focus" : ""}" style="${tint}; height: ${live.rowHeight}px" @click=${() => liveSelect(list)}>
             <div class="live-info">
                 <span class="live-name">
                     <span class="tile-icon">${icon("branch", 18)}</span>
+                    <span class="live-tint-dot"></span>
                     <span class="live-titles">
-                        <a class="live-link" href=${checkoutPath(checkout)} target="_blank" rel="noreferrer" title=${`Open localhost:5000${checkoutPath(checkout)}`}><span class="live-link-name">${checkoutName(checkout)}</span>${icon("open", 12)}</a>
+                        <a class="live-link" href=${checkoutPath(checkout)} target="_blank" rel="noreferrer" title=${`${checkout.branch ?? ""} · open localhost:5000${checkoutPath(checkout)}`} @click=${ev => ev.stopPropagation()}><span class="live-link-name">${checkoutName(checkout)}</span>${icon("open", 12)}</a>
                         <span class="live-branch">${checkout.branch ?? ""}</span>
                     </span>
                 </span>
@@ -1559,7 +1560,6 @@ function liveRow(checkout, index, now, window) {
                 ${checkout.building ? nothing : liveProgress(run)}
             </div>
             <div class="live-track">
-                <button class="live-hit" aria-label=${`Show what ${checkoutName(checkout)} did`} @click=${() => liveSelect(list)}></button>
                 <div class="live-lane">
                 <span class="live-rule"></span>
                 ${repeat(events, e => e.key, e => {
@@ -1569,16 +1569,57 @@ function liveRow(checkout, index, now, window) {
                     const kind = e.kind === "run" ? `live-run ${liveRunState(e.run)}` : `live-${e.kind}`;
                     const style = e.kind === "change" ? `left: ${p0}%` : `left: ${p0}%; width: ${width}%`;
                     return html`<button class="live-ev ${kind} ${fresh ? "fresh" : ""} ${live.selected === e.key ? "selected" : ""}" style=${style} aria-label=${`${checkoutName(checkout)} · ${e.kind === "change" ? e.change.path : e.kind === "run" ? `run #${e.run.id}` : `queued for run #${e.run.id}`}`}
-                        @mouseenter=${() => { live.hover = e.key; update(); }} @mouseleave=${() => { if (live.hover === e.key) { live.hover = null; update(); } }}
-                        @focus=${() => { live.hover = e.key; update(); }} @blur=${() => { if (live.hover === e.key) { live.hover = null; update(); } }}
-                        @click=${() => liveSelect(e.key)}>${liveLabel(e, width)}</button>`;
+                        @mouseenter=${ev => liveHover(e.key, ev)} @mouseleave=${() => liveHover(null)} @focus=${ev => liveHover(e.key, ev)} @blur=${() => liveHover(null)}
+                        @click=${ev => { ev.stopPropagation(); liveSelect(e.key); }}>${liveLabel(e, width)}</button>`;
                 })}
                 </div>
-                ${hovered ? html`
-                    <div class="live-tip ${hovered.kind === "change" ? "change" : ""} ${(pct(hovered.t0) + pct(hovered.t1)) / 2 > 60 ? "left" : ""}" style="left: ${(pct(hovered.t0) + pct(hovered.t1)) / 2}%">
-                        ${liveTip(hovered, checkout, now)}
-                    </div>` : nothing}
             </div>
+        </div>`;
+}
+
+// The rows share the list's height, so every worktree stays in view; only below the smallest height does the list scroll.
+// Smaller rows show less: compact puts the name and branch on one line, dense everything on one line.
+const liveRowMax = 112, liveRowMin = 44;
+
+function liveLayout(height) {
+    const count = Math.max(live.checkouts.length, 1);
+    const fit = gap => (height - 24 - gap * count) / count;
+    const roomy = fit(12);
+    live.rowHeight = Math.floor(Math.min(Math.max(roomy >= 108 ? roomy : fit(6), liveRowMin), liveRowMax));
+}
+
+function liveDensity() {
+    // Each layout from the height its content needs
+    return live.rowHeight >= 108 ? "" : live.rowHeight >= 78 ? "compact" : "dense";
+}
+
+const liveResize = new ResizeObserver(([entry]) => {
+    const before = live.rowHeight;
+    liveLayout(entry.contentRect.height);
+    if (live.rowHeight !== before)
+        update();
+});
+
+function liveHover(key, ev) {
+    if (!key && !live.hover)
+        return;
+
+    live.hover = key;
+    live.hoverRect = ev?.currentTarget.getBoundingClientRect() ?? null;
+    update();
+}
+
+// Below the hovered event, or above it when the window has no room below
+function liveTipLayer(now) {
+    const found = live.hover && live.hoverRect ? liveFind(live.hover) : null;
+    if (!found || found.event.kind === "checkout")
+        return nothing;
+
+    const rect = live.hoverRect;
+    const x = rect.left + rect.width / 2;
+    return html`
+        <div class="live-tip ${x > innerWidth * .6 ? "left" : ""}" style="left: ${x}px; top: ${rect.bottom + 6}px" data-above=${rect.top - 6}>
+            ${liveTip(found.event, found.checkout, now)}
         </div>`;
 }
 
@@ -1704,6 +1745,23 @@ function liveCheckoutList(checkout, now, window) {
         </div>`;
 }
 
+// The file that changed last on top, so a running run needs no scrolling: running files, then finished ones from the most
+// recently finished, then those still to come. The page notes when it sees a file change; what was done before it looked
+// keeps its order.
+function liveFilesByUpdate(run, now) {
+    const changedAt = f => {
+        const key = `${run.key}|${f.file}`;
+        const state = `${f.status}:${f.done}`;
+        const seen = live.fileUpdates.get(key);
+        if (seen?.state !== state)
+            live.fileUpdates.set(key, { state, at: seen ? now : 0 });
+
+        return live.fileUpdates.get(key).at;
+    };
+    const group = f => f.status === "running" ? 0 : f.status === "pending" ? 2 : 1;
+    return run.files.map((f, i) => ({ f, i, at: changedAt(f) })).sort((a, b) => group(a.f) - group(b.f) || b.at - a.at || a.i - b.i).map(x => x.f);
+}
+
 function liveRunDetails(checkout, run, now) {
     const open = where => postIn(checkout, "open", { file: where.file, line: where.line, column: where.column });
     return html`
@@ -1738,7 +1796,7 @@ function liveRunDetails(checkout, run, now) {
             </div>
             <div class="live-files">
                 <span class="live-label">${plural(run.files.length, "file")} · ${liveScope(run)}</span>
-                ${run.files.map(f => html`
+                ${repeat(liveFilesByUpdate(run, now), f => f.file, f => html`
                     <button class="node" @click=${() => open({ file: f.file })}>
                         <span class="live-dot ${f.status === "failed" ? "error" : f.status === "running" ? "busy" : f.status === "passed" ? "ok" : "off"}"></span>
                         <span class="node-name mono">${shortPath(f.file)}</span>
@@ -1887,12 +1945,13 @@ function liveView() {
         ${top(state, "Live", [running ? `${running} running` : "", failing ? `${failing} failing` : ""].filter(Boolean).join(" · "), liveTools())}
         <div class="progress" aria-hidden="true"></div>
         <div class="page live-page">
-            <div class="live-list ${dim}">
+            <div class="live-list ${dim} ${liveDensity()} ${live.settled ? "settled" : ""}">
                 ${liveAxis(now, window)}
                 ${repeat(live.checkouts, c => c.name ?? "", (c, i) => liveRow(c, i, now, window))}
             </div>
             ${livePane(found, now, window)}
-        </div>`;
+        </div>
+        ${liveTipLayer(now)}`;
 }
 
 function content() {
@@ -1921,6 +1980,33 @@ function draw() {
     follow(document.getElementById("output"), ui.outputFollow);
     live.trackWidth = document.querySelector(".live-track")?.clientWidth ?? live.trackWidth;
     liveGlide();
+
+    const tip = document.querySelector(".live-tip");
+    if (tip && tip.getBoundingClientRect().bottom > innerHeight - 8)
+        tip.style.top = `${Number(tip.dataset.above) - tip.offsetHeight}px`;
+
+    const list = document.querySelector(".live-list");
+    if (list !== live.observed) {
+        live.observed?.isConnected && liveResize.unobserve(live.observed);
+        live.observed = list;
+        live.settled = false;
+        if (list)
+            liveResize.observe(list);
+    }
+
+    // Rows change height smoothly once the list is laid out, not while it first appears
+    if (list && !live.settled) {
+        liveLayout(list.clientHeight);
+        requestAnimationFrame(() => {
+            live.settled = true;
+            update();
+        });
+    }
+    else if (list && live.checkouts.length !== live.laidOut) {
+        live.laidOut = live.checkouts.length;
+        liveLayout(list.clientHeight);
+        update();
+    }
 }
 
 document.addEventListener("pointerdown", e => {
