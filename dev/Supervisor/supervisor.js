@@ -1542,12 +1542,11 @@ function liveRow(checkout, index, now, window) {
     const pct = t => Math.min(Math.max((t - window.start) / window.span * 100, 0), 100);
     const events = liveEvents(checkout, now).filter(e => e.t1 >= window.start && e.t0 <= window.end);
     const run = liveCurrentRun(checkout);
-    const failed = !checkout.building && run?.status === "failed";
     const hovered = events.find(e => e.key === live.hover);
     const tint = `--tint: ${liveTints[index % liveTints.length]}`;
     const list = `checkout:${checkoutName(checkout)}`;
     return html`
-        <div class="live-row ${failed ? "error" : ""} ${hovered ? "raised" : ""} ${live.focus === checkoutName(checkout) ? "focus" : ""}" style=${tint}>
+        <div class="live-row ${hovered ? "raised" : ""} ${live.focus === checkoutName(checkout) ? "focus" : ""}" style=${tint}>
             <div class="live-info">
                 <span class="live-name">
                     <span class="tile-icon">${icon("branch", 18)}</span>
