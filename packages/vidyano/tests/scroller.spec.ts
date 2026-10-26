@@ -165,3 +165,147 @@ test.describe('Scroller', () => {
         expect(await getState(page)).toMatchObject({ scrollTop: 800, verticalScrollOffset: 800, atBottom: true });
     });
 });
+
+type Axis = 'vertical' | 'horizontal';
+
+/** Mounts a scroller whose viewport and content have the given size along the axis; the other dimension stays 200px around 100px of content. */
+async function mountAxis(page: Page, axis: Axis, viewport: number, content: number) {
+    await page.evaluate(({ axis, viewport, content }) => {
+        const [viewportStyle, contentStyle] = axis === 'vertical' ? [`height: ${viewport}px`, `width: 100px; height: ${content}px`] : [`width: ${viewport}px`, `width: ${content}px; height: 100px`];
+        document.getElementById('test-container')!.innerHTML = `<vi-scroller style="${viewportStyle}"><div id="content" style="${contentStyle}"></div></vi-scroller>`;
+    }, { axis, viewport, content });
+
+    await page.mouse.move(100, 100);
+    await settle(page);
+}
+
+/** Resizes the viewport, the content or both in the same frame. */
+async function resizeAxis(page: Page, axis: Axis, size: { viewport?: number; content?: number }) {
+    await page.evaluate(({ axis, size }) => {
+        const dimension = axis === 'vertical' ? 'height' : 'width';
+        if (size.viewport !== undefined)
+            (document.querySelector('vi-scroller') as HTMLElement).style[dimension] = `${size.viewport}px`;
+
+        if (size.content !== undefined)
+            document.getElementById('content')!.style[dimension] = `${size.content}px`;
+    }, { axis, size });
+    await settle(page);
+}
+
+async function scrollAxisTo(page: Page, axis: Axis, offset: number) {
+    await page.evaluate(({ axis, offset }) => (document.querySelector('vi-scroller') as any).scroller[axis === 'vertical' ? 'scrollTop' : 'scrollLeft'] = offset, { axis, offset });
+    await settle(page);
+}
+
+/** The scroll state along the axis, with the thumb's position measured against its track. */
+function getThumb(page: Page, axis: Axis) {
+    return page.evaluate(axis => {
+        const scroller = document.querySelector('vi-scroller') as any;
+        const [start, end, size] = axis === 'vertical' ? ['top', 'bottom', 'height'] as const : ['left', 'right', 'width'] as const;
+        const thumb = scroller.shadowRoot.querySelector(`#${axis}`).getBoundingClientRect() as DOMRect;
+        const track = scroller.shadowRoot.querySelector(`.${axis}.scrollbar-parent`).getBoundingClientRect() as DOMRect;
+        return {
+            offset: axis === 'vertical' ? scroller.verticalScrollOffset : scroller.horizontalScrollOffset,
+            range: axis === 'vertical' ? scroller.innerHeight - scroller.outerHeight : scroller.innerWidth - scroller.outerWidth,
+            atEnd: axis === 'vertical' ? scroller.atBottom : scroller.atEnd,
+            thumbSize: thumb[size],
+            thumbStart: thumb[start] - track[start],
+            thumbEnd: thumb[end] - track[start],
+            trackSize: track[size]
+        };
+    }, axis);
+}
+
+/** Expects the thumb to sit as far along its track as the content is scrolled along its range. */
+function expectThumbAtOffset(thumb: Awaited<ReturnType<typeof getThumb>>) {
+    const expected = thumb.offset / thumb.range * (thumb.trackSize - thumb.thumbSize);
+    expect(Math.abs(thumb.thumbStart - expected), `thumb at ${thumb.thumbStart}px, expected ${expected}px`).toBeLessThanOrEqual(1);
+}
+
+/** Scrolls to the start, the middle and the end, and expects the thumb to follow along the whole track. */
+async function expectThumbFollowsScroll(page: Page, axis: Axis) {
+    await scrollAxisTo(page, axis, 0);
+    expect((await getThumb(page, axis)).thumbStart).toBe(0);
+
+    await scrollAxisTo(page, axis, Math.round((await getThumb(page, axis)).range / 2));
+    expectThumbAtOffset(await getThumb(page, axis));
+
+    await scrollAxisTo(page, axis, 1e6);
+    const thumb = await getThumb(page, axis);
+    expect(thumb).toMatchObject({ offset: thumb.range, atEnd: true });
+    expect(thumb.thumbEnd).toBe(thumb.trackSize);
+}
+
+test.describe('Scroller thumb across size changes', () => {
+    // The thumb is the viewport's share of the content along the track, at least 40px.
+    const changes = [
+        { name: 'the viewport grows with the thumb held at its minimum', from: { viewport: 200, content: 4000 }, to: { viewport: 400 }, thumbSize: 40 },
+        { name: 'the viewport shrinks with the thumb held at its minimum', from: { viewport: 400, content: 4000 }, to: { viewport: 200 }, thumbSize: 40 },
+        { name: 'the viewport grows and the thumb grows with it', from: { viewport: 200, content: 800 }, to: { viewport: 400 }, thumbSize: 200 },
+        { name: 'the viewport shrinks and the thumb shrinks with it', from: { viewport: 400, content: 800 }, to: { viewport: 200 }, thumbSize: 50 },
+        { name: 'the viewport grows and the thumb leaves its minimum', from: { viewport: 200, content: 2000 }, to: { viewport: 400 }, thumbSize: 80 },
+        { name: 'the viewport shrinks and the thumb drops to its minimum', from: { viewport: 400, content: 2000 }, to: { viewport: 200 }, thumbSize: 40 },
+        { name: 'the content grows with the thumb held at its minimum', from: { viewport: 200, content: 4000 }, to: { content: 8000 }, thumbSize: 40 },
+        { name: 'the content grows and the thumb drops to its minimum', from: { viewport: 200, content: 800 }, to: { content: 4000 }, thumbSize: 40 },
+        { name: 'the content shrinks and the thumb leaves its minimum', from: { viewport: 200, content: 4000 }, to: { content: 800 }, thumbSize: 50 },
+        { name: 'the viewport and the content grow together', from: { viewport: 200, content: 4000 }, to: { viewport: 400, content: 8000 }, thumbSize: 40 },
+        { name: 'the viewport grows while the content shrinks', from: { viewport: 200, content: 4000 }, to: { viewport: 400, content: 2000 }, thumbSize: 80 }
+    ];
+
+    for (const axis of ['vertical', 'horizontal'] as const) {
+        for (const change of changes) {
+            test(`${axis}: the thumb spans its track after ${change.name}`, async ({ page }) => {
+                await setupPage(page);
+                await mountAxis(page, axis, change.from.viewport, change.from.content);
+                await scrollAxisTo(page, axis, Math.round((await getThumb(page, axis)).range / 2));
+
+                await resizeAxis(page, axis, change.to);
+                const thumb = await getThumb(page, axis);
+                expect(thumb.thumbSize).toBe(change.thumbSize);
+                expect(thumb.trackSize).toBe(change.to.viewport ?? change.from.viewport);
+                expectThumbAtOffset(thumb);
+
+                await expectThumbFollowsScroll(page, axis);
+            });
+        }
+
+        test(`${axis}: the thumb stays at the end of its track when the viewport grows while scrolled to the end`, async ({ page }) => {
+            await setupPage(page);
+            await mountAxis(page, axis, 200, 4000);
+            await scrollAxisTo(page, axis, 1e6);
+
+            await resizeAxis(page, axis, { viewport: 400 });
+            const thumb = await getThumb(page, axis);
+            expect(thumb).toMatchObject({ offset: 3600, range: 3600, atEnd: true, thumbSize: 40 });
+            expect(thumb.thumbEnd).toBe(400);
+        });
+
+        test(`${axis}: dragging the thumb after the viewport grew follows its new travel`, async ({ page }) => {
+            await setupPage(page);
+            await mountAxis(page, axis, 200, 4000);
+            await resizeAxis(page, axis, { viewport: 400 });
+
+            const box = (await page.locator(`vi-scroller #${axis}`).boundingBox())!;
+            expect(axis === 'vertical' ? box.height : box.width).toBe(40);
+
+            const x = box.x + box.width / 2;
+            const y = box.y + box.height / 2;
+            const moveBy = (delta: number) => page.mouse.move(axis === 'vertical' ? x : x + delta, axis === 'vertical' ? y + delta : y, { steps: 4 });
+            await page.mouse.move(x, y);
+            await page.mouse.down();
+
+            // Half of the 360px the thumb can travel maps onto half of the 3600px scroll range.
+            await moveBy(180);
+            await settle(page);
+            expect((await getThumb(page, axis)).offset).toBe(1800);
+
+            await moveBy(500);
+            await page.mouse.up();
+            await settle(page);
+
+            const thumb = await getThumb(page, axis);
+            expect(thumb).toMatchObject({ offset: 3600, atEnd: true });
+            expect(thumb.thumbEnd).toBe(400);
+        });
+    }
+});
