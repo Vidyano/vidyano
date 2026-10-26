@@ -1,5 +1,5 @@
-import { expect, Page, test } from '@playwright/test';
-import { gridPage } from '../_helpers/query-grid';
+import { expect, Page } from '@playwright/test';
+import { gridPage, test } from '../_helpers/query-grid';
 
 /**
  * Mounts a standalone vi-query-grid-filter-dialog-name for the Name attribute of a new People filter.

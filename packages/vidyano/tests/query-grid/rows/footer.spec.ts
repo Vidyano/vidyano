@@ -1,5 +1,5 @@
-import { expect, Locator, test } from '@playwright/test';
-import { getScrollOffset, GRID_SCROLLER, gridPage, headerNames, mountGrid, nextFrames, openView, scrollGrid, VIEWS, waitForGridReady } from '../_helpers/query-grid';
+import { expect, Locator } from '@playwright/test';
+import { getScrollOffset, GRID_SCROLLER, gridPage, headerNames, mountGrid, nextFrames, openView, scrollGrid, test, VIEWS, waitForGridReady } from '../_helpers/query-grid';
 import { clickHeaderMenuItem, hostVar } from '../_helpers/grid';
 import { boxes, injectTotalItem, mountPrepared, rowOf, swapQuery } from '../_helpers/rows';
 

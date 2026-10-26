@@ -1,5 +1,5 @@
-import { expect, Locator, test } from '@playwright/test';
-import { columnTracks, gridPage, headerNames, pageErrors } from '../_helpers/query-grid';
+import { expect, Locator } from '@playwright/test';
+import { columnTracks, gridPage, headerNames, pageErrors, test } from '../_helpers/query-grid';
 import { CellInfo, keepColumns, loadQuery, mountLoaded, patchItems, readCells, samplePixels, setDtoValue, wheelGrid } from '../_helpers/cells';
 
 const BLACK_PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNgYGAAAAAEAAH2FzhVAAAAAElFTkSuQmCC';

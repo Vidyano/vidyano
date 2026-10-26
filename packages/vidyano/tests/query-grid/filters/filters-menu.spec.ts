@@ -1,5 +1,5 @@
-import { expect, Locator, Page, test } from '@playwright/test';
-import { gridPage, mountGrid, waitForQueryIdle } from '../_helpers/query-grid';
+import { expect, Locator, Page } from '@playwright/test';
+import { gridPage, mountGrid, test, waitForQueryIdle } from '../_helpers/query-grid';
 import { clearItem, clickDistinct, columnFilter, filterButton, filterLabel, filterLog, filtersControl, filtersMenuItems, injectFilters, inverseButton, openFilter, openFiltersMenu, removeFilters, setSelectedDistincts, totalItems } from '../_helpers/filters';
 
 const PEOPLE_COLUMNS = ['FirstName', 'LastName', 'BirthDate', 'Gender', 'ContactPreference', 'Email', 'PhoneNumber', 'EmergencyContact', 'IsActive'];

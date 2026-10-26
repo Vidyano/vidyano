@@ -1,5 +1,5 @@
-import { test, expect, Page } from '@playwright/test';
-import { gridPage, mountGrid, waitForGridReady, headerNames, columnTracks, nextFrames, pageErrors, requestLog, getScrollOffset, recordTransitions, stopRecording } from '../_helpers/query-grid';
+import { expect, Page } from '@playwright/test';
+import { columnTracks, getScrollOffset, gridPage, headerNames, mountGrid, nextFrames, pageErrors, recordTransitions, requestLog, stopRecording, test, waitForGridReady } from '../_helpers/query-grid';
 import { attachGrid, columnTokens, consoleErrors, headerBoxes, holdExecuteQuery, hostVar, initializingAdds, initializingEvents, rows, settle, watchInitializing, wheelGrid } from '../_helpers/grid';
 
 const PEOPLE_COLUMNS = ['FirstName', 'LastName', 'BirthDate', 'Gender', 'ContactPreference', 'Email', 'PhoneNumber', 'EmergencyContact', 'IsActive'];

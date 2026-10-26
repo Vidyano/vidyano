@@ -1,5 +1,5 @@
-import { test, expect, Page } from '@playwright/test';
-import { gridPage, waitForGridReady, nextFrames } from '../_helpers/query-grid';
+import { expect, Page } from '@playwright/test';
+import { gridPage, nextFrames, test, waitForGridReady } from '../_helpers/query-grid';
 import { attachGrid } from '../_helpers/grid';
 
 const HEIGHT = 900;

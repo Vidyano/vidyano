@@ -1,5 +1,5 @@
-import { expect, Locator, Page, test } from '@playwright/test';
-import { getScrollOffset, gridPage, mountGrid, pageErrors, requestLog, visibleRows, waitForGridReady } from '../_helpers/query-grid';
+import { expect, Locator, Page } from '@playwright/test';
+import { getScrollOffset, gridPage, mountGrid, pageErrors, requestLog, test, visibleRows, waitForGridReady } from '../_helpers/query-grid';
 import { groupRowOf, opens, rowHeight, scrollToRow, selectedIndexes, setSelected, spyTapAndOpen, taps } from '../_helpers/rows';
 
 const case_ = (id: string) => ({ annotation: [{ type: 'case', description: id }] });

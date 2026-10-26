@@ -1,5 +1,5 @@
-import { test, expect } from '@playwright/test';
-import { columnTracks, headerNames, nextFrames, openView, savedSettings, VIEWS, waitForGridReady } from '../_helpers/query-grid';
+import { expect } from '@playwright/test';
+import { columnTracks, headerNames, nextFrames, openView, savedSettings, test, VIEWS, waitForGridReady } from '../_helpers/query-grid';
 import { configureDialog, dialogButton, dialogLabels, dialogLists, dialogRow, dragRowAbove, focusedRowButton, headerGrid, headerWidths, openConfigure, openMenu, pressRowButton, queryId, resizeColumn, storedGridSettings, waitForDialogClosed } from '../_helpers/header';
 
 const LABELS = ['First name', 'Last name', 'Birth date', 'Gender', 'Contact preference', 'Email', 'Phone number', 'Emergency contact', 'Is active'];

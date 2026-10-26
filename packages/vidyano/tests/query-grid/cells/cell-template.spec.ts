@@ -1,5 +1,5 @@
-import { expect, Page, test } from '@playwright/test';
-import { gridPage, mountGrid } from '../_helpers/query-grid';
+import { expect, Page } from '@playwright/test';
+import { gridPage, mountGrid, test } from '../_helpers/query-grid';
 import { readCells, rowCells, wheelGrid } from '../_helpers/cells';
 import { injectTotalItem } from '../_helpers/rows';
 

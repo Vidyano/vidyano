@@ -1,5 +1,5 @@
-import { test, expect, Locator } from '@playwright/test';
-import { gridPage, mountGrid, getScrollOffset, scrollGrid, waitForGridReady } from '../_helpers/query-grid';
+import { expect, Locator } from '@playwright/test';
+import { getScrollOffset, gridPage, mountGrid, scrollGrid, test, waitForGridReady } from '../_helpers/query-grid';
 import { attachGrid, controlsBox, headerBoxes, hostVar, rows, scrollerBox, settle } from '../_helpers/grid';
 
 async function spinnerVisible(grid: Locator) {

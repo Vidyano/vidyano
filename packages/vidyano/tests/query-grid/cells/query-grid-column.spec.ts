@@ -1,5 +1,5 @@
-import { expect, test } from '@playwright/test';
-import { columnTracks, gridPage, headerNames, mountGrid } from '../_helpers/query-grid';
+import { expect } from '@playwright/test';
+import { columnTracks, gridPage, headerNames, mountGrid, test } from '../_helpers/query-grid';
 import { loadQuery } from '../_helpers/cells';
 
 // QueryGridColumn lives in the web components bundle, so these cases run on the bare page through the public export (m.QueryGridColumn) without creating a grid.

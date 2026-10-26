@@ -1,4 +1,4 @@
-import { expect, Locator, Page, TestInfo } from '@playwright/test';
+import { test as base, expect, Locator, Page, TestInfo } from '@playwright/test';
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
@@ -33,6 +33,75 @@ function devBase(root: string) {
         return root;
     }
 }
+
+/** Shared pages a test changed in a way that only a load applies (see `test`); gridPage loads them instead of resetting. */
+const loadOnGridPage = new WeakSet<Page>();
+
+/** The page events tests listen to; their listeners are removed after every test. */
+const PAGE_EVENTS = ['console', 'pageerror', 'request', 'requestfinished', 'requestfailed', 'response', 'dialog', 'popup', 'frameattached', 'framenavigated'] as const;
+
+/**
+ * The `test` of the specs that use the bare grid page. A new page costs a renderer process, loading index.js and
+ * signing in, together about half of a typical test, so each worker keeps its page and gridPage resets it in place.
+ * After a test its routes and page listeners are removed. A test that adds init scripts, exposes functions, installs
+ * the clock or adds style or script tags, which would outlive it, gets the page replaced after it, as does a test that
+ * closes it; `freshPage` gives every test of a spec its own page, for specs that patch prototypes.
+ */
+export const test = base.extend<{ freshPage: boolean }, { sharedGridPage: { page: Page | null; options: string } }>({
+    freshPage: [false, { option: true }],
+    sharedGridPage: [async ({}, use) => {
+        const holder: { page: Page | null; options: string } = { page: null, options: '' };
+        await use(holder);
+        await holder.page?.context().close();
+    }, { scope: 'worker' }],
+    page: async ({ browser, freshPage, sharedGridPage, viewport, userAgent, deviceScaleFactor, isMobile, hasTouch, locale, timezoneId, colorScheme, ignoreHTTPSErrors, javaScriptEnabled, bypassCSP }, use, testInfo) => {
+        // The test's own options (test.use included); the shared page is replaced when a test needs other ones
+        const options = Object.fromEntries(Object.entries({ viewport, userAgent, deviceScaleFactor, isMobile, hasTouch, locale, timezoneId, colorScheme, ignoreHTTPSErrors, javaScriptEnabled, bypassCSP }).filter(([, value]) => value !== undefined));
+        const open = async () => (await browser.newContext(options)).newPage();
+
+        if (freshPage) {
+            const page = await open();
+            await use(page);
+            await page.context().close();
+            return;
+        }
+
+        if (sharedGridPage.page && sharedGridPage.options !== JSON.stringify(options)) {
+            await sharedGridPage.page.context().close();
+            sharedGridPage.page = null;
+        }
+
+        sharedGridPage.options = JSON.stringify(options);
+        const page = sharedGridPage.page ??= await open();
+        let replace = false;
+
+        // Init scripts, exposed functions and the clock take effect on the next load and outlive the test: gridPage then
+        // loads the page. Style and script tags stay in the head, which gridPage does not reset (the bundle adds its own
+        // styles there). Either way the page is replaced after the test; gridPage adds the bundle itself.
+        const wrapped = [[page, 'addInitScript', true], [page, 'exposeFunction', true], [page, 'exposeBinding', true], [page.clock, 'install', true], [page, 'addStyleTag', false], [page, 'addScriptTag', false]] as const;
+        const originals = wrapped.map(([target, name]) => (target as any)[name]);
+        wrapped.forEach(([target, name, load], i) => (target as any)[name] = (...args: any[]) => {
+            if (load)
+                loadOnGridPage.add(page);
+            if (load || args[0]?.url !== `${BASE}/index.js`)
+                replace = true;
+
+            return originals[i].apply(target, args);
+        });
+
+        await use(page);
+
+        wrapped.forEach(([target, name], i) => (target as any)[name] = originals[i]);
+        if (replace || page.isClosed() || testInfo.status !== testInfo.expectedStatus) {
+            sharedGridPage.page = null;
+            await page.context().close();
+            return;
+        }
+
+        await page.unrouteAll({ behavior: 'ignoreErrors' });
+        PAGE_EVENTS.forEach(event => page.removeAllListeners(event));
+    }
+});
 
 export interface GridPageOptions {
     width?: number;
@@ -71,8 +140,8 @@ function getGridTestHtml(styles: string) {
       :not(:defined) { display: none; }
       #test-container { position: fixed; inset: 0; display: flex; flex-direction: column; }
       #test-container > vi-query-grid { flex: 1 1 auto; min-height: 0; }
-      ${styles}
     </style>
+    <style id="test-styles">${styles}</style>
   </head>
   <body>
     <div id="test-container"></div>
@@ -95,13 +164,53 @@ export async function gridPage(page: Page, options: GridPageOptions = {}) {
             console.error(`[Browser] ${msg.text()}`);
     });
 
-    await page.route('**/grid-test-page', route => route.fulfill({ contentType: 'text/html', body: getGridTestHtml(styles) }));
-    await page.goto(`${BASE}/grid-test-page`);
-    await page.addScriptTag({ url: `${BASE}/index.js`, type: 'module' });
-    await page.waitForFunction(() => typeof (window as any).Vidyano !== 'undefined', null, { timeout: 15000 });
+    // A page the last test left on the grid test page (see `test`) is reset in place instead of loaded again: a new
+    // body and test styles, without the globals and the document and window listeners that test added, and below a
+    // new service and app
+    const reset = !loadOnGridPage.has(page) && await page.evaluate(({ base, styles }) => {
+        const w = window as any;
+        if (w.__gridPageBase !== base)
+            return false;
+
+        w.__gridPageListeners.splice(0).forEach(([target, args]: [EventTarget, Parameters<EventTarget['removeEventListener']>]) => target.removeEventListener(...args));
+        Object.keys(w).filter(key => !w.__gridPageGlobals.has(key)).forEach(key => delete w[key]);
+        (document.activeElement as HTMLElement | null)?.blur();
+        document.body.replaceChildren(Object.assign(document.createElement('div'), { id: 'test-container' }));
+        document.getElementById('test-styles')!.textContent = styles;
+        return true;
+    }, { base: BASE, styles }).catch(() => false);
+
+    if (reset)
+        await page.mouse.move(0, 0);
+    else {
+        await page.route('**/grid-test-page', route => route.fulfill({ contentType: 'text/html', body: getGridTestHtml(styles) }));
+        await page.goto(`${BASE}/grid-test-page`);
+        await page.addScriptTag({ url: `${BASE}/index.js`, type: 'module' });
+        await page.waitForFunction(() => typeof (window as any).Vidyano !== 'undefined', null, { timeout: 15000 });
+    }
 
     await page.evaluate(async ({ base, settings }) => {
         const w = window as any;
+        if (w.__gridPageBase !== base) {
+            w.__gridPageBase = base;
+
+            // Listeners that test code adds to the document or window, told apart from the bundle's own by the caller's
+            // stack frame: a page.evaluate function runs as "eval at evaluate", the bundle from its URL
+            w.__gridPageListeners = [];
+            for (const target of [document, window]) {
+                const add = target.addEventListener;
+                target.addEventListener = function (this: EventTarget, ...args: Parameters<EventTarget['addEventListener']>) {
+                    if (new Error().stack?.split('\n')[2]?.includes('eval at evaluate'))
+                        w.__gridPageListeners.push([target, args]);
+
+                    return add.apply(this, args);
+                };
+            }
+
+            // The window's own keys, the wrapped addEventListener included, stay on a reset
+            w.__gridPageGlobals = new Set([...Object.keys(w), '__gridPageGlobals']);
+        }
+
         const m = await import(`${base}/index.js`);
         w.m = m;
 

@@ -1,5 +1,5 @@
-import { expect, Locator, Page, test } from '@playwright/test';
-import { BASE, gridPage, nextFrames, openView, pageErrors, waitForGridReady } from '../_helpers/query-grid';
+import { expect, Locator, Page } from '@playwright/test';
+import { BASE, gridPage, nextFrames, openView, pageErrors, test, waitForGridReady } from '../_helpers/query-grid';
 import { loadQuery, mountLoaded, patchItems, readCells, setDtoValue } from '../_helpers/cells';
 
 const DATA_TYPES_VIEW = 'components/query-grid_data-types';

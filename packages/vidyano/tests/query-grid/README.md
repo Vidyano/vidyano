@@ -14,17 +14,19 @@ Playwright tests that lock in the behavior of `vi-query-grid`: its rows, cells, 
 
 Most specs mount a grid on a bare test page (`gridPage` + `mountGrid`); the `views/` specs open the real app (`openView`). The tests use public API, real input, rendered DOM and the network only.
 
+A new page costs about as much as a typical test, so the specs share one per worker: the bare-page specs take `test` from `_helpers/query-grid` and `gridPage` resets the page in place (a new body, styles, service and app, without the window globals and the document and window listeners the last test added); `views/rendering.spec.ts` takes `test` from `_helpers/views` and `showView` shows each view on one booted app. A test that adds init scripts, exposes functions or installs the clock gets a freshly loaded page, and the page is replaced after it, as after a test that adds style or script tags; a test with other context options (`test.use({ hasTouch: true })`) gets a page of its own. `test.use({ freshPage: true })` gives a spec a new page per test.
+
 ## Helpers
 
 | File | Contents |
 |---|---|
-| `_helpers/query-grid.ts` | Shared: the base URL (`BASE`), the bare grid page, mounting a grid, waiting for it to be ready, scrolling, the request log, saved user settings and opening app views (`VIEWS`) |
+| `_helpers/query-grid.ts` | Shared: the base URL (`BASE`), the `test` that shares the bare grid page, the bare grid page, mounting a grid, waiting for it to be ready, scrolling, the request log, saved user settings and opening app views (`VIEWS`) |
 | `_helpers/grid.ts` | Grid host specs: column tracks and tokens, header and row boxes, the `initializing` watcher, wheel scrolling and holding `ExecuteQuery` requests |
 | `_helpers/cells.ts` | Cell specs: loading a query without a grid, reading cells and their computed styles |
 | `_helpers/rows.ts` | Row specs: finding the row or group row of an item, selection and select-all state, holding page loads, and the context menu |
 | `_helpers/header.ts` | Header specs: the sort icon, the column menu, the configure dialog and its rows, column resizing and the stored grid settings |
 | `_helpers/filters.ts` | Filter specs: opening a column filter, its distinct rows, the filters menu, saved filters and the filter log |
-| `_helpers/views.ts` | App view specs: `VIEW_MATRIX` with the expected values per view, header and cell alignment, row boxes, the column and grouping menus and the reference dialog |
+| `_helpers/views.ts` | App view specs: the `test` and `showView` that share one app, `VIEW_MATRIX` with the expected values per view, header and cell alignment, row boxes, the column and grouping menus and the reference dialog |
 | `_helpers/perf.ts` | Perf specs: the perf `test` (it fails a test that writes shared server state), the metrics JSON (`recordPerf`), frame and long task sampling, CDP metrics and the 60fps frame budget |
 
 ## Running
