@@ -236,6 +236,40 @@ test.describe('Multiple Flags', () => {
     });
 });
 
+test.describe('Short viewport', () => {
+    test('keeps the options popup inside the viewport and scrolls the options', async ({ browser }) => {
+        // A viewport too short for all 7 options; a page of its own so no earlier components push the attribute down
+        const viewport = { width: 800, height: 200 };
+        const page = await browser.newPage({ viewport });
+
+        try {
+            await setupPage(page, '', sharedBackend.url);
+            const component = await setupAttribute(page, 'vi-persistent-object-attribute-flags-enum', 'FlagsEnum');
+
+            await beginEdit(page, component);
+
+            const popup = component.locator('vi-popup');
+            await popup.locator('[slot="header"]').click();
+
+            const list = popup.locator('ul');
+            await expect(list).toBeVisible();
+
+            const popupBox = (await popup.locator('#popup').boundingBox())!;
+            expect(popupBox.y).toBeGreaterThanOrEqual(0);
+            expect(popupBox.y + popupBox.height).toBeLessThanOrEqual(viewport.height);
+            expect((await list.boundingBox())!.height).toBeGreaterThan(popupBox.height);
+
+            // The last option can still be reached and toggled
+            const allCheckbox = component.locator('li').filter({ hasText: 'All' }).locator('vi-checkbox');
+            await allCheckbox.click();
+            await expect(popup.locator('[slot="header"] span')).toHaveText('All');
+        }
+        finally {
+            await page.close();
+        }
+    });
+});
+
 test.describe('None', () => {
 
     test.describe('Non-edit mode', () => {
