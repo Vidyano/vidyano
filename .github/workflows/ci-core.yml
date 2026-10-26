@@ -17,6 +17,7 @@ on:
       - 'tsconfig.base.json'
       - '.github/workflows/ci-core.yml'
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     branches:
       - v4.0
       - v5.0
@@ -32,8 +33,13 @@ on:
       - 'tsconfig.base.json'
       - '.github/workflows/ci-core.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
 jobs:
   test:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     name: Build and Test
     runs-on: ubuntu-latest
 
