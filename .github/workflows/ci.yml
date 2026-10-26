@@ -15,6 +15,7 @@ on:
       - 'playwright.config.ts'
       - 'tsconfig.json'
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     branches:
       - v4.0
       - v5.0
@@ -28,8 +29,13 @@ on:
       - 'playwright.config.ts'
       - 'tsconfig.json'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
 jobs:
   build-and-test:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     name: Build and Test
     runs-on: ubuntu-latest
 
