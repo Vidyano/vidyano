@@ -137,3 +137,20 @@ test.describe("Reordering a query with more than one page", () => {
         expect(hooks.textSearches).toEqual(hooks.actionTextSearches);
     });
 });
+
+test.describe("Select-all on a reorderable query", () => {
+    test("is never available, so a reorder sends the rows around the drop", async ({ query }) => {
+        await query.search();
+        const first = loadedItem(query, 0), moved = await query.items.atAsync(1);
+
+        // As if the service enabled select-all on QueryGrid_ReorderLarge
+        query.selectAll.isAvailable = true;
+        query.selectAll.allSelected = true;
+        expect(query.selectAll.isAvailable).toBe(false);
+        expect(query.selectAll.allSelected).toBe(false);
+
+        await query.reorder(null, moved, first);
+        expect(loadedItem(query, 0).id).toBe(moved.id);
+        expect(loadedItem(query, 1).id).toBe(first.id);
+    });
+});

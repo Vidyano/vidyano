@@ -36,19 +36,20 @@ export class QuerySelectAll extends Observable<IQuerySelectAll> implements IQuer
         this.propertyChanged.attach(observer);
         query.propertyChanged.attach((_, args) => {
             if (args.propertyName === "hasMore")
-                this.#availabilityChanged(this.#computeAvailable(args.oldValue, query.maxSelectedItems));
+                this.#availabilityChanged(this.#isAvailableFor(args.oldValue, query.maxSelectedItems, query.canReorder));
             else if (args.propertyName === "maxSelectedItems")
-                this.#availabilityChanged(this.#computeAvailable(query.hasMore, args.oldValue));
+                this.#availabilityChanged(this.#isAvailableFor(query.hasMore, args.oldValue, query.canReorder));
         });
     }
 
     /**
      * Gets or sets whether selecting all items is available.
-     * Not while the query's total is unknown (hasMore), because the action would act on rows nobody has seen, nor while the selection is limited (maxSelectedItems).
-     * Setting it is ignored while the selection is limited.
+     * Not while the query's total is unknown (hasMore), because the action would act on rows nobody has seen, nor while the selection is limited (maxSelectedItems),
+     * nor on a reorderable query (canReorder), whose rows are put in order by hand.
+     * Setting it is ignored while the selection is limited, and has no effect on a reorderable query.
      */
     get isAvailable(): boolean {
-        return this.#computeAvailable(this.#query.hasMore, this.#query.maxSelectedItems);
+        return this.#isAvailableFor(this.#query.hasMore, this.#query.maxSelectedItems, this.#query.canReorder);
     }
 
     set isAvailable(isAvailable: boolean) {
@@ -109,8 +110,8 @@ export class QuerySelectAll extends Observable<IQuerySelectAll> implements IQuer
     /**
      * Whether select-all is available for the given state of the query.
      */
-    #computeAvailable(hasMore: boolean, maxSelectedItems: number): boolean {
-        return this.#isAvailable && !hasMore && !maxSelectedItems;
+    #isAvailableFor(hasMore: boolean, maxSelectedItems: number, canReorder: boolean): boolean {
+        return this.#isAvailable && !hasMore && !maxSelectedItems && !canReorder;
     }
 
     /**
