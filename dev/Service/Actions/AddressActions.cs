@@ -28,7 +28,8 @@ public partial class AddressActions
         }
 
         var person = Context.People.First(p => p.Id.ToString() == parent.ObjectId);
-        var ids = selectedItems.Select(i => i.Id).ToHashSet();
+        // The lookup rows of a detail query have ids like "9998;Addresses;13980", the address id comes last
+        var ids = selectedItems.Select(i => i.Id.Split(';')[^1]).ToHashSet();
         var added = Context.Addresses.Where(a => ids.Contains(a.Id.ToString()) && !person.Addresses.Contains(a)).ToList();
 
         lock (person.Addresses)
