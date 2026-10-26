@@ -10,7 +10,7 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@floating-ui/dom": "^1.7.1",
+    "@floating-ui/dom": "^1.8.0",
     "@microsoft/fetch-event-source": "^2.0.1",
     "@playwright/test": "^1.56.1",
     "@polymer/iron-a11y-keys": "3.0.1",
