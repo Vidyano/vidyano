@@ -1,5 +1,5 @@
-import { test, expect } from '@playwright/test';
-import { gridPage, mountGrid, waitForGridReady, requestLog } from '../_helpers/query-grid';
+import { expect } from '@playwright/test';
+import { gridPage, mountGrid, requestLog, test, waitForGridReady } from '../_helpers/query-grid';
 import { controlsBox, headerBoxes, hostVar, rowAt, rows, valuesOf } from '../_helpers/grid';
 import { ALL_PARTS, box, expectAligned, Part, prefixParts, rowHeight } from '../_helpers/views';
 

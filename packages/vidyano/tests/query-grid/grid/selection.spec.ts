@@ -1,5 +1,5 @@
-import { test, expect, Locator } from '@playwright/test';
-import { gridPage, mountGrid, getScrollOffset, scrollGrid } from '../_helpers/query-grid';
+import { expect, Locator } from '@playwright/test';
+import { getScrollOffset, gridPage, mountGrid, scrollGrid, test } from '../_helpers/query-grid';
 import { rowAt, rows, selectedIndexes, settle } from '../_helpers/grid';
 
 const RH = 32;

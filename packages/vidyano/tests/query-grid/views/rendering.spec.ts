@@ -1,6 +1,6 @@
-import { test, expect, Locator, Page } from '@playwright/test';
-import { headerNames, nextFrames, openView, requestLog, savedSettings, visibleRows, waitForGridReady } from '../_helpers/query-grid';
-import { box, cellTexts, columnMenuItem, expectAligned, groupBy, hostVar, PEOPLE_COLUMNS, physicalRowCount, prefixParts, rowBoxes, rowForItem, rowHeight, settle, tracks, VIEW_MATRIX, wheelGrid } from '../_helpers/views';
+import { expect, Locator, Page } from '@playwright/test';
+import { headerNames, nextFrames, requestLog, savedSettings, visibleRows, waitForGridReady } from '../_helpers/query-grid';
+import { box, cellTexts, columnMenuItem, expectAligned, groupBy, hostVar, PEOPLE_COLUMNS, physicalRowCount, prefixParts, rowBoxes, rowForItem, rowHeight, settle, showView, test, tracks, VIEW_MATRIX, wheelGrid } from '../_helpers/views';
 
 async function headerBoxes(grid: Locator) {
     return grid.evaluate((g: any) => Object.fromEntries([...g.shadowRoot.querySelectorAll('vi-query-grid-column-header')]
@@ -87,7 +87,7 @@ async function resize(page: Page, grid: Locator, width: number, height: number) 
 test.describe('Alignment and rendering', () => {
     for (const view of VIEW_MATRIX) {
         test(`${view.name} headers line up with their cells, ungrouped and grouped`, { annotation: [{ type: 'case', description: 'views.all-header-cell-alignment' }] }, async ({ page }) => {
-            const grid = await openView(page, view.path);
+            const grid = await showView(page, view.path);
             await page.mouse.move(0, 0);
 
             const result = await expectAligned(grid, 'ungrouped');
@@ -99,7 +99,7 @@ test.describe('Alignment and rendering', () => {
         });
 
         test(`${view.name} rows and cells are one row height tall`, { annotation: [{ type: 'case', description: 'views.all-row-height' }] }, async ({ page }) => {
-            const grid = await openView(page, view.path);
+            const grid = await showView(page, view.path);
             expect(await hostVar(grid, '--vi-query-grid-row-height')).toBe('32px');
 
             await expectRowHeights(grid, 'top');
@@ -116,7 +116,7 @@ test.describe('Alignment and rendering', () => {
         });
 
         test(`${view.name} --vi-query-grid-columns lists measured widths plus a filler`, { annotation: [{ type: 'case', description: 'views.all-columns-css-var' }] }, async ({ page }) => {
-            const grid = await openView(page, view.path);
+            const grid = await showView(page, view.path);
 
             const value = await hostVar(grid, '--vi-query-grid-columns');
             expect(value).toMatch(/^(\d+px\s+){9}minmax\(0(px)?,\s*1fr\)$/);
@@ -134,7 +134,7 @@ test.describe('Alignment and rendering', () => {
         });
 
         test(`${view.name} striping follows the absolute item index`, { annotation: [{ type: 'case', description: 'views.all-row-striping-parity' }] }, async ({ page }) => {
-            const grid = await openView(page, view.path);
+            const grid = await showView(page, view.path);
             const rh = await rowHeight(grid);
             const even = 'rgb(250, 250, 250)';
             const odd = 'rgb(255, 255, 255)';
@@ -165,7 +165,7 @@ test.describe('Alignment and rendering', () => {
 test.describe('Horizontal scroll, pin and hide', () => {
     for (const view of VIEW_MATRIX) {
         test(`${view.name} horizontal scroll moves headers and cells together`, { annotation: [{ type: 'case', description: 'views.all-hscroll-alignment' }] }, async ({ page }) => {
-            const grid = await openView(page, view.path);
+            const grid = await showView(page, view.path);
             const max = await maxHorizontal(grid);
             const before = await headerBoxes(grid);
             const controls = await box(grid.locator('header .controls'));
@@ -189,7 +189,7 @@ test.describe('Horizontal scroll, pin and hide', () => {
         });
 
         test(`${view.name} a pinned column moves first and stays put on horizontal scroll`, { annotation: [{ type: 'case', description: 'views.all-hscroll-pinned' }] }, async ({ page }) => {
-            const grid = await openView(page, view.path);
+            const grid = await showView(page, view.path);
             const queryId = await grid.evaluate((g: any) => g.query.id);
 
             await columnMenuItem(grid, 'LastName', 'Pin');
@@ -230,7 +230,7 @@ test.describe('Horizontal scroll, pin and hide', () => {
         });
 
         test(`${view.name} pinning a column keeps each column's own width`, { annotation: [{ type: 'case', description: 'views.all-pin-width-reassignment' }, { type: 'case', description: 'views.all-pin-keeps-widths' }] }, async ({ page }) => {
-            const grid = await openView(page, view.path);
+            const grid = await showView(page, view.path);
             const before = await headerBoxes(grid);
 
             await columnMenuItem(grid, 'LastName', 'Pin');
@@ -245,7 +245,7 @@ test.describe('Horizontal scroll, pin and hide', () => {
         });
 
         test(`${view.name} hiding a middle column removes it and keeps widths by name`, { annotation: [{ type: 'case', description: 'views.all-hide-column' }] }, async ({ page }) => {
-            const grid = await openView(page, view.path);
+            const grid = await showView(page, view.path);
             const queryId = await grid.evaluate((g: any) => g.query.id);
             const before = await headerBoxes(grid);
             const remaining = PEOPLE_COLUMNS.filter(c => c !== 'Gender');
@@ -272,7 +272,7 @@ test.describe('Horizontal scroll, pin and hide', () => {
 test.describe('Window resize and more columns', () => {
     for (const view of VIEW_MATRIX) {
         test(`${view.name} alignment and widths survive window resizes`, { annotation: [{ type: 'case', description: 'views.all-resize-alignment' }] }, async ({ page }) => {
-            const grid = await openView(page, view.path);
+            const grid = await showView(page, view.path);
             const columns = await hostVar(grid, '--vi-query-grid-columns');
 
             for (const [width, height] of [[800, 600], [1920, 1080], [1280, 720]]) {
@@ -294,7 +294,7 @@ test.describe('Window resize and more columns', () => {
             const right = (grid: Locator) => grid.locator('.more.right vi-button[icon=ChevronRight]');
             const left = (grid: Locator) => grid.locator('.more.left vi-button[icon=ChevronLeft]');
 
-            let grid = await openView(page, view.path);
+            let grid = await showView(page, view.path);
             await expect(right(grid)).toBeVisible();
             await expect(left(grid)).toBeHidden();
 
@@ -302,7 +302,7 @@ test.describe('Window resize and more columns', () => {
             await expect(right(grid)).toBeHidden();
             await expect(left(grid)).toBeHidden();
 
-            grid = await openView(page, view.path, { width: 1920, height: 1080 });
+            grid = await showView(page, view.path, { width: 1920, height: 1080 });
             await expect(right(grid)).toBeHidden();
             await expect(left(grid)).toBeHidden();
 
@@ -324,7 +324,7 @@ test.describe('Window resize and more columns', () => {
         });
 
         test(`${view.name} right more popup lists off-screen columns sorted by label`, { annotation: [{ type: 'case', description: 'views.all-more-right-items' }] }, async ({ page }, testInfo) => {
-            const grid = await openView(page, view.path);
+            const grid = await showView(page, view.path);
 
             await openMore(grid, 'right');
             await expect(moreItems(grid, 'right').first()).toBeVisible();
@@ -350,7 +350,7 @@ test.describe('Window resize and more columns', () => {
         });
 
         test(`${view.name} picking a column from the more popup scrolls it into view`, { annotation: [{ type: 'case', description: 'views.all-more-pick-scrolls' }] }, async ({ page }) => {
-            const grid = await openView(page, view.path);
+            const grid = await showView(page, view.path);
             const max = await maxHorizontal(grid);
             const offsetLeft = await grid.evaluate((g: any) => g.shadowRoot.querySelector('vi-query-grid-column-header[name=IsActive]').offsetLeft);
 
@@ -380,7 +380,7 @@ test.describe('Window resize and more columns', () => {
 
 test.describe('People', () => {
     test('People first row shows Aaron Lemmens formatted for nl-BE', { annotation: [{ type: 'case', description: 'views.people-first-row' }] }, async ({ page }) => {
-        const grid = await openView(page, 'home/people');
+        const grid = await showView(page, 'home/people');
         const row = await rowForItem(grid, 0);
 
         expect(await grid.evaluate((g: any) => {
@@ -401,7 +401,7 @@ test.describe('People', () => {
 test.describe('PeopleTop10', () => {
     test('PeopleTop10 shows exactly 10 rows without vertical scrolling', { annotation: [{ type: 'case', description: 'views.top10-ten-rows' }] }, async ({ page }) => {
         const log = requestLog(page);
-        const grid = await openView(page, 'home/people-top10');
+        const grid = await showView(page, 'home/people-top10');
         await log.quiet();
         log.clear();
 

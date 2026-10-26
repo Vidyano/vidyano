@@ -1,5 +1,5 @@
-import { test, expect } from '@playwright/test';
-import { headerNames, savedSettings, waitForGridReady } from '../_helpers/query-grid';
+import { expect } from '@playwright/test';
+import { headerNames, savedSettings, test, waitForGridReady } from '../_helpers/query-grid';
 import { dialogButton, dialogLists, dialogRow, header, headerGrid, headerWidths, menuItem, openConfigure, openMenu, pressRowButton, queryId, resizeColumn, waitForDialogClosed } from '../_helpers/header';
 
 /**

@@ -1,5 +1,5 @@
-import { expect, Locator, Page, test } from '@playwright/test';
-import { getScrollOffset, gridPage, GridPageOptions, mountGrid, openView, pageErrors, scrollGrid, VIEWS, waitForGridReady, waitForQueryIdle, pauseClock } from '../_helpers/query-grid';
+import { expect, Locator, Page } from '@playwright/test';
+import { getScrollOffset, gridPage, GridPageOptions, mountGrid, openView, pageErrors, pauseClock, scrollGrid, test, VIEWS, waitForGridReady, waitForQueryIdle } from '../_helpers/query-grid';
 import { scrollerBox } from '../_helpers/grid';
 import { allDistinctRows, settledRows, settledTexts, clearItem, clickDistinct, columnFilter, distinctItem, distinctRows, distinctTexts, filterButton, filterLabel, filterLog, filtersControl, inverseButton, listBox, openFilter, REMAINING, resizeHandleBox, searchInput, setSelectedDistincts, totalItems, columnState } from '../_helpers/filters';
 

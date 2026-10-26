@@ -74,6 +74,7 @@
     "test:vidyano": "npx playwright test --project=vidyano --workers=4",
     "test:virtual-service": "npx playwright test --project=virtual-service --workers=4",
     "test:perf": "npx playwright test --project=vidyano-perf",
+    "test:shard": "node tools/test/shard.mjs reshard",
     "test:ci:core": "act push -W .github/workflows/ci-core.yml -j test --container-options \"--network bridge\"",
     "test:ci:vidyano": "act push -W .github/workflows/ci-vidyano.yml -j test --container-options \"--network bridge\"",
     "test:ci:virtual-service": "act push -W .github/workflows/ci-virtual-service.yml -j test --container-options \"--network bridge\"",

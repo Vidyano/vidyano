@@ -90,7 +90,9 @@ jobs:
             sleep 2
           done
 
-          npm run test:vidyano -- --shard=${{ matrix.shard }}/3
+          # Whole spec files per shard, balanced by their duration on CI (tools/test/shard-weights.json)
+          SPECS=$(node tools/test/shard.mjs ${{ matrix.shard }} 3) || exit 1
+          npm run test:vidyano -- $SPECS
           TEST_EXIT=$?
 
           # Stop server

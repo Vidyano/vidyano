@@ -1,5 +1,5 @@
-import { test, expect, Locator } from '@playwright/test';
-import { gridPage, mountGrid, getScrollOffset, scrollGrid, headerNames, nextFrames, savedSettings, waitForGridReady } from '../_helpers/query-grid';
+import { expect, Locator } from '@playwright/test';
+import { getScrollOffset, gridPage, headerNames, mountGrid, nextFrames, savedSettings, scrollGrid, test, waitForGridReady } from '../_helpers/query-grid';
 import { attachGrid, clickHeaderMenuItem, controlsBox, header, headerBoxes, holdExecuteQuery, hostVar, initializingAdds, openHeaderMenu, openPopupCount, rowAt, rows, scrollerBox, settle, watchInitializing, wheelGrid } from '../_helpers/grid';
 
 const PINNED_ORDER = ['Email', 'FirstName', 'LastName', 'BirthDate', 'Gender', 'ContactPreference', 'PhoneNumber', 'EmergencyContact', 'IsActive'];

@@ -1,5 +1,5 @@
-import { expect, Locator, Page } from '@playwright/test';
-import { getScrollOffset, openApp, VIEWS, waitForGridReady } from './query-grid';
+import { test as base, devices, expect, Locator, Page } from '@playwright/test';
+import { getScrollOffset, openApp, openView, VIEWS, waitForGridReady } from './query-grid';
 
 /**
  * Helpers for the app view specs (tests/query-grid/views). VIEW_MATRIX holds the expected values per view; pixel
@@ -108,6 +108,56 @@ export const VIEW_MATRIX: ViewSpec[] = [
 ];
 
 export const ALL_PARTS: Part[] = ['groupspacer', 'selector', 'actions', 'filter'];
+
+/**
+ * The `test` of the view specs that share one app per worker: the app boots once and every test shows its view
+ * on it with showView instead of opening a fresh page. A failed test ends its worker, so the next one boots again.
+ */
+export const test = base.extend<{}, { appPage: Page }>({
+    appPage: [async ({ browser }, use) => {
+        const context = await browser.newContext({ ...devices['Desktop Chrome'] });
+        const page = await context.newPage();
+        await openView(page, VIEWS.People);
+        await use(page);
+        await context.close();
+    }, { scope: 'worker' }],
+    page: async ({ appPage }, use) => {
+        await use(appPage);
+    }
+});
+
+/**
+ * Shows a view on the shared app page (see `test`) the way openView opens it on a fresh page: the current route
+ * is left first, so the view's route stamps a new grid, and the app's query cache, the grid and query settings and
+ * the recorded saves are cleared before the view loads its query again.
+ */
+export async function showView(page: Page, viewPath: string, options: { width?: number; height?: number } = {}): Promise<Locator> {
+    const { width = 1280, height = 720 } = options;
+    await page.mouse.move(0, 0);
+    await page.setViewportSize({ width, height });
+
+    // Routes keep the grids of earlier views in the DOM, hidden; they are marked so the new grid can be told apart
+    await page.locator('vi-query-grid').evaluateAll(grids => grids.forEach(g => g.setAttribute('data-stale', '')));
+    await page.evaluate(() => (document.querySelector('vi-app') as any).changePath('query-grid-test-blank'));
+    await expect(page.locator('vi-query-grid').filter({ visible: true })).toHaveCount(0);
+
+    await page.evaluate(path => {
+        const app = document.querySelector('vi-app') as any;
+        const settings = app.service.application.userSettings;
+        settings.QueryGridSettings = {};
+        settings.QuerySettings = {};
+        app.cacheClear();
+        (window as any).__saves = [];
+        app.changePath(path);
+    }, viewPath);
+
+    const grid = page.locator('vi-query-grid:not([data-stale])').filter({ visible: true }).first();
+    await grid.waitFor({ state: 'attached', timeout: 30000 });
+    await page.evaluate(() => document.fonts.ready);
+    await waitForGridReady(grid, 30000);
+
+    return grid;
+}
 
 export interface Box { x: number; y: number; width: number; height: number }
 

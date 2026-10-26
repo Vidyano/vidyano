@@ -1,5 +1,5 @@
-import { expect, Locator, Page, test } from '@playwright/test';
-import { columnTracks, gridPage, headerNames, mountGrid, nextFrames, waitForGridReady } from '../_helpers/query-grid';
+import { expect, Locator, Page } from '@playwright/test';
+import { columnTracks, gridPage, headerNames, mountGrid, nextFrames, test, waitForGridReady } from '../_helpers/query-grid';
 import { itemsValues, keepColumns, loadLanguagesQuery, loadQuery, mountLoaded, patchItems, readCells, rowCells, rowCenter, setColumnHints, wheelGrid } from '../_helpers/cells';
 
 const RED = 'rgb(255, 0, 0)';

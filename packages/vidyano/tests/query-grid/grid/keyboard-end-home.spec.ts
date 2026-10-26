@@ -1,5 +1,5 @@
-import { test, expect } from '@playwright/test';
-import { gridPage, mountGrid, getScrollOffset, requestLog } from '../_helpers/query-grid';
+import { expect } from '@playwright/test';
+import { getScrollOffset, gridPage, mountGrid, requestLog, test } from '../_helpers/query-grid';
 import { rows, scrollerBox, settle } from '../_helpers/grid';
 
 /** Page height that gives the People grid body a viewport of exactly 640px (the header is 66px) */

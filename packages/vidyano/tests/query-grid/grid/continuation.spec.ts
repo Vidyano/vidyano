@@ -1,5 +1,5 @@
-import { test, expect, Locator, Page } from '@playwright/test';
-import { gridPage, mountGrid, getScrollOffset, scrollGrid, requestLog, nextFrames, openView } from '../_helpers/query-grid';
+import { expect, Locator, Page } from '@playwright/test';
+import { getScrollOffset, gridPage, mountGrid, nextFrames, openView, requestLog, scrollGrid, test } from '../_helpers/query-grid';
 import { holdExecuteQuery, rowAt, rows, scrollerBox, settle, valuesOf, wheelGrid } from '../_helpers/grid';
 
 /**
