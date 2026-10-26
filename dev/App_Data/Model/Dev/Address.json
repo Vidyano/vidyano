@@ -165,6 +165,7 @@
       "Offset": 10,
       "Source": "Addresses",
       "AutoQuery": true,
+      "LookupSource": "Database.Addresses",
       "Name": "Person_Addresses",
       "Label": {
         "en": "Addresses",

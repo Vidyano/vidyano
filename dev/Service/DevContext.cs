@@ -104,8 +104,8 @@ public partial class DevContext : NullTargetContext
         return People.Take(10);
     }
 
-    //public IQueryable<Address> Addresses()
-    //{
-    //    return _people.SelectMany(p => p.Addresses).AsQueryable();
-    //}
+    /// <summary>
+    /// The lookup of Person_Addresses: the addresses of all people, an added address is listed once.
+    /// </summary>
+    public IQueryable<Address> Addresses => _people.SelectMany(p => p.Addresses).Distinct().AsQueryable();
 }
