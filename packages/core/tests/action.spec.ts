@@ -753,4 +753,86 @@ test.describe("Action", () => {
             service.hooks.onMessageDialog = originalOnMessageDialog;
         });
     });
+
+    test.describe("Select-all in requests", () => {
+        type SentRequest = { selectedIds: string[]; allSelected: boolean; allSelectedInversed: boolean; resolvedCount: string };
+
+        /**
+         * Executes TestCount as if it returned Vidyano.AddReference for a People lookup and selects in the lookup as the dialog would.
+         * The dev backend has no AddReference to try, so the Query.AddReference request goes to it as TestCount:
+         * resolvedCount is the number of rows the backend resolves from what the dialog sent.
+         */
+        async function addReference(service: Service, peopleQuery: Query, select: (lookup: Query) => void): Promise<SentRequest> {
+            const lookup = await service.getQuery("People");
+            if (!lookup.hasSearched)
+                await lookup.search();
+
+            const executeAction = service.executeAction.bind(service);
+            service.executeAction = (async (action: string, ...args: any[]) => {
+                if (action === "Query.TestCount")
+                    return { fullTypeName: "Vidyano.AddReference", queries: [lookup] };
+
+                return executeAction(action, ...args);
+            }) as any;
+
+            let sent: SentRequest;
+            const onFetch = service.hooks.onFetch.bind(service.hooks);
+            service.hooks.onFetch = async (request: Request) => {
+                const body = request.url.endsWith("/ExecuteAction") ? await request.clone().json() : null;
+                if (body?.action !== "Query.AddReference")
+                    return onFetch(request);
+
+                body.action = "Query.TestCount";
+                delete body.parameters;
+
+                const response = await onFetch(new Request(request, { body: JSON.stringify(body) }));
+                sent = {
+                    selectedIds: body.selectedItems.map((i: any) => i.id),
+                    allSelected: !!body.query.allSelected,
+                    allSelectedInversed: !!body.query.allSelectedInversed,
+                    resolvedCount: (await response.clone().json()).result?.notification
+                };
+
+                return response;
+            };
+
+            service.hooks.onSelectReference = async (query: Query) => {
+                select(query);
+                return query.selectedItems;
+            };
+
+            const testCountAction = peopleQuery.actions.find(a => a.name === "TestCount") as Action;
+            await testCountAction.execute();
+
+            return sent;
+        }
+
+        test("AddReference dialog with select-all sends no rows, the backend resolves all of them", async ({ service, peopleQuery }) => {
+            const sent = await addReference(service, peopleQuery, lookup => lookup.selectAll.allSelected = true);
+
+            expect(sent).toEqual({ selectedIds: [], allSelected: true, allSelectedInversed: false, resolvedCount: "10000" });
+        });
+
+        test("AddReference dialog with select-all and an unticked row sends only that row to skip", async ({ service, peopleQuery }) => {
+            let uncheckedId: string;
+            const sent = await addReference(service, peopleQuery, lookup => {
+                lookup.selectAll.allSelected = true;
+                lookup.items[2].isSelected = false;
+                uncheckedId = lookup.items[2].id;
+            });
+
+            expect(sent).toEqual({ selectedIds: [uncheckedId], allSelected: true, allSelectedInversed: true, resolvedCount: "9999" });
+        });
+
+        test("AddReference dialog without select-all sends the ticked rows", async ({ service, peopleQuery }) => {
+            let selectedIds: string[];
+            const sent = await addReference(service, peopleQuery, lookup => {
+                lookup.items[0].isSelected = true;
+                lookup.items[1].isSelected = true;
+                selectedIds = [lookup.items[0].id, lookup.items[1].id];
+            });
+
+            expect(sent).toEqual({ selectedIds, allSelected: false, allSelectedInversed: false, resolvedCount: "2" });
+        });
+    });
 });

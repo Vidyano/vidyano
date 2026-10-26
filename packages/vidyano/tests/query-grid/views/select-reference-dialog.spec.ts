@@ -511,3 +511,125 @@ test.describe('Select reference dialog: unknown total', () => {
         expect(tokens()).toEqual(['offset:100']);
     });
 });
+
+test.describe('Select reference dialog: Add on a detail query', () => {
+    test('select-all with one unticked row adds every other lookup row, also the ones never loaded', { annotation: [{ type: 'case', description: 'views.srd-add-select-all' }] }, async ({ page }) => {
+        test.setTimeout(90000);
+
+        // Person_Addresses has a lookup over the addresses of the other people (dev AddressActions). The added addresses stay:
+        // a ResetTest here would also reset the data and saved filters under the other workers, so each run takes a person nothing was added to
+        await openView(page, VIEWS.People);
+        const personId = await page.evaluate(async () => {
+            const app = document.querySelector('vi-app') as any;
+            // Below 1000 are the people other specs open
+            for (let id = 1000 + Math.floor(Math.random() * 8998), tries = 0; tries < 100; id = id >= 9998 ? 1000 : id + 1, tries++) {
+                const person = await app.service.getPersistentObject(null, 'Person', String(id));
+                const addresses = person.queries.find((q: any) => q.name === 'Person_Addresses');
+                await addresses.search();
+
+                // A person has 1 to 3 addresses of their own
+                if (addresses.totalItems <= 3)
+                    return id;
+            }
+
+            return null;
+        });
+        expect(personId, 'a person nothing was added to').not.toBeNull();
+
+        const grid = await openView(page, `home/person/${personId}`);
+        expect(await grid.evaluate((g: any) => g.query.name)).toBe('Person_Addresses');
+        const before = await grid.evaluate((g: any) => g.query.totalItems);
+
+        // Not awaited: the action resolves when the dialog closes and the references are added
+        await grid.evaluate((g: any) => { g.query.actions.find((a: any) => a.name === 'AddReference').execute(); });
+
+        const dialog = referenceDialog(page);
+        const lookup = dialog.locator('vi-query-grid');
+        await lookup.waitFor({ state: 'attached' });
+        await waitForGridReady(lookup);
+
+        const { total, loaded } = await lookup.evaluate((g: any) => ({ total: g.query.totalItems, loaded: g.query.items.filter((i: any) => i).length }));
+        expect(loaded).toBeLessThan(total - 1);
+
+        await lookup.locator('vi-query-grid-select-all').click();
+        await expect.poll(() => lookup.evaluate((g: any) => g.query.selectAll.allSelected)).toBe(true);
+
+        const unticked = (await itemDisplay(lookup, 0, []))!.id;
+        await (await rowForItem(lookup, 0)).locator('[part=selector]').click();
+        await expect.poll(() => lookup.evaluate((g: any) => g.query.selectAll.inverse)).toBe(true);
+
+        const log = requestLog(page);
+        await dialogButton(dialog, 'OK').click();
+        await expect(referenceDialog(page)).toHaveCount(0);
+
+        // The dialog's query goes along with its select-all and only the unticked row, to skip
+        await expect.poll(() => log.of('ExecuteAction').filter(r => r.action === 'Query.AddReference').length).toBe(1);
+        const sent = log.of('ExecuteAction').find(r => r.action === 'Query.AddReference')!.body;
+        expect({ allSelected: sent.query.allSelected, allSelectedInversed: sent.query.allSelectedInversed, selectedIds: sent.selectedItems.map((i: any) => i.id) })
+            .toEqual({ allSelected: true, allSelectedInversed: true, selectedIds: [unticked] });
+
+        // Every lookup row but the unticked one is added
+        await expect.poll(() => grid.evaluate((g: any) => !g.query.isBusy && g.query.totalItems), { timeout: 30000 }).toBe(before + total - 1);
+    });
+});
+
+test.describe('Select reference dialog: Add Query to a program unit', () => {
+    /** Opens the menu's queries dialog with `open`, selects all, unticks the first row and returns the request it sends and that row's id. */
+    async function addQueriesSelectAllButOne(page: Page, open: () => Promise<void>) {
+        await openView(page, VIEWS.People);
+
+        // Adding queries would change the dev program units, the request is only recorded
+        let sent: any = null;
+        await page.route('**/ExecuteAction', async route => {
+            const body = route.request().postDataJSON();
+            if (body?.action !== 'System.AddQueriesToProgramUnit')
+                return route.continue();
+
+            sent = body;
+            await route.fulfill({ json: {} });
+        });
+
+        await open();
+
+        const dialog = referenceDialog(page);
+        const lookup = dialog.locator('vi-query-grid');
+        await lookup.waitFor({ state: 'attached' });
+        await waitForGridReady(lookup);
+        const total = await lookup.evaluate((g: any) => g.query.totalItems);
+        expect(total).toBeGreaterThan(1);
+
+        await lookup.locator('vi-query-grid-select-all').click();
+        await expect.poll(() => lookup.evaluate((g: any) => g.query.selectAll.allSelected)).toBe(true);
+
+        const unticked = (await itemDisplay(lookup, 0, []))!.id;
+        await (await rowForItem(lookup, 0)).locator('[part=selector]').click();
+        await expect.poll(() => lookup.evaluate((g: any) => g.query.selectAll.inverse)).toBe(true);
+
+        await dialogButton(dialog, 'OK').click();
+        await expect.poll(() => sent, { timeout: 15000 }).not.toBeNull();
+
+        // The menu reloads the page after the request, the reload's requests must not reach the route once the test ends
+        await page.unrouteAll({ behavior: 'ignoreErrors' });
+
+        return { sent, unticked };
+    }
+
+    // With select-all the service skips the sent rows (UpdateSelectedItemsAsync, as the TestCount specs show)
+    const skipOnly = (unticked: string) => ({ allSelected: true, allSelectedInversed: true, selectedIds: [unticked] });
+    const request = (sent: any) => ({ allSelected: sent.query.allSelected, allSelectedInversed: sent.query.allSelectedInversed, selectedIds: sent.selectedItems.map((i: any) => i.id) });
+
+    test('"+ Add menu item" with select-all and one unticked row sends that row to skip', { annotation: [{ type: 'case', description: 'views.srd-add-menu-item-select-all' }] }, async ({ page }) => {
+        const { sent, unticked } = await addQueriesSelectAllButOne(page, () => page.locator('vi-menu').evaluate((m: any) => { m._add(new CustomEvent('tap')); }));
+        expect(request(sent)).toEqual(skipOnly(unticked));
+    });
+
+    test('a program unit\'s "Add Query" with select-all and one unticked row sends that row to skip', { annotation: [{ type: 'case', description: 'views.srd-add-query-select-all' }] }, async ({ page }) => {
+        const { sent, unticked } = await addQueriesSelectAllButOne(page, () => page.locator('vi-menu-item.program-unit').first().evaluate((item: any) => {
+            // The program unit's configure menu: "Program unit: …" › "Add Query"
+            const actions: any[] = [];
+            item._configure({ detail: actions });
+            actions[0].subActions.find((a: any) => a.label === 'Add Query').action();
+        }));
+        expect(request(sent)).toEqual(skipOnly(unticked));
+    });
+});

@@ -195,26 +195,6 @@ export class AppServiceHooksBase extends Vidyano.ServiceHooks {
         return Promise.resolve(null);
     }
 
-    async onAction(args: Vidyano.ExecuteActionArgs): Promise<Vidyano.PersistentObject> {
-        if (args.action === "AddReference") {
-            args.isHandled = true;
-
-            const query = args.query.clone(true);
-            query.search();
-
-            const result = await this.app.showDialog(new SelectReferenceDialog(query));
-            if (result && result.length > 0) {
-                args.selectedItems = result;
-
-                return await args.executeServiceRequest();
-            }
-            else
-                return null;
-        }
-
-        return super.onAction(args);
-    }
-
     onGetStream(blob: Blob, filename: string) {
         const a = document.createElement("a");
         a.style.display = "none";
@@ -308,6 +288,9 @@ export class AppServiceHooksBase extends Vidyano.ServiceHooks {
     }
 
     async onSelectReference(query: Vidyano.Query): Promise<Vidyano.QueryResultItem[]> {
+        if (query.asLookup)
+            return this.app.showDialog(new SelectReferenceDialog(query));
+
         if (!query.hasSearched)
             query.search();
 

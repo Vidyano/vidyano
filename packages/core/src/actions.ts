@@ -31,6 +31,43 @@ Actions.AddPasskey = class AddPasskey extends Action {
     }
 }
 
+Actions.AddReference = class AddReference extends Action {
+    constructor(service: Service, definition: ActionDefinition, owner: ServiceObjectWithActions) {
+        super(service, definition, owner);
+    }
+
+    protected async _onExecute({ menuOption, parameters, noConfirmation }: IActionExecuteOptions): Promise<PersistentObject> {
+        if (this.definition.confirmation && !noConfirmation && !await this.service.hooks.onActionConfirmation(this, menuOption))
+            return null;
+
+        return this.owner.queueWork(async () => {
+            this.query.setNotification();
+
+            // The user picks the references on a lookup clone of the query, so the clone is sent: with select-all on,
+            // the server runs it again and adds all its rows except the unticked ones, also the ones that were never loaded
+            const query = this.query.clone(true);
+            const selectedItems = await this.service.hooks.onSelectReference(query);
+            if (!selectedItems?.length)
+                return null;
+
+            try {
+                await this.service.executeAction("Query.AddReference", this.parent, query, selectedItems, this._getParameters(parameters, menuOption));
+            }
+            catch (e) {
+                // The service shows its error on the clone, it belongs on the query
+                this.query.setNotification(e);
+                throw e;
+            }
+
+            // NOTE: Don't wait for search to complete
+            if (this.definition.refreshQueryOnCompleted)
+                this.query.search({ keepSelection: this.definition.keepSelectionOnRefresh });
+
+            return null;
+        });
+    }
+}
+
 Actions.CancelEdit = class CancelEdit extends Action {
     constructor(service: Service, definition: ActionDefinition, owner: ServiceObjectWithActions) {
         super(service, definition, owner);

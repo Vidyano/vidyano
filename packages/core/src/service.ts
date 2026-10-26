@@ -910,12 +910,12 @@ export class Service extends Observable<Service> {
         const isObjectAction = action.startsWith("PersistentObject.") || query == null;
         const targetServiceObject = isObjectAction ? parent : query;
 
+        // With select-all the service reads the selected items as the rows to skip: none, or the unselected rows when inversed
+        if (!isObjectAction && query.selectAll.allSelected)
+            selectedItems = query.selectAll.inverse ? query.items.filter(i => !i.isSelected && !i.ignoreSelect) : [];
+
         if (!skipHooks) {
             targetServiceObject.setNotification();
-
-            // Clear selected items if all are selected and not inverse
-            if (!isObjectAction && query.selectAll.allSelected && !query.selectAll.inverse)
-                selectedItems = [];
 
             this.hooks.trackEvent(action, parameters ? parameters.MenuLabel || parameters.MenuOption : null, query || parent);
 
