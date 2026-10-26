@@ -371,6 +371,10 @@ export class Action extends ServiceObject {
         return this.owner.queueWork(async () => {
             parameters = this._getParameters(parameters, menuOption);
 
+            // An action on given rows acts on those rows only: with select-all the service would read them as the rows to skip,
+            // so a copy of the query without select-all goes along and the query keeps its selection
+            const query = selectedItems != null && this.query?.selectAll.allSelected ? this.query.clone() : this.query;
+
             if (selectedItems == null && this.query) {
                 if (this.query.selectAll.allSelected) {
                     if (!this.query.selectAll.inverse)
@@ -384,7 +388,18 @@ export class Action extends ServiceObject {
                 selectedItems = selectedItems.filter(i => !i.ignoreSelect);
             }
 
-            let po = await this.service.executeAction(this.#targetType + "." + this.definition.name, this.parent, this.query, selectedItems, parameters);
+            let po: PersistentObject;
+            try {
+                po = await this.service.executeAction(this.#targetType + "." + this.definition.name, this.parent, query, selectedItems, parameters);
+            }
+            catch (e) {
+                // The service shows its error on the copy
+                if (query !== this.query)
+                    this.#setNotification(e);
+
+                throw e;
+            }
+
             if (po) {
                 if (po.fullTypeName === "Vidyano.Notification") {
                     if (po.objectId != null && JSON.parse(po.objectId).dialog) {

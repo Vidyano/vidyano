@@ -834,5 +834,39 @@ test.describe("Action", () => {
 
             expect(sent).toEqual({ selectedIds, allSelected: false, allSelectedInversed: false, resolvedCount: "2" });
         });
+
+        // A row's own action button and its open action pass that row (action-button.ts, query-grid-row.ts)
+        test("an action on a given row with select-all on acts on that row only and keeps the selection", async ({ peopleQuery }) => {
+            await peopleQuery.search();
+            peopleQuery.selectAll.allSelected = true;
+            expect(peopleQuery.selectAll.allSelected).toBe(true);
+
+            const testCount = peopleQuery.actions.find(a => a.name === "TestCount") as Action;
+            await testCount.execute({ selectedItems: [peopleQuery.items[3]] });
+            while (peopleQuery.isBusy)
+                await new Promise(resolve => setTimeout(resolve, 50));
+
+            expect(peopleQuery.notification).toBe("1");
+            expect(peopleQuery.selectAll.allSelected).toBe(true);
+            expect(peopleQuery.selectAll.inverse).toBe(false);
+        });
+
+        test("an action on a given row with select-all on and rows unticked acts on that row only and keeps the selection", async ({ peopleQuery }) => {
+            await peopleQuery.search();
+            peopleQuery.selectAll.allSelected = true;
+            peopleQuery.items[0].isSelected = false;
+            expect(peopleQuery.selectAll.inverse).toBe(true);
+            const unticked = peopleQuery.items[0].id;
+
+            const testCount = peopleQuery.actions.find(a => a.name === "TestCount") as Action;
+            await testCount.execute({ selectedItems: [peopleQuery.items[3]] });
+            while (peopleQuery.isBusy)
+                await new Promise(resolve => setTimeout(resolve, 50));
+
+            expect(peopleQuery.notification).toBe("1");
+            expect(peopleQuery.selectAll.allSelected).toBe(true);
+            expect(peopleQuery.selectAll.inverse).toBe(true);
+            expect(peopleQuery.items.find(i => i.id === unticked)?.isSelected).toBe(false);
+        });
     });
 });

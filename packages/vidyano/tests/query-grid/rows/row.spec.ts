@@ -1288,6 +1288,27 @@ test.describe('vi-query-grid-row: opening rules', () => {
         expect(await page.evaluate(() => (window as any).__sequence)).toEqual(['item-tap', 'ExecuteAction']);
     });
 
+    test('the openaction hint with select-all on executes the action on that row only and keeps the selection', case_('rows.row-openaction-select-all'), async ({ page }) => {
+        await gridPage(page);
+        await patchItemHints(page, { '3': { openaction: 'TestCountSingle' } });
+        const grid = await mountGrid(page);
+        await grid.evaluate((g: any) => { g.query.selectAll.allSelected = true; });
+        expect(await grid.evaluate((g: any) => g.query.selectAll.allSelected)).toBe(true);
+        const log = requestLog(page);
+
+        await (await rowOf(grid, 0)).locator('.column').first().click();
+
+        // TestCountSingle answers with the number of rows the service resolved
+        await expect.poll(() => grid.evaluate((g: any) => g.query.notification)).toBe('1');
+        await log.quiet(300);
+
+        const executed = log.of('ExecuteAction');
+        expect(executed).toHaveLength(1);
+        expect(executed[0].body.query.allSelected).toBeUndefined();
+        expect(executed[0].body.selectedItems.map((i: any) => i.id)).toEqual(['3']);
+        expect(await grid.evaluate((g: any) => [g.query.selectAll.allSelected, g.query.selectAll.inverse])).toEqual([true, false]);
+    });
+
     test('disabled rows ignore clicks', case_('rows.row-open-disabled'), async ({ page }) => {
         const grid = await top10WithHints(page, { '1': { extraclass: 'disabled' } });
         await spyTapAndOpen(page);
