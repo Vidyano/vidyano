@@ -211,7 +211,8 @@ export class Popup extends WebComponent {
 
     /**
      * Repositions the popup relative to its anchor element using Floating UI.
-     * Automatically handles viewport boundaries, flipping, and sizing constraints.
+     * The popup flips to the side of its anchor with the most room and shifts along it to stay in the viewport;
+     * only content that still doesn't fit gets capped: a single slotted vi-scroller, or else the popup itself, which then scrolls.
      * Called automatically when the popup opens or when the anchor size changes.
      */
     async refit() {
@@ -220,23 +221,57 @@ export class Popup extends WebComponent {
 
         if (!anchor || !popup) return;
 
+        let maxPopupWidth = Infinity;
         let { x, y } = await computePosition(anchor, popup, {
             placement: this.placement,
             strategy: "fixed",
             middleware: [
+                // Pick the side on the content's full size, not on the size a cap shrank the popup to or on the empty size
+                // measured before the popover was shown. Only the first pass: once size() caps the popup it resets to the
+                // capped rects, which fit the chosen side and place the popup at its real size
+                {
+                    name: "contentSize",
+                    fn: ({ rects, middlewareData }) => {
+                        if (middlewareData.contentSize)
+                            return {};
+
+                        const content = this.#measureContent(popup);
+                        const measured = Math.abs(rects.floating.width - content.width) < 1 && Math.abs(rects.floating.height - content.height) < 1;
+                        return {
+                            data: content,
+                            reset: measured ? undefined : { rects: { reference: rects.reference, floating: { ...rects.floating, ...content } } }
+                        };
+                    }
+                },
                 flip(),
                 shift({
                     rootBoundary: "viewport"
                 }),
                 size({
-                    apply({ availableWidth, availableHeight, elements }) {
-                        const slottedElements = elements.floating.querySelector("slot").assignedElements();
-                        if (slottedElements.length === 1 && slottedElements[0] instanceof Scroller) {
-                            Object.assign(slottedElements[0].style, {
-                                maxWidth: `${availableWidth - 5}px`,
-                                maxHeight: `${availableHeight - 5}px`,
+                    apply: ({ availableWidth, availableHeight, middlewareData }) => {
+                        const maxWidth = Math.max(0, availableWidth - 5);
+                        const maxHeight = Math.max(0, availableHeight - 5);
+                        maxPopupWidth = maxWidth;
+
+                        const scroller = this.#slottedScroller(popup);
+                        if (scroller) {
+                            Object.assign(scroller.style, {
+                                maxWidth: `${maxWidth}px`,
+                                maxHeight: `${maxHeight}px`,
                             });
+                            // The scroller scrolls, drop a cap the popup got while it held other content
+                            Object.assign(popup.style, { maxWidth: "", maxHeight: "", overflow: "" });
+                            return;
                         }
+
+                        // Last resort, the content fits on no side of the anchor: cap the popup and let it scroll
+                        const content: { width: number; height: number } = middlewareData.contentSize;
+                        const capped = content.width > maxWidth || content.height > maxHeight;
+                        Object.assign(popup.style, {
+                            maxWidth: capped ? `${maxWidth}px` : "",
+                            maxHeight: capped ? `${maxHeight}px` : "",
+                            overflow: capped ? "auto" : ""
+                        });
                     },
                 })
             ]
@@ -245,8 +280,46 @@ export class Popup extends WebComponent {
         Object.assign(popup.style, {
             left: `${x}px`,
             top: `${y}px`,
-            minWidth: this.autoWidth && this.#toggleSize?.width ? `${this.#toggleSize.width}px` : undefined
+            minWidth: this.autoWidth && this.#toggleSize?.width ? `${Math.min(this.#toggleSize.width, maxPopupWidth)}px` : undefined
         });
+    }
+
+    #slottedScroller(popup: HTMLElement): Scroller | null {
+        const slottedElements = popup.querySelector("slot").assignedElements();
+        return slottedElements.length === 1 && slottedElements[0] instanceof Scroller ? slottedElements[0] : null;
+    }
+
+    /**
+     * Measures the popup at its content's full size, in the viewport's top left corner where a fixed popup can take its natural width.
+     * A cap a previous refit put on the popup or its scroller is lifted for the measurement; the position, the cap
+     * and the scroll position the cap allowed are put back before the browser paints.
+     */
+    #measureContent(popup: HTMLElement): { width: number; height: number } {
+        const scroller = this.#slottedScroller(popup);
+        const capped = scroller ?? popup;
+        const { maxWidth, maxHeight } = capped.style;
+        const isCapped = !!(maxWidth || maxHeight);
+        const scrolled = isCapped ? (scroller ? scroller.scroller : popup) : null;
+        const { scrollTop, scrollLeft } = scrolled ?? { scrollTop: 0, scrollLeft: 0 };
+        const { left, top } = popup.style;
+
+        Object.assign(popup.style, { left: "0px", top: "0px" });
+        if (isCapped)
+            capped.style.maxWidth = capped.style.maxHeight = "";
+
+        const { width, height } = popup.getBoundingClientRect();
+        Object.assign(popup.style, { left, top });
+
+        if (isCapped) {
+            Object.assign(capped.style, { maxWidth, maxHeight });
+
+            if (scrolled) {
+                scrolled.scrollTop = scrollTop;
+                scrolled.scrollLeft = scrollLeft;
+            }
+        }
+
+        return { width, height };
     }
 
     async #open() {
