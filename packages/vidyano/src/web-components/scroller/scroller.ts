@@ -378,13 +378,14 @@ export class Scroller extends WebComponent {
 
         if (height !== this.#verticalScrollHeight) {
             this.#verticalScrollHeight = height;
-            this.#verticalScrollSpace = outerHeight - height;
 
             const verticalElement = this.$.vertical;
             if (verticalElement)
                 verticalElement.style.height = `${height}px`;
         }
 
+        // A thumb held at its minimum size keeps its height while the viewport resizes, its travel does not
+        this.#verticalScrollSpace = outerHeight - height;
         this.vertical = !noVertical && height > 0;
 
         const verticalScrollTop = verticalScrollOffset === 0 || innerHeight - outerHeight === 0 ? 0 : Math.round((1 / ((innerHeight - outerHeight) / verticalScrollOffset)) * this.#verticalScrollSpace);
@@ -411,13 +412,14 @@ export class Scroller extends WebComponent {
 
         if (width !== this.#horizontalScrollWidth) {
             this.#horizontalScrollWidth = width;
-            this.#horizontalScrollSpace = outerWidth - width;
 
             const horizontalElement = this.$.horizontal;
             if (horizontalElement)
                 horizontalElement.style.width = `${width}px`;
         }
 
+        // A thumb held at its minimum size keeps its width while the viewport resizes, its travel does not
+        this.#horizontalScrollSpace = outerWidth - width;
         this.horizontal = !noHorizontal && width > 0;
 
         const horizontalScrollLeft = horizontalScrollOffset === 0 ? 0 : Math.round((1 / ((innerWidth - outerWidth) / horizontalScrollOffset)) * this.#horizontalScrollSpace);
