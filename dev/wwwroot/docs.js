@@ -81,7 +81,7 @@ export function highlight(code) {
 
 /** An example's source, as a page shows it: the body of its apply function. */
 function source(example) {
-    const lines = example.apply.toString().replace(/^\(\)\s*=>\s*/, "").replace(/^\{\n?|\}$/g, "").split("\n");
+    const lines = example.apply.toString().replace(/^(\(\)|\w+)\s*=>\s*/, "").replace(/^\{\n?|\}$/g, "").split("\n");
     const indent = Math.min(...lines.slice(1).filter(line => line.trim()).map(line => line.match(/^\s*/)[0].length));
 
     return [lines[0], ...lines.slice(1).map(line => line.slice(indent))].join("\n").trim();
@@ -95,8 +95,9 @@ const everything = {
 
 /**
  * The examples of a page: its live demo, which the page puts in the "stage" slot, the code of the selected example
- * and a floating list to pick one. An example is { id, title, text, apply }, where apply() turns it on and returns
- * the function that turns it off again. "Everything" turns them all on. The selection survives a reload.
+ * and a floating list to pick one. An example is { id, title, text, apply }, where apply(stage) turns it on and returns
+ * the function that turns it off again; stage is the element the page put in the "stage" slot, in the scope of the live
+ * demo, where an example can add a <style> with ::part rules. "Everything" turns them all on. The selection survives a reload.
  *
  *     <docs-examples name="menu" .examples=${examples} .groups=${groups}>
  *         <div slot="stage">…the live demo…</div>
@@ -156,7 +157,7 @@ class DocsExamples extends WebComponent {
 
     #select(example) {
         this.#clear();
-        this.#disposers = (example === everything ? this.examples : [example]).map(e => e.apply());
+        this.#disposers = (example === everything ? this.examples : [example]).map(e => e.apply(this.querySelector("[slot=stage]")));
         this.selected = example;
 
         try {
@@ -225,7 +226,7 @@ class Docs extends WebComponent {
         error: { state: true }
     };
 
-    #observer;
+    #scroll = () => this.#updateCurrent();
     #popstate = () => this.#scrollTo(this.#fromPath(), "auto");
 
     // Not as class fields: those would shadow the reactive accessors
@@ -249,7 +250,7 @@ class Docs extends WebComponent {
         super.disconnectedCallback();
 
         window.removeEventListener("popstate", this.#popstate);
-        this.#observer?.disconnect();
+        window.removeEventListener("scroll", this.#scroll);
     }
 
     async #load() {
@@ -261,18 +262,19 @@ class Docs extends WebComponent {
             // Past the browser's cache, so an edited page shows after the reload
             const version = Date.now();
             const modules = await Promise.all(this.pages.map(name => import(`./docs/${name}.js?v=${version}`)));
-            this.sections = this.pages
-                .map((name, index) => ({ name, module: modules[index], element: document.createElement(modules[index].tag) }))
-                .sort((a, b) => (a.module.order ?? Infinity) - (b.module.order ?? Infinity) || a.name.localeCompare(b.name));
+            const sections = this.pages.map((name, index) => ({ name, parent: name.includes("/") ? name.split("/")[0] : null, module: modules[index], element: document.createElement(modules[index].tag) }));
+
+            // Each page, followed by its sub-pages; both in their order, else by name
+            const byOrder = (a, b) => (a.module.order ?? Infinity) - (b.module.order ?? Infinity) || a.name.localeCompare(b.name);
+            this.sections = sections.filter(s => !s.parent).sort(byOrder).flatMap(top => [top, ...sections.filter(s => s.parent === top.name).sort(byOrder)]);
 
             await this.updateComplete;
-            this.#observe();
+            window.addEventListener("scroll", this.#scroll, { passive: true });
 
             const scrollY = this.#takeReloadScroll();
-            if (scrollY != null)
-                window.scrollTo(0, scrollY);
-            else
-                this.#scrollTo(this.#fromPath(), "auto");
+            const target = this.#fromPath();
+            this.#hold(scrollY != null ? () => window.scrollTo(0, scrollY) : () => this.#scrollTo(target, "auto"));
+            this.#updateCurrent();
 
             this.#watch();
         }
@@ -283,7 +285,9 @@ class Docs extends WebComponent {
 
     // Reloads when a script the page runs changes, such as a rebuilt index.js, and comes back at the same scroll position
     async #watch() {
-        const urls = ["/index.js", "/docs.js", ...this.pages.map(name => `/docs/${name}.js`)];
+        // The bundle, this shell, and every docs module the pages loaded, shared ones included
+        const loadedModules = performance.getEntriesByType("resource").map(entry => new URL(entry.name)).filter(url => url.origin === location.origin && url.pathname.startsWith("/docs/") && url.pathname.endsWith(".js")).map(url => url.pathname);
+        const urls = [...new Set(["/index.js", "/docs.js", ...this.pages.map(name => `/docs/${name}.js`), ...loadedModules])];
         const version = () => Promise.all(urls.map(url => fetch(url, { method: "HEAD", cache: "no-store" }).then(r => r.headers.get("etag") ?? r.headers.get("last-modified"), () => null))).then(tags => tags.join());
 
         const loaded = await version();
@@ -319,31 +323,53 @@ class Docs extends WebComponent {
         }
     }
 
+    // The page the address names, a sub-page (/menu/vi-menu-group/) or a page (/menu/), else the first
     #fromPath() {
-        const name = location.pathname.split("/").filter(Boolean)[0];
-        return this.sections.some(s => s.name === name) ? name : this.sections[0]?.name;
+        const segments = location.pathname.split("/").filter(Boolean);
+        const names = [segments.slice(0, 2).join("/"), segments[0]];
+
+        return names.find(name => this.sections.some(s => s.name === name)) ?? this.sections[0]?.name;
     }
 
-    // The section at the top of the viewport is the current one; the sidebar and the address follow it
-    #observe() {
-        const visible = new Set();
-        this.#observer = new IntersectionObserver(entries => {
-            entries.forEach(entry => entry.isIntersecting ? visible.add(entry.target.id) : visible.delete(entry.target.id));
+    // The current section is the last one whose top reached the top of the window; the sidebar and the address follow it
+    #updateCurrent() {
+        const sections = [...this.renderRoot.querySelectorAll("main > section")];
+        const current = sections.filter(section => section.getBoundingClientRect().top <= 80).at(-1)?.id ?? sections[0]?.id;
+        if (!current || current === this.current)
+            return;
 
-            const current = this.sections.find(s => visible.has(s.name))?.name;
-            if (!current || current === this.current)
-                return;
+        this.current = current;
+        history.replaceState(null, "", `/${current}/`);
+        document.title = `${this.sections.find(s => s.name === current).module.title} · Documentation`;
+    }
 
-            this.current = current;
-            history.replaceState(null, "", `/${current}/`);
-            document.title = `${this.sections.find(s => s.name === current).module.title} · Documentation`;
-        }, { rootMargin: "0px 0px -70% 0px" });
+    /**
+     * Scrolls, and scrolls again whenever the page's height changes while the live demos above still render, so it
+     * lands where it should. It lets go once the user scrolls, clicks or types, or after three seconds.
+     */
+    #hold(scroll) {
+        scroll();
 
-        this.renderRoot.querySelectorAll("main > section").forEach(section => this.#observer.observe(section));
+        const main = this.renderRoot.querySelector("main");
+        const resized = new ResizeObserver(() => scroll());
+        resized.observe(main);
+
+        const release = () => {
+            resized.disconnect();
+            clearTimeout(timeout);
+            ["wheel", "touchstart", "keydown", "pointerdown"].forEach(name => window.removeEventListener(name, release, true));
+        };
+
+        const timeout = setTimeout(release, 3000);
+        ["wheel", "touchstart", "keydown", "pointerdown"].forEach(name => window.addEventListener(name, release, true));
     }
 
     #scrollTo(name, behavior) {
         this.renderRoot.querySelector(`section#${CSS.escape(name ?? "")}`)?.scrollIntoView({ behavior, block: "start" });
+    }
+
+    #renderLink(section) {
+        return html`<a href="/${section.name}/" aria-current=${this.current === section.name ? "true" : nothing} @click=${e => this.#navigate(e, section.name)}>${section.module.title}</a>`;
     }
 
     #navigate(e, name) {
@@ -371,6 +397,7 @@ class Docs extends WebComponent {
                 nav li a { display: block; padding: 8px 20px; color: #c9d3d8; text-decoration: none; }
                 nav li a:hover { background: rgba(255,255,255,.06); color: #fff; }
                 nav li a[aria-current="true"] { background: rgba(255,255,255,.1); color: #fff; box-shadow: inset 3px 0 #4682B4; }
+                nav li li a { padding: 5px 20px 5px 34px; font-size: 13px; }
                 main { padding: 40px 48px; min-width: 0; }
                 main > section { scroll-margin-top: 24px; padding-bottom: 64px; }
                 main > section + section { border-top: 1px solid #dde3e7; padding-top: 40px; }
@@ -385,9 +412,16 @@ class Docs extends WebComponent {
             <nav aria-label="Sections">
                 <span>Documentation</span>
                 <ul>
-                    ${this.sections.map(s => html`
-                        <li><a href="/${s.name}/" aria-current=${this.current === s.name ? "true" : nothing} @click=${e => this.#navigate(e, s.name)}>${s.module.title}</a></li>
-                    `)}
+                    ${this.sections.filter(s => !s.parent).map(top => {
+                        const children = this.sections.filter(s => s.parent === top.name);
+
+                        return html`
+                            <li>
+                                ${this.#renderLink(top)}
+                                ${children.length ? html`<ul>${children.map(child => html`<li>${this.#renderLink(child)}</li>`)}</ul>` : nothing}
+                            </li>
+                        `;
+                    })}
                 </ul>
             </nav>
             <main>
