@@ -420,7 +420,8 @@ export abstract class AppBase extends Polymer.WebComponent {
     }
 
     private _anchorClickHandler(e: MouseEvent) {
-        if (e.defaultPrevented)
+        // A modified click asks the browser for a new tab or window, so leave it to the browser
+        if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0)
             return;
 
         const path = e.composedPath();

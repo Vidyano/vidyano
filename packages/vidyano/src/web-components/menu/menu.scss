@@ -31,7 +31,7 @@ $backgroundColor: var(--colors-blue-grey-900);
             display: none !important;
         }
 
-        vi-menu-item:first-of-type {
+        vi-menu-program-unit:first-of-type {
             margin-top: var(--vi-menu-item-gap);
         }
     }
@@ -41,10 +41,15 @@ $backgroundColor: var(--colors-blue-grey-900);
     }
 }
 
-#toggleCollapse {
+// The toggle region: the built-in button or what Menu.replace("toggle", …) puts there
+#toggle {
     position: absolute;
     top: 0;
     right: 0;
+    display: flex;
+}
+
+#toggleCollapse {
     background-color: transparent;
     height: var(--vi-menu-collapsed-width);
     width: var(--vi-menu-collapsed-width);
@@ -55,10 +60,6 @@ $backgroundColor: var(--colors-blue-grey-900);
         --vi-icon-width: var(--theme-h4);
         --vi-icon-height: var(--theme-h4);
     }
-}
-
-vi-scroller[vertical][hovering] + #resizer {
-    width: calc(var(--theme-h5) / 2);
 }
 
 #add {
@@ -81,6 +82,7 @@ vi-scroller[vertical][hovering] + #resizer {
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 
     a {
+        display: flex;
         cursor: pointer;
         color: var(--vi-menu-color, $color);
         line-height: var(--theme-h2);
@@ -90,6 +92,8 @@ vi-scroller[vertical][hovering] + #resizer {
         text-overflow: ellipsis;
 
         div {
+            flex: 1;
+            min-width: 0;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -130,11 +134,14 @@ header {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 
     .background {
+        display: flex;
+        flex-direction: column;
         background-color: var(--color-dark);
     }
 
     .label {
         display: block;
+        flex: 1;
         font-size: var(--theme-h3);
         line-height: var(--vi-menu-header-height);
         height: var(--vi-menu-header-height);
@@ -143,8 +150,24 @@ header {
     }
 }
 
+main {
+    position: relative;
+    display: flex;
+    flex: 1;
+    min-height: 0;
+
+    .program-units {
+        flex: 1;
+        min-width: 0;
+    }
+}
+
 footer {
     overflow: hidden;
+}
+
+[hidden] {
+    display: none !important;
 }
 
 vi-input-search {
@@ -165,6 +188,8 @@ vi-input-search {
 }
 
 #resizer {
+    // A touch drag resizes: without this the browser pans instead and cancels the pointer
+    touch-action: none;
     position: absolute;
     top: 0;
     bottom: 0;
@@ -178,6 +203,10 @@ vi-input-search {
 }
 
 .container {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
     width: var(--vi-menu--expand-width, 17em);
     opacity: 1;
     transition: opacity 0.22s cubic-bezier(0.2, 0, 0, 1);
@@ -191,10 +220,6 @@ vi-input-search {
 
         &:not(:hover):not([search-focused]) {
             vi-input-search {
-                form {
-                    display: none;
-                }
-
                 &::part(search) {
                     position: relative;
                     right: auto;
@@ -233,8 +258,11 @@ vi-input-search {
 
         }
 
-        #toggleCollapse {
+        #toggle {
             z-index: 1000;
+        }
+
+        #toggleCollapse {
             background-color: var(--color-dark);
 
             &::part(icon) {

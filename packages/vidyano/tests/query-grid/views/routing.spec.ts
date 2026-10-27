@@ -14,14 +14,30 @@ const MENU: Partial<Record<ViewName, string[]>> = {
     QueryGrid_SelectAndFilterAndInlineActions: ['Components', 'Query Grid', 'Select + Filter + Inline Actions']
 };
 
-/** The visible vi-menu-item whose own title reads exactly `title`. */
+/** The visible menu node whose own title reads exactly `title`. */
 async function menuItem(page: Page, title: string): Promise<Locator> {
-    const items = page.locator('vi-menu-item');
-    await expect.poll(() => items.evaluateAll((els, title) => els.findIndex(e => e.checkVisibility() && e.getBoundingClientRect().height > 0 && (e.shadowRoot?.querySelector('#title')?.textContent ?? '').trim() === title), title), { message: `menu item ${title}` }).toBeGreaterThanOrEqual(0);
-    const index = await items.evaluateAll((els, title) => els.findIndex(e => e.checkVisibility() && e.getBoundingClientRect().height > 0 && (e.shadowRoot?.querySelector('#title')?.textContent ?? '').trim() === title), title);
+    const items = page.locator('vi-menu-program-unit, vi-menu-group, vi-menu-item');
+    await expect.poll(() => items.evaluateAll((els, title) => els.findIndex(e => e.checkVisibility() && e.getBoundingClientRect().height > 0 && (e.shadowRoot?.querySelector('.title')?.textContent ?? '').trim() === title), title), { message: `menu item ${title}` }).toBeGreaterThanOrEqual(0);
+    const index = await items.evaluateAll((els, title) => els.findIndex(e => e.checkVisibility() && e.getBoundingClientRect().height > 0 && (e.shadowRoot?.querySelector('.title')?.textContent ?? '').trim() === title), title);
 
     return items.nth(index);
 }
+
+test.describe('Menu links', () => {
+    for (const modifier of ['Control', 'Shift'] as const) {
+        test(`${modifier}+click on a menu item is left to the browser`, async ({ page }) => {
+            await openView(page, VIEWS.People);
+            const opened = page.context().waitForEvent('page', { timeout: 5000 });
+
+            await (await menuItem(page, 'People')).locator('.title').first().click({ modifiers: [modifier] });
+
+            // vi-app no longer routes it in place, so the browser opens the link in a new tab or window
+            const popup = await opened;
+            await popup.waitForURL(`${BASE}/home/people`);
+            await popup.close();
+        });
+    }
+});
 
 test.describe('Routing', () => {
     for (const view of VIEW_MATRIX) {
@@ -31,7 +47,7 @@ test.describe('Routing', () => {
                 await openView(page, view.name === 'People' ? VIEWS.QueryGrid_None : VIEWS.People);
 
                 for (const title of MENU[view.name]!)
-                    await (await menuItem(page, title)).locator('#title').first().click();
+                    await (await menuItem(page, title)).locator('.title').first().click();
 
                 await expect(page).toHaveURL(`${BASE}/${view.path}`);
                 await expect.poll(() => activeGrid(page).evaluate((g: any) => g.query?.name)).toBe(view.name);
