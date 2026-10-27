@@ -5,6 +5,12 @@
       "Bindings": [
         "*"
       ]
+    },
+    "Docs": {
+      "Type": 4,
+      "Bindings": [
+        "docs.localhost"
+      ]
     }
   }
 }
