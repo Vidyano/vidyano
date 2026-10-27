@@ -338,19 +338,19 @@ class Docs extends WebComponent {
             return;
 
         // A page without an element of its own opens its first sub-page instead
-        if (!section.module.tag) {
-            section = this.sections.find(s => s.parent === section.name);
-            if (!section)
-                return;
-
+        const first = !section.module.tag && this.sections.find(s => s.parent === section.name);
+        if (first) {
+            section = first;
             history.replaceState(null, "", this.#address(section.name, tab));
         }
 
         // Made once, the first time it shows; only the page that shows is in the document, with its live demos
-        section.element ??= document.createElement(section.module.tag);
+        if (section.module.tag)
+            section.element ??= document.createElement(section.module.tag);
         const tabs = section.module.tabs ?? [];
         this.tab = tabs.find(t => t.id === tab)?.id ?? tabs[0]?.id ?? null;
-        section.element.tab = this.tab;
+        if (section.element)
+            section.element.tab = this.tab;
         this.current = section;
 
         const title = tabs.length ? `${section.module.title} · ${tabs.find(t => t.id === this.tab).title}` : section.module.title;

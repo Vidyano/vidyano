@@ -123,6 +123,7 @@ class DocsMenuStage extends WebComponent {
     #frame = 0;
     #host = null;
     #hostsFound = 0;
+    #measured = 0;
     #boxesKey = "";
     #hovered = null;
 
@@ -214,9 +215,15 @@ class DocsMenuStage extends WebComponent {
             findAll(menu.shadowRoot, "vi-menu-group").forEach(group => group.expanded = state.open);
     }
 
-    // Every frame, so the outlines follow the menu as it opens, scrolls and changes state
+    // Every frame while an outline shows, so it follows the menu as it opens, scrolls and changes state; the hidden
+    // ones only need to be about right for the pointer, so a few times a second will do
     #measure = () => {
         this.#frame = requestAnimationFrame(this.#measure);
+
+        if (!this.highlight && performance.now() - this.#measured < 150)
+            return;
+
+        this.#measured = performance.now();
 
         const frame = this.querySelector(".frame");
         const menu = this.querySelector("vi-menu");
@@ -289,7 +296,7 @@ class DocsMenuStage extends WebComponent {
         const [unitTitle, ...groupTitles] = titles;
         let revealed = true;
 
-        // The stage may not have rendered its menu yet, while the page restores the selection
+        // The stage may not have rendered its menu yet, when an example is chosen as the page starts
         const menu = this.updateComplete.then(async () => {
             const menu = this.querySelector("vi-menu");
             if (!revealed)
@@ -468,7 +475,8 @@ class DocsParts extends WebComponent {
 
     /** The rules the editors hold, as one style sheet for the menu. */
     get css() {
-        return Object.entries(this.rules).filter(([, declarations]) => declarations.trim()).map(([name, declarations]) => `vi-menu::part(${name}) {\n${declarations}\n}`).join("\n");
+        // Without braces, so a rule can't close its block and style the rest of the page
+        return Object.entries(this.rules).filter(([, declarations]) => declarations.trim()).map(([name, declarations]) => `vi-menu::part(${name}) {\n${declarations.replace(/[{}]/g, "")}\n}`).join("\n");
     }
 
     // Only for as long as the page shows: a reload starts without rules
