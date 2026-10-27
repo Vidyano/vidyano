@@ -14,6 +14,9 @@ export type MenuItemRegion = "item-start" | "item-end";
 /** Renders an extension: a Lit template result, an element, a string, or nothing. */
 export type MenuRender = (menu: Menu) => unknown;
 
+/** Renders a replacement; original is what it replaces, the built-in content or the replacement before it, to wrap or leave out. */
+export type MenuReplaceRender = (menu: Menu, original: unknown) => unknown;
+
 /** Renders an item region extension for one row of the menu tree; the menu is null for a node outside a vi-menu. */
 export type MenuItemRender = (menu: Menu, item: Vidyano.ProgramUnitItem) => unknown;
 
@@ -94,13 +97,14 @@ export function replaceMenu(region: string, render: Function): () => void {
 }
 
 /**
- * Renders a region: its extensions around the built-in content, or around the last replacement.
+ * Renders a region: its extensions around its content. The content is the built-in one, handed to each replacement
+ * in the order they were registered as what it replaces, so the last one decides and may wrap the ones before.
  */
 export function renderRegion(region: MenuRegion, menu: Menu, builtIn: () => unknown): TemplateResult {
     const entries = extensions.get(region) ?? [];
-    const replacement = replacements.get(region)?.at(-1);
+    const content = (replacements.get(region) ?? []).reduce((original, replacement) => call(replacement.render, menu, original), builtIn());
 
-    return html`${entries.filter(e => e.before).map(e => call(e.render, menu))}${replacement ? call(replacement.render, menu) : builtIn()}${entries.filter(e => !e.before).map(e => call(e.render, menu))}`;
+    return html`${entries.filter(e => e.before).map(e => call(e.render, menu))}${content}${entries.filter(e => !e.before).map(e => call(e.render, menu))}`;
 }
 
 /**

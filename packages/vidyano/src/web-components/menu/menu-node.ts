@@ -124,7 +124,7 @@ export abstract class MenuNode extends WebComponent {
      * Renders the item's title with the filter's matches highlighted.
      */
     protected renderTitle(): TemplateResult {
-        return html`<span class="title" @mouseenter=${this._titleMouseenter}>${this.renderHighlighted(this.item?.title ?? "")}</span>`;
+        return html`<span class="title" part="title" @mouseenter=${this._titleMouseenter}>${this.renderHighlighted(this.item?.title ?? "")}</span>`;
     }
 
     /**
@@ -238,7 +238,7 @@ export function renderMenuNode(item: Vidyano.ProgramUnitItem, filter: string, fi
  * The parts of a node, passed up through every shadow root of the tree, so vi-menu::part(item-end) and the like
  * reach them from outside the menu.
  */
-export const menuNodeParts = "icon, item-start, item-end";
+export const menuNodeParts = "item, program-unit, group, icon, title, item-start, item-end, children, separator";
 
 /**
  * Whether a click asks the browser to open the link elsewhere: with Ctrl, Cmd, Shift or Alt, or not the main button.

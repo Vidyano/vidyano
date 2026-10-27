@@ -11,12 +11,12 @@ import "components/scroller/scroller";
 import { SelectReferenceDialog } from "components/select-reference-dialog/select-reference-dialog";
 import "components/user/user";
 import { computed, listener, observer, WebComponent } from "components/web-component/web-component";
-import { extendMenu, hasItemExtensions, MenuExtendOptions, MenuExtensionsController, menuExtensionEvents, MenuItemRegion, MenuItemRender, MenuRegion, MenuRender, MenuReplaceableRegion, renderRegion, replaceMenu } from "./menu-extensions";
+import { extendMenu, hasItemExtensions, MenuExtendOptions, MenuExtensionsController, menuExtensionEvents, MenuItemRegion, MenuItemRender, MenuRegion, MenuRender, MenuReplaceableRegion, MenuReplaceRender, renderRegion, replaceMenu } from "./menu-extensions";
 import { menuNodeParts } from "./menu-node";
 import "./menu-program-unit";
 import styles from "./menu.css";
 
-export type { MenuExtendOptions, MenuItemRegion, MenuItemRender, MenuRegion, MenuRender, MenuReplaceableRegion } from "./menu-extensions";
+export type { MenuExtendOptions, MenuItemRegion, MenuItemRender, MenuRegion, MenuRender, MenuReplaceableRegion, MenuReplaceRender } from "./menu-extensions";
 
 type InstantSearchResult = Vidyano.IInstantSearchResult & { href: string };
 
@@ -35,10 +35,11 @@ export class Menu extends WebComponent {
     }
 
     /**
-     * Replaces the built-in content of a region of every vi-menu; the last replacement registered wins.
+     * Replaces the built-in content of a region of every vi-menu; the last replacement registered decides. The render
+     * function gets what it replaces as original, to wrap it (and style it through ::part) or leave it out.
      * @returns A function that brings back the content it replaced.
      */
-    static replace(region: MenuReplaceableRegion, render: MenuRender): () => void {
+    static replace(region: MenuReplaceableRegion, render: MenuReplaceRender): () => void {
         return replaceMenu(region, render);
     }
 
@@ -302,7 +303,7 @@ export class Menu extends WebComponent {
             return nothing;
 
         return html`
-            <div class="instantSearch">
+            <div class="instantSearch" part="instant-search">
                 ${this.instantSearchResults.map(result => html`
                     <a href=${result.href} @mouseenter=${(e: MouseEvent) => this._instantSearchResultMouseenter(e, result)}><div>${this._renderBreadcrumb(result.breadcrumb)}</div><span class="label">${result.label}</span></a>
                 `)}
@@ -315,17 +316,17 @@ export class Menu extends WebComponent {
 
         return html`
             <div class="container">
-                <header>
+                <header part="header">
                     <div class="background">
                         ${renderRegion("header", this, () => html`
-                            <div class="label">
+                            <div class="label" part="label">
                                 <span ?hidden=${this.hasCustomLabel}>${this.label}</span>
                                 <slot name="label" @slotchange=${this._labelSlotchange}></slot>
                             </div>
                         `)}
                     </div>
                     ${renderRegion("search", this, () => html`
-                        <vi-input-search
+                        <vi-input-search part="search"
                             .value=${this.filter}
                             @value-changed=${(e: CustomEvent) => this.filter = e.detail.value}
                             .focused=${this.searchFocused}
@@ -333,7 +334,7 @@ export class Menu extends WebComponent {
                             @search=${this._search}></vi-input-search>
                     `)}
                 </header>
-                <main>
+                <main part="items">
                     <vi-scroller class="program-units" no-horizontal>
                         ${this._renderInstantSearch()}
                         ${renderRegion("before-items", this, () => nothing)}
@@ -344,14 +345,14 @@ export class Menu extends WebComponent {
                         ${renderRegion("after-items", this, () => nothing)}
                     </vi-scroller>
                 </main>
-                <footer>
+                <footer part="footer">
                     ${renderRegion("footer", this, () => html`<slot name="footer"></slot>`)}
                     ${renderRegion("user", this, () => html`<vi-user></vi-user>`)}
                 </footer>
             </div>
 
-            <div id="toggle">${renderRegion("toggle", this, () => html`<vi-button id="toggleCollapse" icon="Menu_Collapse" @click=${this._toggleCollapse}></vi-button>`)}</div>
-            <div id="resizer" @pointerdown=${this._resizerPointerdown} @pointermove=${this._resizerPointermove} @pointerup=${this._resizerPointerup} @pointercancel=${this._resizerPointerup}></div>
+            <div id="toggle" part="toggle">${renderRegion("toggle", this, () => html`<vi-button id="toggleCollapse" icon="Menu_Collapse" @click=${this._toggleCollapse}></vi-button>`)}</div>
+            <div id="resizer" part="resizer" @pointerdown=${this._resizerPointerdown} @pointermove=${this._resizerPointermove} @pointerup=${this._resizerPointerup} @pointercancel=${this._resizerPointerup}></div>
         `;
     }
 }

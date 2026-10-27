@@ -9,7 +9,7 @@ export class MenuSeparator extends MenuNode {
     static styles = unsafeCSS(styles);
 
     render() {
-        return html`<div class="line"></div>`;
+        return html`<div class="line" part="separator"></div>`;
     }
 }
 

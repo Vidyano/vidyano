@@ -48,6 +48,19 @@ async function setupPage(page: Page) {
             return span;
         };
 
+        /** A Lit template result <div id=…>${content}</div>, as html`` would make it: the page has no html of its own. */
+        // The same strings per id, as html`` has them, so Lit updates the template instead of rendering it anew
+        const templates = new Map<string, any>();
+        w.wrap = (id: string, content: unknown) => {
+            if (!templates.has(id)) {
+                const strings: any = [`<div id="${id}">`, '</div>'];
+                strings.raw = [...strings];
+                templates.set(id, strings);
+            }
+
+            return { ['_$litType$']: 1, strings: templates.get(id), values: [content] };
+        };
+
         class MockLanguage extends Vidyano.Observable {
             culture = 'en';
             messages = {};
@@ -307,6 +320,40 @@ test.describe('Menu.replace', () => {
         await expect(menu.locator('#first-user')).toBeAttached();
     });
 
+    test('a replacement can wrap the original content, which keeps working', async ({ page }) => {
+        await page.evaluate(() => {
+            const w = window as any;
+            w.Menu.replace('search', (_menu: any, original: unknown) => {
+                const frame = document.createElement('div');
+                frame.id = 'search-frame';
+                w.frameOriginal = original;
+                return frame;
+            });
+        });
+        await page.evaluate(() => {
+            const w = window as any;
+            // Lit renders the original into the wrapper's slot of content: here, a template that holds the frame
+            w.Menu.replace('search', (_menu: any, original: unknown) => w.wrap('outer-frame', original));
+        });
+        const menu = await addMenu(page);
+
+        await expect(menu.locator('#outer-frame #search-frame')).toBeAttached();
+    });
+
+    test('the original of a replacement is the built-in content', async ({ page }) => {
+        await page.evaluate(() => {
+            const w = window as any;
+            w.Menu.replace('search', (_menu: any, original: unknown) => w.wrap('search-frame', original));
+        });
+        const menu = await addMenu(page);
+
+        await expect(menu.locator('#search-frame vi-input-search')).toBeAttached();
+
+        // The wrapped search still filters
+        await menu.locator('#search-frame vi-input-search input').fill('Sal');
+        await expect.poll(() => menu.evaluate((m: any) => m.filter)).toBe('Sal');
+    });
+
     test('disposing a repeated replacement removes that registration, not an earlier one of the same function', async ({ page }) => {
         await page.evaluate(() => {
             const w = window as any;
@@ -392,6 +439,30 @@ test.describe('Menu.extend item regions', () => {
         const region = menu.locator('vi-menu-item').filter({ has: page.locator('#styled') }).locator('.item-end');
         await expect(region).toHaveCSS('outline-color', 'rgb(255, 0, 0)');
         await expect(menu.locator('vi-menu-program-unit').first().locator('vi-icon').first()).toHaveCSS('outline-color', 'rgb(0, 0, 255)');
+    });
+
+    test('every part of the menu and its tree can be styled from outside with ::part', async ({ page }) => {
+        // One distinct outline width per part, so each assertion proves its own part reached its element
+        const parts = ['header', 'label', 'search', 'items', 'footer', 'toggle', 'resizer', 'item', 'program-unit', 'group', 'title', 'children'];
+        await page.addStyleTag({ content: parts.map((part, index) => `vi-menu::part(${part}) { outline: ${index + 1}px solid rgb(1, 2, 3); }`).join('\n') });
+        const menu = await addMenu(page);
+
+        const width = (part: string) => `${parts.indexOf(part) + 1}px`;
+        await expect(menu.locator('header')).toHaveCSS('outline-width', width('header'));
+        await expect(menu.locator('header .label')).toHaveCSS('outline-width', width('label'));
+        await expect(menu.locator('vi-input-search')).toHaveCSS('outline-width', width('search'));
+        await expect(menu.locator('main[part="items"]')).toHaveCSS('outline-width', width('items'));
+        await expect(menu.locator('footer')).toHaveCSS('outline-width', width('footer'));
+        await expect(menu.locator('#toggle')).toHaveCSS('outline-width', width('toggle'));
+        await expect(menu.locator('#resizer')).toHaveCSS('outline-width', width('resizer'));
+
+        // A part with several names gets the rule of the last one in the style sheet: program-unit and group come after item
+        const unit = menu.locator('vi-menu-program-unit').first();
+        await expect(unit.locator('.item').first()).toHaveCSS('outline-width', width('program-unit'));
+        await expect(unit.locator('vi-menu-group .item').first()).toHaveCSS('outline-width', width('group'));
+        await expect(unit.locator('vi-menu-item .item').first()).toHaveCSS('outline-width', width('item'));
+        await expect(unit.locator('vi-menu-item .title').first()).toHaveCSS('outline-width', width('title'));
+        await expect(unit.locator('.children').first()).toHaveCSS('outline-width', width('children'));
     });
 
     test('decorates every tree node with its own item', async ({ page }) => {
