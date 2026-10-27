@@ -1,12 +1,10 @@
 import { Menu, WebComponent, html, nothing } from "../index.js";
 
+// Shared with the component pages, at the version this page was loaded at, so all of them share one module
+const { compact, pageStyles } = await import(`./menu/_stage.js${new URL(import.meta.url).search}`);
+
 export const title = "Menu";
 export const tag = "docs-menu";
-
-const app = window[Symbol.for("Vidyano.App")];
-
-/** Whether the menu shows only icons: collapsed, and the mouse not over it. */
-const compact = menu => menu.collapsed && !menu.hovering;
 
 const badge = "font: 600 11px/1 'Open Sans', sans-serif; background: #F5A623; color: #1d1d1d; border-radius: 9px; padding: 3px 7px; text-transform: none; flex-shrink: 0";
 const pill = "border: 1px solid rgba(255,255,255,.3); background: none; color: inherit; border-radius: 12px; padding: 3px 10px; font: 12px 'Open Sans', sans-serif; cursor: pointer";
@@ -223,6 +221,17 @@ const examples = [
             <button aria-label=${menu.collapsed ? "Expand menu" : "Collapse menu"} @click=${() => menu.collapsed = !menu.collapsed}
                 style="width: var(--vi-menu-collapsed-width); height: var(--vi-menu-collapsed-width); border: 0; background: ${menu.collapsed ? "var(--color-dark)" : "transparent"}; color: #FAFAFA; font-size: 16px; cursor: pointer">${menu.collapsed ? "»" : "«"}</button>
         `)
+    },
+    {
+        id: "wrap-search",
+        title: "Wrap the search box",
+        text: "A replacement gets what it replaces as original: wrap it instead of rebuilding it. The built-in search box keeps working inside the frame.",
+        apply: () => Menu.replace("search", (menu, original) => compact(menu) ? original : html`
+            <div style="margin: var(--vi-menu-search-margin); padding: 4px; border-radius: 8px; background: rgba(0,0,0,.25)">
+                ${original}
+                <div style="padding: 2px 8px 4px; font-size: 11px; opacity: .7; line-height: normal">Enter searches everything</div>
+            </div>
+        `)
     }
 ];
 
@@ -232,72 +241,16 @@ const groups = [
 ];
 
 class DocsMenu extends WebComponent {
-    static properties = {
-        collapsed: { state: true }
-    };
-
-    // Not as class fields: those would shadow the reactive accessors
-    constructor() {
-        super();
-
-        this.collapsed = false;
-    }
-
-    // Clicks on the menu's links show as a toast instead of leaving the page
-    #stageClick(e) {
-        // The menu's own toggle collapses it too; keep the buttons below it in step
-        const menu = this.renderRoot.querySelector("vi-menu");
-        menu.updateComplete.then(() => this.collapsed = menu.collapsed);
-
-        const anchor = e.composedPath().find(n => n instanceof HTMLAnchorElement);
-        if (!anchor?.hasAttribute("href") || anchor.getAttribute("rel")?.includes("external"))
-            return;
-
-        e.preventDefault();
-        app.log(`navigates to ${anchor.getAttribute("href")}`);
-
-        const unit = e.composedPath().find(n => n.tagName === "VI-MENU-PROGRAM-UNIT");
-        if (unit)
-            menu.activeProgramUnit = unit.item;
-    }
-
     render() {
-        const programUnits = app.service.application?.programUnits ?? [];
-
         return html`
-            <style>
-                :host { display: block; }
-                h1 { font-size: 28px; font-weight: 600; margin: 0 0 8px; }
-                p { margin: 0; color: #46545c; }
-                code { font: 12.5px ui-monospace, Consolas, monospace; background: #e7ebee; padding: 1px 5px; border-radius: 4px; }
-                .intro { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; max-width: 900px; }
-                .stage { display: flex; flex-direction: column; gap: 10px; width: 420px; max-width: 100%; }
-                .frame { height: 640px; display: flex; border-radius: 8px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,.18); background: #f4f6f8; font: 13px "Open Sans", Arial, Helvetica, sans-serif; }
-                .frame vi-menu { --vi-menu--expand-width: 300px; flex-shrink: 0; }
-                .app { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; padding: 14px; }
-                .app i { display: block; height: 10px; border-radius: 5px; background: #dde3e7; }
-                .app i:first-child { height: 26px; background: #4682B4; opacity: .85; border-radius: 4px; margin-bottom: 6px; }
-                .controls { display: flex; gap: 6px; }
-                .controls button { flex: 1; border: 1px solid #c5ced3; background: #fff; border-radius: 6px; padding: 5px 10px; font: 13px "Open Sans", sans-serif; cursor: pointer; }
-                .controls button[aria-pressed="true"] { background: #1f2a30; border-color: #1f2a30; color: #fff; }
-            </style>
+            ${pageStyles}
             <div class="intro">
                 <h1>Menu</h1>
-                <p><code>Menu.extend(region, render, { before })</code> adds content to a region of every <code>vi-menu</code>, after its built-in content unless <code>before</code> is set. <code>Menu.replace(region, render)</code> swaps the built-in content out; the last replacement wins. Both return a function that undoes them.</p>
-                <p>A render function gets the menu, so it can follow <code>collapsed</code>, <code>hovering</code>, <code>filter</code> and <code>activeProgramUnit</code>; <code>item-start</code> and <code>item-end</code> also get the row's item.</p>
+                <p><code>Menu.extend(region, render, { before })</code> adds content to a region of every <code>vi-menu</code>, after its built-in content unless <code>before</code> is set. <code>Menu.replace(region, render)</code> swaps the built-in content out and gets it as <code>original</code>, to wrap or leave out; the last replacement decides. Both return a function that undoes them.</p>
+                <p>A render function gets the menu, so it can follow <code>collapsed</code>, <code>hovering</code>, <code>filter</code> and <code>activeProgramUnit</code>; <code>item-start</code> and <code>item-end</code> also get the row's item. The pages under Menu show how to style each of its components.</p>
             </div>
             <docs-examples name="menu" .examples=${examples} .groups=${groups}>
-                <div slot="stage" class="stage">
-                    <div class="frame" @click=${e => this.#stageClick(e)}>
-                        <!-- The page decides collapsed, not the menu-collapsed cookie the built-in toggle keeps -->
-                        <vi-menu .label=${"Dev"} .programUnits=${programUnits} .activeProgramUnit=${programUnits?.[0]} .collapsed=${this.collapsed}></vi-menu>
-                        <div class="app" aria-hidden="true"><i></i><i style="width: 70%"></i><i></i><i style="width: 85%"></i><i style="width: 60%"></i><i></i><i style="width: 75%"></i></div>
-                    </div>
-                    <div class="controls">
-                        <button aria-pressed=${String(!this.collapsed)} @click=${() => this.collapsed = false}>Expanded</button>
-                        <button aria-pressed=${String(this.collapsed)} @click=${() => this.collapsed = true}>Collapsed</button>
-                    </div>
-                </div>
+                <docs-menu-stage slot="stage"></docs-menu-stage>
             </docs-examples>
         `;
     }
