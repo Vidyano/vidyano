@@ -5,6 +5,7 @@ import "@polymer/paper-ripple";
 import { SelectReferenceDialog } from "components/select-reference-dialog/select-reference-dialog";
 import { computed, observer } from "components/web-component/web-component";
 import { IConfigurableAction, WebComponentConfigurationController } from "components/web-component/web-component-configuration-controller";
+import { extendMenuNode, MenuNodeRegion, MenuNodeRender } from "./menu-extensions";
 import { isModifiedClick, MenuNode } from "./menu-node";
 import type { MenuGroup } from "./menu-group";
 import "./menu-group";
@@ -18,6 +19,15 @@ import styles from "./menu-program-unit.css";
  */
 export class MenuProgramUnit extends MenuNode {
     static styles = unsafeCSS(styles);
+
+    /**
+     * Adds content to a region of every program unit row of every vi-menu: start, before its icon, or end, after its title.
+     * The render function gets the menu and the row's ProgramUnit.
+     * @returns A function that removes the content again.
+     */
+    static extend(region: MenuNodeRegion, render: MenuNodeRender<Vidyano.ProgramUnit>): () => void {
+        return extendMenuNode("program-unit", region, render);
+    }
 
     /** The program unit the app currently shows; it is expanded. */
     @property({ type: Object })
@@ -88,13 +98,13 @@ export class MenuProgramUnit extends MenuNode {
 
         return html`
             <div class="item" part="item program-unit">
-                ${this.renderItemRegion("item-start")}
+                ${this.renderRegion("program-unit", "start")}
                 <a class="link" href=${link.href ?? nothing} target=${link.target ?? nothing} rel=${link.rel ?? nothing} @click=${this._click}>
                     <paper-ripple></paper-ripple>
                     ${this.renderIcon()}
                     ${this.renderTitle()}
                 </a>
-                ${this.renderItemRegion("item-end")}
+                ${this.renderRegion("program-unit", "end")}
             </div>
             ${unit?.items?.length ? html`
                 <div class="children" part="children" ?open=${this.open} ?inert=${!this.open}>

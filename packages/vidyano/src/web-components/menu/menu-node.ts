@@ -9,7 +9,7 @@ import { AppCacheEntryQuery } from "components/app-cache/app-cache-entry-query";
 import * as IconRegister from "components/icon/icon-register";
 import { computed, observer, serviceBusObserver, WebComponent } from "components/web-component/web-component";
 import type { Menu } from "./menu";
-import { MenuExtensionsController, MenuItemRegion, renderItemRegion } from "./menu-extensions";
+import { MenuExtensionsController, MenuNodeKind, MenuNodeRegion, renderNodeRegion } from "./menu-extensions";
 
 /**
  * Shared base of the menu tree nodes: vi-menu-program-unit, vi-menu-group, vi-menu-item and vi-menu-separator.
@@ -147,16 +147,16 @@ export abstract class MenuNode extends WebComponent {
     }
 
     /**
-     * Renders what Menu.extend adds to an item region of this row, for this node's item.
+     * Renders what the extend of this kind of row adds to one of its regions, for this node's item.
      */
-    protected renderItemRegion(region: MenuItemRegion): TemplateResult | typeof nothing {
+    protected renderRegion(kind: MenuNodeKind, region: MenuNodeRegion): TemplateResult | typeof nothing {
         if (!this.item)
             return nothing;
 
         // Nodes live in vi-menu's shadow tree; a node outside a menu gets null
         this._menu ??= this.findParent<Menu>(e => e instanceof HTMLElement && e.matches("vi-menu"));
 
-        return renderItemRegion(region, this._menu, this.item);
+        return renderNodeRegion(kind, region, this._menu, this.item);
     }
 
     /**

@@ -1,6 +1,8 @@
 import { html, unsafeCSS } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
+import type * as Vidyano from "@vidyano/core";
 import { IConfigurableAction, WebComponentConfigurationController } from "components/web-component/web-component-configuration-controller";
+import { extendMenuNode, MenuNodeRegion, MenuNodeRender } from "./menu-extensions";
 import { isModifiedClick, MenuNode } from "./menu-node";
 import styles from "./menu-item.css";
 
@@ -9,6 +11,15 @@ import styles from "./menu-item.css";
  */
 export class MenuItem extends MenuNode {
     static styles = unsafeCSS(styles);
+
+    /**
+     * Adds content to a region of every item row of every vi-menu: start, before its icon, or end, after its title.
+     * The render function gets the menu and the row's item.
+     * @returns A function that removes the content again.
+     */
+    static extend(region: MenuNodeRegion, render: MenuNodeRender<Vidyano.ProgramUnitItem>): () => void {
+        return extendMenuNode("item", region, render);
+    }
 
     readonly #configurable = new WebComponentConfigurationController(this, (actions: IConfigurableAction[]) => {
         if (!this.item?.path || this.item.path.startsWith("Management/"))
@@ -26,13 +37,13 @@ export class MenuItem extends MenuNode {
 
         return html`
             <div class="item" part="item">
-                ${this.renderItemRegion("item-start")}
+                ${this.renderRegion("item", "start")}
                 <a class="link" href=${ifDefined(link.href)} target=${ifDefined(link.target)} rel=${ifDefined(link.rel)} @click=${this._onClick}>
                     <paper-ripple></paper-ripple>
                     ${this.renderIcon()}
                     ${this.renderTitle()}
                 </a>
-                ${this.renderItemRegion("item-end")}
+                ${this.renderRegion("item", "end")}
             </div>
         `;
     }

@@ -11,12 +11,12 @@ import "components/scroller/scroller";
 import { SelectReferenceDialog } from "components/select-reference-dialog/select-reference-dialog";
 import "components/user/user";
 import { computed, listener, observer, WebComponent } from "components/web-component/web-component";
-import { extendMenu, hasItemExtensions, MenuExtendOptions, MenuExtensionsController, menuExtensionEvents, MenuItemRegion, MenuItemRender, MenuRegion, MenuRender, MenuReplaceableRegion, MenuReplaceRender, renderRegion, replaceMenu } from "./menu-extensions";
+import { extendMenu, hasNodeExtensions, MenuExtendOptions, MenuExtensionsController, menuExtensionEvents, MenuRegion, MenuRender, MenuReplaceableRegion, MenuReplaceRender, renderRegion, replaceMenu } from "./menu-extensions";
 import { menuNodeParts } from "./menu-node";
 import "./menu-program-unit";
 import styles from "./menu.css";
 
-export type { MenuExtendOptions, MenuItemRegion, MenuItemRender, MenuRegion, MenuRender, MenuReplaceableRegion, MenuReplaceRender } from "./menu-extensions";
+export type { MenuExtendOptions, MenuNodeRegion, MenuNodeRender, MenuRegion, MenuRender, MenuReplaceableRegion, MenuReplaceRender } from "./menu-extensions";
 
 type InstantSearchResult = Vidyano.IInstantSearchResult & { href: string };
 
@@ -24,13 +24,11 @@ export class Menu extends WebComponent {
     static styles = unsafeCSS(styles);
 
     /**
-     * Adds content to a region of every vi-menu, after its built-in content unless `before` is set.
-     * The item regions add content to every row of the menu tree, for that row's item.
+     * Adds content to a region of every vi-menu, after its built-in content unless `before` is set. The rows of the
+     * tree have regions of their own, through MenuProgramUnit, MenuGroup and MenuItem.extend.
      * @returns A function that removes the content again.
      */
-    static extend(region: MenuItemRegion, render: MenuItemRender): () => void;
-    static extend(region: MenuRegion, render: MenuRender, options?: MenuExtendOptions): () => void;
-    static extend(region: string, render: Function, options?: MenuExtendOptions): () => void {
+    static extend(region: MenuRegion, render: MenuRender, options?: MenuExtendOptions): () => void {
         return extendMenu(region, render, options);
     }
 
@@ -143,10 +141,10 @@ export class Menu extends WebComponent {
         this.filter = "";
     }
 
-    // The tree's rows render the item regions, which may follow this state
+    // The tree's rows render their regions, which may follow this state
     @observer("collapsed", "hovering", "filter", "activeProgramUnit", { allowUndefined: true })
     private _stateChanged() {
-        if (hasItemExtensions())
+        if (hasNodeExtensions())
             menuExtensionEvents.dispatchEvent(new Event("state"));
     }
 

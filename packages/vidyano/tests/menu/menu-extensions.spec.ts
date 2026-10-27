@@ -36,6 +36,9 @@ async function setupPage(page: Page) {
         const w = window as any;
         const Vidyano = w.Vidyano;
         w.Menu = customElements.get('vi-menu');
+        w.MenuProgramUnit = customElements.get('vi-menu-program-unit');
+        w.MenuGroup = customElements.get('vi-menu-group');
+        w.MenuItem = customElements.get('vi-menu-item');
 
         // Keep the menu links from navigating the test page away
         document.addEventListener('click', e => e.preventDefault());
@@ -225,7 +228,7 @@ test.describe('Menu.extend', () => {
             const w = window as any;
             w.Menu.extend('footer', () => { throw new Error('footer boom'); });
             w.Menu.extend('footer', () => w.el('after-boom'));
-            w.Menu.extend('item-end', () => { throw new Error('item boom'); });
+            w.MenuItem.extend('end', () => { throw new Error('item boom'); });
         });
         const menu = await addMenu(page);
 
@@ -385,7 +388,7 @@ test.describe('Menu.replace', () => {
     });
 
     test('regions without built-in content cannot be replaced', async ({ page }) => {
-        const errors = await page.evaluate(() => ['footer', 'before-items', 'after-items', 'item-start', 'item-end'].map(region => {
+        const errors = await page.evaluate(() => ['footer', 'before-items', 'after-items'].map(region => {
             try {
                 (window as any).Menu.replace(region, () => null);
                 return null;
@@ -399,14 +402,14 @@ test.describe('Menu.replace', () => {
     });
 });
 
-test.describe('Menu.extend item regions', () => {
+test.describe('Row regions: MenuProgramUnit, MenuGroup and MenuItem.extend', () => {
     test.beforeEach(async ({ page }) => await setupPage(page));
 
     test('a click in an item region stays with the extension: it is not inside the row link and does not navigate', async ({ page }) => {
         await page.evaluate(() => {
             const w = window as any;
             w.clicks = 0;
-            w.Menu.extend('item-end', (_menu: any, item: any) => {
+            w.MenuItem.extend('end', (_menu: any, item: any) => {
                 if (item.name !== 'Customers')
                     return null;
 
@@ -432,7 +435,7 @@ test.describe('Menu.extend item regions', () => {
         await page.addStyleTag({ content: 'vi-menu::part(item-end) { outline: 3px solid rgb(255, 0, 0); } vi-menu::part(icon) { outline: 3px solid rgb(0, 0, 255); }' });
         await page.evaluate(() => {
             const w = window as any;
-            w.Menu.extend('item-end', (_menu: any, item: any) => item.name === 'Customers' ? w.el('styled') : null);
+            w.MenuItem.extend('end', (_menu: any, item: any) => item.name === 'Customers' ? w.el('styled') : null);
         });
         const menu = await addMenu(page);
 
@@ -465,11 +468,14 @@ test.describe('Menu.extend item regions', () => {
         await expect(unit.locator('.children').first()).toHaveCSS('outline-width', width('children'));
     });
 
-    test('decorates every tree node with its own item', async ({ page }) => {
+    test('decorates every row of its own component with its own item', async ({ page }) => {
         await page.evaluate(() => {
             const w = window as any;
-            w.Menu.extend('item-end', (menu: any, item: any) => menu?.tagName === 'VI-MENU' ? w.el(`end-${item.id}`, item.title) : null);
-            w.Menu.extend('item-start', (_menu: any, item: any) => item.name === 'Customers' ? w.el('pin') : null);
+            const end = (menu: any, item: any) => menu?.tagName === 'VI-MENU' ? w.el(`end-${item.id}`, item.title) : null;
+            w.MenuProgramUnit.extend('end', end);
+            w.MenuGroup.extend('end', end);
+            w.MenuItem.extend('end', end);
+            w.MenuItem.extend('start', (_menu: any, item: any) => item.name === 'Customers' ? w.el('pin') : null);
         });
         const menu = await addMenu(page);
 
@@ -484,8 +490,8 @@ test.describe('Menu.extend item regions', () => {
     test('item-start goes before the icon and item-end after the title, inside the row', async ({ page }) => {
         await page.evaluate(() => {
             const w = window as any;
-            w.Menu.extend('item-start', (_menu: any, item: any) => item.name === 'Customers' ? w.el('start') : null);
-            w.Menu.extend('item-end', (_menu: any, item: any) => item.name === 'Customers' ? w.el('end') : null);
+            w.MenuItem.extend('start', (_menu: any, item: any) => item.name === 'Customers' ? w.el('start') : null);
+            w.MenuItem.extend('end', (_menu: any, item: any) => item.name === 'Customers' ? w.el('end') : null);
         });
         const menu = await addMenu(page);
         const item = menu.locator('vi-menu-item').filter({ has: page.locator('#end') });
@@ -499,7 +505,7 @@ test.describe('Menu.extend item regions', () => {
     test('item regions follow the menu state', async ({ page }) => {
         await page.evaluate(() => {
             const w = window as any;
-            w.Menu.extend('item-end', (menu: any, item: any) => item.name === 'Customers' ? w.el('badge', menu.collapsed && !menu.hovering ? 'dot' : '12') : null);
+            w.MenuItem.extend('end', (menu: any, item: any) => item.name === 'Customers' ? w.el('badge', menu.collapsed && !menu.hovering ? 'dot' : '12') : null);
         });
         const menu = await addMenu(page);
         const badge = menu.locator('#badge');
@@ -515,11 +521,52 @@ test.describe('Menu.extend item regions', () => {
 
         await page.evaluate(() => {
             const w = window as any;
-            w.dispose = w.Menu.extend('item-end', (_menu: any, item: any) => item.name === 'Customers' ? w.el('late-badge') : null);
+            w.dispose = w.MenuItem.extend('end', (_menu: any, item: any) => item.name === 'Customers' ? w.el('late-badge') : null);
         });
         await expect(menu.locator('#late-badge')).toBeAttached();
 
         await page.evaluate(() => (window as any).dispose());
         await expect(menu.locator('#late-badge')).toHaveCount(0);
+    });
+
+    test('each component extends only its own rows', async ({ page }) => {
+        await page.evaluate(() => {
+            const w = window as any;
+            w.MenuProgramUnit.extend('start', () => w.el('unit-start'));
+            w.MenuGroup.extend('end', () => w.el('group-end'));
+            w.MenuItem.extend('end', () => w.el('item-badge'));
+        });
+        const menu = await addMenu(page);
+
+        await expect(menu.locator('#unit-start')).toHaveCount(1);
+        await expect(menu.locator('vi-menu-program-unit .item-start #unit-start')).toHaveCount(1);
+        await expect(menu.locator('#group-end')).toHaveCount(1);
+        await expect(menu.locator('vi-menu-group .item-end #group-end')).toHaveCount(1);
+        await expect(menu.locator('#item-badge')).toHaveCount(2);
+        await expect(menu.locator('vi-menu-item .item-end #item-badge')).toHaveCount(2);
+    });
+
+    test('Menu.extend has no row regions, and a component has only start and end', async ({ page }) => {
+        const errors = await page.evaluate(() => {
+            const w = window as any;
+            const attempt = (f: () => void) => {
+                try {
+                    f();
+                    return null;
+                }
+                catch (e) {
+                    return String(e);
+                }
+            };
+
+            return [
+                attempt(() => w.Menu.extend('item-start', () => null)),
+                attempt(() => w.Menu.extend('item-end', () => null)),
+                attempt(() => w.MenuItem.extend('header', () => null)),
+                attempt(() => w.MenuGroup.extend('item-end', () => null))
+            ];
+        });
+
+        expect(errors.every(e => e !== null)).toBe(true);
     });
 });

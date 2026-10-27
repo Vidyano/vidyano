@@ -8,8 +8,11 @@ export type MenuRegion = "header" | "toggle" | "search" | "before-items" | "afte
 /** The parts of vi-menu with built-in content, which Menu.replace swaps for other content. */
 export type MenuReplaceableRegion = "header" | "toggle" | "search" | "user";
 
-/** The spots on every row of the menu tree: before the row's icon and after its title. */
-export type MenuItemRegion = "item-start" | "item-end";
+/** The spots on a row of the menu tree that MenuProgramUnit, MenuGroup and MenuItem.extend add content to: before the row's icon and after its title. */
+export type MenuNodeRegion = "start" | "end";
+
+/** The kinds of rows in the menu tree, each extended through its own component. */
+export type MenuNodeKind = "program-unit" | "group" | "item";
 
 /** Renders an extension: a Lit template result, an element, a string, or nothing. */
 export type MenuRender = (menu: Menu) => unknown;
@@ -17,15 +20,16 @@ export type MenuRender = (menu: Menu) => unknown;
 /** Renders a replacement; original is what it replaces, the built-in content or the replacement before it, to wrap or leave out. */
 export type MenuReplaceRender = (menu: Menu, original: unknown) => unknown;
 
-/** Renders an item region extension for one row of the menu tree; the menu is null for a node outside a vi-menu. */
-export type MenuItemRender = (menu: Menu, item: Vidyano.ProgramUnitItem) => unknown;
+/** Renders a row region extension for one row of the menu tree; the menu is null for a row outside a vi-menu. */
+export type MenuNodeRender<TItem = Vidyano.ProgramUnitItem> = (menu: Menu, item: TItem) => unknown;
 
 export interface MenuExtendOptions {
     /** Puts the content before the region's built-in content instead of after it. */
     before?: boolean;
 }
 
-const regions = ["header", "toggle", "search", "before-items", "after-items", "footer", "user", "item-start", "item-end"];
+const regions = ["header", "toggle", "search", "before-items", "after-items", "footer", "user"];
+const nodeRegions = ["start", "end"];
 const replaceableRegions = ["header", "toggle", "search", "user"];
 
 type Extension = { render: Function; before: boolean };
@@ -81,6 +85,21 @@ export function extendMenu(region: string, render: Function, options?: MenuExten
     return () => remove(extensions.get(region), entry);
 }
 
+export function extendMenuNode(kind: MenuNodeKind, region: string, render: Function): () => void {
+    if (!nodeRegions.includes(region))
+        throw new Error(`vi-menu-${kind} has no region "${region}"`);
+
+    const key = `${kind}:${region}`;
+    const entry: Extension = { render, before: false };
+    if (!extensions.has(key))
+        extensions.set(key, []);
+
+    extensions.get(key).push(entry);
+    changed();
+
+    return () => remove(extensions.get(key), entry);
+}
+
 export function replaceMenu(region: string, render: Function): () => void {
     if (!replaceableRegions.includes(region))
         throw new Error(`vi-menu region "${region}" has no built-in content to replace`);
@@ -108,22 +127,23 @@ export function renderRegion(region: MenuRegion, menu: Menu, builtIn: () => unkn
 }
 
 /**
- * Renders an item region for one row of the menu tree.
+ * Renders a region of one row of the menu tree, with the extensions of that kind of row.
  */
-export function renderItemRegion(region: MenuItemRegion, menu: Menu, item: Vidyano.ProgramUnitItem): TemplateResult | typeof nothing {
-    const entries = extensions.get(region);
+export function renderNodeRegion(kind: MenuNodeKind, region: MenuNodeRegion, menu: Menu, item: Vidyano.ProgramUnitItem): TemplateResult | typeof nothing {
+    const entries = extensions.get(`${kind}:${region}`);
     if (!entries?.length)
         return nothing;
 
-    // One box per region, next to the row's link: what an extension puts there never follows the link
-    return html`<div class=${region} part=${region}>${entries.map(e => call(e.render, menu, item))}</div>`;
+    // One box per region, next to the row's link: what an extension puts there never follows the link. Its part is
+    // item-start or item-end, as the menu passes the parts of every row up under one name
+    return html`<div class=${`item-${region}`} part=${`item-${region}`}>${entries.map(e => call(e.render, menu, item))}</div>`;
 }
 
 /**
- * Whether anything extends an item region, so menu state changes need the tree's rows to render again.
+ * Whether anything extends a row region, so menu state changes need the tree's rows to render again.
  */
-export function hasItemExtensions(): boolean {
-    return !!extensions.get("item-start")?.length || !!extensions.get("item-end")?.length;
+export function hasNodeExtensions(): boolean {
+    return [...extensions].some(([key, entries]) => key.includes(":") && entries.length > 0);
 }
 
 /**

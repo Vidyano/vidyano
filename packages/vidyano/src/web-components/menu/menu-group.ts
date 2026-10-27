@@ -3,6 +3,7 @@ import { property } from "lit/decorators.js";
 import * as Vidyano from "@vidyano/core";
 import "@polymer/paper-ripple";
 import { computed, observer } from "components/web-component/web-component";
+import { extendMenuNode, MenuNodeRegion, MenuNodeRender } from "./menu-extensions";
 import { MenuNode } from "./menu-node";
 import styles from "./menu-group.css";
 
@@ -11,6 +12,15 @@ import styles from "./menu-group.css";
  */
 export class MenuGroup extends MenuNode {
     static styles = unsafeCSS(styles);
+
+    /**
+     * Adds content to a region of every group row of every vi-menu: start, before its icon, or end, after its title.
+     * The render function gets the menu and the row's ProgramUnitItemGroup.
+     * @returns A function that removes the content again.
+     */
+    static extend(region: MenuNodeRegion, render: MenuNodeRender<Vidyano.ProgramUnitItemGroup>): () => void {
+        return extendMenuNode("group", region, render);
+    }
 
     /** Whether the children show: when the group is expanded or the menu is filtering. */
     @property({ type: Boolean, reflect: true })
@@ -32,12 +42,12 @@ export class MenuGroup extends MenuNode {
 
         return html`
             <div class="item" part="item group">
-                ${this.renderItemRegion("item-start")}
+                ${this.renderRegion("group", "start")}
                 <a class="link" @click=${this._toggle}>
                     <paper-ripple></paper-ripple>
                     ${this.renderTitle()}
                 </a>
-                ${this.renderItemRegion("item-end")}
+                ${this.renderRegion("group", "end")}
                 ${this.renderIcon()}
             </div>
             <div class="children" part="children" ?inert=${!this.open}>
