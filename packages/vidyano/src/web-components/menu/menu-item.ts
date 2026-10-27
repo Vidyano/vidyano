@@ -1,7 +1,7 @@
 import { html, unsafeCSS } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { IConfigurableAction, WebComponentConfigurationController } from "components/web-component/web-component-configuration-controller";
-import { MenuNode } from "./menu-node";
+import { isModifiedClick, MenuNode } from "./menu-node";
 import styles from "./menu-item.css";
 
 /**
@@ -25,19 +25,23 @@ export class MenuItem extends MenuNode {
         const link = this.linkFor(this.item);
 
         return html`
-            <a class="title" href=${ifDefined(link.href)} target=${ifDefined(link.target)} rel=${ifDefined(link.rel)} @click=${this._onClick}>
-                <paper-ripple></paper-ripple>
+            <div class="row">
                 ${this.renderItemRegion("item-start")}
-                ${this.renderIcon()}
-                ${this.renderTitle()}
+                <a class="title" href=${ifDefined(link.href)} target=${ifDefined(link.target)} rel=${ifDefined(link.rel)} @click=${this._onClick}>
+                    <paper-ripple></paper-ripple>
+                    ${this.renderIcon()}
+                    ${this.renderTitle()}
+                </a>
                 ${this.renderItemRegion("item-end")}
-            </a>
+            </div>
         `;
     }
 
-    // The click keeps bubbling: the app follows the link from its own click listener
-    private _onClick() {
-        this.navigating(this.item);
+    // The click keeps bubbling: the app follows the link from its own click listener. A Ctrl, Shift, Alt or middle
+    // click opens it elsewhere and leaves this tab's filter and cache as they are.
+    private _onClick(e: MouseEvent) {
+        if (!isModifiedClick(e))
+            this.navigating(this.item);
     }
 }
 

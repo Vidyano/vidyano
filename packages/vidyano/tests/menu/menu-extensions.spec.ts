@@ -204,23 +204,22 @@ test.describe('Menu.extend', () => {
         await expect(menu.locator('#late')).toHaveCount(0);
     });
 
-    test('Menu.refresh renders the extensions again for state of their own', async ({ page }) => {
-        await page.evaluate(() => {
-            const w = window as any;
-            w.count = 1;
-            w.Menu.extend('footer', () => w.el('own-state', `count ${w.count}`));
-            w.Menu.extend('item-end', (_menu: any, item: any) => item.name === 'Customers' ? w.el('own-item-state', `item ${w.count}`) : null);
-        });
-        const menu = await addMenu(page);
-        await expect(menu.locator('#own-state')).toHaveText('count 1');
+    test('an extension that throws is logged and skipped; the rest of every menu still renders', async ({ page }) => {
+        const errors: string[] = [];
+        page.on('console', message => message.type() === 'error' && errors.push(message.text()));
 
         await page.evaluate(() => {
             const w = window as any;
-            w.count = 2;
-            w.Menu.refresh();
+            w.Menu.extend('footer', () => { throw new Error('footer boom'); });
+            w.Menu.extend('footer', () => w.el('after-boom'));
+            w.Menu.extend('item-end', () => { throw new Error('item boom'); });
         });
-        await expect(menu.locator('#own-state')).toHaveText('count 2');
-        await expect(menu.locator('#own-item-state')).toHaveText('item 2');
+        const menu = await addMenu(page);
+
+        await expect(menu.locator('header .label')).toContainText('My App');
+        await expect(menu.locator('#after-boom')).toBeAttached();
+        await expect(menu.locator('vi-menu-item').first()).toBeAttached();
+        await expect.poll(() => errors.some(e => e.includes('footer boom')) && errors.some(e => e.includes('item boom'))).toBe(true);
     });
 
     test('the render function gets the menu and follows its state', async ({ page }) => {
@@ -308,6 +307,22 @@ test.describe('Menu.replace', () => {
         await expect(menu.locator('#first-user')).toBeAttached();
     });
 
+    test('disposing a repeated replacement removes that registration, not an earlier one of the same function', async ({ page }) => {
+        await page.evaluate(() => {
+            const w = window as any;
+            const same = () => w.el('same-user');
+            w.Menu.replace('user', same);
+            w.Menu.replace('user', () => w.el('other-user'));
+            w.dispose = w.Menu.replace('user', same);
+        });
+        const menu = await addMenu(page);
+        await expect(menu.locator('#same-user')).toBeAttached();
+
+        await page.evaluate(() => (window as any).dispose());
+        await expect(menu.locator('#other-user')).toBeAttached();
+        await expect(menu.locator('#same-user')).toHaveCount(0);
+    });
+
     test('replaces the search box and the toggle', async ({ page }) => {
         await page.evaluate(() => {
             const w = window as any;
@@ -340,6 +355,45 @@ test.describe('Menu.replace', () => {
 test.describe('Menu.extend item regions', () => {
     test.beforeEach(async ({ page }) => await setupPage(page));
 
+    test('a click in an item region stays with the extension: it is not inside the row link and does not navigate', async ({ page }) => {
+        await page.evaluate(() => {
+            const w = window as any;
+            w.clicks = 0;
+            w.Menu.extend('item-end', (_menu: any, item: any) => {
+                if (item.name !== 'Customers')
+                    return null;
+
+                // A plain button, without preventDefault or stopPropagation
+                const button = document.createElement('button');
+                button.id = 'region-button';
+                button.onclick = () => w.clicks++;
+                return button;
+            });
+        });
+        const menu = await addMenu(page);
+        await menu.evaluate(async (m: any) => { m.filter = 'Cust'; await m.updateComplete; });
+
+        const button = menu.locator('#region-button');
+        await button.click();
+
+        expect(await page.evaluate(() => (window as any).clicks)).toBe(1);
+        expect(await button.evaluate(b => !!b.closest('a'))).toBe(false);
+        expect(await menu.evaluate((m: any) => m.filter)).toBe('Cust');
+    });
+
+    test('item regions and icons can be styled from outside with ::part', async ({ page }) => {
+        await page.addStyleTag({ content: 'vi-menu::part(item-end) { outline: 3px solid rgb(255, 0, 0); } vi-menu::part(icon) { outline: 3px solid rgb(0, 0, 255); }' });
+        await page.evaluate(() => {
+            const w = window as any;
+            w.Menu.extend('item-end', (_menu: any, item: any) => item.name === 'Customers' ? w.el('styled') : null);
+        });
+        const menu = await addMenu(page);
+
+        const region = menu.locator('vi-menu-item').filter({ has: page.locator('#styled') }).locator('.item-end');
+        await expect(region).toHaveCSS('outline-color', 'rgb(255, 0, 0)');
+        await expect(menu.locator('vi-menu-program-unit').first().locator('vi-icon').first()).toHaveCSS('outline-color', 'rgb(0, 0, 255)');
+    });
+
     test('decorates every tree node with its own item', async ({ page }) => {
         await page.evaluate(() => {
             const w = window as any;
@@ -365,8 +419,10 @@ test.describe('Menu.extend item regions', () => {
         const menu = await addMenu(page);
         const item = menu.locator('vi-menu-item').filter({ has: page.locator('#end') });
 
-        const parts = await item.evaluate((el: any) => Array.from(el.shadowRoot.querySelector('a.title').querySelectorAll('#start, #title, #end')).map((n: any) => n.id));
+        // In the row, next to the link rather than inside it
+        const parts = await item.evaluate((el: any) => Array.from(el.shadowRoot.querySelector('.row').querySelectorAll('#start, #title, #end')).map((n: any) => n.id));
         expect(parts).toEqual(['start', 'title', 'end']);
+        expect(await item.evaluate((el: any) => !!el.shadowRoot.querySelector('a.title #start, a.title #end'))).toBe(false);
     });
 
     test('item regions follow the menu state', async ({ page }) => {

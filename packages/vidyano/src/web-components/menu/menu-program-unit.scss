@@ -17,42 +17,21 @@ $transition: 0.22s cubic-bezier(0.2, 0, 0, 1);
         pointer-events: none;
     }
 
-    > .title {
+    // The row: the link to the program unit, with the item regions next to it
+    > .row {
         display: flex;
         align-items: center;
         gap: var(--vi-menu-item-gap);
         position: relative;
         padding-left: var(--vi-menu-item-padding-left);
         padding-right: var(--vi-menu-item-gap);
-        text-decoration: none;
-        color: var(--vi-menu-color, $color);
         font-weight: 600;
         text-transform: uppercase;
         white-space: nowrap;
-        text-overflow: ellipsis;
         overflow: hidden;
-        outline: none;
 
         &:hover {
             background-color: rgba(0, 0, 0, 0.1);
-        }
-
-        > vi-icon {
-            --vi-icon-width: var(--vi-menu-program-unit-icon-size);
-            --vi-icon-height: var(--vi-menu-program-unit-icon-size);
-            width: var(--vi-menu-program-unit-icon-size);
-            height: var(--vi-menu-program-unit-icon-size);
-            flex-shrink: 0;
-            fill: var(--vi-menu-color, $color);
-            transition: transform 0.2s ease, opacity 0.2s ease;
-        }
-
-        > span {
-            display: block;
-            flex: 1;
-            min-width: 0;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         // A region whose extensions all rendered nothing takes no room
@@ -60,11 +39,51 @@ $transition: 0.22s cubic-bezier(0.2, 0, 0, 1);
             display: none !important;
         }
 
+        // Above the link's overlay, so what an extension shows there gets its own clicks
         > .item-start, > .item-end {
             display: flex;
             align-items: center;
             gap: 4px;
             flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        > .title {
+            display: flex;
+            flex: 1;
+            min-width: 0;
+            align-items: center;
+            gap: var(--vi-menu-item-gap);
+            text-decoration: none;
+            color: var(--vi-menu-color, $color);
+            overflow: hidden;
+            outline: none;
+
+            // Covers the whole row, so all of it follows the link except the regions above it
+            &::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+            }
+
+            > vi-icon {
+                --vi-icon-width: var(--vi-menu-program-unit-icon-size);
+                --vi-icon-height: var(--vi-menu-program-unit-icon-size);
+                width: var(--vi-menu-program-unit-icon-size);
+                height: var(--vi-menu-program-unit-icon-size);
+                flex-shrink: 0;
+                fill: var(--vi-menu-color, $color);
+                transition: transform 0.2s ease, opacity 0.2s ease;
+            }
+
+            > span {
+                display: block;
+                flex: 1;
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
         }
     }
 
@@ -104,7 +123,7 @@ $transition: 0.22s cubic-bezier(0.2, 0, 0, 1);
         pointer-events: none;
     }
 
-    > .title {
+    > .row {
         height: var(--vi-menu-item-height);
         justify-content: center;
         padding-left: 0;
@@ -114,8 +133,12 @@ $transition: 0.22s cubic-bezier(0.2, 0, 0, 1);
         max-width: var(--vi-menu-collapsed-width);
         transition: all $transition;
 
-        > span {
-            display: none;
+        > .title {
+            justify-content: center;
+
+            > span {
+                display: none;
+            }
         }
 
         // Only the icon takes room: the item regions lie over the row, so what they show (a dot, say) is placed
@@ -131,7 +154,7 @@ $transition: 0.22s cubic-bezier(0.2, 0, 0, 1);
             }
         }
 
-        &:hover > vi-icon {
+        &:hover > .title > vi-icon {
             transform: scale(1.1);
         }
     }
@@ -143,7 +166,7 @@ $transition: 0.22s cubic-bezier(0.2, 0, 0, 1);
         pointer-events: auto;
     }
 
-    > .title {
+    > .row {
         height: var(--vi-menu-item-height);
         justify-content: flex-start;
         padding-left: var(--vi-menu-item-padding-left);

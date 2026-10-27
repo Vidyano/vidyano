@@ -11,7 +11,8 @@ import "components/scroller/scroller";
 import { SelectReferenceDialog } from "components/select-reference-dialog/select-reference-dialog";
 import "components/user/user";
 import { computed, listener, observer, WebComponent } from "components/web-component/web-component";
-import { changed, extendMenu, hasItemExtensions, MenuExtendOptions, MenuExtensionsController, menuExtensionEvents, MenuItemRegion, MenuItemRender, MenuRegion, MenuRender, MenuReplaceableRegion, renderRegion, replaceMenu } from "./menu-extensions";
+import { extendMenu, hasItemExtensions, MenuExtendOptions, MenuExtensionsController, menuExtensionEvents, MenuItemRegion, MenuItemRender, MenuRegion, MenuRender, MenuReplaceableRegion, renderRegion, replaceMenu } from "./menu-extensions";
+import { menuNodeParts } from "./menu-node";
 import "./menu-program-unit";
 import styles from "./menu.css";
 
@@ -39,13 +40,6 @@ export class Menu extends WebComponent {
      */
     static replace(region: MenuReplaceableRegion, render: MenuRender): () => void {
         return replaceMenu(region, render);
-    }
-
-    /**
-     * Renders the extensions of every vi-menu again, for extensions that follow state of their own.
-     */
-    static refresh() {
-        changed();
     }
 
     private static _minResizeWidth: number;
@@ -156,14 +150,15 @@ export class Menu extends WebComponent {
     }
 
     private _searchFocusedChanged(searchFocused: boolean, wasFocused: boolean) {
-        if (!this.collapsed)
-            return;
-
-        if (searchFocused)
-            this.hovering = true;
+        if (searchFocused) {
+            // Focus in the search shows a collapsed menu in full
+            if (this.collapsed)
+                this.hovering = true;
+        }
         else if (wasFocused) {
-            // Only a blur, not the initial value: give clicks time to complete, then check whether the mouse is still
-            // over the menu, unless the search got the focus back meanwhile
+            // Only a blur, not the initial value, collapsed or not: the focus kept the hover after the mouse left, and
+            // the menu may be collapsed later. Give clicks time to complete, then check whether the mouse is still over
+            // the menu, unless the search got the focus back meanwhile.
             setTimeout(() => {
                 if (!this.searchFocused && !this.matches(":hover"))
                     this.hovering = false;
@@ -343,7 +338,7 @@ export class Menu extends WebComponent {
                         ${this._renderInstantSearch()}
                         ${renderRegion("before-items", this, () => nothing)}
                         ${repeat(this.programUnits ?? [], unit => unit, unit => html`
-                            <vi-menu-program-unit .item=${unit} .filter=${this.filter} .activeProgramUnit=${this.activeProgramUnit} .collapsed=${this.collapsed} .hovering=${this.hovering}></vi-menu-program-unit>
+                            <vi-menu-program-unit exportparts=${menuNodeParts} .item=${unit} .filter=${this.filter} .activeProgramUnit=${this.activeProgramUnit} .collapsed=${this.collapsed} .hovering=${this.hovering}></vi-menu-program-unit>
                             ${this._isFirstRunProgramUnit(application, unit) ? html`<div id="add" @click=${this._add}>+ Add menu item</div>` : nothing}
                         `)}
                         ${renderRegion("after-items", this, () => nothing)}

@@ -5,7 +5,8 @@ import "@polymer/paper-ripple";
 import { SelectReferenceDialog } from "components/select-reference-dialog/select-reference-dialog";
 import { computed, observer } from "components/web-component/web-component";
 import { IConfigurableAction, WebComponentConfigurationController } from "components/web-component/web-component-configuration-controller";
-import { MenuNode } from "./menu-node";
+import { isModifiedClick, MenuNode } from "./menu-node";
+import type { MenuGroup } from "./menu-group";
 import "./menu-group";
 import "./menu-item";
 import "./menu-separator";
@@ -78,9 +79,7 @@ export class MenuProgramUnit extends MenuNode {
             return;
 
         // Blur a focused item before it is hidden, a hidden focused element is an accessibility warning
-        const focused = this.shadowRoot?.activeElement;
-        if (focused instanceof HTMLElement && this.shadowRoot.getElementById("subItems")?.contains(focused))
-            focused.blur();
+        this.blurFocusedWithin(this.shadowRoot?.getElementById("subItems"));
     }
 
     render() {
@@ -88,13 +87,15 @@ export class MenuProgramUnit extends MenuNode {
         const link = this.linkFor(unit);
 
         return html`
-            <a class="title" href=${link.href ?? nothing} target=${link.target ?? nothing} rel=${link.rel ?? nothing} @click=${this._click}>
-                <paper-ripple></paper-ripple>
+            <div class="row">
                 ${this.renderItemRegion("item-start")}
-                ${this.renderIcon()}
-                ${this.renderTitle()}
+                <a class="title" href=${link.href ?? nothing} target=${link.target ?? nothing} rel=${link.rel ?? nothing} @click=${this._click}>
+                    <paper-ripple></paper-ripple>
+                    ${this.renderIcon()}
+                    ${this.renderTitle()}
+                </a>
                 ${this.renderItemRegion("item-end")}
-            </a>
+            </div>
             ${unit?.items?.length ? html`
                 <div id="subItems" ?open=${this.open} ?inert=${!this.open}>
                     <div class="items">${this.renderChildren(unit.items)}</div>
@@ -104,8 +105,12 @@ export class MenuProgramUnit extends MenuNode {
     }
 
     private _click(e: MouseEvent) {
+        // A Ctrl, Shift, Alt or middle click opens the link elsewhere and leaves this menu as it is
+        if (isModifiedClick(e))
+            return;
+
         if (!this.filtering)
-            this._collapseGroups(this.shadowRoot);
+            this.shadowRoot?.querySelectorAll<MenuGroup>("vi-menu-group").forEach(group => group.collapseAll());
 
         if (!this.item?.path) {
             e.preventDefault();
@@ -113,16 +118,6 @@ export class MenuProgramUnit extends MenuNode {
         }
         else
             this.navigating(this.item);
-    }
-
-    /**
-     * Collapses every vi-menu-group below the root, the groups nested in other groups too.
-     */
-    private _collapseGroups(root: ShadowRoot) {
-        root?.querySelectorAll<MenuNode>("vi-menu-group").forEach(group => {
-            group.expanded = false;
-            this._collapseGroups(group.shadowRoot);
-        });
     }
 }
 

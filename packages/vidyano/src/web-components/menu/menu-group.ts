@@ -31,13 +31,15 @@ export class MenuGroup extends MenuNode {
         const group = this.item as Vidyano.ProgramUnitItemGroup;
 
         return html`
-            <a class="title" @click=${this._toggle}>
-                <paper-ripple></paper-ripple>
+            <div class="row">
                 ${this.renderItemRegion("item-start")}
-                ${this.renderTitle()}
+                <a class="title" @click=${this._toggle}>
+                    <paper-ripple></paper-ripple>
+                    ${this.renderTitle()}
+                </a>
                 ${this.renderItemRegion("item-end")}
                 ${this.renderIcon()}
-            </a>
+            </div>
             <div class="sub-items" ?inert=${!this.open}>
                 <div class="content">${this.renderChildren(group?.items)}</div>
             </div>
@@ -50,12 +52,7 @@ export class MenuGroup extends MenuNode {
             return;
 
         // Blur a focused descendant before its content closes
-        let focused = this.shadowRoot?.activeElement;
-        while (focused?.shadowRoot?.activeElement)
-            focused = focused.shadowRoot.activeElement;
-
-        if (focused instanceof HTMLElement)
-            focused.blur();
+        this.blurFocusedWithin(this.shadowRoot?.querySelector(".sub-items"));
     }
 
     private _toggle(e: Event) {

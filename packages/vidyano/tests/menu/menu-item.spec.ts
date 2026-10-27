@@ -137,6 +137,16 @@ test.describe('vi-menu-item', () => {
         expect(await page.evaluate(() => (window as any).__calls.cacheRemove)).toEqual(['AppCacheEntryPersistentObject']);
     });
 
+    test('a Ctrl or Shift click opens a new tab: the filter and the cache of this tab stay', async ({ page }) => {
+        const item = await addNode(page, 'item', query, 'peo');
+        await item.locator('#title').click({ modifiers: ['Control'] });
+        await item.locator('#title').click({ modifiers: ['Shift'] });
+
+        const calls = await page.evaluate(() => (window as any).__calls);
+        expect(calls.cacheRemove).toEqual([]);
+        expect(calls.resetFilter).toBe(0);
+    });
+
     test('a click while filtering asks the menu to reset its filter', async ({ page }) => {
         const item = await addNode(page, 'item', query, 'peo');
         await item.locator('#title').click();
@@ -176,8 +186,9 @@ test.describe('vi-menu-item', () => {
     test('the title row is indented past the program unit icon', async ({ page }) => {
         const item = await addNode(page, 'item', query);
 
-        // padding-left: 16px + 20px + 8px
-        await expect(item.locator('a.title')).toHaveCSS('padding-left', '44px');
+        // padding-left: 16px + 20px + 8px, on the row that holds the link and the item regions
+        await expect(item.locator('.row')).toHaveCSS('padding-left', '44px');
+        await expect(item.locator('.row')).toHaveCSS('display', 'flex');
         await expect(item.locator('a.title')).toHaveCSS('display', 'flex');
     });
 

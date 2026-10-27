@@ -624,10 +624,12 @@ test.describe('Select reference dialog: Add Query to a program unit', () => {
     });
 
     test('a program unit\'s "Add Query" with select-all and one unticked row sends that row to skip', { annotation: [{ type: 'case', description: 'views.srd-add-query-select-all' }] }, async ({ page }) => {
-        const { sent, unticked } = await addQueriesSelectAllButOne(page, () => page.locator('vi-menu-item.program-unit').first().evaluate((item: any) => {
-            // The program unit's configure menu: "Program unit: …" › "Add Query"
-            const actions: any[] = [];
-            item._configure({ detail: actions });
+        const { sent, unticked } = await addQueriesSelectAllButOne(page, () => page.locator('vi-menu-program-unit').first().evaluate((unit: HTMLElement) => {
+            // The program unit's configure menu (Ctrl+right-click): "Program unit: …" › "Add Query". The contextmenu
+            // doesn't bubble, so only the program unit sees it and the app opens no popup.
+            let actions: any[] = [];
+            unit.addEventListener('vi:configure', (e: any) => actions = e.detail, { once: true });
+            unit.dispatchEvent(new MouseEvent('contextmenu', { ctrlKey: true, button: 2, composed: true }));
             actions[0].subActions.find((a: any) => a.label === 'Add Query').action();
         }));
         expect(request(sent)).toEqual(skipOnly(unticked));

@@ -26,9 +26,10 @@ const regions = ["header", "toggle", "search", "before-items", "after-items", "f
 const replaceableRegions = ["header", "toggle", "search", "user"];
 
 type Extension = { render: Function; before: boolean };
+type Replacement = { render: Function };
 
 const extensions = new Map<string, Extension[]>();
-const replacements = new Map<string, Function[]>();
+const replacements = new Map<string, Replacement[]>();
 
 /**
  * Tells the menus and their nodes to render again: "change" when an extension comes or goes,
@@ -36,10 +37,7 @@ const replacements = new Map<string, Function[]>();
  */
 export const menuExtensionEvents = new EventTarget();
 
-/**
- * Renders the menus and their nodes again, e.g. when an extension's own state changed.
- */
-export function changed() {
+function changed() {
     menuExtensionEvents.dispatchEvent(new Event("change"));
 }
 
@@ -50,6 +48,20 @@ function remove<T>(list: T[], entry: T) {
 
     list.splice(index, 1);
     changed();
+}
+
+/**
+ * Calls an extension's render function. One that throws is logged and renders nothing, since the registry is
+ * shared: it would otherwise break every menu.
+ */
+function call(render: Function, ...args: unknown[]): unknown {
+    try {
+        return render(...args);
+    }
+    catch (e) {
+        console.error("A vi-menu extension failed to render.", e);
+        return nothing;
+    }
 }
 
 export function extendMenu(region: string, render: Function, options?: MenuExtendOptions): () => void {
@@ -70,13 +82,15 @@ export function replaceMenu(region: string, render: Function): () => void {
     if (!replaceableRegions.includes(region))
         throw new Error(`vi-menu region "${region}" has no built-in content to replace`);
 
+    // An entry of its own, so disposing removes this registration even when the same function was registered again
+    const entry: Replacement = { render };
     if (!replacements.has(region))
         replacements.set(region, []);
 
-    replacements.get(region).push(render);
+    replacements.get(region).push(entry);
     changed();
 
-    return () => remove(replacements.get(region), render);
+    return () => remove(replacements.get(region), entry);
 }
 
 /**
@@ -86,7 +100,7 @@ export function renderRegion(region: MenuRegion, menu: Menu, builtIn: () => unkn
     const entries = extensions.get(region) ?? [];
     const replacement = replacements.get(region)?.at(-1);
 
-    return html`${entries.filter(e => e.before).map(e => e.render(menu))}${replacement ? replacement(menu) : builtIn()}${entries.filter(e => !e.before).map(e => e.render(menu))}`;
+    return html`${entries.filter(e => e.before).map(e => call(e.render, menu))}${replacement ? call(replacement.render, menu) : builtIn()}${entries.filter(e => !e.before).map(e => call(e.render, menu))}`;
 }
 
 /**
@@ -97,8 +111,8 @@ export function renderItemRegion(region: MenuItemRegion, menu: Menu, item: Vidya
     if (!entries?.length)
         return nothing;
 
-    // One box per region, which the rows lay out as a single flex item
-    return html`<div class=${region} part=${region}>${entries.map(e => e.render(menu, item))}</div>`;
+    // One box per region, next to the row's link: what an extension puts there never follows the link
+    return html`<div class=${region} part=${region}>${entries.map(e => call(e.render, menu, item))}</div>`;
 }
 
 /**

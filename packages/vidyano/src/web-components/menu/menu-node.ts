@@ -160,6 +160,22 @@ export abstract class MenuNode extends WebComponent {
     }
 
     /**
+     * Blurs the focused element when it lies within the container, however deep in nested shadow roots it sits:
+     * a hidden focused element is an accessibility warning.
+     */
+    protected blurFocusedWithin(container: Element) {
+        let focused = this.shadowRoot?.activeElement;
+        if (!focused || !container?.contains(focused))
+            return;
+
+        while (focused.shadowRoot?.activeElement)
+            focused = focused.shadowRoot.activeElement;
+
+        if (focused instanceof HTMLElement)
+            focused.blur();
+    }
+
+    /**
      * Renders the child items, each as the node element that fits its type.
      */
     protected renderChildren(items: Vidyano.ProgramUnitItem[]): TemplateResult {
@@ -210,10 +226,23 @@ export abstract class MenuNode extends WebComponent {
  */
 export function renderMenuNode(item: Vidyano.ProgramUnitItem, filter: string, filterParent: Vidyano.ProgramUnitItem): TemplateResult {
     if (item instanceof Vidyano.ProgramUnitItemGroup)
-        return html`<vi-menu-group .item=${item} .filter=${filter} .filterParent=${filterParent}></vi-menu-group>`;
+        return html`<vi-menu-group exportparts=${menuNodeParts} .item=${item} .filter=${filter} .filterParent=${filterParent}></vi-menu-group>`;
 
     if (item instanceof Vidyano.ProgramUnitItemSeparator)
-        return html`<vi-menu-separator .item=${item} .filter=${filter} .filterParent=${filterParent}></vi-menu-separator>`;
+        return html`<vi-menu-separator exportparts=${menuNodeParts} .item=${item} .filter=${filter} .filterParent=${filterParent}></vi-menu-separator>`;
 
-    return html`<vi-menu-item .item=${item} .filter=${filter} .filterParent=${filterParent}></vi-menu-item>`;
+    return html`<vi-menu-item exportparts=${menuNodeParts} .item=${item} .filter=${filter} .filterParent=${filterParent}></vi-menu-item>`;
+}
+
+/**
+ * The parts of a node, passed up through every shadow root of the tree, so vi-menu::part(item-end) and the like
+ * reach them from outside the menu.
+ */
+export const menuNodeParts = "icon, item-start, item-end";
+
+/**
+ * Whether a click asks the browser to open the link elsewhere: with Ctrl, Cmd, Shift or Alt, or not the main button.
+ */
+export function isModifiedClick(e: MouseEvent): boolean {
+    return e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0;
 }

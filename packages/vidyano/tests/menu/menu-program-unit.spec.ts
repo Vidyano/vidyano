@@ -104,6 +104,25 @@ test.describe('vi-menu-program-unit', () => {
         await expect(pu).toHaveAttribute('expanded', '');
     });
 
+    test('closing blurs a focused child, however deep in the nested shadow roots', async ({ page }) => {
+        const pu = await addProgramUnit(page, { active: true });
+        const link = pu.locator('vi-menu-item').filter({ hasText: 'Customers' }).locator('a.title');
+        await link.focus();
+        await expect.poll(() => link.evaluate(a => (a.getRootNode() as ShadowRoot).activeElement === a)).toBe(true);
+
+        // Blurred before the children are hidden, by the program unit itself
+        const blurredBeforeClose = await pu.evaluate(async (el: any) => {
+            const item = [...el.shadowRoot.querySelectorAll('vi-menu-item')].find((i: any) => i.item.title === 'Customers');
+            const a = item.shadowRoot.querySelector('a.title');
+            let blurred = false;
+            a.addEventListener('blur', () => blurred = true, { once: true });
+            el.expanded = false;
+            await el.updateComplete;
+            return blurred && !el.shadowRoot.getElementById('subItems').hasAttribute('open');
+        });
+        expect(blurredBeforeClose).toBe(true);
+    });
+
     test('renders its children as group and item nodes', async ({ page }) => {
         const pu = await addProgramUnit(page, { active: true });
         await expect(pu.locator('vi-menu-group')).toHaveCount(1);

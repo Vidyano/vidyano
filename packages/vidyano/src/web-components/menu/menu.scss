@@ -188,6 +188,8 @@ vi-input-search {
 }
 
 #resizer {
+    // A touch drag resizes: without this the browser pans instead and cancels the pointer
+    touch-action: none;
     position: absolute;
     top: 0;
     bottom: 0;

@@ -21,7 +21,8 @@ span.match {
     pointer-events: none;
 }
 
-.title {
+// The row: the link that toggles the group, its item regions and the chevron
+.row {
     display: flex;
     align-items: center;
     gap: var(--vi-menu-item-gap);
@@ -33,12 +34,8 @@ span.match {
         var(--vi-menu-extra-indent, 0px)
     );
     padding-right: var(--vi-menu-item-gap);
-    text-decoration: none;
-    color: var(--vi-menu-color, $color);
     white-space: nowrap;
-    text-overflow: ellipsis;
     overflow: hidden;
-    outline: none;
 
     &:hover {
         background-color: rgba(0, 0, 0, 0.1);
@@ -53,24 +50,19 @@ span.match {
         transform: rotate(-180deg);
     }
 
-    > #title {
-        display: block;
-        flex: 1;
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
     // A region whose extensions all rendered nothing takes no room
     > .item-start:empty, > .item-end:empty {
         display: none !important;
     }
 
+    // Above the link's overlay, so what an extension shows there gets its own clicks
     > .item-start, > .item-end {
         display: flex;
         align-items: center;
         gap: 4px;
         flex-shrink: 0;
+        position: relative;
+        z-index: 1;
     }
 
     // In the indent, under the program unit's icon, so the titles stay aligned
@@ -84,7 +76,33 @@ span.match {
     }
 }
 
-:host([open]) .title > vi-icon {
+.title {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    align-items: center;
+    text-decoration: none;
+    color: var(--vi-menu-color, $color);
+    overflow: hidden;
+    outline: none;
+
+    // Covers the whole row, so all of it toggles the group except the regions above it
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+    }
+
+    > #title {
+        display: block;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+:host([open]) .row > vi-icon {
     transform: rotate(0deg);
 }
 

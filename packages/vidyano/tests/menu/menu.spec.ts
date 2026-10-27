@@ -199,6 +199,27 @@ test.describe('vi-menu', () => {
         expect(await cookie(page, 'menu-width')).toBe(String(initial));
     });
 
+    test('the resizer keeps touch drags for itself, so the browser does not pan instead', async ({ page }) => {
+        const menu = await setupPage(page);
+        expect(await menu.locator('#resizer').evaluate(e => getComputedStyle(e).touchAction)).toBe('none');
+    });
+
+    test('a blur while expanded lets the hover go, so a later collapse shows only the icons', async ({ page }) => {
+        const menu = await setupPage(page, { programUnits });
+        const unit = menu.locator('vi-menu-program-unit').first();
+
+        // Focus the search of the expanded menu, then leave the menu with the mouse: the focus keeps the hover
+        await page.mouse.move(20, 300);
+        await searchInput(menu).focus();
+        await page.mouse.move(800, 300);
+
+        await searchInput(menu).blur();
+        await expect(menu).not.toHaveAttribute('search-focused');
+
+        await menu.evaluate(async (m: any) => { m.collapsed = true; await m.updateComplete; });
+        await expect.poll(() => prop(unit, 'hovering')).toBe(false);
+    });
+
     test('a menu-width cookie sets the width', async ({ page }) => {
         const menu = await setupPage(page, { cookies: { 'menu-width': '400' } });
         expect(await menu.evaluate(e => e.style.getPropertyValue('--vi-menu--expand-width'))).toBe('400px');
