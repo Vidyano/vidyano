@@ -8,6 +8,8 @@ import { AppCacheEntryPersistentObject } from "components/app-cache/app-cache-en
 import { AppCacheEntryQuery } from "components/app-cache/app-cache-entry-query";
 import * as IconRegister from "components/icon/icon-register";
 import { computed, observer, serviceBusObserver, WebComponent } from "components/web-component/web-component";
+import type { Menu } from "./menu";
+import { MenuExtensionsController, MenuItemRegion, renderItemRegion } from "./menu-extensions";
 
 /**
  * Shared base of the menu tree nodes: vi-menu-program-unit, vi-menu-group, vi-menu-item and vi-menu-separator.
@@ -15,6 +17,9 @@ import { computed, observer, serviceBusObserver, WebComponent } from "components
  * expanding its ancestors on the "vi-menu-item:select" ServiceBus message.
  */
 export abstract class MenuNode extends WebComponent {
+    private _menu: Menu;
+    private _extensions = new MenuExtensionsController(this, true);
+
     /** The program unit item this node shows. */
     @property({ type: Object })
     item: Vidyano.ProgramUnitItem;
@@ -142,6 +147,19 @@ export abstract class MenuNode extends WebComponent {
     }
 
     /**
+     * Renders what Menu.extend adds to an item region of this row, for this node's item.
+     */
+    protected renderItemRegion(region: MenuItemRegion): TemplateResult | typeof nothing {
+        if (!this.item)
+            return nothing;
+
+        // Nodes live in vi-menu's shadow tree; a node outside a menu gets null
+        this._menu ??= this.findParent<Menu>(e => e instanceof HTMLElement && e.matches("vi-menu"));
+
+        return renderItemRegion(region, this._menu, this.item);
+    }
+
+    /**
      * Renders the child items, each as the node element that fits its type.
      */
     protected renderChildren(items: Vidyano.ProgramUnitItem[]): TemplateResult {
@@ -155,7 +173,8 @@ export abstract class MenuNode extends WebComponent {
         if (!item || item instanceof Vidyano.ProgramUnitItemGroup || item instanceof Vidyano.ProgramUnitItemSeparator || !item.path)
             return { href: undefined, target: undefined, rel: undefined };
 
-        const href = item instanceof Vidyano.ProgramUnitItemUrl ? item.path : Path.routes.rootPath + item.path;
+        // Outside vi-app no root path is set, which leaves the link relative
+        const href = item instanceof Vidyano.ProgramUnitItemUrl ? item.path : (Path.routes.rootPath ?? "") + item.path;
         const external = item instanceof Vidyano.ProgramUnitItemUrl && href.startsWith("http");
 
         // Only external links open in a new tab; vi-app routes the others in place

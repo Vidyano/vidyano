@@ -1,0 +1,132 @@
+import { html, nothing, ReactiveController, ReactiveControllerHost, TemplateResult } from "lit";
+import type * as Vidyano from "@vidyano/core";
+import type { Menu } from "./menu";
+
+/** The parts of vi-menu that Menu.extend adds content to. */
+export type MenuRegion = "header" | "toggle" | "search" | "before-items" | "after-items" | "footer" | "user";
+
+/** The parts of vi-menu with built-in content, which Menu.replace swaps for other content. */
+export type MenuReplaceableRegion = "header" | "toggle" | "search" | "user";
+
+/** The spots on every row of the menu tree: before the row's icon and after its title. */
+export type MenuItemRegion = "item-start" | "item-end";
+
+/** Renders an extension: a Lit template result, an element, a string, or nothing. */
+export type MenuRender = (menu: Menu) => unknown;
+
+/** Renders an item region extension for one row of the menu tree; the menu is null for a node outside a vi-menu. */
+export type MenuItemRender = (menu: Menu, item: Vidyano.ProgramUnitItem) => unknown;
+
+export interface MenuExtendOptions {
+    /** Puts the content before the region's built-in content instead of after it. */
+    before?: boolean;
+}
+
+const regions = ["header", "toggle", "search", "before-items", "after-items", "footer", "user", "item-start", "item-end"];
+const replaceableRegions = ["header", "toggle", "search", "user"];
+
+type Extension = { render: Function; before: boolean };
+
+const extensions = new Map<string, Extension[]>();
+const replacements = new Map<string, Function[]>();
+
+/**
+ * Tells the menus and their nodes to render again: "change" when an extension comes or goes,
+ * "state" when a menu's state changes, which the item regions on its nodes may follow.
+ */
+export const menuExtensionEvents = new EventTarget();
+
+/**
+ * Renders the menus and their nodes again, e.g. when an extension's own state changed.
+ */
+export function changed() {
+    menuExtensionEvents.dispatchEvent(new Event("change"));
+}
+
+function remove<T>(list: T[], entry: T) {
+    const index = list.indexOf(entry);
+    if (index < 0)
+        return;
+
+    list.splice(index, 1);
+    changed();
+}
+
+export function extendMenu(region: string, render: Function, options?: MenuExtendOptions): () => void {
+    if (!regions.includes(region))
+        throw new Error(`vi-menu has no region "${region}"`);
+
+    const entry: Extension = { render, before: !!options?.before };
+    if (!extensions.has(region))
+        extensions.set(region, []);
+
+    extensions.get(region).push(entry);
+    changed();
+
+    return () => remove(extensions.get(region), entry);
+}
+
+export function replaceMenu(region: string, render: Function): () => void {
+    if (!replaceableRegions.includes(region))
+        throw new Error(`vi-menu region "${region}" has no built-in content to replace`);
+
+    if (!replacements.has(region))
+        replacements.set(region, []);
+
+    replacements.get(region).push(render);
+    changed();
+
+    return () => remove(replacements.get(region), render);
+}
+
+/**
+ * Renders a region: its extensions around the built-in content, or around the last replacement.
+ */
+export function renderRegion(region: MenuRegion, menu: Menu, builtIn: () => unknown): TemplateResult {
+    const entries = extensions.get(region) ?? [];
+    const replacement = replacements.get(region)?.at(-1);
+
+    return html`${entries.filter(e => e.before).map(e => e.render(menu))}${replacement ? replacement(menu) : builtIn()}${entries.filter(e => !e.before).map(e => e.render(menu))}`;
+}
+
+/**
+ * Renders an item region for one row of the menu tree.
+ */
+export function renderItemRegion(region: MenuItemRegion, menu: Menu, item: Vidyano.ProgramUnitItem): TemplateResult | typeof nothing {
+    const entries = extensions.get(region);
+    if (!entries?.length)
+        return nothing;
+
+    // One box per region, which the rows lay out as a single flex item
+    return html`<div class=${region} part=${region}>${entries.map(e => e.render(menu, item))}</div>`;
+}
+
+/**
+ * Whether anything extends an item region, so menu state changes need the tree's rows to render again.
+ */
+export function hasItemExtensions(): boolean {
+    return !!extensions.get("item-start")?.length || !!extensions.get("item-end")?.length;
+}
+
+/**
+ * Renders the host again when an extension comes or goes, and on menu state changes when `followState` is set.
+ */
+export class MenuExtensionsController implements ReactiveController {
+    #host: ReactiveControllerHost;
+    #events: string[];
+    #update = () => this.#host.requestUpdate();
+
+    constructor(host: ReactiveControllerHost, followState = false) {
+        this.#host = host;
+        this.#events = followState ? ["change", "state"] : ["change"];
+        host.addController(this);
+    }
+
+    hostConnected() {
+        this.#events.forEach(name => menuExtensionEvents.addEventListener(name, this.#update));
+    }
+
+    hostDisconnected() {
+        this.#events.forEach(name => menuExtensionEvents.removeEventListener(name, this.#update));
+    }
+}

@@ -41,10 +41,15 @@ $backgroundColor: var(--colors-blue-grey-900);
     }
 }
 
-#toggleCollapse {
+// The toggle region: the built-in button or what Menu.replace("toggle", …) puts there
+#toggle {
     position: absolute;
     top: 0;
     right: 0;
+    display: flex;
+}
+
+#toggleCollapse {
     background-color: transparent;
     height: var(--vi-menu-collapsed-width);
     width: var(--vi-menu-collapsed-width);
@@ -251,8 +256,11 @@ vi-input-search {
 
         }
 
-        #toggleCollapse {
+        #toggle {
             z-index: 1000;
+        }
+
+        #toggleCollapse {
             background-color: var(--color-dark);
 
             &::part(icon) {

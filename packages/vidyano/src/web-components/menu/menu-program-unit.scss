@@ -54,6 +54,18 @@ $transition: 0.22s cubic-bezier(0.2, 0, 0, 1);
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
+        // A region whose extensions all rendered nothing takes no room
+        > .item-start:empty, > .item-end:empty {
+            display: none !important;
+        }
+
+        > .item-start, > .item-end {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
     }
 
     #subItems {
@@ -104,6 +116,19 @@ $transition: 0.22s cubic-bezier(0.2, 0, 0, 1);
 
         > span {
             display: none;
+        }
+
+        // Only the icon takes room: the item regions lie over the row, so what they show (a dot, say) is placed
+        // against the row with position: absolute and the icon stays centered
+        > .item-start, > .item-end {
+            position: absolute;
+            inset: 0;
+            gap: 0;
+            pointer-events: none;
+
+            > * {
+                pointer-events: auto;
+            }
         }
 
         &:hover > vi-icon {

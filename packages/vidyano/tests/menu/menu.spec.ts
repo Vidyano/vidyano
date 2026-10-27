@@ -156,6 +156,7 @@ test.describe('vi-menu', () => {
         const menu = await setupPage(page, { cookies: { 'menu-collapsed': 'true' }, programUnits });
         const unit = menu.locator('vi-menu-program-unit').first();
 
+        // Right after the menu shows: its initial unfocused search must not count as a blur that closes it later
         await page.mouse.move(20, 300);
         await searchInput(menu).focus();
         await expect(menu).toHaveAttribute('search-focused', '');

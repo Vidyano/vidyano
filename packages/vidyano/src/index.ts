@@ -5,6 +5,8 @@ import "./web-components/web-component/web-component-registration"
 export * from "./web-components/web-component/web-component"
 
 export { Path } from "./libs/pathjs/pathjs";
+// For Menu.extend and other render callbacks in pages that load the bundle as is
+export { html, nothing } from "lit";
 export * as Polymer from "./libs/polymer/polymer";
 
 export * from "./web-components/app/style-modules/flex-layout"

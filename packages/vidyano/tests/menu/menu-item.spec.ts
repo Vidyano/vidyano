@@ -90,6 +90,8 @@ test.describe('vi-menu-item', () => {
         const link = item.locator('a.title');
 
         await expect(link).toHaveAttribute('href', /Home\/People$/);
+        // Outside vi-app no root path is set; the link is relative then
+        await expect(link).not.toHaveAttribute('href', /^null/);
         await expect(link).not.toHaveAttribute('rel');
         await expect(link).not.toHaveAttribute('target');
         await expect(item.locator('#title')).toHaveText('People');

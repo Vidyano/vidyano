@@ -27,8 +27,10 @@ export class MenuItem extends MenuNode {
         return html`
             <a class="title" href=${ifDefined(link.href)} target=${ifDefined(link.target)} rel=${ifDefined(link.rel)} @click=${this._onClick}>
                 <paper-ripple></paper-ripple>
+                ${this.renderItemRegion("item-start")}
                 ${this.renderIcon()}
                 ${this.renderTitle()}
+                ${this.renderItemRegion("item-end")}
             </a>
         `;
     }

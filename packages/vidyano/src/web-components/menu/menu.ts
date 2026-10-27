@@ -11,19 +11,49 @@ import "components/scroller/scroller";
 import { SelectReferenceDialog } from "components/select-reference-dialog/select-reference-dialog";
 import "components/user/user";
 import { computed, listener, observer, WebComponent } from "components/web-component/web-component";
+import { changed, extendMenu, hasItemExtensions, MenuExtendOptions, MenuExtensionsController, menuExtensionEvents, MenuItemRegion, MenuItemRender, MenuRegion, MenuRender, MenuReplaceableRegion, renderRegion, replaceMenu } from "./menu-extensions";
 import "./menu-program-unit";
 import styles from "./menu.css";
+
+export type { MenuExtendOptions, MenuItemRegion, MenuItemRender, MenuRegion, MenuRender, MenuReplaceableRegion } from "./menu-extensions";
 
 type InstantSearchResult = Vidyano.IInstantSearchResult & { href: string };
 
 export class Menu extends WebComponent {
     static styles = unsafeCSS(styles);
 
+    /**
+     * Adds content to a region of every vi-menu, after its built-in content unless `before` is set.
+     * The item regions add content to every row of the menu tree, for that row's item.
+     * @returns A function that removes the content again.
+     */
+    static extend(region: MenuItemRegion, render: MenuItemRender): () => void;
+    static extend(region: MenuRegion, render: MenuRender, options?: MenuExtendOptions): () => void;
+    static extend(region: string, render: Function, options?: MenuExtendOptions): () => void {
+        return extendMenu(region, render, options);
+    }
+
+    /**
+     * Replaces the built-in content of a region of every vi-menu; the last replacement registered wins.
+     * @returns A function that brings back the content it replaced.
+     */
+    static replace(region: MenuReplaceableRegion, render: MenuRender): () => void {
+        return replaceMenu(region, render);
+    }
+
+    /**
+     * Renders the extensions of every vi-menu again, for extensions that follow state of their own.
+     */
+    static refresh() {
+        changed();
+    }
+
     private static _minResizeWidth: number;
     private _resizeWidth: number;
     private _resizeStartX: number;
     private _resizeStartWidth: number;
     private _instantSearchTimeout: ReturnType<typeof setTimeout>;
+    private _extensions = new MenuExtensionsController(this);
 
     /** The text shown in the header, unless the label slot has content. */
     @property({ type: String })
@@ -118,16 +148,24 @@ export class Menu extends WebComponent {
         this.filter = "";
     }
 
-    private _searchFocusedChanged(searchFocused: boolean) {
+    // The tree's rows render the item regions, which may follow this state
+    @observer("collapsed", "hovering", "filter", "activeProgramUnit", { allowUndefined: true })
+    private _stateChanged() {
+        if (hasItemExtensions())
+            menuExtensionEvents.dispatchEvent(new Event("state"));
+    }
+
+    private _searchFocusedChanged(searchFocused: boolean, wasFocused: boolean) {
         if (!this.collapsed)
             return;
 
         if (searchFocused)
             this.hovering = true;
-        else {
-            // Give clicks time to complete, then check whether the mouse is still over the menu
+        else if (wasFocused) {
+            // Only a blur, not the initial value: give clicks time to complete, then check whether the mouse is still
+            // over the menu, unless the search got the focus back meanwhile
             setTimeout(() => {
-                if (!this.matches(":hover"))
+                if (!this.searchFocused && !this.matches(":hover"))
                     this.hovering = false;
             }, 100);
         }
@@ -149,7 +187,7 @@ export class Menu extends WebComponent {
             if (filter !== this.filter)
                 return;
 
-            this.instantSearchResults = results.length > 0 ? results.map(r => ({ ...r, href: `${Path.routes.rootPath}PersistentObject.${r.id}/${r.objectId}` })) : null;
+            this.instantSearchResults = results.length > 0 ? results.map(r => ({ ...r, href: `${Path.routes.rootPath ?? ""}PersistentObject.${r.id}/${r.objectId}` })) : null;
         }, this.instantSearchDelay);
     }
 
@@ -284,34 +322,40 @@ export class Menu extends WebComponent {
             <div class="container">
                 <header>
                     <div class="background">
-                        <div class="label">
-                            <span ?hidden=${this.hasCustomLabel}>${this.label}</span>
-                            <slot name="label" @slotchange=${this._labelSlotchange}></slot>
-                        </div>
+                        ${renderRegion("header", this, () => html`
+                            <div class="label">
+                                <span ?hidden=${this.hasCustomLabel}>${this.label}</span>
+                                <slot name="label" @slotchange=${this._labelSlotchange}></slot>
+                            </div>
+                        `)}
                     </div>
-                    <vi-input-search
-                        .value=${this.filter}
-                        @value-changed=${(e: CustomEvent) => this.filter = e.detail.value}
-                        .focused=${this.searchFocused}
-                        @focused-changed=${(e: CustomEvent) => this.searchFocused = e.detail.value}
-                        @search=${this._search}></vi-input-search>
+                    ${renderRegion("search", this, () => html`
+                        <vi-input-search
+                            .value=${this.filter}
+                            @value-changed=${(e: CustomEvent) => this.filter = e.detail.value}
+                            .focused=${this.searchFocused}
+                            @focused-changed=${(e: CustomEvent) => this.searchFocused = e.detail.value}
+                            @search=${this._search}></vi-input-search>
+                    `)}
                 </header>
                 <main>
                     <vi-scroller class="program-units" no-horizontal>
                         ${this._renderInstantSearch()}
+                        ${renderRegion("before-items", this, () => nothing)}
                         ${repeat(this.programUnits ?? [], unit => unit, unit => html`
                             <vi-menu-program-unit .item=${unit} .filter=${this.filter} .activeProgramUnit=${this.activeProgramUnit} .collapsed=${this.collapsed} .hovering=${this.hovering}></vi-menu-program-unit>
                             ${this._isFirstRunProgramUnit(application, unit) ? html`<div id="add" @click=${this._add}>+ Add menu item</div>` : nothing}
                         `)}
+                        ${renderRegion("after-items", this, () => nothing)}
                     </vi-scroller>
                 </main>
                 <footer>
-                    <slot name="footer"></slot>
-                    <vi-user></vi-user>
+                    ${renderRegion("footer", this, () => html`<slot name="footer"></slot>`)}
+                    ${renderRegion("user", this, () => html`<vi-user></vi-user>`)}
                 </footer>
             </div>
 
-            <vi-button id="toggleCollapse" icon="Menu_Collapse" @click=${this._toggleCollapse}></vi-button>
+            <div id="toggle">${renderRegion("toggle", this, () => html`<vi-button id="toggleCollapse" icon="Menu_Collapse" @click=${this._toggleCollapse}></vi-button>`)}</div>
             <div id="resizer" @pointerdown=${this._resizerPointerdown} @pointermove=${this._resizerPointermove} @pointerup=${this._resizerPointerup} @pointercancel=${this._resizerPointerup}></div>
         `;
     }

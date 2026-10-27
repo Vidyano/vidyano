@@ -33,8 +33,10 @@ export class MenuGroup extends MenuNode {
         return html`
             <a class="title" @click=${this._toggle}>
                 <paper-ripple></paper-ripple>
-                ${this.renderIcon()}
+                ${this.renderItemRegion("item-start")}
                 ${this.renderTitle()}
+                ${this.renderItemRegion("item-end")}
+                ${this.renderIcon()}
             </a>
             <div class="sub-items" ?inert=${!this.open}>
                 <div class="content">${this.renderChildren(group?.items)}</div>

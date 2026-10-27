@@ -90,8 +90,10 @@ export class MenuProgramUnit extends MenuNode {
         return html`
             <a class="title" href=${link.href ?? nothing} target=${link.target ?? nothing} rel=${link.rel ?? nothing} @click=${this._click}>
                 <paper-ripple></paper-ripple>
+                ${this.renderItemRegion("item-start")}
                 ${this.renderIcon()}
                 ${this.renderTitle()}
+                ${this.renderItemRegion("item-end")}
             </a>
             ${unit?.items?.length ? html`
                 <div id="subItems" ?open=${this.open} ?inert=${!this.open}>
