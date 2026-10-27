@@ -5,6 +5,7 @@ import { COMPUTED_CONFIG_SYMBOL, ComputedConfig } from "./web-component-computed
 import { NOTIFY_CONFIG_SYMBOL, NotifyConfig } from "./web-component-notify-decorator";
 import { LISTENERS_CONFIG_SYMBOL, ListenersConfig } from "./web-component-listener-decorator";
 import { KEYBINDINGS_CONFIG_SYMBOL, KeybindingsConfig } from "./web-component-keybinding-decorator";
+import { SERVICE_BUS_OBSERVERS_CONFIG_SYMBOL, ServiceBusObserversConfig } from "./web-component-service-bus-decorator";
 
 export const SENSITIVE_CONFIG_SYMBOL = Symbol("WebComponent.sensitiveConfig");
 
@@ -23,6 +24,7 @@ type WebComponentConstructor = typeof WebComponent & {
     [SENSITIVE_CONFIG_SYMBOL]?: boolean;
     [LISTENERS_CONFIG_SYMBOL]?: ListenersConfig;
     [KEYBINDINGS_CONFIG_SYMBOL]?: KeybindingsConfig;
+    [SERVICE_BUS_OBSERVERS_CONFIG_SYMBOL]?: ServiceBusObserversConfig;
 };
 
 // Re-export getter functions from their respective decorator files for backward compatibility
@@ -77,6 +79,7 @@ export function registerWebComponent<T extends typeof WebComponent>(tagName: str
     const inheritedMethodObserversConfig = collectInheritedConfig<MethodObserversConfig>(targetClass as WebComponentConstructor, METHOD_OBSERVERS_CONFIG_SYMBOL);
     const inheritedListenersConfig = collectInheritedConfig<ListenersConfig>(targetClass as WebComponentConstructor, LISTENERS_CONFIG_SYMBOL);
     const inheritedKeybindingsConfig = collectInheritedConfig<KeybindingsConfig>(targetClass as WebComponentConstructor, KEYBINDINGS_CONFIG_SYMBOL);
+    const inheritedServiceBusObserversConfig = collectInheritedConfig<ServiceBusObserversConfig>(targetClass as WebComponentConstructor, SERVICE_BUS_OBSERVERS_CONFIG_SYMBOL);
     const inheritedSensitive = parentClass[SENSITIVE_CONFIG_SYMBOL];
 
     // Check hasOwnProperty to avoid false conflict warnings from prototype chain inheritance
@@ -85,6 +88,7 @@ export function registerWebComponent<T extends typeof WebComponent>(tagName: str
     const decoratedMethodObserversConfig = targetClass.hasOwnProperty(METHOD_OBSERVERS_CONFIG_SYMBOL) ? targetClass[METHOD_OBSERVERS_CONFIG_SYMBOL] : {};
     const decoratedListenersConfig = targetClass.hasOwnProperty(LISTENERS_CONFIG_SYMBOL) ? targetClass[LISTENERS_CONFIG_SYMBOL] : {};
     const decoratedKeybindingsConfig = targetClass.hasOwnProperty(KEYBINDINGS_CONFIG_SYMBOL) ? targetClass[KEYBINDINGS_CONFIG_SYMBOL] : {};
+    const decoratedServiceBusObserversConfig = targetClass.hasOwnProperty(SERVICE_BUS_OBSERVERS_CONFIG_SYMBOL) ? targetClass[SERVICE_BUS_OBSERVERS_CONFIG_SYMBOL] : {};
 
     // Detect duplicate computed properties (derived class redefining same property as parent)
     const duplicateComputedProps = Object.keys(inheritedComputedConfig).filter(key => key in decoratedComputedConfig);
@@ -101,6 +105,7 @@ export function registerWebComponent<T extends typeof WebComponent>(tagName: str
     (targetClass as WebComponentConstructor)[PROPERTY_OBSERVERS_CONFIG_SYMBOL] = { ...inheritedPropertyObserversConfig, ...decoratedPropertyObserversConfig };
     (targetClass as WebComponentConstructor)[LISTENERS_CONFIG_SYMBOL] = { ...inheritedListenersConfig, ...decoratedListenersConfig };
     (targetClass as WebComponentConstructor)[KEYBINDINGS_CONFIG_SYMBOL] = { ...inheritedKeybindingsConfig, ...decoratedKeybindingsConfig };
+    (targetClass as WebComponentConstructor)[SERVICE_BUS_OBSERVERS_CONFIG_SYMBOL] = { ...inheritedServiceBusObserversConfig, ...decoratedServiceBusObserversConfig };
     (targetClass as WebComponentConstructor)[METHOD_OBSERVERS_CONFIG_SYMBOL] = { ...inheritedMethodObserversConfig, ...decoratedMethodObserversConfig };
     (targetClass as WebComponentConstructor)[SENSITIVE_CONFIG_SYMBOL] = inheritedSensitive;
 

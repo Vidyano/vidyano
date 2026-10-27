@@ -27,4 +27,5 @@ import "./web-component/test-computed-chained-root.js";
 import "./web-component/test-app-sensitive.js";
 import "./web-component/test-observer-side-effect-root.js";
 import "./web-component/test-observer-disconnected-update.js";
+import "./web-component/test-service-bus-observer.js";
 import "./dialog/test-dialog.js";

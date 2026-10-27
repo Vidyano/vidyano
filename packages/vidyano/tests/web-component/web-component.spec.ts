@@ -1860,3 +1860,79 @@ test('TestObserverDisconnectedUpdate: an update that runs after disconnect obser
     });
     await expect(page.locator('test-observer-disconnected-update #source-value')).toContainText('fourth');
 });
+
+test.describe('@serviceBusObserver', () => {
+    const send = (page: Page, message: string, detail?: any) => page.evaluate(([m, d]) => (customElements.get('test-service-bus-observer') as any).send(m, d), [message, detail] as const);
+    const received = (component: Locator) => component.evaluate(node => (node as any).received);
+
+    // ServiceBus hands callbacks the message without its topic prefix
+    test('calls the method with the message and detail, bound to the component', async ({ page }) => {
+        const component = await setupComponentTest(page, 'test-service-bus-observer');
+
+        await send(page, 'test-service-bus:message', { name: 'first' });
+        await send(page, 'test-service-bus:other', { name: 'other' });
+
+        expect(await received(component)).toEqual([{ message: 'message', detail: { name: 'first' }, self: true }]);
+    });
+
+    test('subscribes to symbol messages', async ({ page }) => {
+        const component = await setupComponentTest(page, 'test-service-bus-observer');
+
+        await page.evaluate(() => (customElements.get('test-service-bus-observer') as any).sendSymbol(42));
+
+        expect(await received(component)).toEqual([{ message: 'symbol', detail: 42, self: true }]);
+    });
+
+    // ServiceBus keeps the last message per topic, so ignore-last lives on a topic of its own
+    test('receives the last message sent before connecting, unless receiveLast is false', async ({ page }) => {
+        await setupComponentTest(page, 'test-service-bus-observer');
+
+        await send(page, 'test-service-bus:message', 'before');
+        await send(page, 'test-service-bus-ignore:last', 'before');
+
+        const state = await page.evaluate(() => {
+            const element = document.createElement('test-service-bus-observer') as any;
+            document.body.appendChild(element);
+            return { received: element.received, ignoredLast: element.ignoredLast };
+        });
+
+        expect(state.received).toEqual([{ message: 'message', detail: 'before', self: true }]);
+        expect(state.ignoredLast).toEqual([]);
+    });
+
+    test('stops while detached and resubscribes once on reconnect', async ({ page }) => {
+        const component = await setupComponentTest(page, 'test-service-bus-observer');
+
+        await component.evaluate(node => (window as any).__detached = node.parentNode.removeChild(node));
+        await send(page, 'test-service-bus-ignore:last', 'while detached');
+
+        const ignoredLast = await page.evaluate(() => {
+            const element = (window as any).__detached;
+            document.body.appendChild(element);
+            return element.ignoredLast;
+        });
+        expect(ignoredLast).toEqual([]);
+
+        // Detach and attach again: still one subscription, so one call per message
+        await page.evaluate(() => {
+            const element = (window as any).__detached;
+            element.remove();
+            document.body.appendChild(element);
+        });
+        await send(page, 'test-service-bus-ignore:last', 'after');
+
+        expect(await page.evaluate(() => (window as any).__detached.ignoredLast)).toEqual([{ message: 'last', detail: 'after', self: true }]);
+    });
+
+    test('a derived component keeps the observers of its base class', async ({ page }) => {
+        const component = await setupComponentTest(page, 'test-service-bus-observer-derived');
+
+        await send(page, 'test-service-bus:message', 'base');
+        await send(page, 'test-service-bus:derived', 'derived');
+
+        expect(await received(component)).toEqual([
+            { message: 'message', detail: 'base', self: true },
+            { message: 'derived', detail: 'derived', self: true }
+        ]);
+    });
+});

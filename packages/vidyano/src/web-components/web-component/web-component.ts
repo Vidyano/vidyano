@@ -4,6 +4,7 @@ import { Service, ServiceBus } from "@vidyano/core";
 import { WebComponentReactiveController } from "./web-component-reactive-controller";
 import { WebComponentListenerController, getListenersConfig } from "./web-component-listener-decorator";
 import { WebComponentKeybindingController, getKeybindingsConfig } from "./web-component-keybinding-decorator";
+import { WebComponentServiceBusController, getServiceBusObserversConfig } from "./web-component-service-bus-decorator";
 import { WebComponentTranslationController } from "./web-component-translation-controller";
 import { getComputedConfig } from "./web-component-computed-decorator";
 import { getMethodObserversConfig, getPropertyObserversConfig } from "./web-component-observer-decorator";
@@ -11,12 +12,14 @@ import { getNotifyConfig } from "./web-component-notify-decorator";
 
 export { listener } from "./web-component-listener-decorator";
 export { keybinding } from "./web-component-keybinding-decorator";
+export { serviceBusObserver, type ServiceBusObserverOptions } from "./web-component-service-bus-decorator";
 export { observer, type ObserverOptions } from "./web-component-observer-decorator";
 export { notify } from "./web-component-notify-decorator";
 export { computed, type ComputedOptions } from "./web-component-computed-decorator";
 
 const LISTENER_CONTROLLER_SYMBOL = Symbol("WebComponent.listenerController");
 const KEYBINDING_CONTROLLER_SYMBOL = Symbol("WebComponent.keybindingController");
+const SERVICE_BUS_CONTROLLER_SYMBOL = Symbol("WebComponent.serviceBusController");
 const REACTIVE_CONTROLLER_SYMBOL = Symbol("WebComponent.reactiveController");
 const TRANSLATION_CONTROLLER_SYMBOL = Symbol("WebComponent.translationController");
 
@@ -157,6 +160,10 @@ export abstract class WebComponent<TTranslations extends Record<string, any> = {
         if (Object.keys(keybindingConfig).length > 0) {
             this.addController(this[KEYBINDING_CONTROLLER_SYMBOL] = new WebComponentKeybindingController(this));
         }
+
+        // Reflect.ownKeys counts symbol messages too
+        if (Reflect.ownKeys(getServiceBusObserversConfig(this)).length > 0)
+            this[SERVICE_BUS_CONTROLLER_SYMBOL] = new WebComponentServiceBusController(this);
 
         if (Object.keys(getComputedConfig(this)).length > 0 ||
             Object.keys(getPropertyObserversConfig(this)).length > 0 ||
