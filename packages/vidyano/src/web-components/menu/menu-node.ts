@@ -121,29 +121,29 @@ export abstract class MenuNode extends WebComponent {
     }
 
     /**
-     * Renders the item's title with the filter's matches highlighted.
+     * Renders the item's title with the filter's matches highlighted, as the title part of this kind of row.
      */
-    protected renderTitle(): TemplateResult {
-        return html`<span class="title" part="title" @mouseenter=${this._titleMouseenter}>${this.renderHighlighted(this.item?.title ?? "")}</span>`;
+    protected renderTitle(kind: MenuNodeKind): TemplateResult {
+        return html`<span class="title" part=${`${kind}-title`} @mouseenter=${this._titleMouseenter}>${this.renderHighlighted(this.item?.title ?? "", kind)}</span>`;
     }
 
     /**
-     * Renders text with every match of the filter wrapped in a span.match.
+     * Renders text with every match of the filter wrapped in a span.match, the match part of this kind of row.
      */
-    protected renderHighlighted(text: string): TemplateResult | string {
+    protected renderHighlighted(text: string, kind: MenuNodeKind): TemplateResult | string {
         if (!this.filtering || !MenuNode.matches(this.item, this.filter.toUpperCase(), this.filterParent))
             return text;
 
         const escaped = this.filter.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         const parts = text.split(new RegExp(`(${escaped})`, "gi"));
-        return html`${parts.map((part, index) => index % 2 === 1 ? html`<span class="match">${part}</span>` : part)}`;
+        return html`${parts.map((part, index) => index % 2 === 1 ? html`<span class="match" part=${`${kind}-match`}>${part}</span>` : part)}`;
     }
 
     /**
-     * Renders the item's icon, if it has one.
+     * Renders the item's icon, if it has one, as the given part: the icon of this kind of row, or a group's toggle.
      */
-    protected renderIcon(): TemplateResult | typeof nothing {
-        return this.icon ? html`<vi-icon source=${this.icon} part="icon"></vi-icon>` : nothing;
+    protected renderIcon(part: string): TemplateResult | typeof nothing {
+        return this.icon ? html`<vi-icon source=${this.icon} part=${part}></vi-icon>` : nothing;
     }
 
     /**
@@ -235,10 +235,15 @@ export function renderMenuNode(item: Vidyano.ProgramUnitItem, filter: string, fi
 }
 
 /**
- * The parts of a node, passed up through every shadow root of the tree, so vi-menu::part(item-end) and the like
- * reach them from outside the menu.
+ * The parts of the nodes, passed up through every shadow root of the tree, so vi-menu::part(item-title) and the like
+ * reach them from outside the menu. Each is named after its kind of row, so a rule styles that kind alone.
  */
-export const menuNodeParts = "item, program-unit, group, icon, title, item-start, item-end, children, separator";
+export const menuNodeParts = [
+    "program-unit", "program-unit-icon", "program-unit-title", "program-unit-match", "program-unit-start", "program-unit-end", "program-unit-children",
+    "group", "group-toggle", "group-title", "group-match", "group-start", "group-end", "group-children",
+    "item", "item-icon", "item-title", "item-match", "item-start", "item-end",
+    "separator"
+].join(", ");
 
 /**
  * Whether a click asks the browser to open the link elsewhere: with Ctrl, Cmd, Shift or Alt, or not the main button.

@@ -1,28 +1,39 @@
-const { defineComponentPage, style } = await import(`./_stage.js${new URL(import.meta.url).search}`);
+import { MenuGroup, html } from "../../index.js";
+
+const { badge, defineComponentPage } = await import(`./_stage.js${new URL(import.meta.url).search}`);
 
 export const title = "vi-menu-group";
 export const tag = "docs-menu-group";
 export const order = 3;
 
-defineComponentPage({
+export const { text, tabs } = defineComponentPage({
     tag,
     component: "vi-menu-group",
     text: "A group of items in a program unit, which its line opens and closes. Groups can hold groups.",
-    parts: [
-        ["item group", "The group's line. group is on group lines only; item is on every line of the tree."],
-        ["icon", "The chevron that shows whether the group is open."],
-        ["title", "The group's title, with the search matches highlighted."],
-        ["item-start, item-end", "The boxes of Menu.extend(\"item-start\") and Menu.extend(\"item-end\"), when an extension shows something there."],
-        ["children", "The items and groups in the group."]
+    behavior: {
+        examples: [
+            {
+                id: "counts",
+                title: "After the title",
+                text: "How many items each group holds.",
+                reveal: stage => stage.reveal("Attributes"),
+                apply: () => MenuGroup.extend("end", (menu, group) => html`<small style="${badge}">${group.items.length}</small>`)
+            }
+        ]
+    },
+    states: [
+        { id: "open", label: "Open", open: true },
+        { id: "closed", label: "Closed", open: false },
+        { id: "searching", label: "Searching", searching: true, open: true }
     ],
-    examples: [
-        {
-            id: "line",
-            title: "Group lines",
-            text: "Group titles in small capitals, set apart from the items.",
-            apply: stage => style(stage, `
-                vi-menu::part(group) { font-variant: small-caps; letter-spacing: .04em; opacity: .85; }
-            `)
-        }
+    regions: MenuGroup,
+    parts: [
+        { name: "group", text: "The group's line." },
+        { name: "group-toggle", text: "The chevron that shows whether the group is open." },
+        { name: "group-title", text: "The group's title, with the search matches highlighted." },
+        { name: "group-match", text: "A match of the search in the title.", when: "Only while searching." },
+        { name: "group-start", text: "The box of MenuGroup.extend(\"start\"), before the title." },
+        { name: "group-end", text: "The box of MenuGroup.extend(\"end\"), before the chevron." },
+        { name: "group-children", text: "The items and groups in the group.", when: "Only while the group is open." }
     ]
 });

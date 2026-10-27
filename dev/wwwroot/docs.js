@@ -1,6 +1,6 @@
-// The documentation site at http://docs.localhost:5000/: one page that keeps scrolling through every section, with a
-// sidebar that follows it. A section is a module in docs/<name>.js that exports its title, the tag of the element that
-// renders it and optionally an order; /<name>/ opens the page at that section.
+// The documentation site at http://docs.localhost:5000/: a sidebar with every page, and one page at a time at its own
+// address, /<name>[/<tab>]. A page is a module in docs/<name>.js that exports its title, the tag of the element that
+// renders it and optionally an order, its text and its tabs.
 import { Vidyano, WebComponent, html, nothing } from "./index.js";
 
 /**
@@ -64,7 +64,7 @@ export const highlighter = (async () => {
 })();
 
 /**
- * JavaScript as a <code> element: highlighted once highlight.js is there, plain text until then or without it.
+ * Code as a <code> element: highlighted once highlight.js is there, plain text until then or without it.
  */
 export function highlight(code) {
     const element = document.createElement("code");
@@ -73,7 +73,7 @@ export function highlight(code) {
         return element;
     }
 
-    element.className = "hljs language-javascript";
+    element.className = `hljs language-javascript`;
     // highlight.js escapes the code itself; the markup is its own
     element.innerHTML = hljs.highlight(code, { language: "javascript" }).value;
     return element;
@@ -87,6 +87,12 @@ function source(example) {
     return [lines[0], ...lines.slice(1).map(line => line.slice(indent))].join("\n").trim();
 }
 
+const none = {
+    id: "none",
+    title: "None",
+    text: "No example: the component as it is built in. Pick one from the list to turn it on."
+};
+
 const everything = {
     id: "everything",
     title: "Everything",
@@ -94,10 +100,12 @@ const everything = {
 };
 
 /**
- * The examples of a page: its live demo, which the page puts in the "stage" slot, the code of the selected example
- * and a floating list to pick one. An example is { id, title, text, apply }, where apply(stage) turns it on and returns
- * the function that turns it off again; stage is the element the page put in the "stage" slot, in the scope of the live
- * demo, where an example can add a <style> with ::part rules. "Everything" turns them all on. The selection survives a reload.
+ * The examples of a page: a card with its live demo, which the page puts in the "stage" slot, and the code of the
+ * selected example, next to the list to pick one from. An example is { id, title, text, apply }, where apply(stage)
+ * turns it on and returns the function that turns it off again; stage is the element the page put in the "stage" slot.
+ * Optionally, reveal(stage) brings what the example changes into view, without being part of its code, and alone keeps
+ * it out of Everything when it competes with another.
+ * "None", the default, turns none on and "Everything", last in the list, all of them. The selection survives a reload.
  *
  *     <docs-examples name="menu" .examples=${examples} .groups=${groups}>
  *         <div slot="stage">…the live demo…</div>
@@ -138,7 +146,8 @@ class DocsExamples extends WebComponent {
         }
         catch { }
 
-        this.#select(this.examples.find(e => e.id === id) ?? everything);
+        // None to start with, so a page shows the component as it is built in
+        this.#select([none, ...this.examples, everything].find(e => e.id === id) ?? none);
 
         // The code shows plain until highlight.js is there
         highlighter.then(() => this.requestUpdate());
@@ -157,7 +166,9 @@ class DocsExamples extends WebComponent {
 
     #select(example) {
         this.#clear();
-        this.#disposers = (example === everything ? this.examples : [example]).map(e => e.apply(this.querySelector("[slot=stage]")));
+        const stage = this.querySelector("[slot=stage]");
+        const examples = example === everything ? this.examples.filter(e => !e.alone) : example === none ? [] : [example];
+        this.#disposers = examples.flatMap(e => [e.apply(stage), e.reveal?.(stage)]).filter(Boolean);
         this.selected = example;
 
         try {
@@ -166,68 +177,98 @@ class DocsExamples extends WebComponent {
         catch { }
     }
 
+    async #copy(code) {
+        try {
+            await navigator.clipboard.writeText(code);
+            app.showAlert("Copied the code", "OK", 1500);
+        }
+        catch {
+            app.showAlert("The browser did not allow copying", "Warning");
+        }
+    }
+
     #renderChoice(example) {
-        return html`<button class="choice" aria-pressed=${String(this.selected === example)} @click=${() => this.#select(example)}>${example.title}</button>`;
+        return html`<li><button class="choice" aria-pressed=${String(this.selected === example)} @click=${() => this.#select(example)}>${example.title}</button></li>`;
     }
 
     render() {
         if (!this.selected)
             return nothing;
 
-        const code = this.selected === everything ? this.examples.map(source).join("\n\n") : source(this.selected);
+        const code = this.selected === everything ? this.examples.filter(e => !e.alone).map(source).join("\n\n") : this.selected === none ? null : source(this.selected);
 
         return html`
             <link rel="stylesheet" href=${highlightTheme}>
             <style>
-                :host { display: grid; grid-template-columns: max-content minmax(0, 1fr) 230px; gap: 28px; align-items: start; }
-                h2 { font-size: 17px; font-weight: 600; margin: 0; }
-                p { margin: 0; color: #46545c; }
-                /* As tall as the stage at most: the row takes its height from the stage, the code scrolls within */
-                .detail { display: flex; flex-direction: column; gap: 10px; min-width: 0; align-self: stretch; contain: size; }
-                pre { margin: 0; border-radius: 8px; overflow-y: auto; flex: 0 1 auto; min-height: 0; background: #0d1117; }
-                /* Wrapped instead of scrolling sideways; also overrides the scrolling and background of the theme's .hljs */
-                pre code, pre code.hljs { display: block; padding: 14px 16px; font: 12.5px/1.6 ui-monospace, Consolas, monospace; color: #e6edf3; white-space: pre-wrap; overflow-wrap: anywhere; overflow: visible; background: none; }
-                /* Never taller than the window, so every choice is reachable while it sticks */
-                .rail { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; box-sizing: border-box; overscroll-behavior: contain; background: #fff; border-radius: 10px; padding: 14px 10px; box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.06); }
-                .rail h3 { font: 600 10.5px/1 "Open Sans", sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #6b7a82; margin: 14px 10px 6px; }
-                .choice { display: block; width: 100%; text-align: left; border: 0; background: none; border-radius: 6px; padding: 6px 10px; font: 13px "Open Sans", sans-serif; color: #33434b; cursor: pointer; }
-                .choice:hover { background: #f0f3f5; color: #1f2a30; }
-                .choice[aria-pressed="true"] { background: #e8f0f7; color: #1d4f7a; font-weight: 600; box-shadow: inset 2px 0 #4682B4; border-radius: 0 6px 6px 0; }
-                @media (max-width: 1300px) { :host { grid-template-columns: max-content minmax(0, 1fr); } .rail { grid-column: 1 / -1; grid-row: 1; position: static; display: flex; flex-wrap: wrap; gap: 4px; } .rail h3 { display: none; } .choice { width: auto; } }
-                @media (max-width: 900px) { :host { grid-template-columns: minmax(0, 1fr); } .detail { contain: none; } pre { max-height: 640px; } }
+                /* The layout of a Styling tab: the stage, and next to it the choices and the chosen one's code */
+                :host { display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap; }
+                .stage { flex-shrink: 0; }
+                /* Takes the rest of the width, so the code shows whole */
+                .legend { flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 16px; position: sticky; top: 24px; }
+                *:focus { outline: none; }
+                nav { display: flex; flex-direction: column; gap: 12px; }
+                .group { display: flex; flex-direction: column; gap: 6px; }
+                h3 { font: 600 11px/1 "Open Sans", sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #5b6b73; margin: 0; }
+                ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+                .choice { padding: 4px 12px; border: 1px solid #dce2e6; border-radius: 16px; background: #fff; font: 12.5px "Open Sans", sans-serif; color: #1f2a30; cursor: pointer; }
+                .choice:hover { border-color: #b8c4cb; }
+                .choice[aria-pressed="true"] { border-color: #F5A623; background: #fff6e6; }
+                .about { display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; background: #fff; border: 1px solid #e3e8eb; border-radius: 10px; }
+                header { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; }
+                h2 { font: 600 14px "Open Sans", sans-serif; margin: 0; }
+                p { margin: 0; color: #46545c; font-size: 13px; }
+                .copy { flex-shrink: 0; border: 1px solid #dce2e6; background: #fff; border-radius: 6px; padding: 3px 10px; font: 12px "Open Sans", sans-serif; color: #3e4c53; cursor: pointer; }
+                .copy:hover { border-color: #4682B4; color: #1d4f7a; }
+                /* Scrolls within, so the page doesn't */
+                pre { margin: 0; max-height: 360px; overflow: auto; border-radius: 6px; background: #0d1117; }
+                /* Unwrapped, so the indentation holds; also overrides the scrolling and background of the theme's .hljs */
+                pre code, pre code.hljs { display: inline-block; min-width: 100%; box-sizing: border-box; padding: 10px 14px; font: 12.5px/1.6 ui-monospace, Consolas, monospace; color: #e6edf3; white-space: pre; overflow: visible; background: none; }
             </style>
-            <slot name="stage"></slot>
-            <div class="detail">
-                <h2>${this.selected.title}</h2>
-                <p>${this.selected.text}</p>
-                <pre>${highlight(code)}</pre>
+            <div class="stage"><slot name="stage"></slot></div>
+            <div class="legend">
+                <nav aria-label="Examples">
+                    ${(this.groups ?? [{ examples: this.examples }]).map((group, index) => html`
+                        <div class="group">
+                            ${group.title ? html`<h3>${group.title}</h3>` : nothing}
+                            <ol>
+                                ${index === 0 ? this.#renderChoice(none) : nothing}
+                                ${group.examples.map(example => this.#renderChoice(example))}
+                                ${this.groups ? nothing : this.#renderChoice(everything)}
+                            </ol>
+                        </div>
+                    `)}
+                    ${this.groups ? html`<div class="group"><h3>All</h3><ol>${this.#renderChoice(everything)}</ol></div>` : nothing}
+                </nav>
+                <div class="about">
+                    <header>
+                        <h2>${this.selected.title}</h2>
+                        ${code != null ? html`<button class="copy" @click=${() => this.#copy(code)}>Copy</button>` : nothing}
+                    </header>
+                    <p>${this.selected.text}</p>
+                    ${code != null ? html`<pre>${highlight(code)}</pre>` : nothing}
+                </div>
             </div>
-            <nav class="rail" aria-label="Examples">
-                ${this.#renderChoice(everything)}
-                ${(this.groups ?? [{ examples: this.examples }]).map(group => html`
-                    ${group.title ? html`<h3>${group.title}</h3>` : nothing}
-                    ${group.examples.map(example => this.#renderChoice(example))}
-                `)}
-            </nav>
         `;
     }
 }
 
 customElements.define("docs-examples", DocsExamples);
 
-
-const reloadScrollKey = "docs:reload-scroll";
-
+/**
+ * The documentation site: a sidebar with every page, and the one page the address names, /<page>[/<tab>]. A page with
+ * tabs gets them under its title; its element gets the open one as tab.
+ */
 class Docs extends WebComponent {
     static properties = {
         pages: { type: Array },
         sections: { state: true },
         current: { state: true },
+        tab: { state: true },
+        filter: { state: true },
         error: { state: true }
     };
 
-    #scroll = () => this.#updateCurrent();
-    #popstate = () => this.#scrollTo(this.#fromPath(), "auto");
+    #addressChanged = () => this.#show();
 
     // Not as class fields: those would shadow the reactive accessors
     constructor() {
@@ -236,21 +277,22 @@ class Docs extends WebComponent {
         this.pages = [];
         this.sections = [];
         this.current = null;
+        this.tab = null;
+        this.filter = "";
         this.error = null;
     }
 
     connectedCallback() {
         super.connectedCallback();
 
-        window.addEventListener("popstate", this.#popstate);
+        window.addEventListener("popstate", this.#addressChanged);
         this.#load();
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
 
-        window.removeEventListener("popstate", this.#popstate);
-        window.removeEventListener("scroll", this.#scroll);
+        window.removeEventListener("popstate", this.#addressChanged);
     }
 
     async #load() {
@@ -262,20 +304,13 @@ class Docs extends WebComponent {
             // Past the browser's cache, so an edited page shows after the reload
             const version = Date.now();
             const modules = await Promise.all(this.pages.map(name => import(`./docs/${name}.js?v=${version}`)));
-            const sections = this.pages.map((name, index) => ({ name, parent: name.includes("/") ? name.split("/")[0] : null, module: modules[index], element: document.createElement(modules[index].tag) }));
+            const sections = this.pages.map((name, index) => ({ name, parent: name.includes("/") ? name.split("/")[0] : null, module: modules[index], element: null }));
 
             // Each page, followed by its sub-pages; both in their order, else by name
             const byOrder = (a, b) => (a.module.order ?? Infinity) - (b.module.order ?? Infinity) || a.name.localeCompare(b.name);
             this.sections = sections.filter(s => !s.parent).sort(byOrder).flatMap(top => [top, ...sections.filter(s => s.parent === top.name).sort(byOrder)]);
 
-            await this.updateComplete;
-            window.addEventListener("scroll", this.#scroll, { passive: true });
-
-            const scrollY = this.#takeReloadScroll();
-            const target = this.#fromPath();
-            this.#hold(scrollY != null ? () => window.scrollTo(0, scrollY) : () => this.#scrollTo(target, "auto"));
-            this.#updateCurrent();
-
+            this.#show();
             this.#watch();
         }
         catch (e) {
@@ -283,7 +318,7 @@ class Docs extends WebComponent {
         }
     }
 
-    // Reloads when a script the page runs changes, such as a rebuilt index.js, and comes back at the same scroll position
+    // Reloads when a script the page runs changes, such as a rebuilt index.js; the address keeps the page
     async #watch() {
         // The bundle, this shell, and every docs module the pages loaded, shared ones included
         const loadedModules = performance.getEntriesByType("resource").map(entry => new URL(entry.name)).filter(url => url.origin === location.origin && url.pathname.startsWith("/docs/") && url.pathname.endsWith(".js")).map(url => url.pathname);
@@ -298,11 +333,6 @@ class Docs extends WebComponent {
             const current = await version();
             // Wait until it holds still for a second, so a build that writes in steps reloads once, when it's done
             if (current !== loaded && current === previous && !current.split(",").includes("")) {
-                try {
-                    sessionStorage.setItem(reloadScrollKey, String(window.scrollY));
-                }
-                catch { }
-
                 location.reload();
                 return;
             }
@@ -311,122 +341,151 @@ class Docs extends WebComponent {
         }
     }
 
-    #takeReloadScroll() {
-        try {
-            const value = sessionStorage.getItem(reloadScrollKey);
-            sessionStorage.removeItem(reloadScrollKey);
+    /** The page the address names, a sub-page (/menu/vi-menu-group) or a page (/menu), and the tab after it; else the first page. */
+    #fromAddress() {
+        const segments = location.pathname.split("/").filter(Boolean).map(decodeURIComponent);
+        for (const length of [2, 1]) {
+            const name = segments.slice(0, length).join("/");
+            if (segments.length >= length && this.sections.some(s => s.name === name))
+                return { name, tab: segments[length] ?? null };
+        }
 
-            return value != null ? Number(value) : null;
-        }
-        catch {
-            return null;
-        }
+        return { name: this.sections[0]?.name, tab: null };
     }
 
-    // The page the address names, a sub-page (/menu/vi-menu-group/) or a page (/menu/), else the first
-    #fromPath() {
-        const segments = location.pathname.split("/").filter(Boolean);
-        const names = [segments.slice(0, 2).join("/"), segments[0]];
-
-        return names.find(name => this.sections.some(s => s.name === name)) ?? this.sections[0]?.name;
-    }
-
-    // The current section is the last one whose top reached the top of the window; the sidebar and the address follow it
-    #updateCurrent() {
-        const sections = [...this.renderRoot.querySelectorAll("main > section")];
-        const current = sections.filter(section => section.getBoundingClientRect().top <= 80).at(-1)?.id ?? sections[0]?.id;
-        if (!current || current === this.current)
+    #show() {
+        const { name, tab } = this.#fromAddress();
+        const section = this.sections.find(s => s.name === name);
+        if (!section)
             return;
 
-        this.current = current;
-        history.replaceState(null, "", `/${current}/`);
-        document.title = `${this.sections.find(s => s.name === current).module.title} · Documentation`;
+        // Made once, the first time it shows; only the page that shows is in the document, with its live demos
+        section.element ??= document.createElement(section.module.tag);
+        const tabs = section.module.tabs ?? [];
+        this.tab = tabs.find(t => t.id === tab)?.id ?? tabs[0]?.id ?? null;
+        section.element.tab = this.tab;
+        this.current = section;
+
+        const title = tabs.length ? `${section.module.title} · ${tabs.find(t => t.id === this.tab).title}` : section.module.title;
+        document.title = `${title} · Documentation`;
     }
 
-    /**
-     * Scrolls, and scrolls again whenever the page's height changes while the live demos above still render, so it
-     * lands where it should. It lets go once the user scrolls, clicks or types, or after three seconds.
-     */
-    #hold(scroll) {
-        scroll();
-
-        const main = this.renderRoot.querySelector("main");
-        const resized = new ResizeObserver(() => scroll());
-        resized.observe(main);
-
-        const release = () => {
-            resized.disconnect();
-            clearTimeout(timeout);
-            ["wheel", "touchstart", "keydown", "pointerdown"].forEach(name => window.removeEventListener(name, release, true));
-        };
-
-        const timeout = setTimeout(release, 3000);
-        ["wheel", "touchstart", "keydown", "pointerdown"].forEach(name => window.addEventListener(name, release, true));
+    #address(name, tab) {
+        return `/${name}${tab ? `/${tab}` : ""}`;
     }
 
-    #scrollTo(name, behavior) {
-        this.renderRoot.querySelector(`section#${CSS.escape(name ?? "")}`)?.scrollIntoView({ behavior, block: "start" });
-    }
-
-    #renderLink(section) {
-        return html`<a href="/${section.name}/" aria-current=${this.current === section.name ? "true" : nothing} @click=${e => this.#navigate(e, section.name)}>${section.module.title}</a>`;
-    }
-
-    #navigate(e, name) {
+    #navigate(e, name, tab = null) {
         if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0)
             return;
 
         e.preventDefault();
-        history.pushState(null, "", `/${name}/`);
-        this.#scrollTo(name, "smooth");
+        history.pushState(null, "", this.#address(name, tab));
+        this.#show();
+        window.scrollTo(0, 0);
+    }
+
+    #matches(section) {
+        const filter = this.filter.trim().toLowerCase();
+        return !filter || section.module.title.toLowerCase().includes(filter);
+    }
+
+    #renderLink(section) {
+        return html`<a class="link" href=${this.#address(section.name)} aria-current=${this.current === section ? "page" : nothing} @click=${e => this.#navigate(e, section.name)}>${section.module.title}</a>`;
+    }
+
+    #renderNav() {
+        return this.sections.filter(s => !s.parent).map(top => {
+            const children = this.sections.filter(s => s.parent === top.name);
+            const shown = this.#matches(top) ? children : children.filter(c => this.#matches(c));
+            if (!this.#matches(top) && !shown.length)
+                return nothing;
+
+            return html`
+                <li class="top">
+                    ${this.#renderLink(top)}
+                    ${shown.length ? html`<ul>${shown.map(child => html`<li>${this.#renderLink(child)}</li>`)}</ul>` : nothing}
+                </li>
+            `;
+        });
+    }
+
+    #renderPage(section) {
+        const { title, text, tabs = [] } = section.module;
+        const parent = section.parent && this.sections.find(s => s.name === section.parent);
+
+        return html`
+            <div class="crumbs">
+                <span>Documentation</span>
+                ${parent ? html`<span aria-hidden="true">/</span><a href=${this.#address(parent.name)} @click=${e => this.#navigate(e, parent.name)}>${parent.module.title}</a>` : nothing}
+                <span aria-hidden="true">/</span><span class="here">${title}</span>
+            </div>
+            <h1 class=${title.startsWith("vi-") ? "code" : ""}>${title}</h1>
+            ${text ? html`<div class="text">${typeof text === "string" ? html`<p>${text}</p>` : text}</div>` : nothing}
+            ${tabs.length ? html`
+                <div class="tabs" role="tablist">
+                    ${tabs.map(t => html`<a role="tab" href=${this.#address(section.name, t.id)} aria-selected=${String(this.tab === t.id)} @click=${e => this.#navigate(e, section.name, t.id)}>${t.title}</a>`)}
+                </div>
+            ` : nothing}
+            ${section.element}
+        `;
     }
 
     render() {
         return html`
             <style>
+                *:focus { outline: none; }
                 /* The Dev app's theme, which the live demos inherit */
                 :host {
-                    display: grid; grid-template-columns: 220px minmax(0, 1fr); min-height: 100vh; font: 14px/1.55 "Open Sans", system-ui, sans-serif; color: #1f2a30; background: #F4F6F8;
+                    display: grid; grid-template-columns: 264px minmax(0, 1fr); min-height: 100vh; font: 14px/1.55 "Open Sans", system-ui, sans-serif; color: #1f2a30; background: #f7f8fa;
                     --color: #4682B4; --color-dark: #396992; --color-light: #7ea8cb; --colors-blue-grey-900: #263238; --theme-foreground: #333;
                     --theme-h1: 40px; --theme-h2: 32px; --theme-h3: 22px; --theme-h4: 12px; --theme-h5: 6px;
                     --theme-color-error: #a80511; --theme-color-notice: #48545e; --theme-color-ok: #339f7b; --theme-color-warning: #e5a300;
                 }
-                nav { background: #1f2a30; color: #e8edf0; padding: 24px 0; position: sticky; top: 0; height: 100vh; box-sizing: border-box; overflow-y: auto; }
-                nav > span { display: block; padding: 0 20px 18px; color: #fff; font-size: 17px; font-weight: 600; }
-                nav ul { list-style: none; margin: 0; padding: 0; }
-                nav li a { display: block; padding: 8px 20px; color: #c9d3d8; text-decoration: none; }
-                nav li a:hover { background: rgba(255,255,255,.06); color: #fff; }
-                nav li a[aria-current="true"] { background: rgba(255,255,255,.1); color: #fff; box-shadow: inset 3px 0 #4682B4; }
-                nav li li a { padding: 5px 20px 5px 34px; font-size: 13px; }
-                main { padding: 40px 48px; min-width: 0; }
-                main > section { scroll-margin-top: 24px; padding-bottom: 64px; }
-                main > section + section { border-top: 1px solid #dde3e7; padding-top: 40px; }
+                nav { position: sticky; top: 0; height: 100vh; overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px; padding: 24px 16px; background: #fff; border-right: 1px solid #e3e8eb; }
+                .brand { display: flex; align-items: center; gap: 10px; padding: 0 8px; color: inherit; text-decoration: none; font-weight: 700; font-size: 15px; }
+                .brand span { width: 28px; height: 28px; border-radius: 7px; background: #263238; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+                .search { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border: 1px solid #dce2e6; border-radius: 8px; color: #5b6b73; }
+                .search:focus-within { border-color: #4682B4; }
+                .search input { border: 0; outline: 0; font: inherit; color: #1f2a30; flex: 1; min-width: 0; background: none; }
+                nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+                nav li.top + li.top { margin-top: 8px; }
+                .link { display: block; padding: 6px 8px; border-radius: 6px; color: #3e4c53; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+                .link:hover { background: #f0f3f5; color: #1f2a30; }
+                .top > .link { font-weight: 600; color: #1f2a30; }
+                li li .link { padding-left: 22px; }
+                .link[aria-current="page"] { background: #eaf1f7; color: #1d4f7a; font-weight: 600; box-shadow: inset 2px 0 #4682B4; }
+                main { min-width: 0; display: flex; flex-direction: column; gap: 20px; padding: 32px 48px 64px; }
+                .crumbs { display: flex; gap: 8px; color: #5b6b73; font-size: 13px; }
+                .crumbs a { color: #2f6a9a; text-decoration: none; }
+                .crumbs a:hover { text-decoration: underline; }
+                .crumbs .here { color: #1f2a30; }
+                h1 { margin: -8px 0 0; font-size: 30px; font-weight: 700; line-height: 1.25; }
+                h1.code { font-family: ui-monospace, Consolas, monospace; letter-spacing: -.01em; }
+                .text { display: flex; flex-direction: column; gap: 10px; max-width: 820px; margin-top: -8px; }
+                .text p { margin: 0; color: #46545c; font-size: 15px; }
+                .text code { font: 13px ui-monospace, Consolas, monospace; background: #e7ebee; padding: 1px 5px; border-radius: 4px; }
+                .tabs { display: flex; gap: 24px; border-bottom: 1px solid #e3e8eb; }
+                .tabs a { padding: 10px 0; color: #5b6b73; text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+                .tabs a:hover { color: #1f2a30; }
+                .tabs a[aria-selected="true"] { color: #1d4f7a; font-weight: 600; border-bottom-color: #4682B4; }
                 .muted { color: #5b6a72; }
                 .error { color: #b3261e; }
                 @media (max-width: 720px) {
                     :host { grid-template-columns: minmax(0, 1fr); }
-                    nav { position: static; height: auto; padding: 16px 0 8px; }
+                    nav { position: static; height: auto; padding: 16px; }
                     main { padding: 24px 16px; }
                 }
             </style>
-            <nav aria-label="Sections">
-                <span>Documentation</span>
-                <ul>
-                    ${this.sections.filter(s => !s.parent).map(top => {
-                        const children = this.sections.filter(s => s.parent === top.name);
-
-                        return html`
-                            <li>
-                                ${this.#renderLink(top)}
-                                ${children.length ? html`<ul>${children.map(child => html`<li>${this.#renderLink(child)}</li>`)}</ul>` : nothing}
-                            </li>
-                        `;
-                    })}
-                </ul>
+            <nav aria-label="Pages">
+                <a class="brand" href="/" @click=${e => this.#navigate(e, this.sections[0]?.name)}><span>Vi</span>Vidyano docs</a>
+                <label class="search">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="6"></circle><path d="M20 20l-4.5-4.5"></path></svg>
+                    <input type="search" aria-label="Filter the pages" placeholder="Filter" .value=${this.filter} @input=${e => this.filter = e.target.value}>
+                </label>
+                <ul>${this.#renderNav()}</ul>
             </nav>
             <main>
-                ${this.error ? html`<p class="error">${this.error}</p>` : !this.sections.length ? html`<p class="muted">Loading…</p>` : nothing}
-                ${this.sections.map(s => html`<section id=${s.name}>${s.element}</section>`)}
+                ${this.error ? html`<p class="error">${this.error}</p>` : !this.current ? html`<p class="muted">Loading…</p>` : this.#renderPage(this.current)}
             </main>
             <vi-alert></vi-alert>
         `;

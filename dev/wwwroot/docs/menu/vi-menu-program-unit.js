@@ -1,37 +1,48 @@
-const { defineComponentPage, style } = await import(`./_stage.js${new URL(import.meta.url).search}`);
+import { MenuProgramUnit, html, nothing } from "../../index.js";
+
+const { badge, compact, defineComponentPage } = await import(`./_stage.js${new URL(import.meta.url).search}`);
 
 export const title = "vi-menu-program-unit";
 export const tag = "docs-menu-program-unit";
 export const order = 2;
 
-defineComponentPage({
+export const { text, tabs } = defineComponentPage({
     tag,
     component: "vi-menu-program-unit",
     text: "A program unit: the top-level line with its icon, and below it the groups and items it holds. It opens for the active program unit.",
-    parts: [
-        ["item program-unit", "The program unit's line. program-unit is on its line only; item is on every line of the tree."],
-        ["icon", "The program unit's icon."],
-        ["title", "The program unit's title, with the search matches highlighted."],
-        ["item-start, item-end", "The boxes of Menu.extend(\"item-start\") and Menu.extend(\"item-end\"), when an extension shows something there."],
-        ["children", "The groups and items below the line."]
+    behavior: {
+        examples: [
+            {
+                id: "counts",
+                title: "After the title",
+                text: "How many items each program unit holds; collapsed, a dot on its icon.",
+                apply: () => MenuProgramUnit.extend("end", (menu, unit) => {
+                    if (!unit.items?.length)
+                        return nothing;
+
+                    if (compact(menu))
+                        // On the icon's top right corner; the region lies over the whole line while the menu shows only icons
+                        return html`<small style="position: absolute; top: 3px; right: 7px; width: 8px; height: 8px; border-radius: 50%; background: #F5A623; box-shadow: 0 0 0 2px var(--colors-blue-grey-900)"></small>`;
+
+                    return html`<small style="${badge}">${unit.items.length}</small>`;
+                })
+            }
+        ]
+    },
+    states: [
+        { id: "open", label: "Open", open: true },
+        { id: "closed", label: "Closed", open: false },
+        { id: "collapsed", label: "Collapsed", collapsed: true, open: true },
+        { id: "searching", label: "Searching", searching: true, open: true }
     ],
-    examples: [
-        {
-            id: "line",
-            title: "Line and hover",
-            text: "An accent bar on the hovered program unit; pseudo-classes such as :hover work on parts too.",
-            apply: stage => style(stage, `
-                vi-menu::part(program-unit) { border-left: 3px solid transparent; }
-                vi-menu::part(program-unit):hover { border-left-color: #F5A623; background: rgba(255, 255, 255, .06); }
-            `)
-        },
-        {
-            id: "children",
-            title: "Children",
-            text: "A guide line along the groups and items of a program unit.",
-            apply: stage => style(stage, `
-                vi-menu::part(children) { box-shadow: inset 1px 0 rgba(255, 255, 255, .15); margin-left: 22px; }
-            `)
-        }
+    regions: MenuProgramUnit,
+    parts: [
+        { name: "program-unit", text: "The program unit's line." },
+        { name: "program-unit-icon", text: "The program unit's icon." },
+        { name: "program-unit-title", text: "The program unit's title, with the search matches highlighted.", when: "Not while the menu shows only icons." },
+        { name: "program-unit-match", text: "A match of the search in the title.", when: "Only while searching." },
+        { name: "program-unit-start", text: "The box of MenuProgramUnit.extend(\"start\"), before the icon.", when: "Not while the menu shows only icons." },
+        { name: "program-unit-end", text: "The box of MenuProgramUnit.extend(\"end\"), after the title.", when: "Not while the menu shows only icons." },
+        { name: "program-unit-children", text: "The groups and items below the line.", when: "Only while the program unit is open." }
     ]
 });

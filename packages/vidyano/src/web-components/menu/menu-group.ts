@@ -41,16 +41,16 @@ export class MenuGroup extends MenuNode {
         const group = this.item as Vidyano.ProgramUnitItemGroup;
 
         return html`
-            <div class="item" part="item group">
+            <div class="item" part="group">
                 ${this.renderRegion("group", "start")}
                 <a class="link" @click=${this._toggle}>
                     <paper-ripple></paper-ripple>
-                    ${this.renderTitle()}
+                    ${this.renderTitle("group")}
                 </a>
                 ${this.renderRegion("group", "end")}
-                ${this.renderIcon()}
+                ${this.renderIcon("group-toggle")}
             </div>
-            <div class="children" part="children" ?inert=${!this.open}>
+            <div class="children" part="group-children" ?inert=${!this.open}>
                 <div class="content">${this.renderChildren(group?.items)}</div>
             </div>
         `;

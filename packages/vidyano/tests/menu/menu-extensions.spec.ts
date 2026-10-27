@@ -432,7 +432,7 @@ test.describe('Row regions: MenuProgramUnit, MenuGroup and MenuItem.extend', () 
     });
 
     test('item regions and icons can be styled from outside with ::part', async ({ page }) => {
-        await page.addStyleTag({ content: 'vi-menu::part(item-end) { outline: 3px solid rgb(255, 0, 0); } vi-menu::part(icon) { outline: 3px solid rgb(0, 0, 255); }' });
+        await page.addStyleTag({ content: 'vi-menu::part(item-end) { outline: 3px solid rgb(255, 0, 0); } vi-menu::part(program-unit-icon) { outline: 3px solid rgb(0, 0, 255); }' });
         await page.evaluate(() => {
             const w = window as any;
             w.MenuItem.extend('end', (_menu: any, item: any) => item.name === 'Customers' ? w.el('styled') : null);
@@ -446,8 +446,19 @@ test.describe('Row regions: MenuProgramUnit, MenuGroup and MenuItem.extend', () 
 
     test('every part of the menu and its tree can be styled from outside with ::part', async ({ page }) => {
         // One distinct outline width per part, so each assertion proves its own part reached its element
-        const parts = ['header', 'label', 'search', 'items', 'footer', 'toggle', 'resizer', 'item', 'program-unit', 'group', 'title', 'children'];
+        const parts = [
+            'header', 'label', 'search', 'items', 'footer', 'toggle', 'resizer',
+            'program-unit', 'program-unit-icon', 'program-unit-title', 'program-unit-start', 'program-unit-end', 'program-unit-children',
+            'group', 'group-toggle', 'group-title', 'group-start', 'group-end', 'group-children',
+            'item', 'item-title', 'item-start', 'item-end'
+        ];
         await page.addStyleTag({ content: parts.map((part, index) => `vi-menu::part(${part}) { outline: ${index + 1}px solid rgb(1, 2, 3); }`).join('\n') });
+        await page.evaluate(() => {
+            const w = window as any;
+            for (const [component, kind] of [[w.MenuProgramUnit, 'pu'], [w.MenuGroup, 'group'], [w.MenuItem, 'item']])
+                for (const region of ['start', 'end'])
+                    component.extend(region, () => w.el(`${kind}-${region}`));
+        });
         const menu = await addMenu(page);
 
         const width = (part: string) => `${parts.indexOf(part) + 1}px`;
@@ -459,13 +470,48 @@ test.describe('Row regions: MenuProgramUnit, MenuGroup and MenuItem.extend', () 
         await expect(menu.locator('#toggle')).toHaveCSS('outline-width', width('toggle'));
         await expect(menu.locator('#resizer')).toHaveCSS('outline-width', width('resizer'));
 
-        // A part with several names gets the rule of the last one in the style sheet: program-unit and group come after item
-        const unit = menu.locator('vi-menu-program-unit').first();
-        await expect(unit.locator('.item').first()).toHaveCSS('outline-width', width('program-unit'));
-        await expect(unit.locator('vi-menu-group .item').first()).toHaveCSS('outline-width', width('group'));
-        await expect(unit.locator('vi-menu-item .item').first()).toHaveCSS('outline-width', width('item'));
-        await expect(unit.locator('vi-menu-item .title').first()).toHaveCSS('outline-width', width('title'));
-        await expect(unit.locator('.children').first()).toHaveCSS('outline-width', width('children'));
+        // Each component's parts by their own names
+        for (const [host, prefix, kind] of [['vi-menu-program-unit', 'program-unit', 'pu'], ['vi-menu-group', 'group', 'group'], ['vi-menu-item', 'item', 'item']]) {
+            const row = menu.locator(host).first();
+            await expect(row.locator('.item').first(), prefix).toHaveCSS('outline-width', width(prefix));
+            await expect(row.locator('.title').first(), `${prefix}-title`).toHaveCSS('outline-width', width(`${prefix}-title`));
+            await expect(row.locator(`.item-start:has(#${kind}-start)`).first(), `${prefix}-start`).toHaveCSS('outline-width', width(`${prefix}-start`));
+            await expect(row.locator(`.item-end:has(#${kind}-end)`).first(), `${prefix}-end`).toHaveCSS('outline-width', width(`${prefix}-end`));
+        }
+
+        await expect(menu.locator('vi-menu-program-unit vi-icon').first()).toHaveCSS('outline-width', width('program-unit-icon'));
+        await expect(menu.locator('vi-menu-group vi-icon').first()).toHaveCSS('outline-width', width('group-toggle'));
+        await expect(menu.locator('vi-menu-program-unit .children').first()).toHaveCSS('outline-width', width('program-unit-children'));
+        await expect(menu.locator('vi-menu-group .children').first()).toHaveCSS('outline-width', width('group-children'));
+    });
+
+    test('a part of one component reaches no other, and the names the components shared are gone', async ({ page }) => {
+        await page.addStyleTag({ content: `
+            vi-menu::part(item-title) { background-color: rgb(1, 2, 3); }
+            vi-menu::part(title), vi-menu::part(icon), vi-menu::part(children), vi-menu::part(group-icon) { background-color: rgb(4, 5, 6); }
+        ` });
+        const menu = await addMenu(page);
+
+        await expect(menu.locator('vi-menu-item .title').first()).toHaveCSS('background-color', 'rgb(1, 2, 3)');
+        await expect(menu.locator('vi-menu-group .title').first()).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+        await expect(menu.locator('vi-menu-program-unit .title').first()).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+        await expect(menu.locator('vi-menu-program-unit vi-icon').first()).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+        await expect(menu.locator('vi-menu-program-unit .children').first()).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+        await expect(menu.locator('vi-menu-group vi-icon').first()).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    });
+
+    test('the search matches in each component\'s title are a part of that component alone', async ({ page }) => {
+        await page.addStyleTag({ content: `
+            vi-menu::part(program-unit-match) { background-color: rgb(1, 1, 1); }
+            vi-menu::part(group-match) { background-color: rgb(2, 2, 2); }
+            vi-menu::part(item-match) { background-color: rgb(3, 3, 3); }
+        ` });
+        const menu = await addMenu(page);
+        await menu.evaluate(async (m: any) => { m.filter = 's'; await m.updateComplete; });
+
+        await expect(menu.locator('vi-menu-program-unit .title .match').first()).toHaveCSS('background-color', 'rgb(1, 1, 1)');
+        await expect(menu.locator('vi-menu-group .title .match').first()).toHaveCSS('background-color', 'rgb(2, 2, 2)');
+        await expect(menu.locator('vi-menu-item .title .match').first()).toHaveCSS('background-color', 'rgb(3, 3, 3)');
     });
 
     test('decorates every row of its own component with its own item', async ({ page }) => {

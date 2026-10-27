@@ -97,17 +97,17 @@ export class MenuProgramUnit extends MenuNode {
         const link = this.linkFor(unit);
 
         return html`
-            <div class="item" part="item program-unit">
+            <div class="item" part="program-unit">
                 ${this.renderRegion("program-unit", "start")}
                 <a class="link" href=${link.href ?? nothing} target=${link.target ?? nothing} rel=${link.rel ?? nothing} @click=${this._click}>
                     <paper-ripple></paper-ripple>
-                    ${this.renderIcon()}
-                    ${this.renderTitle()}
+                    ${this.renderIcon("program-unit-icon")}
+                    ${this.renderTitle("program-unit")}
                 </a>
                 ${this.renderRegion("program-unit", "end")}
             </div>
             ${unit?.items?.length ? html`
-                <div class="children" part="children" ?open=${this.open} ?inert=${!this.open}>
+                <div class="children" part="program-unit-children" ?open=${this.open} ?inert=${!this.open}>
                     <div class="content">${this.renderChildren(unit.items)}</div>
                 </div>
             ` : nothing}

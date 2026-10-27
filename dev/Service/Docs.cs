@@ -6,8 +6,8 @@ namespace Dev.Service;
 
 /// <summary>
 /// The "Docs" website (http://docs.localhost:5000/): documentation with live examples. Every path gets the same
-/// page, wwwroot/docs.js; each wwwroot/docs/&lt;name&gt;.js is one documentation page, at /&lt;name&gt;/, and each
-/// wwwroot/docs/&lt;name&gt;/&lt;sub&gt;.js a page under it, at /&lt;name&gt;/&lt;sub&gt;/. Files starting with _ are shared
+/// page, wwwroot/docs.js; each wwwroot/docs/&lt;name&gt;.js is one documentation page, at /&lt;name&gt;, and each
+/// wwwroot/docs/&lt;name&gt;/&lt;sub&gt;.js a page under it, at /&lt;name&gt;/&lt;sub&gt;. Files starting with _ are shared
 /// code, not pages.
 /// </summary>
 public static class Docs

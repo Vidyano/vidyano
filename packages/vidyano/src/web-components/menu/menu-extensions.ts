@@ -135,8 +135,8 @@ export function renderNodeRegion(kind: MenuNodeKind, region: MenuNodeRegion, men
         return nothing;
 
     // One box per region, next to the row's link: what an extension puts there never follows the link. Its part is
-    // item-start or item-end, as the menu passes the parts of every row up under one name
-    return html`<div class=${`item-${region}`} part=${`item-${region}`}>${entries.map(e => call(e.render, menu, item))}</div>`;
+    // named after the kind of row, such as group-end, so a rule styles that kind alone
+    return html`<div class=${`item-${region}`} part=${`${kind}-${region}`}>${entries.map(e => call(e.render, menu, item))}</div>`;
 }
 
 /**
