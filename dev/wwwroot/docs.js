@@ -1,6 +1,6 @@
 // The documentation site at http://docs.localhost:5000/: a sidebar with every page, and one page at a time at its own
 // address, /<name>[/<tab>]. A page is a module in docs/<name>.js that exports its title, the tag of the element that
-// renders it and optionally an order, its text and its tabs.
+// renders it and optionally an order, its text and its tabs. A page without a tag opens its first sub-page.
 import { Vidyano, WebComponent, html, nothing } from "./index.js";
 
 /**
@@ -89,7 +89,7 @@ function source(example) {
 
 const none = {
     id: "none",
-    title: "None",
+    title: "Default",
     text: "No example: the component as it is built in. Pick one from the list to turn it on."
 };
 
@@ -105,7 +105,7 @@ const everything = {
  * turns it on and returns the function that turns it off again; stage is the element the page put in the "stage" slot.
  * Optionally, reveal(stage) brings what the example changes into view, without being part of its code, and alone keeps
  * it out of Everything when it competes with another.
- * "None", the default, turns none on and "Everything", last in the list, all of them. The selection survives a reload.
+ * "Default" turns none on and "Everything" all of them. A reload starts at Default again.
  *
  *     <docs-examples name="menu" .examples=${examples} .groups=${groups}>
  *         <div slot="stage">…the live demo…</div>
@@ -133,21 +133,11 @@ class DocsExamples extends WebComponent {
         this.selected = null;
     }
 
-    get #storageKey() {
-        return `docs:${this.name}:selected`;
-    }
-
     connectedCallback() {
         super.connectedCallback();
 
-        let id = null;
-        try {
-            id = sessionStorage.getItem(this.#storageKey);
-        }
-        catch { }
-
-        // None to start with, so a page shows the component as it is built in
-        this.#select([none, ...this.examples, everything].find(e => e.id === id) ?? none);
+        // Default to start with, so a page shows the component as it is built in
+        this.#select(none);
 
         // The code shows plain until highlight.js is there
         highlighter.then(() => this.requestUpdate());
@@ -170,11 +160,6 @@ class DocsExamples extends WebComponent {
         const examples = example === everything ? this.examples.filter(e => !e.alone) : example === none ? [] : [example];
         this.#disposers = examples.flatMap(e => [e.apply(stage), e.reveal?.(stage)]).filter(Boolean);
         this.selected = example;
-
-        try {
-            sessionStorage.setItem(this.#storageKey, example.id);
-        }
-        catch { }
     }
 
     async #copy(code) {
@@ -188,7 +173,7 @@ class DocsExamples extends WebComponent {
     }
 
     #renderChoice(example) {
-        return html`<li><button class="choice" aria-pressed=${String(this.selected === example)} @click=${() => this.#select(example)}>${example.title}</button></li>`;
+        return html`<button class="choice" aria-pressed=${String(this.selected === example)} @click=${() => this.#select(example)}>${example.title}</button>`;
     }
 
     render() {
@@ -200,54 +185,47 @@ class DocsExamples extends WebComponent {
         return html`
             <link rel="stylesheet" href=${highlightTheme}>
             <style>
-                /* The layout of a Styling tab: the stage, and next to it the choices and the chosen one's code */
-                :host { display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap; }
-                .stage { flex-shrink: 0; }
-                /* Takes the rest of the width, so the code shows whole */
-                .legend { flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 16px; position: sticky; top: 24px; }
+                /* The stage bare, the chosen example's code next to it and the choices floating on the right */
+                :host { display: grid; grid-template-columns: max-content minmax(0, 1fr) 230px; gap: 28px; align-items: start; }
                 *:focus { outline: none; }
-                nav { display: flex; flex-direction: column; gap: 12px; }
-                .group { display: flex; flex-direction: column; gap: 6px; }
-                h3 { font: 600 11px/1 "Open Sans", sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #5b6b73; margin: 0; }
-                ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
-                .choice { padding: 4px 12px; border: 1px solid #dce2e6; border-radius: 16px; background: #fff; font: 12.5px "Open Sans", sans-serif; color: #1f2a30; cursor: pointer; }
-                .choice:hover { border-color: #b8c4cb; }
-                .choice[aria-pressed="true"] { border-color: #F5A623; background: #fff6e6; }
-                .about { display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; background: #fff; border: 1px solid #e3e8eb; border-radius: 10px; }
-                header { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; }
-                h2 { font: 600 14px "Open Sans", sans-serif; margin: 0; }
-                p { margin: 0; color: #46545c; font-size: 13px; }
+                .stage { user-select: none; }
+                header { display: flex; gap: 12px; align-items: center; justify-content: space-between; }
+                h2 { font-size: 17px; font-weight: 600; margin: 0; }
+                p { margin: 0; color: #46545c; }
                 .copy { flex-shrink: 0; border: 1px solid #dce2e6; background: #fff; border-radius: 6px; padding: 3px 10px; font: 12px "Open Sans", sans-serif; color: #3e4c53; cursor: pointer; }
                 .copy:hover { border-color: #4682B4; color: #1d4f7a; }
-                /* Scrolls within, so the page doesn't */
-                pre { margin: 0; max-height: 360px; overflow: auto; border-radius: 6px; background: #0d1117; }
-                /* Unwrapped, so the indentation holds; also overrides the scrolling and background of the theme's .hljs */
-                pre code, pre code.hljs { display: inline-block; min-width: 100%; box-sizing: border-box; padding: 10px 14px; font: 12.5px/1.6 ui-monospace, Consolas, monospace; color: #e6edf3; white-space: pre; overflow: visible; background: none; }
+                /* As tall as the stage at most: the row takes its height from the stage, the code scrolls within */
+                .detail { display: flex; flex-direction: column; gap: 10px; min-width: 0; align-self: stretch; contain: size; }
+                pre { margin: 0; border-radius: 8px; overflow-y: auto; flex: 0 1 auto; min-height: 0; background: #0d1117; }
+                /* Wrapped instead of scrolling sideways; also overrides the scrolling and background of the theme's .hljs */
+                pre code, pre code.hljs { display: block; padding: 14px 16px; font: 12.5px/1.6 ui-monospace, Consolas, monospace; color: #e6edf3; white-space: pre-wrap; overflow-wrap: anywhere; overflow: visible; background: none; }
+                /* Never taller than the window, so every choice is reachable while it sticks */
+                .rail { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; box-sizing: border-box; overscroll-behavior: contain; background: #fff; border-radius: 10px; padding: 4px 10px 14px; box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.06); user-select: none; }
+                .rail h3 { font: 600 10.5px/1 "Open Sans", sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #6b7a82; margin: 14px 10px 6px; }
+                .choice { display: block; width: 100%; text-align: left; border: 0; background: none; border-radius: 6px; padding: 6px 10px; font: 13px "Open Sans", sans-serif; color: #33434b; cursor: pointer; }
+                .choice:hover { background: #f0f3f5; color: #1f2a30; }
+                .choice[aria-pressed="true"] { background: #e8f0f7; color: #1d4f7a; font-weight: 600; box-shadow: inset 2px 0 #4682B4; border-radius: 0 6px 6px 0; }
+                @media (max-width: 1300px) { :host { grid-template-columns: max-content minmax(0, 1fr); } .rail { grid-column: 1 / -1; grid-row: 1; position: static; display: flex; flex-wrap: wrap; gap: 4px; } .rail h3 { display: none; } .choice { width: auto; } }
+                @media (max-width: 900px) { :host { grid-template-columns: minmax(0, 1fr); } .detail { contain: none; } pre { max-height: 640px; } }
             </style>
             <div class="stage"><slot name="stage"></slot></div>
-            <div class="legend">
-                <nav aria-label="Examples">
-                    ${(this.groups ?? [{ examples: this.examples }]).map((group, index) => html`
-                        <div class="group">
-                            ${group.title ? html`<h3>${group.title}</h3>` : nothing}
-                            <ol>
-                                ${index === 0 ? this.#renderChoice(none) : nothing}
-                                ${group.examples.map(example => this.#renderChoice(example))}
-                                ${this.groups ? nothing : this.#renderChoice(everything)}
-                            </ol>
-                        </div>
-                    `)}
-                    ${this.groups ? html`<div class="group"><h3>All</h3><ol>${this.#renderChoice(everything)}</ol></div>` : nothing}
-                </nav>
-                <div class="about">
-                    <header>
-                        <h2>${this.selected.title}</h2>
-                        ${code != null ? html`<button class="copy" @click=${() => this.#copy(code)}>Copy</button>` : nothing}
-                    </header>
-                    <p>${this.selected.text}</p>
-                    ${code != null ? html`<pre>${highlight(code)}</pre>` : nothing}
-                </div>
+            <div class="detail">
+                <header>
+                    <h2>${this.selected.title}</h2>
+                    ${code != null ? html`<button class="copy" @click=${() => this.#copy(code)}>Copy</button>` : nothing}
+                </header>
+                <p>${this.selected.text}</p>
+                ${code != null ? html`<pre>${highlight(code)}</pre>` : nothing}
             </div>
+            <nav class="rail" aria-label="Examples">
+                <h3>All</h3>
+                ${this.#renderChoice(none)}
+                ${this.#renderChoice(everything)}
+                ${(this.groups ?? [{ title: "Examples", examples: this.examples }]).map(group => html`
+                    <h3>${group.title}</h3>
+                    ${group.examples.map(example => this.#renderChoice(example))}
+                `)}
+            </nav>
         `;
     }
 }
@@ -355,9 +333,18 @@ class Docs extends WebComponent {
 
     #show() {
         const { name, tab } = this.#fromAddress();
-        const section = this.sections.find(s => s.name === name);
+        let section = this.sections.find(s => s.name === name);
         if (!section)
             return;
+
+        // A page without an element of its own opens its first sub-page instead
+        if (!section.module.tag) {
+            section = this.sections.find(s => s.parent === section.name);
+            if (!section)
+                return;
+
+            history.replaceState(null, "", this.#address(section.name, tab));
+        }
 
         // Made once, the first time it shows; only the page that shows is in the document, with its live demos
         section.element ??= document.createElement(section.module.tag);
@@ -441,7 +428,7 @@ class Docs extends WebComponent {
                     --theme-h1: 40px; --theme-h2: 32px; --theme-h3: 22px; --theme-h4: 12px; --theme-h5: 6px;
                     --theme-color-error: #a80511; --theme-color-notice: #48545e; --theme-color-ok: #339f7b; --theme-color-warning: #e5a300;
                 }
-                nav { position: sticky; top: 0; height: 100vh; overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px; padding: 24px 16px; background: #fff; border-right: 1px solid #e3e8eb; }
+                nav { position: sticky; top: 0; height: 100vh; user-select: none; overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px; padding: 24px 16px; background: #fff; border-right: 1px solid #e3e8eb; }
                 .brand { display: flex; align-items: center; gap: 10px; padding: 0 8px; color: inherit; text-decoration: none; font-weight: 700; font-size: 15px; }
                 .brand span { width: 28px; height: 28px; border-radius: 7px; background: #263238; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; }
                 .search { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border: 1px solid #dce2e6; border-radius: 8px; color: #5b6b73; }
@@ -453,7 +440,8 @@ class Docs extends WebComponent {
                 .link:hover { background: #f0f3f5; color: #1f2a30; }
                 .top > .link { font-weight: 600; color: #1f2a30; }
                 li li .link { padding-left: 22px; }
-                .link[aria-current="page"] { background: #eaf1f7; color: #1d4f7a; font-weight: 600; box-shadow: inset 2px 0 #4682B4; }
+                /* Square on the left, so the bar there stays straight */
+                .link[aria-current="page"] { border-radius: 0 6px 6px 0; background: #eaf1f7; color: #1d4f7a; font-weight: 600; box-shadow: inset 2px 0 #4682B4; }
                 main { min-width: 0; display: flex; flex-direction: column; gap: 20px; padding: 32px 48px 64px; }
                 .crumbs { display: flex; gap: 8px; color: #5b6b73; font-size: 13px; }
                 .crumbs a { color: #2f6a9a; text-decoration: none; }

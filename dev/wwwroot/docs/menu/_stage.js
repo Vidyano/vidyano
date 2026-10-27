@@ -366,7 +366,7 @@ class DocsMenuStage extends WebComponent {
         return html`
             <style>
                 *:focus { outline: none; }
-                docs-menu-stage { display: flex; flex-direction: column; gap: 10px; width: 420px; max-width: 100%; }
+                docs-menu-stage { display: flex; flex-direction: column; gap: 10px; width: 420px; max-width: 100%; user-select: none; }
                 docs-menu-stage .frame { position: relative; height: 640px; display: flex; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,.14); background: #f4f6f8; font: 13px "Open Sans", Arial, Helvetica, sans-serif; }
                 docs-menu-stage vi-menu { --vi-menu--expand-width: 300px; flex-shrink: 0; }
                 docs-menu-stage .app { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; padding: 14px; }
@@ -616,7 +616,7 @@ export const pageStyles = html`
 /**
  * Defines the documentation page of one menu component, with a Behavior tab, the extension points an outsider adds
  * content with and their live examples, when it has those, and a Styling tab, the parts an outsider restyles with
- * vi-menu::part(…). behavior, optional, is { examples }; parts is [{ name, text, when }]; states, optional, the
+ * vi-menu::part(…). behavior, optional, is { examples, groups }; parts is [{ name, text, when }]; states, optional, the
  * states the Styling tab offers, the menu's own when left out; regions, optional, the component class whose start and end regions the Styling tab shows with a placeholder.
  * @returns The page's text and tabs, for its module to export.
  */
@@ -639,7 +639,7 @@ export function defineComponentPage({ tag, text, behavior, component, parts, sta
             if (this.tab === "behavior")
                 return html`
                     ${pageStyles}
-                    <docs-examples name=${`${tag}-behavior`} .examples=${behavior.examples}>
+                    <docs-examples name=${`${tag}-behavior`} .examples=${behavior.examples} .groups=${behavior.groups ?? null}>
                         <docs-menu-stage slot="stage"></docs-menu-stage>
                     </docs-examples>
                 `;
