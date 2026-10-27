@@ -25,9 +25,9 @@ export class MenuItem extends MenuNode {
         const link = this.linkFor(this.item);
 
         return html`
-            <div class="row">
+            <div class="item">
                 ${this.renderItemRegion("item-start")}
-                <a class="title" href=${ifDefined(link.href)} target=${ifDefined(link.target)} rel=${ifDefined(link.rel)} @click=${this._onClick}>
+                <a class="link" href=${ifDefined(link.href)} target=${ifDefined(link.target)} rel=${ifDefined(link.rel)} @click=${this._onClick}>
                     <paper-ripple></paper-ripple>
                     ${this.renderIcon()}
                     ${this.renderTitle()}

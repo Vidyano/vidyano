@@ -44,13 +44,13 @@ async function setupPage(page: Page) {
     });
 
     const group = page.locator('vi-menu-group#group');
-    await expect(group.locator('#title').first()).toHaveText('Reports');
+    await expect(group.locator('.title').first()).toHaveText('Reports');
 
     return group;
 }
 
 function child(group: ReturnType<Page['locator']>, title: string) {
-    return group.locator('.sub-items vi-menu-item, .sub-items vi-menu-group').filter({ has: group.page().locator('#title', { hasText: new RegExp(`^${title}$`) }) }).first();
+    return group.locator('.children vi-menu-item, .children vi-menu-group').filter({ has: group.page().locator('.title', { hasText: new RegExp(`^${title}$`) }) }).first();
 }
 
 function nested(group: ReturnType<Page['locator']>) {
@@ -67,7 +67,7 @@ test.describe('vi-menu-group', () => {
 
     test('a click on the title toggles the children', async ({ page }) => {
         const group = await setupPage(page);
-        const title = group.locator('a.title').first();
+        const title = group.locator('a.link').first();
 
         await title.click();
         await expect(group).toHaveAttribute('expanded', '');
@@ -86,20 +86,20 @@ test.describe('vi-menu-group', () => {
             document.getElementById('test-container')!.addEventListener('click', e => (window as any).__clicks.push(e.defaultPrevented));
         });
 
-        await group.locator('a.title').first().click();
+        await group.locator('a.link').first().click();
         expect(await page.evaluate(() => (window as any).__clicks)).toEqual([true]);
-        expect(await group.locator('a.title').first().getAttribute('href')).toBeNull();
+        expect(await group.locator('a.link').first().getAttribute('href')).toBeNull();
     });
 
     test('nested groups toggle on their own', async ({ page }) => {
         const group = await setupPage(page);
-        await group.locator('a.title').first().click();
+        await group.locator('a.link').first().click();
 
         const archive = nested(group);
         const oldSales = archive.locator('vi-menu-item').first();
         await expect(oldSales).toBeHidden();
 
-        await archive.locator('a.title').first().click();
+        await archive.locator('a.link').first().click();
         await expect(archive).toHaveAttribute('expanded', '');
         await expect(oldSales).toBeVisible();
         await expect(group).toHaveAttribute('expanded', '');
@@ -107,8 +107,8 @@ test.describe('vi-menu-group', () => {
 
     test('collapseAll collapses the group and every nested group', async ({ page }) => {
         const group = await setupPage(page);
-        await group.locator('a.title').first().click();
-        await nested(group).locator('a.title').first().click();
+        await group.locator('a.link').first().click();
+        await nested(group).locator('a.link').first().click();
         await expect(nested(group)).toHaveAttribute('expanded', '');
 
         await group.evaluate((node: any) => node.collapseAll());
@@ -167,8 +167,8 @@ test.describe('vi-menu-group', () => {
 
     test('closing blurs a focused child', async ({ page }) => {
         const group = await setupPage(page);
-        await group.locator('a.title').first().click();
-        await nested(group).locator('a.title').first().focus();
+        await group.locator('a.link').first().click();
+        await nested(group).locator('a.link').first().focus();
 
         await group.evaluate((node: any) => node.expanded = false);
 

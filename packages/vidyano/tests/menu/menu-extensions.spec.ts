@@ -420,9 +420,9 @@ test.describe('Menu.extend item regions', () => {
         const item = menu.locator('vi-menu-item').filter({ has: page.locator('#end') });
 
         // In the row, next to the link rather than inside it
-        const parts = await item.evaluate((el: any) => Array.from(el.shadowRoot.querySelector('.row').querySelectorAll('#start, #title, #end')).map((n: any) => n.id));
+        const parts = await item.evaluate((el: any) => Array.from(el.shadowRoot.querySelector('.item').querySelectorAll('#start, .title, #end')).map((n: any) => n.id || n.className));
         expect(parts).toEqual(['start', 'title', 'end']);
-        expect(await item.evaluate((el: any) => !!el.shadowRoot.querySelector('a.title #start, a.title #end'))).toBe(false);
+        expect(await item.evaluate((el: any) => !!el.shadowRoot.querySelector('a.link #start, a.link #end'))).toBe(false);
     });
 
     test('item regions follow the menu state', async ({ page }) => {

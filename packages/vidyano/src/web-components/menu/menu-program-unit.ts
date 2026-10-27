@@ -79,7 +79,7 @@ export class MenuProgramUnit extends MenuNode {
             return;
 
         // Blur a focused item before it is hidden, a hidden focused element is an accessibility warning
-        this.blurFocusedWithin(this.shadowRoot?.getElementById("subItems"));
+        this.blurFocusedWithin(this.shadowRoot?.querySelector(".children"));
     }
 
     render() {
@@ -87,9 +87,9 @@ export class MenuProgramUnit extends MenuNode {
         const link = this.linkFor(unit);
 
         return html`
-            <div class="row">
+            <div class="item">
                 ${this.renderItemRegion("item-start")}
-                <a class="title" href=${link.href ?? nothing} target=${link.target ?? nothing} rel=${link.rel ?? nothing} @click=${this._click}>
+                <a class="link" href=${link.href ?? nothing} target=${link.target ?? nothing} rel=${link.rel ?? nothing} @click=${this._click}>
                     <paper-ripple></paper-ripple>
                     ${this.renderIcon()}
                     ${this.renderTitle()}
@@ -97,8 +97,8 @@ export class MenuProgramUnit extends MenuNode {
                 ${this.renderItemRegion("item-end")}
             </div>
             ${unit?.items?.length ? html`
-                <div id="subItems" ?open=${this.open} ?inert=${!this.open}>
-                    <div class="items">${this.renderChildren(unit.items)}</div>
+                <div class="children" ?open=${this.open} ?inert=${!this.open}>
+                    <div class="content">${this.renderChildren(unit.items)}</div>
                 </div>
             ` : nothing}
         `;

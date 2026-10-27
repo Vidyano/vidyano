@@ -20,8 +20,8 @@ span.match {
     pointer-events: none;
 }
 
-// The row: the link to the item, with the item regions next to it
-.row {
+// The item: the link to the item, with the item regions next to it
+.item {
     display: flex;
     gap: var(--vi-menu-item-gap);
     position: relative;
@@ -66,7 +66,7 @@ span.match {
     }
 }
 
-.title {
+.link {
     display: flex;
     flex: 1;
     min-width: 0;
@@ -91,7 +91,7 @@ span.match {
         fill: var(--vi-menu-color, $color);
     }
 
-    > span {
+    > .title {
         display: block;
         flex: 1;
         min-width: 0;

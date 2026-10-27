@@ -87,25 +87,25 @@ test.describe('vi-menu-item', () => {
 
     test('a query item links to its path under the app root', async ({ page }) => {
         const item = await addNode(page, 'item', query);
-        const link = item.locator('a.title');
+        const link = item.locator('a.link');
 
         await expect(link).toHaveAttribute('href', /Home\/People$/);
         // Outside vi-app no root path is set; the link is relative then
         await expect(link).not.toHaveAttribute('href', /^null/);
         await expect(link).not.toHaveAttribute('rel');
         await expect(link).not.toHaveAttribute('target');
-        await expect(item.locator('#title')).toHaveText('People');
+        await expect(item.locator('.title')).toHaveText('People');
     });
 
     test('a persistent object item links to its path with the object id', async ({ page }) => {
         const item = await addNode(page, 'item', persistentObject);
 
-        await expect(item.locator('a.title')).toHaveAttribute('href', /Home\/Settings\/42$/);
+        await expect(item.locator('a.link')).toHaveAttribute('href', /Home\/Settings\/42$/);
     });
 
     test('an http url item links to its url as external in a new tab', async ({ page }) => {
         const item = await addNode(page, 'item', externalUrl);
-        const link = item.locator('a.title');
+        const link = item.locator('a.link');
 
         await expect(link).toHaveAttribute('href', 'https://www.vidyano.com/docs');
         await expect(link).toHaveAttribute('rel', 'external noopener');
@@ -114,7 +114,7 @@ test.describe('vi-menu-item', () => {
 
     test('a url item without http keeps its path as is', async ({ page }) => {
         const item = await addNode(page, 'item', internalUrl);
-        const link = item.locator('a.title');
+        const link = item.locator('a.link');
 
         await expect(link).toHaveAttribute('href', 'Home/Custom');
         await expect(link).not.toHaveAttribute('rel');
@@ -123,7 +123,7 @@ test.describe('vi-menu-item', () => {
 
     test('a click drops the cached query and leaves the filter alone when not filtering', async ({ page }) => {
         const item = await addNode(page, 'item', query);
-        await item.locator('#title').click();
+        await item.locator('.title').click();
 
         const calls = await page.evaluate(() => (window as any).__calls);
         expect(calls.cacheRemove).toEqual(['AppCacheEntryQuery']);
@@ -132,15 +132,15 @@ test.describe('vi-menu-item', () => {
 
     test('a click drops the cached persistent object', async ({ page }) => {
         const item = await addNode(page, 'item', persistentObject);
-        await item.locator('#title').click();
+        await item.locator('.title').click();
 
         expect(await page.evaluate(() => (window as any).__calls.cacheRemove)).toEqual(['AppCacheEntryPersistentObject']);
     });
 
     test('a Ctrl or Shift click opens a new tab: the filter and the cache of this tab stay', async ({ page }) => {
         const item = await addNode(page, 'item', query, 'peo');
-        await item.locator('#title').click({ modifiers: ['Control'] });
-        await item.locator('#title').click({ modifiers: ['Shift'] });
+        await item.locator('.title').click({ modifiers: ['Control'] });
+        await item.locator('.title').click({ modifiers: ['Shift'] });
 
         const calls = await page.evaluate(() => (window as any).__calls);
         expect(calls.cacheRemove).toEqual([]);
@@ -149,7 +149,7 @@ test.describe('vi-menu-item', () => {
 
     test('a click while filtering asks the menu to reset its filter', async ({ page }) => {
         const item = await addNode(page, 'item', query, 'peo');
-        await item.locator('#title').click();
+        await item.locator('.title').click();
 
         expect(await page.evaluate(() => (window as any).__calls.resetFilter)).toBe(1);
     });
@@ -157,7 +157,7 @@ test.describe('vi-menu-item', () => {
     test('a click reaches the app so it can follow the link', async ({ page }) => {
         const item = await addNode(page, 'item', query);
         await page.evaluate(() => document.getElementById('test-container')!.addEventListener('click', () => (window as any).__calls.appClick = true));
-        await item.locator('#title').click();
+        await item.locator('.title').click();
 
         expect(await page.evaluate(() => (window as any).__calls.appClick)).toBe(true);
     });
@@ -167,9 +167,9 @@ test.describe('vi-menu-item', () => {
 
         await expect(item).toBeVisible();
         await expect(item).toHaveAttribute('filtering', '');
-        await expect(item.locator('#title')).toHaveText('People');
-        await expect(item.locator('#title span.match')).toHaveText('eop');
-        await expect(item.locator('#title span.match')).toHaveCSS('color', 'rgb(255, 221, 0)');
+        await expect(item.locator('.title')).toHaveText('People');
+        await expect(item.locator('.title span.match')).toHaveText('eop');
+        await expect(item.locator('.title span.match')).toHaveCSS('color', 'rgb(255, 221, 0)');
     });
 
     test('the filter hides an item that does not match', async ({ page }) => {
@@ -180,21 +180,21 @@ test.describe('vi-menu-item', () => {
 
         await item.evaluate((n: any) => n.filter = '');
         await expect(item).toBeVisible();
-        await expect(item.locator('#title span.match')).toHaveCount(0);
+        await expect(item.locator('.title span.match')).toHaveCount(0);
     });
 
     test('the title row is indented past the program unit icon', async ({ page }) => {
         const item = await addNode(page, 'item', query);
 
-        // padding-left: 16px + 20px + 8px, on the row that holds the link and the item regions
-        await expect(item.locator('.row')).toHaveCSS('padding-left', '44px');
-        await expect(item.locator('.row')).toHaveCSS('display', 'flex');
-        await expect(item.locator('a.title')).toHaveCSS('display', 'flex');
+        // padding-left: 16px + 20px + 8px, on the item line that holds the link and its regions
+        await expect(item.locator('.item')).toHaveCSS('padding-left', '44px');
+        await expect(item.locator('.item')).toHaveCSS('display', 'flex');
+        await expect(item.locator('a.link')).toHaveCSS('display', 'flex');
     });
 
     test('ctrl+right-click offers to configure the program unit item', async ({ page }) => {
         const item = await addNode(page, 'item', query);
-        await item.locator('#title').click({ button: 'right', modifiers: ['Control'] });
+        await item.locator('.title').click({ button: 'right', modifiers: ['Control'] });
 
         expect(await page.evaluate(() => (window as any).__calls.configure)).toEqual(['Program unit item: People']);
 
@@ -207,7 +207,7 @@ test.describe('vi-menu-item', () => {
 
     test('ctrl+right-click offers nothing for management items', async ({ page }) => {
         const item = await addNode(page, 'item', management);
-        await item.locator('#title').click({ button: 'right', modifiers: ['Control'] });
+        await item.locator('.title').click({ button: 'right', modifiers: ['Control'] });
 
         expect(await page.evaluate(() => (window as any).__calls.configure)).toEqual([]);
     });
@@ -217,7 +217,7 @@ test.describe('vi-menu-item with vi-menu.sticky-search', () => {
     test('a click while filtering keeps the filter', async ({ page }) => {
         await setupPage(page, { stickySearch: true });
         const item = await addNode(page, 'item', query, 'peo');
-        await item.locator('#title').click();
+        await item.locator('.title').click();
 
         expect(await page.evaluate(() => (window as any).__calls.resetFilter)).toBe(0);
     });

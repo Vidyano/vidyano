@@ -94,11 +94,11 @@ test.describe('vi-menu-program-unit', () => {
     test('is expanded while its program unit is the active one', async ({ page }) => {
         const pu = await addProgramUnit(page, { active: true });
         await expect(pu).toHaveAttribute('expanded', '');
-        await expect(own(pu, '#subItems')).toHaveAttribute('open', '');
+        await expect(own(pu, '.children')).toHaveAttribute('open', '');
 
         await setProperty(pu, 'activeProgramUnit', null);
         await expect(pu).not.toHaveAttribute('expanded');
-        await expect(own(pu, '#subItems')).not.toHaveAttribute('open');
+        await expect(own(pu, '.children')).not.toHaveAttribute('open');
 
         await setProperty(pu, 'activeProgramUnit', '$item');
         await expect(pu).toHaveAttribute('expanded', '');
@@ -106,19 +106,19 @@ test.describe('vi-menu-program-unit', () => {
 
     test('closing blurs a focused child, however deep in the nested shadow roots', async ({ page }) => {
         const pu = await addProgramUnit(page, { active: true });
-        const link = pu.locator('vi-menu-item').filter({ hasText: 'Customers' }).locator('a.title');
+        const link = pu.locator('vi-menu-item').filter({ hasText: 'Customers' }).locator('a.link');
         await link.focus();
         await expect.poll(() => link.evaluate(a => (a.getRootNode() as ShadowRoot).activeElement === a)).toBe(true);
 
         // Blurred before the children are hidden, by the program unit itself
         const blurredBeforeClose = await pu.evaluate(async (el: any) => {
             const item = [...el.shadowRoot.querySelectorAll('vi-menu-item')].find((i: any) => i.item.title === 'Customers');
-            const a = item.shadowRoot.querySelector('a.title');
+            const a = item.shadowRoot.querySelector('a.link');
             let blurred = false;
             a.addEventListener('blur', () => blurred = true, { once: true });
             el.expanded = false;
             await el.updateComplete;
-            return blurred && !el.shadowRoot.getElementById('subItems').hasAttribute('open');
+            return blurred && !el.shadowRoot.querySelector('.children').hasAttribute('open');
         });
         expect(blurredBeforeClose).toBe(true);
     });
@@ -131,34 +131,34 @@ test.describe('vi-menu-program-unit', () => {
 
     test('closes its children to zero height when not expanded', async ({ page }) => {
         const pu = await addProgramUnit(page);
-        await expect.poll(() => own(pu, '#subItems').evaluate(el => el.getBoundingClientRect().height)).toBe(0);
-        await expect(own(pu, '#subItems')).toHaveAttribute('inert', '');
+        await expect.poll(() => own(pu, '.children').evaluate(el => el.getBoundingClientRect().height)).toBe(0);
+        await expect(own(pu, '.children')).toHaveAttribute('inert', '');
 
         await setProperty(pu, 'expanded', true);
-        await expect.poll(() => own(pu, '#subItems').evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThan(0);
-        await expect(own(pu, '#subItems')).not.toHaveAttribute('inert');
+        await expect.poll(() => own(pu, '.children').evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThan(0);
+        await expect(own(pu, '.children')).not.toHaveAttribute('inert');
     });
 
     test('shows only its icon while the menu is collapsed and not hovered', async ({ page }) => {
         const pu = await addProgramUnit(page, { active: true, collapsed: true });
-        await expect(own(pu, 'a.title vi-icon')).toBeVisible();
-        await expect(own(pu, '#title')).toBeHidden();
-        await expect(own(pu, '#subItems')).not.toHaveAttribute('open');
+        await expect(own(pu, 'a.link vi-icon')).toBeVisible();
+        await expect(own(pu, '.title')).toBeHidden();
+        await expect(own(pu, '.children')).not.toHaveAttribute('open');
 
         await setProperty(pu, 'hovering', true);
-        await expect(own(pu, '#title')).toBeVisible();
-        await expect(own(pu, '#title')).toHaveText('Sales');
-        await expect(own(pu, '#subItems')).toHaveAttribute('open', '');
+        await expect(own(pu, '.title')).toBeVisible();
+        await expect(own(pu, '.title')).toHaveText('Sales');
+        await expect(own(pu, '.children')).toHaveAttribute('open', '');
     });
 
     test('opens and highlights matches while filtering', async ({ page }) => {
         const pu = await addProgramUnit(page, { filter: 'open' });
         await expect(pu).toHaveAttribute('filtering', '');
-        await expect(own(pu, '#subItems')).toHaveAttribute('open', '');
+        await expect(own(pu, '.children')).toHaveAttribute('open', '');
         await expect(pu).toBeVisible();
 
         await setProperty(pu, 'filter', 'sal');
-        await expect(own(pu, '#title span.match')).toHaveText('Sal');
+        await expect(own(pu, '.title span.match')).toHaveText('Sal');
 
         await setProperty(pu, 'filter', 'nothing matches');
         await expect(pu).toBeHidden();
@@ -166,20 +166,20 @@ test.describe('vi-menu-program-unit', () => {
 
     test('toggles expanded on click when it has no path', async ({ page }) => {
         const pu = await addProgramUnit(page, { path: null });
-        await expect(own(pu, 'a.title')).not.toHaveAttribute('href');
+        await expect(own(pu, 'a.link')).not.toHaveAttribute('href');
 
-        await own(pu, 'a.title').click();
+        await own(pu, 'a.link').click();
         await expect(pu).toHaveAttribute('expanded', '');
 
-        await own(pu, 'a.title').click();
+        await own(pu, 'a.link').click();
         await expect(pu).not.toHaveAttribute('expanded');
     });
 
     test('links to its path and stays expanded on click when it has one', async ({ page }) => {
         const pu = await addProgramUnit(page, { active: true });
-        await expect(own(pu, 'a.title')).toHaveAttribute('href', /sales$/);
+        await expect(own(pu, 'a.link')).toHaveAttribute('href', /sales$/);
 
-        await own(pu, 'a.title').click();
+        await own(pu, 'a.link').click();
         await expect(pu).toHaveAttribute('expanded', '');
     });
 
@@ -192,7 +192,7 @@ test.describe('vi-menu-program-unit', () => {
         });
         await expect(group).toHaveAttribute('expanded', '');
 
-        await own(pu, 'a.title').click();
+        await own(pu, 'a.link').click();
         await expect(group).not.toHaveAttribute('expanded');
         await expect(pu).toHaveAttribute('expanded', '');
     });
@@ -206,7 +206,7 @@ test.describe('vi-menu-program-unit', () => {
         });
         await setProperty(pu, 'filter', 'orders');
 
-        await own(pu, 'a.title').click();
+        await own(pu, 'a.link').click();
         await expect(group).toHaveAttribute('expanded', '');
     });
 

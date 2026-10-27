@@ -124,7 +124,7 @@ export abstract class MenuNode extends WebComponent {
      * Renders the item's title with the filter's matches highlighted.
      */
     protected renderTitle(): TemplateResult {
-        return html`<span id="title" class="flex" @mouseenter=${this._titleMouseenter}>${this.renderHighlighted(this.item?.title ?? "")}</span>`;
+        return html`<span class="title" @mouseenter=${this._titleMouseenter}>${this.renderHighlighted(this.item?.title ?? "")}</span>`;
     }
 
     /**

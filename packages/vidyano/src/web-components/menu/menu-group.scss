@@ -21,8 +21,8 @@ span.match {
     pointer-events: none;
 }
 
-// The row: the link that toggles the group, its item regions and the chevron
-.row {
+// The item: the link that toggles the group, its item regions and the chevron
+.item {
     display: flex;
     align-items: center;
     gap: var(--vi-menu-item-gap);
@@ -76,7 +76,7 @@ span.match {
     }
 }
 
-.title {
+.link {
     display: flex;
     flex: 1;
     min-width: 0;
@@ -93,7 +93,7 @@ span.match {
         inset: 0;
     }
 
-    > #title {
+    > .title {
         display: block;
         flex: 1;
         min-width: 0;
@@ -102,11 +102,11 @@ span.match {
     }
 }
 
-:host([open]) .row > vi-icon {
+:host([open]) .item > vi-icon {
     transform: rotate(0deg);
 }
 
-.sub-items {
+.children {
     display: grid;
     grid-template-rows: 0fr;
     visibility: hidden;
@@ -119,12 +119,12 @@ span.match {
     }
 }
 
-:host([open]) .sub-items {
+:host([open]) .children {
     grid-template-rows: 1fr;
     visibility: visible;
     transition: grid-template-rows var(--vi-menu-group-transition-duration) ease, visibility 0s;
 }
 
-:host([filtering]) .sub-items {
+:host([filtering]) .children {
     transition: none;
 }
