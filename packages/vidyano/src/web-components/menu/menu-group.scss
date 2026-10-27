@@ -1,0 +1,91 @@
+$color: #FAFAFA;
+
+:host {
+    position: relative;
+    box-sizing: border-box;
+    display: block;
+    line-height: var(--vi-menu-item-height);
+    color: var(--vi-menu-color, $color);
+    fill: var(--vi-menu-color, $color);
+    cursor: pointer;
+    --vi-menu-group-transition-duration: 150ms;
+}
+
+:host([hidden]) {
+    display: none !important;
+}
+
+span.match {
+    color: #FFDD00;
+    font-weight: bold;
+    pointer-events: none;
+}
+
+.title {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    gap: var(--vi-menu-item-gap);
+    position: relative;
+    padding-left: calc(
+        var(--vi-menu-item-padding-left) +
+        var(--vi-menu-program-unit-icon-size) +
+        var(--vi-menu-item-gap) +
+        var(--vi-menu-extra-indent, 0px)
+    );
+    padding-right: var(--vi-menu-item-gap);
+    text-decoration: none;
+    color: var(--vi-menu-color, $color);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    outline: none;
+
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.1);
+    }
+
+    > vi-icon {
+        --vi-icon-width: var(--vi-menu-item-icon-size);
+        --vi-icon-height: var(--vi-menu-item-icon-size);
+        width: var(--vi-menu-item-icon-size);
+        fill: var(--vi-menu-color, $color);
+        transition: transform 0.2s ease, opacity 0.2s ease;
+        transform: rotate(-180deg);
+    }
+
+    > #title {
+        display: block;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+:host([open]) .title > vi-icon {
+    transform: rotate(0deg);
+}
+
+.sub-items {
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    transition: grid-template-rows var(--vi-menu-group-transition-duration) ease, visibility 0s var(--vi-menu-group-transition-duration);
+    --vi-menu-extra-indent: var(--vi-menu-group-indent);
+
+    > .content {
+        min-height: 0;
+        overflow: hidden;
+    }
+}
+
+:host([open]) .sub-items {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    transition: grid-template-rows var(--vi-menu-group-transition-duration) ease, visibility 0s;
+}
+
+:host([filtering]) .sub-items {
+    transition: none;
+}

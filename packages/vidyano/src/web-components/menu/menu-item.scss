@@ -1,209 +1,58 @@
 $color: #FAFAFA;
-$backgroundColor: var(--colors-blue-grey-900);
 
 :host {
     position: relative;
     box-sizing: border-box;
-	display: block;
-	line-height: var(--vi-menu-item-height);
+    display: block;
+    line-height: var(--vi-menu-item-height);
     color: var(--vi-menu-color, $color);
     fill: var(--vi-menu-color, $color);
     cursor: pointer;
-    --iron-collapse-transition-duration: 150ms;
+}
 
-    span.match {
-        color: #FFDD00;
-        font-weight: bold;
-        pointer-events: none;
+:host([hidden]) {
+    display: none !important;
+}
+
+span.match {
+    color: #FFDD00;
+    font-weight: bold;
+    pointer-events: none;
+}
+
+.title {
+    display: flex;
+    gap: var(--vi-menu-item-gap);
+    position: relative;
+    padding-left: calc(
+        var(--vi-menu-item-padding-left) +
+        var(--vi-menu-program-unit-icon-size) +
+        var(--vi-menu-item-gap) +
+        var(--vi-menu-extra-indent, 0px)  // Extra indent passed from parent group
+    );
+    padding-right: var(--vi-menu-item-gap);
+    text-decoration: none;
+    color: var(--vi-menu-color, $color);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    outline: none;
+    align-items: center;
+
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.1);
     }
 
-    > .title {
-        display: flex;
-        gap: var(--vi-menu-item-gap);
-        position: relative;
-        padding-left: calc(
-            var(--vi-menu-item-padding-left) +
-            var(--vi-menu-program-unit-icon-size) +
-            var(--vi-menu-item-gap) +
-            var(--vi-menu-extra-indent, 0px)  // Extra indent passed from parent group
-        );
-        padding-right: var(--vi-menu-item-gap);
-        text-decoration: none;
-        color: var(--vi-menu-color, $color);
-        white-space: nowrap;
-        text-overflow: ellipsis;
+    > vi-icon {
+        --vi-icon-width: var(--vi-menu-item-icon-size);
+        --vi-icon-height: var(--vi-menu-item-icon-size);
+        width: var(--vi-menu-item-icon-size);
+        fill: var(--vi-menu-color, $color);
+    }
+
+    > span {
+        display: block;
         overflow: hidden;
-        outline: none;
-        align-items: center;
-
-        &:hover {
-            background-color: rgba(0, 0, 0, 0.1);
-        }
-
-        > vi-icon {
-            --vi-icon-width: var(--vi-menu-item-icon-size);
-            --vi-icon-height: var(--vi-menu-item-icon-size);
-            width: var(--vi-menu-item-icon-size);
-            fill: var(--vi-menu-color, $color);
-    		transition: transform 0.2s ease, opacity 0.2s ease;
-            transform: rotate(0deg);
-        }
-
-        > span {
-            display: block;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-    }
-
-    &[hidden] {
-        display: none !important;
-    }
-
-    &[type=program-unit] {
-		background-color: transparent;
-
-        &:not(:last-of-type) {
-            margin: var(--vi-menu-program-unit-spacing) 0;
-        }
-
-        > .title {
-            font-weight: 600;
-            color: var(--vi-menu-color, $color);
-            text-transform: uppercase;
-            padding-left: var(--vi-menu-item-padding-left);
-
-            > vi-icon {
-                --vi-icon-width: var(--vi-menu-program-unit-icon-size);
-                --vi-icon-height: var(--vi-menu-program-unit-icon-size);
-                width: var(--vi-menu-program-unit-icon-size);
-                height: var(--vi-menu-program-unit-icon-size);
-            }
-        }
-
-        #subItems {
-            transition: opacity 0.22s cubic-bezier(0.2, 0, 0, 1);
-            margin-top: var(--theme-h5);
-        }
-
-        &[collapsed]:not([hovering]) {
-            #subItems {
-                opacity: 0;
-                pointer-events: none;
-            }
-            > .title {
-                height: var(--vi-menu-item-height);
-                line-height: var(--vi-menu-item-height);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding-left: 0;
-                padding-right: 0;
-                width: var(--vi-menu-collapsed-width);
-                min-width: var(--vi-menu-collapsed-width);
-                max-width: var(--vi-menu-collapsed-width);
-                overflow: hidden;
-                transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
-
-                > vi-icon {
-                    --vi-icon-width: var(--vi-menu-program-unit-icon-size);
-                    --vi-icon-height: var(--vi-menu-program-unit-icon-size);
-                    width: var(--vi-menu-program-unit-icon-size);
-                    height: var(--vi-menu-program-unit-icon-size);
-                    flex-shrink: 0;
-                    transition: transform 0.2s ease;
-                }
-
-                > span {
-                    display: none;
-                }
-
-                &:hover > vi-icon {
-                    transform: scale(1.1);
-                }
-            }
-        }
-
-        &[collapsed][hovering] {
-            #subItems {
-                opacity: 1;
-                pointer-events: auto;
-            }
-
-            > .title {
-                height: var(--vi-menu-item-height);
-                line-height: var(--vi-menu-item-height);
-                display: flex;
-                align-items: center;
-                justify-content: flex-start;
-                padding-left: var(--vi-menu-item-padding-left);
-                padding-right: var(--vi-menu-item-padding-right);
-                gap: var(--vi-menu-item-gap);
-                width: auto;
-                min-width: unset;
-                max-width: unset;
-                transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
-
-                > vi-icon {
-                    --vi-icon-width: var(--vi-menu-program-unit-icon-size);
-                    --vi-icon-height: var(--vi-menu-program-unit-icon-size);
-                    width: var(--vi-menu-program-unit-icon-size);
-                    height: var(--vi-menu-program-unit-icon-size);
-                    flex-shrink: 0;
-                    transition: transform 0.2s ease;
-                }
-
-                > span {
-                    display: inline;
-                }
-            }
-        }
-	}
-
-    &[type=program-unit-item-group] {
-        > .title {
-            flex-direction: row-reverse;
-
-            vi-icon {
-                transform: rotate(-180deg);
-            }
-        }
-
-        &[expand], &[filtering] {
-            vi-icon {
-                transform: rotate(0deg);
-            }
-        }
-
-        #subItems {
-            --vi-menu-extra-indent: var(--vi-menu-group-indent);
-        }
-    }
-
-    &[type=program-unit-item-separator] {
-        cursor: default;
-
-        a {
-            height: var(--vi-menu-separator-height);
-            pointer-events: none;
-            position: relative;
-
-            > * {
-                display: none;
-            }
-
-            &::after {
-                position: absolute;
-                inset: calc(var(--vi-menu-separator-height) / 2) var(--vi-menu-item-gap) 0 calc(
-                    var(--vi-menu-item-padding-left) +
-                    var(--vi-menu-program-unit-icon-size) +
-                    var(--vi-menu-item-gap) +
-                    var(--vi-menu-extra-indent, 0px)
-                );
-                content: "";
-                height: 1px;
-                background-color: rgba(255, 255, 255, .1);
-            }
-        }
+        text-overflow: ellipsis;
     }
 }

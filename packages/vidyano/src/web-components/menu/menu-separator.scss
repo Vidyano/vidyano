@@ -1,0 +1,24 @@
+:host {
+    position: relative;
+    display: block;
+    height: var(--vi-menu-separator-height);
+    pointer-events: none;
+}
+
+:host([hidden]) {
+    display: none !important;
+}
+
+.line {
+    position: absolute;
+    top: calc(var(--vi-menu-separator-height) / 2);
+    left: calc(
+        var(--vi-menu-item-padding-left) +
+        var(--vi-menu-program-unit-icon-size) +
+        var(--vi-menu-item-gap) +
+        var(--vi-menu-extra-indent, 0px)
+    );
+    right: var(--vi-menu-item-gap);
+    height: 1px;
+    background-color: rgba(255, 255, 255, .1);
+}
